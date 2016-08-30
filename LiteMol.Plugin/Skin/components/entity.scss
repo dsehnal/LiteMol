@@ -1,0 +1,210 @@
+
+
+.lm-entity-tree {    
+    overflow: hidden;
+    position: absolute;    
+    bottom: 0;
+    left: 0;
+    right: 0; 
+    top: 0;
+    padding-top: $control-spacing;
+    background: $control-background;   
+    
+    .lm-entity-tree-children {
+        overflow-x: hidden;
+        overflow-y: auto;
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0; 
+        top: $row-height + $control-spacing + 1;
+        padding: $control-spacing 0;
+    } 
+}
+
+.lm-entity-store-header {
+    height: $row-height + 1;
+    position: relative;
+    
+    > span {
+        margin-left: 6px;
+        display: inline-block;
+        line-height: $row-height;
+        font-weight: bold;
+        
+        @include non-selectable
+    } 
+    
+    button {     
+        display: block !important;
+        height: $row-height !important;
+        margin: 0 !important;
+        line-height: $row-height !important;
+        border: none !important;
+        position: absolute;
+        top: 0;  
+    }
+        
+    border-bottom: 1px solid $border-color;
+}
+
+.lm-entity-store-root {
+    overflow-x: hidden;
+    overflow-y: auto;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    top: $row-height + 1;
+    right: 0; 
+}
+
+.lm-entity-tree-entry {
+    height: $row-height + 1;
+    position: relative;
+    border-bottom: 1px solid $control-background;
+}
+
+.lm-entity-tree-entry-current {
+    background: darken($default-background, 4%) !important; 
+    
+    .lm-entity-tree-entry-label {
+        color: $entity-current-font-color;
+        font-weight: bold;
+        .lm-entity-tree-entry-label-tag {
+            font-weight: normal;
+        }
+        &:hover {
+            color: $hover-font-color;
+        }
+    }
+}
+
+.lm-entity-tree-entry-current-path {
+    background: darken($default-background, 2%) !important;
+    .lm-entity-tree-entry-label {
+        color: darken($entity-current-font-color, 5%);
+        &:hover {
+            color: $hover-font-color;
+        }
+    }
+}
+
+.lm-entity-tree-entry button, .lm-entity-tree-entry > div {
+    display: block !important;
+    height: $row-height !important;
+    margin: 0 !important;
+    line-height: $row-height !important;
+    border: none !important;
+    position: absolute;
+    top: 0;    
+}
+
+
+.lm-entity-tree-entry-toggle-group {
+    width: $row-height;
+    height: $row-height;
+    padding: 0;
+    left: 0;
+}
+
+.lm-entity-tree-entry-toggle-visible {
+    width: $row-height;
+    right: 0; //$row-height + 6;
+    padding: 0 !important;
+    font-size: 80%;
+}
+
+.lm-entity-tree-entry-toggle-visible-full, .lm-entity-tree-entry-toggle-visible-full:focus, .lm-entity-tree-entry-toggle-visible-full:active {
+    color: $entity-color-fully-visible;
+}
+
+.lm-entity-tree-entry-toggle-visible-partial, .lm-entity-tree-entry-toggle-visible-partial:focus, .lm-entity-tree-entry-toggle-visible-partial:active {
+    color: $entity-color-partialy-visible;
+}
+
+.lm-entity-tree-entry-toggle-visible-none, .lm-entity-tree-entry-toggle-visible-none:focus, .lm-entity-tree-entry-toggle-visible-none:active {
+    //background: transparent !important;
+    color: $entity-color-not-visible;
+}
+
+.lm-entity-tree-entry-remove {
+    width: $row-height;
+    height: $row-height;
+    right: $row-height;
+    padding: 0 !important;
+    text-align: center;
+    font-size: 80%;
+    color: darken($font-color, 66%)
+}
+
+.lm-entity-tree-entry-body {
+    position: absolute;
+    left: $row-height;
+    border-radius: 0 0 0 $entity-subtree-offset;
+    right: 0;     
+    background: $default-background;
+}
+
+.lm-entity-tree-entry .lm-entity-badge {
+    width: $row-height;
+    position: absolute;
+    height: $row-height;
+    left: 0;
+    top: 0;
+    border-radius: 0 $entity-subtree-offset 0 $entity-subtree-offset;
+}
+
+.lm-entity-tree-entry-label-wrap {
+    right: 2 * $row-height;
+    overflow: hidden;
+    left: $row-height;
+    height: $row-height;
+    position: absolute;
+}
+
+.lm-entity-tree-entry-label {
+    position: absolute;
+    right: 0;
+    top: 0;
+    left: 0;
+    text-align: left !important;
+    width: 100%;
+    padding: 0 $control-spacing !important;
+}
+
+.lm-entity-tree-entry-label-tag {
+    color: $entity-tag-color;
+    font-size: 70%;
+    display: inline-block;
+    margin-left: 6px;
+}
+
+    
+.lm-entity-tree-children-wrap {
+    padding-left: $entity-subtree-offset;
+}
+
+.lm-entity-tree-root {
+    > .lm-entity-tree-entry {
+        .lm-entity-badge {
+            border-top-right-radius: 0;
+        }
+        .lm-entity-tree-entry-label {
+            font-weight: bold;
+        }
+        .lm-entity-tree-entry-toggle-group {
+            display: none !important;
+        }        
+        .lm-entity-tree-entry-body {
+            left: $row-height - $entity-subtree-offset !important;
+        }
+        background: $default-background;
+        border-bottom: 1px solid $border-color;
+    }
+    
+    > .lm-entity-tree-children-wrap {
+       margin-top: $control-spacing;
+       padding-left: 0 !important;
+    }    
+}
+

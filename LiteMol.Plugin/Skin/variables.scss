@@ -1,0 +1,100 @@
+
+// measures 
+
+$control-label-width:   110px;
+$row-height:            32px;
+$control-spacing:       10px;
+$entity-subtree-offset: 8px;
+$info-vertical-padding: 5px;
+
+// layout
+
+$expanded-top-height:    100px;
+$expanded-bottom-height: 3 * $row-height + 2;
+$expanded-right-width:   290px;
+$expanded-left-width:    290px;
+
+$expanded-portrait-bottom-height: 10 * ($row-height + 1) + 3 * $control-spacing + 1;
+$expanded-portrait-top-height:    2 * $row-height + 1;
+
+$standard-bottom-height: 8 * ($row-height + 1) + 3 * $control-spacing + 1;
+$standard-top-height:    2 * $row-height + 1;
+
+//////////////////////////////////////////////////
+// BASE COLORS
+
+$default-background:         #111318;
+$font-color:                 #ccd4e0; // = darken(#F2F4F7, 12%); 
+$hover-font-color:           #51A2FB;
+$entity-current-font-color:  #68BEFD;
+$btn-remove-background:      #DE0A28;
+$btn-remove-hover-font-color:#F2F4F7;
+$btn-commit-on-font-color:   #68BEFD;
+$entity-badge-font-color:    #ccd4e0;
+
+// alternative colors
+// $default-background:         #2D3E50;
+// $font-color:                 #EDF1F2; 
+// $hover-font-color:           #3B9AD9;
+// $entity-current-font-color:  #FFFFFF;
+// $btn-remove-background:      #BF3A31;
+// $btn-remove-hover-font-color:#ffffff;
+// $btn-commit-on-font-color:   #ffffff; //#30AD63; //!!Change 
+
+
+// entity colors are "somewhat orthogonal" on the RGB cube
+// TypeClass = 'Root' | 'Group' | 'Data' | 'Object' | 'Visual' | 'Selection' | 'Action' | 'Behaviour'
+
+// DO NOT CHANGE THESE!!
+$entity-color-Root:      $default-background;    
+$entity-color-Data:      darken(#95a5a6, 15%); 
+$entity-color-Selection: darken(#e74c3c, 15%); 
+$entity-color-Action:    darken(#34495e, 10%); 
+$entity-color-Object:    darken(#2ecc71, 10%); 
+$entity-color-Behaviour: darken(#9b59b6, 10%);   
+$entity-color-Visual:    darken(#3498db, 5%); 
+$entity-color-Group:     darken(#e67e22, 5%); 
+
+// used in LOG
+$log-message:          #0CCA5D;
+$log-info:             #5E3673;
+$log-warning:          #FCC937;
+$log-error:            #FD354B;
+
+//////////////////////////////////////////////////
+// COMPUTED COLORS
+
+$control-background: lighten($default-background, 6.5%);
+$border-color: lighten($default-background, 15%);  
+$form-control-background: darken($default-background, 2.5%); 
+
+// buttons
+$btn-link-font-color: $font-color;
+$btn-link-toggle-on-font-color: $font-color;
+$btn-link-toggle-off-font-color: darken($font-color, 33%);
+
+// used for "actions" -- i.e. + in selection
+$btn-remove-font-color: $font-color;
+
+$btn-action-background: $form-control-background;
+
+// update selection etc
+//!! $btn-commit-on-font-color: $entity-current-font-color;
+$btn-commit-on-hover-font-color: darken($btn-commit-on-font-color, 20%); //!!Change
+$btn-commit-on-background: darken($default-background, 2%);
+$btn-commit-off-background:  darken($default-background, 4%); //$control-background;
+$btn-commit-off-font-color: $font-color;
+
+// log
+$log-font-color: darken($font-color, 5%);
+$log-timestamp-font-color: darken($font-color, 20%);
+
+// highlight
+$highlight-info-font-color: $hover-font-color;
+$highlight-info-additional-font-color: darken($hover-font-color, 20%);
+
+// entity state
+$entity-color-fully-visible: $font-color; 
+$entity-color-not-visible: darken($font-color, 66%);
+$entity-color-partialy-visible: darken($font-color, 33%);
+$entity-tag-color: darken($font-color, 20%);

@@ -1,0 +1,81 @@
+/*
+ * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ */
+
+namespace LiteMol.Bootstrap.Visualization.Molecule {
+    "use strict";
+
+    export type Source = Entity.Molecule.Model | Entity.Molecule.Selection;
+
+    export type Type = 'Cartoons' | 'Calpha' | 'BallsAndSticks' | 'VDWBalls' | 'Surface';
+    export type DetailType = 'Automatic' | 'Very Low' | 'Low' | 'Medium' | 'High' | 'Very High';
+    
+    export type Style<Params> = Visualization.Style<Type, Params>
+            
+    export const TypeDescriptions: { [key: string]: TypeDescription } = {
+        'Cartoons': { label: 'Cartoon', shortLabel: 'Cartoon' },
+        'Calpha': { label: 'C-\u03B1 Trace', shortLabel: 'C-\u03B1' },
+        'BallsAndSticks': { label: 'Balls and Sticks', shortLabel: `B'n'S` },
+        'VDWBalls': { label: 'VDW Balls', shortLabel: 'VDW' },
+        'Surface': { label: 'Surface', shortLabel: 'Surface' }
+    };
+    
+    export const Types: Type[] = [ 'Cartoons', 'Calpha', 'BallsAndSticks', 'VDWBalls', 'Surface' ];
+    export const DetailTypes: DetailType[] = [ 'Automatic', 'Very Low', 'Low', 'Medium', 'High', 'Very High' ];
+    
+    export interface DetailParams {
+        detail?: DetailType
+    }
+        
+    export interface BallsAndSticksParams extends DetailParams {
+        useVDW?: boolean,
+        vdwScaling?: number,
+        atomRadius?: number,
+        bondRadius?: number,
+        detail?: DetailType
+    }
+    
+    export interface SurfaceParams {
+        probeRadius?: number,
+        density?: number,
+        smoothing?: number,
+        isWireframe?: boolean
+    }
+    
+    export namespace Default {
+        
+        export const DetailParams:DetailParams = { detail: 'Automatic' }
+        
+        export const BallsAndSticksParams: BallsAndSticksParams = {
+            useVDW: true,
+            vdwScaling: 0.22,
+            atomRadius: 0.35,
+            bondRadius: 0.09,
+            detail: 'Automatic'
+        };
+        
+        export const SurfaceParams: SurfaceParams = {
+            probeRadius: 1.4,
+            density: 1.1,
+            smoothing: 6,
+            isWireframe: false
+        }
+        
+        export const Transparency: LiteMol.Visualization.Theme.Transparency = { alpha: 1.0, writeDepth: false };
+                    
+        export const ForType: Map<Type, Style<any>> = (function() {    
+            let types = {
+                'Cartoons': { type: 'Cartoons', params: { detail: 'Automatic' }, theme: { template: CartoonThemeTemplate, colors: CartoonThemeTemplate.colors, transparency: Transparency, interactive: true } },
+                'Calpha': { type: 'Calpha', params: { detail: 'Automatic' }, theme: { template: CartoonThemeTemplate, colors: CartoonThemeTemplate.colors, transparency: Transparency, interactive: true } },
+                'BallsAndSticks': { type: 'BallsAndSticks', params: BallsAndSticksParams, theme: { template: ElementSymbolThemeTemplate, colors: ElementSymbolThemeTemplate.colors, transparency: Transparency, interactive: true } },
+                'VDWBalls': { type: 'VDWBalls', params: { detail: 'Automatic' }, theme: { template: ElementSymbolThemeTemplate, colors: ElementSymbolThemeTemplate.colors, transparency: Transparency, interactive: true } },
+                'Surface': { type: 'Surface', params: SurfaceParams, theme: { template: SurfaceThemeTemplate, colors: SurfaceThemeTemplate.colors, transparency: { alpha: 0.33, writeDepth: false }, interactive: true } }  
+            };
+            let map = new Map<Type, Style<any>>();
+            for (let k of Object.keys(types)) {
+                map.set(<Type>k, (types as any)[k]);
+            }
+            return map;
+        })();    
+    }
+}

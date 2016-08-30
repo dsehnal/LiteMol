@@ -1,0 +1,26 @@
+{
+  "compileOnSave": false,
+  "compilerOptions": {
+    "noImplicitAny": true,
+    "noEmitOnError": true,
+    "removeComments": false,
+    "sourceMap": false,
+    "declaration": false,
+    "target": "es5",
+    "jsx": "react",
+    "out": "LiteMol-viewer.js"
+  },
+  "files": [
+    "../lib/es6-collections.d.ts",
+    "../dist/LiteMol-plugin.d.ts",
+    
+    "./src/DataSources.ts",
+    "./src/PDBe/Data.ts",
+    "./src/PDBe/Validation.ts",
+    "./src/PDBe/SequenceAnnotation.ts",
+    "./src/PDBe/Views.tsx",
+    "./src/Spec.ts",
+    
+    "./src/App.ts"
+  ]
+}

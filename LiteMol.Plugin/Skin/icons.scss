@@ -1,0 +1,127 @@
+
+[class^="icon-"]:before, [class*=" icon-"]:before {
+  font-family: "fontello";
+  font-style: normal;
+  font-weight: normal;
+  speak: none;
+ 
+  display: inline-block;
+  text-decoration: inherit;
+  width: 1em;
+  margin-right: .2em;
+  text-align: center;
+  /* opacity: .8; */
+ 
+  /* For safety - reset parent styles, that can break glyph codes*/
+  font-variant: normal;
+  text-transform: none;
+ 
+  /* fix buttons height, for twitter bootstrap */
+  line-height: 1em;
+ 
+  /* Animation center compensation - margins should be symmetric */
+  /* remove if not needed */
+  margin-left: .2em;
+ 
+  /* you can be more comfortable with increased icons size */
+  /* font-size: 120%; */
+ 
+  /* Font smoothing. That was taken from TWBS */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+ 
+  /* Uncomment for 3D effect */
+  /* text-shadow: 1px 1px 1px rgba(127, 127, 127, 0.3); */
+}
+
+.icon-expand-layout:before { 
+	content: "\e84a";
+}
+
+.icon-plus:before { 
+	content: "\e816";
+}
+
+.icon-minus:before { 
+	content: "\e819";
+}
+
+.icon-reset-scene:before {
+	content: "\e891";
+}
+
+.icon-ok:before { 
+	content: "\e812";
+}
+
+.icon-cross:before { 
+	content: "\e868";
+}
+
+.icon-off:before { 
+	content: "\e813";
+}
+
+.icon-expand:before {
+	content: "\e885";
+}
+
+.icon-collapse:before { 
+	content: "\e883";
+}
+
+.icon-visual-visibility:before { 
+	content: "\e826";
+}
+
+.icon-abort:before { 
+	content: "\e814";
+}
+
+.icon-focus-on-visual:before { 
+	content: "\e8a3";
+}
+
+.icon-settings:before  { 
+	content: "\e855";
+}
+
+.icon-tools:before {
+	content: "\e856";
+}
+
+.icon-log:before {
+	content: "\e8a5";
+}
+
+.icon-remove:before {
+	content: "\e847";
+}
+
+.icon-help:before {
+    content: '\e81c'
+}
+
+.icon-info:before {
+    content: '\e81e'
+}
+
+.icon-left-open-big:before {
+    content: '\e87c'
+}
+
+.icon-right-open-big:before {
+    content: '\e87d'
+}
+
+.icon-left-open:before {
+    content: '\e874'
+}
+
+.icon-right-open:before {
+    content: '\e875'
+}
+
+.icon-screenshot:before { 
+	content: "\e80f";
+}

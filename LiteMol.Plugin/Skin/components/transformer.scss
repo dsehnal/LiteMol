@@ -1,0 +1,39 @@
+.lm-transformer {    
+    
+    .lm-entity-badge {
+        position: absolute;
+        top: 0;
+        right: 0;
+        height: $row-height;
+        line-height: $row-height;
+        width: $row-height;
+    }
+}
+
+.lm-layout-right {
+    background: $control-background;
+}
+
+.lm-transformer-wrapper {
+    position: relative;    
+}
+
+.lm-transformer-wrapper {   
+    
+    .lm-entity-badge {
+        left: 0;
+        top: 0;
+    }
+    
+    &:first-child {
+        .lm-panel-description-content {
+            top: $row-height + 1;
+        }
+    }
+    
+    &:not(:first-child) {
+        .lm-panel-description-content {            
+            bottom: $row-height + 1;
+        }
+    }
+}

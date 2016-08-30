@@ -1,0 +1,102 @@
+﻿/*
+ * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ */
+
+namespace LiteMol.Plugin {
+    "use strict";
+    
+    import Entity = Bootstrap.Entity;    
+    import Transformer = Bootstrap.Entity.Transformer;
+    
+    export namespace DataSources {
+        export const DownloadMolecule = Transformer.Molecule.downloadMoleculeSource({ 
+            sourceId: 'url-molecule', 
+            name: 'Url', 
+            description: 'Download a molecule from the specified Url (if the host server supports cross domain requests).',  
+            defaultId: 'http://webchemdev.ncbr.muni.cz/CoordinateServer/1tqn/cartoon',
+            urlTemplate: id => id,
+            isFullUrl: true
+        }); 
+    }
+    
+    import LayoutRegion = Bootstrap.Components.LayoutRegion;
+        
+    export function createDefault(target: HTMLElement) {
+        
+        let spec: Specification = {
+            settings: {
+                'molecule.model.defaultQuery': `residues({ name: 'ALA' })`,
+                'molecule.model.defaultAssemblyName': '1', 
+                'molecule.coordinateStreaming.defaultId': '1jj2',
+                'molecule.coordinateStreaming.defaultServer': 'http://webchemdev.ncbr.muni.cz/CoordinateServer',
+                'molecule.coordinateStreaming.defaultRadius': 10,
+                'density.defaultVisualBehaviourRadius': 5
+            },
+            transforms: [
+                // Root transforms
+                { transformer: Transformer.Molecule.CoordinateStreaming.InitStreaming, view: Views.Transform.Molecule.InitCoordinateStreaming, initiallyCollapsed: true },
+                { transformer: DataSources.DownloadMolecule, view: Views.Transform.Data.WithUrlIdField, initiallyCollapsed: true },
+                { transformer: Transformer.Molecule.OpenMoleculeFromFile, view: Views.Transform.Molecule.OpenFile, initiallyCollapsed: true },                
+                { transformer: Transformer.Data.Download, view: Views.Transform.Data.Download, initiallyCollapsed: true },
+                { transformer: Transformer.Data.OpenFile, view: Views.Transform.Data.OpenFile, initiallyCollapsed: true },
+                
+                // Raw data transforms
+                { transformer: Transformer.Molecule.CreateFromString, view: Views.Transform.Molecule.CreateFromString },
+                { transformer: Transformer.Data.ParseCif, view: Views.Transform.Empty },
+                { transformer: Transformer.Density.ParseBinary, view: Views.Transform.Density.ParseBinary },
+                
+                // Molecule(model) transforms
+                { transformer: Transformer.Molecule.CreateFromMmCif, view: Views.Transform.Molecule.CreateFromMmCif },
+                { transformer: Transformer.Molecule.CreateModel, view: Views.Transform.Molecule.CreateModel, initiallyCollapsed: true },
+                { transformer: Transformer.Molecule.CreateSelection, view: Views.Transform.Molecule.CreateSelection, initiallyCollapsed: true },        
+                                
+                { transformer: Transformer.Molecule.CreateAssembly, view: Views.Transform.Molecule.CreateAssembly, initiallyCollapsed: true },
+                { transformer: Transformer.Molecule.CreateSymmetryMates, view: Views.Transform.Molecule.CreateSymmetryMates, initiallyCollapsed: true },
+                
+                { transformer: Transformer.Molecule.CreateMacromoleculeVisual, view: Views.Transform.Empty },
+                { transformer: Transformer.Molecule.CreateVisual, view: Views.Transform.Molecule.CreateVisual },
+                
+                // density transforms
+                { transformer: Transformer.Density.CreateVisual, view: Views.Transform.Density.CreateVisual },
+                { transformer: Transformer.Density.CreateVisualBehaviour, view: Views.Transform.Density.CreateVisualBehaviour },
+                
+                // Coordinate streaming
+                { transformer: Transformer.Molecule.CoordinateStreaming.CreateBehaviour, view: Views.Transform.Empty, initiallyCollapsed: true },
+            ],
+            behaviours: [
+                Bootstrap.Behaviour.SetEntityToCurrentWhenAdded,
+                Bootstrap.Behaviour.FocusCameraOnSelect,
+                Bootstrap.Behaviour.CreateVisualWhenModelIsAdded,
+                Bootstrap.Behaviour.ApplySelectionToVisual,
+                Bootstrap.Behaviour.ApplyInteractivitySelection,
+                
+                Bootstrap.Behaviour.Molecule.HighlightElementInfo,
+                Bootstrap.Behaviour.Molecule.DistanceToLastClickedElement,
+                Bootstrap.Behaviour.Molecule.ShowInteractionOnSelect(5),
+                                
+                Bootstrap.Behaviour.GoogleAnalytics('UA-77062725-1')
+            ],            
+            components: [
+                Components.Visualization.HighlightInfo(LayoutRegion.Main, true),               
+                Components.Entity.Current('LiteMol', Plugin.VERSION.number)(LayoutRegion.Right, true),
+                Components.Transform.View(LayoutRegion.Right),
+                Components.Context.Log(LayoutRegion.Bottom, true),
+                Components.Context.Overlay(LayoutRegion.Root),
+                Components.Context.BackgroundTasks(LayoutRegion.Main, true)
+            ],
+            viewport: {
+                view: Views.Visualization.Viewport,
+                controlsView: Views.Visualization.ViewportControls
+            },
+            layoutView: Views.Layout,
+            tree: {
+                region: LayoutRegion.Left,
+                view: Views.Entity.Tree
+            }
+        }
+
+        let plugin = new Instance(spec, target);
+        plugin.context.logger.message(`LiteMol Viewer ${VERSION.number}`);
+        return plugin;
+    }
+}

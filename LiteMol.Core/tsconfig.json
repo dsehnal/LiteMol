@@ -1,0 +1,64 @@
+{
+  "compileOnSave": false,
+  "compilerOptions": {
+    "noImplicitAny": true,
+    "noEmitOnError": true,
+    "removeComments": false,
+    "sourceMap": false,
+    "declaration": true,
+    "target": "es5",
+    "out": "LiteMol-core-temp.js"
+  },
+  "files": [
+    "../lib/es6-collections.d.ts",
+    
+    "lib/promise.d.ts",
+    "lib/rx-lite.d.ts",
+    "lib/Lib.ts",
+
+    "Version.ts",
+
+    "Base/Computation.ts",
+    
+    // FORMATS
+    "Formats/Common.ts",
+
+    "Formats/CIF/Dictionary.ts",
+    "Formats/CIF/Parser.ts",
+
+    "Formats/Molecule/mmCIF.ts",
+    "Formats/Molecule/PDB/Data.ts",
+    "Formats/Molecule/PDB/Parser.ts",
+    "Formats/Molecule/SDF.ts",
+    "Formats/Molecule/Formats.ts",
+    
+    "Formats/Density/Data.ts",
+    "Formats/Density/CCP4.ts",
+    "Formats/Density/BRIX.ts",
+    "Formats/Density/Formats.ts",
+
+    // GEOMETRY
+    "Geometry/LinearAlgebra.ts",
+    "Geometry/SubdivisionTree.ts",
+    "Geometry/Surface.ts",
+    "Geometry/MarchingCubes/MarchingCubes.ts",
+    "Geometry/MarchingCubes/Tables.ts",
+    "Geometry/MolecularSurface/MolecularIsoSurface.ts",
+
+    // STRUCTURE
+    "Structure/Molecule.ts",
+    "Structure/Spacegroups.ts",
+    "Structure/Symmetry.ts",
+    "Structure/Query/Data.ts",
+    "Structure/Query/Queries.ts",
+    "Structure/Query/Algebraic.ts",
+
+    // UTILS
+    "Utils/MiscUtils.ts",
+    "Utils/ArrayBuilder.ts",
+    "Utils/NumberParsers.ts",
+    "Utils/PerformanceMonitor.ts",
+
+    "Module.ts"
+  ]
+}

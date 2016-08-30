@@ -1,0 +1,50 @@
+{
+  "compileOnSave": false,
+  "compilerOptions": {
+    "noImplicitAny": true,
+    "noEmitOnError": true,
+    "removeComments": false,
+    "sourceMap": false,
+    "declaration": true,
+    "target": "es5",
+    "out": "LiteMol-visualization-temp.js"
+  },
+  "files": [
+    "../lib/es6-collections.d.ts",
+    
+    "../build/LiteMol-core.d.ts",
+    
+    "lib/three.d.ts",
+
+    "Version.ts",
+
+    "lib/lib.ts",
+
+    "Base/Helpers.ts",
+    "Base/Theme.ts",
+    "Base/Materials.ts",
+    "Base/Model.ts",
+    "Base/ModelStore.ts",
+    "Base/Camera.ts", // before scene
+    "Base/Scene.ts",
+    "Base/CameraControls.ts",
+    "Base/Selection.ts",
+
+    "Surface/Geometry.ts",
+    "Surface/Model.ts",
+
+    "Lines/Geometry.ts",
+    "Lines/Model.ts",
+
+    "Molecule/BallsAndSticks/Geometry.ts",
+    "Molecule/BallsAndSticks/Model.ts",
+    "Molecule/Cartoons/Geometry.ts",
+    "Molecule/Cartoons/GeometryElements.ts",
+    "Molecule/Cartoons/Model.ts",
+    "Molecule/Colors.ts",
+
+    "Utils/Palette.ts",
+
+    "Module.ts"
+  ]
+}

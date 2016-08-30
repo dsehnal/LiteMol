@@ -1,0 +1,64 @@
+{
+  "compileOnSave": false,
+  "compilerOptions": {
+    "noImplicitAny": true,
+    "noEmitOnError": true,
+    "removeComments": false,
+    "sourceMap": false,
+    "declaration": true,
+    "target": "es5",
+    "jsx": "react",
+    "out": "LiteMol-plugin-temp.js"
+  },
+  "files": [
+    "../lib/es6-collections.d.ts",
+
+    "../build/LiteMol-core.d.ts",
+    "../build/LiteMol-visualization.d.ts",
+    "../build/LiteMol-bootstrap.d.ts",
+
+    "lib/react.d.ts",
+    "lib/react-dom.d.ts",
+    "lib/color-picker.d.ts",
+    
+    "Version.ts",
+
+    "lib/Lib.ts",
+
+    // BASIC CONTROLS
+    "Controls/CommonControls.tsx",
+    "Controls/OptionsBox.tsx",
+    "Controls/Panel.tsx",
+    "Controls/Slider.tsx",
+    "Controls/ColorPicker.tsx",
+    "Controls/QueryEditor.tsx",
+
+    // VIEW
+    "Views/View.tsx",
+    "Views/Layout.tsx",
+    
+    // VIEW -> TRANSFORM
+    "Views/Transform/View.tsx",    
+    "Views/Transform/Data.tsx",    
+    "Views/Transform/Molecule.tsx",
+    "Views/Transform/Density.tsx",        
+    
+    // VIEW -> CONTEXT
+    "Views/Context/Log.tsx",
+    "Views/Context/Tasks.tsx",
+    
+    // VIEW -> ENTITY
+    "Views/Entity/Tree.tsx",
+    "Views/Entity/Info.tsx",
+    
+    // VIEW -> VISUALIZATION
+    "Views/Visualization/Viewport.tsx",    
+        
+    // PLUGIN BASICS
+    "Plugin/Components.ts",
+    "Plugin/Plugin.ts",
+    "Plugin/Default.ts",   
+
+    "Module.ts"
+  ]
+}

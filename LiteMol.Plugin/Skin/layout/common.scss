@@ -1,0 +1,61 @@
+
+
+.lm-layout-expanded, .lm-layout-standard {
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+}
+
+.lm-layout-region {
+    overflow: hidden;
+    background: $default-background;
+}
+
+.lm-layout-static, .lm-layout-scrollable {
+    position: absolute;
+}
+
+.lm-layout-scrollable {
+    overflow-y: auto;
+}
+
+.lm-layout-static {
+    overflow: hidden;
+}
+
+.lm-layout-main, .lm-layout-bottom {
+    .lm-layout-static {        
+        left: 0;
+        right: 0;
+        top: 0;
+        bottom: 0;
+    }    
+}
+
+.lm-layout-right {
+        
+    .lm-layout-static {        
+        left: 0;
+        right: 0;
+        top: 0;
+        height: $row-height + $control-spacing;
+    }
+    
+    .lm-layout-scrollable {
+        left: 0;
+        right: 0;
+        top: $row-height + $control-spacing + 1;
+        bottom: 0;
+     }   
+    
+}
+
+.lm-layout-left {    
+    .lm-layout-static {        
+        left: 0;
+        right: 0;
+        bottom: 0;
+        top: 0;
+    }
+}

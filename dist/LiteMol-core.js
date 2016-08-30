@@ -1,0 +1,17313 @@
+
+; var __LiteMol_Core = function () {
+  'use strict';
+/*!
+ * @overview es6-promise - a tiny implementation of Promises/A+.
+ * @copyright Copyright (c) 2014 Yehuda Katz, Tom Dale, Stefan Penner and contributors (Conversion to ES6 API by Jake Archibald)
+ * @license   Licensed under MIT license
+ *            See https://raw.githubusercontent.com/jakearchibald/es6-promise/master/LICENSE
+ * @version   3.2.1
+ */
+
+var __createPromise = function (__promise) {
+    "use strict";
+    function lib$es6$promise$utils$$objectOrFunction(x) {
+        return typeof x === 'function' || (typeof x === 'object' && x !== null);
+    }
+
+    function lib$es6$promise$utils$$isFunction(x) {
+        return typeof x === 'function';
+    }
+
+    function lib$es6$promise$utils$$isMaybeThenable(x) {
+        return typeof x === 'object' && x !== null;
+    }
+
+    var lib$es6$promise$utils$$_isArray;
+    if (!Array.isArray) {
+        lib$es6$promise$utils$$_isArray = function (x) {
+            return Object.prototype.toString.call(x) === '[object Array]';
+        };
+    } else {
+        lib$es6$promise$utils$$_isArray = Array.isArray;
+    }
+
+    var lib$es6$promise$utils$$isArray = lib$es6$promise$utils$$_isArray;
+    var lib$es6$promise$asap$$len = 0;
+    var lib$es6$promise$asap$$vertxNext;
+    var lib$es6$promise$asap$$customSchedulerFn;
+
+    var lib$es6$promise$asap$$asap = function asap(callback, arg) {
+        lib$es6$promise$asap$$queue[lib$es6$promise$asap$$len] = callback;
+        lib$es6$promise$asap$$queue[lib$es6$promise$asap$$len + 1] = arg;
+        lib$es6$promise$asap$$len += 2;
+        if (lib$es6$promise$asap$$len === 2) {
+            // If len is 2, that means that we need to schedule an async flush.
+            // If additional callbacks are queued before the queue is flushed, they
+            // will be processed by this flush that we are scheduling.
+            if (lib$es6$promise$asap$$customSchedulerFn) {
+                lib$es6$promise$asap$$customSchedulerFn(lib$es6$promise$asap$$flush);
+            } else {
+                lib$es6$promise$asap$$scheduleFlush();
+            }
+        }
+    }
+
+    function lib$es6$promise$asap$$setScheduler(scheduleFn) {
+        lib$es6$promise$asap$$customSchedulerFn = scheduleFn;
+    }
+
+    function lib$es6$promise$asap$$setAsap(asapFn) {
+        lib$es6$promise$asap$$asap = asapFn;
+    }
+
+    var lib$es6$promise$asap$$browserWindow = (typeof window !== 'undefined') ? window : undefined;
+    var lib$es6$promise$asap$$browserGlobal = lib$es6$promise$asap$$browserWindow || {};
+    var lib$es6$promise$asap$$BrowserMutationObserver = lib$es6$promise$asap$$browserGlobal.MutationObserver || lib$es6$promise$asap$$browserGlobal.WebKitMutationObserver;
+    var lib$es6$promise$asap$$isNode = typeof self === 'undefined' && typeof process !== 'undefined' && {}.toString.call(process) === '[object process]';
+
+    // test for web worker but not in IE10
+    var lib$es6$promise$asap$$isWorker = typeof Uint8ClampedArray !== 'undefined' &&
+      typeof importScripts !== 'undefined' &&
+      typeof MessageChannel !== 'undefined';
+
+    // node
+    function lib$es6$promise$asap$$useNextTick() {
+        // node version 0.10.x displays a deprecation warning when nextTick is used recursively
+        // see https://github.com/cujojs/when/issues/410 for details
+        return function () {
+            process.nextTick(lib$es6$promise$asap$$flush);
+        };
+    }
+
+    // vertx
+    function lib$es6$promise$asap$$useVertxTimer() {
+        return function () {
+            lib$es6$promise$asap$$vertxNext(lib$es6$promise$asap$$flush);
+        };
+    }
+
+    function lib$es6$promise$asap$$useMutationObserver() {
+        var iterations = 0;
+        var observer = new lib$es6$promise$asap$$BrowserMutationObserver(lib$es6$promise$asap$$flush);
+        var node = document.createTextNode('');
+        observer.observe(node, { characterData: true });
+
+        return function () {
+            node.data = (iterations = ++iterations % 2);
+        };
+    }
+
+    // web worker
+    function lib$es6$promise$asap$$useMessageChannel() {
+        var channel = new MessageChannel();
+        channel.port1.onmessage = lib$es6$promise$asap$$flush;
+        return function () {
+            channel.port2.postMessage(0);
+        };
+    }
+
+    function lib$es6$promise$asap$$useSetTimeout() {
+        return function () {
+            setTimeout(lib$es6$promise$asap$$flush, 1);
+        };
+    }
+
+    var lib$es6$promise$asap$$queue = new Array(1000);
+    function lib$es6$promise$asap$$flush() {
+        for (var i = 0; i < lib$es6$promise$asap$$len; i += 2) {
+            var callback = lib$es6$promise$asap$$queue[i];
+            var arg = lib$es6$promise$asap$$queue[i + 1];
+
+            callback(arg);
+
+            lib$es6$promise$asap$$queue[i] = undefined;
+            lib$es6$promise$asap$$queue[i + 1] = undefined;
+        }
+
+        lib$es6$promise$asap$$len = 0;
+    }
+
+    ////function lib$es6$promise$asap$$attemptVertx() {
+    ////    try {
+    ////        var r = require;
+    ////        var vertx = r('vertx');
+    ////        lib$es6$promise$asap$$vertxNext = vertx.runOnLoop || vertx.runOnContext;
+    ////        return lib$es6$promise$asap$$useVertxTimer();
+    ////    } catch (e) {
+    ////        return lib$es6$promise$asap$$useSetTimeout();
+    ////    }
+    ////}
+
+    var lib$es6$promise$asap$$scheduleFlush;
+    // Decide what async method to use to triggering processing of queued callbacks:
+    if (lib$es6$promise$asap$$isNode) {
+        lib$es6$promise$asap$$scheduleFlush = lib$es6$promise$asap$$useNextTick();
+    } else if (lib$es6$promise$asap$$BrowserMutationObserver) {
+        lib$es6$promise$asap$$scheduleFlush = lib$es6$promise$asap$$useMutationObserver();
+    } else if (lib$es6$promise$asap$$isWorker) {
+        lib$es6$promise$asap$$scheduleFlush = lib$es6$promise$asap$$useMessageChannel();
+    } /*else if (lib$es6$promise$asap$$browserWindow === undefined && typeof require === 'function') {
+        lib$es6$promise$asap$$scheduleFlush = lib$es6$promise$asap$$attemptVertx();
+    }*/ else {
+        lib$es6$promise$asap$$scheduleFlush = lib$es6$promise$asap$$useSetTimeout();
+    }
+    function lib$es6$promise$then$$then(onFulfillment, onRejection) {
+        var parent = this;
+
+        var child = new this.constructor(lib$es6$promise$$internal$$noop);
+
+        if (child[lib$es6$promise$$internal$$PROMISE_ID] === undefined) {
+            lib$es6$promise$$internal$$makePromise(child);
+        }
+
+        var state = parent._state;
+
+        if (state) {
+            var callback = arguments[state - 1];
+            lib$es6$promise$asap$$asap(function () {
+                lib$es6$promise$$internal$$invokeCallback(state, child, callback, parent._result);
+            });
+        } else {
+            lib$es6$promise$$internal$$subscribe(parent, child, onFulfillment, onRejection);
+        }
+
+        return child;
+    }
+    var lib$es6$promise$then$$default = lib$es6$promise$then$$then;
+    function lib$es6$promise$promise$resolve$$resolve(object) {
+        /*jshint validthis:true */
+        var Constructor = this;
+
+        if (object && typeof object === 'object' && object.constructor === Constructor) {
+            return object;
+        }
+
+        var promise = new Constructor(lib$es6$promise$$internal$$noop);
+        lib$es6$promise$$internal$$resolve(promise, object);
+        return promise;
+    }
+    var lib$es6$promise$promise$resolve$$default = lib$es6$promise$promise$resolve$$resolve;
+    var lib$es6$promise$$internal$$PROMISE_ID = Math.random().toString(36).substring(16);
+
+    function lib$es6$promise$$internal$$noop() { }
+
+    var lib$es6$promise$$internal$$PENDING = void 0;
+    var lib$es6$promise$$internal$$FULFILLED = 1;
+    var lib$es6$promise$$internal$$REJECTED = 2;
+
+    var lib$es6$promise$$internal$$GET_THEN_ERROR = new lib$es6$promise$$internal$$ErrorObject();
+
+    function lib$es6$promise$$internal$$selfFulfillment() {
+        return new TypeError("You cannot resolve a promise with itself");
+    }
+
+    function lib$es6$promise$$internal$$cannotReturnOwn() {
+        return new TypeError('A promises callback cannot return that same promise.');
+    }
+
+    function lib$es6$promise$$internal$$getThen(promise) {
+        try {
+            return promise.then;
+        } catch (error) {
+            lib$es6$promise$$internal$$GET_THEN_ERROR.error = error;
+            return lib$es6$promise$$internal$$GET_THEN_ERROR;
+        }
+    }
+
+    function lib$es6$promise$$internal$$tryThen(then, value, fulfillmentHandler, rejectionHandler) {
+        try {
+            then.call(value, fulfillmentHandler, rejectionHandler);
+        } catch (e) {
+            return e;
+        }
+    }
+
+    function lib$es6$promise$$internal$$handleForeignThenable(promise, thenable, then) {
+        lib$es6$promise$asap$$asap(function (promise) {
+            var sealed = false;
+            var error = lib$es6$promise$$internal$$tryThen(then, thenable, function (value) {
+                if (sealed) { return; }
+                sealed = true;
+                if (thenable !== value) {
+                    lib$es6$promise$$internal$$resolve(promise, value);
+                } else {
+                    lib$es6$promise$$internal$$fulfill(promise, value);
+                }
+            }, function (reason) {
+                if (sealed) { return; }
+                sealed = true;
+
+                lib$es6$promise$$internal$$reject(promise, reason);
+            }, 'Settle: ' + (promise._label || ' unknown promise'));
+
+            if (!sealed && error) {
+                sealed = true;
+                lib$es6$promise$$internal$$reject(promise, error);
+            }
+        }, promise);
+    }
+
+    function lib$es6$promise$$internal$$handleOwnThenable(promise, thenable) {
+        if (thenable._state === lib$es6$promise$$internal$$FULFILLED) {
+            lib$es6$promise$$internal$$fulfill(promise, thenable._result);
+        } else if (thenable._state === lib$es6$promise$$internal$$REJECTED) {
+            lib$es6$promise$$internal$$reject(promise, thenable._result);
+        } else {
+            lib$es6$promise$$internal$$subscribe(thenable, undefined, function (value) {
+                lib$es6$promise$$internal$$resolve(promise, value);
+            }, function (reason) {
+                lib$es6$promise$$internal$$reject(promise, reason);
+            });
+        }
+    }
+
+    function lib$es6$promise$$internal$$handleMaybeThenable(promise, maybeThenable, then) {
+        if (maybeThenable.constructor === promise.constructor &&
+            then === lib$es6$promise$then$$default &&
+            constructor.resolve === lib$es6$promise$promise$resolve$$default) {
+            lib$es6$promise$$internal$$handleOwnThenable(promise, maybeThenable);
+        } else {
+            if (then === lib$es6$promise$$internal$$GET_THEN_ERROR) {
+                lib$es6$promise$$internal$$reject(promise, lib$es6$promise$$internal$$GET_THEN_ERROR.error);
+            } else if (then === undefined) {
+                lib$es6$promise$$internal$$fulfill(promise, maybeThenable);
+            } else if (lib$es6$promise$utils$$isFunction(then)) {
+                lib$es6$promise$$internal$$handleForeignThenable(promise, maybeThenable, then);
+            } else {
+                lib$es6$promise$$internal$$fulfill(promise, maybeThenable);
+            }
+        }
+    }
+
+    function lib$es6$promise$$internal$$resolve(promise, value) {
+        if (promise === value) {
+            lib$es6$promise$$internal$$reject(promise, lib$es6$promise$$internal$$selfFulfillment());
+        } else if (lib$es6$promise$utils$$objectOrFunction(value)) {
+            lib$es6$promise$$internal$$handleMaybeThenable(promise, value, lib$es6$promise$$internal$$getThen(value));
+        } else {
+            lib$es6$promise$$internal$$fulfill(promise, value);
+        }
+    }
+
+    function lib$es6$promise$$internal$$publishRejection(promise) {
+        if (promise._onerror) {
+            promise._onerror(promise._result);
+        }
+
+        lib$es6$promise$$internal$$publish(promise);
+    }
+
+    function lib$es6$promise$$internal$$fulfill(promise, value) {
+        if (promise._state !== lib$es6$promise$$internal$$PENDING) { return; }
+
+        promise._result = value;
+        promise._state = lib$es6$promise$$internal$$FULFILLED;
+
+        if (promise._subscribers.length !== 0) {
+            lib$es6$promise$asap$$asap(lib$es6$promise$$internal$$publish, promise);
+        }
+    }
+
+    function lib$es6$promise$$internal$$reject(promise, reason) {
+        if (promise._state !== lib$es6$promise$$internal$$PENDING) { return; }
+        promise._state = lib$es6$promise$$internal$$REJECTED;
+        promise._result = reason;
+
+        lib$es6$promise$asap$$asap(lib$es6$promise$$internal$$publishRejection, promise);
+    }
+
+    function lib$es6$promise$$internal$$subscribe(parent, child, onFulfillment, onRejection) {
+        var subscribers = parent._subscribers;
+        var length = subscribers.length;
+
+        parent._onerror = null;
+
+        subscribers[length] = child;
+        subscribers[length + lib$es6$promise$$internal$$FULFILLED] = onFulfillment;
+        subscribers[length + lib$es6$promise$$internal$$REJECTED] = onRejection;
+
+        if (length === 0 && parent._state) {
+            lib$es6$promise$asap$$asap(lib$es6$promise$$internal$$publish, parent);
+        }
+    }
+
+    function lib$es6$promise$$internal$$publish(promise) {
+        var subscribers = promise._subscribers;
+        var settled = promise._state;
+
+        if (subscribers.length === 0) { return; }
+
+        var child, callback, detail = promise._result;
+
+        for (var i = 0; i < subscribers.length; i += 3) {
+            child = subscribers[i];
+            callback = subscribers[i + settled];
+
+            if (child) {
+                lib$es6$promise$$internal$$invokeCallback(settled, child, callback, detail);
+            } else {
+                callback(detail);
+            }
+        }
+
+        promise._subscribers.length = 0;
+    }
+
+    function lib$es6$promise$$internal$$ErrorObject() {
+        this.error = null;
+    }
+
+    var lib$es6$promise$$internal$$TRY_CATCH_ERROR = new lib$es6$promise$$internal$$ErrorObject();
+
+    function lib$es6$promise$$internal$$tryCatch(callback, detail) {
+        try {
+            return callback(detail);
+        } catch (e) {
+            lib$es6$promise$$internal$$TRY_CATCH_ERROR.error = e;
+            return lib$es6$promise$$internal$$TRY_CATCH_ERROR;
+        }
+    }
+
+    function lib$es6$promise$$internal$$invokeCallback(settled, promise, callback, detail) {
+        var hasCallback = lib$es6$promise$utils$$isFunction(callback),
+            value, error, succeeded, failed;
+
+        if (hasCallback) {
+            value = lib$es6$promise$$internal$$tryCatch(callback, detail);
+
+            if (value === lib$es6$promise$$internal$$TRY_CATCH_ERROR) {
+                failed = true;
+                error = value.error;
+                value = null;
+            } else {
+                succeeded = true;
+            }
+
+            if (promise === value) {
+                lib$es6$promise$$internal$$reject(promise, lib$es6$promise$$internal$$cannotReturnOwn());
+                return;
+            }
+
+        } else {
+            value = detail;
+            succeeded = true;
+        }
+
+        if (promise._state !== lib$es6$promise$$internal$$PENDING) {
+            // noop
+        } else if (hasCallback && succeeded) {
+            lib$es6$promise$$internal$$resolve(promise, value);
+        } else if (failed) {
+            lib$es6$promise$$internal$$reject(promise, error);
+        } else if (settled === lib$es6$promise$$internal$$FULFILLED) {
+            lib$es6$promise$$internal$$fulfill(promise, value);
+        } else if (settled === lib$es6$promise$$internal$$REJECTED) {
+            lib$es6$promise$$internal$$reject(promise, value);
+        }
+    }
+
+    function lib$es6$promise$$internal$$initializePromise(promise, resolver) {
+        try {
+            resolver(function resolvePromise(value) {
+                lib$es6$promise$$internal$$resolve(promise, value);
+            }, function rejectPromise(reason) {
+                lib$es6$promise$$internal$$reject(promise, reason);
+            });
+        } catch (e) {
+            lib$es6$promise$$internal$$reject(promise, e);
+        }
+    }
+
+    var lib$es6$promise$$internal$$id = 0;
+    function lib$es6$promise$$internal$$nextId() {
+        return lib$es6$promise$$internal$$id++;
+    }
+
+    function lib$es6$promise$$internal$$makePromise(promise) {
+        promise[lib$es6$promise$$internal$$PROMISE_ID] = lib$es6$promise$$internal$$id++;
+        promise._state = undefined;
+        promise._result = undefined;
+        promise._subscribers = [];
+    }
+
+    function lib$es6$promise$promise$all$$all(entries) {
+        return new lib$es6$promise$enumerator$$default(this, entries).promise;
+    }
+    var lib$es6$promise$promise$all$$default = lib$es6$promise$promise$all$$all;
+    function lib$es6$promise$promise$race$$race(entries) {
+        /*jshint validthis:true */
+        var Constructor = this;
+
+        if (!lib$es6$promise$utils$$isArray(entries)) {
+            return new Constructor(function (resolve, reject) {
+                reject(new TypeError('You must pass an array to race.'));
+            });
+        } else {
+            return new Constructor(function (resolve, reject) {
+                var length = entries.length;
+                for (var i = 0; i < length; i++) {
+                    Constructor.resolve(entries[i]).then(resolve, reject);
+                }
+            });
+        }
+    }
+    var lib$es6$promise$promise$race$$default = lib$es6$promise$promise$race$$race;
+    function lib$es6$promise$promise$reject$$reject(reason) {
+        /*jshint validthis:true */
+        var Constructor = this;
+        var promise = new Constructor(lib$es6$promise$$internal$$noop);
+        lib$es6$promise$$internal$$reject(promise, reason);
+        return promise;
+    }
+    var lib$es6$promise$promise$reject$$default = lib$es6$promise$promise$reject$$reject;
+
+
+    function lib$es6$promise$promise$$needsResolver() {
+        throw new TypeError('You must pass a resolver function as the first argument to the promise constructor');
+    }
+
+    function lib$es6$promise$promise$$needsNew() {
+        throw new TypeError("Failed to construct 'Promise': Please use the 'new' operator, this object constructor cannot be called as a function.");
+    }
+
+    var lib$es6$promise$promise$$default = lib$es6$promise$promise$$Promise;
+    /**
+      Promise objects represent the eventual result of an asynchronous operation. The
+      primary way of interacting with a promise is through its `then` method, which
+      registers callbacks to receive either a promise's eventual value or the reason
+      why the promise cannot be fulfilled.
+
+      Terminology
+      -----------
+
+      - `promise` is an object or function with a `then` method whose behavior conforms to this specification.
+      - `thenable` is an object or function that defines a `then` method.
+      - `value` is any legal JavaScript value (including undefined, a thenable, or a promise).
+      - `exception` is a value that is thrown using the throw statement.
+      - `reason` is a value that indicates why a promise was rejected.
+      - `settled` the final resting state of a promise, fulfilled or rejected.
+
+      A promise can be in one of three states: pending, fulfilled, or rejected.
+
+      Promises that are fulfilled have a fulfillment value and are in the fulfilled
+      state.  Promises that are rejected have a rejection reason and are in the
+      rejected state.  A fulfillment value is never a thenable.
+
+      Promises can also be said to *resolve* a value.  If this value is also a
+      promise, then the original promise's settled state will match the value's
+      settled state.  So a promise that *resolves* a promise that rejects will
+      itself reject, and a promise that *resolves* a promise that fulfills will
+      itself fulfill.
+
+
+      Basic Usage:
+      ------------
+
+      ```js
+      var promise = new Promise(function(resolve, reject) {
+        // on success
+        resolve(value);
+
+        // on failure
+        reject(reason);
+      });
+
+      promise.then(function(value) {
+        // on fulfillment
+      }, function(reason) {
+        // on rejection
+      });
+      ```
+
+      Advanced Usage:
+      ---------------
+
+      Promises shine when abstracting away asynchronous interactions such as
+      `XMLHttpRequest`s.
+
+      ```js
+      function getJSON(url) {
+        return new Promise(function(resolve, reject){
+          var xhr = new XMLHttpRequest();
+
+          xhr.open('GET', url);
+          xhr.onreadystatechange = handler;
+          xhr.responseType = 'json';
+          xhr.setRequestHeader('Accept', 'application/json');
+          xhr.send();
+
+          function handler() {
+            if (this.readyState === this.DONE) {
+              if (this.status === 200) {
+                resolve(this.response);
+              } else {
+                reject(new Error('getJSON: `' + url + '` failed with status: [' + this.status + ']'));
+              }
+            }
+          };
+        });
+      }
+
+      getJSON('/posts.json').then(function(json) {
+        // on fulfillment
+      }, function(reason) {
+        // on rejection
+      });
+      ```
+
+      Unlike callbacks, promises are great composable primitives.
+
+      ```js
+      Promise.all([
+        getJSON('/posts'),
+        getJSON('/comments')
+      ]).then(function(values){
+        values[0] // => postsJSON
+        values[1] // => commentsJSON
+
+        return values;
+      });
+      ```
+
+      @class Promise
+      @param {function} resolver
+      Useful for tooling.
+      @constructor
+    */
+    function lib$es6$promise$promise$$Promise(resolver) {
+        this[lib$es6$promise$$internal$$PROMISE_ID] = lib$es6$promise$$internal$$nextId();
+        this._result = this._state = undefined;
+        this._subscribers = [];
+
+        if (lib$es6$promise$$internal$$noop !== resolver) {
+            typeof resolver !== 'function' && lib$es6$promise$promise$$needsResolver();
+            this instanceof lib$es6$promise$promise$$Promise ? lib$es6$promise$$internal$$initializePromise(this, resolver) : lib$es6$promise$promise$$needsNew();
+        }
+    }
+
+    lib$es6$promise$promise$$Promise.all = lib$es6$promise$promise$all$$default;
+    lib$es6$promise$promise$$Promise.race = lib$es6$promise$promise$race$$default;
+    lib$es6$promise$promise$$Promise.resolve = lib$es6$promise$promise$resolve$$default;
+    lib$es6$promise$promise$$Promise.reject = lib$es6$promise$promise$reject$$default;
+    lib$es6$promise$promise$$Promise._setScheduler = lib$es6$promise$asap$$setScheduler;
+    lib$es6$promise$promise$$Promise._setAsap = lib$es6$promise$asap$$setAsap;
+    lib$es6$promise$promise$$Promise._asap = lib$es6$promise$asap$$asap;
+
+    lib$es6$promise$promise$$Promise.prototype = {
+        constructor: lib$es6$promise$promise$$Promise,
+
+        /**
+          The primary way of interacting with a promise is through its `then` method,
+          which registers callbacks to receive either a promise's eventual value or the
+          reason why the promise cannot be fulfilled.
+    
+          ```js
+          findUser().then(function(user){
+            // user is available
+          }, function(reason){
+            // user is unavailable, and you are given the reason why
+          });
+          ```
+    
+          Chaining
+          --------
+    
+          The return value of `then` is itself a promise.  This second, 'downstream'
+          promise is resolved with the return value of the first promise's fulfillment
+          or rejection handler, or rejected if the handler throws an exception.
+    
+          ```js
+          findUser().then(function (user) {
+            return user.name;
+          }, function (reason) {
+            return 'default name';
+          }).then(function (userName) {
+            // If `findUser` fulfilled, `userName` will be the user's name, otherwise it
+            // will be `'default name'`
+          });
+    
+          findUser().then(function (user) {
+            throw new Error('Found user, but still unhappy');
+          }, function (reason) {
+            throw new Error('`findUser` rejected and we're unhappy');
+          }).then(function (value) {
+            // never reached
+          }, function (reason) {
+            // if `findUser` fulfilled, `reason` will be 'Found user, but still unhappy'.
+            // If `findUser` rejected, `reason` will be '`findUser` rejected and we're unhappy'.
+          });
+          ```
+          If the downstream promise does not specify a rejection handler, rejection reasons will be propagated further downstream.
+    
+          ```js
+          findUser().then(function (user) {
+            throw new PedagogicalException('Upstream error');
+          }).then(function (value) {
+            // never reached
+          }).then(function (value) {
+            // never reached
+          }, function (reason) {
+            // The `PedgagocialException` is propagated all the way down to here
+          });
+          ```
+    
+          Assimilation
+          ------------
+    
+          Sometimes the value you want to propagate to a downstream promise can only be
+          retrieved asynchronously. This can be achieved by returning a promise in the
+          fulfillment or rejection handler. The downstream promise will then be pending
+          until the returned promise is settled. This is called *assimilation*.
+    
+          ```js
+          findUser().then(function (user) {
+            return findCommentsByAuthor(user);
+          }).then(function (comments) {
+            // The user's comments are now available
+          });
+          ```
+    
+          If the assimliated promise rejects, then the downstream promise will also reject.
+    
+          ```js
+          findUser().then(function (user) {
+            return findCommentsByAuthor(user);
+          }).then(function (comments) {
+            // If `findCommentsByAuthor` fulfills, we'll have the value here
+          }, function (reason) {
+            // If `findCommentsByAuthor` rejects, we'll have the reason here
+          });
+          ```
+    
+          Simple Example
+          --------------
+    
+          Synchronous Example
+    
+          ```javascript
+          var result;
+    
+          try {
+            result = findResult();
+            // success
+          } catch(reason) {
+            // failure
+          }
+          ```
+    
+          Errback Example
+    
+          ```js
+          findResult(function(result, err){
+            if (err) {
+              // failure
+            } else {
+              // success
+            }
+          });
+          ```
+    
+          Promise Example;
+    
+          ```javascript
+          findResult().then(function(result){
+            // success
+          }, function(reason){
+            // failure
+          });
+          ```
+    
+          Advanced Example
+          --------------
+    
+          Synchronous Example
+    
+          ```javascript
+          var author, books;
+    
+          try {
+            author = findAuthor();
+            books  = findBooksByAuthor(author);
+            // success
+          } catch(reason) {
+            // failure
+          }
+          ```
+    
+          Errback Example
+    
+          ```js
+    
+          function foundBooks(books) {
+    
+          }
+    
+          function failure(reason) {
+    
+          }
+    
+          findAuthor(function(author, err){
+            if (err) {
+              failure(err);
+              // failure
+            } else {
+              try {
+                findBoooksByAuthor(author, function(books, err) {
+                  if (err) {
+                    failure(err);
+                  } else {
+                    try {
+                      foundBooks(books);
+                    } catch(reason) {
+                      failure(reason);
+                    }
+                  }
+                });
+              } catch(error) {
+                failure(err);
+              }
+              // success
+            }
+          });
+          ```
+    
+          Promise Example;
+    
+          ```javascript
+          findAuthor().
+            then(findBooksByAuthor).
+            then(function(books){
+              // found books
+          }).catch(function(reason){
+            // something went wrong
+          });
+          ```
+    
+          @method then
+          @param {Function} onFulfilled
+          @param {Function} onRejected
+          Useful for tooling.
+          @return {Promise}
+        */
+        then: lib$es6$promise$then$$default,
+
+        /**
+          `catch` is simply sugar for `then(undefined, onRejection)` which makes it the same
+          as the catch block of a try/catch statement.
+    
+          ```js
+          function findAuthor(){
+            throw new Error('couldn't find that author');
+          }
+    
+          // synchronous
+          try {
+            findAuthor();
+          } catch(reason) {
+            // something went wrong
+          }
+    
+          // async with promises
+          findAuthor().catch(function(reason){
+            // something went wrong
+          });
+          ```
+    
+          @method catch
+          @param {Function} onRejection
+          Useful for tooling.
+          @return {Promise}
+        */
+        'catch': function (onRejection) {
+            return this.then(null, onRejection);
+        }
+    };
+    var lib$es6$promise$enumerator$$default = lib$es6$promise$enumerator$$Enumerator;
+    function lib$es6$promise$enumerator$$Enumerator(Constructor, input) {
+        this._instanceConstructor = Constructor;
+        this.promise = new Constructor(lib$es6$promise$$internal$$noop);
+
+        if (!this.promise[lib$es6$promise$$internal$$PROMISE_ID]) {
+            lib$es6$promise$$internal$$makePromise(this.promise);
+        }
+
+        if (Array.isArray(input)) {
+            this._input = input;
+            this.length = input.length;
+            this._remaining = input.length;
+
+            this._result = new Array(this.length);
+
+            if (this.length === 0) {
+                lib$es6$promise$$internal$$fulfill(this.promise, this._result);
+            } else {
+                this.length = this.length || 0;
+                this._enumerate();
+                if (this._remaining === 0) {
+                    lib$es6$promise$$internal$$fulfill(this.promise, this._result);
+                }
+            }
+        } else {
+            lib$es6$promise$$internal$$reject(this.promise, lib$es6$promise$enumerator$$validationError());
+        }
+    }
+
+    function lib$es6$promise$enumerator$$validationError() {
+        return new Error('Array Methods must be provided an Array');
+    }
+
+    lib$es6$promise$enumerator$$Enumerator.prototype._enumerate = function () {
+        var length = this.length;
+        var input = this._input;
+
+        for (var i = 0; this._state === lib$es6$promise$$internal$$PENDING && i < length; i++) {
+            this._eachEntry(input[i], i);
+        }
+    };
+
+    lib$es6$promise$enumerator$$Enumerator.prototype._eachEntry = function (entry, i) {
+        var c = this._instanceConstructor;
+        var resolve = c.resolve;
+
+        if (resolve === lib$es6$promise$promise$resolve$$default) {
+            var then = lib$es6$promise$$internal$$getThen(entry);
+
+            if (then === lib$es6$promise$then$$default &&
+                entry._state !== lib$es6$promise$$internal$$PENDING) {
+                this._settledAt(entry._state, i, entry._result);
+            } else if (typeof then !== 'function') {
+                this._remaining--;
+                this._result[i] = entry;
+            } else if (c === lib$es6$promise$promise$$default) {
+                var promise = new c(lib$es6$promise$$internal$$noop);
+                lib$es6$promise$$internal$$handleMaybeThenable(promise, entry, then);
+                this._willSettleAt(promise, i);
+            } else {
+                this._willSettleAt(new c(function (resolve) { resolve(entry); }), i);
+            }
+        } else {
+            this._willSettleAt(resolve(entry), i);
+        }
+    };
+
+    lib$es6$promise$enumerator$$Enumerator.prototype._settledAt = function (state, i, value) {
+        var promise = this.promise;
+
+        if (promise._state === lib$es6$promise$$internal$$PENDING) {
+            this._remaining--;
+
+            if (state === lib$es6$promise$$internal$$REJECTED) {
+                lib$es6$promise$$internal$$reject(promise, value);
+            } else {
+                this._result[i] = value;
+            }
+        }
+
+        if (this._remaining === 0) {
+            lib$es6$promise$$internal$$fulfill(promise, this._result);
+        }
+    };
+
+    lib$es6$promise$enumerator$$Enumerator.prototype._willSettleAt = function (promise, i) {
+        var enumerator = this;
+
+        lib$es6$promise$$internal$$subscribe(promise, undefined, function (value) {
+            enumerator._settledAt(lib$es6$promise$$internal$$FULFILLED, i, value);
+        }, function (reason) {
+            enumerator._settledAt(lib$es6$promise$$internal$$REJECTED, i, reason);
+        });
+    };
+    function lib$es6$promise$polyfill$$polyfill() {
+        var local;
+
+        if (typeof global !== 'undefined') {
+            local = global;
+        } else if (typeof self !== 'undefined') {
+            local = self;
+        } else {
+            try {
+                local = Function('return this')();
+            } catch (e) {
+                throw new Error('polyfill failed because global object is unavailable in this environment');
+            }
+        }
+
+        var P = local.Promise;
+
+        if (P && Object.prototype.toString.call(P.resolve()) === '[object Promise]' && !P.cast) {
+            return;
+        }
+
+        local.Promise = lib$es6$promise$promise$$default;
+    }
+    var lib$es6$promise$polyfill$$default = lib$es6$promise$polyfill$$polyfill;
+
+    var lib$es6$promise$umd$$ES6Promise = {
+        'Promise': lib$es6$promise$promise$$default,
+        'polyfill': lib$es6$promise$polyfill$$default
+    };
+
+    /* global define:true module:true window: true */
+    // if (typeof define === 'function' && define['amd']) {
+    //     define(function () { return lib$es6$promise$umd$$ES6Promise; });
+    // } else if (typeof module !== 'undefined' && module['exports']) {
+    //     module['exports'] = lib$es6$promise$umd$$ES6Promise;
+    // } else if (typeof this !== 'undefined') {
+    //     this['ES6Promise'] = lib$es6$promise$umd$$ES6Promise;
+    // }
+
+    lib$es6$promise$polyfill$$default();
+    
+    __promise.ES6Promise = lib$es6$promise$umd$$ES6Promise    
+};
+
+var __LiteMolPromise;
+
+if (typeof window !== 'undefined' && window && window.Promise) {
+    __LiteMolPromise = window.Promise;
+} else if (typeof global !== 'undefined' && global && global.Promise) {
+    __LiteMolPromise = global.Promise;
+} else {
+    var __promise = {};
+    __createPromise(__promise);
+    __LiteMolPromise = __promise.ES6Promise.Promise;
+}
+
+
+// Copyright (c) Microsoft, All rights reserved. See License.txt in the project root for license information.
+
+/*
+ * Copyright (c) Microsoft.  All rights reserved.
+Microsoft Open Technologies would like to thank its contributors, a list
+of whom are at http://rx.codeplex.com/wikipage?title=Contributors.
+
+Licensed under the Apache License, Version 2.0 (the "License"); you
+may not use this file except in compliance with the License. You may
+obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+implied. See the License for the specific language governing permissions
+and limitations under the License.
+ * 
+ */
+
+var __LiteMolRxTemp = {};
+
+; (function (__LMtarget, __LMpromise, undefined) {
+
+    var objectTypes = {
+        'function': true,
+        'object': true
+    };
+
+    function checkGlobal(value) {
+        return (value && value.Object === Object) ? value : null;
+    }
+
+    var freeExports = (objectTypes[typeof exports] && exports && !exports.nodeType) ? exports : null;
+    var freeModule = (objectTypes[typeof module] && module && !module.nodeType) ? module : null;
+    var freeGlobal = checkGlobal(freeExports && freeModule && typeof global === 'object' && global);
+    var freeSelf = checkGlobal(objectTypes[typeof self] && self);
+    var freeWindow = checkGlobal(objectTypes[typeof window] && window);
+    var moduleExports = (freeModule && freeModule.exports === freeExports) ? freeExports : null;
+    var thisGlobal = checkGlobal(objectTypes[typeof this] && this);
+    var root = freeGlobal || ((freeWindow !== (thisGlobal && thisGlobal.window)) && freeWindow) || freeSelf || thisGlobal || Function('return this')();
+
+    var Rx = {
+        internals: {},
+        config: {
+            Promise: __LMpromise
+        },
+        helpers: {}
+    };
+
+    // Defaults
+    var noop = Rx.helpers.noop = function () { },
+      identity = Rx.helpers.identity = function (x) { return x; },
+      defaultNow = Rx.helpers.defaultNow = Date.now,
+      defaultComparer = Rx.helpers.defaultComparer = function (x, y) { return isEqual(x, y); },
+      defaultSubComparer = Rx.helpers.defaultSubComparer = function (x, y) { return x > y ? 1 : (x < y ? -1 : 0); },
+      defaultKeySerializer = Rx.helpers.defaultKeySerializer = function (x) { return x.toString(); },
+      defaultError = Rx.helpers.defaultError = function (err) { throw err; },
+      isPromise = Rx.helpers.isPromise = function (p) { return !!p && typeof p.subscribe !== 'function' && typeof p.then === 'function'; },
+      isFunction = Rx.helpers.isFunction = (function () {
+
+          var isFn = function (value) {
+              return typeof value == 'function' || false;
+          };
+
+          // fallback for older versions of Chrome and Safari
+          if (isFn(/x/)) {
+              isFn = function (value) {
+                  return typeof value == 'function' && toString.call(value) == '[object Function]';
+              };
+          }
+
+          return isFn;
+      }());
+
+    function cloneArray(arr) {
+        var len = arr.length, a = new Array(len);
+        for (var i = 0; i < len; i++) { a[i] = arr[i]; }
+        return a;
+    }
+
+    var errorObj = { e: {} };
+
+    function tryCatcherGen(tryCatchTarget) {
+        return function tryCatcher() {
+            try {
+                return tryCatchTarget.apply(this, arguments);
+            } catch (e) {
+                errorObj.e = e;
+                return errorObj;
+            }
+        };
+    }
+
+    var tryCatch = Rx.internals.tryCatch = function tryCatch(fn) {
+        if (!isFunction(fn)) { throw new TypeError('fn must be a function'); }
+        return tryCatcherGen(fn);
+    };
+
+    function thrower(e) {
+        throw e;
+    }
+
+    Rx.config.longStackSupport = false;
+    var hasStacks = false, stacks = tryCatch(function () { throw new Error(); })();
+    hasStacks = !!stacks.e && !!stacks.e.stack;
+
+    // All code after this point will be filtered from stack traces reported by RxJS
+    var rStartingLine = captureLine(), rFileName;
+
+    var STACK_JUMP_SEPARATOR = 'From previous event:';
+
+    function makeStackTraceLong(error, observable) {
+        // If possible, transform the error stack trace by removing Node and RxJS
+        // cruft, then concatenating with the stack trace of `observable`.
+        if (hasStacks &&
+            observable.stack &&
+            typeof error === 'object' &&
+            error !== null &&
+            error.stack &&
+            error.stack.indexOf(STACK_JUMP_SEPARATOR) === -1
+        ) {
+            var stacks = [];
+            for (var o = observable; !!o; o = o.source) {
+                if (o.stack) {
+                    stacks.unshift(o.stack);
+                }
+            }
+            stacks.unshift(error.stack);
+
+            var concatedStacks = stacks.join('\n' + STACK_JUMP_SEPARATOR + '\n');
+            error.stack = filterStackString(concatedStacks);
+        }
+    }
+
+    function filterStackString(stackString) {
+        var lines = stackString.split('\n'), desiredLines = [];
+        for (var i = 0, len = lines.length; i < len; i++) {
+            var line = lines[i];
+
+            if (!isInternalFrame(line) && !isNodeFrame(line) && line) {
+                desiredLines.push(line);
+            }
+        }
+        return desiredLines.join('\n');
+    }
+
+    function isInternalFrame(stackLine) {
+        var fileNameAndLineNumber = getFileNameAndLineNumber(stackLine);
+        if (!fileNameAndLineNumber) {
+            return false;
+        }
+        var fileName = fileNameAndLineNumber[0], lineNumber = fileNameAndLineNumber[1];
+
+        return fileName === rFileName &&
+          lineNumber >= rStartingLine &&
+          lineNumber <= rEndingLine;
+    }
+
+    function isNodeFrame(stackLine) {
+        return stackLine.indexOf('(module.js:') !== -1 ||
+          stackLine.indexOf('(node.js:') !== -1;
+    }
+
+    function captureLine() {
+        if (!hasStacks) { return; }
+
+        try {
+            throw new Error();
+        } catch (e) {
+            var lines = e.stack.split('\n');
+            var firstLine = lines[0].indexOf('@') > 0 ? lines[1] : lines[2];
+            var fileNameAndLineNumber = getFileNameAndLineNumber(firstLine);
+            if (!fileNameAndLineNumber) { return; }
+
+            rFileName = fileNameAndLineNumber[0];
+            return fileNameAndLineNumber[1];
+        }
+    }
+
+    function getFileNameAndLineNumber(stackLine) {
+        // Named functions: 'at functionName (filename:lineNumber:columnNumber)'
+        var attempt1 = /at .+ \((.+):(\d+):(?:\d+)\)$/.exec(stackLine);
+        if (attempt1) { return [attempt1[1], Number(attempt1[2])]; }
+
+        // Anonymous functions: 'at filename:lineNumber:columnNumber'
+        var attempt2 = /at ([^ ]+):(\d+):(?:\d+)$/.exec(stackLine);
+        if (attempt2) { return [attempt2[1], Number(attempt2[2])]; }
+
+        // Firefox style: 'function@filename:lineNumber or @filename:lineNumber'
+        var attempt3 = /.*@(.+):(\d+)$/.exec(stackLine);
+        if (attempt3) { return [attempt3[1], Number(attempt3[2])]; }
+    }
+
+    var EmptyError = Rx.EmptyError = function () {
+        this.message = 'Sequence contains no elements.';
+        Error.call(this);
+    };
+    EmptyError.prototype = Object.create(Error.prototype);
+    EmptyError.prototype.name = 'EmptyError';
+
+    var ObjectDisposedError = Rx.ObjectDisposedError = function () {
+        this.message = 'Object has been disposed';
+        Error.call(this);
+    };
+    ObjectDisposedError.prototype = Object.create(Error.prototype);
+    ObjectDisposedError.prototype.name = 'ObjectDisposedError';
+
+    var ArgumentOutOfRangeError = Rx.ArgumentOutOfRangeError = function () {
+        this.message = 'Argument out of range';
+        Error.call(this);
+    };
+    ArgumentOutOfRangeError.prototype = Object.create(Error.prototype);
+    ArgumentOutOfRangeError.prototype.name = 'ArgumentOutOfRangeError';
+
+    var NotSupportedError = Rx.NotSupportedError = function (message) {
+        this.message = message || 'This operation is not supported';
+        Error.call(this);
+    };
+    NotSupportedError.prototype = Object.create(Error.prototype);
+    NotSupportedError.prototype.name = 'NotSupportedError';
+
+    var NotImplementedError = Rx.NotImplementedError = function (message) {
+        this.message = message || 'This operation is not implemented';
+        Error.call(this);
+    };
+    NotImplementedError.prototype = Object.create(Error.prototype);
+    NotImplementedError.prototype.name = 'NotImplementedError';
+
+    var notImplemented = Rx.helpers.notImplemented = function () {
+        throw new NotImplementedError();
+    };
+
+    var notSupported = Rx.helpers.notSupported = function () {
+        throw new NotSupportedError();
+    };
+
+    // Shim in iterator support
+    var $iterator$ = (typeof Symbol === 'function' && Symbol.iterator) ||
+      '_es6shim_iterator_';
+    // Bug for mozilla version
+    if (root.Set && typeof new root.Set()['@@iterator'] === 'function') {
+        $iterator$ = '@@iterator';
+    }
+
+    var doneEnumerator = Rx.doneEnumerator = { done: true, value: undefined };
+
+    var isIterable = Rx.helpers.isIterable = function (o) {
+        return o && o[$iterator$] !== undefined;
+    };
+
+    var isArrayLike = Rx.helpers.isArrayLike = function (o) {
+        return o && o.length !== undefined;
+    };
+
+    Rx.helpers.iterator = $iterator$;
+
+    var bindCallback = Rx.internals.bindCallback = function (func, thisArg, argCount) {
+        if (typeof thisArg === 'undefined') { return func; }
+        switch (argCount) {
+            case 0:
+                return function () {
+                    return func.call(thisArg)
+                };
+            case 1:
+                return function (arg) {
+                    return func.call(thisArg, arg);
+                };
+            case 2:
+                return function (value, index) {
+                    return func.call(thisArg, value, index);
+                };
+            case 3:
+                return function (value, index, collection) {
+                    return func.call(thisArg, value, index, collection);
+                };
+        }
+
+        return function () {
+            return func.apply(thisArg, arguments);
+        };
+    };
+
+    /** Used to determine if values are of the language type Object */
+    var dontEnums = ['toString',
+      'toLocaleString',
+      'valueOf',
+      'hasOwnProperty',
+      'isPrototypeOf',
+      'propertyIsEnumerable',
+      'constructor'],
+    dontEnumsLength = dontEnums.length;
+
+    var argsTag = '[object Arguments]',
+        arrayTag = '[object Array]',
+        boolTag = '[object Boolean]',
+        dateTag = '[object Date]',
+        errorTag = '[object Error]',
+        funcTag = '[object Function]',
+        mapTag = '[object Map]',
+        numberTag = '[object Number]',
+        objectTag = '[object Object]',
+        regexpTag = '[object RegExp]',
+        setTag = '[object Set]',
+        stringTag = '[object String]',
+        weakMapTag = '[object WeakMap]';
+
+    var arrayBufferTag = '[object ArrayBuffer]',
+        float32Tag = '[object Float32Array]',
+        float64Tag = '[object Float64Array]',
+        int8Tag = '[object Int8Array]',
+        int16Tag = '[object Int16Array]',
+        int32Tag = '[object Int32Array]',
+        uint8Tag = '[object Uint8Array]',
+        uint8ClampedTag = '[object Uint8ClampedArray]',
+        uint16Tag = '[object Uint16Array]',
+        uint32Tag = '[object Uint32Array]';
+
+    var typedArrayTags = {};
+    typedArrayTags[float32Tag] = typedArrayTags[float64Tag] =
+    typedArrayTags[int8Tag] = typedArrayTags[int16Tag] =
+    typedArrayTags[int32Tag] = typedArrayTags[uint8Tag] =
+    typedArrayTags[uint8ClampedTag] = typedArrayTags[uint16Tag] =
+    typedArrayTags[uint32Tag] = true;
+    typedArrayTags[argsTag] = typedArrayTags[arrayTag] =
+    typedArrayTags[arrayBufferTag] = typedArrayTags[boolTag] =
+    typedArrayTags[dateTag] = typedArrayTags[errorTag] =
+    typedArrayTags[funcTag] = typedArrayTags[mapTag] =
+    typedArrayTags[numberTag] = typedArrayTags[objectTag] =
+    typedArrayTags[regexpTag] = typedArrayTags[setTag] =
+    typedArrayTags[stringTag] = typedArrayTags[weakMapTag] = false;
+
+    var objectProto = Object.prototype,
+        hasOwnProperty = objectProto.hasOwnProperty,
+        objToString = objectProto.toString,
+        MAX_SAFE_INTEGER = Math.pow(2, 53) - 1;
+
+    var keys = Object.keys || (function () {
+        var hasOwnProperty = Object.prototype.hasOwnProperty,
+            hasDontEnumBug = !({ toString: null }).propertyIsEnumerable('toString'),
+            dontEnums = [
+              'toString',
+              'toLocaleString',
+              'valueOf',
+              'hasOwnProperty',
+              'isPrototypeOf',
+              'propertyIsEnumerable',
+              'constructor'
+            ],
+            dontEnumsLength = dontEnums.length;
+
+        return function (obj) {
+            if (typeof obj !== 'object' && (typeof obj !== 'function' || obj === null)) {
+                throw new TypeError('Object.keys called on non-object');
+            }
+
+            var result = [], prop, i;
+
+            for (prop in obj) {
+                if (hasOwnProperty.call(obj, prop)) {
+                    result.push(prop);
+                }
+            }
+
+            if (hasDontEnumBug) {
+                for (i = 0; i < dontEnumsLength; i++) {
+                    if (hasOwnProperty.call(obj, dontEnums[i])) {
+                        result.push(dontEnums[i]);
+                    }
+                }
+            }
+            return result;
+        };
+    }());
+
+    function equalObjects(object, other, equalFunc, isLoose, stackA, stackB) {
+        var objProps = keys(object),
+            objLength = objProps.length,
+            othProps = keys(other),
+            othLength = othProps.length;
+
+        if (objLength !== othLength && !isLoose) {
+            return false;
+        }
+        var index = objLength, key;
+        while (index--) {
+            key = objProps[index];
+            if (!(isLoose ? key in other : hasOwnProperty.call(other, key))) {
+                return false;
+            }
+        }
+        var skipCtor = isLoose;
+        while (++index < objLength) {
+            key = objProps[index];
+            var objValue = object[key],
+                othValue = other[key],
+                result;
+
+            if (!(result === undefined ? equalFunc(objValue, othValue, isLoose, stackA, stackB) : result)) {
+                return false;
+            }
+            skipCtor || (skipCtor = key === 'constructor');
+        }
+        if (!skipCtor) {
+            var objCtor = object.constructor,
+                othCtor = other.constructor;
+
+            if (objCtor !== othCtor &&
+                ('constructor' in object && 'constructor' in other) &&
+                !(typeof objCtor === 'function' && objCtor instanceof objCtor &&
+                  typeof othCtor === 'function' && othCtor instanceof othCtor)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    function equalByTag(object, other, tag) {
+        switch (tag) {
+            case boolTag:
+            case dateTag:
+                return +object === +other;
+
+            case errorTag:
+                return object.name === other.name && object.message === other.message;
+
+            case numberTag:
+                return (object !== +object) ?
+                  other !== +other :
+                  object === +other;
+
+            case regexpTag:
+            case stringTag:
+                return object === (other + '');
+        }
+        return false;
+    }
+
+    var isObject = Rx.internals.isObject = function (value) {
+        var type = typeof value;
+        return !!value && (type === 'object' || type === 'function');
+    };
+
+    function isObjectLike(value) {
+        return !!value && typeof value === 'object';
+    }
+
+    function isLength(value) {
+        return typeof value === 'number' && value > -1 && value % 1 === 0 && value <= MAX_SAFE_INTEGER;
+    }
+
+    var isHostObject = (function () {
+        try {
+            Object({ 'toString': 0 } + '');
+        } catch (e) {
+            return function () { return false; };
+        }
+        return function (value) {
+            return typeof value.toString !== 'function' && typeof (value + '') === 'string';
+        };
+    }());
+
+    function isTypedArray(value) {
+        return isObjectLike(value) && isLength(value.length) && !!typedArrayTags[objToString.call(value)];
+    }
+
+    var isArray = Array.isArray || function (value) {
+        return isObjectLike(value) && isLength(value.length) && objToString.call(value) === arrayTag;
+    };
+
+    function arraySome(array, predicate) {
+        var index = -1,
+            length = array.length;
+
+        while (++index < length) {
+            if (predicate(array[index], index, array)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    function equalArrays(array, other, equalFunc, isLoose, stackA, stackB) {
+        var index = -1,
+            arrLength = array.length,
+            othLength = other.length;
+
+        if (arrLength !== othLength && !(isLoose && othLength > arrLength)) {
+            return false;
+        }
+        // Ignore non-index properties.
+        while (++index < arrLength) {
+            var arrValue = array[index],
+                othValue = other[index],
+                result;
+
+            if (result !== undefined) {
+                if (result) {
+                    continue;
+                }
+                return false;
+            }
+            // Recursively compare arrays (susceptible to call stack limits).
+            if (isLoose) {
+                if (!arraySome(other, function (othValue) {
+                      return arrValue === othValue || equalFunc(arrValue, othValue, isLoose, stackA, stackB);
+                })) {
+                    return false;
+                }
+            } else if (!(arrValue === othValue || equalFunc(arrValue, othValue, isLoose, stackA, stackB))) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    function baseIsEqualDeep(object, other, equalFunc, isLoose, stackA, stackB) {
+        var objIsArr = isArray(object),
+            othIsArr = isArray(other),
+            objTag = arrayTag,
+            othTag = arrayTag;
+
+        if (!objIsArr) {
+            objTag = objToString.call(object);
+            if (objTag === argsTag) {
+                objTag = objectTag;
+            } else if (objTag !== objectTag) {
+                objIsArr = isTypedArray(object);
+            }
+        }
+        if (!othIsArr) {
+            othTag = objToString.call(other);
+            if (othTag === argsTag) {
+                othTag = objectTag;
+            }
+        }
+        var objIsObj = objTag === objectTag && !isHostObject(object),
+            othIsObj = othTag === objectTag && !isHostObject(other),
+            isSameTag = objTag === othTag;
+
+        if (isSameTag && !(objIsArr || objIsObj)) {
+            return equalByTag(object, other, objTag);
+        }
+        if (!isLoose) {
+            var objIsWrapped = objIsObj && hasOwnProperty.call(object, '__wrapped__'),
+                othIsWrapped = othIsObj && hasOwnProperty.call(other, '__wrapped__');
+
+            if (objIsWrapped || othIsWrapped) {
+                return equalFunc(objIsWrapped ? object.value() : object, othIsWrapped ? other.value() : other, isLoose, stackA, stackB);
+            }
+        }
+        if (!isSameTag) {
+            return false;
+        }
+        // Assume cyclic values are equal.
+        // For more information on detecting circular references see https://es5.github.io/#JO.
+        stackA || (stackA = []);
+        stackB || (stackB = []);
+
+        var length = stackA.length;
+        while (length--) {
+            if (stackA[length] === object) {
+                return stackB[length] === other;
+            }
+        }
+        // Add `object` and `other` to the stack of traversed objects.
+        stackA.push(object);
+        stackB.push(other);
+
+        var result = (objIsArr ? equalArrays : equalObjects)(object, other, equalFunc, isLoose, stackA, stackB);
+
+        stackA.pop();
+        stackB.pop();
+
+        return result;
+    }
+
+    function baseIsEqual(value, other, isLoose, stackA, stackB) {
+        if (value === other) {
+            return true;
+        }
+        if (value == null || other == null || (!isObject(value) && !isObjectLike(other))) {
+            return value !== value && other !== other;
+        }
+        return baseIsEqualDeep(value, other, baseIsEqual, isLoose, stackA, stackB);
+    }
+
+    var isEqual = Rx.internals.isEqual = function (value, other) {
+        return baseIsEqual(value, other);
+    };
+
+    var hasProp = {}.hasOwnProperty,
+        slice = Array.prototype.slice;
+
+    var inherits = Rx.internals.inherits = function (child, parent) {
+        function __() { this.constructor = child; }
+        __.prototype = parent.prototype;
+        child.prototype = new __();
+    };
+
+    var addProperties = Rx.internals.addProperties = function (obj) {
+        for (var sources = [], i = 1, len = arguments.length; i < len; i++) { sources.push(arguments[i]); }
+        for (var idx = 0, ln = sources.length; idx < ln; idx++) {
+            var source = sources[idx];
+            for (var prop in source) {
+                obj[prop] = source[prop];
+            }
+        }
+    };
+
+    // Rx Utils
+    var addRef = Rx.internals.addRef = function (xs, r) {
+        return new AnonymousObservable(function (observer) {
+            return new BinaryDisposable(r.getDisposable(), xs.subscribe(observer));
+        });
+    };
+
+    function arrayInitialize(count, factory) {
+        var a = new Array(count);
+        for (var i = 0; i < count; i++) {
+            a[i] = factory();
+        }
+        return a;
+    }
+
+    /**
+     * Represents a group of disposable resources that are disposed together.
+     * @constructor
+     */
+    var CompositeDisposable = Rx.CompositeDisposable = function () {
+        var args = [], i, len;
+        if (Array.isArray(arguments[0])) {
+            args = arguments[0];
+        } else {
+            len = arguments.length;
+            args = new Array(len);
+            for (i = 0; i < len; i++) { args[i] = arguments[i]; }
+        }
+        this.disposables = args;
+        this.isDisposed = false;
+        this.length = args.length;
+    };
+
+    var CompositeDisposablePrototype = CompositeDisposable.prototype;
+
+    /**
+     * Adds a disposable to the CompositeDisposable or disposes the disposable if the CompositeDisposable is disposed.
+     * @param {Mixed} item Disposable to add.
+     */
+    CompositeDisposablePrototype.add = function (item) {
+        if (this.isDisposed) {
+            item.dispose();
+        } else {
+            this.disposables.push(item);
+            this.length++;
+        }
+    };
+
+    /**
+     * Removes and disposes the first occurrence of a disposable from the CompositeDisposable.
+     * @param {Mixed} item Disposable to remove.
+     * @returns {Boolean} true if found; false otherwise.
+     */
+    CompositeDisposablePrototype.remove = function (item) {
+        var shouldDispose = false;
+        if (!this.isDisposed) {
+            var idx = this.disposables.indexOf(item);
+            if (idx !== -1) {
+                shouldDispose = true;
+                this.disposables.splice(idx, 1);
+                this.length--;
+                item.dispose();
+            }
+        }
+        return shouldDispose;
+    };
+
+    /**
+     *  Disposes all disposables in the group and removes them from the group.
+     */
+    CompositeDisposablePrototype.dispose = function () {
+        if (!this.isDisposed) {
+            this.isDisposed = true;
+            var len = this.disposables.length, currentDisposables = new Array(len);
+            for (var i = 0; i < len; i++) { currentDisposables[i] = this.disposables[i]; }
+            this.disposables = [];
+            this.length = 0;
+
+            for (i = 0; i < len; i++) {
+                currentDisposables[i].dispose();
+            }
+        }
+    };
+
+    /**
+     * Provides a set of static methods for creating Disposables.
+     * @param {Function} dispose Action to run during the first call to dispose. The action is guaranteed to be run at most once.
+     */
+    var Disposable = Rx.Disposable = function (action) {
+        this.isDisposed = false;
+        this.action = action || noop;
+    };
+
+    /** Performs the task of cleaning up resources. */
+    Disposable.prototype.dispose = function () {
+        if (!this.isDisposed) {
+            this.action();
+            this.isDisposed = true;
+        }
+    };
+
+    /**
+     * Creates a disposable object that invokes the specified action when disposed.
+     * @param {Function} dispose Action to run during the first call to dispose. The action is guaranteed to be run at most once.
+     * @return {Disposable} The disposable object that runs the given action upon disposal.
+     */
+    var disposableCreate = Disposable.create = function (action) { return new Disposable(action); };
+
+    /**
+     * Gets the disposable that does nothing when disposed.
+     */
+    var disposableEmpty = Disposable.empty = { dispose: noop };
+
+    /**
+     * Validates whether the given object is a disposable
+     * @param {Object} Object to test whether it has a dispose method
+     * @returns {Boolean} true if a disposable object, else false.
+     */
+    var isDisposable = Disposable.isDisposable = function (d) {
+        return d && isFunction(d.dispose);
+    };
+
+    var checkDisposed = Disposable.checkDisposed = function (disposable) {
+        if (disposable.isDisposed) { throw new ObjectDisposedError(); }
+    };
+
+    var disposableFixup = Disposable._fixup = function (result) {
+        return isDisposable(result) ? result : disposableEmpty;
+    };
+
+    // Single assignment
+    var SingleAssignmentDisposable = Rx.SingleAssignmentDisposable = function () {
+        this.isDisposed = false;
+        this.current = null;
+    };
+    SingleAssignmentDisposable.prototype.getDisposable = function () {
+        return this.current;
+    };
+    SingleAssignmentDisposable.prototype.setDisposable = function (value) {
+        if (this.current) { throw new Error('Disposable has already been assigned'); }
+        var shouldDispose = this.isDisposed;
+        !shouldDispose && (this.current = value);
+        shouldDispose && value && value.dispose();
+    };
+    SingleAssignmentDisposable.prototype.dispose = function () {
+        if (!this.isDisposed) {
+            this.isDisposed = true;
+            var old = this.current;
+            this.current = null;
+            old && old.dispose();
+        }
+    };
+
+    // Multiple assignment disposable
+    var SerialDisposable = Rx.SerialDisposable = function () {
+        this.isDisposed = false;
+        this.current = null;
+    };
+    SerialDisposable.prototype.getDisposable = function () {
+        return this.current;
+    };
+    SerialDisposable.prototype.setDisposable = function (value) {
+        var shouldDispose = this.isDisposed;
+        if (!shouldDispose) {
+            var old = this.current;
+            this.current = value;
+        }
+        old && old.dispose();
+        shouldDispose && value && value.dispose();
+    };
+    SerialDisposable.prototype.dispose = function () {
+        if (!this.isDisposed) {
+            this.isDisposed = true;
+            var old = this.current;
+            this.current = null;
+        }
+        old && old.dispose();
+    };
+
+    var BinaryDisposable = Rx.BinaryDisposable = function (first, second) {
+        this._first = first;
+        this._second = second;
+        this.isDisposed = false;
+    };
+
+    BinaryDisposable.prototype.dispose = function () {
+        if (!this.isDisposed) {
+            this.isDisposed = true;
+            var old1 = this._first;
+            this._first = null;
+            old1 && old1.dispose();
+            var old2 = this._second;
+            this._second = null;
+            old2 && old2.dispose();
+        }
+    };
+
+    var NAryDisposable = Rx.NAryDisposable = function (disposables) {
+        this._disposables = disposables;
+        this.isDisposed = false;
+    };
+
+    NAryDisposable.prototype.dispose = function () {
+        if (!this.isDisposed) {
+            this.isDisposed = true;
+            for (var i = 0, len = this._disposables.length; i < len; i++) {
+                this._disposables[i].dispose();
+            }
+            this._disposables.length = 0;
+        }
+    };
+
+    /**
+     * Represents a disposable resource that only disposes its underlying disposable resource when all dependent disposable objects have been disposed.
+     */
+    var RefCountDisposable = Rx.RefCountDisposable = (function () {
+
+        function InnerDisposable(disposable) {
+            this.disposable = disposable;
+            this.disposable.count++;
+            this.isInnerDisposed = false;
+        }
+
+        InnerDisposable.prototype.dispose = function () {
+            if (!this.disposable.isDisposed && !this.isInnerDisposed) {
+                this.isInnerDisposed = true;
+                this.disposable.count--;
+                if (this.disposable.count === 0 && this.disposable.isPrimaryDisposed) {
+                    this.disposable.isDisposed = true;
+                    this.disposable.underlyingDisposable.dispose();
+                }
+            }
+        };
+
+        /**
+         * Initializes a new instance of the RefCountDisposable with the specified disposable.
+         * @constructor
+         * @param {Disposable} disposable Underlying disposable.
+          */
+        function RefCountDisposable(disposable) {
+            this.underlyingDisposable = disposable;
+            this.isDisposed = false;
+            this.isPrimaryDisposed = false;
+            this.count = 0;
+        }
+
+        /**
+         * Disposes the underlying disposable only when all dependent disposables have been disposed
+         */
+        RefCountDisposable.prototype.dispose = function () {
+            if (!this.isDisposed && !this.isPrimaryDisposed) {
+                this.isPrimaryDisposed = true;
+                if (this.count === 0) {
+                    this.isDisposed = true;
+                    this.underlyingDisposable.dispose();
+                }
+            }
+        };
+
+        /**
+         * Returns a dependent disposable that when disposed decreases the refcount on the underlying disposable.
+         * @returns {Disposable} A dependent disposable contributing to the reference count that manages the underlying disposable's lifetime.
+         */
+        RefCountDisposable.prototype.getDisposable = function () {
+            return this.isDisposed ? disposableEmpty : new InnerDisposable(this);
+        };
+
+        return RefCountDisposable;
+    })();
+
+    var ScheduledItem = Rx.internals.ScheduledItem = function (scheduler, state, action, dueTime, comparer) {
+        this.scheduler = scheduler;
+        this.state = state;
+        this.action = action;
+        this.dueTime = dueTime;
+        this.comparer = comparer || defaultSubComparer;
+        this.disposable = new SingleAssignmentDisposable();
+    };
+
+    ScheduledItem.prototype.invoke = function () {
+        this.disposable.setDisposable(this.invokeCore());
+    };
+
+    ScheduledItem.prototype.compareTo = function (other) {
+        return this.comparer(this.dueTime, other.dueTime);
+    };
+
+    ScheduledItem.prototype.isCancelled = function () {
+        return this.disposable.isDisposed;
+    };
+
+    ScheduledItem.prototype.invokeCore = function () {
+        return disposableFixup(this.action(this.scheduler, this.state));
+    };
+
+    /** Provides a set of static properties to access commonly used schedulers. */
+    var Scheduler = Rx.Scheduler = (function () {
+
+        function Scheduler() { }
+
+        /** Determines whether the given object is a scheduler */
+        Scheduler.isScheduler = function (s) {
+            return s instanceof Scheduler;
+        };
+
+        var schedulerProto = Scheduler.prototype;
+
+        /**
+       * Schedules an action to be executed.
+       * @param state State passed to the action to be executed.
+       * @param {Function} action Action to be executed.
+       * @returns {Disposable} The disposable object used to cancel the scheduled action (best effort).
+       */
+        schedulerProto.schedule = function (state, action) {
+            throw new NotImplementedError();
+        };
+
+        /**
+         * Schedules an action to be executed after dueTime.
+         * @param state State passed to the action to be executed.
+         * @param {Function} action Action to be executed.
+         * @param {Number} dueTime Relative time after which to execute the action.
+         * @returns {Disposable} The disposable object used to cancel the scheduled action (best effort).
+         */
+        schedulerProto.scheduleFuture = function (state, dueTime, action) {
+            var dt = dueTime;
+            dt instanceof Date && (dt = dt - this.now());
+            dt = Scheduler.normalize(dt);
+
+            if (dt === 0) { return this.schedule(state, action); }
+
+            return this._scheduleFuture(state, dt, action);
+        };
+
+        schedulerProto._scheduleFuture = function (state, dueTime, action) {
+            throw new NotImplementedError();
+        };
+
+        /** Gets the current time according to the local machine's system clock. */
+        Scheduler.now = defaultNow;
+
+        /** Gets the current time according to the local machine's system clock. */
+        Scheduler.prototype.now = defaultNow;
+
+        /**
+         * Normalizes the specified TimeSpan value to a positive value.
+         * @param {Number} timeSpan The time span value to normalize.
+         * @returns {Number} The specified TimeSpan value if it is zero or positive; otherwise, 0
+         */
+        Scheduler.normalize = function (timeSpan) {
+            timeSpan < 0 && (timeSpan = 0);
+            return timeSpan;
+        };
+
+        return Scheduler;
+    }());
+
+    var normalizeTime = Scheduler.normalize, isScheduler = Scheduler.isScheduler;
+
+    (function (schedulerProto) {
+
+        function invokeRecImmediate(scheduler, pair) {
+            var state = pair[0], action = pair[1], group = new CompositeDisposable();
+            action(state, innerAction);
+            return group;
+
+            function innerAction(state2) {
+                var isAdded = false, isDone = false;
+
+                var d = scheduler.schedule(state2, scheduleWork);
+                if (!isDone) {
+                    group.add(d);
+                    isAdded = true;
+                }
+
+                function scheduleWork(_, state3) {
+                    if (isAdded) {
+                        group.remove(d);
+                    } else {
+                        isDone = true;
+                    }
+                    action(state3, innerAction);
+                    return disposableEmpty;
+                }
+            }
+        }
+
+        function invokeRecDate(scheduler, pair) {
+            var state = pair[0], action = pair[1], group = new CompositeDisposable();
+            action(state, innerAction);
+            return group;
+
+            function innerAction(state2, dueTime1) {
+                var isAdded = false, isDone = false;
+
+                var d = scheduler.scheduleFuture(state2, dueTime1, scheduleWork);
+                if (!isDone) {
+                    group.add(d);
+                    isAdded = true;
+                }
+
+                function scheduleWork(_, state3) {
+                    if (isAdded) {
+                        group.remove(d);
+                    } else {
+                        isDone = true;
+                    }
+                    action(state3, innerAction);
+                    return disposableEmpty;
+                }
+            }
+        }
+
+        /**
+         * Schedules an action to be executed recursively.
+         * @param {Mixed} state State passed to the action to be executed.
+         * @param {Function} action Action to execute recursively. The last parameter passed to the action is used to trigger recursive scheduling of the action, passing in recursive invocation state.
+         * @returns {Disposable} The disposable object used to cancel the scheduled action (best effort).
+         */
+        schedulerProto.scheduleRecursive = function (state, action) {
+            return this.schedule([state, action], invokeRecImmediate);
+        };
+
+        /**
+         * Schedules an action to be executed recursively after a specified relative or absolute due time.
+         * @param {Mixed} state State passed to the action to be executed.
+         * @param {Function} action Action to execute recursively. The last parameter passed to the action is used to trigger recursive scheduling of the action, passing in the recursive due time and invocation state.
+         * @param {Number | Date} dueTime Relative or absolute time after which to execute the action for the first time.
+         * @returns {Disposable} The disposable object used to cancel the scheduled action (best effort).
+         */
+        schedulerProto.scheduleRecursiveFuture = function (state, dueTime, action) {
+            return this.scheduleFuture([state, action], dueTime, invokeRecDate);
+        };
+
+    }(Scheduler.prototype));
+
+    (function (schedulerProto) {
+
+        /**
+         * Schedules a periodic piece of work by dynamically discovering the scheduler's capabilities. The periodic task will be scheduled using window.setInterval for the base implementation.
+         * @param {Mixed} state Initial state passed to the action upon the first iteration.
+         * @param {Number} period Period for running the work periodically.
+         * @param {Function} action Action to be executed, potentially updating the state.
+         * @returns {Disposable} The disposable object used to cancel the scheduled recurring action (best effort).
+         */
+        schedulerProto.schedulePeriodic = function (state, period, action) {
+            if (typeof root.setInterval === 'undefined') { throw new NotSupportedError(); }
+            period = normalizeTime(period);
+            var s = state, id = root.setInterval(function () { s = action(s); }, period);
+            return disposableCreate(function () { root.clearInterval(id); });
+        };
+
+    }(Scheduler.prototype));
+
+    /** Gets a scheduler that schedules work immediately on the current thread. */
+    var ImmediateScheduler = (function (__super__) {
+        inherits(ImmediateScheduler, __super__);
+        function ImmediateScheduler() {
+            __super__.call(this);
+        }
+
+        ImmediateScheduler.prototype.schedule = function (state, action) {
+            return disposableFixup(action(this, state));
+        };
+
+        return ImmediateScheduler;
+    }(Scheduler));
+
+    var immediateScheduler = Scheduler.immediate = new ImmediateScheduler();
+
+    /**
+     * Gets a scheduler that schedules work as soon as possible on the current thread.
+     */
+    var CurrentThreadScheduler = (function (__super__) {
+        var queue;
+
+        function runTrampoline() {
+            while (queue.length > 0) {
+                var item = queue.dequeue();
+                !item.isCancelled() && item.invoke();
+            }
+        }
+
+        inherits(CurrentThreadScheduler, __super__);
+        function CurrentThreadScheduler() {
+            __super__.call(this);
+        }
+
+        CurrentThreadScheduler.prototype.schedule = function (state, action) {
+            var si = new ScheduledItem(this, state, action, this.now());
+
+            if (!queue) {
+                queue = new PriorityQueue(4);
+                queue.enqueue(si);
+
+                var result = tryCatch(runTrampoline)();
+                queue = null;
+                if (result === errorObj) { thrower(result.e); }
+            } else {
+                queue.enqueue(si);
+            }
+            return si.disposable;
+        };
+
+        CurrentThreadScheduler.prototype.scheduleRequired = function () { return !queue; };
+
+        return CurrentThreadScheduler;
+    }(Scheduler));
+
+    var currentThreadScheduler = Scheduler.currentThread = new CurrentThreadScheduler();
+
+    var SchedulePeriodicRecursive = Rx.internals.SchedulePeriodicRecursive = (function () {
+        function createTick(self) {
+            return function tick(command, recurse) {
+                recurse(0, self._period);
+                var state = tryCatch(self._action)(self._state);
+                if (state === errorObj) {
+                    self._cancel.dispose();
+                    thrower(state.e);
+                }
+                self._state = state;
+            };
+        }
+
+        function SchedulePeriodicRecursive(scheduler, state, period, action) {
+            this._scheduler = scheduler;
+            this._state = state;
+            this._period = period;
+            this._action = action;
+        }
+
+        SchedulePeriodicRecursive.prototype.start = function () {
+            var d = new SingleAssignmentDisposable();
+            this._cancel = d;
+            d.setDisposable(this._scheduler.scheduleRecursiveFuture(0, this._period, createTick(this)));
+
+            return d;
+        };
+
+        return SchedulePeriodicRecursive;
+    }());
+
+    var scheduleMethod, clearMethod;
+
+    var localTimer = (function () {
+        var localSetTimeout, localClearTimeout = noop;
+        if (!!root.setTimeout) {
+            localSetTimeout = root.setTimeout;
+            localClearTimeout = root.clearTimeout;
+        } else if (!!root.WScript) {
+            localSetTimeout = function (fn, time) {
+                root.WScript.Sleep(time);
+                fn();
+            };
+        } else {
+            throw new NotSupportedError();
+        }
+
+        return {
+            setTimeout: localSetTimeout,
+            clearTimeout: localClearTimeout
+        };
+    }());
+    var localSetTimeout = localTimer.setTimeout,
+      localClearTimeout = localTimer.clearTimeout;
+
+    (function () {
+
+        var nextHandle = 1, tasksByHandle = {}, currentlyRunning = false;
+
+        clearMethod = function (handle) {
+            delete tasksByHandle[handle];
+        };
+
+        function runTask(handle) {
+            if (currentlyRunning) {
+                localSetTimeout(function () { runTask(handle); }, 0);
+            } else {
+                var task = tasksByHandle[handle];
+                if (task) {
+                    currentlyRunning = true;
+                    var result = tryCatch(task)();
+                    clearMethod(handle);
+                    currentlyRunning = false;
+                    if (result === errorObj) { thrower(result.e); }
+                }
+            }
+        }
+
+        var reNative = new RegExp('^' +
+          String(toString)
+            .replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+            .replace(/toString| for [^\]]+/g, '.*?') + '$'
+        );
+
+        var setImmediate = typeof (setImmediate = freeGlobal && moduleExports && freeGlobal.setImmediate) == 'function' &&
+          !reNative.test(setImmediate) && setImmediate;
+
+        function postMessageSupported() {
+            // Ensure not in a worker
+            if (!root.postMessage || root.importScripts) { return false; }
+            var isAsync = false, oldHandler = root.onmessage;
+            // Test for async
+            root.onmessage = function () { isAsync = true; };
+            root.postMessage('', '*');
+            root.onmessage = oldHandler;
+
+            return isAsync;
+        }
+
+        // Use in order, setImmediate, nextTick, postMessage, MessageChannel, script readystatechanged, setTimeout
+        if (isFunction(setImmediate)) {
+            scheduleMethod = function (action) {
+                var id = nextHandle++;
+                tasksByHandle[id] = action;
+                setImmediate(function () { runTask(id); });
+
+                return id;
+            };
+        } else if (typeof process !== 'undefined' && {}.toString.call(process) === '[object process]') {
+            scheduleMethod = function (action) {
+                var id = nextHandle++;
+                tasksByHandle[id] = action;
+                process.nextTick(function () { runTask(id); });
+
+                return id;
+            };
+        } else if (postMessageSupported()) {
+            var MSG_PREFIX = 'ms.rx.schedule' + Math.random();
+
+            var onGlobalPostMessage = function (event) {
+                // Only if we're a match to avoid any other global events
+                if (typeof event.data === 'string' && event.data.substring(0, MSG_PREFIX.length) === MSG_PREFIX) {
+                    runTask(event.data.substring(MSG_PREFIX.length));
+                }
+            };
+
+            root.addEventListener('message', onGlobalPostMessage, false);
+
+            scheduleMethod = function (action) {
+                var id = nextHandle++;
+                tasksByHandle[id] = action;
+                root.postMessage(MSG_PREFIX + id, '*');
+                return id;
+            };
+        } else if (!!root.MessageChannel) {
+            var channel = new root.MessageChannel();
+
+            channel.port1.onmessage = function (e) { runTask(e.data); };
+
+            scheduleMethod = function (action) {
+                var id = nextHandle++;
+                tasksByHandle[id] = action;
+                channel.port2.postMessage(id);
+                return id;
+            };
+        } else if ('document' in root && 'onreadystatechange' in root.document.createElement('script')) {
+
+            scheduleMethod = function (action) {
+                var scriptElement = root.document.createElement('script');
+                var id = nextHandle++;
+                tasksByHandle[id] = action;
+
+                scriptElement.onreadystatechange = function () {
+                    runTask(id);
+                    scriptElement.onreadystatechange = null;
+                    scriptElement.parentNode.removeChild(scriptElement);
+                    scriptElement = null;
+                };
+                root.document.documentElement.appendChild(scriptElement);
+                return id;
+            };
+
+        } else {
+            scheduleMethod = function (action) {
+                var id = nextHandle++;
+                tasksByHandle[id] = action;
+                localSetTimeout(function () {
+                    runTask(id);
+                }, 0);
+
+                return id;
+            };
+        }
+    }());
+
+    /**
+     * Gets a scheduler that schedules work via a timed callback based upon platform.
+     */
+    var DefaultScheduler = (function (__super__) {
+        inherits(DefaultScheduler, __super__);
+        function DefaultScheduler() {
+            __super__.call(this);
+        }
+
+        function scheduleAction(disposable, action, scheduler, state) {
+            return function schedule() {
+                disposable.setDisposable(Disposable._fixup(action(scheduler, state)));
+            };
+        }
+
+        function ClearDisposable(id) {
+            this._id = id;
+            this.isDisposed = false;
+        }
+
+        ClearDisposable.prototype.dispose = function () {
+            if (!this.isDisposed) {
+                this.isDisposed = true;
+                clearMethod(this._id);
+            }
+        };
+
+        function LocalClearDisposable(id) {
+            this._id = id;
+            this.isDisposed = false;
+        }
+
+        LocalClearDisposable.prototype.dispose = function () {
+            if (!this.isDisposed) {
+                this.isDisposed = true;
+                localClearTimeout(this._id);
+            }
+        };
+
+        DefaultScheduler.prototype.schedule = function (state, action) {
+            var disposable = new SingleAssignmentDisposable(),
+                id = scheduleMethod(scheduleAction(disposable, action, this, state));
+            return new BinaryDisposable(disposable, new ClearDisposable(id));
+        };
+
+        DefaultScheduler.prototype._scheduleFuture = function (state, dueTime, action) {
+            if (dueTime === 0) { return this.schedule(state, action); }
+            var disposable = new SingleAssignmentDisposable(),
+                id = localSetTimeout(scheduleAction(disposable, action, this, state), dueTime);
+            return new BinaryDisposable(disposable, new LocalClearDisposable(id));
+        };
+
+        function scheduleLongRunning(state, action, disposable) {
+            return function () { action(state, disposable); };
+        }
+
+        DefaultScheduler.prototype.scheduleLongRunning = function (state, action) {
+            var disposable = disposableCreate(noop);
+            scheduleMethod(scheduleLongRunning(state, action, disposable));
+            return disposable;
+        };
+
+        return DefaultScheduler;
+    }(Scheduler));
+
+    var defaultScheduler = Scheduler['default'] = Scheduler.async = new DefaultScheduler();
+
+    function IndexedItem(id, value) {
+        this.id = id;
+        this.value = value;
+    }
+
+    IndexedItem.prototype.compareTo = function (other) {
+        var c = this.value.compareTo(other.value);
+        c === 0 && (c = this.id - other.id);
+        return c;
+    };
+
+    var PriorityQueue = Rx.internals.PriorityQueue = function (capacity) {
+        this.items = new Array(capacity);
+        this.length = 0;
+    };
+
+    var priorityProto = PriorityQueue.prototype;
+    priorityProto.isHigherPriority = function (left, right) {
+        return this.items[left].compareTo(this.items[right]) < 0;
+    };
+
+    priorityProto.percolate = function (index) {
+        if (index >= this.length || index < 0) { return; }
+        var parent = index - 1 >> 1;
+        if (parent < 0 || parent === index) { return; }
+        if (this.isHigherPriority(index, parent)) {
+            var temp = this.items[index];
+            this.items[index] = this.items[parent];
+            this.items[parent] = temp;
+            this.percolate(parent);
+        }
+    };
+
+    priorityProto.heapify = function (index) {
+        +index || (index = 0);
+        if (index >= this.length || index < 0) { return; }
+        var left = 2 * index + 1,
+            right = 2 * index + 2,
+            first = index;
+        if (left < this.length && this.isHigherPriority(left, first)) {
+            first = left;
+        }
+        if (right < this.length && this.isHigherPriority(right, first)) {
+            first = right;
+        }
+        if (first !== index) {
+            var temp = this.items[index];
+            this.items[index] = this.items[first];
+            this.items[first] = temp;
+            this.heapify(first);
+        }
+    };
+
+    priorityProto.peek = function () { return this.items[0].value; };
+
+    priorityProto.removeAt = function (index) {
+        this.items[index] = this.items[--this.length];
+        this.items[this.length] = undefined;
+        this.heapify();
+    };
+
+    priorityProto.dequeue = function () {
+        var result = this.peek();
+        this.removeAt(0);
+        return result;
+    };
+
+    priorityProto.enqueue = function (item) {
+        var index = this.length++;
+        this.items[index] = new IndexedItem(PriorityQueue.count++, item);
+        this.percolate(index);
+    };
+
+    priorityProto.remove = function (item) {
+        for (var i = 0; i < this.length; i++) {
+            if (this.items[i].value === item) {
+                this.removeAt(i);
+                return true;
+            }
+        }
+        return false;
+    };
+    PriorityQueue.count = 0;
+
+    /**
+     *  Represents a notification to an observer.
+     */
+    var Notification = Rx.Notification = (function () {
+        function Notification() {
+
+        }
+
+        Notification.prototype._accept = function (onNext, onError, onCompleted) {
+            throw new NotImplementedError();
+        };
+
+        Notification.prototype._acceptObserver = function (onNext, onError, onCompleted) {
+            throw new NotImplementedError();
+        };
+
+        /**
+         * Invokes the delegate corresponding to the notification or the observer's method corresponding to the notification and returns the produced result.
+         * @param {Function | Observer} observerOrOnNext Function to invoke for an OnNext notification or Observer to invoke the notification on..
+         * @param {Function} onError Function to invoke for an OnError notification.
+         * @param {Function} onCompleted Function to invoke for an OnCompleted notification.
+         * @returns {Any} Result produced by the observation.
+         */
+        Notification.prototype.accept = function (observerOrOnNext, onError, onCompleted) {
+            return observerOrOnNext && typeof observerOrOnNext === 'object' ?
+              this._acceptObserver(observerOrOnNext) :
+              this._accept(observerOrOnNext, onError, onCompleted);
+        };
+
+        /**
+         * Returns an observable sequence with a single notification.
+         *
+         * @memberOf Notifications
+         * @param {Scheduler} [scheduler] Scheduler to send out the notification calls on.
+         * @returns {Observable} The observable sequence that surfaces the behavior of the notification upon subscription.
+         */
+        Notification.prototype.toObservable = function (scheduler) {
+            var self = this;
+            isScheduler(scheduler) || (scheduler = immediateScheduler);
+            return new AnonymousObservable(function (o) {
+                return scheduler.schedule(self, function (_, notification) {
+                    notification._acceptObserver(o);
+                    notification.kind === 'N' && o.onCompleted();
+                });
+            });
+        };
+
+        return Notification;
+    })();
+
+    var OnNextNotification = (function (__super__) {
+        inherits(OnNextNotification, __super__);
+        function OnNextNotification(value) {
+            this.value = value;
+            this.kind = 'N';
+        }
+
+        OnNextNotification.prototype._accept = function (onNext) {
+            return onNext(this.value);
+        };
+
+        OnNextNotification.prototype._acceptObserver = function (o) {
+            return o.onNext(this.value);
+        };
+
+        OnNextNotification.prototype.toString = function () {
+            return 'OnNext(' + this.value + ')';
+        };
+
+        return OnNextNotification;
+    }(Notification));
+
+    var OnErrorNotification = (function (__super__) {
+        inherits(OnErrorNotification, __super__);
+        function OnErrorNotification(error) {
+            this.error = error;
+            this.kind = 'E';
+        }
+
+        OnErrorNotification.prototype._accept = function (onNext, onError) {
+            return onError(this.error);
+        };
+
+        OnErrorNotification.prototype._acceptObserver = function (o) {
+            return o.onError(this.error);
+        };
+
+        OnErrorNotification.prototype.toString = function () {
+            return 'OnError(' + this.error + ')';
+        };
+
+        return OnErrorNotification;
+    }(Notification));
+
+    var OnCompletedNotification = (function (__super__) {
+        inherits(OnCompletedNotification, __super__);
+        function OnCompletedNotification() {
+            this.kind = 'C';
+        }
+
+        OnCompletedNotification.prototype._accept = function (onNext, onError, onCompleted) {
+            return onCompleted();
+        };
+
+        OnCompletedNotification.prototype._acceptObserver = function (o) {
+            return o.onCompleted();
+        };
+
+        OnCompletedNotification.prototype.toString = function () {
+            return 'OnCompleted()';
+        };
+
+        return OnCompletedNotification;
+    }(Notification));
+
+    /**
+     * Creates an object that represents an OnNext notification to an observer.
+     * @param {Any} value The value contained in the notification.
+     * @returns {Notification} The OnNext notification containing the value.
+     */
+    var notificationCreateOnNext = Notification.createOnNext = function (value) {
+        return new OnNextNotification(value);
+    };
+
+    /**
+     * Creates an object that represents an OnError notification to an observer.
+     * @param {Any} error The exception contained in the notification.
+     * @returns {Notification} The OnError notification containing the exception.
+     */
+    var notificationCreateOnError = Notification.createOnError = function (error) {
+        return new OnErrorNotification(error);
+    };
+
+    /**
+     * Creates an object that represents an OnCompleted notification to an observer.
+     * @returns {Notification} The OnCompleted notification.
+     */
+    var notificationCreateOnCompleted = Notification.createOnCompleted = function () {
+        return new OnCompletedNotification();
+    };
+
+    /**
+     * Supports push-style iteration over an observable sequence.
+     */
+    var Observer = Rx.Observer = function () { };
+
+    /**
+     *  Creates an observer from the specified OnNext, along with optional OnError, and OnCompleted actions.
+     * @param {Function} [onNext] Observer's OnNext action implementation.
+     * @param {Function} [onError] Observer's OnError action implementation.
+     * @param {Function} [onCompleted] Observer's OnCompleted action implementation.
+     * @returns {Observer} The observer object implemented using the given actions.
+     */
+    var observerCreate = Observer.create = function (onNext, onError, onCompleted) {
+        onNext || (onNext = noop);
+        onError || (onError = defaultError);
+        onCompleted || (onCompleted = noop);
+        return new AnonymousObserver(onNext, onError, onCompleted);
+    };
+
+    /**
+     * Abstract base class for implementations of the Observer class.
+     * This base class enforces the grammar of observers where OnError and OnCompleted are terminal messages.
+     */
+    var AbstractObserver = Rx.internals.AbstractObserver = (function (__super__) {
+        inherits(AbstractObserver, __super__);
+
+        /**
+         * Creates a new observer in a non-stopped state.
+         */
+        function AbstractObserver() {
+            this.isStopped = false;
+        }
+
+        // Must be implemented by other observers
+        AbstractObserver.prototype.next = notImplemented;
+        AbstractObserver.prototype.error = notImplemented;
+        AbstractObserver.prototype.completed = notImplemented;
+
+        /**
+         * Notifies the observer of a new element in the sequence.
+         * @param {Any} value Next element in the sequence.
+         */
+        AbstractObserver.prototype.onNext = function (value) {
+            !this.isStopped && this.next(value);
+        };
+
+        /**
+         * Notifies the observer that an exception has occurred.
+         * @param {Any} error The error that has occurred.
+         */
+        AbstractObserver.prototype.onError = function (error) {
+            if (!this.isStopped) {
+                this.isStopped = true;
+                this.error(error);
+            }
+        };
+
+        /**
+         * Notifies the observer of the end of the sequence.
+         */
+        AbstractObserver.prototype.onCompleted = function () {
+            if (!this.isStopped) {
+                this.isStopped = true;
+                this.completed();
+            }
+        };
+
+        /**
+         * Disposes the observer, causing it to transition to the stopped state.
+         */
+        AbstractObserver.prototype.dispose = function () { this.isStopped = true; };
+
+        AbstractObserver.prototype.fail = function (e) {
+            if (!this.isStopped) {
+                this.isStopped = true;
+                this.error(e);
+                return true;
+            }
+
+            return false;
+        };
+
+        return AbstractObserver;
+    }(Observer));
+
+    /**
+     * Class to create an Observer instance from delegate-based implementations of the on* methods.
+     */
+    var AnonymousObserver = Rx.AnonymousObserver = (function (__super__) {
+        inherits(AnonymousObserver, __super__);
+
+        /**
+         * Creates an observer from the specified OnNext, OnError, and OnCompleted actions.
+         * @param {Any} onNext Observer's OnNext action implementation.
+         * @param {Any} onError Observer's OnError action implementation.
+         * @param {Any} onCompleted Observer's OnCompleted action implementation.
+         */
+        function AnonymousObserver(onNext, onError, onCompleted) {
+            __super__.call(this);
+            this._onNext = onNext;
+            this._onError = onError;
+            this._onCompleted = onCompleted;
+        }
+
+        /**
+         * Calls the onNext action.
+         * @param {Any} value Next element in the sequence.
+         */
+        AnonymousObserver.prototype.next = function (value) {
+            this._onNext(value);
+        };
+
+        /**
+         * Calls the onError action.
+         * @param {Any} error The error that has occurred.
+         */
+        AnonymousObserver.prototype.error = function (error) {
+            this._onError(error);
+        };
+
+        /**
+         *  Calls the onCompleted action.
+         */
+        AnonymousObserver.prototype.completed = function () {
+            this._onCompleted();
+        };
+
+        return AnonymousObserver;
+    }(AbstractObserver));
+
+    var observableProto;
+
+    /**
+     * Represents a push-style collection.
+     */
+    var Observable = Rx.Observable = (function () {
+
+        function makeSubscribe(self, subscribe) {
+            return function (o) {
+                var oldOnError = o.onError;
+                o.onError = function (e) {
+                    makeStackTraceLong(e, self);
+                    oldOnError.call(o, e);
+                };
+
+                return subscribe.call(self, o);
+            };
+        }
+
+        function Observable() {
+            if (Rx.config.longStackSupport && hasStacks) {
+                var oldSubscribe = this._subscribe;
+                var e = tryCatch(thrower)(new Error()).e;
+                this.stack = e.stack.substring(e.stack.indexOf('\n') + 1);
+                this._subscribe = makeSubscribe(this, oldSubscribe);
+            }
+        }
+
+        observableProto = Observable.prototype;
+
+        /**
+        * Determines whether the given object is an Observable
+        * @param {Any} An object to determine whether it is an Observable
+        * @returns {Boolean} true if an Observable, else false.
+        */
+        Observable.isObservable = function (o) {
+            return o && isFunction(o.subscribe);
+        };
+
+        /**
+         *  Subscribes an o to the observable sequence.
+         *  @param {Mixed} [oOrOnNext] The object that is to receive notifications or an action to invoke for each element in the observable sequence.
+         *  @param {Function} [onError] Action to invoke upon exceptional termination of the observable sequence.
+         *  @param {Function} [onCompleted] Action to invoke upon graceful termination of the observable sequence.
+         *  @returns {Diposable} A disposable handling the subscriptions and unsubscriptions.
+         */
+        observableProto.subscribe = observableProto.forEach = function (oOrOnNext, onError, onCompleted) {
+            return this._subscribe(typeof oOrOnNext === 'object' ?
+                oOrOnNext :
+              observerCreate(oOrOnNext, onError, onCompleted));
+        };
+
+        /**
+         * Subscribes to the next value in the sequence with an optional "this" argument.
+         * @param {Function} onNext The function to invoke on each element in the observable sequence.
+         * @param {Any} [thisArg] Object to use as this when executing callback.
+         * @returns {Disposable} A disposable handling the subscriptions and unsubscriptions.
+         */
+        observableProto.subscribeOnNext = function (onNext, thisArg) {
+            return this._subscribe(observerCreate(typeof thisArg !== 'undefined' ? function (x) { onNext.call(thisArg, x); } : onNext));
+        };
+
+        /**
+         * Subscribes to an exceptional condition in the sequence with an optional "this" argument.
+         * @param {Function} onError The function to invoke upon exceptional termination of the observable sequence.
+         * @param {Any} [thisArg] Object to use as this when executing callback.
+         * @returns {Disposable} A disposable handling the subscriptions and unsubscriptions.
+         */
+        observableProto.subscribeOnError = function (onError, thisArg) {
+            return this._subscribe(observerCreate(null, typeof thisArg !== 'undefined' ? function (e) { onError.call(thisArg, e); } : onError));
+        };
+
+        /**
+         * Subscribes to the next value in the sequence with an optional "this" argument.
+         * @param {Function} onCompleted The function to invoke upon graceful termination of the observable sequence.
+         * @param {Any} [thisArg] Object to use as this when executing callback.
+         * @returns {Disposable} A disposable handling the subscriptions and unsubscriptions.
+         */
+        observableProto.subscribeOnCompleted = function (onCompleted, thisArg) {
+            return this._subscribe(observerCreate(null, null, typeof thisArg !== 'undefined' ? function () { onCompleted.call(thisArg); } : onCompleted));
+        };
+
+        return Observable;
+    })();
+
+    var ScheduledObserver = Rx.internals.ScheduledObserver = (function (__super__) {
+        inherits(ScheduledObserver, __super__);
+
+        function ScheduledObserver(scheduler, observer) {
+            __super__.call(this);
+            this.scheduler = scheduler;
+            this.observer = observer;
+            this.isAcquired = false;
+            this.hasFaulted = false;
+            this.queue = [];
+            this.disposable = new SerialDisposable();
+        }
+
+        function enqueueNext(observer, x) { return function () { observer.onNext(x); }; }
+        function enqueueError(observer, e) { return function () { observer.onError(e); }; }
+        function enqueueCompleted(observer) { return function () { observer.onCompleted(); }; }
+
+        ScheduledObserver.prototype.next = function (x) {
+            this.queue.push(enqueueNext(this.observer, x));
+        };
+
+        ScheduledObserver.prototype.error = function (e) {
+            this.queue.push(enqueueError(this.observer, e));
+        };
+
+        ScheduledObserver.prototype.completed = function () {
+            this.queue.push(enqueueCompleted(this.observer));
+        };
+
+
+        function scheduleMethod(state, recurse) {
+            var work;
+            if (state.queue.length > 0) {
+                work = state.queue.shift();
+            } else {
+                state.isAcquired = false;
+                return;
+            }
+            var res = tryCatch(work)();
+            if (res === errorObj) {
+                state.queue = [];
+                state.hasFaulted = true;
+                return thrower(res.e);
+            }
+            recurse(state);
+        }
+
+        ScheduledObserver.prototype.ensureActive = function () {
+            var isOwner = false;
+            if (!this.hasFaulted && this.queue.length > 0) {
+                isOwner = !this.isAcquired;
+                this.isAcquired = true;
+            }
+            isOwner &&
+              this.disposable.setDisposable(this.scheduler.scheduleRecursive(this, scheduleMethod));
+        };
+
+        ScheduledObserver.prototype.dispose = function () {
+            __super__.prototype.dispose.call(this);
+            this.disposable.dispose();
+        };
+
+        return ScheduledObserver;
+    }(AbstractObserver));
+
+    var ObservableBase = Rx.ObservableBase = (function (__super__) {
+        inherits(ObservableBase, __super__);
+
+        function fixSubscriber(subscriber) {
+            return subscriber && isFunction(subscriber.dispose) ? subscriber :
+              isFunction(subscriber) ? disposableCreate(subscriber) : disposableEmpty;
+        }
+
+        function setDisposable(s, state) {
+            var ado = state[0], self = state[1];
+            var sub = tryCatch(self.subscribeCore).call(self, ado);
+            if (sub === errorObj && !ado.fail(errorObj.e)) { thrower(errorObj.e); }
+            ado.setDisposable(fixSubscriber(sub));
+        }
+
+        function ObservableBase() {
+            __super__.call(this);
+        }
+
+        ObservableBase.prototype._subscribe = function (o) {
+            var ado = new AutoDetachObserver(o), state = [ado, this];
+
+            if (currentThreadScheduler.scheduleRequired()) {
+                currentThreadScheduler.schedule(state, setDisposable);
+            } else {
+                setDisposable(null, state);
+            }
+            return ado;
+        };
+
+        ObservableBase.prototype.subscribeCore = notImplemented;
+
+        return ObservableBase;
+    }(Observable));
+
+    var FlatMapObservable = Rx.FlatMapObservable = (function (__super__) {
+
+        inherits(FlatMapObservable, __super__);
+
+        function FlatMapObservable(source, selector, resultSelector, thisArg) {
+            this.resultSelector = isFunction(resultSelector) ? resultSelector : null;
+            this.selector = bindCallback(isFunction(selector) ? selector : function () { return selector; }, thisArg, 3);
+            this.source = source;
+            __super__.call(this);
+        }
+
+        FlatMapObservable.prototype.subscribeCore = function (o) {
+            return this.source.subscribe(new InnerObserver(o, this.selector, this.resultSelector, this));
+        };
+
+        inherits(InnerObserver, AbstractObserver);
+        function InnerObserver(observer, selector, resultSelector, source) {
+            this.i = 0;
+            this.selector = selector;
+            this.resultSelector = resultSelector;
+            this.source = source;
+            this.o = observer;
+            AbstractObserver.call(this);
+        }
+
+        InnerObserver.prototype._wrapResult = function (result, x, i) {
+            return this.resultSelector ?
+              result.map(function (y, i2) { return this.resultSelector(x, y, i, i2); }, this) :
+              result;
+        };
+
+        InnerObserver.prototype.next = function (x) {
+            var i = this.i++;
+            var result = tryCatch(this.selector)(x, i, this.source);
+            if (result === errorObj) { return this.o.onError(result.e); }
+
+            isPromise(result) && (result = observableFromPromise(result));
+            (isArrayLike(result) || isIterable(result)) && (result = Observable.from(result));
+            this.o.onNext(this._wrapResult(result, x, i));
+        };
+
+        InnerObserver.prototype.error = function (e) { this.o.onError(e); };
+
+        InnerObserver.prototype.completed = function () { this.o.onCompleted(); };
+
+        return FlatMapObservable;
+
+    }(ObservableBase));
+
+    var Enumerable = Rx.internals.Enumerable = function () { };
+
+    function IsDisposedDisposable(state) {
+        this._s = state;
+        this.isDisposed = false;
+    }
+
+    IsDisposedDisposable.prototype.dispose = function () {
+        if (!this.isDisposed) {
+            this.isDisposed = true;
+            this._s.isDisposed = true;
+        }
+    };
+
+    var ConcatEnumerableObservable = (function (__super__) {
+        inherits(ConcatEnumerableObservable, __super__);
+        function ConcatEnumerableObservable(sources) {
+            this.sources = sources;
+            __super__.call(this);
+        }
+
+        function scheduleMethod(state, recurse) {
+            if (state.isDisposed) { return; }
+            var currentItem = tryCatch(state.e.next).call(state.e);
+            if (currentItem === errorObj) { return state.o.onError(currentItem.e); }
+            if (currentItem.done) { return state.o.onCompleted(); }
+
+            // Check if promise
+            var currentValue = currentItem.value;
+            isPromise(currentValue) && (currentValue = observableFromPromise(currentValue));
+
+            var d = new SingleAssignmentDisposable();
+            state.subscription.setDisposable(d);
+            d.setDisposable(currentValue.subscribe(new InnerObserver(state, recurse)));
+        }
+
+        ConcatEnumerableObservable.prototype.subscribeCore = function (o) {
+            var subscription = new SerialDisposable();
+            var state = {
+                isDisposed: false,
+                o: o,
+                subscription: subscription,
+                e: this.sources[$iterator$]()
+            };
+
+            var cancelable = currentThreadScheduler.scheduleRecursive(state, scheduleMethod);
+            return new NAryDisposable([subscription, cancelable, new IsDisposedDisposable(state)]);
+        };
+
+        function InnerObserver(state, recurse) {
+            this._state = state;
+            this._recurse = recurse;
+            AbstractObserver.call(this);
+        }
+
+        inherits(InnerObserver, AbstractObserver);
+
+        InnerObserver.prototype.next = function (x) { this._state.o.onNext(x); };
+        InnerObserver.prototype.error = function (e) { this._state.o.onError(e); };
+        InnerObserver.prototype.completed = function () { this._recurse(this._state); };
+
+        return ConcatEnumerableObservable;
+    }(ObservableBase));
+
+    Enumerable.prototype.concat = function () {
+        return new ConcatEnumerableObservable(this);
+    };
+
+    var CatchErrorObservable = (function (__super__) {
+        function CatchErrorObservable(sources) {
+            this.sources = sources;
+            __super__.call(this);
+        }
+
+        inherits(CatchErrorObservable, __super__);
+
+        function scheduleMethod(state, recurse) {
+            if (state.isDisposed) { return; }
+            var currentItem = tryCatch(state.e.next).call(state.e);
+            if (currentItem === errorObj) { return state.o.onError(currentItem.e); }
+            if (currentItem.done) { return state.lastError !== null ? state.o.onError(state.lastError) : state.o.onCompleted(); }
+
+            var currentValue = currentItem.value;
+            isPromise(currentValue) && (currentValue = observableFromPromise(currentValue));
+
+            var d = new SingleAssignmentDisposable();
+            state.subscription.setDisposable(d);
+            d.setDisposable(currentValue.subscribe(new InnerObserver(state, recurse)));
+        }
+
+        CatchErrorObservable.prototype.subscribeCore = function (o) {
+            var subscription = new SerialDisposable();
+            var state = {
+                isDisposed: false,
+                e: this.sources[$iterator$](),
+                subscription: subscription,
+                lastError: null,
+                o: o
+            };
+
+            var cancelable = currentThreadScheduler.scheduleRecursive(state, scheduleMethod);
+            return new NAryDisposable([subscription, cancelable, new IsDisposedDisposable(state)]);
+        };
+
+        function InnerObserver(state, recurse) {
+            this._state = state;
+            this._recurse = recurse;
+            AbstractObserver.call(this);
+        }
+
+        inherits(InnerObserver, AbstractObserver);
+
+        InnerObserver.prototype.next = function (x) { this._state.o.onNext(x); };
+        InnerObserver.prototype.error = function (e) { this._state.lastError = e; this._recurse(this._state); };
+        InnerObserver.prototype.completed = function () { this._state.o.onCompleted(); };
+
+        return CatchErrorObservable;
+    }(ObservableBase));
+
+    Enumerable.prototype.catchError = function () {
+        return new CatchErrorObservable(this);
+    };
+
+    var RepeatEnumerable = (function (__super__) {
+        inherits(RepeatEnumerable, __super__);
+        function RepeatEnumerable(v, c) {
+            this.v = v;
+            this.c = c == null ? -1 : c;
+        }
+
+        RepeatEnumerable.prototype[$iterator$] = function () {
+            return new RepeatEnumerator(this);
+        };
+
+        function RepeatEnumerator(p) {
+            this.v = p.v;
+            this.l = p.c;
+        }
+
+        RepeatEnumerator.prototype.next = function () {
+            if (this.l === 0) { return doneEnumerator; }
+            if (this.l > 0) { this.l--; }
+            return { done: false, value: this.v };
+        };
+
+        return RepeatEnumerable;
+    }(Enumerable));
+
+    var enumerableRepeat = Enumerable.repeat = function (value, repeatCount) {
+        return new RepeatEnumerable(value, repeatCount);
+    };
+
+    var OfEnumerable = (function (__super__) {
+        inherits(OfEnumerable, __super__);
+        function OfEnumerable(s, fn, thisArg) {
+            this.s = s;
+            this.fn = fn ? bindCallback(fn, thisArg, 3) : null;
+        }
+        OfEnumerable.prototype[$iterator$] = function () {
+            return new OfEnumerator(this);
+        };
+
+        function OfEnumerator(p) {
+            this.i = -1;
+            this.s = p.s;
+            this.l = this.s.length;
+            this.fn = p.fn;
+        }
+
+        OfEnumerator.prototype.next = function () {
+            return ++this.i < this.l ?
+       { done: false, value: !this.fn ? this.s[this.i] : this.fn(this.s[this.i], this.i, this.s) } :
+              doneEnumerator;
+        };
+
+        return OfEnumerable;
+    }(Enumerable));
+
+    var enumerableOf = Enumerable.of = function (source, selector, thisArg) {
+        return new OfEnumerable(source, selector, thisArg);
+    };
+
+    var ToArrayObservable = (function (__super__) {
+        inherits(ToArrayObservable, __super__);
+        function ToArrayObservable(source) {
+            this.source = source;
+            __super__.call(this);
+        }
+
+        ToArrayObservable.prototype.subscribeCore = function (o) {
+            return this.source.subscribe(new InnerObserver(o));
+        };
+
+        inherits(InnerObserver, AbstractObserver);
+        function InnerObserver(o) {
+            this.o = o;
+            this.a = [];
+            AbstractObserver.call(this);
+        }
+
+        InnerObserver.prototype.next = function (x) { this.a.push(x); };
+        InnerObserver.prototype.error = function (e) { this.o.onError(e); };
+        InnerObserver.prototype.completed = function () { this.o.onNext(this.a); this.o.onCompleted(); };
+
+        return ToArrayObservable;
+    }(ObservableBase));
+
+    /**
+    * Creates an array from an observable sequence.
+    * @returns {Observable} An observable sequence containing a single element with a list containing all the elements of the source sequence.
+    */
+    observableProto.toArray = function () {
+        return new ToArrayObservable(this);
+    };
+
+    /**
+     *  Creates an observable sequence from a specified subscribe method implementation.
+     * @example
+     *  var res = Rx.Observable.create(function (observer) { return function () { } );
+     *  var res = Rx.Observable.create(function (observer) { return Rx.Disposable.empty; } );
+     *  var res = Rx.Observable.create(function (observer) { } );
+     * @param {Function} subscribe Implementation of the resulting observable sequence's subscribe method, returning a function that will be wrapped in a Disposable.
+     * @returns {Observable} The observable sequence with the specified implementation for the Subscribe method.
+     */
+    Observable.create = function (subscribe, parent) {
+        return new AnonymousObservable(subscribe, parent);
+    };
+
+    var Defer = (function (__super__) {
+        inherits(Defer, __super__);
+        function Defer(factory) {
+            this._f = factory;
+            __super__.call(this);
+        }
+
+        Defer.prototype.subscribeCore = function (o) {
+            var result = tryCatch(this._f)();
+            if (result === errorObj) { return observableThrow(result.e).subscribe(o); }
+            isPromise(result) && (result = observableFromPromise(result));
+            return result.subscribe(o);
+        };
+
+        return Defer;
+    }(ObservableBase));
+
+    /**
+     *  Returns an observable sequence that invokes the specified factory function whenever a new observer subscribes.
+     *
+     * @example
+     *  var res = Rx.Observable.defer(function () { return Rx.Observable.fromArray([1,2,3]); });
+     * @param {Function} observableFactory Observable factory function to invoke for each observer that subscribes to the resulting sequence or Promise.
+     * @returns {Observable} An observable sequence whose observers trigger an invocation of the given observable factory function.
+     */
+    var observableDefer = Observable.defer = function (observableFactory) {
+        return new Defer(observableFactory);
+    };
+
+    var EmptyObservable = (function (__super__) {
+        inherits(EmptyObservable, __super__);
+        function EmptyObservable(scheduler) {
+            this.scheduler = scheduler;
+            __super__.call(this);
+        }
+
+        EmptyObservable.prototype.subscribeCore = function (observer) {
+            var sink = new EmptySink(observer, this.scheduler);
+            return sink.run();
+        };
+
+        function EmptySink(observer, scheduler) {
+            this.observer = observer;
+            this.scheduler = scheduler;
+        }
+
+        function scheduleItem(s, state) {
+            state.onCompleted();
+            return disposableEmpty;
+        }
+
+        EmptySink.prototype.run = function () {
+            var state = this.observer;
+            return this.scheduler === immediateScheduler ?
+              scheduleItem(null, state) :
+              this.scheduler.schedule(state, scheduleItem);
+        };
+
+        return EmptyObservable;
+    }(ObservableBase));
+
+    var EMPTY_OBSERVABLE = new EmptyObservable(immediateScheduler);
+
+    /**
+     *  Returns an empty observable sequence, using the specified scheduler to send out the single OnCompleted message.
+     *
+     * @example
+     *  var res = Rx.Observable.empty();
+     *  var res = Rx.Observable.empty(Rx.Scheduler.timeout);
+     * @param {Scheduler} [scheduler] Scheduler to send the termination call on.
+     * @returns {Observable} An observable sequence with no elements.
+     */
+    var observableEmpty = Observable.empty = function (scheduler) {
+        isScheduler(scheduler) || (scheduler = immediateScheduler);
+        return scheduler === immediateScheduler ? EMPTY_OBSERVABLE : new EmptyObservable(scheduler);
+    };
+
+    var FromObservable = (function (__super__) {
+        inherits(FromObservable, __super__);
+        function FromObservable(iterable, fn, scheduler) {
+            this._iterable = iterable;
+            this._fn = fn;
+            this._scheduler = scheduler;
+            __super__.call(this);
+        }
+
+        function createScheduleMethod(o, it, fn) {
+            return function loopRecursive(i, recurse) {
+                var next = tryCatch(it.next).call(it);
+                if (next === errorObj) { return o.onError(next.e); }
+                if (next.done) { return o.onCompleted(); }
+
+                var result = next.value;
+
+                if (isFunction(fn)) {
+                    result = tryCatch(fn)(result, i);
+                    if (result === errorObj) { return o.onError(result.e); }
+                }
+
+                o.onNext(result);
+                recurse(i + 1);
+            };
+        }
+
+        FromObservable.prototype.subscribeCore = function (o) {
+            var list = Object(this._iterable),
+                it = getIterable(list);
+
+            return this._scheduler.scheduleRecursive(0, createScheduleMethod(o, it, this._fn));
+        };
+
+        return FromObservable;
+    }(ObservableBase));
+
+    var maxSafeInteger = Math.pow(2, 53) - 1;
+
+    function StringIterable(s) {
+        this._s = s;
+    }
+
+    StringIterable.prototype[$iterator$] = function () {
+        return new StringIterator(this._s);
+    };
+
+    function StringIterator(s) {
+        this._s = s;
+        this._l = s.length;
+        this._i = 0;
+    }
+
+    StringIterator.prototype[$iterator$] = function () {
+        return this;
+    };
+
+    StringIterator.prototype.next = function () {
+        return this._i < this._l ? { done: false, value: this._s.charAt(this._i++) } : doneEnumerator;
+    };
+
+    function ArrayIterable(a) {
+        this._a = a;
+    }
+
+    ArrayIterable.prototype[$iterator$] = function () {
+        return new ArrayIterator(this._a);
+    };
+
+    function ArrayIterator(a) {
+        this._a = a;
+        this._l = toLength(a);
+        this._i = 0;
+    }
+
+    ArrayIterator.prototype[$iterator$] = function () {
+        return this;
+    };
+
+    ArrayIterator.prototype.next = function () {
+        return this._i < this._l ? { done: false, value: this._a[this._i++] } : doneEnumerator;
+    };
+
+    function numberIsFinite(value) {
+        return typeof value === 'number' && root.isFinite(value);
+    }
+
+    function isNan(n) {
+        return n !== n;
+    }
+
+    function getIterable(o) {
+        var i = o[$iterator$], it;
+        if (!i && typeof o === 'string') {
+            it = new StringIterable(o);
+            return it[$iterator$]();
+        }
+        if (!i && o.length !== undefined) {
+            it = new ArrayIterable(o);
+            return it[$iterator$]();
+        }
+        if (!i) { throw new TypeError('Object is not iterable'); }
+        return o[$iterator$]();
+    }
+
+    function sign(value) {
+        var number = +value;
+        if (number === 0) { return number; }
+        if (isNaN(number)) { return number; }
+        return number < 0 ? -1 : 1;
+    }
+
+    function toLength(o) {
+        var len = +o.length;
+        if (isNaN(len)) { return 0; }
+        if (len === 0 || !numberIsFinite(len)) { return len; }
+        len = sign(len) * Math.floor(Math.abs(len));
+        if (len <= 0) { return 0; }
+        if (len > maxSafeInteger) { return maxSafeInteger; }
+        return len;
+    }
+
+    /**
+    * This method creates a new Observable sequence from an array-like or iterable object.
+    * @param {Any} arrayLike An array-like or iterable object to convert to an Observable sequence.
+    * @param {Function} [mapFn] Map function to call on every element of the array.
+    * @param {Any} [thisArg] The context to use calling the mapFn if provided.
+    * @param {Scheduler} [scheduler] Optional scheduler to use for scheduling.  If not provided, defaults to Scheduler.currentThread.
+    */
+    var observableFrom = Observable.from = function (iterable, mapFn, thisArg, scheduler) {
+        if (iterable == null) {
+            throw new Error('iterable cannot be null.')
+        }
+        if (mapFn && !isFunction(mapFn)) {
+            throw new Error('mapFn when provided must be a function');
+        }
+        if (mapFn) {
+            var mapper = bindCallback(mapFn, thisArg, 2);
+        }
+        isScheduler(scheduler) || (scheduler = currentThreadScheduler);
+        return new FromObservable(iterable, mapper, scheduler);
+    }
+
+    var FromArrayObservable = (function (__super__) {
+        inherits(FromArrayObservable, __super__);
+        function FromArrayObservable(args, scheduler) {
+            this._args = args;
+            this._scheduler = scheduler;
+            __super__.call(this);
+        }
+
+        function scheduleMethod(o, args) {
+            var len = args.length;
+            return function loopRecursive(i, recurse) {
+                if (i < len) {
+                    o.onNext(args[i]);
+                    recurse(i + 1);
+                } else {
+                    o.onCompleted();
+                }
+            };
+        }
+
+        FromArrayObservable.prototype.subscribeCore = function (o) {
+            return this._scheduler.scheduleRecursive(0, scheduleMethod(o, this._args));
+        };
+
+        return FromArrayObservable;
+    }(ObservableBase));
+
+    /**
+    *  Converts an array to an observable sequence, using an optional scheduler to enumerate the array.
+    * @deprecated use Observable.from or Observable.of
+    * @param {Scheduler} [scheduler] Scheduler to run the enumeration of the input sequence on.
+    * @returns {Observable} The observable sequence whose elements are pulled from the given enumerable sequence.
+    */
+    var observableFromArray = Observable.fromArray = function (array, scheduler) {
+        isScheduler(scheduler) || (scheduler = currentThreadScheduler);
+        return new FromArrayObservable(array, scheduler)
+    };
+
+    var NeverObservable = (function (__super__) {
+        inherits(NeverObservable, __super__);
+        function NeverObservable() {
+            __super__.call(this);
+        }
+
+        NeverObservable.prototype.subscribeCore = function (observer) {
+            return disposableEmpty;
+        };
+
+        return NeverObservable;
+    }(ObservableBase));
+
+    var NEVER_OBSERVABLE = new NeverObservable();
+
+    /**
+     * Returns a non-terminating observable sequence, which can be used to denote an infinite duration (e.g. when using reactive joins).
+     * @returns {Observable} An observable sequence whose observers will never get called.
+     */
+    var observableNever = Observable.never = function () {
+        return NEVER_OBSERVABLE;
+    };
+
+    function observableOf(scheduler, array) {
+        isScheduler(scheduler) || (scheduler = currentThreadScheduler);
+        return new FromArrayObservable(array, scheduler);
+    }
+
+    /**
+    *  This method creates a new Observable instance with a variable number of arguments, regardless of number or type of the arguments.
+    * @returns {Observable} The observable sequence whose elements are pulled from the given arguments.
+    */
+    Observable.of = function () {
+        var len = arguments.length, args = new Array(len);
+        for (var i = 0; i < len; i++) { args[i] = arguments[i]; }
+        return new FromArrayObservable(args, currentThreadScheduler);
+    };
+
+    /**
+    *  This method creates a new Observable instance with a variable number of arguments, regardless of number or type of the arguments.
+    * @param {Scheduler} scheduler A scheduler to use for scheduling the arguments.
+    * @returns {Observable} The observable sequence whose elements are pulled from the given arguments.
+    */
+    Observable.ofWithScheduler = function (scheduler) {
+        var len = arguments.length, args = new Array(len - 1);
+        for (var i = 1; i < len; i++) { args[i - 1] = arguments[i]; }
+        return new FromArrayObservable(args, scheduler);
+    };
+
+    var PairsObservable = (function (__super__) {
+        inherits(PairsObservable, __super__);
+        function PairsObservable(o, scheduler) {
+            this._o = o;
+            this._keys = Object.keys(o);
+            this._scheduler = scheduler;
+            __super__.call(this);
+        }
+
+        function scheduleMethod(o, obj, keys) {
+            return function loopRecursive(i, recurse) {
+                if (i < keys.length) {
+                    var key = keys[i];
+                    o.onNext([key, obj[key]]);
+                    recurse(i + 1);
+                } else {
+                    o.onCompleted();
+                }
+            };
+        }
+
+        PairsObservable.prototype.subscribeCore = function (o) {
+            return this._scheduler.scheduleRecursive(0, scheduleMethod(o, this._o, this._keys));
+        };
+
+        return PairsObservable;
+    }(ObservableBase));
+
+    /**
+     * Convert an object into an observable sequence of [key, value] pairs.
+     * @param {Object} obj The object to inspect.
+     * @param {Scheduler} [scheduler] Scheduler to run the enumeration of the input sequence on.
+     * @returns {Observable} An observable sequence of [key, value] pairs from the object.
+     */
+    Observable.pairs = function (obj, scheduler) {
+        scheduler || (scheduler = currentThreadScheduler);
+        return new PairsObservable(obj, scheduler);
+    };
+
+    var RangeObservable = (function (__super__) {
+        inherits(RangeObservable, __super__);
+        function RangeObservable(start, count, scheduler) {
+            this.start = start;
+            this.rangeCount = count;
+            this.scheduler = scheduler;
+            __super__.call(this);
+        }
+
+        function loopRecursive(start, count, o) {
+            return function loop(i, recurse) {
+                if (i < count) {
+                    o.onNext(start + i);
+                    recurse(i + 1);
+                } else {
+                    o.onCompleted();
+                }
+            };
+        }
+
+        RangeObservable.prototype.subscribeCore = function (o) {
+            return this.scheduler.scheduleRecursive(
+              0,
+              loopRecursive(this.start, this.rangeCount, o)
+            );
+        };
+
+        return RangeObservable;
+    }(ObservableBase));
+
+    /**
+    *  Generates an observable sequence of integral numbers within a specified range, using the specified scheduler to send out observer messages.
+    * @param {Number} start The value of the first integer in the sequence.
+    * @param {Number} count The number of sequential integers to generate.
+    * @param {Scheduler} [scheduler] Scheduler to run the generator loop on. If not specified, defaults to Scheduler.currentThread.
+    * @returns {Observable} An observable sequence that contains a range of sequential integral numbers.
+    */
+    Observable.range = function (start, count, scheduler) {
+        isScheduler(scheduler) || (scheduler = currentThreadScheduler);
+        return new RangeObservable(start, count, scheduler);
+    };
+
+    var RepeatObservable = (function (__super__) {
+        inherits(RepeatObservable, __super__);
+        function RepeatObservable(value, repeatCount, scheduler) {
+            this.value = value;
+            this.repeatCount = repeatCount == null ? -1 : repeatCount;
+            this.scheduler = scheduler;
+            __super__.call(this);
+        }
+
+        RepeatObservable.prototype.subscribeCore = function (observer) {
+            var sink = new RepeatSink(observer, this);
+            return sink.run();
+        };
+
+        return RepeatObservable;
+    }(ObservableBase));
+
+    function RepeatSink(observer, parent) {
+        this.observer = observer;
+        this.parent = parent;
+    }
+
+    RepeatSink.prototype.run = function () {
+        var observer = this.observer, value = this.parent.value;
+        function loopRecursive(i, recurse) {
+            if (i === -1 || i > 0) {
+                observer.onNext(value);
+                i > 0 && i--;
+            }
+            if (i === 0) { return observer.onCompleted(); }
+            recurse(i);
+        }
+
+        return this.parent.scheduler.scheduleRecursive(this.parent.repeatCount, loopRecursive);
+    };
+
+    /**
+     *  Generates an observable sequence that repeats the given element the specified number of times, using the specified scheduler to send out observer messages.
+     * @param {Mixed} value Element to repeat.
+     * @param {Number} repeatCount [Optiona] Number of times to repeat the element. If not specified, repeats indefinitely.
+     * @param {Scheduler} scheduler Scheduler to run the producer loop on. If not specified, defaults to Scheduler.immediate.
+     * @returns {Observable} An observable sequence that repeats the given element the specified number of times.
+     */
+    Observable.repeat = function (value, repeatCount, scheduler) {
+        isScheduler(scheduler) || (scheduler = currentThreadScheduler);
+        return new RepeatObservable(value, repeatCount, scheduler);
+    };
+
+    var JustObservable = (function (__super__) {
+        inherits(JustObservable, __super__);
+        function JustObservable(value, scheduler) {
+            this._value = value;
+            this._scheduler = scheduler;
+            __super__.call(this);
+        }
+
+        JustObservable.prototype.subscribeCore = function (o) {
+            var state = [this._value, o];
+            return this._scheduler === immediateScheduler ?
+              scheduleItem(null, state) :
+              this._scheduler.schedule(state, scheduleItem);
+        };
+
+        function scheduleItem(s, state) {
+            var value = state[0], observer = state[1];
+            observer.onNext(value);
+            observer.onCompleted();
+            return disposableEmpty;
+        }
+
+        return JustObservable;
+    }(ObservableBase));
+
+    /**
+     *  Returns an observable sequence that contains a single element, using the specified scheduler to send out observer messages.
+     *  There is an alias called 'just' or browsers <IE9.
+     * @param {Mixed} value Single element in the resulting observable sequence.
+     * @param {Scheduler} scheduler Scheduler to send the single element on. If not specified, defaults to Scheduler.immediate.
+     * @returns {Observable} An observable sequence containing the single specified element.
+     */
+    var observableReturn = Observable['return'] = Observable.just = function (value, scheduler) {
+        isScheduler(scheduler) || (scheduler = immediateScheduler);
+        return new JustObservable(value, scheduler);
+    };
+
+    var ThrowObservable = (function (__super__) {
+        inherits(ThrowObservable, __super__);
+        function ThrowObservable(error, scheduler) {
+            this._error = error;
+            this._scheduler = scheduler;
+            __super__.call(this);
+        }
+
+        ThrowObservable.prototype.subscribeCore = function (o) {
+            var state = [this._error, o];
+            return this._scheduler === immediateScheduler ?
+              scheduleItem(null, state) :
+              this._scheduler.schedule(state, scheduleItem);
+        };
+
+        function scheduleItem(s, state) {
+            var e = state[0], o = state[1];
+            o.onError(e);
+            return disposableEmpty;
+        }
+
+        return ThrowObservable;
+    }(ObservableBase));
+
+    /**
+     *  Returns an observable sequence that terminates with an exception, using the specified scheduler to send out the single onError message.
+     *  There is an alias to this method called 'throwError' for browsers <IE9.
+     * @param {Mixed} error An object used for the sequence's termination.
+     * @param {Scheduler} scheduler Scheduler to send the exceptional termination call on. If not specified, defaults to Scheduler.immediate.
+     * @returns {Observable} The observable sequence that terminates exceptionally with the specified exception object.
+     */
+    var observableThrow = Observable['throw'] = function (error, scheduler) {
+        isScheduler(scheduler) || (scheduler = immediateScheduler);
+        return new ThrowObservable(error, scheduler);
+    };
+
+    var CatchObservable = (function (__super__) {
+        inherits(CatchObservable, __super__);
+        function CatchObservable(source, fn) {
+            this.source = source;
+            this._fn = fn;
+            __super__.call(this);
+        }
+
+        CatchObservable.prototype.subscribeCore = function (o) {
+            var d1 = new SingleAssignmentDisposable(), subscription = new SerialDisposable();
+            subscription.setDisposable(d1);
+            d1.setDisposable(this.source.subscribe(new CatchObserver(o, subscription, this._fn)));
+            return subscription;
+        };
+
+        return CatchObservable;
+    }(ObservableBase));
+
+    var CatchObserver = (function (__super__) {
+        inherits(CatchObserver, __super__);
+        function CatchObserver(o, s, fn) {
+            this._o = o;
+            this._s = s;
+            this._fn = fn;
+            __super__.call(this);
+        }
+
+        CatchObserver.prototype.next = function (x) { this._o.onNext(x); };
+        CatchObserver.prototype.completed = function () { return this._o.onCompleted(); };
+        CatchObserver.prototype.error = function (e) {
+            var result = tryCatch(this._fn)(e);
+            if (result === errorObj) { return this._o.onError(result.e); }
+            isPromise(result) && (result = observableFromPromise(result));
+
+            var d = new SingleAssignmentDisposable();
+            this._s.setDisposable(d);
+            d.setDisposable(result.subscribe(this._o));
+        };
+
+        return CatchObserver;
+    }(AbstractObserver));
+
+    /**
+     * Continues an observable sequence that is terminated by an exception with the next observable sequence.
+     * @param {Mixed} handlerOrSecond Exception handler function that returns an observable sequence given the error that occurred in the first sequence, or a second observable sequence used to produce results when an error occurred in the first sequence.
+     * @returns {Observable} An observable sequence containing the first sequence's elements, followed by the elements of the handler sequence in case an exception occurred.
+     */
+    observableProto['catch'] = function (handlerOrSecond) {
+        return isFunction(handlerOrSecond) ? new CatchObservable(this, handlerOrSecond) : observableCatch([this, handlerOrSecond]);
+    };
+
+    /**
+     * Continues an observable sequence that is terminated by an exception with the next observable sequence.
+     * @param {Array | Arguments} args Arguments or an array to use as the next sequence if an error occurs.
+     * @returns {Observable} An observable sequence containing elements from consecutive source sequences until a source sequence terminates successfully.
+     */
+    var observableCatch = Observable['catch'] = function () {
+        var items;
+        if (Array.isArray(arguments[0])) {
+            items = arguments[0];
+        } else {
+            var len = arguments.length;
+            items = new Array(len);
+            for (var i = 0; i < len; i++) { items[i] = arguments[i]; }
+        }
+        return enumerableOf(items).catchError();
+    };
+
+    /**
+     * Merges the specified observable sequences into one observable sequence by using the selector function whenever any of the observable sequences or Promises produces an element.
+     * This can be in the form of an argument list of observables or an array.
+     *
+     * @example
+     * 1 - obs = observable.combineLatest(obs1, obs2, obs3, function (o1, o2, o3) { return o1 + o2 + o3; });
+     * 2 - obs = observable.combineLatest([obs1, obs2, obs3], function (o1, o2, o3) { return o1 + o2 + o3; });
+     * @returns {Observable} An observable sequence containing the result of combining elements of the sources using the specified result selector function.
+     */
+    observableProto.combineLatest = function () {
+        var len = arguments.length, args = new Array(len);
+        for (var i = 0; i < len; i++) { args[i] = arguments[i]; }
+        if (Array.isArray(args[0])) {
+            args[0].unshift(this);
+        } else {
+            args.unshift(this);
+        }
+        return combineLatest.apply(this, args);
+    };
+
+    function falseFactory() { return false; }
+    function argumentsToArray() {
+        var len = arguments.length, args = new Array(len);
+        for (var i = 0; i < len; i++) { args[i] = arguments[i]; }
+        return args;
+    }
+
+    var CombineLatestObservable = (function (__super__) {
+        inherits(CombineLatestObservable, __super__);
+        function CombineLatestObservable(params, cb) {
+            this._params = params;
+            this._cb = cb;
+            __super__.call(this);
+        }
+
+        CombineLatestObservable.prototype.subscribeCore = function (observer) {
+            var len = this._params.length,
+                subscriptions = new Array(len);
+
+            var state = {
+                hasValue: arrayInitialize(len, falseFactory),
+                hasValueAll: false,
+                isDone: arrayInitialize(len, falseFactory),
+                values: new Array(len)
+            };
+
+            for (var i = 0; i < len; i++) {
+                var source = this._params[i], sad = new SingleAssignmentDisposable();
+                subscriptions[i] = sad;
+                isPromise(source) && (source = observableFromPromise(source));
+                sad.setDisposable(source.subscribe(new CombineLatestObserver(observer, i, this._cb, state)));
+            }
+
+            return new NAryDisposable(subscriptions);
+        };
+
+        return CombineLatestObservable;
+    }(ObservableBase));
+
+    var CombineLatestObserver = (function (__super__) {
+        inherits(CombineLatestObserver, __super__);
+        function CombineLatestObserver(o, i, cb, state) {
+            this._o = o;
+            this._i = i;
+            this._cb = cb;
+            this._state = state;
+            __super__.call(this);
+        }
+
+        function notTheSame(i) {
+            return function (x, j) {
+                return j !== i;
+            };
+        }
+
+        CombineLatestObserver.prototype.next = function (x) {
+            this._state.values[this._i] = x;
+            this._state.hasValue[this._i] = true;
+            if (this._state.hasValueAll || (this._state.hasValueAll = this._state.hasValue.every(identity))) {
+                var res = tryCatch(this._cb).apply(null, this._state.values);
+                if (res === errorObj) { return this._o.onError(res.e); }
+                this._o.onNext(res);
+            } else if (this._state.isDone.filter(notTheSame(this._i)).every(identity)) {
+                this._o.onCompleted();
+            }
+        };
+
+        CombineLatestObserver.prototype.error = function (e) {
+            this._o.onError(e);
+        };
+
+        CombineLatestObserver.prototype.completed = function () {
+            this._state.isDone[this._i] = true;
+            this._state.isDone.every(identity) && this._o.onCompleted();
+        };
+
+        return CombineLatestObserver;
+    }(AbstractObserver));
+
+    /**
+    * Merges the specified observable sequences into one observable sequence by using the selector function whenever any of the observable sequences or Promises produces an element.
+    *
+    * @example
+    * 1 - obs = Rx.Observable.combineLatest(obs1, obs2, obs3, function (o1, o2, o3) { return o1 + o2 + o3; });
+    * 2 - obs = Rx.Observable.combineLatest([obs1, obs2, obs3], function (o1, o2, o3) { return o1 + o2 + o3; });
+    * @returns {Observable} An observable sequence containing the result of combining elements of the sources using the specified result selector function.
+    */
+    var combineLatest = Observable.combineLatest = function () {
+        var len = arguments.length, args = new Array(len);
+        for (var i = 0; i < len; i++) { args[i] = arguments[i]; }
+        var resultSelector = isFunction(args[len - 1]) ? args.pop() : argumentsToArray;
+        Array.isArray(args[0]) && (args = args[0]);
+        return new CombineLatestObservable(args, resultSelector);
+    };
+
+    /**
+     * Concatenates all the observable sequences.  This takes in either an array or variable arguments to concatenate.
+     * @returns {Observable} An observable sequence that contains the elements of each given sequence, in sequential order.
+     */
+    observableProto.concat = function () {
+        for (var args = [], i = 0, len = arguments.length; i < len; i++) { args.push(arguments[i]); }
+        args.unshift(this);
+        return observableConcat.apply(null, args);
+    };
+
+    var ConcatObserver = (function (__super__) {
+        inherits(ConcatObserver, __super__);
+        function ConcatObserver(s, fn) {
+            this._s = s;
+            this._fn = fn;
+            __super__.call(this);
+        }
+
+        ConcatObserver.prototype.next = function (x) { this._s.o.onNext(x); };
+        ConcatObserver.prototype.error = function (e) { this._s.o.onError(e); };
+        ConcatObserver.prototype.completed = function () { this._s.i++; this._fn(this._s); };
+
+        return ConcatObserver;
+    }(AbstractObserver));
+
+    var ConcatObservable = (function (__super__) {
+        inherits(ConcatObservable, __super__);
+        function ConcatObservable(sources) {
+            this._sources = sources;
+            __super__.call(this);
+        }
+
+        function scheduleRecursive(state, recurse) {
+            if (state.disposable.isDisposed) { return; }
+            if (state.i === state.sources.length) { return state.o.onCompleted(); }
+
+            // Check if promise
+            var currentValue = state.sources[state.i];
+            isPromise(currentValue) && (currentValue = observableFromPromise(currentValue));
+
+            var d = new SingleAssignmentDisposable();
+            state.subscription.setDisposable(d);
+            d.setDisposable(currentValue.subscribe(new ConcatObserver(state, recurse)));
+        }
+
+        ConcatObservable.prototype.subscribeCore = function (o) {
+            var subscription = new SerialDisposable();
+            var disposable = disposableCreate(noop);
+            var state = {
+                o: o,
+                i: 0,
+                subscription: subscription,
+                disposable: disposable,
+                sources: this._sources
+            };
+
+            var cancelable = immediateScheduler.scheduleRecursive(state, scheduleRecursive);
+            return new NAryDisposable([subscription, disposable, cancelable]);
+        };
+
+        return ConcatObservable;
+    }(ObservableBase));
+
+    /**
+     * Concatenates all the observable sequences.
+     * @param {Array | Arguments} args Arguments or an array to concat to the observable sequence.
+     * @returns {Observable} An observable sequence that contains the elements of each given sequence, in sequential order.
+     */
+    var observableConcat = Observable.concat = function () {
+        var args;
+        if (Array.isArray(arguments[0])) {
+            args = arguments[0];
+        } else {
+            args = new Array(arguments.length);
+            for (var i = 0, len = arguments.length; i < len; i++) { args[i] = arguments[i]; }
+        }
+        return new ConcatObservable(args);
+    };
+
+    /**
+     * Concatenates an observable sequence of observable sequences.
+     * @returns {Observable} An observable sequence that contains the elements of each observed inner sequence, in sequential order.
+     */
+    observableProto.concatAll = function () {
+        return this.merge(1);
+    };
+
+    var MergeObservable = (function (__super__) {
+        inherits(MergeObservable, __super__);
+
+        function MergeObservable(source, maxConcurrent) {
+            this.source = source;
+            this.maxConcurrent = maxConcurrent;
+            __super__.call(this);
+        }
+
+        MergeObservable.prototype.subscribeCore = function (observer) {
+            var g = new CompositeDisposable();
+            g.add(this.source.subscribe(new MergeObserver(observer, this.maxConcurrent, g)));
+            return g;
+        };
+
+        return MergeObservable;
+
+    }(ObservableBase));
+
+    var MergeObserver = (function (__super__) {
+        function MergeObserver(o, max, g) {
+            this.o = o;
+            this.max = max;
+            this.g = g;
+            this.done = false;
+            this.q = [];
+            this.activeCount = 0;
+            __super__.call(this);
+        }
+
+        inherits(MergeObserver, __super__);
+
+        MergeObserver.prototype.handleSubscribe = function (xs) {
+            var sad = new SingleAssignmentDisposable();
+            this.g.add(sad);
+            isPromise(xs) && (xs = observableFromPromise(xs));
+            sad.setDisposable(xs.subscribe(new InnerObserver(this, sad)));
+        };
+
+        MergeObserver.prototype.next = function (innerSource) {
+            if (this.activeCount < this.max) {
+                this.activeCount++;
+                this.handleSubscribe(innerSource);
+            } else {
+                this.q.push(innerSource);
+            }
+        };
+        MergeObserver.prototype.error = function (e) { this.o.onError(e); };
+        MergeObserver.prototype.completed = function () { this.done = true; this.activeCount === 0 && this.o.onCompleted(); };
+
+        function InnerObserver(parent, sad) {
+            this.parent = parent;
+            this.sad = sad;
+            __super__.call(this);
+        }
+
+        inherits(InnerObserver, __super__);
+
+        InnerObserver.prototype.next = function (x) { this.parent.o.onNext(x); };
+        InnerObserver.prototype.error = function (e) { this.parent.o.onError(e); };
+        InnerObserver.prototype.completed = function () {
+            this.parent.g.remove(this.sad);
+            if (this.parent.q.length > 0) {
+                this.parent.handleSubscribe(this.parent.q.shift());
+            } else {
+                this.parent.activeCount--;
+                this.parent.done && this.parent.activeCount === 0 && this.parent.o.onCompleted();
+            }
+        };
+
+        return MergeObserver;
+    }(AbstractObserver));
+
+    /**
+    * Merges an observable sequence of observable sequences into an observable sequence, limiting the number of concurrent subscriptions to inner sequences.
+    * Or merges two observable sequences into a single observable sequence.
+    * @param {Mixed} [maxConcurrentOrOther] Maximum number of inner observable sequences being subscribed to concurrently or the second observable sequence.
+    * @returns {Observable} The observable sequence that merges the elements of the inner sequences.
+    */
+    observableProto.merge = function (maxConcurrentOrOther) {
+        return typeof maxConcurrentOrOther !== 'number' ?
+          observableMerge(this, maxConcurrentOrOther) :
+          new MergeObservable(this, maxConcurrentOrOther);
+    };
+
+    /**
+     * Merges all the observable sequences into a single observable sequence.
+     * The scheduler is optional and if not specified, the immediate scheduler is used.
+     * @returns {Observable} The observable sequence that merges the elements of the observable sequences.
+     */
+    var observableMerge = Observable.merge = function () {
+        var scheduler, sources = [], i, len = arguments.length;
+        if (!arguments[0]) {
+            scheduler = immediateScheduler;
+            for (i = 1; i < len; i++) { sources.push(arguments[i]); }
+        } else if (isScheduler(arguments[0])) {
+            scheduler = arguments[0];
+            for (i = 1; i < len; i++) { sources.push(arguments[i]); }
+        } else {
+            scheduler = immediateScheduler;
+            for (i = 0; i < len; i++) { sources.push(arguments[i]); }
+        }
+        if (Array.isArray(sources[0])) {
+            sources = sources[0];
+        }
+        return observableOf(scheduler, sources).mergeAll();
+    };
+
+    var CompositeError = Rx.CompositeError = function (errors) {
+        this.innerErrors = errors;
+        this.message = 'This contains multiple errors. Check the innerErrors';
+        Error.call(this);
+    };
+    CompositeError.prototype = Object.create(Error.prototype);
+    CompositeError.prototype.name = 'CompositeError';
+
+    var MergeDelayErrorObservable = (function (__super__) {
+        inherits(MergeDelayErrorObservable, __super__);
+        function MergeDelayErrorObservable(source) {
+            this.source = source;
+            __super__.call(this);
+        }
+
+        MergeDelayErrorObservable.prototype.subscribeCore = function (o) {
+            var group = new CompositeDisposable(),
+              m = new SingleAssignmentDisposable(),
+              state = { isStopped: false, errors: [], o: o };
+
+            group.add(m);
+            m.setDisposable(this.source.subscribe(new MergeDelayErrorObserver(group, state)));
+
+            return group;
+        };
+
+        return MergeDelayErrorObservable;
+    }(ObservableBase));
+
+    var MergeDelayErrorObserver = (function (__super__) {
+        inherits(MergeDelayErrorObserver, __super__);
+        function MergeDelayErrorObserver(group, state) {
+            this._group = group;
+            this._state = state;
+            __super__.call(this);
+        }
+
+        function setCompletion(o, errors) {
+            if (errors.length === 0) {
+                o.onCompleted();
+            } else if (errors.length === 1) {
+                o.onError(errors[0]);
+            } else {
+                o.onError(new CompositeError(errors));
+            }
+        }
+
+        MergeDelayErrorObserver.prototype.next = function (x) {
+            var inner = new SingleAssignmentDisposable();
+            this._group.add(inner);
+
+            // Check for promises support
+            isPromise(x) && (x = observableFromPromise(x));
+            inner.setDisposable(x.subscribe(new InnerObserver(inner, this._group, this._state)));
+        };
+
+        MergeDelayErrorObserver.prototype.error = function (e) {
+            this._state.errors.push(e);
+            this._state.isStopped = true;
+            this._group.length === 1 && setCompletion(this._state.o, this._state.errors);
+        };
+
+        MergeDelayErrorObserver.prototype.completed = function () {
+            this._state.isStopped = true;
+            this._group.length === 1 && setCompletion(this._state.o, this._state.errors);
+        };
+
+        inherits(InnerObserver, __super__);
+        function InnerObserver(inner, group, state) {
+            this._inner = inner;
+            this._group = group;
+            this._state = state;
+            __super__.call(this);
+        }
+
+        InnerObserver.prototype.next = function (x) { this._state.o.onNext(x); };
+        InnerObserver.prototype.error = function (e) {
+            this._state.errors.push(e);
+            this._group.remove(this._inner);
+            this._state.isStopped && this._group.length === 1 && setCompletion(this._state.o, this._state.errors);
+        };
+        InnerObserver.prototype.completed = function () {
+            this._group.remove(this._inner);
+            this._state.isStopped && this._group.length === 1 && setCompletion(this._state.o, this._state.errors);
+        };
+
+        return MergeDelayErrorObserver;
+    }(AbstractObserver));
+
+    /**
+    * Flattens an Observable that emits Observables into one Observable, in a way that allows an Observer to
+    * receive all successfully emitted items from all of the source Observables without being interrupted by
+    * an error notification from one of them.
+    *
+    * This behaves like Observable.prototype.mergeAll except that if any of the merged Observables notify of an
+    * error via the Observer's onError, mergeDelayError will refrain from propagating that
+    * error notification until all of the merged Observables have finished emitting items.
+    * @param {Array | Arguments} args Arguments or an array to merge.
+    * @returns {Observable} an Observable that emits all of the items emitted by the Observables emitted by the Observable
+    */
+    Observable.mergeDelayError = function () {
+        var args;
+        if (Array.isArray(arguments[0])) {
+            args = arguments[0];
+        } else {
+            var len = arguments.length;
+            args = new Array(len);
+            for (var i = 0; i < len; i++) { args[i] = arguments[i]; }
+        }
+        var source = observableOf(null, args);
+        return new MergeDelayErrorObservable(source);
+    };
+
+    var MergeAllObservable = (function (__super__) {
+        inherits(MergeAllObservable, __super__);
+
+        function MergeAllObservable(source) {
+            this.source = source;
+            __super__.call(this);
+        }
+
+        MergeAllObservable.prototype.subscribeCore = function (o) {
+            var g = new CompositeDisposable(), m = new SingleAssignmentDisposable();
+            g.add(m);
+            m.setDisposable(this.source.subscribe(new MergeAllObserver(o, g)));
+            return g;
+        };
+
+        return MergeAllObservable;
+    }(ObservableBase));
+
+    var MergeAllObserver = (function (__super__) {
+        function MergeAllObserver(o, g) {
+            this.o = o;
+            this.g = g;
+            this.done = false;
+            __super__.call(this);
+        }
+
+        inherits(MergeAllObserver, __super__);
+
+        MergeAllObserver.prototype.next = function (innerSource) {
+            var sad = new SingleAssignmentDisposable();
+            this.g.add(sad);
+            isPromise(innerSource) && (innerSource = observableFromPromise(innerSource));
+            sad.setDisposable(innerSource.subscribe(new InnerObserver(this, sad)));
+        };
+
+        MergeAllObserver.prototype.error = function (e) {
+            this.o.onError(e);
+        };
+
+        MergeAllObserver.prototype.completed = function () {
+            this.done = true;
+            this.g.length === 1 && this.o.onCompleted();
+        };
+
+        function InnerObserver(parent, sad) {
+            this.parent = parent;
+            this.sad = sad;
+            __super__.call(this);
+        }
+
+        inherits(InnerObserver, __super__);
+
+        InnerObserver.prototype.next = function (x) {
+            this.parent.o.onNext(x);
+        };
+        InnerObserver.prototype.error = function (e) {
+            this.parent.o.onError(e);
+        };
+        InnerObserver.prototype.completed = function () {
+            this.parent.g.remove(this.sad);
+            this.parent.done && this.parent.g.length === 1 && this.parent.o.onCompleted();
+        };
+
+        return MergeAllObserver;
+    }(AbstractObserver));
+
+    /**
+    * Merges an observable sequence of observable sequences into an observable sequence.
+    * @returns {Observable} The observable sequence that merges the elements of the inner sequences.
+    */
+    observableProto.mergeAll = function () {
+        return new MergeAllObservable(this);
+    };
+
+    var SkipUntilObservable = (function (__super__) {
+        inherits(SkipUntilObservable, __super__);
+
+        function SkipUntilObservable(source, other) {
+            this._s = source;
+            this._o = isPromise(other) ? observableFromPromise(other) : other;
+            this._open = false;
+            __super__.call(this);
+        }
+
+        SkipUntilObservable.prototype.subscribeCore = function (o) {
+            var leftSubscription = new SingleAssignmentDisposable();
+            leftSubscription.setDisposable(this._s.subscribe(new SkipUntilSourceObserver(o, this)));
+
+            isPromise(this._o) && (this._o = observableFromPromise(this._o));
+
+            var rightSubscription = new SingleAssignmentDisposable();
+            rightSubscription.setDisposable(this._o.subscribe(new SkipUntilOtherObserver(o, this, rightSubscription)));
+
+            return new BinaryDisposable(leftSubscription, rightSubscription);
+        };
+
+        return SkipUntilObservable;
+    }(ObservableBase));
+
+    var SkipUntilSourceObserver = (function (__super__) {
+        inherits(SkipUntilSourceObserver, __super__);
+        function SkipUntilSourceObserver(o, p) {
+            this._o = o;
+            this._p = p;
+            __super__.call(this);
+        }
+
+        SkipUntilSourceObserver.prototype.next = function (x) {
+            this._p._open && this._o.onNext(x);
+        };
+
+        SkipUntilSourceObserver.prototype.error = function (err) {
+            this._o.onError(err);
+        };
+
+        SkipUntilSourceObserver.prototype.onCompleted = function () {
+            this._p._open && this._o.onCompleted();
+        };
+
+        return SkipUntilSourceObserver;
+    }(AbstractObserver));
+
+    var SkipUntilOtherObserver = (function (__super__) {
+        inherits(SkipUntilOtherObserver, __super__);
+        function SkipUntilOtherObserver(o, p, r) {
+            this._o = o;
+            this._p = p;
+            this._r = r;
+            __super__.call(this);
+        }
+
+        SkipUntilOtherObserver.prototype.next = function () {
+            this._p._open = true;
+            this._r.dispose();
+        };
+
+        SkipUntilOtherObserver.prototype.error = function (err) {
+            this._o.onError(err);
+        };
+
+        SkipUntilOtherObserver.prototype.onCompleted = function () {
+            this._r.dispose();
+        };
+
+        return SkipUntilOtherObserver;
+    }(AbstractObserver));
+
+    /**
+     * Returns the values from the source observable sequence only after the other observable sequence produces a value.
+     * @param {Observable | Promise} other The observable sequence or Promise that triggers propagation of elements of the source sequence.
+     * @returns {Observable} An observable sequence containing the elements of the source sequence starting from the point the other sequence triggered propagation.
+     */
+    observableProto.skipUntil = function (other) {
+        return new SkipUntilObservable(this, other);
+    };
+
+    var SwitchObservable = (function (__super__) {
+        inherits(SwitchObservable, __super__);
+        function SwitchObservable(source) {
+            this.source = source;
+            __super__.call(this);
+        }
+
+        SwitchObservable.prototype.subscribeCore = function (o) {
+            var inner = new SerialDisposable(), s = this.source.subscribe(new SwitchObserver(o, inner));
+            return new BinaryDisposable(s, inner);
+        };
+
+        inherits(SwitchObserver, AbstractObserver);
+        function SwitchObserver(o, inner) {
+            this.o = o;
+            this.inner = inner;
+            this.stopped = false;
+            this.latest = 0;
+            this.hasLatest = false;
+            AbstractObserver.call(this);
+        }
+
+        SwitchObserver.prototype.next = function (innerSource) {
+            var d = new SingleAssignmentDisposable(), id = ++this.latest;
+            this.hasLatest = true;
+            this.inner.setDisposable(d);
+            isPromise(innerSource) && (innerSource = observableFromPromise(innerSource));
+            d.setDisposable(innerSource.subscribe(new InnerObserver(this, id)));
+        };
+
+        SwitchObserver.prototype.error = function (e) {
+            this.o.onError(e);
+        };
+
+        SwitchObserver.prototype.completed = function () {
+            this.stopped = true;
+            !this.hasLatest && this.o.onCompleted();
+        };
+
+        inherits(InnerObserver, AbstractObserver);
+        function InnerObserver(parent, id) {
+            this.parent = parent;
+            this.id = id;
+            AbstractObserver.call(this);
+        }
+        InnerObserver.prototype.next = function (x) {
+            this.parent.latest === this.id && this.parent.o.onNext(x);
+        };
+
+        InnerObserver.prototype.error = function (e) {
+            this.parent.latest === this.id && this.parent.o.onError(e);
+        };
+
+        InnerObserver.prototype.completed = function () {
+            if (this.parent.latest === this.id) {
+                this.parent.hasLatest = false;
+                this.parent.stopped && this.parent.o.onCompleted();
+            }
+        };
+
+        return SwitchObservable;
+    }(ObservableBase));
+
+    /**
+    * Transforms an observable sequence of observable sequences into an observable sequence producing values only from the most recent observable sequence.
+    * @returns {Observable} The observable sequence that at any point in time produces the elements of the most recent inner observable sequence that has been received.
+    */
+    observableProto['switch'] = observableProto.switchLatest = function () {
+        return new SwitchObservable(this);
+    };
+
+    var TakeUntilObservable = (function (__super__) {
+        inherits(TakeUntilObservable, __super__);
+
+        function TakeUntilObservable(source, other) {
+            this.source = source;
+            this.other = isPromise(other) ? observableFromPromise(other) : other;
+            __super__.call(this);
+        }
+
+        TakeUntilObservable.prototype.subscribeCore = function (o) {
+            return new BinaryDisposable(
+              this.source.subscribe(o),
+              this.other.subscribe(new TakeUntilObserver(o))
+            );
+        };
+
+        return TakeUntilObservable;
+    }(ObservableBase));
+
+    var TakeUntilObserver = (function (__super__) {
+        inherits(TakeUntilObserver, __super__);
+        function TakeUntilObserver(o) {
+            this._o = o;
+            __super__.call(this);
+        }
+
+        TakeUntilObserver.prototype.next = function () {
+            this._o.onCompleted();
+        };
+
+        TakeUntilObserver.prototype.error = function (err) {
+            this._o.onError(err);
+        };
+
+        TakeUntilObserver.prototype.onCompleted = noop;
+
+        return TakeUntilObserver;
+    }(AbstractObserver));
+
+    /**
+     * Returns the values from the source observable sequence until the other observable sequence produces a value.
+     * @param {Observable | Promise} other Observable sequence or Promise that terminates propagation of elements of the source sequence.
+     * @returns {Observable} An observable sequence containing the elements of the source sequence up to the point the other sequence interrupted further propagation.
+     */
+    observableProto.takeUntil = function (other) {
+        return new TakeUntilObservable(this, other);
+    };
+
+    function falseFactory() { return false; }
+    function argumentsToArray() {
+        var len = arguments.length, args = new Array(len);
+        for (var i = 0; i < len; i++) { args[i] = arguments[i]; }
+        return args;
+    }
+
+    var WithLatestFromObservable = (function (__super__) {
+        inherits(WithLatestFromObservable, __super__);
+        function WithLatestFromObservable(source, sources, resultSelector) {
+            this._s = source;
+            this._ss = sources;
+            this._cb = resultSelector;
+            __super__.call(this);
+        }
+
+        WithLatestFromObservable.prototype.subscribeCore = function (o) {
+            var len = this._ss.length;
+            var state = {
+                hasValue: arrayInitialize(len, falseFactory),
+                hasValueAll: false,
+                values: new Array(len)
+            };
+
+            var n = this._ss.length, subscriptions = new Array(n + 1);
+            for (var i = 0; i < n; i++) {
+                var other = this._ss[i], sad = new SingleAssignmentDisposable();
+                isPromise(other) && (other = observableFromPromise(other));
+                sad.setDisposable(other.subscribe(new WithLatestFromOtherObserver(o, i, state)));
+                subscriptions[i] = sad;
+            }
+
+            var outerSad = new SingleAssignmentDisposable();
+            outerSad.setDisposable(this._s.subscribe(new WithLatestFromSourceObserver(o, this._cb, state)));
+            subscriptions[n] = outerSad;
+
+            return new NAryDisposable(subscriptions);
+        };
+
+        return WithLatestFromObservable;
+    }(ObservableBase));
+
+    var WithLatestFromOtherObserver = (function (__super__) {
+        inherits(WithLatestFromOtherObserver, __super__);
+        function WithLatestFromOtherObserver(o, i, state) {
+            this._o = o;
+            this._i = i;
+            this._state = state;
+            __super__.call(this);
+        }
+
+        WithLatestFromOtherObserver.prototype.next = function (x) {
+            this._state.values[this._i] = x;
+            this._state.hasValue[this._i] = true;
+            this._state.hasValueAll = this._state.hasValue.every(identity);
+        };
+
+        WithLatestFromOtherObserver.prototype.error = function (e) {
+            this._o.onError(e);
+        };
+
+        WithLatestFromOtherObserver.prototype.completed = noop;
+
+        return WithLatestFromOtherObserver;
+    }(AbstractObserver));
+
+    var WithLatestFromSourceObserver = (function (__super__) {
+        inherits(WithLatestFromSourceObserver, __super__);
+        function WithLatestFromSourceObserver(o, cb, state) {
+            this._o = o;
+            this._cb = cb;
+            this._state = state;
+            __super__.call(this);
+        }
+
+        WithLatestFromSourceObserver.prototype.next = function (x) {
+            var allValues = [x].concat(this._state.values);
+            if (!this._state.hasValueAll) { return; }
+            var res = tryCatch(this._cb).apply(null, allValues);
+            if (res === errorObj) { return this._o.onError(res.e); }
+            this._o.onNext(res);
+        };
+
+        WithLatestFromSourceObserver.prototype.error = function (e) {
+            this._o.onError(e);
+        };
+
+        WithLatestFromSourceObserver.prototype.completed = function () {
+            this._o.onCompleted();
+        };
+
+        return WithLatestFromSourceObserver;
+    }(AbstractObserver));
+
+    /**
+     * Merges the specified observable sequences into one observable sequence by using the selector function only when the (first) source observable sequence produces an element.
+     * @returns {Observable} An observable sequence containing the result of combining elements of the sources using the specified result selector function.
+     */
+    observableProto.withLatestFrom = function () {
+        if (arguments.length === 0) { throw new Error('invalid arguments'); }
+
+        var len = arguments.length, args = new Array(len);
+        for (var i = 0; i < len; i++) { args[i] = arguments[i]; }
+        var resultSelector = isFunction(args[len - 1]) ? args.pop() : argumentsToArray;
+        Array.isArray(args[0]) && (args = args[0]);
+
+        return new WithLatestFromObservable(this, args, resultSelector);
+    };
+
+    function falseFactory() { return false; }
+    function emptyArrayFactory() { return []; }
+
+    var ZipObservable = (function (__super__) {
+        inherits(ZipObservable, __super__);
+        function ZipObservable(sources, resultSelector) {
+            this._s = sources;
+            this._cb = resultSelector;
+            __super__.call(this);
+        }
+
+        ZipObservable.prototype.subscribeCore = function (observer) {
+            var n = this._s.length,
+                subscriptions = new Array(n),
+                done = arrayInitialize(n, falseFactory),
+                q = arrayInitialize(n, emptyArrayFactory);
+
+            for (var i = 0; i < n; i++) {
+                var source = this._s[i], sad = new SingleAssignmentDisposable();
+                subscriptions[i] = sad;
+                isPromise(source) && (source = observableFromPromise(source));
+                sad.setDisposable(source.subscribe(new ZipObserver(observer, i, this, q, done)));
+            }
+
+            return new NAryDisposable(subscriptions);
+        };
+
+        return ZipObservable;
+    }(ObservableBase));
+
+    var ZipObserver = (function (__super__) {
+        inherits(ZipObserver, __super__);
+        function ZipObserver(o, i, p, q, d) {
+            this._o = o;
+            this._i = i;
+            this._p = p;
+            this._q = q;
+            this._d = d;
+            __super__.call(this);
+        }
+
+        function notEmpty(x) { return x.length > 0; }
+        function shiftEach(x) { return x.shift(); }
+        function notTheSame(i) {
+            return function (x, j) {
+                return j !== i;
+            };
+        }
+
+        ZipObserver.prototype.next = function (x) {
+            this._q[this._i].push(x);
+            if (this._q.every(notEmpty)) {
+                var queuedValues = this._q.map(shiftEach);
+                var res = tryCatch(this._p._cb).apply(null, queuedValues);
+                if (res === errorObj) { return this._o.onError(res.e); }
+                this._o.onNext(res);
+            } else if (this._d.filter(notTheSame(this._i)).every(identity)) {
+                this._o.onCompleted();
+            }
+        };
+
+        ZipObserver.prototype.error = function (e) {
+            this._o.onError(e);
+        };
+
+        ZipObserver.prototype.completed = function () {
+            this._d[this._i] = true;
+            this._d.every(identity) && this._o.onCompleted();
+        };
+
+        return ZipObserver;
+    }(AbstractObserver));
+
+    /**
+     * Merges the specified observable sequences into one observable sequence by using the selector function whenever all of the observable sequences or an array have produced an element at a corresponding index.
+     * The last element in the arguments must be a function to invoke for each series of elements at corresponding indexes in the args.
+     * @returns {Observable} An observable sequence containing the result of combining elements of the args using the specified result selector function.
+     */
+    observableProto.zip = function () {
+        if (arguments.length === 0) { throw new Error('invalid arguments'); }
+
+        var len = arguments.length, args = new Array(len);
+        for (var i = 0; i < len; i++) { args[i] = arguments[i]; }
+        var resultSelector = isFunction(args[len - 1]) ? args.pop() : argumentsToArray;
+        Array.isArray(args[0]) && (args = args[0]);
+
+        var parent = this;
+        args.unshift(parent);
+
+        return new ZipObservable(args, resultSelector);
+    };
+
+    /**
+     * Merges the specified observable sequences into one observable sequence by using the selector function whenever all of the observable sequences have produced an element at a corresponding index.
+     * @param arguments Observable sources.
+     * @param {Function} resultSelector Function to invoke for each series of elements at corresponding indexes in the sources.
+     * @returns {Observable} An observable sequence containing the result of combining elements of the sources using the specified result selector function.
+     */
+    Observable.zip = function () {
+        var len = arguments.length, args = new Array(len);
+        for (var i = 0; i < len; i++) { args[i] = arguments[i]; }
+        if (Array.isArray(args[0])) {
+            args = isFunction(args[1]) ? args[0].concat(args[1]) : args[0];
+        }
+        var first = args.shift();
+        return first.zip.apply(first, args);
+    };
+
+    function falseFactory() { return false; }
+    function emptyArrayFactory() { return []; }
+    function argumentsToArray() {
+        var len = arguments.length, args = new Array(len);
+        for (var i = 0; i < len; i++) { args[i] = arguments[i]; }
+        return args;
+    }
+
+    var ZipIterableObservable = (function (__super__) {
+        inherits(ZipIterableObservable, __super__);
+        function ZipIterableObservable(sources, cb) {
+            this.sources = sources;
+            this._cb = cb;
+            __super__.call(this);
+        }
+
+        ZipIterableObservable.prototype.subscribeCore = function (o) {
+            var sources = this.sources, len = sources.length, subscriptions = new Array(len);
+
+            var state = {
+                q: arrayInitialize(len, emptyArrayFactory),
+                done: arrayInitialize(len, falseFactory),
+                cb: this._cb,
+                o: o
+            };
+
+            for (var i = 0; i < len; i++) {
+                (function (i) {
+                    var source = sources[i], sad = new SingleAssignmentDisposable();
+                    (isArrayLike(source) || isIterable(source)) && (source = observableFrom(source));
+
+                    subscriptions[i] = sad;
+                    sad.setDisposable(source.subscribe(new ZipIterableObserver(state, i)));
+                }(i));
+            }
+
+            return new NAryDisposable(subscriptions);
+        };
+
+        return ZipIterableObservable;
+    }(ObservableBase));
+
+    var ZipIterableObserver = (function (__super__) {
+        inherits(ZipIterableObserver, __super__);
+        function ZipIterableObserver(s, i) {
+            this._s = s;
+            this._i = i;
+            __super__.call(this);
+        }
+
+        function notEmpty(x) { return x.length > 0; }
+        function shiftEach(x) { return x.shift(); }
+        function notTheSame(i) {
+            return function (x, j) {
+                return j !== i;
+            };
+        }
+
+        ZipIterableObserver.prototype.next = function (x) {
+            this._s.q[this._i].push(x);
+            if (this._s.q.every(notEmpty)) {
+                var queuedValues = this._s.q.map(shiftEach),
+                    res = tryCatch(this._s.cb).apply(null, queuedValues);
+                if (res === errorObj) { return this._s.o.onError(res.e); }
+                this._s.o.onNext(res);
+            } else if (this._s.done.filter(notTheSame(this._i)).every(identity)) {
+                this._s.o.onCompleted();
+            }
+        };
+
+        ZipIterableObserver.prototype.error = function (e) { this._s.o.onError(e); };
+
+        ZipIterableObserver.prototype.completed = function () {
+            this._s.done[this._i] = true;
+            this._s.done.every(identity) && this._s.o.onCompleted();
+        };
+
+        return ZipIterableObserver;
+    }(AbstractObserver));
+
+    /**
+     * Merges the specified observable sequences into one observable sequence by using the selector function whenever all of the observable sequences or an array have produced an element at a corresponding index.
+     * The last element in the arguments must be a function to invoke for each series of elements at corresponding indexes in the args.
+     * @returns {Observable} An observable sequence containing the result of combining elements of the args using the specified result selector function.
+     */
+    observableProto.zipIterable = function () {
+        if (arguments.length === 0) { throw new Error('invalid arguments'); }
+
+        var len = arguments.length, args = new Array(len);
+        for (var i = 0; i < len; i++) { args[i] = arguments[i]; }
+        var resultSelector = isFunction(args[len - 1]) ? args.pop() : argumentsToArray;
+
+        var parent = this;
+        args.unshift(parent);
+        return new ZipIterableObservable(args, resultSelector);
+    };
+
+    function asObservable(source) {
+        return function subscribe(o) { return source.subscribe(o); };
+    }
+
+    /**
+     *  Hides the identity of an observable sequence.
+     * @returns {Observable} An observable sequence that hides the identity of the source sequence.
+     */
+    observableProto.asObservable = function () {
+        return new AnonymousObservable(asObservable(this), this);
+    };
+
+    var DematerializeObservable = (function (__super__) {
+        inherits(DematerializeObservable, __super__);
+        function DematerializeObservable(source) {
+            this.source = source;
+            __super__.call(this);
+        }
+
+        DematerializeObservable.prototype.subscribeCore = function (o) {
+            return this.source.subscribe(new DematerializeObserver(o));
+        };
+
+        return DematerializeObservable;
+    }(ObservableBase));
+
+    var DematerializeObserver = (function (__super__) {
+        inherits(DematerializeObserver, __super__);
+
+        function DematerializeObserver(o) {
+            this._o = o;
+            __super__.call(this);
+        }
+
+        DematerializeObserver.prototype.next = function (x) { x.accept(this._o); };
+        DematerializeObserver.prototype.error = function (e) { this._o.onError(e); };
+        DematerializeObserver.prototype.completed = function () { this._o.onCompleted(); };
+
+        return DematerializeObserver;
+    }(AbstractObserver));
+
+    /**
+     * Dematerializes the explicit notification values of an observable sequence as implicit notifications.
+     * @returns {Observable} An observable sequence exhibiting the behavior corresponding to the source sequence's notification values.
+     */
+    observableProto.dematerialize = function () {
+        return new DematerializeObservable(this);
+    };
+
+    var DistinctUntilChangedObservable = (function (__super__) {
+        inherits(DistinctUntilChangedObservable, __super__);
+        function DistinctUntilChangedObservable(source, keyFn, comparer) {
+            this.source = source;
+            this.keyFn = keyFn;
+            this.comparer = comparer;
+            __super__.call(this);
+        }
+
+        DistinctUntilChangedObservable.prototype.subscribeCore = function (o) {
+            return this.source.subscribe(new DistinctUntilChangedObserver(o, this.keyFn, this.comparer));
+        };
+
+        return DistinctUntilChangedObservable;
+    }(ObservableBase));
+
+    var DistinctUntilChangedObserver = (function (__super__) {
+        inherits(DistinctUntilChangedObserver, __super__);
+        function DistinctUntilChangedObserver(o, keyFn, comparer) {
+            this.o = o;
+            this.keyFn = keyFn;
+            this.comparer = comparer;
+            this.hasCurrentKey = false;
+            this.currentKey = null;
+            __super__.call(this);
+        }
+
+        DistinctUntilChangedObserver.prototype.next = function (x) {
+            var key = x, comparerEquals;
+            if (isFunction(this.keyFn)) {
+                key = tryCatch(this.keyFn)(x);
+                if (key === errorObj) { return this.o.onError(key.e); }
+            }
+            if (this.hasCurrentKey) {
+                comparerEquals = tryCatch(this.comparer)(this.currentKey, key);
+                if (comparerEquals === errorObj) { return this.o.onError(comparerEquals.e); }
+            }
+            if (!this.hasCurrentKey || !comparerEquals) {
+                this.hasCurrentKey = true;
+                this.currentKey = key;
+                this.o.onNext(x);
+            }
+        };
+        DistinctUntilChangedObserver.prototype.error = function (e) {
+            this.o.onError(e);
+        };
+        DistinctUntilChangedObserver.prototype.completed = function () {
+            this.o.onCompleted();
+        };
+
+        return DistinctUntilChangedObserver;
+    }(AbstractObserver));
+
+    /**
+    *  Returns an observable sequence that contains only distinct contiguous elements according to the keyFn and the comparer.
+    * @param {Function} [keyFn] A function to compute the comparison key for each element. If not provided, it projects the value.
+    * @param {Function} [comparer] Equality comparer for computed key values. If not provided, defaults to an equality comparer function.
+    * @returns {Observable} An observable sequence only containing the distinct contiguous elements, based on a computed key value, from the source sequence.
+    */
+    observableProto.distinctUntilChanged = function (keyFn, comparer) {
+        comparer || (comparer = defaultComparer);
+        return new DistinctUntilChangedObservable(this, keyFn, comparer);
+    };
+
+    var TapObservable = (function (__super__) {
+        inherits(TapObservable, __super__);
+        function TapObservable(source, observerOrOnNext, onError, onCompleted) {
+            this.source = source;
+            this._oN = observerOrOnNext;
+            this._oE = onError;
+            this._oC = onCompleted;
+            __super__.call(this);
+        }
+
+        TapObservable.prototype.subscribeCore = function (o) {
+            return this.source.subscribe(new InnerObserver(o, this));
+        };
+
+        inherits(InnerObserver, AbstractObserver);
+        function InnerObserver(o, p) {
+            this.o = o;
+            this.t = !p._oN || isFunction(p._oN) ?
+              observerCreate(p._oN || noop, p._oE || noop, p._oC || noop) :
+              p._oN;
+            this.isStopped = false;
+            AbstractObserver.call(this);
+        }
+        InnerObserver.prototype.next = function (x) {
+            var res = tryCatch(this.t.onNext).call(this.t, x);
+            if (res === errorObj) { this.o.onError(res.e); }
+            this.o.onNext(x);
+        };
+        InnerObserver.prototype.error = function (err) {
+            var res = tryCatch(this.t.onError).call(this.t, err);
+            if (res === errorObj) { return this.o.onError(res.e); }
+            this.o.onError(err);
+        };
+        InnerObserver.prototype.completed = function () {
+            var res = tryCatch(this.t.onCompleted).call(this.t);
+            if (res === errorObj) { return this.o.onError(res.e); }
+            this.o.onCompleted();
+        };
+
+        return TapObservable;
+    }(ObservableBase));
+
+    /**
+    *  Invokes an action for each element in the observable sequence and invokes an action upon graceful or exceptional termination of the observable sequence.
+    *  This method can be used for debugging, logging, etc. of query behavior by intercepting the message stream to run arbitrary actions for messages on the pipeline.
+    * @param {Function | Observer} observerOrOnNext Action to invoke for each element in the observable sequence or an o.
+    * @param {Function} [onError]  Action to invoke upon exceptional termination of the observable sequence. Used if only the observerOrOnNext parameter is also a function.
+    * @param {Function} [onCompleted]  Action to invoke upon graceful termination of the observable sequence. Used if only the observerOrOnNext parameter is also a function.
+    * @returns {Observable} The source sequence with the side-effecting behavior applied.
+    */
+    observableProto['do'] = observableProto.tap = observableProto.doAction = function (observerOrOnNext, onError, onCompleted) {
+        return new TapObservable(this, observerOrOnNext, onError, onCompleted);
+    };
+
+    /**
+    *  Invokes an action for each element in the observable sequence.
+    *  This method can be used for debugging, logging, etc. of query behavior by intercepting the message stream to run arbitrary actions for messages on the pipeline.
+    * @param {Function} onNext Action to invoke for each element in the observable sequence.
+    * @param {Any} [thisArg] Object to use as this when executing callback.
+    * @returns {Observable} The source sequence with the side-effecting behavior applied.
+    */
+    observableProto.doOnNext = observableProto.tapOnNext = function (onNext, thisArg) {
+        return this.tap(typeof thisArg !== 'undefined' ? function (x) { onNext.call(thisArg, x); } : onNext);
+    };
+
+    /**
+    *  Invokes an action upon exceptional termination of the observable sequence.
+    *  This method can be used for debugging, logging, etc. of query behavior by intercepting the message stream to run arbitrary actions for messages on the pipeline.
+    * @param {Function} onError Action to invoke upon exceptional termination of the observable sequence.
+    * @param {Any} [thisArg] Object to use as this when executing callback.
+    * @returns {Observable} The source sequence with the side-effecting behavior applied.
+    */
+    observableProto.doOnError = observableProto.tapOnError = function (onError, thisArg) {
+        return this.tap(noop, typeof thisArg !== 'undefined' ? function (e) { onError.call(thisArg, e); } : onError);
+    };
+
+    /**
+    *  Invokes an action upon graceful termination of the observable sequence.
+    *  This method can be used for debugging, logging, etc. of query behavior by intercepting the message stream to run arbitrary actions for messages on the pipeline.
+    * @param {Function} onCompleted Action to invoke upon graceful termination of the observable sequence.
+    * @param {Any} [thisArg] Object to use as this when executing callback.
+    * @returns {Observable} The source sequence with the side-effecting behavior applied.
+    */
+    observableProto.doOnCompleted = observableProto.tapOnCompleted = function (onCompleted, thisArg) {
+        return this.tap(noop, null, typeof thisArg !== 'undefined' ? function () { onCompleted.call(thisArg); } : onCompleted);
+    };
+
+    var FinallyObservable = (function (__super__) {
+        inherits(FinallyObservable, __super__);
+        function FinallyObservable(source, fn, thisArg) {
+            this.source = source;
+            this._fn = bindCallback(fn, thisArg, 0);
+            __super__.call(this);
+        }
+
+        FinallyObservable.prototype.subscribeCore = function (o) {
+            var d = tryCatch(this.source.subscribe).call(this.source, o);
+            if (d === errorObj) {
+                this._fn();
+                thrower(d.e);
+            }
+
+            return new FinallyDisposable(d, this._fn);
+        };
+
+        function FinallyDisposable(s, fn) {
+            this.isDisposed = false;
+            this._s = s;
+            this._fn = fn;
+        }
+        FinallyDisposable.prototype.dispose = function () {
+            if (!this.isDisposed) {
+                var res = tryCatch(this._s.dispose).call(this._s);
+                this._fn();
+                res === errorObj && thrower(res.e);
+            }
+        };
+
+        return FinallyObservable;
+
+    }(ObservableBase));
+
+    /**
+     *  Invokes a specified action after the source observable sequence terminates gracefully or exceptionally.
+     * @param {Function} finallyAction Action to invoke after the source observable sequence terminates.
+     * @returns {Observable} Source sequence with the action-invoking termination behavior applied.
+     */
+    observableProto['finally'] = function (action, thisArg) {
+        return new FinallyObservable(this, action, thisArg);
+    };
+
+    var IgnoreElementsObservable = (function (__super__) {
+        inherits(IgnoreElementsObservable, __super__);
+
+        function IgnoreElementsObservable(source) {
+            this.source = source;
+            __super__.call(this);
+        }
+
+        IgnoreElementsObservable.prototype.subscribeCore = function (o) {
+            return this.source.subscribe(new InnerObserver(o));
+        };
+
+        function InnerObserver(o) {
+            this.o = o;
+            this.isStopped = false;
+        }
+        InnerObserver.prototype.onNext = noop;
+        InnerObserver.prototype.onError = function (err) {
+            if (!this.isStopped) {
+                this.isStopped = true;
+                this.o.onError(err);
+            }
+        };
+        InnerObserver.prototype.onCompleted = function () {
+            if (!this.isStopped) {
+                this.isStopped = true;
+                this.o.onCompleted();
+            }
+        };
+        InnerObserver.prototype.dispose = function () { this.isStopped = true; };
+        InnerObserver.prototype.fail = function (e) {
+            if (!this.isStopped) {
+                this.isStopped = true;
+                this.observer.onError(e);
+                return true;
+            }
+
+            return false;
+        };
+
+        return IgnoreElementsObservable;
+    }(ObservableBase));
+
+    /**
+     *  Ignores all elements in an observable sequence leaving only the termination messages.
+     * @returns {Observable} An empty observable sequence that signals termination, successful or exceptional, of the source sequence.
+     */
+    observableProto.ignoreElements = function () {
+        return new IgnoreElementsObservable(this);
+    };
+
+    var MaterializeObservable = (function (__super__) {
+        inherits(MaterializeObservable, __super__);
+        function MaterializeObservable(source, fn) {
+            this.source = source;
+            __super__.call(this);
+        }
+
+        MaterializeObservable.prototype.subscribeCore = function (o) {
+            return this.source.subscribe(new MaterializeObserver(o));
+        };
+
+        return MaterializeObservable;
+    }(ObservableBase));
+
+    var MaterializeObserver = (function (__super__) {
+        inherits(MaterializeObserver, __super__);
+
+        function MaterializeObserver(o) {
+            this._o = o;
+            __super__.call(this);
+        }
+
+        MaterializeObserver.prototype.next = function (x) { this._o.onNext(notificationCreateOnNext(x)) };
+        MaterializeObserver.prototype.error = function (e) { this._o.onNext(notificationCreateOnError(e)); this._o.onCompleted(); };
+        MaterializeObserver.prototype.completed = function () { this._o.onNext(notificationCreateOnCompleted()); this._o.onCompleted(); };
+
+        return MaterializeObserver;
+    }(AbstractObserver));
+
+    /**
+     *  Materializes the implicit notifications of an observable sequence as explicit notification values.
+     * @returns {Observable} An observable sequence containing the materialized notification values from the source sequence.
+     */
+    observableProto.materialize = function () {
+        return new MaterializeObservable(this);
+    };
+
+    /**
+     *  Repeats the observable sequence a specified number of times. If the repeat count is not specified, the sequence repeats indefinitely.
+     * @param {Number} [repeatCount]  Number of times to repeat the sequence. If not provided, repeats the sequence indefinitely.
+     * @returns {Observable} The observable sequence producing the elements of the given sequence repeatedly.
+     */
+    observableProto.repeat = function (repeatCount) {
+        return enumerableRepeat(this, repeatCount).concat();
+    };
+
+    /**
+     *  Repeats the source observable sequence the specified number of times or until it successfully terminates. If the retry count is not specified, it retries indefinitely.
+     *  Note if you encounter an error and want it to retry once, then you must use .retry(2);
+     *
+     * @example
+     *  var res = retried = retry.repeat();
+     *  var res = retried = retry.repeat(2);
+     * @param {Number} [retryCount]  Number of times to retry the sequence. If not provided, retry the sequence indefinitely.
+     * @returns {Observable} An observable sequence producing the elements of the given sequence repeatedly until it terminates successfully.
+     */
+    observableProto.retry = function (retryCount) {
+        return enumerableRepeat(this, retryCount).catchError();
+    };
+
+    function repeat(value) {
+        return {
+            '@@iterator': function () {
+                return {
+                    next: function () {
+                        return { done: false, value: value };
+                    }
+                };
+            }
+        };
+    }
+
+    var RetryWhenObservable = (function (__super__) {
+        function createDisposable(state) {
+            return {
+                isDisposed: false,
+                dispose: function () {
+                    if (!this.isDisposed) {
+                        this.isDisposed = true;
+                        state.isDisposed = true;
+                    }
+                }
+            };
+        }
+
+        function RetryWhenObservable(source, notifier) {
+            this.source = source;
+            this._notifier = notifier;
+            __super__.call(this);
+        }
+
+        inherits(RetryWhenObservable, __super__);
+
+        RetryWhenObservable.prototype.subscribeCore = function (o) {
+            var exceptions = new Subject(),
+              notifier = new Subject(),
+              handled = this._notifier(exceptions),
+              notificationDisposable = handled.subscribe(notifier);
+
+            var e = this.source['@@iterator']();
+
+            var state = { isDisposed: false },
+              lastError,
+              subscription = new SerialDisposable();
+            var cancelable = currentThreadScheduler.scheduleRecursive(null, function (_, recurse) {
+                if (state.isDisposed) { return; }
+                var currentItem = e.next();
+
+                if (currentItem.done) {
+                    if (lastError) {
+                        o.onError(lastError);
+                    } else {
+                        o.onCompleted();
+                    }
+                    return;
+                }
+
+                // Check if promise
+                var currentValue = currentItem.value;
+                isPromise(currentValue) && (currentValue = observableFromPromise(currentValue));
+
+                var outer = new SingleAssignmentDisposable();
+                var inner = new SingleAssignmentDisposable();
+                subscription.setDisposable(new BinaryDisposable(inner, outer));
+                outer.setDisposable(currentValue.subscribe(
+                  function (x) { o.onNext(x); },
+                  function (exn) {
+                      inner.setDisposable(notifier.subscribe(recurse, function (ex) {
+                          o.onError(ex);
+                      }, function () {
+                          o.onCompleted();
+                      }));
+
+                      exceptions.onNext(exn);
+                      outer.dispose();
+                  },
+                  function () { o.onCompleted(); }));
+            });
+
+            return new NAryDisposable([notificationDisposable, subscription, cancelable, createDisposable(state)]);
+        };
+
+        return RetryWhenObservable;
+    }(ObservableBase));
+
+    observableProto.retryWhen = function (notifier) {
+        return new RetryWhenObservable(repeat(this), notifier);
+    };
+
+    function repeat(value) {
+        return {
+            '@@iterator': function () {
+                return {
+                    next: function () {
+                        return { done: false, value: value };
+                    }
+                };
+            }
+        };
+    }
+
+    var RepeatWhenObservable = (function (__super__) {
+        function createDisposable(state) {
+            return {
+                isDisposed: false,
+                dispose: function () {
+                    if (!this.isDisposed) {
+                        this.isDisposed = true;
+                        state.isDisposed = true;
+                    }
+                }
+            };
+        }
+
+        function RepeatWhenObservable(source, notifier) {
+            this.source = source;
+            this._notifier = notifier;
+            __super__.call(this);
+        }
+
+        inherits(RepeatWhenObservable, __super__);
+
+        RepeatWhenObservable.prototype.subscribeCore = function (o) {
+            var completions = new Subject(),
+              notifier = new Subject(),
+              handled = this._notifier(completions),
+              notificationDisposable = handled.subscribe(notifier);
+
+            var e = this.source['@@iterator']();
+
+            var state = { isDisposed: false },
+              lastError,
+              subscription = new SerialDisposable();
+            var cancelable = currentThreadScheduler.scheduleRecursive(null, function (_, recurse) {
+                if (state.isDisposed) { return; }
+                var currentItem = e.next();
+
+                if (currentItem.done) {
+                    if (lastError) {
+                        o.onError(lastError);
+                    } else {
+                        o.onCompleted();
+                    }
+                    return;
+                }
+
+                // Check if promise
+                var currentValue = currentItem.value;
+                isPromise(currentValue) && (currentValue = observableFromPromise(currentValue));
+
+                var outer = new SingleAssignmentDisposable();
+                var inner = new SingleAssignmentDisposable();
+                subscription.setDisposable(new BinaryDisposable(inner, outer));
+                outer.setDisposable(currentValue.subscribe(
+                  function (x) { o.onNext(x); },
+                  function (exn) { o.onError(exn); },
+                  function () {
+                      inner.setDisposable(notifier.subscribe(recurse, function (ex) {
+                          o.onError(ex);
+                      }, function () {
+                          o.onCompleted();
+                      }));
+
+                      completions.onNext(null);
+                      outer.dispose();
+                  }));
+            });
+
+            return new NAryDisposable([notificationDisposable, subscription, cancelable, createDisposable(state)]);
+        };
+
+        return RepeatWhenObservable;
+    }(ObservableBase));
+
+    observableProto.repeatWhen = function (notifier) {
+        return new RepeatWhenObservable(repeat(this), notifier);
+    };
+
+    var ScanObservable = (function (__super__) {
+        inherits(ScanObservable, __super__);
+        function ScanObservable(source, accumulator, hasSeed, seed) {
+            this.source = source;
+            this.accumulator = accumulator;
+            this.hasSeed = hasSeed;
+            this.seed = seed;
+            __super__.call(this);
+        }
+
+        ScanObservable.prototype.subscribeCore = function (o) {
+            return this.source.subscribe(new ScanObserver(o, this));
+        };
+
+        return ScanObservable;
+    }(ObservableBase));
+
+    var ScanObserver = (function (__super__) {
+        inherits(ScanObserver, __super__);
+        function ScanObserver(o, parent) {
+            this._o = o;
+            this._p = parent;
+            this._fn = parent.accumulator;
+            this._hs = parent.hasSeed;
+            this._s = parent.seed;
+            this._ha = false;
+            this._a = null;
+            this._hv = false;
+            this._i = 0;
+            __super__.call(this);
+        }
+
+        ScanObserver.prototype.next = function (x) {
+            !this._hv && (this._hv = true);
+            if (this._ha) {
+                this._a = tryCatch(this._fn)(this._a, x, this._i, this._p);
+            } else {
+                this._a = this._hs ? tryCatch(this._fn)(this._s, x, this._i, this._p) : x;
+                this._ha = true;
+            }
+            if (this._a === errorObj) { return this._o.onError(this._a.e); }
+            this._o.onNext(this._a);
+            this._i++;
+        };
+
+        ScanObserver.prototype.error = function (e) {
+            this._o.onError(e);
+        };
+
+        ScanObserver.prototype.completed = function () {
+            !this._hv && this._hs && this._o.onNext(this._s);
+            this._o.onCompleted();
+        };
+
+        return ScanObserver;
+    }(AbstractObserver));
+
+    /**
+    *  Applies an accumulator function over an observable sequence and returns each intermediate result. The optional seed value is used as the initial accumulator value.
+    *  For aggregation behavior with no intermediate results, see Observable.aggregate.
+    * @param {Mixed} [seed] The initial accumulator value.
+    * @param {Function} accumulator An accumulator function to be invoked on each element.
+    * @returns {Observable} An observable sequence containing the accumulated values.
+    */
+    observableProto.scan = function () {
+        var hasSeed = false, seed, accumulator = arguments[0];
+        if (arguments.length === 2) {
+            hasSeed = true;
+            seed = arguments[1];
+        }
+        return new ScanObservable(this, accumulator, hasSeed, seed);
+    };
+
+    var SkipLastObservable = (function (__super__) {
+        inherits(SkipLastObservable, __super__);
+        function SkipLastObservable(source, c) {
+            this.source = source;
+            this._c = c;
+            __super__.call(this);
+        }
+
+        SkipLastObservable.prototype.subscribeCore = function (o) {
+            return this.source.subscribe(new SkipLastObserver(o, this._c));
+        };
+
+        return SkipLastObservable;
+    }(ObservableBase));
+
+    var SkipLastObserver = (function (__super__) {
+        inherits(SkipLastObserver, __super__);
+        function SkipLastObserver(o, c) {
+            this._o = o;
+            this._c = c;
+            this._q = [];
+            __super__.call(this);
+        }
+
+        SkipLastObserver.prototype.next = function (x) {
+            this._q.push(x);
+            this._q.length > this._c && this._o.onNext(this._q.shift());
+        };
+
+        SkipLastObserver.prototype.error = function (e) {
+            this._o.onError(e);
+        };
+
+        SkipLastObserver.prototype.completed = function () {
+            this._o.onCompleted();
+        };
+
+        return SkipLastObserver;
+    }(AbstractObserver));
+
+    /**
+     *  Bypasses a specified number of elements at the end of an observable sequence.
+     * @description
+     *  This operator accumulates a queue with a length enough to store the first `count` elements. As more elements are
+     *  received, elements are taken from the front of the queue and produced on the result sequence. This causes elements to be delayed.
+     * @param count Number of elements to bypass at the end of the source sequence.
+     * @returns {Observable} An observable sequence containing the source sequence elements except for the bypassed ones at the end.
+     */
+    observableProto.skipLast = function (count) {
+        if (count < 0) { throw new ArgumentOutOfRangeError(); }
+        return new SkipLastObservable(this, count);
+    };
+
+    /**
+     *  Prepends a sequence of values to an observable sequence with an optional scheduler and an argument list of values to prepend.
+     *  @example
+     *  var res = source.startWith(1, 2, 3);
+     *  var res = source.startWith(Rx.Scheduler.timeout, 1, 2, 3);
+     * @param {Arguments} args The specified values to prepend to the observable sequence
+     * @returns {Observable} The source sequence prepended with the specified values.
+     */
+    observableProto.startWith = function () {
+        var values, scheduler, start = 0;
+        if (!!arguments.length && isScheduler(arguments[0])) {
+            scheduler = arguments[0];
+            start = 1;
+        } else {
+            scheduler = immediateScheduler;
+        }
+        for (var args = [], i = start, len = arguments.length; i < len; i++) { args.push(arguments[i]); }
+        return observableConcat.apply(null, [observableFromArray(args, scheduler), this]);
+    };
+
+    var TakeLastObserver = (function (__super__) {
+        inherits(TakeLastObserver, __super__);
+        function TakeLastObserver(o, c) {
+            this._o = o;
+            this._c = c;
+            this._q = [];
+            __super__.call(this);
+        }
+
+        TakeLastObserver.prototype.next = function (x) {
+            this._q.push(x);
+            this._q.length > this._c && this._q.shift();
+        };
+
+        TakeLastObserver.prototype.error = function (e) {
+            this._o.onError(e);
+        };
+
+        TakeLastObserver.prototype.completed = function () {
+            while (this._q.length > 0) { this._o.onNext(this._q.shift()); }
+            this._o.onCompleted();
+        };
+
+        return TakeLastObserver;
+    }(AbstractObserver));
+
+    /**
+     *  Returns a specified number of contiguous elements from the end of an observable sequence.
+     * @description
+     *  This operator accumulates a buffer with a length enough to store elements count elements. Upon completion of
+     *  the source sequence, this buffer is drained on the result sequence. This causes the elements to be delayed.
+     * @param {Number} count Number of elements to take from the end of the source sequence.
+     * @returns {Observable} An observable sequence containing the specified number of elements from the end of the source sequence.
+     */
+    observableProto.takeLast = function (count) {
+        if (count < 0) { throw new ArgumentOutOfRangeError(); }
+        var source = this;
+        return new AnonymousObservable(function (o) {
+            return source.subscribe(new TakeLastObserver(o, count));
+        }, source);
+    };
+
+    observableProto.flatMapConcat = observableProto.concatMap = function (selector, resultSelector, thisArg) {
+        return new FlatMapObservable(this, selector, resultSelector, thisArg).merge(1);
+    };
+    var MapObservable = (function (__super__) {
+        inherits(MapObservable, __super__);
+
+        function MapObservable(source, selector, thisArg) {
+            this.source = source;
+            this.selector = bindCallback(selector, thisArg, 3);
+            __super__.call(this);
+        }
+
+        function innerMap(selector, self) {
+            return function (x, i, o) { return selector.call(this, self.selector(x, i, o), i, o); };
+        }
+
+        MapObservable.prototype.internalMap = function (selector, thisArg) {
+            return new MapObservable(this.source, innerMap(selector, this), thisArg);
+        };
+
+        MapObservable.prototype.subscribeCore = function (o) {
+            return this.source.subscribe(new InnerObserver(o, this.selector, this));
+        };
+
+        inherits(InnerObserver, AbstractObserver);
+        function InnerObserver(o, selector, source) {
+            this.o = o;
+            this.selector = selector;
+            this.source = source;
+            this.i = 0;
+            AbstractObserver.call(this);
+        }
+
+        InnerObserver.prototype.next = function (x) {
+            var result = tryCatch(this.selector)(x, this.i++, this.source);
+            if (result === errorObj) { return this.o.onError(result.e); }
+            this.o.onNext(result);
+        };
+
+        InnerObserver.prototype.error = function (e) {
+            this.o.onError(e);
+        };
+
+        InnerObserver.prototype.completed = function () {
+            this.o.onCompleted();
+        };
+
+        return MapObservable;
+
+    }(ObservableBase));
+
+    /**
+    * Projects each element of an observable sequence into a new form by incorporating the element's index.
+    * @param {Function} selector A transform function to apply to each source element; the second parameter of the function represents the index of the source element.
+    * @param {Any} [thisArg] Object to use as this when executing callback.
+    * @returns {Observable} An observable sequence whose elements are the result of invoking the transform function on each element of source.
+    */
+    observableProto.map = observableProto.select = function (selector, thisArg) {
+        var selectorFn = typeof selector === 'function' ? selector : function () { return selector; };
+        return this instanceof MapObservable ?
+          this.internalMap(selectorFn, thisArg) :
+          new MapObservable(this, selectorFn, thisArg);
+    };
+
+    function plucker(args, len) {
+        return function mapper(x) {
+            var currentProp = x;
+            for (var i = 0; i < len; i++) {
+                var p = currentProp[args[i]];
+                if (typeof p !== 'undefined') {
+                    currentProp = p;
+                } else {
+                    return undefined;
+                }
+            }
+            return currentProp;
+        };
+    }
+
+    /**
+     * Retrieves the value of a specified nested property from all elements in
+     * the Observable sequence.
+     * @param {Arguments} arguments The nested properties to pluck.
+     * @returns {Observable} Returns a new Observable sequence of property values.
+     */
+    observableProto.pluck = function () {
+        var len = arguments.length, args = new Array(len);
+        if (len === 0) { throw new Error('List of properties cannot be empty.'); }
+        for (var i = 0; i < len; i++) { args[i] = arguments[i]; }
+        return this.map(plucker(args, len));
+    };
+
+    observableProto.flatMap = observableProto.selectMany = observableProto.mergeMap = function (selector, resultSelector, thisArg) {
+        return new FlatMapObservable(this, selector, resultSelector, thisArg).mergeAll();
+    };
+
+    observableProto.flatMapLatest = observableProto.switchMap = function (selector, resultSelector, thisArg) {
+        return new FlatMapObservable(this, selector, resultSelector, thisArg).switchLatest();
+    };
+
+    var SkipObservable = (function (__super__) {
+        inherits(SkipObservable, __super__);
+        function SkipObservable(source, count) {
+            this.source = source;
+            this._count = count;
+            __super__.call(this);
+        }
+
+        SkipObservable.prototype.subscribeCore = function (o) {
+            return this.source.subscribe(new SkipObserver(o, this._count));
+        };
+
+        function SkipObserver(o, c) {
+            this._o = o;
+            this._r = c;
+            AbstractObserver.call(this);
+        }
+
+        inherits(SkipObserver, AbstractObserver);
+
+        SkipObserver.prototype.next = function (x) {
+            if (this._r <= 0) {
+                this._o.onNext(x);
+            } else {
+                this._r--;
+            }
+        };
+        SkipObserver.prototype.error = function (e) { this._o.onError(e); };
+        SkipObserver.prototype.completed = function () { this._o.onCompleted(); };
+
+        return SkipObservable;
+    }(ObservableBase));
+
+    /**
+     * Bypasses a specified number of elements in an observable sequence and then returns the remaining elements.
+     * @param {Number} count The number of elements to skip before returning the remaining elements.
+     * @returns {Observable} An observable sequence that contains the elements that occur after the specified index in the input sequence.
+     */
+    observableProto.skip = function (count) {
+        if (count < 0) { throw new ArgumentOutOfRangeError(); }
+        return new SkipObservable(this, count);
+    };
+
+    var SkipWhileObservable = (function (__super__) {
+        inherits(SkipWhileObservable, __super__);
+        function SkipWhileObservable(source, fn) {
+            this.source = source;
+            this._fn = fn;
+            __super__.call(this);
+        }
+
+        SkipWhileObservable.prototype.subscribeCore = function (o) {
+            return this.source.subscribe(new SkipWhileObserver(o, this));
+        };
+
+        return SkipWhileObservable;
+    }(ObservableBase));
+
+    var SkipWhileObserver = (function (__super__) {
+        inherits(SkipWhileObserver, __super__);
+
+        function SkipWhileObserver(o, p) {
+            this._o = o;
+            this._p = p;
+            this._i = 0;
+            this._r = false;
+            __super__.call(this);
+        }
+
+        SkipWhileObserver.prototype.next = function (x) {
+            if (!this._r) {
+                var res = tryCatch(this._p._fn)(x, this._i++, this._p);
+                if (res === errorObj) { return this._o.onError(res.e); }
+                this._r = !res;
+            }
+            this._r && this._o.onNext(x);
+        };
+        SkipWhileObserver.prototype.error = function (e) { this._o.onError(e); };
+        SkipWhileObserver.prototype.completed = function () { this._o.onCompleted(); };
+
+        return SkipWhileObserver;
+    }(AbstractObserver));
+
+    /**
+     *  Bypasses elements in an observable sequence as long as a specified condition is true and then returns the remaining elements.
+     *  The element's index is used in the logic of the predicate function.
+     *
+     *  var res = source.skipWhile(function (value) { return value < 10; });
+     *  var res = source.skipWhile(function (value, index) { return value < 10 || index < 10; });
+     * @param {Function} predicate A function to test each element for a condition; the second parameter of the function represents the index of the source element.
+     * @param {Any} [thisArg] Object to use as this when executing callback.
+     * @returns {Observable} An observable sequence that contains the elements from the input sequence starting at the first element in the linear series that does not pass the test specified by predicate.
+     */
+    observableProto.skipWhile = function (predicate, thisArg) {
+        var fn = bindCallback(predicate, thisArg, 3);
+        return new SkipWhileObservable(this, fn);
+    };
+
+    var TakeObservable = (function (__super__) {
+        inherits(TakeObservable, __super__);
+        function TakeObservable(source, count) {
+            this.source = source;
+            this._count = count;
+            __super__.call(this);
+        }
+
+        TakeObservable.prototype.subscribeCore = function (o) {
+            return this.source.subscribe(new TakeObserver(o, this._count));
+        };
+
+        function TakeObserver(o, c) {
+            this._o = o;
+            this._c = c;
+            this._r = c;
+            AbstractObserver.call(this);
+        }
+
+        inherits(TakeObserver, AbstractObserver);
+
+        TakeObserver.prototype.next = function (x) {
+            if (this._r-- > 0) {
+                this._o.onNext(x);
+                this._r <= 0 && this._o.onCompleted();
+            }
+        };
+
+        TakeObserver.prototype.error = function (e) { this._o.onError(e); };
+        TakeObserver.prototype.completed = function () { this._o.onCompleted(); };
+
+        return TakeObservable;
+    }(ObservableBase));
+
+    /**
+     *  Returns a specified number of contiguous elements from the start of an observable sequence, using the specified scheduler for the edge case of take(0).
+     * @param {Number} count The number of elements to return.
+     * @param {Scheduler} [scheduler] Scheduler used to produce an OnCompleted message in case <paramref name="count count</paramref> is set to 0.
+     * @returns {Observable} An observable sequence that contains the specified number of elements from the start of the input sequence.
+     */
+    observableProto.take = function (count, scheduler) {
+        if (count < 0) { throw new ArgumentOutOfRangeError(); }
+        if (count === 0) { return observableEmpty(scheduler); }
+        return new TakeObservable(this, count);
+    };
+
+    var TakeWhileObservable = (function (__super__) {
+        inherits(TakeWhileObservable, __super__);
+        function TakeWhileObservable(source, fn) {
+            this.source = source;
+            this._fn = fn;
+            __super__.call(this);
+        }
+
+        TakeWhileObservable.prototype.subscribeCore = function (o) {
+            return this.source.subscribe(new TakeWhileObserver(o, this));
+        };
+
+        return TakeWhileObservable;
+    }(ObservableBase));
+
+    var TakeWhileObserver = (function (__super__) {
+        inherits(TakeWhileObserver, __super__);
+
+        function TakeWhileObserver(o, p) {
+            this._o = o;
+            this._p = p;
+            this._i = 0;
+            this._r = true;
+            __super__.call(this);
+        }
+
+        TakeWhileObserver.prototype.next = function (x) {
+            if (this._r) {
+                this._r = tryCatch(this._p._fn)(x, this._i++, this._p);
+                if (this._r === errorObj) { return this._o.onError(this._r.e); }
+            }
+            if (this._r) {
+                this._o.onNext(x);
+            } else {
+                this._o.onCompleted();
+            }
+        };
+        TakeWhileObserver.prototype.error = function (e) { this._o.onError(e); };
+        TakeWhileObserver.prototype.completed = function () { this._o.onCompleted(); };
+
+        return TakeWhileObserver;
+    }(AbstractObserver));
+
+    /**
+     *  Returns elements from an observable sequence as long as a specified condition is true.
+     *  The element's index is used in the logic of the predicate function.
+     * @param {Function} predicate A function to test each element for a condition; the second parameter of the function represents the index of the source element.
+     * @param {Any} [thisArg] Object to use as this when executing callback.
+     * @returns {Observable} An observable sequence that contains the elements from the input sequence that occur before the element at which the test no longer passes.
+     */
+    observableProto.takeWhile = function (predicate, thisArg) {
+        var fn = bindCallback(predicate, thisArg, 3);
+        return new TakeWhileObservable(this, fn);
+    };
+
+    var FilterObservable = (function (__super__) {
+        inherits(FilterObservable, __super__);
+
+        function FilterObservable(source, predicate, thisArg) {
+            this.source = source;
+            this.predicate = bindCallback(predicate, thisArg, 3);
+            __super__.call(this);
+        }
+
+        FilterObservable.prototype.subscribeCore = function (o) {
+            return this.source.subscribe(new InnerObserver(o, this.predicate, this));
+        };
+
+        function innerPredicate(predicate, self) {
+            return function (x, i, o) { return self.predicate(x, i, o) && predicate.call(this, x, i, o); }
+        }
+
+        FilterObservable.prototype.internalFilter = function (predicate, thisArg) {
+            return new FilterObservable(this.source, innerPredicate(predicate, this), thisArg);
+        };
+
+        inherits(InnerObserver, AbstractObserver);
+        function InnerObserver(o, predicate, source) {
+            this.o = o;
+            this.predicate = predicate;
+            this.source = source;
+            this.i = 0;
+            AbstractObserver.call(this);
+        }
+
+        InnerObserver.prototype.next = function (x) {
+            var shouldYield = tryCatch(this.predicate)(x, this.i++, this.source);
+            if (shouldYield === errorObj) {
+                return this.o.onError(shouldYield.e);
+            }
+            shouldYield && this.o.onNext(x);
+        };
+
+        InnerObserver.prototype.error = function (e) {
+            this.o.onError(e);
+        };
+
+        InnerObserver.prototype.completed = function () {
+            this.o.onCompleted();
+        };
+
+        return FilterObservable;
+
+    }(ObservableBase));
+
+    /**
+    *  Filters the elements of an observable sequence based on a predicate by incorporating the element's index.
+    * @param {Function} predicate A function to test each source element for a condition; the second parameter of the function represents the index of the source element.
+    * @param {Any} [thisArg] Object to use as this when executing callback.
+    * @returns {Observable} An observable sequence that contains elements from the input sequence that satisfy the condition.
+    */
+    observableProto.filter = observableProto.where = function (predicate, thisArg) {
+        return this instanceof FilterObservable ? this.internalFilter(predicate, thisArg) :
+          new FilterObservable(this, predicate, thisArg);
+    };
+
+    function createCbObservable(fn, ctx, selector, args) {
+        var o = new AsyncSubject();
+
+        args.push(createCbHandler(o, ctx, selector));
+        fn.apply(ctx, args);
+
+        return o.asObservable();
+    }
+
+    function createCbHandler(o, ctx, selector) {
+        return function handler() {
+            var len = arguments.length, results = new Array(len);
+            for (var i = 0; i < len; i++) { results[i] = arguments[i]; }
+
+            if (isFunction(selector)) {
+                results = tryCatch(selector).apply(ctx, results);
+                if (results === errorObj) { return o.onError(results.e); }
+                o.onNext(results);
+            } else {
+                if (results.length <= 1) {
+                    o.onNext(results[0]);
+                } else {
+                    o.onNext(results);
+                }
+            }
+
+            o.onCompleted();
+        };
+    }
+
+    /**
+     * Converts a callback function to an observable sequence.
+     *
+     * @param {Function} fn Function with a callback as the last parameter to convert to an Observable sequence.
+     * @param {Mixed} [ctx] The context for the func parameter to be executed.  If not specified, defaults to undefined.
+     * @param {Function} [selector] A selector which takes the arguments from the callback to produce a single item to yield on next.
+     * @returns {Function} A function, when executed with the required parameters minus the callback, produces an Observable sequence with a single value of the arguments to the callback as an array.
+     */
+    Observable.fromCallback = function (fn, ctx, selector) {
+        return function () {
+            typeof ctx === 'undefined' && (ctx = this);
+
+            var len = arguments.length, args = new Array(len)
+            for (var i = 0; i < len; i++) { args[i] = arguments[i]; }
+            return createCbObservable(fn, ctx, selector, args);
+        };
+    };
+
+    function createNodeObservable(fn, ctx, selector, args) {
+        var o = new AsyncSubject();
+
+        args.push(createNodeHandler(o, ctx, selector));
+        fn.apply(ctx, args);
+
+        return o.asObservable();
+    }
+
+    function createNodeHandler(o, ctx, selector) {
+        return function handler() {
+            var err = arguments[0];
+            if (err) { return o.onError(err); }
+
+            var len = arguments.length, results = [];
+            for (var i = 1; i < len; i++) { results[i - 1] = arguments[i]; }
+
+            if (isFunction(selector)) {
+                var results = tryCatch(selector).apply(ctx, results);
+                if (results === errorObj) { return o.onError(results.e); }
+                o.onNext(results);
+            } else {
+                if (results.length <= 1) {
+                    o.onNext(results[0]);
+                } else {
+                    o.onNext(results);
+                }
+            }
+
+            o.onCompleted();
+        };
+    }
+
+    /**
+     * Converts a Node.js callback style function to an observable sequence.  This must be in function (err, ...) format.
+     * @param {Function} fn The function to call
+     * @param {Mixed} [ctx] The context for the func parameter to be executed.  If not specified, defaults to undefined.
+     * @param {Function} [selector] A selector which takes the arguments from the callback minus the error to produce a single item to yield on next.
+     * @returns {Function} An async function which when applied, returns an observable sequence with the callback arguments as an array.
+     */
+    Observable.fromNodeCallback = function (fn, ctx, selector) {
+        return function () {
+            typeof ctx === 'undefined' && (ctx = this);
+            var len = arguments.length, args = new Array(len);
+            for (var i = 0; i < len; i++) { args[i] = arguments[i]; }
+            return createNodeObservable(fn, ctx, selector, args);
+        };
+    };
+
+    function isNodeList(el) {
+        if (root.StaticNodeList) {
+            // IE8 Specific
+            // instanceof is slower than Object#toString, but Object#toString will not work as intended in IE8
+            return el instanceof root.StaticNodeList || el instanceof root.NodeList;
+        } else {
+            return Object.prototype.toString.call(el) === '[object NodeList]';
+        }
+    }
+
+    function ListenDisposable(e, n, fn) {
+        this._e = e;
+        this._n = n;
+        this._fn = fn;
+        this._e.addEventListener(this._n, this._fn, false);
+        this.isDisposed = false;
+    }
+    ListenDisposable.prototype.dispose = function () {
+        if (!this.isDisposed) {
+            this._e.removeEventListener(this._n, this._fn, false);
+            this.isDisposed = true;
+        }
+    };
+
+    function createEventListener(el, eventName, handler) {
+        var disposables = new CompositeDisposable();
+
+        // Asume NodeList or HTMLCollection
+        var elemToString = Object.prototype.toString.call(el);
+        if (isNodeList(el) || elemToString === '[object HTMLCollection]') {
+            for (var i = 0, len = el.length; i < len; i++) {
+                disposables.add(createEventListener(el.item(i), eventName, handler));
+            }
+        } else if (el) {
+            disposables.add(new ListenDisposable(el, eventName, handler));
+        }
+
+        return disposables;
+    }
+
+    /**
+     * Configuration option to determine whether to use native events only
+     */
+    Rx.config.useNativeEvents = false;
+
+    var EventObservable = (function (__super__) {
+        inherits(EventObservable, __super__);
+        function EventObservable(el, name, fn) {
+            this._el = el;
+            this._n = name;
+            this._fn = fn;
+            __super__.call(this);
+        }
+
+        function createHandler(o, fn) {
+            return function handler() {
+                var results = arguments[0];
+                if (isFunction(fn)) {
+                    results = tryCatch(fn).apply(null, arguments);
+                    if (results === errorObj) { return o.onError(results.e); }
+                }
+                o.onNext(results);
+            };
+        }
+
+        EventObservable.prototype.subscribeCore = function (o) {
+            return createEventListener(
+              this._el,
+              this._n,
+              createHandler(o, this._fn));
+        };
+
+        return EventObservable;
+    }(ObservableBase));
+
+    /**
+     * Creates an observable sequence by adding an event listener to the matching DOMElement or each item in the NodeList.
+     * @param {Object} element The DOMElement or NodeList to attach a listener.
+     * @param {String} eventName The event name to attach the observable sequence.
+     * @param {Function} [selector] A selector which takes the arguments from the event handler to produce a single item to yield on next.
+     * @returns {Observable} An observable sequence of events from the specified element and the specified event.
+     */
+    Observable.fromEvent = function (element, eventName, selector) {
+        // Node.js specific
+        if (element.addListener) {
+            return fromEventPattern(
+              function (h) { element.addListener(eventName, h); },
+              function (h) { element.removeListener(eventName, h); },
+              selector);
+        }
+
+        // Use only if non-native events are allowed
+        if (!Rx.config.useNativeEvents) {
+            // Handles jq, Angular.js, Zepto, Marionette, Ember.js
+            if (typeof element.on === 'function' && typeof element.off === 'function') {
+                return fromEventPattern(
+                  function (h) { element.on(eventName, h); },
+                  function (h) { element.off(eventName, h); },
+                  selector);
+            }
+        }
+
+        return new EventObservable(element, eventName, selector).publish().refCount();
+    };
+
+    var EventPatternObservable = (function (__super__) {
+        inherits(EventPatternObservable, __super__);
+        function EventPatternObservable(add, del, fn) {
+            this._add = add;
+            this._del = del;
+            this._fn = fn;
+            __super__.call(this);
+        }
+
+        function createHandler(o, fn) {
+            return function handler() {
+                var results = arguments[0];
+                if (isFunction(fn)) {
+                    results = tryCatch(fn).apply(null, arguments);
+                    if (results === errorObj) { return o.onError(results.e); }
+                }
+                o.onNext(results);
+            };
+        }
+
+        EventPatternObservable.prototype.subscribeCore = function (o) {
+            var fn = createHandler(o, this._fn);
+            var returnValue = this._add(fn);
+            return new EventPatternDisposable(this._del, fn, returnValue);
+        };
+
+        function EventPatternDisposable(del, fn, ret) {
+            this._del = del;
+            this._fn = fn;
+            this._ret = ret;
+            this.isDisposed = false;
+        }
+
+        EventPatternDisposable.prototype.dispose = function () {
+            if (!this.isDisposed) {
+                isFunction(this._del) && this._del(this._fn, this._ret);
+                this.isDisposed = true;
+            }
+        };
+
+        return EventPatternObservable;
+    }(ObservableBase));
+
+    /**
+     * Creates an observable sequence from an event emitter via an addHandler/removeHandler pair.
+     * @param {Function} addHandler The function to add a handler to the emitter.
+     * @param {Function} [removeHandler] The optional function to remove a handler from an emitter.
+     * @param {Function} [selector] A selector which takes the arguments from the event handler to produce a single item to yield on next.
+     * @returns {Observable} An observable sequence which wraps an event from an event emitter
+     */
+    var fromEventPattern = Observable.fromEventPattern = function (addHandler, removeHandler, selector) {
+        return new EventPatternObservable(addHandler, removeHandler, selector).publish().refCount();
+    };
+
+    var FromPromiseObservable = (function (__super__) {
+        inherits(FromPromiseObservable, __super__);
+        function FromPromiseObservable(p, s) {
+            this._p = p;
+            this._s = s;
+            __super__.call(this);
+        }
+
+        function scheduleNext(s, state) {
+            var o = state[0], data = state[1];
+            o.onNext(data);
+            o.onCompleted();
+        }
+
+        function scheduleError(s, state) {
+            var o = state[0], err = state[1];
+            o.onError(err);
+        }
+
+        FromPromiseObservable.prototype.subscribeCore = function (o) {
+            var sad = new SingleAssignmentDisposable(), self = this, p = this._p;
+
+            if (isFunction(p)) {
+                p = tryCatch(p)();
+                if (p === errorObj) {
+                    o.onError(p.e);
+                    return sad;
+                }
+            }
+
+            p
+              .then(function (data) {
+                  sad.setDisposable(self._s.schedule([o, data], scheduleNext));
+              }, function (err) {
+                  sad.setDisposable(self._s.schedule([o, err], scheduleError));
+              });
+
+            return sad;
+        };
+
+        return FromPromiseObservable;
+    }(ObservableBase));
+
+    /**
+    * Converts a Promise to an Observable sequence
+    * @param {Promise} An ES6 Compliant promise.
+    * @returns {Observable} An Observable sequence which wraps the existing promise success and failure.
+    */
+    var observableFromPromise = Observable.fromPromise = function (promise, scheduler) {
+        scheduler || (scheduler = defaultScheduler);
+        return new FromPromiseObservable(promise, scheduler);
+    };
+
+    /*
+     * Converts an existing observable sequence to an ES6 Compatible Promise
+     * @example
+     * var promise = Rx.Observable.return(42).toPromise(RSVP.Promise);
+     *
+     * // With config
+     * Rx.config.Promise = RSVP.Promise;
+     * var promise = Rx.Observable.return(42).toPromise();
+     * @param {Function} [promiseCtor] The constructor of the promise. If not provided, it looks for it in Rx.config.Promise.
+     * @returns {Promise} An ES6 compatible promise with the last value from the observable sequence.
+     */
+    observableProto.toPromise = function (promiseCtor) {
+        promiseCtor || (promiseCtor = Rx.config.Promise);
+        if (!promiseCtor) { throw new NotSupportedError('Promise type not provided nor in Rx.config.Promise'); }
+        var source = this;
+        return new promiseCtor(function (resolve, reject) {
+            // No cancellation can be done
+            var value;
+            source.subscribe(function (v) {
+                value = v;
+            }, reject, function () {
+                resolve(value);
+            });
+        });
+    };
+
+    /**
+     * Invokes the asynchronous function, surfacing the result through an observable sequence.
+     * @param {Function} functionAsync Asynchronous function which returns a Promise to run.
+     * @returns {Observable} An observable sequence exposing the function's result value, or an exception.
+     */
+    Observable.startAsync = function (functionAsync) {
+        var promise = tryCatch(functionAsync)();
+        if (promise === errorObj) { return observableThrow(promise.e); }
+        return observableFromPromise(promise);
+    };
+
+    var MulticastObservable = (function (__super__) {
+        inherits(MulticastObservable, __super__);
+        function MulticastObservable(source, fn1, fn2) {
+            this.source = source;
+            this._fn1 = fn1;
+            this._fn2 = fn2;
+            __super__.call(this);
+        }
+
+        MulticastObservable.prototype.subscribeCore = function (o) {
+            var connectable = this.source.multicast(this._fn1());
+            return new BinaryDisposable(this._fn2(connectable).subscribe(o), connectable.connect());
+        };
+
+        return MulticastObservable;
+    }(ObservableBase));
+
+    /**
+     * Multicasts the source sequence notifications through an instantiated subject into all uses of the sequence within a selector function. Each
+     * subscription to the resulting sequence causes a separate multicast invocation, exposing the sequence resulting from the selector function's
+     * invocation. For specializations with fixed subject types, see Publish, PublishLast, and Replay.
+     *
+     * @example
+     * 1 - res = source.multicast(observable);
+     * 2 - res = source.multicast(function () { return new Subject(); }, function (x) { return x; });
+     *
+     * @param {Function|Subject} subjectOrSubjectSelector
+     * Factory function to create an intermediate subject through which the source sequence's elements will be multicast to the selector function.
+     * Or:
+     * Subject to push source elements into.
+     *
+     * @param {Function} [selector] Optional selector function which can use the multicasted source sequence subject to the policies enforced by the created subject. Specified only if <paramref name="subjectOrSubjectSelector" is a factory function.
+     * @returns {Observable} An observable sequence that contains the elements of a sequence produced by multicasting the source sequence within a selector function.
+     */
+    observableProto.multicast = function (subjectOrSubjectSelector, selector) {
+        return isFunction(subjectOrSubjectSelector) ?
+          new MulticastObservable(this, subjectOrSubjectSelector, selector) :
+          new ConnectableObservable(this, subjectOrSubjectSelector);
+    };
+
+    /**
+     * Returns an observable sequence that is the result of invoking the selector on a connectable observable sequence that shares a single subscription to the underlying sequence.
+     * This operator is a specialization of Multicast using a regular Subject.
+     *
+     * @example
+     * var resres = source.publish();
+     * var res = source.publish(function (x) { return x; });
+     *
+     * @param {Function} [selector] Selector function which can use the multicasted source sequence as many times as needed, without causing multiple subscriptions to the source sequence. Subscribers to the given source will receive all notifications of the source from the time of the subscription on.
+     * @returns {Observable} An observable sequence that contains the elements of a sequence produced by multicasting the source sequence within a selector function.
+     */
+    observableProto.publish = function (selector) {
+        return selector && isFunction(selector) ?
+          this.multicast(function () { return new Subject(); }, selector) :
+          this.multicast(new Subject());
+    };
+
+    /**
+     * Returns an observable sequence that shares a single subscription to the underlying sequence.
+     * This operator is a specialization of publish which creates a subscription when the number of observers goes from zero to one, then shares that subscription with all subsequent observers until the number of observers returns to zero, at which point the subscription is disposed.
+     * @returns {Observable} An observable sequence that contains the elements of a sequence produced by multicasting the source sequence.
+     */
+    observableProto.share = function () {
+        return this.publish().refCount();
+    };
+
+    /**
+     * Returns an observable sequence that is the result of invoking the selector on a connectable observable sequence that shares a single subscription to the underlying sequence containing only the last notification.
+     * This operator is a specialization of Multicast using a AsyncSubject.
+     *
+     * @example
+     * var res = source.publishLast();
+     * var res = source.publishLast(function (x) { return x; });
+     *
+     * @param selector [Optional] Selector function which can use the multicasted source sequence as many times as needed, without causing multiple subscriptions to the source sequence. Subscribers to the given source will only receive the last notification of the source.
+     * @returns {Observable} An observable sequence that contains the elements of a sequence produced by multicasting the source sequence within a selector function.
+     */
+    observableProto.publishLast = function (selector) {
+        return selector && isFunction(selector) ?
+          this.multicast(function () { return new AsyncSubject(); }, selector) :
+          this.multicast(new AsyncSubject());
+    };
+
+    /**
+     * Returns an observable sequence that is the result of invoking the selector on a connectable observable sequence that shares a single subscription to the underlying sequence and starts with initialValue.
+     * This operator is a specialization of Multicast using a BehaviorSubject.
+     *
+     * @example
+     * var res = source.publishValue(42);
+     * var res = source.publishValue(function (x) { return x.select(function (y) { return y * y; }) }, 42);
+     *
+     * @param {Function} [selector] Optional selector function which can use the multicasted source sequence as many times as needed, without causing multiple subscriptions to the source sequence. Subscribers to the given source will receive immediately receive the initial value, followed by all notifications of the source from the time of the subscription on.
+     * @param {Mixed} initialValue Initial value received by observers upon subscription.
+     * @returns {Observable} An observable sequence that contains the elements of a sequence produced by multicasting the source sequence within a selector function.
+     */
+    observableProto.publishValue = function (initialValueOrSelector, initialValue) {
+        return arguments.length === 2 ?
+          this.multicast(function () {
+              return new BehaviorSubject(initialValue);
+          }, initialValueOrSelector) :
+          this.multicast(new BehaviorSubject(initialValueOrSelector));
+    };
+
+    /**
+     * Returns an observable sequence that shares a single subscription to the underlying sequence and starts with an initialValue.
+     * This operator is a specialization of publishValue which creates a subscription when the number of observers goes from zero to one, then shares that subscription with all subsequent observers until the number of observers returns to zero, at which point the subscription is disposed.
+     * @param {Mixed} initialValue Initial value received by observers upon subscription.
+     * @returns {Observable} An observable sequence that contains the elements of a sequence produced by multicasting the source sequence.
+     */
+    observableProto.shareValue = function (initialValue) {
+        return this.publishValue(initialValue).refCount();
+    };
+
+    /**
+     * Returns an observable sequence that is the result of invoking the selector on a connectable observable sequence that shares a single subscription to the underlying sequence replaying notifications subject to a maximum time length for the replay buffer.
+     * This operator is a specialization of Multicast using a ReplaySubject.
+     *
+     * @example
+     * var res = source.replay(null, 3);
+     * var res = source.replay(null, 3, 500);
+     * var res = source.replay(null, 3, 500, scheduler);
+     * var res = source.replay(function (x) { return x.take(6).repeat(); }, 3, 500, scheduler);
+     *
+     * @param selector [Optional] Selector function which can use the multicasted source sequence as many times as needed, without causing multiple subscriptions to the source sequence. Subscribers to the given source will receive all the notifications of the source subject to the specified replay buffer trimming policy.
+     * @param bufferSize [Optional] Maximum element count of the replay buffer.
+     * @param windowSize [Optional] Maximum time length of the replay buffer.
+     * @param scheduler [Optional] Scheduler where connected observers within the selector function will be invoked on.
+     * @returns {Observable} An observable sequence that contains the elements of a sequence produced by multicasting the source sequence within a selector function.
+     */
+    observableProto.replay = function (selector, bufferSize, windowSize, scheduler) {
+        return selector && isFunction(selector) ?
+          this.multicast(function () { return new ReplaySubject(bufferSize, windowSize, scheduler); }, selector) :
+          this.multicast(new ReplaySubject(bufferSize, windowSize, scheduler));
+    };
+
+    /**
+     * Returns an observable sequence that shares a single subscription to the underlying sequence replaying notifications subject to a maximum time length for the replay buffer.
+     * This operator is a specialization of replay which creates a subscription when the number of observers goes from zero to one, then shares that subscription with all subsequent observers until the number of observers returns to zero, at which point the subscription is disposed.
+     *
+     * @example
+     * var res = source.shareReplay(3);
+     * var res = source.shareReplay(3, 500);
+     * var res = source.shareReplay(3, 500, scheduler);
+     *
+  
+     * @param bufferSize [Optional] Maximum element count of the replay buffer.
+     * @param window [Optional] Maximum time length of the replay buffer.
+     * @param scheduler [Optional] Scheduler where connected observers within the selector function will be invoked on.
+     * @returns {Observable} An observable sequence that contains the elements of a sequence produced by multicasting the source sequence.
+     */
+    observableProto.shareReplay = function (bufferSize, windowSize, scheduler) {
+        return this.replay(null, bufferSize, windowSize, scheduler).refCount();
+    };
+
+    var RefCountObservable = (function (__super__) {
+        inherits(RefCountObservable, __super__);
+        function RefCountObservable(source) {
+            this.source = source;
+            this._count = 0;
+            this._connectableSubscription = null;
+            __super__.call(this);
+        }
+
+        RefCountObservable.prototype.subscribeCore = function (o) {
+            var subscription = this.source.subscribe(o);
+            ++this._count === 1 && (this._connectableSubscription = this.source.connect());
+            return new RefCountDisposable(this, subscription);
+        };
+
+        function RefCountDisposable(p, s) {
+            this._p = p;
+            this._s = s;
+            this.isDisposed = false;
+        }
+
+        RefCountDisposable.prototype.dispose = function () {
+            if (!this.isDisposed) {
+                this.isDisposed = true;
+                this._s.dispose();
+                --this._p._count === 0 && this._p._connectableSubscription.dispose();
+            }
+        };
+
+        return RefCountObservable;
+    }(ObservableBase));
+
+    var ConnectableObservable = Rx.ConnectableObservable = (function (__super__) {
+        inherits(ConnectableObservable, __super__);
+        function ConnectableObservable(source, subject) {
+            this.source = source;
+            this._connection = null;
+            this._source = source.asObservable();
+            this._subject = subject;
+            __super__.call(this);
+        }
+
+        function ConnectDisposable(parent, subscription) {
+            this._p = parent;
+            this._s = subscription;
+        }
+
+        ConnectDisposable.prototype.dispose = function () {
+            if (this._s) {
+                this._s.dispose();
+                this._s = null;
+                this._p._connection = null;
+            }
+        };
+
+        ConnectableObservable.prototype.connect = function () {
+            if (!this._connection) {
+                if (this._subject.isStopped) {
+                    return disposableEmpty;
+                }
+                var subscription = this._source.subscribe(this._subject);
+                this._connection = new ConnectDisposable(this, subscription);
+            }
+            return this._connection;
+        };
+
+        ConnectableObservable.prototype._subscribe = function (o) {
+            return this._subject.subscribe(o);
+        };
+
+        ConnectableObservable.prototype.refCount = function () {
+            return new RefCountObservable(this);
+        };
+
+        return ConnectableObservable;
+    }(Observable));
+
+    var TimerObservable = (function (__super__) {
+        inherits(TimerObservable, __super__);
+        function TimerObservable(dt, s) {
+            this._dt = dt;
+            this._s = s;
+            __super__.call(this);
+        }
+
+        TimerObservable.prototype.subscribeCore = function (o) {
+            return this._s.scheduleFuture(o, this._dt, scheduleMethod);
+        };
+
+        function scheduleMethod(s, o) {
+            o.onNext(0);
+            o.onCompleted();
+        }
+
+        return TimerObservable;
+    }(ObservableBase));
+
+    function _observableTimer(dueTime, scheduler) {
+        return new TimerObservable(dueTime, scheduler);
+    }
+
+    function observableTimerDateAndPeriod(dueTime, period, scheduler) {
+        return new AnonymousObservable(function (observer) {
+            var d = dueTime, p = normalizeTime(period);
+            return scheduler.scheduleRecursiveFuture(0, d, function (count, self) {
+                if (p > 0) {
+                    var now = scheduler.now();
+                    d = new Date(d.getTime() + p);
+                    d.getTime() <= now && (d = new Date(now + p));
+                }
+                observer.onNext(count);
+                self(count + 1, new Date(d));
+            });
+        });
+    }
+
+    function observableTimerTimeSpanAndPeriod(dueTime, period, scheduler) {
+        return dueTime === period ?
+          new AnonymousObservable(function (observer) {
+              return scheduler.schedulePeriodic(0, period, function (count) {
+                  observer.onNext(count);
+                  return count + 1;
+              });
+          }) :
+          observableDefer(function () {
+              return observableTimerDateAndPeriod(new Date(scheduler.now() + dueTime), period, scheduler);
+          });
+    }
+
+    /**
+     *  Returns an observable sequence that produces a value after each period.
+     *
+     * @example
+     *  1 - res = Rx.Observable.interval(1000);
+     *  2 - res = Rx.Observable.interval(1000, Rx.Scheduler.timeout);
+     *
+     * @param {Number} period Period for producing the values in the resulting sequence (specified as an integer denoting milliseconds).
+     * @param {Scheduler} [scheduler] Scheduler to run the timer on. If not specified, Rx.Scheduler.timeout is used.
+     * @returns {Observable} An observable sequence that produces a value after each period.
+     */
+    var observableinterval = Observable.interval = function (period, scheduler) {
+        return observableTimerTimeSpanAndPeriod(period, period, isScheduler(scheduler) ? scheduler : defaultScheduler);
+    };
+
+    /**
+     *  Returns an observable sequence that produces a value after dueTime has elapsed and then after each period.
+     * @param {Number} dueTime Absolute (specified as a Date object) or relative time (specified as an integer denoting milliseconds) at which to produce the first value.
+     * @param {Mixed} [periodOrScheduler]  Period to produce subsequent values (specified as an integer denoting milliseconds), or the scheduler to run the timer on. If not specified, the resulting timer is not recurring.
+     * @param {Scheduler} [scheduler]  Scheduler to run the timer on. If not specified, the timeout scheduler is used.
+     * @returns {Observable} An observable sequence that produces a value after due time has elapsed and then each period.
+     */
+    var observableTimer = Observable.timer = function (dueTime, periodOrScheduler, scheduler) {
+        var period;
+        isScheduler(scheduler) || (scheduler = defaultScheduler);
+        if (periodOrScheduler != null && typeof periodOrScheduler === 'number') {
+            period = periodOrScheduler;
+        } else if (isScheduler(periodOrScheduler)) {
+            scheduler = periodOrScheduler;
+        }
+        if ((dueTime instanceof Date || typeof dueTime === 'number') && period === undefined) {
+            return _observableTimer(dueTime, scheduler);
+        }
+        if (dueTime instanceof Date && period !== undefined) {
+            return observableTimerDateAndPeriod(dueTime, periodOrScheduler, scheduler);
+        }
+        return observableTimerTimeSpanAndPeriod(dueTime, period, scheduler);
+    };
+
+    function observableDelayRelative(source, dueTime, scheduler) {
+        return new AnonymousObservable(function (o) {
+            var active = false,
+              cancelable = new SerialDisposable(),
+              exception = null,
+              q = [],
+              running = false,
+              subscription;
+            subscription = source.materialize().timestamp(scheduler).subscribe(function (notification) {
+                var d, shouldRun;
+                if (notification.value.kind === 'E') {
+                    q = [];
+                    q.push(notification);
+                    exception = notification.value.error;
+                    shouldRun = !running;
+                } else {
+                    q.push({ value: notification.value, timestamp: notification.timestamp + dueTime });
+                    shouldRun = !active;
+                    active = true;
+                }
+                if (shouldRun) {
+                    if (exception !== null) {
+                        o.onError(exception);
+                    } else {
+                        d = new SingleAssignmentDisposable();
+                        cancelable.setDisposable(d);
+                        d.setDisposable(scheduler.scheduleRecursiveFuture(null, dueTime, function (_, self) {
+                            var e, recurseDueTime, result, shouldRecurse;
+                            if (exception !== null) {
+                                return;
+                            }
+                            running = true;
+                            do {
+                                result = null;
+                                if (q.length > 0 && q[0].timestamp - scheduler.now() <= 0) {
+                                    result = q.shift().value;
+                                }
+                                if (result !== null) {
+                                    result.accept(o);
+                                }
+                            } while (result !== null);
+                            shouldRecurse = false;
+                            recurseDueTime = 0;
+                            if (q.length > 0) {
+                                shouldRecurse = true;
+                                recurseDueTime = Math.max(0, q[0].timestamp - scheduler.now());
+                            } else {
+                                active = false;
+                            }
+                            e = exception;
+                            running = false;
+                            if (e !== null) {
+                                o.onError(e);
+                            } else if (shouldRecurse) {
+                                self(null, recurseDueTime);
+                            }
+                        }));
+                    }
+                }
+            });
+            return new BinaryDisposable(subscription, cancelable);
+        }, source);
+    }
+
+    function observableDelayAbsolute(source, dueTime, scheduler) {
+        return observableDefer(function () {
+            return observableDelayRelative(source, dueTime - scheduler.now(), scheduler);
+        });
+    }
+
+    function delayWithSelector(source, subscriptionDelay, delayDurationSelector) {
+        var subDelay, selector;
+        if (isFunction(subscriptionDelay)) {
+            selector = subscriptionDelay;
+        } else {
+            subDelay = subscriptionDelay;
+            selector = delayDurationSelector;
+        }
+        return new AnonymousObservable(function (o) {
+            var delays = new CompositeDisposable(), atEnd = false, subscription = new SerialDisposable();
+
+            function start() {
+                subscription.setDisposable(source.subscribe(
+                  function (x) {
+                      var delay = tryCatch(selector)(x);
+                      if (delay === errorObj) { return o.onError(delay.e); }
+                      var d = new SingleAssignmentDisposable();
+                      delays.add(d);
+                      d.setDisposable(delay.subscribe(
+                        function () {
+                            o.onNext(x);
+                            delays.remove(d);
+                            done();
+                        },
+                        function (e) { o.onError(e); },
+                        function () {
+                            o.onNext(x);
+                            delays.remove(d);
+                            done();
+                        }
+                      ));
+                  },
+                  function (e) { o.onError(e); },
+                  function () {
+                      atEnd = true;
+                      subscription.dispose();
+                      done();
+                  }
+                ));
+            }
+
+            function done() {
+                atEnd && delays.length === 0 && o.onCompleted();
+            }
+
+            if (!subDelay) {
+                start();
+            } else {
+                subscription.setDisposable(subDelay.subscribe(start, function (e) { o.onError(e); }, start));
+            }
+
+            return new BinaryDisposable(subscription, delays);
+        }, source);
+    }
+
+    /**
+     *  Time shifts the observable sequence by dueTime.
+     *  The relative time intervals between the values are preserved.
+     *
+     * @param {Number} dueTime Absolute (specified as a Date object) or relative time (specified as an integer denoting milliseconds) by which to shift the observable sequence.
+     * @param {Scheduler} [scheduler] Scheduler to run the delay timers on. If not specified, the timeout scheduler is used.
+     * @returns {Observable} Time-shifted sequence.
+     */
+    observableProto.delay = function () {
+        var firstArg = arguments[0];
+        if (typeof firstArg === 'number' || firstArg instanceof Date) {
+            var dueTime = firstArg, scheduler = arguments[1];
+            isScheduler(scheduler) || (scheduler = defaultScheduler);
+            return dueTime instanceof Date ?
+              observableDelayAbsolute(this, dueTime, scheduler) :
+              observableDelayRelative(this, dueTime, scheduler);
+        } else if (Observable.isObservable(firstArg) || isFunction(firstArg)) {
+            return delayWithSelector(this, firstArg, arguments[1]);
+        } else {
+            throw new Error('Invalid arguments');
+        }
+    };
+
+    var DebounceObservable = (function (__super__) {
+        inherits(DebounceObservable, __super__);
+        function DebounceObservable(source, dt, s) {
+            isScheduler(s) || (s = defaultScheduler);
+            this.source = source;
+            this._dt = dt;
+            this._s = s;
+            __super__.call(this);
+        }
+
+        DebounceObservable.prototype.subscribeCore = function (o) {
+            var cancelable = new SerialDisposable();
+            return new BinaryDisposable(
+              this.source.subscribe(new DebounceObserver(o, this._dt, this._s, cancelable)),
+              cancelable);
+        };
+
+        return DebounceObservable;
+    }(ObservableBase));
+
+    var DebounceObserver = (function (__super__) {
+        inherits(DebounceObserver, __super__);
+        function DebounceObserver(observer, dueTime, scheduler, cancelable) {
+            this._o = observer;
+            this._d = dueTime;
+            this._scheduler = scheduler;
+            this._c = cancelable;
+            this._v = null;
+            this._hv = false;
+            this._id = 0;
+            __super__.call(this);
+        }
+
+        function scheduleFuture(s, state) {
+            state.self._hv && state.self._id === state.currentId && state.self._o.onNext(state.x);
+            state.self._hv = false;
+        }
+
+        DebounceObserver.prototype.next = function (x) {
+            this._hv = true;
+            this._v = x;
+            var currentId = ++this._id, d = new SingleAssignmentDisposable();
+            this._c.setDisposable(d);
+            d.setDisposable(this._scheduler.scheduleFuture(this, this._d, function (_, self) {
+                self._hv && self._id === currentId && self._o.onNext(x);
+                self._hv = false;
+            }));
+        };
+
+        DebounceObserver.prototype.error = function (e) {
+            this._c.dispose();
+            this._o.onError(e);
+            this._hv = false;
+            this._id++;
+        };
+
+        DebounceObserver.prototype.completed = function () {
+            this._c.dispose();
+            this._hv && this._o.onNext(this._v);
+            this._o.onCompleted();
+            this._hv = false;
+            this._id++;
+        };
+
+        return DebounceObserver;
+    }(AbstractObserver));
+
+    function debounceWithSelector(source, durationSelector) {
+        return new AnonymousObservable(function (o) {
+            var value, hasValue = false, cancelable = new SerialDisposable(), id = 0;
+            var subscription = source.subscribe(
+              function (x) {
+                  var throttle = tryCatch(durationSelector)(x);
+                  if (throttle === errorObj) { return o.onError(throttle.e); }
+
+                  isPromise(throttle) && (throttle = observableFromPromise(throttle));
+
+                  hasValue = true;
+                  value = x;
+                  id++;
+                  var currentid = id, d = new SingleAssignmentDisposable();
+                  cancelable.setDisposable(d);
+                  d.setDisposable(throttle.subscribe(
+                    function () {
+                        hasValue && id === currentid && o.onNext(value);
+                        hasValue = false;
+                        d.dispose();
+                    },
+                    function (e) { o.onError(e); },
+                    function () {
+                        hasValue && id === currentid && o.onNext(value);
+                        hasValue = false;
+                        d.dispose();
+                    }
+                  ));
+              },
+              function (e) {
+                  cancelable.dispose();
+                  o.onError(e);
+                  hasValue = false;
+                  id++;
+              },
+              function () {
+                  cancelable.dispose();
+                  hasValue && o.onNext(value);
+                  o.onCompleted();
+                  hasValue = false;
+                  id++;
+              }
+            );
+            return new BinaryDisposable(subscription, cancelable);
+        }, source);
+    }
+
+    observableProto.debounce = function () {
+        if (isFunction(arguments[0])) {
+            return debounceWithSelector(this, arguments[0]);
+        } else if (typeof arguments[0] === 'number') {
+            return new DebounceObservable(this, arguments[0], arguments[1]);
+        } else {
+            throw new Error('Invalid arguments');
+        }
+    };
+
+    var TimestampObservable = (function (__super__) {
+        inherits(TimestampObservable, __super__);
+        function TimestampObservable(source, s) {
+            this.source = source;
+            this._s = s;
+            __super__.call(this);
+        }
+
+        TimestampObservable.prototype.subscribeCore = function (o) {
+            return this.source.subscribe(new TimestampObserver(o, this._s));
+        };
+
+        return TimestampObservable;
+    }(ObservableBase));
+
+    var TimestampObserver = (function (__super__) {
+        inherits(TimestampObserver, __super__);
+        function TimestampObserver(o, s) {
+            this._o = o;
+            this._s = s;
+            __super__.call(this);
+        }
+
+        TimestampObserver.prototype.next = function (x) {
+            this._o.onNext({ value: x, timestamp: this._s.now() });
+        };
+
+        TimestampObserver.prototype.error = function (e) {
+            this._o.onError(e);
+        };
+
+        TimestampObserver.prototype.completed = function () {
+            this._o.onCompleted();
+        };
+
+        return TimestampObserver;
+    }(AbstractObserver));
+
+    /**
+     *  Records the timestamp for each value in an observable sequence.
+     *
+     * @example
+     *  1 - res = source.timestamp(); // produces { value: x, timestamp: ts }
+     *  2 - res = source.timestamp(Rx.Scheduler.default);
+     *
+     * @param {Scheduler} [scheduler]  Scheduler used to compute timestamps. If not specified, the default scheduler is used.
+     * @returns {Observable} An observable sequence with timestamp information on values.
+     */
+    observableProto.timestamp = function (scheduler) {
+        isScheduler(scheduler) || (scheduler = defaultScheduler);
+        return new TimestampObservable(this, scheduler);
+    };
+
+    var SampleObservable = (function (__super__) {
+        inherits(SampleObservable, __super__);
+        function SampleObservable(source, sampler) {
+            this.source = source;
+            this._sampler = sampler;
+            __super__.call(this);
+        }
+
+        SampleObservable.prototype.subscribeCore = function (o) {
+            var state = {
+                o: o,
+                atEnd: false,
+                value: null,
+                hasValue: false,
+                sourceSubscription: new SingleAssignmentDisposable()
+            };
+
+            state.sourceSubscription.setDisposable(this.source.subscribe(new SampleSourceObserver(state)));
+            return new BinaryDisposable(
+              state.sourceSubscription,
+              this._sampler.subscribe(new SamplerObserver(state))
+            );
+        };
+
+        return SampleObservable;
+    }(ObservableBase));
+
+    var SamplerObserver = (function (__super__) {
+        inherits(SamplerObserver, __super__);
+        function SamplerObserver(s) {
+            this._s = s;
+            __super__.call(this);
+        }
+
+        SamplerObserver.prototype._handleMessage = function () {
+            if (this._s.hasValue) {
+                this._s.hasValue = false;
+                this._s.o.onNext(this._s.value);
+            }
+            this._s.atEnd && this._s.o.onCompleted();
+        };
+
+        SamplerObserver.prototype.next = function () { this._handleMessage(); };
+        SamplerObserver.prototype.error = function (e) { this._s.onError(e); };
+        SamplerObserver.prototype.completed = function () { this._handleMessage(); };
+
+        return SamplerObserver;
+    }(AbstractObserver));
+
+    var SampleSourceObserver = (function (__super__) {
+        inherits(SampleSourceObserver, __super__);
+        function SampleSourceObserver(s) {
+            this._s = s;
+            __super__.call(this);
+        }
+
+        SampleSourceObserver.prototype.next = function (x) {
+            this._s.hasValue = true;
+            this._s.value = x;
+        };
+        SampleSourceObserver.prototype.error = function (e) { this._s.o.onError(e); };
+        SampleSourceObserver.prototype.completed = function () {
+            this._s.atEnd = true;
+            this._s.sourceSubscription.dispose();
+        };
+
+        return SampleSourceObserver;
+    }(AbstractObserver));
+
+    /**
+     *  Samples the observable sequence at each interval.
+     *
+     * @example
+     *  1 - res = source.sample(sampleObservable); // Sampler tick sequence
+     *  2 - res = source.sample(5000); // 5 seconds
+     *  2 - res = source.sample(5000, Rx.Scheduler.timeout); // 5 seconds
+     *
+     * @param {Mixed} intervalOrSampler Interval at which to sample (specified as an integer denoting milliseconds) or Sampler Observable.
+     * @param {Scheduler} [scheduler]  Scheduler to run the sampling timer on. If not specified, the timeout scheduler is used.
+     * @returns {Observable} Sampled observable sequence.
+     */
+    observableProto.sample = function (intervalOrSampler, scheduler) {
+        isScheduler(scheduler) || (scheduler = defaultScheduler);
+        return typeof intervalOrSampler === 'number' ?
+          new SampleObservable(this, observableinterval(intervalOrSampler, scheduler)) :
+          new SampleObservable(this, intervalOrSampler);
+    };
+
+    var TimeoutError = Rx.TimeoutError = function (message) {
+        this.message = message || 'Timeout has occurred';
+        this.name = 'TimeoutError';
+        Error.call(this);
+    };
+    TimeoutError.prototype = Object.create(Error.prototype);
+
+    function timeoutWithSelector(source, firstTimeout, timeoutDurationSelector, other) {
+        if (isFunction(firstTimeout)) {
+            other = timeoutDurationSelector;
+            timeoutDurationSelector = firstTimeout;
+            firstTimeout = observableNever();
+        }
+        Observable.isObservable(other) || (other = observableThrow(new TimeoutError()));
+        return new AnonymousObservable(function (o) {
+            var subscription = new SerialDisposable(),
+              timer = new SerialDisposable(),
+              original = new SingleAssignmentDisposable();
+
+            subscription.setDisposable(original);
+
+            var id = 0, switched = false;
+
+            function setTimer(timeout) {
+                var myId = id, d = new SingleAssignmentDisposable();
+
+                function timerWins() {
+                    switched = (myId === id);
+                    return switched;
+                }
+
+                timer.setDisposable(d);
+                d.setDisposable(timeout.subscribe(function () {
+                    timerWins() && subscription.setDisposable(other.subscribe(o));
+                    d.dispose();
+                }, function (e) {
+                    timerWins() && o.onError(e);
+                }, function () {
+                    timerWins() && subscription.setDisposable(other.subscribe(o));
+                }));
+            };
+
+            setTimer(firstTimeout);
+
+            function oWins() {
+                var res = !switched;
+                if (res) { id++; }
+                return res;
+            }
+
+            original.setDisposable(source.subscribe(function (x) {
+                if (oWins()) {
+                    o.onNext(x);
+                    var timeout = tryCatch(timeoutDurationSelector)(x);
+                    if (timeout === errorObj) { return o.onError(timeout.e); }
+                    setTimer(isPromise(timeout) ? observableFromPromise(timeout) : timeout);
+                }
+            }, function (e) {
+                oWins() && o.onError(e);
+            }, function () {
+                oWins() && o.onCompleted();
+            }));
+            return new BinaryDisposable(subscription, timer);
+        }, source);
+    }
+
+    function timeout(source, dueTime, other, scheduler) {
+        if (isScheduler(other)) {
+            scheduler = other;
+            other = observableThrow(new TimeoutError());
+        }
+        if (other instanceof Error) { other = observableThrow(other); }
+        isScheduler(scheduler) || (scheduler = defaultScheduler);
+        Observable.isObservable(other) || (other = observableThrow(new TimeoutError()));
+        return new AnonymousObservable(function (o) {
+            var id = 0,
+              original = new SingleAssignmentDisposable(),
+              subscription = new SerialDisposable(),
+              switched = false,
+              timer = new SerialDisposable();
+
+            subscription.setDisposable(original);
+
+            function createTimer() {
+                var myId = id;
+                timer.setDisposable(scheduler.scheduleFuture(null, dueTime, function () {
+                    switched = id === myId;
+                    if (switched) {
+                        isPromise(other) && (other = observableFromPromise(other));
+                        subscription.setDisposable(other.subscribe(o));
+                    }
+                }));
+            }
+
+            createTimer();
+
+            original.setDisposable(source.subscribe(function (x) {
+                if (!switched) {
+                    id++;
+                    o.onNext(x);
+                    createTimer();
+                }
+            }, function (e) {
+                if (!switched) {
+                    id++;
+                    o.onError(e);
+                }
+            }, function () {
+                if (!switched) {
+                    id++;
+                    o.onCompleted();
+                }
+            }));
+            return new BinaryDisposable(subscription, timer);
+        }, source);
+    }
+
+    observableProto.timeout = function () {
+        var firstArg = arguments[0];
+        if (firstArg instanceof Date || typeof firstArg === 'number') {
+            return timeout(this, firstArg, arguments[1], arguments[2]);
+        } else if (Observable.isObservable(firstArg) || isFunction(firstArg)) {
+            return timeoutWithSelector(this, firstArg, arguments[1], arguments[2]);
+        } else {
+            throw new Error('Invalid arguments');
+        }
+    };
+
+    /**
+     * Returns an Observable that emits only the first item emitted by the source Observable during sequential time windows of a specified duration.
+     * @param {Number} windowDuration time to wait before emitting another item after emitting the last item
+     * @param {Scheduler} [scheduler] the Scheduler to use internally to manage the timers that handle timeout for each item. If not provided, defaults to Scheduler.timeout.
+     * @returns {Observable} An Observable that performs the throttle operation.
+     */
+    observableProto.throttle = function (windowDuration, scheduler) {
+        isScheduler(scheduler) || (scheduler = defaultScheduler);
+        var duration = +windowDuration || 0;
+        if (duration <= 0) { throw new RangeError('windowDuration cannot be less or equal zero.'); }
+        var source = this;
+        return new AnonymousObservable(function (o) {
+            var lastOnNext = 0;
+            return source.subscribe(
+              function (x) {
+                  var now = scheduler.now();
+                  if (lastOnNext === 0 || now - lastOnNext >= duration) {
+                      lastOnNext = now;
+                      o.onNext(x);
+                  }
+              }, function (e) { o.onError(e); }, function () { o.onCompleted(); }
+            );
+        }, source);
+    };
+
+    var PausableObservable = (function (__super__) {
+        inherits(PausableObservable, __super__);
+        function PausableObservable(source, pauser) {
+            this.source = source;
+            this.controller = new Subject();
+            this.paused = true;
+
+            if (pauser && pauser.subscribe) {
+                this.pauser = this.controller.merge(pauser);
+            } else {
+                this.pauser = this.controller;
+            }
+
+            __super__.call(this);
+        }
+
+        PausableObservable.prototype._subscribe = function (o) {
+            var conn = this.source.publish(),
+              subscription = conn.subscribe(o),
+              connection = disposableEmpty;
+
+            var pausable = this.pauser.startWith(!this.paused).distinctUntilChanged().subscribe(function (b) {
+                if (b) {
+                    connection = conn.connect();
+                } else {
+                    connection.dispose();
+                    connection = disposableEmpty;
+                }
+            });
+
+            return new NAryDisposable([subscription, connection, pausable]);
+        };
+
+        PausableObservable.prototype.pause = function () {
+            this.paused = true;
+            this.controller.onNext(false);
+        };
+
+        PausableObservable.prototype.resume = function () {
+            this.paused = false;
+            this.controller.onNext(true);
+        };
+
+        return PausableObservable;
+
+    }(Observable));
+
+    /**
+     * Pauses the underlying observable sequence based upon the observable sequence which yields true/false.
+     * @example
+     * var pauser = new Rx.Subject();
+     * var source = Rx.Observable.interval(100).pausable(pauser);
+     * @param {Observable} pauser The observable sequence used to pause the underlying sequence.
+     * @returns {Observable} The observable sequence which is paused based upon the pauser.
+     */
+    observableProto.pausable = function (pauser) {
+        return new PausableObservable(this, pauser);
+    };
+
+    function combineLatestSource(source, subject, resultSelector) {
+        return new AnonymousObservable(function (o) {
+            var hasValue = [false, false],
+              hasValueAll = false,
+              isDone = false,
+              values = new Array(2),
+              err;
+
+            function next(x, i) {
+                values[i] = x;
+                hasValue[i] = true;
+                if (hasValueAll || (hasValueAll = hasValue.every(identity))) {
+                    if (err) { return o.onError(err); }
+                    var res = tryCatch(resultSelector).apply(null, values);
+                    if (res === errorObj) { return o.onError(res.e); }
+                    o.onNext(res);
+                }
+                isDone && values[1] && o.onCompleted();
+            }
+
+            return new BinaryDisposable(
+              source.subscribe(
+                function (x) {
+                    next(x, 0);
+                },
+                function (e) {
+                    if (values[1]) {
+                        o.onError(e);
+                    } else {
+                        err = e;
+                    }
+                },
+                function () {
+                    isDone = true;
+                    values[1] && o.onCompleted();
+                }),
+              subject.subscribe(
+                function (x) {
+                    next(x, 1);
+                },
+                function (e) { o.onError(e); },
+                function () {
+                    isDone = true;
+                    next(true, 1);
+                })
+              );
+        }, source);
+    }
+
+    var PausableBufferedObservable = (function (__super__) {
+        inherits(PausableBufferedObservable, __super__);
+        function PausableBufferedObservable(source, pauser) {
+            this.source = source;
+            this.controller = new Subject();
+            this.paused = true;
+
+            if (pauser && pauser.subscribe) {
+                this.pauser = this.controller.merge(pauser);
+            } else {
+                this.pauser = this.controller;
+            }
+
+            __super__.call(this);
+        }
+
+        PausableBufferedObservable.prototype._subscribe = function (o) {
+            var q = [], previousShouldFire;
+
+            function drainQueue() { while (q.length > 0) { o.onNext(q.shift()); } }
+
+            var subscription =
+              combineLatestSource(
+                this.source,
+                this.pauser.startWith(!this.paused).distinctUntilChanged(),
+                function (data, shouldFire) {
+                    return { data: data, shouldFire: shouldFire };
+                })
+                .subscribe(
+                  function (results) {
+                      if (previousShouldFire !== undefined && results.shouldFire !== previousShouldFire) {
+                          previousShouldFire = results.shouldFire;
+                          // change in shouldFire
+                          if (results.shouldFire) { drainQueue(); }
+                      } else {
+                          previousShouldFire = results.shouldFire;
+                          // new data
+                          if (results.shouldFire) {
+                              o.onNext(results.data);
+                          } else {
+                              q.push(results.data);
+                          }
+                      }
+                  },
+                  function (err) {
+                      drainQueue();
+                      o.onError(err);
+                  },
+                  function () {
+                      drainQueue();
+                      o.onCompleted();
+                  }
+                );
+            return subscription;
+        };
+
+        PausableBufferedObservable.prototype.pause = function () {
+            this.paused = true;
+            this.controller.onNext(false);
+        };
+
+        PausableBufferedObservable.prototype.resume = function () {
+            this.paused = false;
+            this.controller.onNext(true);
+        };
+
+        return PausableBufferedObservable;
+
+    }(Observable));
+
+    /**
+     * Pauses the underlying observable sequence based upon the observable sequence which yields true/false,
+     * and yields the values that were buffered while paused.
+     * @example
+     * var pauser = new Rx.Subject();
+     * var source = Rx.Observable.interval(100).pausableBuffered(pauser);
+     * @param {Observable} pauser The observable sequence used to pause the underlying sequence.
+     * @returns {Observable} The observable sequence which is paused based upon the pauser.
+     */
+    observableProto.pausableBuffered = function (pauser) {
+        return new PausableBufferedObservable(this, pauser);
+    };
+
+    var ControlledObservable = (function (__super__) {
+        inherits(ControlledObservable, __super__);
+        function ControlledObservable(source, enableQueue, scheduler) {
+            __super__.call(this);
+            this.subject = new ControlledSubject(enableQueue, scheduler);
+            this.source = source.multicast(this.subject).refCount();
+        }
+
+        ControlledObservable.prototype._subscribe = function (o) {
+            return this.source.subscribe(o);
+        };
+
+        ControlledObservable.prototype.request = function (numberOfItems) {
+            return this.subject.request(numberOfItems == null ? -1 : numberOfItems);
+        };
+
+        return ControlledObservable;
+
+    }(Observable));
+
+    var ControlledSubject = (function (__super__) {
+        inherits(ControlledSubject, __super__);
+        function ControlledSubject(enableQueue, scheduler) {
+            enableQueue == null && (enableQueue = true);
+
+            __super__.call(this);
+            this.subject = new Subject();
+            this.enableQueue = enableQueue;
+            this.queue = enableQueue ? [] : null;
+            this.requestedCount = 0;
+            this.requestedDisposable = null;
+            this.error = null;
+            this.hasFailed = false;
+            this.hasCompleted = false;
+            this.scheduler = scheduler || currentThreadScheduler;
+        }
+
+        addProperties(ControlledSubject.prototype, Observer, {
+            _subscribe: function (o) {
+                return this.subject.subscribe(o);
+            },
+            onCompleted: function () {
+                this.hasCompleted = true;
+                if (!this.enableQueue || this.queue.length === 0) {
+                    this.subject.onCompleted();
+                    this.disposeCurrentRequest();
+                } else {
+                    this.queue.push(Notification.createOnCompleted());
+                }
+            },
+            onError: function (error) {
+                this.hasFailed = true;
+                this.error = error;
+                if (!this.enableQueue || this.queue.length === 0) {
+                    this.subject.onError(error);
+                    this.disposeCurrentRequest();
+                } else {
+                    this.queue.push(Notification.createOnError(error));
+                }
+            },
+            onNext: function (value) {
+                if (this.requestedCount <= 0) {
+                    this.enableQueue && this.queue.push(Notification.createOnNext(value));
+                } else {
+                    (this.requestedCount-- === 0) && this.disposeCurrentRequest();
+                    this.subject.onNext(value);
+                }
+            },
+            _processRequest: function (numberOfItems) {
+                if (this.enableQueue) {
+                    while (this.queue.length > 0 && (numberOfItems > 0 || this.queue[0].kind !== 'N')) {
+                        var first = this.queue.shift();
+                        first.accept(this.subject);
+                        if (first.kind === 'N') {
+                            numberOfItems--;
+                        } else {
+                            this.disposeCurrentRequest();
+                            this.queue = [];
+                        }
+                    }
+                }
+
+                return numberOfItems;
+            },
+            request: function (number) {
+                this.disposeCurrentRequest();
+                var self = this;
+
+                this.requestedDisposable = this.scheduler.schedule(number,
+                function (s, i) {
+                    var remaining = self._processRequest(i);
+                    var stopped = self.hasCompleted || self.hasFailed;
+                    if (!stopped && remaining > 0) {
+                        self.requestedCount = remaining;
+
+                        return disposableCreate(function () {
+                            self.requestedCount = 0;
+                        });
+                        // Scheduled item is still in progress. Return a new
+                        // disposable to allow the request to be interrupted
+                        // via dispose.
+                    }
+                });
+
+                return this.requestedDisposable;
+            },
+            disposeCurrentRequest: function () {
+                if (this.requestedDisposable) {
+                    this.requestedDisposable.dispose();
+                    this.requestedDisposable = null;
+                }
+            }
+        });
+
+        return ControlledSubject;
+    }(Observable));
+
+    /**
+     * Attaches a controller to the observable sequence with the ability to queue.
+     * @example
+     * var source = Rx.Observable.interval(100).controlled();
+     * source.request(3); // Reads 3 values
+     * @param {bool} enableQueue truthy value to determine if values should be queued pending the next request
+     * @param {Scheduler} scheduler determines how the requests will be scheduled
+     * @returns {Observable} The observable sequence which only propagates values on request.
+     */
+    observableProto.controlled = function (enableQueue, scheduler) {
+
+        if (enableQueue && isScheduler(enableQueue)) {
+            scheduler = enableQueue;
+            enableQueue = true;
+        }
+
+        if (enableQueue == null) { enableQueue = true; }
+        return new ControlledObservable(this, enableQueue, scheduler);
+    };
+
+    /**
+     * Pipes the existing Observable sequence into a Node.js Stream.
+     * @param {Stream} dest The destination Node.js stream.
+     * @returns {Stream} The destination stream.
+     */
+    observableProto.pipe = function (dest) {
+        var source = this.pausableBuffered();
+
+        function onDrain() {
+            source.resume();
+        }
+
+        dest.addListener('drain', onDrain);
+
+        source.subscribe(
+          function (x) {
+              !dest.write(x) && source.pause();
+          },
+          function (err) {
+              dest.emit('error', err);
+          },
+          function () {
+              // Hack check because STDIO is not closable
+              !dest._isStdio && dest.end();
+              dest.removeListener('drain', onDrain);
+          });
+
+        source.resume();
+
+        return dest;
+    };
+
+    var TransduceObserver = (function (__super__) {
+        inherits(TransduceObserver, __super__);
+        function TransduceObserver(o, xform) {
+            this._o = o;
+            this._xform = xform;
+            __super__.call(this);
+        }
+
+        TransduceObserver.prototype.next = function (x) {
+            var res = tryCatch(this._xform['@@transducer/step']).call(this._xform, this._o, x);
+            if (res === errorObj) { this._o.onError(res.e); }
+        };
+
+        TransduceObserver.prototype.error = function (e) { this._o.onError(e); };
+
+        TransduceObserver.prototype.completed = function () {
+            this._xform['@@transducer/result'](this._o);
+        };
+
+        return TransduceObserver;
+    }(AbstractObserver));
+
+    function transformForObserver(o) {
+        return {
+            '@@transducer/init': function () {
+                return o;
+            },
+            '@@transducer/step': function (obs, input) {
+                return obs.onNext(input);
+            },
+            '@@transducer/result': function (obs) {
+                return obs.onCompleted();
+            }
+        };
+    }
+
+    /**
+     * Executes a transducer to transform the observable sequence
+     * @param {Transducer} transducer A transducer to execute
+     * @returns {Observable} An Observable sequence containing the results from the transducer.
+     */
+    observableProto.transduce = function (transducer) {
+        var source = this;
+        return new AnonymousObservable(function (o) {
+            var xform = transducer(transformForObserver(o));
+            return source.subscribe(new TransduceObserver(o, xform));
+        }, source);
+    };
+
+    var AnonymousObservable = Rx.AnonymousObservable = (function (__super__) {
+        inherits(AnonymousObservable, __super__);
+
+        // Fix subscriber to check for undefined or function returned to decorate as Disposable
+        function fixSubscriber(subscriber) {
+            return subscriber && isFunction(subscriber.dispose) ? subscriber :
+              isFunction(subscriber) ? disposableCreate(subscriber) : disposableEmpty;
+        }
+
+        function setDisposable(s, state) {
+            var ado = state[0], self = state[1];
+            var sub = tryCatch(self.__subscribe).call(self, ado);
+            if (sub === errorObj && !ado.fail(errorObj.e)) { thrower(errorObj.e); }
+            ado.setDisposable(fixSubscriber(sub));
+        }
+
+        function AnonymousObservable(subscribe, parent) {
+            this.source = parent;
+            this.__subscribe = subscribe;
+            __super__.call(this);
+        }
+
+        AnonymousObservable.prototype._subscribe = function (o) {
+            var ado = new AutoDetachObserver(o), state = [ado, this];
+
+            if (currentThreadScheduler.scheduleRequired()) {
+                currentThreadScheduler.schedule(state, setDisposable);
+            } else {
+                setDisposable(null, state);
+            }
+            return ado;
+        };
+
+        return AnonymousObservable;
+
+    }(Observable));
+
+    var AutoDetachObserver = (function (__super__) {
+        inherits(AutoDetachObserver, __super__);
+
+        function AutoDetachObserver(observer) {
+            __super__.call(this);
+            this.observer = observer;
+            this.m = new SingleAssignmentDisposable();
+        }
+
+        var AutoDetachObserverPrototype = AutoDetachObserver.prototype;
+
+        AutoDetachObserverPrototype.next = function (value) {
+            var result = tryCatch(this.observer.onNext).call(this.observer, value);
+            if (result === errorObj) {
+                this.dispose();
+                thrower(result.e);
+            }
+        };
+
+        AutoDetachObserverPrototype.error = function (err) {
+            var result = tryCatch(this.observer.onError).call(this.observer, err);
+            this.dispose();
+            result === errorObj && thrower(result.e);
+        };
+
+        AutoDetachObserverPrototype.completed = function () {
+            var result = tryCatch(this.observer.onCompleted).call(this.observer);
+            this.dispose();
+            result === errorObj && thrower(result.e);
+        };
+
+        AutoDetachObserverPrototype.setDisposable = function (value) { this.m.setDisposable(value); };
+        AutoDetachObserverPrototype.getDisposable = function () { return this.m.getDisposable(); };
+
+        AutoDetachObserverPrototype.dispose = function () {
+            __super__.prototype.dispose.call(this);
+            this.m.dispose();
+        };
+
+        return AutoDetachObserver;
+    }(AbstractObserver));
+
+    var InnerSubscription = function (s, o) {
+        this._s = s;
+        this._o = o;
+    };
+
+    InnerSubscription.prototype.dispose = function () {
+        if (!this._s.isDisposed && this._o !== null) {
+            var idx = this._s.observers.indexOf(this._o);
+            this._s.observers.splice(idx, 1);
+            this._o = null;
+        }
+    };
+
+    /**
+     *  Represents an object that is both an observable sequence as well as an observer.
+     *  Each notification is broadcasted to all subscribed observers.
+     */
+    var Subject = Rx.Subject = (function (__super__) {
+        inherits(Subject, __super__);
+        function Subject() {
+            __super__.call(this);
+            this.isDisposed = false;
+            this.isStopped = false;
+            this.observers = [];
+            this.hasError = false;
+        }
+
+        addProperties(Subject.prototype, Observer.prototype, {
+            _subscribe: function (o) {
+                checkDisposed(this);
+                if (!this.isStopped) {
+                    this.observers.push(o);
+                    return new InnerSubscription(this, o);
+                }
+                if (this.hasError) {
+                    o.onError(this.error);
+                    return disposableEmpty;
+                }
+                o.onCompleted();
+                return disposableEmpty;
+            },
+            /**
+             * Indicates whether the subject has observers subscribed to it.
+             * @returns {Boolean} Indicates whether the subject has observers subscribed to it.
+             */
+            hasObservers: function () { checkDisposed(this); return this.observers.length > 0; },
+            /**
+             * Notifies all subscribed observers about the end of the sequence.
+             */
+            onCompleted: function () {
+                checkDisposed(this);
+                if (!this.isStopped) {
+                    this.isStopped = true;
+                    for (var i = 0, os = cloneArray(this.observers), len = os.length; i < len; i++) {
+                        os[i].onCompleted();
+                    }
+
+                    this.observers.length = 0;
+                }
+            },
+            /**
+             * Notifies all subscribed observers about the exception.
+             * @param {Mixed} error The exception to send to all observers.
+             */
+            onError: function (error) {
+                checkDisposed(this);
+                if (!this.isStopped) {
+                    this.isStopped = true;
+                    this.error = error;
+                    this.hasError = true;
+                    for (var i = 0, os = cloneArray(this.observers), len = os.length; i < len; i++) {
+                        os[i].onError(error);
+                    }
+
+                    this.observers.length = 0;
+                }
+            },
+            /**
+             * Notifies all subscribed observers about the arrival of the specified element in the sequence.
+             * @param {Mixed} value The value to send to all observers.
+             */
+            onNext: function (value) {
+                checkDisposed(this);
+                if (!this.isStopped) {
+                    for (var i = 0, os = cloneArray(this.observers), len = os.length; i < len; i++) {
+                        os[i].onNext(value);
+                    }
+                }
+            },
+            /**
+             * Unsubscribe all observers and release resources.
+             */
+            dispose: function () {
+                this.isDisposed = true;
+                this.observers = null;
+            }
+        });
+
+        /**
+         * Creates a subject from the specified observer and observable.
+         * @param {Observer} observer The observer used to send messages to the subject.
+         * @param {Observable} observable The observable used to subscribe to messages sent from the subject.
+         * @returns {Subject} Subject implemented using the given observer and observable.
+         */
+        Subject.create = function (observer, observable) {
+            return new AnonymousSubject(observer, observable);
+        };
+
+        return Subject;
+    }(Observable));
+
+    /**
+     *  Represents the result of an asynchronous operation.
+     *  The last value before the OnCompleted notification, or the error received through OnError, is sent to all subscribed observers.
+     */
+    var AsyncSubject = Rx.AsyncSubject = (function (__super__) {
+        inherits(AsyncSubject, __super__);
+
+        /**
+         * Creates a subject that can only receive one value and that value is cached for all future observations.
+         * @constructor
+         */
+        function AsyncSubject() {
+            __super__.call(this);
+            this.isDisposed = false;
+            this.isStopped = false;
+            this.hasValue = false;
+            this.observers = [];
+            this.hasError = false;
+        }
+
+        addProperties(AsyncSubject.prototype, Observer.prototype, {
+            _subscribe: function (o) {
+                checkDisposed(this);
+
+                if (!this.isStopped) {
+                    this.observers.push(o);
+                    return new InnerSubscription(this, o);
+                }
+
+                if (this.hasError) {
+                    o.onError(this.error);
+                } else if (this.hasValue) {
+                    o.onNext(this.value);
+                    o.onCompleted();
+                } else {
+                    o.onCompleted();
+                }
+
+                return disposableEmpty;
+            },
+            /**
+             * Indicates whether the subject has observers subscribed to it.
+             * @returns {Boolean} Indicates whether the subject has observers subscribed to it.
+             */
+            hasObservers: function () { checkDisposed(this); return this.observers.length > 0; },
+            /**
+             * Notifies all subscribed observers about the end of the sequence, also causing the last received value to be sent out (if any).
+             */
+            onCompleted: function () {
+                var i, len;
+                checkDisposed(this);
+                if (!this.isStopped) {
+                    this.isStopped = true;
+                    var os = cloneArray(this.observers), len = os.length;
+
+                    if (this.hasValue) {
+                        for (i = 0; i < len; i++) {
+                            var o = os[i];
+                            o.onNext(this.value);
+                            o.onCompleted();
+                        }
+                    } else {
+                        for (i = 0; i < len; i++) {
+                            os[i].onCompleted();
+                        }
+                    }
+
+                    this.observers.length = 0;
+                }
+            },
+            /**
+             * Notifies all subscribed observers about the error.
+             * @param {Mixed} error The Error to send to all observers.
+             */
+            onError: function (error) {
+                checkDisposed(this);
+                if (!this.isStopped) {
+                    this.isStopped = true;
+                    this.hasError = true;
+                    this.error = error;
+
+                    for (var i = 0, os = cloneArray(this.observers), len = os.length; i < len; i++) {
+                        os[i].onError(error);
+                    }
+
+                    this.observers.length = 0;
+                }
+            },
+            /**
+             * Sends a value to the subject. The last value received before successful termination will be sent to all subscribed and future observers.
+             * @param {Mixed} value The value to store in the subject.
+             */
+            onNext: function (value) {
+                checkDisposed(this);
+                if (this.isStopped) { return; }
+                this.value = value;
+                this.hasValue = true;
+            },
+            /**
+             * Unsubscribe all observers and release resources.
+             */
+            dispose: function () {
+                this.isDisposed = true;
+                this.observers = null;
+                this.error = null;
+                this.value = null;
+            }
+        });
+
+        return AsyncSubject;
+    }(Observable));
+
+    var AnonymousSubject = Rx.AnonymousSubject = (function (__super__) {
+        inherits(AnonymousSubject, __super__);
+        function AnonymousSubject(observer, observable) {
+            this.observer = observer;
+            this.observable = observable;
+            __super__.call(this);
+        }
+
+        addProperties(AnonymousSubject.prototype, Observer.prototype, {
+            _subscribe: function (o) {
+                return this.observable.subscribe(o);
+            },
+            onCompleted: function () {
+                this.observer.onCompleted();
+            },
+            onError: function (error) {
+                this.observer.onError(error);
+            },
+            onNext: function (value) {
+                this.observer.onNext(value);
+            }
+        });
+
+        return AnonymousSubject;
+    }(Observable));
+
+    /**
+     *  Represents a value that changes over time.
+     *  Observers can subscribe to the subject to receive the last (or initial) value and all subsequent notifications.
+     */
+    var BehaviorSubject = Rx.BehaviorSubject = (function (__super__) {
+        inherits(BehaviorSubject, __super__);
+        function BehaviorSubject(value) {
+            __super__.call(this);
+            this.value = value;
+            this.observers = [];
+            this.isDisposed = false;
+            this.isStopped = false;
+            this.hasError = false;
+        }
+
+        addProperties(BehaviorSubject.prototype, Observer.prototype, {
+            _subscribe: function (o) {
+                checkDisposed(this);
+                if (!this.isStopped) {
+                    this.observers.push(o);
+                    o.onNext(this.value);
+                    return new InnerSubscription(this, o);
+                }
+                if (this.hasError) {
+                    o.onError(this.error);
+                } else {
+                    o.onCompleted();
+                }
+                return disposableEmpty;
+            },
+            /**
+             * Gets the current value or throws an exception.
+             * Value is frozen after onCompleted is called.
+             * After onError is called always throws the specified exception.
+             * An exception is always thrown after dispose is called.
+             * @returns {Mixed} The initial value passed to the constructor until onNext is called; after which, the last value passed to onNext.
+             */
+            getValue: function () {
+                checkDisposed(this);
+                if (this.hasError) { thrower(this.error); }
+                return this.value;
+            },
+            /**
+             * Indicates whether the subject has observers subscribed to it.
+             * @returns {Boolean} Indicates whether the subject has observers subscribed to it.
+             */
+            hasObservers: function () { checkDisposed(this); return this.observers.length > 0; },
+            /**
+             * Notifies all subscribed observers about the end of the sequence.
+             */
+            onCompleted: function () {
+                checkDisposed(this);
+                if (this.isStopped) { return; }
+                this.isStopped = true;
+                for (var i = 0, os = cloneArray(this.observers), len = os.length; i < len; i++) {
+                    os[i].onCompleted();
+                }
+
+                this.observers.length = 0;
+            },
+            /**
+             * Notifies all subscribed observers about the exception.
+             * @param {Mixed} error The exception to send to all observers.
+             */
+            onError: function (error) {
+                checkDisposed(this);
+                if (this.isStopped) { return; }
+                this.isStopped = true;
+                this.hasError = true;
+                this.error = error;
+
+                for (var i = 0, os = cloneArray(this.observers), len = os.length; i < len; i++) {
+                    os[i].onError(error);
+                }
+
+                this.observers.length = 0;
+            },
+            /**
+             * Notifies all subscribed observers about the arrival of the specified element in the sequence.
+             * @param {Mixed} value The value to send to all observers.
+             */
+            onNext: function (value) {
+                checkDisposed(this);
+                if (this.isStopped) { return; }
+                this.value = value;
+                for (var i = 0, os = cloneArray(this.observers), len = os.length; i < len; i++) {
+                    os[i].onNext(value);
+                }
+            },
+            /**
+             * Unsubscribe all observers and release resources.
+             */
+            dispose: function () {
+                this.isDisposed = true;
+                this.observers = null;
+                this.value = null;
+                this.error = null;
+            }
+        });
+
+        return BehaviorSubject;
+    }(Observable));
+
+    /**
+     * Represents an object that is both an observable sequence as well as an observer.
+     * Each notification is broadcasted to all subscribed and future observers, subject to buffer trimming policies.
+     */
+    var ReplaySubject = Rx.ReplaySubject = (function (__super__) {
+
+        var maxSafeInteger = Math.pow(2, 53) - 1;
+
+        function createRemovableDisposable(subject, observer) {
+            return disposableCreate(function () {
+                observer.dispose();
+                !subject.isDisposed && subject.observers.splice(subject.observers.indexOf(observer), 1);
+            });
+        }
+
+        inherits(ReplaySubject, __super__);
+
+        /**
+         *  Initializes a new instance of the ReplaySubject class with the specified buffer size, window size and scheduler.
+         *  @param {Number} [bufferSize] Maximum element count of the replay buffer.
+         *  @param {Number} [windowSize] Maximum time length of the replay buffer.
+         *  @param {Scheduler} [scheduler] Scheduler the observers are invoked on.
+         */
+        function ReplaySubject(bufferSize, windowSize, scheduler) {
+            this.bufferSize = bufferSize == null ? maxSafeInteger : bufferSize;
+            this.windowSize = windowSize == null ? maxSafeInteger : windowSize;
+            this.scheduler = scheduler || currentThreadScheduler;
+            this.q = [];
+            this.observers = [];
+            this.isStopped = false;
+            this.isDisposed = false;
+            this.hasError = false;
+            this.error = null;
+            __super__.call(this);
+        }
+
+        addProperties(ReplaySubject.prototype, Observer.prototype, {
+            _subscribe: function (o) {
+                checkDisposed(this);
+                var so = new ScheduledObserver(this.scheduler, o), subscription = createRemovableDisposable(this, so);
+
+                this._trim(this.scheduler.now());
+                this.observers.push(so);
+
+                for (var i = 0, len = this.q.length; i < len; i++) {
+                    so.onNext(this.q[i].value);
+                }
+
+                if (this.hasError) {
+                    so.onError(this.error);
+                } else if (this.isStopped) {
+                    so.onCompleted();
+                }
+
+                so.ensureActive();
+                return subscription;
+            },
+            /**
+             * Indicates whether the subject has observers subscribed to it.
+             * @returns {Boolean} Indicates whether the subject has observers subscribed to it.
+             */
+            hasObservers: function () { checkDisposed(this); return this.observers.length > 0; },
+            _trim: function (now) {
+                while (this.q.length > this.bufferSize) {
+                    this.q.shift();
+                }
+                while (this.q.length > 0 && (now - this.q[0].interval) > this.windowSize) {
+                    this.q.shift();
+                }
+            },
+            /**
+             * Notifies all subscribed observers about the arrival of the specified element in the sequence.
+             * @param {Mixed} value The value to send to all observers.
+             */
+            onNext: function (value) {
+                checkDisposed(this);
+                if (this.isStopped) { return; }
+                var now = this.scheduler.now();
+                this.q.push({ interval: now, value: value });
+                this._trim(now);
+
+                for (var i = 0, os = cloneArray(this.observers), len = os.length; i < len; i++) {
+                    var observer = os[i];
+                    observer.onNext(value);
+                    observer.ensureActive();
+                }
+            },
+            /**
+             * Notifies all subscribed observers about the exception.
+             * @param {Mixed} error The exception to send to all observers.
+             */
+            onError: function (error) {
+                checkDisposed(this);
+                if (this.isStopped) { return; }
+                this.isStopped = true;
+                this.error = error;
+                this.hasError = true;
+                var now = this.scheduler.now();
+                this._trim(now);
+                for (var i = 0, os = cloneArray(this.observers), len = os.length; i < len; i++) {
+                    var observer = os[i];
+                    observer.onError(error);
+                    observer.ensureActive();
+                }
+                this.observers.length = 0;
+            },
+            /**
+             * Notifies all subscribed observers about the end of the sequence.
+             */
+            onCompleted: function () {
+                checkDisposed(this);
+                if (this.isStopped) { return; }
+                this.isStopped = true;
+                var now = this.scheduler.now();
+                this._trim(now);
+                for (var i = 0, os = cloneArray(this.observers), len = os.length; i < len; i++) {
+                    var observer = os[i];
+                    observer.onCompleted();
+                    observer.ensureActive();
+                }
+                this.observers.length = 0;
+            },
+            /**
+             * Unsubscribe all observers and release resources.
+             */
+            dispose: function () {
+                this.isDisposed = true;
+                this.observers = null;
+            }
+        });
+
+        return ReplaySubject;
+    }(Observable));
+
+    /**
+    * Used to pause and resume streams.
+    */
+    Rx.Pauser = (function (__super__) {
+        inherits(Pauser, __super__);
+        function Pauser() {
+            __super__.call(this);
+        }
+
+        /**
+         * Pauses the underlying sequence.
+         */
+        Pauser.prototype.pause = function () { this.onNext(false); };
+
+        /**
+        * Resumes the underlying sequence.
+        */
+        Pauser.prototype.resume = function () { this.onNext(true); };
+
+        return Pauser;
+    }(Subject));
+    
+    __LMtarget.Rx = Rx;
+
+    // All code before this point will be filtered from stack traces.
+    var rEndingLine = captureLine();
+
+}.call(this, __LiteMolRxTemp, __LiteMolPromise));
+
+var __LiteMolRx = __LiteMolRxTemp.Rx;
+/*
+ * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ */
+var LiteMol;
+(function (LiteMol) {
+    var Core;
+    (function (Core) {
+        "use strict";
+        Core.Rx = __LiteMolRx;
+        Core.Promise = __LiteMolPromise;
+    })(Core = LiteMol.Core || (LiteMol.Core = {}));
+})(LiteMol || (LiteMol = {}));
+/*
+ * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ */
+var LiteMol;
+(function (LiteMol) {
+    var Core;
+    (function (Core) {
+        Core.VERSION = { number: "2.3.0", date: "Aug 30 2016" };
+    })(Core = LiteMol.Core || (LiteMol.Core = {}));
+})(LiteMol || (LiteMol = {}));
+/*
+ * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ */
+var LiteMol;
+(function (LiteMol) {
+    var Core;
+    (function (Core) {
+        "use strict";
+        var Computation = (function () {
+            function Computation(computation) {
+                this.computation = computation;
+            }
+            Computation.prototype.bind = function (next) {
+                var _this = this;
+                return Computation.create(function (ctx) {
+                    _this.run(ctx).result.then(function (a) {
+                        next(a).run(ctx).result.then(ctx.resolve).catch(ctx.reject);
+                    }).catch(ctx.reject);
+                });
+            };
+            Computation.prototype.map = function (f) {
+                var _this = this;
+                return Computation.create(function (ctx) {
+                    _this.run(ctx).result.then(function (r) { return ctx.resolve(f(r)); }).catch(ctx.reject);
+                });
+            };
+            Computation.prototype.run = function (ctx) {
+                var _this = this;
+                var context = ctx ? ctx : new Computation.Context();
+                return {
+                    progress: context.progressStream,
+                    result: new Core.Promise(function (resolve, reject) {
+                        try {
+                            context.__push(resolve, reject);
+                            _this.computation(context);
+                        }
+                        catch (e) {
+                            context.reject(e);
+                        }
+                    })
+                };
+            };
+            return Computation;
+        }());
+        Core.Computation = Computation;
+        var Computation;
+        (function (Computation) {
+            function create(computation) {
+                return new Computation(computation);
+            }
+            Computation.create = create;
+            function resolve(a) {
+                return create(function (ctx) { return ctx.resolve(a); });
+            }
+            Computation.resolve = resolve;
+            var Context = (function () {
+                function Context() {
+                    var _this = this;
+                    this._abortRequested = false;
+                    this._abortRequest = function () { return _this._abortRequested = true; };
+                    this.progressTick = new Core.Rx.Subject();
+                    this.progress = { message: 'Working...', current: 0, max: 0, isIndeterminate: false, requestAbort: void 0 };
+                    this.progressStream = new Core.Rx.BehaviorSubject(this.progress);
+                    this.promiseStack = [];
+                    this.resolve = this._resolve.bind(this);
+                    this.reject = this._reject.bind(this);
+                    this.progressTick.throttle(1000 / 30).subscribe(function (p) {
+                        _this.progressStream.onNext({
+                            message: p.message,
+                            isIndeterminate: p.isIndeterminate,
+                            current: p.current,
+                            max: p.max,
+                            requestAbort: p.requestAbort
+                        });
+                    });
+                }
+                Context.prototype.schedule = function (action, afterMs) {
+                    var _this = this;
+                    if (afterMs === void 0) { afterMs = 0; }
+                    setTimeout(function () {
+                        try {
+                            action();
+                        }
+                        catch (e) {
+                            _this.reject(e);
+                        }
+                    }, afterMs);
+                };
+                Object.defineProperty(Context.prototype, "abortRequested", {
+                    get: function () {
+                        return this._abortRequested;
+                    },
+                    enumerable: true,
+                    configurable: true
+                });
+                Context.prototype.setRequestAbort = function (abort) {
+                    this.progress.requestAbort = abort;
+                };
+                Object.defineProperty(Context.prototype, "abortRequest", {
+                    get: function () { return this._abortRequest; },
+                    enumerable: true,
+                    configurable: true
+                });
+                Context.prototype.update = function (msg, abort, current, max) {
+                    if (current === void 0) { current = NaN; }
+                    if (max === void 0) { max = NaN; }
+                    this.progress.message = msg;
+                    this.progress.requestAbort = abort;
+                    if (isNaN(current)) {
+                        this.progress.isIndeterminate = true;
+                    }
+                    else {
+                        this.progress.isIndeterminate = false;
+                        this.progress.current = current;
+                        this.progress.max = max;
+                    }
+                    this.progressTick.onNext(this.progress);
+                };
+                Context.prototype.__push = function (resolve, reject) {
+                    this.promiseStack.push({ resolve: resolve, reject: reject });
+                };
+                Context.prototype._resolve = function (result) {
+                    var top = this.promiseStack.pop();
+                    if (!top) {
+                        throw 'Bug in code somewhere, Computation.resolve/reject called too many times.';
+                    }
+                    top.resolve(result);
+                    if (!this.promiseStack.length) {
+                        this.progressTick.onCompleted();
+                        this.progressStream.onCompleted();
+                    }
+                };
+                Context.prototype._reject = function (err) {
+                    var top = this.promiseStack.pop();
+                    if (!top) {
+                        throw 'Bug in code somewhere, Computation.resolve/reject called too many times.';
+                    }
+                    top.reject(err);
+                    if (!this.promiseStack.length) {
+                        this.progressTick.onCompleted();
+                        this.progressStream.onCompleted();
+                    }
+                };
+                Context.prototype.abort = function () {
+                    this.reject('Aborted.');
+                };
+                return Context;
+            }());
+            Computation.Context = Context;
+        })(Computation = Core.Computation || (Core.Computation = {}));
+    })(Core = LiteMol.Core || (LiteMol.Core = {}));
+})(LiteMol || (LiteMol = {}));
+/*
+ * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ */
+var LiteMol;
+(function (LiteMol) {
+    var Core;
+    (function (Core) {
+        var Formats;
+        (function (Formats) {
+            "use strict";
+            var FormatInfo;
+            (function (FormatInfo) {
+                function formatRegExp(info) {
+                    return new RegExp(info.extensions.map(function (e) { return ("(\\" + e + ")"); }).join('|') + '(\\.gz){0,1}$', 'i');
+                }
+                FormatInfo.formatRegExp = formatRegExp;
+                function formatFileFilters(all) {
+                    return all.map(function (info) { return info.extensions.map(function (e) { return (e + "," + e + ".gz"); }).join(','); }).join(',');
+                }
+                FormatInfo.formatFileFilters = formatFileFilters;
+                function getFormat(filename, all) {
+                    for (var _i = 0, all_1 = all; _i < all_1.length; _i++) {
+                        var f = all_1[_i];
+                        if (formatRegExp(f).test(filename))
+                            return f;
+                    }
+                    return void 0;
+                }
+                FormatInfo.getFormat = getFormat;
+            })(FormatInfo = Formats.FormatInfo || (Formats.FormatInfo = {}));
+            var ParserError = (function () {
+                function ParserError(message, line) {
+                    this.message = message;
+                    this.line = line;
+                }
+                ParserError.prototype.toString = function () {
+                    if (this.line >= 0) {
+                        return "[Line " + this.line + "] " + this.message;
+                    }
+                    return this.message;
+                };
+                return ParserError;
+            }());
+            Formats.ParserError = ParserError;
+            /**
+             * A generic parser result.
+             */
+            var ParserResult = (function () {
+                function ParserResult(error, warnings, result) {
+                    this.error = error;
+                    this.warnings = warnings;
+                    this.result = result;
+                }
+                ParserResult.error = function (message, line) {
+                    if (line === void 0) { line = -1; }
+                    return new ParserResult(new ParserError(message, line), [], void 0);
+                };
+                ParserResult.success = function (result, warnings) {
+                    if (warnings === void 0) { warnings = []; }
+                    return new ParserResult(void 0, warnings, result);
+                };
+                return ParserResult;
+            }());
+            Formats.ParserResult = ParserResult;
+            /**
+             * A helper class for building a typed array of token indices.
+             */
+            var TokenIndexBuilder = (function () {
+                function TokenIndexBuilder(size) {
+                    this.count = 0;
+                    this.tokens = new Int32Array(size);
+                    this.tokensLenMinus2 = (size - 2) | 0;
+                }
+                TokenIndexBuilder.prototype.resize = function () {
+                    // scale the size using golden ratio, because why not.
+                    var newBuffer = new Int32Array((1.61 * this.tokens.length) | 0);
+                    newBuffer.set(this.tokens);
+                    this.tokens = newBuffer;
+                    this.tokensLenMinus2 = (newBuffer.length - 2) | 0;
+                };
+                TokenIndexBuilder.prototype.addToken = function (start, end) {
+                    if (this.count >= this.tokensLenMinus2) {
+                        this.resize();
+                    }
+                    this.tokens[this.count++] = start;
+                    this.tokens[this.count++] = end;
+                };
+                return TokenIndexBuilder;
+            }());
+            Formats.TokenIndexBuilder = TokenIndexBuilder;
+            /**
+             * A helper class to store only unique strings.
+             */
+            var ShortStringPool = (function () {
+                function ShortStringPool() {
+                }
+                ShortStringPool.getString = function (key) {
+                    if (key.length > 6)
+                        return key;
+                    var value = this.strings.get(key);
+                    if (value !== void 0)
+                        return value;
+                    this.strings.set(key, key);
+                    return key;
+                };
+                ShortStringPool.strings = new Map();
+                return ShortStringPool;
+            }());
+            Formats.ShortStringPool = ShortStringPool;
+        })(Formats = Core.Formats || (Core.Formats = {}));
+    })(Core = LiteMol.Core || (LiteMol.Core = {}));
+})(LiteMol || (LiteMol = {}));
+/*
+ * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ */
+/*
+    On data representation of molecular files
+
+    Consider an mmCIF file that stores a molecule with 100k atoms. For the sake of simplicity,
+    lets ignore things like symmetry or assemblies, and assume, that the file only stores the
+    _atom_site records. The atom site "table" in the standard mmCIF from PDB database currently
+    has 26 columns.
+
+    So the data looks something like this:
+
+        loop_
+        _atom_site.column1
+        ....
+        _atom_site.column26
+        t1,1 .... t1,26
+        t100000,1 .... t100000,26
+
+    The straightforward way to represent this data in JavaScript is to have an array of objects
+    with properties named "column1" ..., "column26":
+
+        [{ column1: "t1,1", ..., column26: "t1,26" },
+          ...,
+         { column1: "t100000,1", ..., column26: "t100000,26" }]
+
+    So in order to represent the atoms sites, we would need 100k objects and 2.6 million strings.
+    Is this bad? well, sort of. It would not be so bad if this representation would be the only
+    thing we need to keep in memory and/or the life time of the object was short. But usually
+    we would need to keep the object around for the entire lifetime of the app. This alone
+    adds a very non-significant overhead for the garbage collector (which increases the app's
+    latency). What's worse is that we usually only need a fraction of this data, but this can
+    vary application for application. For just 100k atoms, the overhead is not "that bad", but
+    consider 1M atoms and suddenly we have a problem.
+
+    The following data model shows an alternative way of storing molecular file s
+    in memory that is very efficient, fast and introduces a very minimal overhead.
+
+ */
+var LiteMol;
+(function (LiteMol) {
+    var Core;
+    (function (Core) {
+        var Formats;
+        (function (Formats) {
+            var CIF;
+            (function (CIF) {
+                "use strict";
+                var ShortStringPool = Formats.ShortStringPool;
+                /**
+                 * Represents the input file.
+                 */
+                var File = (function () {
+                    function File(data) {
+                        this.data = data;
+                        this.dataBlocks = [];
+                    }
+                    /**
+                     * Adds a block.
+                     */
+                    File.prototype.addBlock = function (block) {
+                        this.dataBlocks[this.dataBlocks.length] = block;
+                    };
+                    File.prototype.toJSON = function () {
+                        return this.dataBlocks.map(function (b) { return b.toJSON(); });
+                    };
+                    return File;
+                }());
+                CIF.File = File;
+                /**
+                 * Represents a single data block.
+                 */
+                var Block = (function () {
+                    function Block(file, header) {
+                        this.file = file;
+                        this.header = header;
+                        this.data = file.data;
+                        this.categoryList = [];
+                        this.additionalData = {};
+                        this.categoryMap = {};
+                    }
+                    Object.defineProperty(Block.prototype, "categories", {
+                        /**
+                         * Categories of the block.
+                         * block.categories._atom_site / ['_atom_site']
+                         */
+                        get: function () {
+                            return this.categoryMap;
+                        },
+                        enumerable: true,
+                        configurable: true
+                    });
+                    /**
+                     * Adds a category.
+                     */
+                    Block.prototype.addCategory = function (category) {
+                        this.categoryList[this.categoryList.length] = category;
+                        this.categoryMap[category.name] = category;
+                    };
+                    /**
+                     * Gets a category by its name.
+                     */
+                    Block.prototype.getCategory = function (name) {
+                        return this.categoryMap[name];
+                    };
+                    /**
+                     * Determines if a given category is present.
+                     */
+                    Block.prototype.hasCategory = function (name) {
+                        return this.categoryMap[name] !== void 0;
+                    };
+                    Block.prototype.toJSON = function () {
+                        return {
+                            id: this.header,
+                            categories: this.categoryList.map(function (c) { return c.toJSON(); }),
+                            additionalData: this.additionalData
+                        };
+                    };
+                    return Block;
+                }());
+                CIF.Block = Block;
+                /**
+                 * A context for easy (but slower) querying of category data.
+                 */
+                var CategoryQueryRowContext = (function () {
+                    function CategoryQueryRowContext(category, rowNumber) {
+                        this.category = category;
+                        this.rowNumber = rowNumber;
+                    }
+                    /**
+                     * Get a string value of the row.
+                     */
+                    CategoryQueryRowContext.prototype.getString = function (column) {
+                        return this.category.getStringValue(column, this.rowNumber);
+                    };
+                    /**
+                     * Get an integer value of the row.
+                     */
+                    CategoryQueryRowContext.prototype.getInt = function (column) {
+                        return this.category.getIntValue(column, this.rowNumber);
+                    };
+                    /**
+                     * Get a float value of the row.
+                     */
+                    CategoryQueryRowContext.prototype.getFloat = function (column) {
+                        return this.category.getFloatValue(column, this.rowNumber);
+                    };
+                    return CategoryQueryRowContext;
+                }());
+                CIF.CategoryQueryRowContext = CategoryQueryRowContext;
+                /**
+                 * Represents a single column of a CIF category.
+                 */
+                var Column = (function () {
+                    function Column(category, name, index) {
+                        this.category = category;
+                        this.name = name;
+                        this.index = index;
+                    }
+                    /**
+                     * Returns the raw string value at given row.
+                     */
+                    Column.prototype.getRaw = function (row) {
+                        return this.category.getRawValueFromIndex(this.index, row);
+                    };
+                    /**
+                     * Returns the string value at given row.
+                     */
+                    Column.prototype.getString = function (row) {
+                        return this.category.getStringValueFromIndex(this.index, row);
+                    };
+                    /**
+                     * Returns the integer value at given row.
+                     */
+                    Column.prototype.getInteger = function (row) {
+                        return this.category.getIntValueFromIndex(this.index, row);
+                    };
+                    /**
+                     * Returns the float value at given row.
+                     */
+                    Column.prototype.getFloat = function (row) {
+                        return this.category.getFloatValueFromIndex(this.index, row);
+                    };
+                    /**
+                     * Returns true if the token has the specified string value.
+                     */
+                    Column.prototype.stringEquals = function (row, value) {
+                        return this.category.valueEqual(this.index, row, value);
+                    };
+                    /**
+                     * Returns true if the value is not defined (. or ? token).
+                     */
+                    Column.prototype.isUndefined = function (row) {
+                        return this.category.isValueUndefinedFromIndex(this.index, row);
+                    };
+                    return Column;
+                }());
+                CIF.Column = Column;
+                /**
+                 * Represents a single CIF category.
+                 */
+                var Category = (function () {
+                    function Category(data, name, startIndex, endIndex, columns, tokens, tokenCount) {
+                        this.name = name;
+                        this.columnNames = columns;
+                        this.tokens = tokens;
+                        this.data = data;
+                        this.startIndex = startIndex;
+                        this.endIndex = endIndex;
+                        this.columnCount = this.columnNames.length;
+                        this.rowCount = (tokenCount / this.columnNames.length) | 0; //((this.tokens.length / 2) / this.columns.length) | 0;
+                        this.tokenCount = tokenCount;
+                        this.columnIndices = {};
+                        this.columnWrappers = {};
+                        this._columnArray = [];
+                        this.shortColumnWrappers = {};
+                        for (var i = 0; i < this.columnNames.length; i++) {
+                            this.columnIndices[this.columnNames[i]] = i;
+                            var col = new Column(this, this.columnNames[i], i);
+                            this.columnWrappers[this.columnNames[i]] = col;
+                            this.shortColumnWrappers[this.columnNames[i].substr(name.length + 1)] = col;
+                            this._columnArray[i] = col;
+                        }
+                    }
+                    Object.defineProperty(Category.prototype, "columns", {
+                        /**
+                         * The column wrappers used to access the colummns.
+                         * Can be accessed for example as category.columns.id.
+                         */
+                        get: function () {
+                            return this.shortColumnWrappers;
+                        },
+                        enumerable: true,
+                        configurable: true
+                    });
+                    Object.defineProperty(Category.prototype, "columnArray", {
+                        /**
+                         * The array of column wrappers used to access the colummns.
+                         */
+                        get: function () {
+                            return this._columnArray;
+                        },
+                        enumerable: true,
+                        configurable: true
+                    });
+                    /**
+                     * Compute the token index.
+                     */
+                    Category.prototype.getTokenIndex = function (row, columnIndex) {
+                        return row * this.columnCount + columnIndex;
+                    };
+                    /**
+                     * Get index of a columns.
+                     * @returns -1 if the column isn't present, the index otherwise.
+                     */
+                    Category.prototype.getColumnIndex = function (name) {
+                        var idx = this.columnIndices[name];
+                        if (idx !== undefined)
+                            return idx;
+                        return -1;
+                    };
+                    /**
+                     * Get a column object that makes accessing data easier.
+                     * @returns undefined if the column isn't present, the Column object otherwise.
+                     */
+                    Category.prototype.getColumn = function (name) {
+                        return this.columnWrappers[name];
+                    };
+                    /**
+                     * Updates the range of the token given by the column and row.
+                     */
+                    Category.prototype.updateTokenRange = function (columnIndex, row, token) {
+                        var offset = 2 * (row * this.columnCount + columnIndex);
+                        token.start = this.tokens[offset];
+                        token.end = this.tokens[offset + 1];
+                    };
+                    /**
+                     * Updates the range of the token given by its index.
+                     */
+                    Category.prototype.updateTokenIndexRange = function (tokenIndex, token) {
+                        token.start = this.tokens[2 * tokenIndex];
+                        token.end = this.tokens[2 * tokenIndex + 1];
+                    };
+                    /**
+                     * Determines if the token at the given index is . or ?.
+                     */
+                    Category.prototype.isTokenUndefined = function (index) {
+                        var s = this.tokens[2 * index];
+                        if (this.tokens[2 * index + 1] - s !== 1)
+                            return;
+                        var v = this.data.charCodeAt(s);
+                        return v === 46 /* . */ || v === 63 /* ? */;
+                    };
+                    /**
+                     * Determines if the token at the given range is . or ?.
+                     */
+                    Category.prototype.isTokenRangeUndefined = function (start, end) {
+                        if (end - start !== 1)
+                            return;
+                        var v = this.data.charCodeAt(start);
+                        return v === 46 /* . */ || v === 63 /* ? */;
+                    };
+                    /**
+                     * Determines if a column value is defined (has to be present and not . nor ?).
+                     */
+                    Category.prototype.isValueUndefined = function (column, row) {
+                        if (row === void 0) { row = 0; }
+                        row = row | 0;
+                        var c = this.getColumnIndex(column);
+                        if (c < 0)
+                            return true;
+                        return this.isTokenUndefined(row * this.columnCount + c);
+                    };
+                    /**
+                     * Determines if a column value is defined (has to be present and not . nor ?).
+                     */
+                    Category.prototype.isValueUndefinedFromIndex = function (columnIndex, row) {
+                        row = row | 0;
+                        if (columnIndex < 0)
+                            return true;
+                        return this.isTokenUndefined(row * this.columnCount + columnIndex);
+                    };
+                    /**
+                     * Returns the length of the given token;
+                     */
+                    Category.prototype.getTokenLengthFromIndex = function (columnIndex, row) {
+                        if (columnIndex < 0)
+                            return 0;
+                        var i = (row * this.columnCount + columnIndex) * 2;
+                        return this.tokens[i + 1] - this.tokens[i];
+                    };
+                    /**
+                     * Get a string value from a token at a given index.
+                     */
+                    Category.prototype.getStringValueFromToken = function (index) {
+                        var s = this.tokens[2 * index], e = this.tokens[2 * index + 1];
+                        if (e - s === 1) {
+                            var v = this.data.charCodeAt(s);
+                            if (v === 46 /* . */ || v === 63 /* ? */)
+                                return null;
+                        }
+                        var ret = ShortStringPool.getString(this.data.substring(s, e));
+                        return ret;
+                    };
+                    /**
+                     * Returns the string value of the column.
+                     * @returns null if not present or ./?.
+                     */
+                    Category.prototype.getStringValue = function (column, row) {
+                        if (row === void 0) { row = 0; }
+                        row = row | 0;
+                        var col = this.getColumnIndex(column);
+                        if (col < 0)
+                            return null;
+                        return this.getStringValueFromToken(row * this.columnCount + col);
+                    };
+                    /**
+                     * Returns the string value of the column.
+                     * @returns Default if not present or ./?.
+                     */
+                    Category.prototype.getStringValueOrDefault = function (column, defaultValue, row) {
+                        if (defaultValue === void 0) { defaultValue = ""; }
+                        if (row === void 0) { row = 0; }
+                        var ret = this.getStringValue(column, row);
+                        if (!ret)
+                            return defaultValue;
+                        return ret;
+                    };
+                    /**
+                     * Returns the float value of the column.
+                     * @returns NaN if not present or ./?.
+                     */
+                    Category.prototype.getFloatValue = function (column, row) {
+                        if (row === void 0) { row = 0; }
+                        row = row | 0;
+                        var col = this.getColumnIndex(column);
+                        if (col < 0)
+                            return NaN;
+                        var i = (row * this.columnCount + col) * 2, s = this.tokens[i], e = this.tokens[i + 1];
+                        if (e - s === 1) {
+                            var v = this.data.charCodeAt(s);
+                            if (v === 46 /* . */ || v === 63 /* ? */)
+                                return NaN;
+                        }
+                        return Core.Utils.FastNumberParsers.parseFloat(this.data, this.tokens[i], this.tokens[i + 1]);
+                    };
+                    /**
+                     * Returns the float value of the column.
+                     * @returns Default if not present or ./?.
+                     */
+                    Category.prototype.getFloatValueOrDefault = function (column, defaultValue, row) {
+                        if (defaultValue === void 0) { defaultValue = 0; }
+                        if (row === void 0) { row = 0; }
+                        var ret = this.getFloatValue(column, row);
+                        if (isNaN(ret))
+                            return defaultValue;
+                        return ret;
+                    };
+                    /**
+                     * Returns the integer value of the column.
+                     * @returns NaN if not present or ./?.
+                     */
+                    Category.prototype.getIntValue = function (column, row) {
+                        if (row === void 0) { row = 0; }
+                        row = row | 0;
+                        var col = this.getColumnIndex(column);
+                        if (col < 0)
+                            return NaN;
+                        var i = (row * this.columnCount + col) * 2, s = this.tokens[i], e = this.tokens[i + 1];
+                        if (e - s === 1) {
+                            var v = this.data.charCodeAt(s);
+                            if (v === 46 /* . */ || v === 63 /* ? */)
+                                return NaN;
+                        }
+                        return Core.Utils.FastNumberParsers.parseInt(this.data, this.tokens[i], this.tokens[i + 1]);
+                    };
+                    /**
+                      * Returns the float value of the column.
+                      * @returns Default if not present or ./?.
+                      */
+                    Category.prototype.getIntValueOrDefault = function (column, defaultValue, row) {
+                        if (defaultValue === void 0) { defaultValue = 0; }
+                        if (row === void 0) { row = 0; }
+                        var ret = this.getIntValue(column, row);
+                        if (isNaN(ret))
+                            return defaultValue;
+                        return ret;
+                    };
+                    /**
+                     * Returns the raw value of the column (does not do null check for ./?).
+                     */
+                    Category.prototype.getRawValueFromIndex = function (columnIndex, row) {
+                        if (columnIndex < 0)
+                            return null;
+                        var i = (row * this.columnCount + columnIndex) * 2;
+                        return ShortStringPool.getString(this.data.substring(this.tokens[i], this.tokens[i + 1]));
+                    };
+                    /**
+                     * Returns the string value of the column.
+                     */
+                    Category.prototype.getStringValueFromIndex = function (columnIndex, row) {
+                        if (columnIndex < 0)
+                            return null;
+                        var i = (row * this.columnCount + columnIndex) * 2;
+                        var ret = ShortStringPool.getString(this.data.substring(this.tokens[i], this.tokens[i + 1]));
+                        if (ret === "." || ret === "?")
+                            return null;
+                        return ret;
+                    };
+                    /**
+                     * Returns the integer value of the column.
+                     */
+                    Category.prototype.getIntValueFromIndex = function (columnIndex, row) {
+                        if (columnIndex < 0)
+                            return NaN;
+                        var i = (row * this.columnCount + columnIndex) * 2;
+                        return Core.Utils.FastNumberParsers.parseInt(this.data, this.tokens[i], this.tokens[i + 1]);
+                    };
+                    /**
+                     * Returns the integer value of the column.
+                     */
+                    Category.prototype.getFloatValueFromIndex = function (columnIndex, row) {
+                        if (columnIndex < 0)
+                            return NaN;
+                        var i = (row * this.columnCount + columnIndex) * 2;
+                        return Core.Utils.FastNumberParsers.parseFloat(this.data, this.tokens[i], this.tokens[i + 1]);
+                    };
+                    /**
+                     * Returns a matrix constructed from a given field: category.field[1..rows][1..cols]
+                     */
+                    Category.prototype.getMatrix = function (field, rows, cols, rowIndex) {
+                        var ret = [], row;
+                        for (var i = 1; i <= rows; i++) {
+                            row = [];
+                            for (var j = 1; j <= cols; j++) {
+                                var c = field + "[" + i + "][" + j + "]";
+                                if (this.isValueUndefined(c, rowIndex))
+                                    return undefined;
+                                row[j - 1] = this.getFloatValue(c, rowIndex);
+                            }
+                            ret[i - 1] = row;
+                        }
+                        return ret;
+                    };
+                    /**
+                     * Returns a vector constructed from a given field: category.field[1..rows]
+                     */
+                    Category.prototype.getVector = function (field, rows, cols, rowIndex) {
+                        var ret = [];
+                        for (var i = 1; i <= rows; i++) {
+                            var c = field + "[" + i + "]";
+                            if (this.isValueUndefined(c, rowIndex))
+                                return undefined;
+                            ret[i - 1] = this.getFloatValue(c, rowIndex);
+                        }
+                        return ret;
+                    };
+                    Category.prototype.getTransform = function (row, matrix, vector) {
+                        var ret = Core.Geometry.LinearAlgebra.Matrix4.identity(), i, j, c;
+                        for (i = 1; i <= 3; i++) {
+                            for (j = 1; j <= 3; j++) {
+                                c = matrix + "[" + i + "][" + j + "]";
+                                if (this.isValueUndefined(c, row))
+                                    return undefined;
+                                Core.Geometry.LinearAlgebra.Matrix4.setValue(ret, i - 1, j - 1, this.getFloatValue(c, row));
+                            }
+                            c = vector + "[" + i + "]";
+                            Core.Geometry.LinearAlgebra.Matrix4.setValue(ret, i - 1, 3, this.getFloatValue(c, row));
+                        }
+                        return ret;
+                    };
+                    /**
+                     * Determines if two tokens have the same string value.
+                     */
+                    Category.prototype.areTokensEqual = function (aIndex, bIndex) {
+                        var aS = this.tokens[aIndex * 2], bS = this.tokens[bIndex * 2], len = this.tokens[aIndex * 2 + 1] - aS;
+                        if (len !== this.tokens[bIndex * 2 + 1] - bS)
+                            return false;
+                        for (var i = 0; i < len; i++) {
+                            if (this.data.charCodeAt(i + aS) !== this.data.charCodeAt(i + bS))
+                                return false;
+                        }
+                        return true;
+                    };
+                    /**
+                     * Determines if a token contains a given string.
+                     */
+                    Category.prototype.tokenEqual = function (aIndex, value) {
+                        var s = this.tokens[aIndex * 2], len = value.length;
+                        if (len !== this.tokens[aIndex * 2 + 1] - s)
+                            return false;
+                        for (var i = 0; i < len; i++) {
+                            if (this.data.charCodeAt(i + s) !== value.charCodeAt(i))
+                                return false;
+                        }
+                        return true;
+                    };
+                    /**
+                     * Determines if a value contains a given string.
+                     */
+                    Category.prototype.valueEqual = function (columnIndex, row, value) {
+                        var aIndex = (row * this.columnCount + columnIndex) * 2, s = this.tokens[aIndex], len = value.length;
+                        if (len !== this.tokens[aIndex + 1] - s)
+                            return false;
+                        for (var i = 0; i < len; i++) {
+                            if (this.data.charCodeAt(i + s) !== value.charCodeAt(i))
+                                return false;
+                        }
+                        return true;
+                    };
+                    /**
+                     * Maps the rows to an user defined representation.
+                     *
+                     * @example
+                     *   // returns an array objects with id and type properties.
+                     *   category.select(row => { id: row.getInt("_entity.id"), type: row.getString("_entity.type") })
+                     */
+                    Category.prototype.select = function (selector) {
+                        var ret = [];
+                        for (var i = 0; i < this.rowCount; i++) {
+                            ret[i] = selector(new CategoryQueryRowContext(this, i));
+                        }
+                        return ret;
+                    };
+                    /**
+                     * Maps the rows that satisfy a condition to an user defined representation.
+                     *
+                     * @example
+                     *   // returns entity ids of entities with weight > 1000.
+                     *   category.selectWhere(
+                     *     row => row.getFloat("_entity.weight") > 1000,
+                     *     row => row.getInt("_entity.id"))
+                     */
+                    Category.prototype.selectWhere = function (condition, selector) {
+                        var ret = [];
+                        for (var i = 0; i < this.rowCount; i++) {
+                            var ctx = new CategoryQueryRowContext(this, i);
+                            if (condition(ctx)) {
+                                ret[ret.length] = selector(ctx);
+                            }
+                        }
+                        return ret;
+                    };
+                    Category.prototype.toJSON = function () {
+                        var _this = this;
+                        var rows = [], data = this.data, tokens = this.tokens;
+                        var colNames = this.columnNames.map(function (c) { return c.substr(_this.name.length + 1); });
+                        for (var i = 0; i < this.rowCount; i++) {
+                            var item = {};
+                            for (var j = 0; j < this.columnCount; j++) {
+                                var tk = (i * this.columnCount + j) * 2;
+                                item[colNames[j]] = ShortStringPool.getString(data.substring(tokens[tk], tokens[tk + 1]));
+                            }
+                            rows[i] = item;
+                        }
+                        return { name: this.name, columns: colNames, rows: rows };
+                    };
+                    return Category;
+                }());
+                CIF.Category = Category;
+            })(CIF = Formats.CIF || (Formats.CIF = {}));
+        })(Formats = Core.Formats || (Core.Formats = {}));
+    })(Core = LiteMol.Core || (LiteMol.Core = {}));
+})(LiteMol || (LiteMol = {}));
+/*
+ * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ */
+var LiteMol;
+(function (LiteMol) {
+    var Core;
+    (function (Core) {
+        var Formats;
+        (function (Formats) {
+            var CIF;
+            (function (CIF) {
+                "use strict";
+                /**
+                 * Cif tokenizer .. d'oh.
+                 */
+                var CifTokenizer = (function () {
+                    function CifTokenizer(data) {
+                        this.data = data;
+                        this.length = data.length;
+                        this.position = 0;
+                        this.currentTokenStart = 0;
+                        this.currentTokenEnd = 0;
+                        this.currentTokenType = 6 /* End */;
+                        this.currentLineNumber = 1;
+                        this.isEscaped = false;
+                    }
+                    /**
+                     * Eat everything until a whitespace/newline occurs.
+                     */
+                    CifTokenizer.prototype.eatValue = function () {
+                        while (this.position < this.length) {
+                            switch (this.data.charCodeAt(this.position)) {
+                                case 9: // \t
+                                case 10: // \n
+                                case 13: // \r
+                                case 32:
+                                    this.currentTokenEnd = this.position;
+                                    return;
+                                default:
+                                    ++this.position;
+                                    break;
+                            }
+                        }
+                        this.currentTokenEnd = this.position;
+                    };
+                    /**
+                     * Eats an escaped values. Handles the "degenerate" cases as well.
+                     *
+                     * "Degenerate" cases:
+                     * - 'xx'x' => xx'x
+                     * - 'xxxNEWLINE => 'xxx
+                     *
+                     */
+                    CifTokenizer.prototype.eatEscaped = function (esc) {
+                        var next, c;
+                        ++this.position;
+                        while (this.position < this.length) {
+                            c = this.data.charCodeAt(this.position);
+                            if (c === esc) {
+                                next = this.data.charCodeAt(this.position + 1);
+                                switch (next) {
+                                    case 9: // \t
+                                    case 10: // \n
+                                    case 13: // \r
+                                    case 32:
+                                        // get rid of the quotes.
+                                        this.currentTokenStart++;
+                                        this.currentTokenEnd = this.position;
+                                        this.isEscaped = true;
+                                        ++this.position;
+                                        return;
+                                    default:
+                                        if (next === void 0) {
+                                            // get rid of the quotes.
+                                            this.currentTokenStart++;
+                                            this.currentTokenEnd = this.position;
+                                            this.isEscaped = true;
+                                            ++this.position;
+                                            return;
+                                        }
+                                        ++this.position;
+                                        break;
+                                }
+                            }
+                            else {
+                                // handle 'xxxNEWLINE => 'xxx
+                                if (c === 10 || c === 13) {
+                                    this.currentTokenEnd = this.position;
+                                    return;
+                                }
+                                ++this.position;
+                            }
+                        }
+                        this.currentTokenEnd = this.position;
+                    };
+                    /**
+                     * Eats a multiline token of the form NL;....NL;
+                     */
+                    CifTokenizer.prototype.eatMultiline = function () {
+                        var prev = 59, pos = this.position + 1, c;
+                        while (pos < this.length) {
+                            c = this.data.charCodeAt(pos);
+                            if (c === 59 && (prev === 10 || prev === 13)) {
+                                this.position = pos + 1;
+                                // get rid of the ;
+                                this.currentTokenStart++;
+                                // remove trailing newlines
+                                pos--;
+                                c = this.data.charCodeAt(pos);
+                                while (c === 10 || c === 13) {
+                                    pos--;
+                                    c = this.data.charCodeAt(pos);
+                                }
+                                this.currentTokenEnd = pos + 1;
+                                this.isEscaped = true;
+                                return;
+                            }
+                            else {
+                                // handle line numbers
+                                if (c === 13) {
+                                    this.currentLineNumber++;
+                                }
+                                else if (c === 10 && prev !== 13) {
+                                    this.currentLineNumber++;
+                                }
+                                prev = c;
+                                ++pos;
+                            }
+                        }
+                        this.position = pos;
+                        return prev;
+                    };
+                    /**
+                     * Skips until \n or \r occurs -- therefore the newlines get handled by the "skipWhitespace" function.
+                     */
+                    CifTokenizer.prototype.skipCommentLine = function () {
+                        while (this.position < this.length) {
+                            var c = this.data.charCodeAt(this.position);
+                            if (c === 10 || c === 13) {
+                                return;
+                            }
+                            ++this.position;
+                        }
+                    };
+                    /**
+                     * Skips all the whitespace - space, tab, newline, CR
+                     * Handles incrementing line count.
+                     */
+                    CifTokenizer.prototype.skipWhitespace = function () {
+                        var prev = 10;
+                        while (this.position < this.length) {
+                            var c = this.data.charCodeAt(this.position);
+                            switch (c) {
+                                case 9: // '\t'
+                                case 32:
+                                    prev = c;
+                                    ++this.position;
+                                    break;
+                                case 10:
+                                    // handle \r\n
+                                    if (prev !== 13) {
+                                        ++this.currentLineNumber;
+                                    }
+                                    prev = c;
+                                    ++this.position;
+                                    break;
+                                case 13:
+                                    prev = c;
+                                    ++this.position;
+                                    ++this.currentLineNumber;
+                                    break;
+                                default:
+                                    return prev;
+                            }
+                        }
+                        return prev;
+                    };
+                    CifTokenizer.prototype.isData = function () {
+                        // here we already assume the 5th char is _ and that the length >= 5
+                        // d/D
+                        var c = this.data.charCodeAt(this.currentTokenStart);
+                        if (c !== 68 && c !== 100)
+                            return false;
+                        // a/A
+                        c = this.data.charCodeAt(this.currentTokenStart + 1);
+                        if (c !== 65 && c !== 97)
+                            return false;
+                        // t/t
+                        c = this.data.charCodeAt(this.currentTokenStart + 2);
+                        if (c !== 84 && c !== 116)
+                            return false;
+                        // a/A
+                        c = this.data.charCodeAt(this.currentTokenStart + 3);
+                        if (c !== 65 && c !== 97)
+                            return false;
+                        return true;
+                    };
+                    CifTokenizer.prototype.isSave = function () {
+                        // here we already assume the 5th char is _ and that the length >= 5
+                        // s/S
+                        var c = this.data.charCodeAt(this.currentTokenStart);
+                        if (c !== 83 && c !== 115)
+                            return false;
+                        // a/A
+                        c = this.data.charCodeAt(this.currentTokenStart + 1);
+                        if (c !== 65 && c !== 97)
+                            return false;
+                        // v/V
+                        c = this.data.charCodeAt(this.currentTokenStart + 2);
+                        if (c !== 86 && c !== 118)
+                            return false;
+                        // e/E
+                        c = this.data.charCodeAt(this.currentTokenStart + 3);
+                        if (c !== 69 && c !== 101)
+                            return false;
+                        return true;
+                    };
+                    CifTokenizer.prototype.isLoop = function () {
+                        // here we already assume the 5th char is _ and that the length >= 5
+                        if (this.currentTokenEnd - this.currentTokenStart !== 5)
+                            return false;
+                        // l/L
+                        var c = this.data.charCodeAt(this.currentTokenStart);
+                        if (c !== 76 && c !== 108)
+                            return false;
+                        // o/O
+                        c = this.data.charCodeAt(this.currentTokenStart + 1);
+                        if (c !== 79 && c !== 111)
+                            return false;
+                        // o/O
+                        c = this.data.charCodeAt(this.currentTokenStart + 2);
+                        if (c !== 79 && c !== 111)
+                            return false;
+                        // p/P
+                        c = this.data.charCodeAt(this.currentTokenStart + 3);
+                        if (c !== 80 && c !== 112)
+                            return false;
+                        return true;
+                    };
+                    /**
+                     * Checks if the current token shares the namespace with string at <start,end).
+                     */
+                    CifTokenizer.prototype.isNamespace = function (start, end) {
+                        var i, nsLen = end - start, offset = this.currentTokenStart - start, tokenLen = this.currentTokenEnd - this.currentTokenStart;
+                        if (tokenLen < nsLen)
+                            return false;
+                        for (i = start; i < end; ++i) {
+                            if (this.data.charCodeAt(i) !== this.data.charCodeAt(i + offset))
+                                return false;
+                        }
+                        if (nsLen === tokenLen)
+                            return true;
+                        if (this.data.charCodeAt(i + offset) === 46) {
+                            return true;
+                        }
+                        return false;
+                    };
+                    /**
+                     * Returns the index of '.' in the current token. If no '.' is present, returns currentTokenEnd.
+                     */
+                    CifTokenizer.prototype.getNamespaceEnd = function () {
+                        var i;
+                        for (i = this.currentTokenStart; i < this.currentTokenEnd; ++i) {
+                            if (this.data.charCodeAt(i) === 46)
+                                return i;
+                        }
+                        return i;
+                    };
+                    /**
+                     * Get the namespace string. endIndex is obtained by the getNamespaceEnd() function.
+                     */
+                    CifTokenizer.prototype.getNamespace = function (endIndex) {
+                        return this.data.substring(this.currentTokenStart, endIndex);
+                    };
+                    /**
+                     * String representation of the current token.
+                     */
+                    CifTokenizer.prototype.getTokenString = function () {
+                        return this.data.substring(this.currentTokenStart, this.currentTokenEnd);
+                    };
+                    /**
+                     * Move to the next token.
+                     */
+                    CifTokenizer.prototype.moveNextInternal = function () {
+                        var prev = this.skipWhitespace(), c;
+                        if (this.position >= this.length) {
+                            this.currentTokenType = 6 /* End */;
+                            return;
+                        }
+                        this.currentTokenStart = this.position;
+                        this.currentTokenEnd = this.position;
+                        this.isEscaped = false;
+                        c = this.data.charCodeAt(this.position);
+                        switch (c) {
+                            case 35:
+                                this.skipCommentLine();
+                                this.currentTokenType = 5 /* Comment */;
+                                break;
+                            case 34: // ", escaped value
+                            case 39:
+                                this.eatEscaped(c);
+                                this.currentTokenType = 3 /* Value */;
+                                break;
+                            case 59:
+                                // multiline value must start at the beginning of the line.
+                                if (prev === 10 || prev === 13) {
+                                    this.eatMultiline();
+                                }
+                                else {
+                                    this.eatValue();
+                                }
+                                this.currentTokenType = 3 /* Value */;
+                                break;
+                            default:
+                                this.eatValue();
+                                // escaped is always Value
+                                if (this.isEscaped) {
+                                    this.currentTokenType = 3 /* Value */;
+                                }
+                                else if (this.data.charCodeAt(this.currentTokenStart) === 95) {
+                                    this.currentTokenType = 4 /* ColumnName */;
+                                }
+                                else if (this.currentTokenEnd - this.currentTokenStart >= 5 && this.data.charCodeAt(this.currentTokenStart + 4) === 95) {
+                                    if (this.isData())
+                                        this.currentTokenType = 0 /* Data */;
+                                    else if (this.isSave())
+                                        this.currentTokenType = 1 /* Save */;
+                                    else if (this.isLoop())
+                                        this.currentTokenType = 2 /* Loop */;
+                                    else
+                                        this.currentTokenType = 3 /* Value */;
+                                }
+                                else {
+                                    this.currentTokenType = 3 /* Value */;
+                                }
+                                break;
+                        }
+                    };
+                    /**
+                     * Moves to the next non-comment token.
+                     */
+                    CifTokenizer.prototype.moveNext = function () {
+                        this.moveNextInternal();
+                        while (this.currentTokenType === 5 /* Comment */)
+                            this.moveNextInternal();
+                    };
+                    return CifTokenizer;
+                }());
+                /**
+                 * mmCIF parser.
+                 *
+                 * Trying to be as close to the specification http://www.iucr.org/resources/cif/spec/version1.1/cifsyntax
+                 *
+                 * Differences I'm aware of:
+                 * - Except keywords (data_, loop_, save_) everything is case sensitive.
+                 * - The tokens . and ? are treated the same as the values '.' and '?'.
+                 * - Ignores \ in the multiline values:
+                 *     ;abc\
+                 *     efg
+                 *     ;
+                 *   should have the value 'abcefg' but will have the value 'abc\\nefg' instead.
+                 *   Post processing of this is left to the consumer of the data.
+                 * - Similarly, things like punctuation (\', ..) are left to be processed by the user if needed.
+                 *
+                 */
+                var Parser = (function () {
+                    function Parser() {
+                    }
+                    /**
+                     * Reads a category containing a single row.
+                     */
+                    Parser.handleSingle = function (tokenizer, block) {
+                        var nsStart = tokenizer.currentTokenStart, nsEnd = tokenizer.getNamespaceEnd(), name = tokenizer.getNamespace(nsEnd), column, columns = [], tokens = new Formats.TokenIndexBuilder(512), tokenCount = 0;
+                        while (tokenizer.currentTokenType === 4 /* ColumnName */ && tokenizer.isNamespace(nsStart, nsEnd)) {
+                            column = tokenizer.getTokenString();
+                            tokenizer.moveNext();
+                            if (tokenizer.currentTokenType !== 3 /* Value */) {
+                                return {
+                                    hasError: true,
+                                    errorLine: tokenizer.currentLineNumber,
+                                    errorMessage: "Expected value."
+                                };
+                            }
+                            columns[columns.length] = column;
+                            tokens.addToken(tokenizer.currentTokenStart, tokenizer.currentTokenEnd);
+                            tokenCount++;
+                            tokenizer.moveNext();
+                        }
+                        block.addCategory(new CIF.Category(block.data, name, nsStart, tokenizer.currentTokenStart, columns, tokens.tokens, tokenCount));
+                        return {
+                            hasError: false,
+                            errorLine: 0,
+                            errorMessage: ""
+                        };
+                    };
+                    /**
+                     * Reads a loop.
+                     */
+                    Parser.handleLoop = function (tokenizer, block) {
+                        var start = tokenizer.currentTokenStart, loopLine = tokenizer.currentLineNumber;
+                        tokenizer.moveNext();
+                        var name = tokenizer.getNamespace(tokenizer.getNamespaceEnd()), columns = [], tokens = new Formats.TokenIndexBuilder(name === "_atom_site" ? (block.data.length / 1.85) | 0 : 1024), tokenCount = 0;
+                        while (tokenizer.currentTokenType === 4 /* ColumnName */) {
+                            columns[columns.length] = tokenizer.getTokenString();
+                            tokenizer.moveNext();
+                        }
+                        while (tokenizer.currentTokenType === 3 /* Value */) {
+                            tokens.addToken(tokenizer.currentTokenStart, tokenizer.currentTokenEnd);
+                            tokenCount++;
+                            tokenizer.moveNext();
+                        }
+                        if (tokenCount % columns.length !== 0) {
+                            return {
+                                hasError: true,
+                                errorLine: tokenizer.currentLineNumber,
+                                errorMessage: "The number of values for loop starting at line " + loopLine + " is not a multiple of the number of columns."
+                            };
+                        }
+                        block.addCategory(new CIF.Category(block.data, name, start, tokenizer.currentTokenStart, columns, tokens.tokens, tokenCount));
+                        return {
+                            hasError: false,
+                            errorLine: 0,
+                            errorMessage: ""
+                        };
+                    };
+                    /**
+                     * Creates an error result.
+                     */
+                    Parser.error = function (line, message) {
+                        return Formats.ParserResult.error(message, line);
+                    };
+                    /**
+                     * Creates a data result.
+                     */
+                    Parser.result = function (data) {
+                        return Formats.ParserResult.success(data);
+                    };
+                    /**
+                     * Parses an mmCIF file.
+                     *
+                     * @returns CifParserResult wrapper of the result.
+                     */
+                    Parser.parse = function (data) {
+                        var tokenizer = new CifTokenizer(data), cat, id, file = new CIF.File(data), block = new CIF.Block(file, "default"), saveFrame = new CIF.Block(file, "empty"), inSaveFrame = false, blockSaveFrames;
+                        tokenizer.moveNext();
+                        while (tokenizer.currentTokenType !== 6 /* End */) {
+                            var token = tokenizer.currentTokenType;
+                            // Data block
+                            if (token === 0 /* Data */) {
+                                if (inSaveFrame) {
+                                    return Parser.error(tokenizer.currentLineNumber, "Unexpected data block inside a save frame.");
+                                }
+                                if (block.categoryList.length > 0) {
+                                    file.addBlock(block);
+                                }
+                                block = new CIF.Block(file, data.substring(tokenizer.currentTokenStart + 5, tokenizer.currentTokenEnd));
+                                tokenizer.moveNext();
+                            }
+                            else if (token === 1 /* Save */) {
+                                id = data.substring(tokenizer.currentTokenStart + 5, tokenizer.currentTokenEnd);
+                                if (id.length === 0) {
+                                    if (saveFrame.categoryList.length > 0) {
+                                        blockSaveFrames = block.additionalData["saveFrames"];
+                                        if (!blockSaveFrames) {
+                                            blockSaveFrames = [];
+                                            block.additionalData["saveFrames"] = blockSaveFrames;
+                                        }
+                                        blockSaveFrames[blockSaveFrames.length] = saveFrame;
+                                    }
+                                    inSaveFrame = false;
+                                }
+                                else {
+                                    if (inSaveFrame) {
+                                        return Parser.error(tokenizer.currentLineNumber, "Save frames cannot be nested.");
+                                    }
+                                    inSaveFrame = true;
+                                    saveFrame = new CIF.Block(file, id);
+                                }
+                                tokenizer.moveNext();
+                            }
+                            else if (token === 2 /* Loop */) {
+                                cat = Parser.handleLoop(tokenizer, inSaveFrame ? saveFrame : block);
+                                if (cat.hasError) {
+                                    return Parser.error(cat.errorLine, cat.errorMessage);
+                                }
+                            }
+                            else if (token === 4 /* ColumnName */) {
+                                cat = Parser.handleSingle(tokenizer, inSaveFrame ? saveFrame : block);
+                                if (cat.hasError) {
+                                    return Parser.error(cat.errorLine, cat.errorMessage);
+                                }
+                            }
+                            else {
+                                return Parser.error(tokenizer.currentLineNumber, "Unexpected token. Expected data_, loop_, or data name.");
+                            }
+                        }
+                        // Check if the latest save frame was closed.
+                        if (inSaveFrame) {
+                            return Parser.error(tokenizer.currentLineNumber, "Unfinished save frame (`" + saveFrame.header + "`).");
+                        }
+                        if (block.categoryList.length > 0) {
+                            file.addBlock(block);
+                        }
+                        return Parser.result(file);
+                    };
+                    return Parser;
+                }());
+                function parse(data) {
+                    return Parser.parse(data);
+                }
+                CIF.parse = parse;
+            })(CIF = Formats.CIF || (Formats.CIF = {}));
+        })(Formats = Core.Formats || (Core.Formats = {}));
+    })(Core = LiteMol.Core || (LiteMol.Core = {}));
+})(LiteMol || (LiteMol = {}));
+/*
+ * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ */
+var LiteMol;
+(function (LiteMol) {
+    var Core;
+    (function (Core) {
+        var Formats;
+        (function (Formats) {
+            var Molecule;
+            (function (Molecule) {
+                var mmCIF;
+                (function (mmCIF) {
+                    "use strict";
+                    function getModelEndRow(startRow, category) {
+                        var size = category.rowCount, modelNumCol = category.getColumnIndex("_atom_site.pdbx_PDB_model_num"), currentOffset = 0, colCount = category.columnCount, startOffset = startRow * colCount + modelNumCol, i = 0;
+                        if (modelNumCol < 0)
+                            return size;
+                        for (i = startRow; i < size; i++) {
+                            currentOffset = i * colCount;
+                            if (!category.areTokensEqual(startOffset, currentOffset + modelNumCol)) {
+                                break;
+                            }
+                        }
+                        return i;
+                    }
+                    function buildModelAtomTable(startRow, category) {
+                        var endRow = getModelEndRow(startRow, category);
+                        var colCount = category.columnCount, atoms = new Core.Structure.DataTableBuilder(endRow - startRow), id = atoms.addColumn("id", function (size) { return new Int32Array(size); }), idX = category.getColumnIndex("_atom_site.id"), pX = atoms.addColumn("x", function (size) { return new Float32Array(size); }), pXX = category.getColumnIndex("_atom_site.Cartn_x"), pY = atoms.addColumn("y", function (size) { return new Float32Array(size); }), pYX = category.getColumnIndex("_atom_site.Cartn_y"), pZ = atoms.addColumn("z", function (size) { return new Float32Array(size); }), pZX = category.getColumnIndex("_atom_site.Cartn_z"), altLoc = atoms.addColumn("altLoc", function (size) { return []; }), altLocX = category.getColumnIndex("_atom_site.label_alt_id"), rowIndex = atoms.addColumn("rowIndex", function (size) { return new Int32Array(size); }), residueIndex = atoms.addColumn("residueIndex", function (size) { return new Int32Array(size); }), chainIndex = atoms.addColumn("chainIndex", function (size) { return new Int32Array(size); }), entityIndex = atoms.addColumn("entityIndex", function (size) { return new Int32Array(size); }), name = atoms.addColumn("name", function (size) { return []; }), nameX = category.getColumnIndex("_atom_site.label_atom_id"), elementSymbol = atoms.addColumn("elementSymbol", function (size) { return []; }), elementSymbolX = category.getColumnIndex("_atom_site.type_symbol"), occupancy = atoms.addColumn("occupancy", function (size) { return new Float32Array(size); }), occupancyX = category.getColumnIndex("_atom_site.occupancy"), tempFactor = atoms.addColumn("tempFactor", function (size) { return new Float32Array(size); }), tempFactorX = category.getColumnIndex("_atom_site.B_iso_or_equiv"), authName = atoms.addColumn("authName", function (size) { return []; }), authNameX = category.getColumnIndex("_atom_site.auth_atom_id");
+                        var resSeqNumberCol = category.getColumnIndex("_atom_site.label_seq_id"), asymIdCol = category.getColumnIndex("_atom_site.label_asym_id"), entityCol = category.getColumnIndex("_atom_site.label_entity_id"), insCodeCol = category.getColumnIndex("_atom_site.pdbx_PDB_ins_code"), authResSeqNumberCol = category.getColumnIndex("_atom_site.auth_seq_id"), modelNumCol = category.getColumnIndex("_atom_site.pdbx_PDB_model_num"), 
+                        //authAsymIdCol = category.getColumnIndex("_atom_site.auth_asym_id"),
+                        currentResidueNumberToken = resSeqNumberCol, currentAsymIdToken = asymIdCol, currentInsCodeToken = insCodeCol, currentAuthResidueNumberToken = authResSeqNumberCol, 
+                        //currentAuthAsymIdToken = authAsymIdCol,
+                        currentEntityToken = entityCol, currentOffset = 0, newResidue = false, newChain = false, numChains = 0, numResidues = 0, numEntities = 0;
+                        for (var row = startRow; row < endRow; row++) {
+                            var index = row - startRow;
+                            currentOffset = row * colCount;
+                            id[index] = category.getIntValueFromIndex(idX, row);
+                            pX[index] = category.getFloatValueFromIndex(pXX, row);
+                            pY[index] = category.getFloatValueFromIndex(pYX, row);
+                            pZ[index] = category.getFloatValueFromIndex(pZX, row);
+                            name[index] = category.getStringValueFromIndex(nameX, row);
+                            authName[index] = category.getStringValueFromIndex(authNameX, row);
+                            elementSymbol[index] = category.getStringValueFromIndex(elementSymbolX, row);
+                            altLoc[index] = category.getStringValueFromIndex(altLocX, row);
+                            occupancy[index] = category.getFloatValueFromIndex(occupancyX, row);
+                            tempFactor[index] = category.getFloatValueFromIndex(tempFactorX, row);
+                            newResidue = false;
+                            newChain = false;
+                            if (category.isTokenUndefined(currentResidueNumberToken)) {
+                                // handle HET residues
+                                newResidue =
+                                    !category.areTokensEqual(currentAuthResidueNumberToken, currentOffset + authResSeqNumberCol);
+                            }
+                            else {
+                                newResidue =
+                                    !category.areTokensEqual(currentResidueNumberToken, currentOffset + resSeqNumberCol)
+                                        || !category.areTokensEqual(currentInsCodeToken, currentOffset + insCodeCol);
+                            }
+                            if (newResidue) {
+                                numResidues++;
+                                currentResidueNumberToken = currentOffset + resSeqNumberCol;
+                                currentAuthResidueNumberToken = currentOffset + authResSeqNumberCol;
+                                currentInsCodeToken = currentOffset + insCodeCol;
+                            }
+                            if (!category.areTokensEqual(currentAsymIdToken, currentOffset + asymIdCol)) {
+                                // handle new chain
+                                newChain = true;
+                                numChains++;
+                                currentAsymIdToken = currentOffset + asymIdCol;
+                                if (!newResidue) {
+                                    newResidue = true;
+                                    numResidues++;
+                                    currentResidueNumberToken = currentOffset + resSeqNumberCol;
+                                    currentAuthResidueNumberToken = currentOffset + authResSeqNumberCol;
+                                    currentInsCodeToken = currentOffset + insCodeCol;
+                                }
+                            }
+                            if (!category.areTokensEqual(currentEntityToken, currentOffset + entityCol)) {
+                                // handle new entity
+                                numEntities++;
+                                currentEntityToken = currentOffset + entityCol;
+                                if (!newChain) {
+                                    newChain = true;
+                                    numChains++;
+                                    currentAsymIdToken = currentOffset + asymIdCol;
+                                }
+                                if (!newResidue) {
+                                    newResidue = true;
+                                    numResidues++;
+                                    currentResidueNumberToken = currentOffset + resSeqNumberCol;
+                                    currentAuthResidueNumberToken = currentOffset + authResSeqNumberCol;
+                                    currentInsCodeToken = currentOffset + insCodeCol;
+                                }
+                            }
+                            rowIndex[index] = row;
+                            residueIndex[index] = numResidues;
+                            chainIndex[index] = numChains;
+                            entityIndex[index] = numEntities;
+                        }
+                        var modelId = modelNumCol < 0 ? "1" : category.getStringValue("_atom_site.pdbx_PDB_model_num", startRow);
+                        return {
+                            atoms: atoms.seal(),
+                            modelId: modelId,
+                            endRow: endRow
+                        };
+                    }
+                    function buildStructure(category, atoms) {
+                        var count = atoms.count, residueIndexCol = atoms.residueIndex, chainIndexCol = atoms.chainIndex, entityIndexCol = atoms.entityIndex, residues = new Core.Structure.DataTableBuilder(atoms.residueIndex[atoms.count - 1] + 1), chains = new Core.Structure.DataTableBuilder(atoms.chainIndex[atoms.count - 1] + 1), entities = new Core.Structure.DataTableBuilder(atoms.entityIndex[atoms.count - 1] + 1), residueName = residues.addColumn("name", function (size) { return []; }), residueSeqNumber = residues.addColumn("seqNumber", function (size) { return new Int32Array(size); }), residueAsymId = residues.addColumn("asymId", function (size) { return []; }), residueAuthName = residues.addColumn("authName", function (size) { return []; }), residueAuthSeqNumber = residues.addColumn("authSeqNumber", function (size) { return new Int32Array(size); }), residueAuthAsymId = residues.addColumn("authAsymId", function (size) { return []; }), residueInsertionCode = residues.addColumn("insCode", function (size) { return []; }), residueEntityId = residues.addColumn("entityId", function (size) { return []; }), residueIsHet = residues.addColumn("isHet", function (size) { return new Int8Array(size); }), residueAtomStartIndex = residues.addColumn("atomStartIndex", function (size) { return new Int32Array(size); }), residueAtomEndIndex = residues.addColumn("atomEndIndex", function (size) { return new Int32Array(size); }), residueChainIndex = residues.addColumn("chainIndex", function (size) { return new Int32Array(size); }), residueEntityIndex = residues.addColumn("entityIndex", function (size) { return new Int32Array(size); }), residueSecondaryStructureIndex = residues.addColumn("secondaryStructureIndex", function (size) { return new Int32Array(size); }), chainAsymId = chains.addColumn("asymId", function (size) { return []; }), chainEntityId = chains.addColumn("entityId", function (size) { return []; }), chainAuthAsymId = chains.addColumn("authAsymId", function (size) { return []; }), chainAtomStartIndex = chains.addColumn("atomStartIndex", function (size) { return new Int32Array(size); }), chainAtomEndIndex = chains.addColumn("atomEndIndex", function (size) { return new Int32Array(size); }), chainResidueStartIndex = chains.addColumn("residueStartIndex", function (size) { return new Int32Array(size); }), chainResidueEndIndex = chains.addColumn("residueEndIndex", function (size) { return new Int32Array(size); }), chainEntityIndex = chains.addColumn("entityIndex", function (size) { return new Int32Array(size); }), entityId = entities.addColumn("entityId", function (size) { return []; }), entityTypeEnum = entities.addColumn("entityType", function (size) { return []; }), entityType = entities.addColumn("type", function (size) { return []; }), entityAtomStartIndex = entities.addColumn("atomStartIndex", function (size) { return new Int32Array(size); }), entityAtomEndIndex = entities.addColumn("atomEndIndex", function (size) { return new Int32Array(size); }), entityResidueStartIndex = entities.addColumn("residueStartIndex", function (size) { return new Int32Array(size); }), entityResidueEndIndex = entities.addColumn("residueEndIndex", function (size) { return new Int32Array(size); }), entityChainStartIndex = entities.addColumn("chainStartIndex", function (size) { return new Int32Array(size); }), entityChainEndIndex = entities.addColumn("chainEndIndex", function (size) { return new Int32Array(size); }), resNameCol = category.getColumnIndex("_atom_site.label_comp_id"), resSeqNumberCol = category.getColumnIndex("_atom_site.label_seq_id"), asymIdCol = category.getColumnIndex("_atom_site.label_asym_id"), authResNameCol = category.getColumnIndex("_atom_site.auth_comp_id"), authResSeqNumberCol = category.getColumnIndex("_atom_site.auth_seq_id"), authAsymIdCol = category.getColumnIndex("_atom_site.auth_asym_id"), isHetCol = category.getColumnIndex("_atom_site.group_PDB"), entityCol = category.getColumnIndex("_atom_site.label_entity_id"), insCodeCol = category.getColumnIndex("_atom_site.pdbx_PDB_ins_code"), residueStart = 0, chainStart = 0, entityStart = 0, entityChainStart = 0, entityResidueStart = 0, chainResidueStart = 0, currentResidue = 0, currentChain = 0, currentEntity = 0;
+                        var i = 0;
+                        for (i = 0; i < count; i++) {
+                            if (residueIndexCol[i] !== residueIndexCol[residueStart]) {
+                                residueName[currentResidue] = category.getStringValueFromIndex(resNameCol, residueStart);
+                                residueSeqNumber[currentResidue] = category.getIntValueFromIndex(resSeqNumberCol, residueStart);
+                                residueAsymId[currentResidue] = category.getStringValueFromIndex(asymIdCol, residueStart);
+                                residueAuthName[currentResidue] = category.getStringValueFromIndex(authResNameCol, residueStart);
+                                residueAuthSeqNumber[currentResidue] = category.getIntValueFromIndex(authResSeqNumberCol, residueStart);
+                                residueAuthAsymId[currentResidue] = category.getStringValueFromIndex(authAsymIdCol, residueStart);
+                                residueInsertionCode[currentResidue] = category.getStringValueFromIndex(insCodeCol, residueStart);
+                                residueEntityId[currentResidue] = category.getStringValueFromIndex(entityCol, residueStart);
+                                residueIsHet[currentResidue] = category.valueEqual(isHetCol, residueStart, "HETATM") ? 1 : 0;
+                                residueAtomStartIndex[currentResidue] = residueStart;
+                                residueAtomEndIndex[currentResidue] = i;
+                                residueChainIndex[currentResidue] = currentChain;
+                                residueEntityIndex[currentResidue] = currentEntity;
+                                currentResidue++;
+                                residueStart = i;
+                            }
+                            if (chainIndexCol[i] !== chainIndexCol[chainStart]) {
+                                chainAsymId[currentChain] = category.getStringValueFromIndex(asymIdCol, chainStart);
+                                chainAuthAsymId[currentChain] = category.getStringValueFromIndex(authAsymIdCol, chainStart);
+                                chainEntityId[currentChain] = category.getStringValueFromIndex(entityCol, chainStart);
+                                chainResidueStartIndex[currentChain] = chainResidueStart;
+                                chainResidueEndIndex[currentChain] = currentResidue;
+                                chainAtomStartIndex[currentChain] = chainStart;
+                                chainAtomEndIndex[currentChain] = i;
+                                chainEntityIndex[currentChain] = currentEntity;
+                                currentChain++;
+                                chainStart = i;
+                                chainResidueStart = currentResidue;
+                            }
+                            if (entityIndexCol[i] !== entityIndexCol[entityStart]) {
+                                entityId[currentEntity] = category.getStringValueFromIndex(entityCol, entityStart);
+                                entityTypeEnum[currentEntity] = Core.Structure.EntityType.Unknown;
+                                entityType[currentEntity] = 'unknown';
+                                entityAtomStartIndex[currentEntity] = entityStart;
+                                entityAtomEndIndex[currentEntity] = i;
+                                entityResidueStartIndex[currentEntity] = entityResidueStart;
+                                entityResidueEndIndex[currentEntity] = currentResidue;
+                                entityChainStartIndex[currentEntity] = entityChainStart;
+                                entityChainEndIndex[currentEntity] = currentChain;
+                                currentEntity++;
+                                entityStart = i;
+                                entityChainStart = currentChain;
+                                entityResidueStart = currentResidue;
+                            }
+                        }
+                        // entity
+                        entityId[currentEntity] = category.getStringValueFromIndex(entityCol, entityStart);
+                        entityTypeEnum[currentEntity] = Core.Structure.EntityType.Unknown;
+                        entityType[currentEntity] = 'unknown';
+                        entityAtomStartIndex[currentEntity] = entityStart;
+                        entityAtomEndIndex[currentEntity] = i;
+                        entityResidueStartIndex[currentEntity] = entityResidueStart;
+                        entityResidueEndIndex[currentEntity] = currentResidue + 1;
+                        entityChainStartIndex[currentEntity] = entityChainStart;
+                        entityChainEndIndex[currentEntity] = currentChain + 1;
+                        // chain
+                        chainAsymId[currentChain] = category.getStringValueFromIndex(asymIdCol, chainStart);
+                        chainAuthAsymId[currentChain] = category.getStringValueFromIndex(authAsymIdCol, chainStart);
+                        chainEntityId[currentChain] = category.getStringValueFromIndex(entityCol, chainStart);
+                        chainResidueStartIndex[currentChain] = chainResidueStart;
+                        chainResidueEndIndex[currentChain] = currentResidue + 1;
+                        chainAtomStartIndex[currentChain] = chainStart;
+                        chainAtomEndIndex[currentChain] = i;
+                        chainEntityIndex[currentChain] = currentEntity;
+                        // residue
+                        residueName[currentResidue] = category.getStringValueFromIndex(resNameCol, residueStart);
+                        residueSeqNumber[currentResidue] = category.getIntValueFromIndex(resSeqNumberCol, residueStart);
+                        residueAsymId[currentResidue] = category.getStringValueFromIndex(asymIdCol, residueStart);
+                        residueAuthName[currentResidue] = category.getStringValueFromIndex(authResNameCol, residueStart);
+                        residueAuthSeqNumber[currentResidue] = category.getIntValueFromIndex(authResSeqNumberCol, residueStart);
+                        residueAuthAsymId[currentResidue] = category.getStringValueFromIndex(authAsymIdCol, residueStart);
+                        residueInsertionCode[currentResidue] = category.getStringValueFromIndex(insCodeCol, residueStart);
+                        residueAtomStartIndex[currentResidue] = residueStart;
+                        residueAtomEndIndex[currentResidue] = i;
+                        residueChainIndex[currentResidue] = currentChain;
+                        residueEntityIndex[currentResidue] = currentEntity;
+                        residueIsHet[currentResidue] = category.valueEqual(isHetCol, residueStart, "HETATM") ? 1 : 0;
+                        return {
+                            residues: residues.seal(),
+                            chains: chains.seal(),
+                            entities: entities.seal()
+                        };
+                    }
+                    function assignEntityTypes(category, entities) {
+                        var i;
+                        for (i = 0; i < entities.count; i++) {
+                            entities.entityType[i] = Core.Structure.EntityType.Unknown;
+                        }
+                        if (!category) {
+                            return;
+                        }
+                        var dataEnum = {}, data = {}, et;
+                        for (i = 0; i < category.rowCount; i++) {
+                            var t = (category.getStringValue("_entity.type", i) || "").toLowerCase();
+                            switch (t) {
+                                case "polymer":
+                                    et = Core.Structure.EntityType.Polymer;
+                                    break;
+                                case "non-polymer":
+                                    et = Core.Structure.EntityType.NonPolymer;
+                                    break;
+                                case "water":
+                                    et = Core.Structure.EntityType.Water;
+                                    break;
+                                default:
+                                    et = Core.Structure.EntityType.Unknown;
+                                    break;
+                            }
+                            var eId = category.getStringValue("_entity.id", i);
+                            dataEnum[eId] = et;
+                            data[eId] = t !== "" ? t : "unknown";
+                        }
+                        for (i = 0; i < entities.count; i++) {
+                            et = dataEnum[entities.entityId[i]];
+                            if (et !== undefined) {
+                                entities.entityType[i] = et;
+                                entities.type[i] = data[entities.entityId[i]];
+                            }
+                        }
+                    }
+                    function residueIdfromColumns(cat, row, asymId, seqNum, insCode) {
+                        return new Core.Structure.PolyResidueIdentifier(cat.getStringValue(asymId, row), cat.getIntValue(seqNum, row), cat.getStringValue(insCode, row));
+                    }
+                    var aminoAcidNames = { "ALA": true, "ARG": true, "ASP": true, "CYS": true, "GLN": true, "GLU": true, "GLY": true, "HIS": true, "ILE": true, "LEU": true, "LYS": true, "MET": true, "PHE": true, "PRO": true, "SER": true, "THR": true, "TRP": true, "TYR": true, "VAL": true, "ASN": true, "PYL": true, "SEC": true };
+                    function isResidueAminoSeq(atoms, residues, entities, index) {
+                        if (entities.entityType[residues.entityIndex[index]] !== Core.Structure.EntityType.Polymer)
+                            return false;
+                        //if (mmCif.aminoAcidNames[residues.name[index]]) return true;
+                        var ca = false, o = false, names = atoms.name, assigned = 0;
+                        for (var i = residues.atomStartIndex[index], max = residues.atomEndIndex[index]; i < max; i++) {
+                            var n = names[i];
+                            if (!ca && n === "CA") {
+                                ca = true;
+                                assigned++;
+                            }
+                            else if (!o && n === "O") {
+                                o = true;
+                                assigned++;
+                            }
+                            if (assigned === 2)
+                                break;
+                        }
+                        return (ca && o) || (ca && !residues.isHet[index]);
+                    }
+                    function isResidueNucleotide(atoms, residues, entities, index) {
+                        if (aminoAcidNames[residues.name[index]] || entities.entityType[residues.entityIndex[index]] !== Core.Structure.EntityType.Polymer)
+                            return false;
+                        var o5 = false, c3 = false, n3 = false, names = atoms.name, assigned = 0;
+                        for (var i = residues.atomStartIndex[index], max = residues.atomEndIndex[index]; i < max; i++) {
+                            var n = names[i];
+                            if (!o5 && n === "O5'") {
+                                o5 = true;
+                                assigned++;
+                            }
+                            else if (!c3 && n === "C3'") {
+                                c3 = true;
+                                assigned++;
+                            }
+                            else if (!n3 && n === "N3") {
+                                n3 = true;
+                                assigned++;
+                            }
+                            if (assigned === 3)
+                                break;
+                        }
+                        return o5 && c3 && n3;
+                    }
+                    function analyzeSecondaryStructure(atoms, residues, entities, start, end, elements) {
+                        var asymId = residues.asymId, entityIndex = residues.entityIndex, currentType = 0 /* None */, currentElementStartIndex = start, currentResidueIndex = start, residueCount = end;
+                        while (currentElementStartIndex < residueCount) {
+                            if (isResidueNucleotide(atoms, residues, entities, currentElementStartIndex)) {
+                                currentResidueIndex = currentElementStartIndex + 1;
+                                while (currentResidueIndex < residueCount
+                                    && asymId[currentElementStartIndex] === asymId[currentResidueIndex]
+                                    && entityIndex[currentElementStartIndex] === entityIndex[currentResidueIndex]
+                                    && isResidueNucleotide(atoms, residues, entities, currentResidueIndex)) {
+                                    currentResidueIndex++;
+                                }
+                                currentType = 5 /* Strand */;
+                            }
+                            else if (isResidueAminoSeq(atoms, residues, entities, currentElementStartIndex)) {
+                                currentResidueIndex = currentElementStartIndex + 1;
+                                while (currentResidueIndex < residueCount
+                                    && asymId[currentElementStartIndex] === asymId[currentResidueIndex]
+                                    && entityIndex[currentElementStartIndex] === entityIndex[currentResidueIndex]
+                                    && isResidueAminoSeq(atoms, residues, entities, currentResidueIndex)) {
+                                    currentResidueIndex++;
+                                }
+                                currentType = 4 /* AminoSeq */;
+                            }
+                            else {
+                                currentResidueIndex = currentElementStartIndex + 1;
+                                while (currentResidueIndex < residueCount
+                                    && asymId[currentElementStartIndex] === asymId[currentResidueIndex]
+                                    && entityIndex[currentElementStartIndex] === entityIndex[currentResidueIndex]
+                                    && !isResidueNucleotide(atoms, residues, entities, currentResidueIndex)
+                                    && !isResidueAminoSeq(atoms, residues, entities, currentResidueIndex)) {
+                                    currentResidueIndex++;
+                                }
+                                currentType = 0 /* None */;
+                            }
+                            var e = new Core.Structure.SecondaryStructureElement(currentType, new Core.Structure.PolyResidueIdentifier(residues.asymId[currentElementStartIndex], residues.seqNumber[currentElementStartIndex], residues.insCode[currentElementStartIndex]), new Core.Structure.PolyResidueIdentifier(residues.asymId[currentResidueIndex - 1], residues.seqNumber[currentResidueIndex - 1], residues.insCode[currentResidueIndex - 1]));
+                            e.startResidueIndex = currentElementStartIndex;
+                            e.endResidueIndex = currentResidueIndex;
+                            elements[elements.length] = e;
+                            currentElementStartIndex = currentResidueIndex;
+                        }
+                    }
+                    function splitNonconsecutiveSecondaryStructure(residues, elements) {
+                        var ret = [];
+                        var authSeqNumber = residues.authSeqNumber;
+                        for (var _i = 0, elements_1 = elements; _i < elements_1.length; _i++) {
+                            var s = elements_1[_i];
+                            var partStart = s.startResidueIndex;
+                            var end = s.endResidueIndex - 1;
+                            for (var i = s.startResidueIndex; i < end; i++) {
+                                if (authSeqNumber[i + 1] - authSeqNumber[i] === 1)
+                                    continue;
+                                var e = new Core.Structure.SecondaryStructureElement(s.type, s.startResidueId, s.endResidueId, s.info);
+                                e.startResidueIndex = partStart;
+                                e.endResidueIndex = i + 1;
+                                ret[ret.length] = e;
+                                partStart = i + 1;
+                            }
+                            if (partStart === s.startResidueIndex) {
+                                ret[ret.length] = s;
+                            }
+                            else {
+                                var e = new Core.Structure.SecondaryStructureElement(s.type, s.startResidueId, s.endResidueId, s.info);
+                                e.startResidueIndex = partStart;
+                                e.endResidueIndex = s.endResidueIndex;
+                                ret[ret.length] = e;
+                            }
+                        }
+                        return ret;
+                    }
+                    function updateSSIndicesAndFilterEmpty(elements, structure) {
+                        var residues = structure.residues, count = residues.count, asymId = residues.asymId, seqNumber = residues.seqNumber, insCode = residues.insCode, inSS = false, currentElement, endPivot, key = "", starts = new Map(), ends = new Map();
+                        for (var _i = 0, elements_2 = elements; _i < elements_2.length; _i++) {
+                            var e = elements_2[_i];
+                            key = e.startResidueId.asymId + " " + e.startResidueId.seqNumber;
+                            if (e.startResidueId.insCode)
+                                key += " " + e.startResidueId.insCode;
+                            starts.set(key, e);
+                            key = e.endResidueId.asymId + " " + e.endResidueId.seqNumber;
+                            if (e.endResidueId.insCode)
+                                key += " " + e.endResidueId.insCode;
+                            ends.set(key, e);
+                        }
+                        for (var i = 0; i < count; i++) {
+                            key = asymId[i] + " " + seqNumber[i];
+                            if (insCode[i])
+                                key += " " + insCode[i];
+                            currentElement = starts.get(key);
+                            if (currentElement) {
+                                currentElement.startResidueIndex = i;
+                                currentElement.endResidueIndex = i + 1;
+                            }
+                            currentElement = ends.get(key);
+                            if (currentElement) {
+                                if (currentElement.startResidueIndex < 0)
+                                    currentElement.startResidueIndex = i;
+                                currentElement.endResidueIndex = i + 1;
+                            }
+                        }
+                        if (currentElement) {
+                            currentElement.endResidueIndex = count;
+                        }
+                        var nonEmpty = [];
+                        for (var _a = 0, elements_3 = elements; _a < elements_3.length; _a++) {
+                            var e = elements_3[_a];
+                            if (e.startResidueIndex < 0 || e.endResidueIndex < 0)
+                                continue;
+                            if (e.type === 3 /* Sheet */ && e.length < 3)
+                                continue;
+                            if (e.endResidueIndex >= 0 && e.startResidueIndex >= 0)
+                                nonEmpty[nonEmpty.length] = e;
+                        }
+                        nonEmpty.sort(function (a, b) { return a.startResidueIndex - b.startResidueIndex; });
+                        // fix one-off "overlaps" for helices
+                        for (var i = 0; i < nonEmpty.length - 1; i++) {
+                            if (nonEmpty[i + 1].startResidueIndex - nonEmpty[i].endResidueIndex === -1) {
+                                nonEmpty[i + 1].startResidueIndex++;
+                            }
+                        }
+                        if (!nonEmpty.length)
+                            return nonEmpty;
+                        var ret = [nonEmpty[0]];
+                        // handle overlapping structures.
+                        for (var i = 1; i < nonEmpty.length; i++) {
+                            var a = ret[ret.length - 1], b = nonEmpty[i];
+                            if (b.startResidueIndex < a.endResidueIndex) {
+                                handleSecondaryStructureCollision(a, b);
+                            }
+                            else {
+                                ret[ret.length] = b;
+                            }
+                        }
+                        return ret;
+                    }
+                    function handleSecondaryStructureCollision(a, b) {
+                        if (b.endResidueIndex > a.endResidueIndex) {
+                            a.endResidueIndex = b.endResidueIndex;
+                        }
+                    }
+                    function getSecondaryStructureInfo(data, atoms, structure) {
+                        var input = [], elements = [];
+                        var _struct_conf = data.getCategory("_struct_conf"), _struct_sheet_range = data.getCategory("_struct_sheet_range"), i;
+                        if (_struct_conf) {
+                            var type_id_col = _struct_conf.getColumn("_struct_conf.conf_type_id");
+                            if (type_id_col) {
+                                for (i = 0; i < _struct_conf.rowCount; i++) {
+                                    var type = void 0;
+                                    switch (type_id_col.getString(i).toUpperCase()) {
+                                        case "HELX_P":
+                                            type = 1 /* Helix */;
+                                            break;
+                                        case "TURN_P":
+                                            type = 2 /* Turn */;
+                                            break;
+                                    }
+                                    if (!type)
+                                        continue;
+                                    input[input.length] = new Core.Structure.SecondaryStructureElement(type, residueIdfromColumns(_struct_conf, i, "_struct_conf.beg_label_asym_id", "_struct_conf.beg_label_seq_id", "_struct_conf.pdbx_beg_PDB_ins_code"), residueIdfromColumns(_struct_conf, i, "_struct_conf.end_label_asym_id", "_struct_conf.end_label_seq_id", "_struct_conf.pdbx_end_PDB_ins_code"), {
+                                        helixClass: _struct_conf.getStringValue("_struct_conf.pdbx_PDB_helix_class", i)
+                                    });
+                                }
+                            }
+                        }
+                        if (_struct_sheet_range) {
+                            for (i = 0; i < _struct_sheet_range.rowCount; i++) {
+                                input[input.length] = new Core.Structure.SecondaryStructureElement(3 /* Sheet */, residueIdfromColumns(_struct_sheet_range, i, "_struct_sheet_range.beg_label_asym_id", "_struct_sheet_range.beg_label_seq_id", "_struct_sheet_range.pdbx_beg_PDB_ins_code"), residueIdfromColumns(_struct_sheet_range, i, "_struct_sheet_range.end_label_asym_id", "_struct_sheet_range.end_label_seq_id", "_struct_sheet_range.pdbx_end_PDB_ins_code"), {
+                                    symmetry: _struct_sheet_range.getStringValue("_struct_sheet_range.symmetry", i),
+                                    sheetId: _struct_sheet_range.getStringValue("_struct_sheet_range.sheet_id", i),
+                                    id: _struct_sheet_range.getStringValue("_struct_sheet_range.id", i)
+                                });
+                            }
+                        }
+                        var secondary = input.length > 0 ? updateSSIndicesAndFilterEmpty(input, structure) : [];
+                        var residues = structure.residues, residueCount = residues.count;
+                        if (secondary.length === 0) {
+                            analyzeSecondaryStructure(atoms, residues, structure.entities, 0, residueCount, elements);
+                            return splitNonconsecutiveSecondaryStructure(residues, elements);
+                        }
+                        var _max = secondary.length - 1;
+                        if (secondary[0].startResidueIndex > 0) {
+                            analyzeSecondaryStructure(atoms, residues, structure.entities, 0, secondary[0].startResidueIndex, elements);
+                        }
+                        for (i = 0; i < _max; i++) {
+                            elements[elements.length] = secondary[i];
+                            if (secondary[i + 1].startResidueIndex - secondary[i].endResidueIndex > 0) {
+                                analyzeSecondaryStructure(atoms, residues, structure.entities, secondary[i].endResidueIndex, secondary[i + 1].startResidueIndex, elements);
+                            }
+                        }
+                        elements[elements.length] = secondary[_max];
+                        if (secondary[_max].endResidueIndex < residueCount) {
+                            analyzeSecondaryStructure(atoms, residues, structure.entities, secondary[_max].endResidueIndex, residueCount, elements);
+                        }
+                        return splitNonconsecutiveSecondaryStructure(residues, elements);
+                    }
+                    function assignSecondaryStructureIndex(residues, ss) {
+                        var ssIndex = residues.secondaryStructureIndex;
+                        var index = 0;
+                        for (var _i = 0, ss_1 = ss; _i < ss_1.length; _i++) {
+                            var s = ss_1[_i];
+                            for (var i = s.startResidueIndex; i < s.endResidueIndex; i++) {
+                                ssIndex[i] = index;
+                            }
+                            index++;
+                        }
+                        return ssIndex;
+                    }
+                    function parseOperatorList(value) {
+                        // '(X0)(1-5)' becomes [['X0']['1', '2', '3', '4', '5']]
+                        // kudos to Glen van Ginkel.
+                        var oeRegex = /\(?([^\(\)]+)\)?]*/g, g, groups = [], ret = [];
+                        while (g = oeRegex.exec(value))
+                            groups[groups.length] = g[1];
+                        groups.forEach(function (g) {
+                            var group = [];
+                            g.split(",").forEach(function (e) {
+                                var dashIndex = e.indexOf("-");
+                                if (dashIndex > 0) {
+                                    var from = parseInt(e.substring(0, dashIndex)), to = parseInt(e.substr(dashIndex + 1));
+                                    for (var i = from; i <= to; i++)
+                                        group[group.length] = i.toString();
+                                }
+                                else {
+                                    group[group.length] = e.trim();
+                                }
+                            });
+                            ret[ret.length] = group;
+                        });
+                        return ret;
+                    }
+                    function getAssemblyInfo(data) {
+                        var _info = data.getCategory("_pdbx_struct_assembly"), _gen = data.getCategory("_pdbx_struct_assembly_gen"), _opers = data.getCategory("_pdbx_struct_oper_list");
+                        if (!_info || !_gen || !_opers) {
+                            return null;
+                        }
+                        var i, opers = {}, gens = [], genMap = new Map();
+                        for (i = 0; i < _gen.rowCount; i++) {
+                            var id = _gen.getStringValue("_pdbx_struct_assembly_gen.assembly_id", i);
+                            var entry = genMap.get(id);
+                            if (!entry) {
+                                entry = new Core.Structure.AssemblyGen(id);
+                                genMap.set(id, entry);
+                                gens.push(entry);
+                            }
+                            entry.gens.push(new Core.Structure.AssemblyGenEntry(parseOperatorList(_gen.getStringValue("_pdbx_struct_assembly_gen.oper_expression", i)), _gen.getStringValue("_pdbx_struct_assembly_gen.asym_id_list", i).split(",")));
+                        }
+                        for (i = 0; i < _opers.rowCount; i++) {
+                            var oper = _opers.getTransform(i, "_pdbx_struct_oper_list.matrix", "_pdbx_struct_oper_list.vector");
+                            if (!oper) {
+                                return null;
+                            }
+                            var op = new Core.Structure.AssemblyOperator(_opers.getStringValue("_pdbx_struct_oper_list.id", i), _opers.getStringValue("_pdbx_struct_oper_list.name", i), oper);
+                            opers[op.id] = op;
+                        }
+                        return new Core.Structure.AssemblyInfo(opers, gens);
+                    }
+                    function getSymmetryInfo(data) {
+                        var _cell = data.getCategory("_cell"), _symmetry = data.getCategory("_symmetry"), _atom_sites = data.getCategory("_atom_sites");
+                        var spacegroupName = "", cellSize = [1.0, 1.0, 1.0], cellAngles = [90.0, 90.0, 90.0], toFracTransform = Core.Geometry.LinearAlgebra.Matrix4.identity(), isNonStandardCrytalFrame = false;
+                        if (!_cell || !_symmetry) {
+                            return null;
+                        }
+                        spacegroupName = _symmetry.getStringValue("_symmetry.space_group_name_H-M");
+                        cellSize = [_cell.getFloatValue("_cell.length_a"), _cell.getFloatValue("_cell.length_b"), _cell.getFloatValue("_cell.length_c")];
+                        cellAngles = [_cell.getFloatValue("_cell.angle_alpha"), _cell.getFloatValue("_cell.angle_beta"), _cell.getFloatValue("_cell.angle_gamma")];
+                        if (_symmetry.isValueUndefined("_symmetry.space_group_name_H-M")
+                            || _cell.isValueUndefined("_cell.length_a") || _cell.isValueUndefined("_cell.length_b") || _cell.isValueUndefined("_cell.length_c")
+                            || _cell.isValueUndefined("_cell.angle_alpha") || _cell.isValueUndefined("_cell.angle_beta") || _cell.isValueUndefined("_cell.angle_gamma")) {
+                            return null;
+                        }
+                        var sq = function (x) { return x * x; };
+                        var toRadians = function (degs) { return degs * Math.PI / 180.0; };
+                        var la = cellSize[0], lb = cellSize[1], lc = cellSize[2], aa = toRadians(cellAngles[0]), ab = toRadians(cellAngles[1]), ac = toRadians(cellAngles[2]), v = la * lb * lc * Math.sqrt(1.0 - sq(Math.cos(aa)) - sq(Math.cos(ab)) - sq(Math.cos(ac)) + 2.0 * Math.cos(aa) * Math.cos(ab) * Math.cos(ac));
+                        var fromFrac = Core.Geometry.LinearAlgebra.Matrix4.ofRows([
+                            [la, lb * Math.cos(ac), lc * Math.cos(ab), 0.0],
+                            [0.0, lb * Math.sin(ac), lc * (Math.cos(aa) - Math.cos(ab) * Math.cos(ac)) / Math.sin(ac), 0.0],
+                            [0.0, 0.0, v / (la * lb * Math.sin(ac)), 0.0],
+                            [0.0, 0.0, 0.0, 1.0]]);
+                        var toFracComputed = Core.Geometry.LinearAlgebra.Matrix4.identity();
+                        Core.Geometry.LinearAlgebra.Matrix4.invert(toFracComputed, fromFrac);
+                        if (_atom_sites) {
+                            var transform = _atom_sites.getTransform(0, "_atom_sites.fract_transf_matrix", "_atom_sites.fract_transf_vector");
+                            //console.log("CIF", JSON.stringify(Array.prototype.slice.call(transform, 0).map((x: any) => x.toFixed(6))));
+                            //console.log("COMP", JSON.stringify(Array.prototype.slice.call(toFracComputed, 0).map((x: any) => x.toFixed(6))));
+                            //console.log("COMP", JSON.stringify(Array.prototype.slice.call(fromFrac, 0).map((x: any) => x.toFixed(6))));
+                            if (transform) {
+                                toFracTransform = transform;
+                                if (!Core.Geometry.LinearAlgebra.Matrix4.areEqual(toFracComputed, transform, 0.0001)) {
+                                    isNonStandardCrytalFrame = true;
+                                }
+                            }
+                        }
+                        else {
+                            toFracTransform = toFracComputed;
+                        }
+                        return new Core.Structure.SymmetryInfo(spacegroupName, cellSize, cellAngles, toFracTransform, isNonStandardCrytalFrame);
+                    }
+                    function getComponentBonds(category) {
+                        if (!category || !category.rowCount)
+                            return undefined;
+                        var info = new Core.Structure.ComponentBondInfo();
+                        var idCol = category.getColumnIndex("_chem_comp_bond.comp_id"), nameACol = category.getColumnIndex("_chem_comp_bond.atom_id_1"), nameBCol = category.getColumnIndex("_chem_comp_bond.atom_id_2"), orderCol = category.getColumnIndex("_chem_comp_bond.value_order"), count = category.rowCount;
+                        var entry = info.newEntry(category.getStringValueFromIndex(idCol, 0));
+                        for (var i = 0; i < count; i++) {
+                            var id = category.getStringValueFromIndex(idCol, i), nameA = category.getStringValueFromIndex(nameACol, i), nameB = category.getStringValueFromIndex(nameBCol, i), order = category.getStringValueFromIndex(orderCol, i);
+                            if (entry.id !== id) {
+                                entry = info.newEntry(id);
+                            }
+                            var t = void 0;
+                            switch (order.toLowerCase()) {
+                                case "sing":
+                                    t = Core.Structure.BondOrder.Single;
+                                    break;
+                                case "doub":
+                                case "delo":
+                                    t = Core.Structure.BondOrder.Double;
+                                    break;
+                                case "trip":
+                                    t = Core.Structure.BondOrder.Triple;
+                                    break;
+                                case "quad":
+                                    t = Core.Structure.BondOrder.Quadruple;
+                                    break;
+                                default:
+                                    t = Core.Structure.BondOrder.Single;
+                                    break;
+                            }
+                            entry.add(nameA, nameB, t);
+                        }
+                        return info;
+                    }
+                    function getModel(startRow, data) {
+                        var _a = buildModelAtomTable(startRow, data.getCategory("_atom_site")), atoms = _a.atoms, modelId = _a.modelId, endRow = _a.endRow, structure = buildStructure(data.getCategory("_atom_site"), atoms), entry = data.getCategory("_entry"), id;
+                        if (entry && entry.getColumnIndex("_entry.id") >= 0)
+                            id = entry.getStringValue("_entry.id");
+                        else
+                            id = data.header;
+                        assignEntityTypes(data.getCategory("_entity"), structure.entities);
+                        var ss = getSecondaryStructureInfo(data, atoms, structure);
+                        assignSecondaryStructureIndex(structure.residues, ss);
+                        return {
+                            model: new Core.Structure.MoleculeModel(id, modelId, atoms, structure.residues, structure.chains, structure.entities, getComponentBonds(data.getCategory("_chem_comp_bond")), ss, getSymmetryInfo(data), getAssemblyInfo(data), undefined, Core.Structure.MoleculeModelSource.File, undefined),
+                            endRow: endRow
+                        };
+                    }
+                    function ofDataBlock(data) {
+                        var models = [], atomSite = data.getCategory("_atom_site"), startRow = 0;
+                        if (!atomSite) {
+                            throw "'_atom_site' category is missing in the input.";
+                        }
+                        var entry = data.getCategory("_entry"), id;
+                        if (entry && entry.getColumnIndex("_entry.id") >= 0)
+                            id = entry.getStringValue("_entry.id");
+                        else
+                            id = data.header;
+                        while (startRow < atomSite.rowCount) {
+                            var _a = getModel(startRow, data), model = _a.model, endRow = _a.endRow;
+                            models.push(model);
+                            startRow = endRow;
+                        }
+                        return new Core.Structure.Molecule(id, models);
+                    }
+                    mmCIF.ofDataBlock = ofDataBlock;
+                })(mmCIF = Molecule.mmCIF || (Molecule.mmCIF = {}));
+            })(Molecule = Formats.Molecule || (Formats.Molecule = {}));
+        })(Formats = Core.Formats || (Core.Formats = {}));
+    })(Core = LiteMol.Core || (LiteMol.Core = {}));
+})(LiteMol || (LiteMol = {}));
+/*
+ * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ */
+var LiteMol;
+(function (LiteMol) {
+    var Core;
+    (function (Core) {
+        var Formats;
+        (function (Formats) {
+            var Molecule;
+            (function (Molecule) {
+                var PDB;
+                (function (PDB) {
+                    "use strict";
+                    var MoleculeData = (function () {
+                        function MoleculeData(header, crystInfo, models, data) {
+                            this.header = header;
+                            this.crystInfo = crystInfo;
+                            this.models = models;
+                            this.data = data;
+                        }
+                        MoleculeData.prototype.makeEntities = function () {
+                            var data = [
+                                "data_ent",
+                                "loop_",
+                                "_entity.id",
+                                "_entity.type",
+                                "_entity.src_method",
+                                "_entity.pdbx_description",
+                                "_entity.formula_weight",
+                                "_entity.pdbx_number_of_molecules",
+                                "_entity.details",
+                                "_entity.pdbx_mutation",
+                                "_entity.pdbx_fragment",
+                                "_entity.pdbx_ec",
+                                "1 polymer man polymer 0.0 0 ? ? ? ?",
+                                "2 non-polymer syn non-polymer 0.0 0 ? ? ? ?",
+                                "3 water nat water 0.0 0 ? ? ? ?"
+                            ].join('\n');
+                            return Formats.CIF.parse(data).result.dataBlocks[0].getCategory('_entity');
+                        };
+                        MoleculeData.prototype.toCifFile = function () {
+                            var helpers = {
+                                dot: PDB.Parser.getDotRange(this.data.length),
+                                question: PDB.Parser.getQuestionmarkRange(this.data.length),
+                                numberTokens: PDB.Parser.getNumberRanges(this.data.length),
+                                data: this.data
+                            };
+                            var file = new Formats.CIF.File(this.data);
+                            var block = new Formats.CIF.Block(file, this.header.id);
+                            file.dataBlocks.push(block);
+                            block.addCategory(this.makeEntities());
+                            if (this.crystInfo) {
+                                var _a = this.crystInfo.toCifCategory(this.header.id), cell = _a.cell, symm = _a.symm;
+                                block.addCategory(cell);
+                                block.addCategory(symm);
+                            }
+                            block.addCategory(this.models.toCifCategory(block, helpers));
+                            return file;
+                        };
+                        return MoleculeData;
+                    }());
+                    PDB.MoleculeData = MoleculeData;
+                    var Header = (function () {
+                        function Header(id) {
+                            this.id = id;
+                        }
+                        return Header;
+                    }());
+                    PDB.Header = Header;
+                    var CrystStructureInfo = (function () {
+                        function CrystStructureInfo(record) {
+                            this.record = record;
+                        }
+                        CrystStructureInfo.prototype.toCifCategory = function (id) {
+                            //COLUMNS       DATA TYPE      CONTENTS
+                            //--------------------------------------------------------------------------------
+                            //    1 - 6       Record name    "CRYST1"
+                            //7 - 15       Real(9.3)      a (Angstroms)
+                            //16 - 24       Real(9.3)      b (Angstroms)
+                            //25 - 33       Real(9.3)      c (Angstroms)
+                            //34 - 40       Real(7.2)      alpha (degrees)
+                            //41 - 47       Real(7.2)      beta (degrees)
+                            //48 - 54       Real(7.2)      gamma (degrees)
+                            //56 - 66       LString        Space group       
+                            //67 - 70       Integer        Z value           
+                            var data = [
+                                ("_cell.entry_id           '" + id + "'"),
+                                ("_cell.length_a           " + this.record.substr(6, 9).trim()),
+                                ("_cell.length_b           " + this.record.substr(15, 9).trim()),
+                                ("_cell.length_c           " + this.record.substr(24, 9).trim()),
+                                ("_cell.angle_alpha        " + this.record.substr(33, 7).trim()),
+                                ("_cell.angle_beta         " + this.record.substr(40, 7).trim()),
+                                ("_cell.angle_gamma        " + this.record.substr(48, 7).trim()),
+                                ("_cell.Z_PDB              " + this.record.substr(66, 4).trim()),
+                                "_cell.pdbx_unique_axis   ?",
+                                ("_symmetry.entry_id                         '" + id + "'"),
+                                ("_symmetry.space_group_name_H-M             '" + this.record.substr(55, 11).trim() + "'"),
+                                "_symmetry.pdbx_full_space_group_name_H-M   ?",
+                                "_symmetry.cell_setting                     ?",
+                                "_symmetry.Int_Tables_number                ?",
+                                "_symmetry.space_group_name_Hall            ?"
+                            ].join('\n');
+                            var cif = Formats.CIF.parse(data).result.dataBlocks[0];
+                            return {
+                                cell: cif.getCategory('_cell'),
+                                symm: cif.getCategory('_symmetry')
+                            };
+                        };
+                        return CrystStructureInfo;
+                    }());
+                    PDB.CrystStructureInfo = CrystStructureInfo;
+                    var SecondaryStructure = (function () {
+                        function SecondaryStructure(helixTokens, sheetTokens) {
+                            this.helixTokens = helixTokens;
+                            this.sheetTokens = sheetTokens;
+                        }
+                        SecondaryStructure.prototype.toCifCategory = function (data) {
+                            return null;
+                        };
+                        return SecondaryStructure;
+                    }());
+                    PDB.SecondaryStructure = SecondaryStructure;
+                    var ModelData = (function () {
+                        function ModelData(idToken, atomTokens, atomCount) {
+                            this.idToken = idToken;
+                            this.atomTokens = atomTokens;
+                            this.atomCount = atomCount;
+                        }
+                        ModelData.prototype.writeToken = function (index, cifTokens) {
+                            cifTokens.add2(this.atomTokens[2 * index], this.atomTokens[2 * index + 1]);
+                        };
+                        ModelData.prototype.writeTokenCond = function (index, cifTokens, dot) {
+                            var s = this.atomTokens[2 * index];
+                            var e = this.atomTokens[2 * index + 1];
+                            if (s === e)
+                                cifTokens.add2(dot.start, dot.end);
+                            else
+                                cifTokens.add2(s, e);
+                        };
+                        ModelData.prototype.writeRange = function (range, cifTokens) {
+                            cifTokens.add2(range.start, range.end);
+                        };
+                        ModelData.prototype.tokenEquals = function (start, end, value, data) {
+                            var len = value.length;
+                            if (len !== end - start)
+                                return false;
+                            for (var i = value.length - 1; i >= 0; i--) {
+                                if (data.charCodeAt(i + start) !== value.charCodeAt(i)) {
+                                    return false;
+                                }
+                            }
+                            return true;
+                        };
+                        ModelData.prototype.getEntityType = function (row, data) {
+                            var o = row * 14;
+                            if (this.tokenEquals(this.atomTokens[2 * o], this.atomTokens[2 * o + 1], "HETATM", data)) {
+                                var s = this.atomTokens[2 * (o + 4)], e = this.atomTokens[2 * (o + 4) + 1];
+                                if (this.tokenEquals(s, e, "HOH", data) || this.tokenEquals(s, e, "WTR", data) || this.tokenEquals(s, e, "SOL", data)) {
+                                    return 3; // water
+                                }
+                                return 2; // non-polymer
+                            }
+                            else {
+                                return 1; // polymer
+                            }
+                        };
+                        ModelData.prototype.writeCifTokens = function (modelToken, cifTokens, helpers) {
+                            var columnIndices = {
+                                //COLUMNS        DATA TYPE       CONTENTS                            
+                                //--------------------------------------------------------------------------------
+                                // 1 -  6        Record name     "ATOM  "                                          
+                                RECORD: 0,
+                                // 7 - 11        Integer         Atom serial number.                   
+                                SERIAL: 1,
+                                //13 - 16        Atom            Atom name.          
+                                ATOM_NAME: 2,
+                                //17             Character       Alternate location indicator. 
+                                ALT_LOC: 3,
+                                //18 - 20        Residue name    Residue name.       
+                                RES_NAME: 4,
+                                //22             Character       Chain identifier.         
+                                CHAIN_ID: 5,
+                                //23 - 26        Integer         Residue sequence number.              
+                                RES_SEQN: 6,
+                                //27             AChar           Code for insertion of residues.       
+                                INS_CODE: 7,
+                                //31 - 38        Real(8.3)       Orthogonal coordinates for X in Angstroms.   
+                                X: 8,
+                                //39 - 46        Real(8.3)       Orthogonal coordinates for Y in Angstroms.                            
+                                Y: 9,
+                                //47 - 54        Real(8.3)       Orthogonal coordinates for Z in Angstroms.        
+                                Z: 10,
+                                //55 - 60        Real(6.2)       Occupancy.       
+                                OCCUPANCY: 11,
+                                //61 - 66        Real(6.2)       Temperature factor (Default = 0.0).                   
+                                TEMP_FACTOR: 12,
+                                //73 - 76        LString(4)      Segment identifier, left-justified.   
+                                // ignored
+                                //77 - 78        LString(2)      Element symbol, right-justified.   
+                                ELEMENT: 13
+                            };
+                            var columnCount = 14;
+                            for (var i = 0; i < this.atomCount; i++) {
+                                var o = i * columnCount;
+                                //_atom_site.group_PDB
+                                this.writeToken(o + columnIndices.RECORD, cifTokens);
+                                //_atom_site.id
+                                this.writeToken(o + columnIndices.SERIAL, cifTokens);
+                                //_atom_site.type_symbol
+                                this.writeToken(o + columnIndices.ELEMENT, cifTokens);
+                                //_atom_site.label_atom_id
+                                this.writeToken(o + columnIndices.ATOM_NAME, cifTokens);
+                                //_atom_site.label_alt_id
+                                this.writeTokenCond(o + columnIndices.ALT_LOC, cifTokens, helpers.dot);
+                                //_atom_site.label_comp_id
+                                this.writeToken(o + columnIndices.RES_NAME, cifTokens);
+                                //_atom_site.label_asym_id
+                                this.writeToken(o + columnIndices.CHAIN_ID, cifTokens);
+                                //_atom_site.label_entity_id
+                                this.writeRange(helpers.numberTokens.get(this.getEntityType(i, helpers.data)), cifTokens);
+                                //_atom_site.label_seq_id
+                                this.writeToken(o + columnIndices.RES_SEQN, cifTokens);
+                                //_atom_site.pdbx_PDB_ins_code
+                                this.writeTokenCond(o + columnIndices.INS_CODE, cifTokens, helpers.dot);
+                                //_atom_site.Cartn_x
+                                this.writeToken(o + columnIndices.X, cifTokens);
+                                //_atom_site.Cartn_y
+                                this.writeToken(o + columnIndices.Y, cifTokens);
+                                //_atom_site.Cartn_z
+                                this.writeToken(o + columnIndices.Z, cifTokens);
+                                //_atom_site.occupancy
+                                this.writeToken(o + columnIndices.OCCUPANCY, cifTokens);
+                                //_atom_site.B_iso_or_equiv
+                                this.writeToken(o + columnIndices.TEMP_FACTOR, cifTokens);
+                                //_atom_site.Cartn_x_esd
+                                this.writeRange(helpers.question, cifTokens);
+                                //_atom_site.Cartn_y_esd
+                                this.writeRange(helpers.question, cifTokens);
+                                //_atom_site.Cartn_z_esd
+                                this.writeRange(helpers.question, cifTokens);
+                                //_atom_site.occupancy_esd
+                                this.writeRange(helpers.question, cifTokens);
+                                //_atom_site.B_iso_or_equiv_esd
+                                this.writeRange(helpers.question, cifTokens);
+                                //_atom_site.pdbx_formal_charge
+                                this.writeRange(helpers.question, cifTokens);
+                                //_atom_site.auth_seq_id
+                                this.writeToken(o + columnIndices.RES_SEQN, cifTokens);
+                                //_atom_site.auth_comp_id
+                                this.writeToken(o + columnIndices.RES_NAME, cifTokens);
+                                //_atom_site.auth_asym_id
+                                this.writeToken(o + columnIndices.CHAIN_ID, cifTokens);
+                                //_atom_site.auth_atom_id
+                                this.writeToken(o + columnIndices.ATOM_NAME, cifTokens);
+                                //_atom_site.pdbx_PDB_model_num 
+                                this.writeRange(modelToken, cifTokens);
+                            }
+                        };
+                        ModelData.COLUMNS = [
+                            "_atom_site.group_PDB",
+                            "_atom_site.id",
+                            "_atom_site.type_symbol",
+                            "_atom_site.label_atom_id",
+                            "_atom_site.label_alt_id",
+                            "_atom_site.label_comp_id",
+                            "_atom_site.label_asym_id",
+                            "_atom_site.label_entity_id",
+                            "_atom_site.label_seq_id",
+                            "_atom_site.pdbx_PDB_ins_code",
+                            "_atom_site.Cartn_x",
+                            "_atom_site.Cartn_y",
+                            "_atom_site.Cartn_z",
+                            "_atom_site.occupancy",
+                            "_atom_site.B_iso_or_equiv",
+                            "_atom_site.Cartn_x_esd",
+                            "_atom_site.Cartn_y_esd",
+                            "_atom_site.Cartn_z_esd",
+                            "_atom_site.occupancy_esd",
+                            "_atom_site.B_iso_or_equiv_esd",
+                            "_atom_site.pdbx_formal_charge",
+                            "_atom_site.auth_seq_id",
+                            "_atom_site.auth_comp_id",
+                            "_atom_site.auth_asym_id",
+                            "_atom_site.auth_atom_id",
+                            "_atom_site.pdbx_PDB_model_num"
+                        ];
+                        return ModelData;
+                    }());
+                    PDB.ModelData = ModelData;
+                    var ModelsData = (function () {
+                        function ModelsData(models) {
+                            this.models = models;
+                        }
+                        ModelsData.prototype.toCifCategory = function (block, helpers) {
+                            var atomCount = 0;
+                            for (var _i = 0, _a = this.models; _i < _a.length; _i++) {
+                                var m = _a[_i];
+                                atomCount += m.atomCount;
+                            }
+                            var colCount = 26;
+                            var tokens = Core.Utils.ArrayBuilder.forTokenIndices(atomCount * 26);
+                            for (var _b = 0, _c = this.models; _b < _c.length; _b++) {
+                                var m = _c[_b];
+                                m.writeCifTokens(m.idToken, tokens, helpers);
+                            }
+                            return new Formats.CIF.Category(block.data, "_atom_site", 0, 0, ModelData.COLUMNS, tokens.array, atomCount * 26);
+                        };
+                        return ModelsData;
+                    }());
+                    PDB.ModelsData = ModelsData;
+                })(PDB = Molecule.PDB || (Molecule.PDB = {}));
+            })(Molecule = Formats.Molecule || (Formats.Molecule = {}));
+        })(Formats = Core.Formats || (Core.Formats = {}));
+    })(Core = LiteMol.Core || (LiteMol.Core = {}));
+})(LiteMol || (LiteMol = {}));
+/*
+ * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ */
+var LiteMol;
+(function (LiteMol) {
+    var Core;
+    (function (Core) {
+        var Formats;
+        (function (Formats) {
+            var Molecule;
+            (function (Molecule) {
+                var PDB;
+                (function (PDB) {
+                    "use strict";
+                    var Tokenizer = (function () {
+                        function Tokenizer(data) {
+                            this.data = data;
+                            this.trimmedToken = { start: 0, end: 0 };
+                            this.line = 0;
+                            this.position = 0;
+                            this.length = data.length;
+                        }
+                        Tokenizer.prototype.moveToNextLine = function () {
+                            while (this.position < this.length && this.data.charCodeAt(this.position) !== 10) {
+                                this.position++;
+                            }
+                            this.position++;
+                            this.line++;
+                            return this.position;
+                        };
+                        Tokenizer.prototype.moveToEndOfLine = function () {
+                            while (this.position < this.length) {
+                                var c = this.data.charCodeAt(this.position);
+                                if (c === 10 || c === 13) {
+                                    return this.position;
+                                }
+                                this.position++;
+                            }
+                            return this.position;
+                        };
+                        Tokenizer.prototype.startsWith = function (start, value) {
+                            for (var i = value.length - 1; i >= 0; i--) {
+                                if (this.data.charCodeAt(i + start) !== value.charCodeAt(i)) {
+                                    return false;
+                                }
+                            }
+                            return true;
+                        };
+                        Tokenizer.prototype.trim = function (start, end) {
+                            while (start < end && this.data.charCodeAt(start) === 32)
+                                start++;
+                            while (end > start && this.data.charCodeAt(end - 1) === 32)
+                                end--;
+                            this.trimmedToken.start = start;
+                            this.trimmedToken.end = end;
+                        };
+                        Tokenizer.prototype.tokenizeAtomRecord = function (tokens) {
+                            var startPos = this.position;
+                            var start = this.position;
+                            var end = this.moveToEndOfLine();
+                            var length = end - start;
+                            // invalid atom record
+                            if (length < 66)
+                                return false;
+                            //COLUMNS        DATA TYPE       CONTENTS                            
+                            //--------------------------------------------------------------------------------
+                            // 1 -  6        Record name     "ATOM  "                                            
+                            this.trim(start, start + 6);
+                            tokens.addToken(this.trimmedToken.start, this.trimmedToken.end);
+                            // 7 - 11        Integer         Atom serial number.                   
+                            start = startPos + 6;
+                            this.trim(start, start + 5);
+                            tokens.addToken(this.trimmedToken.start, this.trimmedToken.end);
+                            //13 - 16        Atom            Atom name.          
+                            start = startPos + 12;
+                            this.trim(start, start + 4);
+                            tokens.addToken(this.trimmedToken.start, this.trimmedToken.end);
+                            //17             Character       Alternate location indicator. 
+                            if (this.data.charCodeAt(startPos + 16) === 32) {
+                                tokens.addToken(0, 0);
+                            }
+                            else {
+                                tokens.addToken(startPos + 16, startPos + 17);
+                            }
+                            //18 - 20        Residue name    Residue name.       
+                            start = startPos + 17;
+                            this.trim(start, start + 3);
+                            tokens.addToken(this.trimmedToken.start, this.trimmedToken.end);
+                            //22             Character       Chain identifier.         
+                            tokens.addToken(startPos + 21, startPos + 22);
+                            //23 - 26        Integer         Residue sequence number.              
+                            start = startPos + 22;
+                            this.trim(start, start + 4);
+                            tokens.addToken(this.trimmedToken.start, this.trimmedToken.end);
+                            //27             AChar           Code for insertion of residues.      
+                            if (this.data.charCodeAt(startPos + 26) === 32) {
+                                tokens.addToken(0, 0);
+                            }
+                            else {
+                                tokens.addToken(startPos + 26, startPos + 27);
+                            }
+                            //31 - 38        Real(8.3)       Orthogonal coordinates for X in Angstroms.   
+                            start = startPos + 30;
+                            this.trim(start, start + 8);
+                            tokens.addToken(this.trimmedToken.start, this.trimmedToken.end);
+                            //39 - 46        Real(8.3)       Orthogonal coordinates for Y in Angstroms.                            
+                            start = startPos + 38;
+                            this.trim(start, start + 8);
+                            tokens.addToken(this.trimmedToken.start, this.trimmedToken.end);
+                            //47 - 54        Real(8.3)       Orthogonal coordinates for Z in Angstroms.        
+                            start = startPos + 46;
+                            this.trim(start, start + 8);
+                            tokens.addToken(this.trimmedToken.start, this.trimmedToken.end);
+                            //55 - 60        Real(6.2)       Occupancy.       
+                            start = startPos + 54;
+                            this.trim(start, start + 6);
+                            tokens.addToken(this.trimmedToken.start, this.trimmedToken.end);
+                            //61 - 66        Real(6.2)       Temperature factor (Default = 0.0).                   
+                            start = startPos + 60;
+                            this.trim(start, start + 6);
+                            tokens.addToken(this.trimmedToken.start, this.trimmedToken.end);
+                            //73 - 76        LString(4)      Segment identifier, left-justified.   
+                            // ignored
+                            //77 - 78        LString(2)      Element symbol, right-justified.   
+                            if (length >= 78) {
+                                start = startPos + 76;
+                                this.trim(start, start + 2);
+                                if (this.trimmedToken.start < this.trimmedToken.end) {
+                                    tokens.addToken(this.trimmedToken.start, this.trimmedToken.end);
+                                }
+                                else {
+                                    tokens.addToken(startPos + 12, startPos + 13);
+                                }
+                            }
+                            //79 - 80        LString(2)      Charge on the atom.      
+                            // ignored
+                            return true;
+                        };
+                        return Tokenizer;
+                    }());
+                    var Parser = (function () {
+                        function Parser(id, data) {
+                            this.id = id;
+                            this.data = data;
+                        }
+                        Parser.tokenizeAtom = function (tokens, tokenizer) {
+                            if (tokenizer.tokenizeAtomRecord(tokens)) {
+                                return void 0;
+                            }
+                            return new Formats.ParserError("Invalid ATOM/HETATM record.", tokenizer.line);
+                        };
+                        Parser.tokenize = function (id, data) {
+                            var tokenizer = new Tokenizer(data);
+                            var length = data.length;
+                            var modelAtomTokens = new Formats.TokenIndexBuilder(4096); //2 * 14 * this.data.length / 78);
+                            var atomCount = 0;
+                            var models = [];
+                            var cryst = void 0;
+                            var modelIdToken = { start: 0, end: 0 };
+                            while (tokenizer.position < length) {
+                                var cont = true;
+                                switch (data.charCodeAt(tokenizer.position)) {
+                                    case 65:
+                                        if (tokenizer.startsWith(tokenizer.position, "ATOM")) {
+                                            var err = Parser.tokenizeAtom(modelAtomTokens, tokenizer);
+                                            atomCount++;
+                                            if (err)
+                                                return err;
+                                        }
+                                        break;
+                                    case 67:
+                                        if (tokenizer.startsWith(tokenizer.position, "CRYST1")) {
+                                            var start = tokenizer.position;
+                                            var end = tokenizer.moveToEndOfLine();
+                                            cryst = new PDB.CrystStructureInfo(data.substring(start, end));
+                                        }
+                                        break;
+                                    case 69:
+                                        if (tokenizer.startsWith(tokenizer.position, "ENDMDL") && atomCount > 0) {
+                                            if (models.length === 0) {
+                                                modelIdToken = { start: data.length + 3, end: data.length + 4 };
+                                            }
+                                            models.push(new PDB.ModelData(modelIdToken, modelAtomTokens.tokens, atomCount));
+                                            atomCount = 0;
+                                            modelAtomTokens = null;
+                                        }
+                                        else if (tokenizer.startsWith(tokenizer.position, "END")) {
+                                            var start = tokenizer.position;
+                                            var end = tokenizer.moveToEndOfLine();
+                                            tokenizer.trim(start, end);
+                                            if (tokenizer.trimmedToken.end - tokenizer.trimmedToken.start === 3) {
+                                                cont = false;
+                                            }
+                                        }
+                                        break;
+                                    case 72:
+                                        if (tokenizer.startsWith(tokenizer.position, "HETATM")) {
+                                            var err = Parser.tokenizeAtom(modelAtomTokens, tokenizer);
+                                            atomCount++;
+                                            if (err)
+                                                return err;
+                                        }
+                                        break;
+                                    case 77:
+                                        if (tokenizer.startsWith(tokenizer.position, "MODEL")) {
+                                            if (atomCount > 0) {
+                                                if (models.length === 0) {
+                                                    modelIdToken = { start: data.length + 3, end: data.length + 4 };
+                                                }
+                                                models.push(new PDB.ModelData(modelIdToken, modelAtomTokens.tokens, atomCount));
+                                            }
+                                            var start = tokenizer.position + 6;
+                                            var end = tokenizer.moveToEndOfLine();
+                                            tokenizer.trim(start, end);
+                                            modelIdToken = { start: tokenizer.trimmedToken.start, end: tokenizer.trimmedToken.end };
+                                            if (atomCount > 0 || !modelAtomTokens) {
+                                                modelAtomTokens = new Formats.TokenIndexBuilder(4096);
+                                            }
+                                            atomCount = 0;
+                                        }
+                                        break;
+                                }
+                                tokenizer.moveToNextLine();
+                                if (!cont)
+                                    break;
+                            }
+                            var fakeCifData = data + ".?0123";
+                            if (atomCount > 0) {
+                                if (models.length === 0) {
+                                    modelIdToken = { start: data.length + 3, end: data.length + 4 };
+                                }
+                                models.push(new PDB.ModelData(modelIdToken, modelAtomTokens.tokens, atomCount));
+                            }
+                            return new PDB.MoleculeData(new PDB.Header(id), cryst, new PDB.ModelsData(models), fakeCifData);
+                        };
+                        Parser.getDotRange = function (length) {
+                            return { start: length - 6, end: length - 5 };
+                        };
+                        Parser.getNumberRanges = function (length) {
+                            var ret = new Map();
+                            for (var i = 0; i < 4; i++) {
+                                ret.set(i, { start: length - 4 + i, end: length - 3 + i });
+                            }
+                            return ret;
+                        };
+                        Parser.getQuestionmarkRange = function (length) {
+                            return { start: length - 5, end: length - 4 };
+                        };
+                        Parser.parse = function (id, data) {
+                            var ret = Parser.tokenize(id, data);
+                            if (ret instanceof Formats.ParserError) {
+                                return Formats.ParserResult.error(ret.message, ret.line);
+                            }
+                            else {
+                                return Formats.ParserResult.success(ret.toCifFile());
+                            }
+                        };
+                        return Parser;
+                    }());
+                    PDB.Parser = Parser;
+                    function toCifFile(id, data) {
+                        return Parser.parse(id, data);
+                    }
+                    PDB.toCifFile = toCifFile;
+                })(PDB = Molecule.PDB || (Molecule.PDB = {}));
+            })(Molecule = Formats.Molecule || (Formats.Molecule = {}));
+        })(Formats = Core.Formats || (Core.Formats = {}));
+    })(Core = LiteMol.Core || (LiteMol.Core = {}));
+})(LiteMol || (LiteMol = {}));
+/*
+ * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ */
+/*
+ * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ */
+var LiteMol;
+(function (LiteMol) {
+    var Core;
+    (function (Core) {
+        var Formats;
+        (function (Formats) {
+            var Molecule;
+            (function (Molecule) {
+                var SupportedFormats;
+                (function (SupportedFormats) {
+                    SupportedFormats.mmCIF = { name: 'mmCIF', extensions: ['.cif'] };
+                    SupportedFormats.PDB = { name: 'PDB', extensions: ['.pdb', '.ent'] };
+                    SupportedFormats.All = [SupportedFormats.mmCIF, SupportedFormats.PDB];
+                })(SupportedFormats = Molecule.SupportedFormats || (Molecule.SupportedFormats = {}));
+                function parse(format, data, id) {
+                    return Core.Computation.create(function (ctx) {
+                        switch (format.name) {
+                            case SupportedFormats.mmCIF.name: {
+                                ctx.update('Parsing...');
+                                ctx.schedule(function () {
+                                    var file = Formats.CIF.parse(data);
+                                    if (file.error) {
+                                        ctx.reject(file.error.toString());
+                                        return;
+                                    }
+                                    if (!file.result.dataBlocks.length) {
+                                        ctx.reject("The CIF data does not contain a data block.");
+                                        return;
+                                    }
+                                    ctx.update('Creating representation...');
+                                    ctx.schedule(function () {
+                                        try {
+                                            var mol = Molecule.mmCIF.ofDataBlock(file.result.dataBlocks[0]);
+                                            ctx.resolve(Formats.ParserResult.success(mol, file.result.dataBlocks.length > 1 ? ["The input data contains multiple data blocks, only the first one was parsed. To parse all data blocks, use the function 'mmCIF.ofDataBlock' separately for each block."] : void 0));
+                                        }
+                                        catch (e) {
+                                            ctx.reject("" + e);
+                                        }
+                                    });
+                                });
+                                break;
+                            }
+                            case SupportedFormats.PDB.name: {
+                                ctx.update('Parsing...');
+                                ctx.schedule(function () {
+                                    var file = Molecule.PDB.toCifFile(id !== void 0 ? id : 'PDB', data);
+                                    if (file.error) {
+                                        ctx.reject(file.error.toString());
+                                        return;
+                                    }
+                                    if (!file.result.dataBlocks.length) {
+                                        ctx.reject("The PDB data does not contain a data block.");
+                                        return;
+                                    }
+                                    ctx.update('Creating representation...');
+                                    ctx.schedule(function () {
+                                        try {
+                                            var mol = Molecule.mmCIF.ofDataBlock(file.result.dataBlocks[0]);
+                                            ctx.resolve(Formats.ParserResult.success(mol));
+                                        }
+                                        catch (e) {
+                                            ctx.reject("" + e);
+                                        }
+                                    });
+                                });
+                                break;
+                            }
+                            default: {
+                                ctx.reject("'" + format + "' is not a supported molecule format.");
+                                break;
+                            }
+                        }
+                    });
+                }
+                Molecule.parse = parse;
+            })(Molecule = Formats.Molecule || (Formats.Molecule = {}));
+        })(Formats = Core.Formats || (Core.Formats = {}));
+    })(Core = LiteMol.Core || (LiteMol.Core = {}));
+})(LiteMol || (LiteMol = {}));
+/*
+ * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ */
+var LiteMol;
+(function (LiteMol) {
+    var Core;
+    (function (Core) {
+        var Formats;
+        (function (Formats) {
+            var Density;
+            (function (Density) {
+                "use strict";
+                var Field3DZYX = (function () {
+                    function Field3DZYX(data, dimensions) {
+                        this.data = data;
+                        this.dimensions = dimensions;
+                        this.len = this.dimensions[0] * this.dimensions[1] * this.dimensions[2];
+                        this.nX = this.dimensions[0];
+                        this.nY = this.dimensions[1];
+                    }
+                    Object.defineProperty(Field3DZYX.prototype, "length", {
+                        get: function () {
+                            return this.len;
+                        },
+                        enumerable: true,
+                        configurable: true
+                    });
+                    Field3DZYX.prototype.getAt = function (idx) {
+                        return this.data[idx];
+                    };
+                    Field3DZYX.prototype.setAt = function (idx, v) {
+                        this.data[idx] = v;
+                    };
+                    Field3DZYX.prototype.get = function (i, j, k) {
+                        return this.data[(this.nX * (k * this.nY + j) + i) | 0];
+                    };
+                    Field3DZYX.prototype.set = function (i, j, k, v) {
+                        this.data[(this.nX * (k * this.nY + j) + i) | 0] = v;
+                    };
+                    Field3DZYX.prototype.fill = function (v) {
+                        for (var i = 0; i < this.len; i++) {
+                            this.data[i] = v;
+                        }
+                    };
+                    return Field3DZYX;
+                }());
+                Density.Field3DZYX = Field3DZYX;
+                /**
+                 * Represents electron density data.
+                 */
+                var Data = (function () {
+                    function Data(cellSize, cellAngles, origin, hasSkewMatrix, skewMatrix, data, dataDimensions, basis, startOffset, valuesInfo, attributes) {
+                        /**
+                         * Are the data normalized?
+                         */
+                        this.isNormalized = false;
+                        this.cellSize = cellSize;
+                        this.cellAngles = cellAngles;
+                        this.origin = origin;
+                        this.hasSkewMatrix = hasSkewMatrix;
+                        this.skewMatrix = skewMatrix;
+                        this.data = data;
+                        this.basis = basis;
+                        this.startOffset = startOffset;
+                        this.dataDimensions = dataDimensions;
+                        this.valuesInfo = valuesInfo;
+                        this.attributes = attributes ? attributes : {};
+                    }
+                    /**
+                     * If not already normalized, normalize the data.
+                     */
+                    Data.prototype.normalize = function () {
+                        if (this.isNormalized)
+                            return;
+                        var data = this.data, _a = this.valuesInfo, mean = _a.mean, sigma = _a.sigma;
+                        var min = Number.POSITIVE_INFINITY, max = Number.NEGATIVE_INFINITY;
+                        for (var i = 0, _l = data.length; i < _l; i++) {
+                            var v = (data.getAt(i) - mean) / sigma;
+                            data.setAt(i, v);
+                            if (v < min)
+                                min = v;
+                            if (v > max)
+                                max = v;
+                        }
+                        this.valuesInfo.min = min;
+                        this.valuesInfo.max = max;
+                        this.isNormalized = true;
+                    };
+                    /**
+                     * If normalized, de-normalize the data.
+                     */
+                    Data.prototype.denormalize = function () {
+                        if (!this.isNormalized)
+                            return;
+                        var data = this.data, _a = this.valuesInfo, mean = _a.mean, sigma = _a.sigma;
+                        var min = Number.POSITIVE_INFINITY, max = Number.NEGATIVE_INFINITY;
+                        for (var i = 0, _l = data.length; i < _l; i++) {
+                            var v = sigma * data.getAt(i) + mean;
+                            data.setAt(i, v);
+                            if (v < min)
+                                min = v;
+                            if (v > max)
+                                max = v;
+                        }
+                        this.valuesInfo.min = min;
+                        this.valuesInfo.max = max;
+                        this.isNormalized = false;
+                    };
+                    return Data;
+                }());
+                Density.Data = Data;
+            })(Density = Formats.Density || (Formats.Density = {}));
+        })(Formats = Core.Formats || (Core.Formats = {}));
+    })(Core = LiteMol.Core || (LiteMol.Core = {}));
+})(LiteMol || (LiteMol = {}));
+/*
+ * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ */
+var LiteMol;
+(function (LiteMol) {
+    var Core;
+    (function (Core) {
+        var Formats;
+        (function (Formats) {
+            var Density;
+            (function (Density) {
+                var CCP4;
+                (function (CCP4) {
+                    function parse(buffer) {
+                        return Parser.parse(buffer);
+                    }
+                    CCP4.parse = parse;
+                    /**
+                     * Parses CCP4 files.
+                     */
+                    var Parser = (function () {
+                        function Parser() {
+                        }
+                        Parser.getArray = function (r, offset, count) {
+                            var ret = [];
+                            for (var i = 0; i < count; i++) {
+                                ret[i] = r(offset + i);
+                            }
+                            return ret;
+                        };
+                        /**
+                         * Parse CCP4 file according to spec at http://www.ccp4.ac.uk/html/maplib.html
+                         * Inspired by PyMOL implementation of the parser.
+                         */
+                        Parser.parse = function (buffer) {
+                            var headerSize = 1024, endian = false, headerView = new DataView(buffer, 0, headerSize), warnings = [];
+                            var mode = headerView.getInt32(3 * 4, false);
+                            if (mode !== 2) {
+                                endian = true;
+                                mode = headerView.getInt32(3 * 4, true);
+                                if (mode !== 2) {
+                                    return Formats.ParserResult.error("Only CCP4 modes 0 and 2 are supported.");
+                                }
+                            }
+                            var readInt = function (o) { return headerView.getInt32(o * 4, endian); }, readFloat = function (o) { return headerView.getFloat32(o * 4, endian); };
+                            var header = {
+                                extent: Parser.getArray(readInt, 0, 3),
+                                mode: mode,
+                                nxyzStart: Parser.getArray(readInt, 4, 3),
+                                grid: Parser.getArray(readInt, 7, 3),
+                                cellDimensions: Parser.getArray(readFloat, 10, 3),
+                                cellAngles: Parser.getArray(readFloat, 13, 3),
+                                crs2xyz: Parser.getArray(readInt, 16, 3),
+                                min: readFloat(19),
+                                max: readFloat(20),
+                                mean: readFloat(21),
+                                spacegroupNumber: readInt(22),
+                                symBytes: readInt(23),
+                                skewFlag: readInt(24),
+                                skewMatrix: Parser.getArray(readFloat, 25, 9),
+                                skewTranslation: Parser.getArray(readFloat, 34, 3),
+                                origin2k: Parser.getArray(readFloat, 49, 3)
+                            };
+                            var dataOffset = buffer.byteLength - 4 * header.extent[0] * header.extent[1] * header.extent[2];
+                            if (dataOffset !== headerSize + header.symBytes) {
+                                if (dataOffset === headerSize) {
+                                    warnings.push("File contains bogus symmetry record.");
+                                }
+                                else if (dataOffset < headerSize) {
+                                    return Formats.ParserResult.error("File appears truncated and doesn't match header.");
+                                }
+                                else if ((dataOffset > headerSize) && (dataOffset < (1024 * 1024))) {
+                                    // Fix for loading SPIDER files which are larger than usual
+                                    // In this specific case, we must absolutely trust the symBytes record
+                                    dataOffset = headerSize + header.symBytes;
+                                    warnings.push("File is larger than expected and doesn't match header. Continuing file load, good luck!");
+                                }
+                                else {
+                                    return Formats.ParserResult.error("File is MUCH larger than expected and doesn't match header.");
+                                }
+                            }
+                            //let mapp = readInt(52);
+                            //let mapStr = String.fromCharCode((mapp & 0xFF)) + String.fromCharCode(((mapp >> 8) & 0xFF)) + String.fromCharCode(((mapp >> 16) & 0xFF)) + String.fromCharCode(((mapp >> 24) & 0xFF));
+                            // pretend we've checked the MAP string at offset 52
+                            // pretend we've read the symmetry data
+                            if (header.grid[0] === 0 && header.extent[0] > 0) {
+                                header.grid[0] = header.extent[0] - 1;
+                                warnings.push("Fixed X interval count.");
+                            }
+                            if (header.grid[1] === 0 && header.extent[1] > 0) {
+                                header.grid[1] = header.extent[1] - 1;
+                                warnings.push("Fixed Y interval count.");
+                            }
+                            if (header.grid[2] === 0 && header.extent[2] > 0) {
+                                header.grid[2] = header.extent[2] - 1;
+                                warnings.push("Fixed Z interval count.");
+                            }
+                            if (header.crs2xyz[0] === 0 && header.crs2xyz[1] === 0 && header.crs2xyz[2] === 0) {
+                                warnings.push("All crs2xyz records are zero. Setting crs2xyz to 1, 2, 3.");
+                                header.crs2xyz = [1, 2, 3];
+                            }
+                            if (header.cellDimensions[0] === 0.0 &&
+                                header.cellDimensions[1] === 0.0 &&
+                                header.cellDimensions[2] === 0.0) {
+                                warnings.push("Cell dimensions are all zero. Setting to 1.0, 1.0, 1.0. Map file will not align with other structures.");
+                                header.cellDimensions[0] = 1.0;
+                                header.cellDimensions[1] = 1.0;
+                                header.cellDimensions[2] = 1.0;
+                            }
+                            var alpha = (Math.PI / 180.0) * header.cellAngles[0], beta = (Math.PI / 180.0) * header.cellAngles[1], gamma = (Math.PI / 180.0) * header.cellAngles[2];
+                            var xScale = header.cellDimensions[0] / header.grid[0], yScale = header.cellDimensions[1] / header.grid[1], zScale = header.cellDimensions[2] / header.grid[2];
+                            var z1 = Math.cos(beta), z2 = (Math.cos(alpha) - Math.cos(beta) * Math.cos(gamma)) / Math.sin(gamma), z3 = Math.sqrt(1.0 - z1 * z1 - z2 * z2);
+                            var xAxis = [xScale, 0.0, 0.0], yAxis = [Math.cos(gamma) * yScale, Math.sin(gamma) * yScale, 0.0], zAxis = [z1 * zScale, z2 * zScale, z3 * zScale];
+                            var indices = [0, 0, 0];
+                            indices[header.crs2xyz[0] - 1] = 0;
+                            indices[header.crs2xyz[1] - 1] = 1;
+                            indices[header.crs2xyz[2] - 1] = 2;
+                            var origin;
+                            if (header.origin2k[0] === 0.0 && header.origin2k[1] === 0.0 && header.origin2k[2] === 0.0) {
+                                origin = [
+                                    xAxis[0] * header.nxyzStart[indices[0]] + yAxis[0] * header.nxyzStart[indices[1]] + zAxis[0] * header.nxyzStart[indices[2]],
+                                    yAxis[1] * header.nxyzStart[indices[1]] + zAxis[1] * header.nxyzStart[indices[2]],
+                                    zAxis[2] * header.nxyzStart[indices[2]]
+                                ];
+                            }
+                            else {
+                                // Use ORIGIN records rather than old n[xyz]start records
+                                //   http://www2.mrc-lmb.cam.ac.uk/image2000.html
+                                // XXX the ORIGIN field is only used by the EM community, and
+                                //     has undefined meaning for non-orthogonal maps and/or
+                                //     non-cubic voxels, etc.
+                                origin = [header.origin2k[indices[0]], header.origin2k[indices[1]], header.origin2k[indices[2]]];
+                            }
+                            var extent = [header.extent[indices[0]], header.extent[indices[1]], header.extent[indices[2]]];
+                            var skewMatrix = new Float32Array(16), i, j;
+                            for (i = 0; i < 3; i++) {
+                                for (j = 0; j < 3; j++) {
+                                    skewMatrix[4 * j + i] = header.skewMatrix[3 * i + j];
+                                }
+                                skewMatrix[12 + i] = header.skewTranslation[i];
+                            }
+                            var nativeEndian = new Uint16Array(new Uint8Array([0x12, 0x34]).buffer)[0] === 0x3412;
+                            var rawData = endian === nativeEndian
+                                ? Parser.readRawData1(new Float32Array(buffer, headerSize + header.symBytes, extent[0] * extent[1] * extent[2]), endian, extent, header.extent, indices, header.mean)
+                                : Parser.readRawData(new DataView(buffer, headerSize + header.symBytes), endian, extent, header.extent, indices, header.mean);
+                            var field = new Density.Field3DZYX(rawData.data, extent);
+                            var data = new Density.Data(header.cellDimensions, header.cellAngles, origin, header.skewFlag !== 0, skewMatrix, field, extent, { x: xAxis, y: yAxis, z: zAxis }, [header.nxyzStart[indices[0]], header.nxyzStart[indices[1]], header.nxyzStart[indices[2]]], { min: header.min, max: header.max, mean: header.mean, sigma: rawData.sigma }, { spacegroupIndex: header.spacegroupNumber - 1 });
+                            return Formats.ParserResult.success(data, warnings);
+                        };
+                        Parser.normalizeData = function (data, mean, stddev) {
+                            var min = Number.POSITIVE_INFINITY, max = Number.NEGATIVE_INFINITY;
+                            for (var i = 0, _l = data.length; i < _l; i++) {
+                                var v = (data[i] - mean) / stddev;
+                                data[i] = v;
+                                if (v < min)
+                                    min = v;
+                                if (v > max)
+                                    max = v;
+                            }
+                            return { min: min, max: max };
+                        };
+                        Parser.readRawData1 = function (view, endian, extent, headerExtent, indices, mean) {
+                            var data = new Float32Array(extent[0] * extent[1] * extent[2]), coord = [0, 0, 0], mX, mY, mZ, cX, cY, cZ, xSize, xySize, offset = 0, v = 0.1, sigma = 0.0, t = 0.1, iX = indices[0], iY = indices[1], iZ = indices[2];
+                            //mX = extent[indices[0]];
+                            //mY = extent[indices[1]];  
+                            //mZ = extent[indices[2]];
+                            mX = headerExtent[0];
+                            mY = headerExtent[1];
+                            mZ = headerExtent[2];
+                            xSize = extent[0];
+                            xySize = extent[0] * extent[1];
+                            for (cZ = 0; cZ < mZ; cZ++) {
+                                coord[2] = cZ;
+                                for (cY = 0; cY < mY; cY++) {
+                                    coord[1] = cY;
+                                    for (cX = 0; cX < mX; cX++) {
+                                        coord[0] = cX;
+                                        v = view[offset];
+                                        t = v - mean;
+                                        sigma += t * t,
+                                            data[coord[iX] + coord[iY] * xSize + coord[iZ] * xySize] = v;
+                                        offset += 1;
+                                    }
+                                }
+                            }
+                            sigma /= mX * mY * mZ;
+                            sigma = Math.sqrt(sigma);
+                            return {
+                                data: data,
+                                sigma: sigma
+                            };
+                        };
+                        Parser.readRawData = function (view, endian, extent, headerExtent, indices, mean) {
+                            var data = new Float32Array(extent[0] * extent[1] * extent[2]), coord = [0, 0, 0], mX, mY, mZ, cX, cY, cZ, xSize, xySize, offset = 0, v = 0.1, sigma = 0.0, t = 0.1, iX = indices[0], iY = indices[1], iZ = indices[2];
+                            mX = headerExtent[0];
+                            mY = headerExtent[1];
+                            mZ = headerExtent[2];
+                            xSize = extent[0];
+                            xySize = extent[0] * extent[1];
+                            for (cZ = 0; cZ < mZ; cZ++) {
+                                coord[2] = cZ;
+                                for (cY = 0; cY < mY; cY++) {
+                                    coord[1] = cY;
+                                    for (cX = 0; cX < mX; cX++) {
+                                        coord[0] = cX;
+                                        v = view.getFloat32(offset, endian);
+                                        t = v - mean;
+                                        sigma += t * t,
+                                            data[coord[iX] + coord[iY] * xSize + coord[iZ] * xySize] = v;
+                                        offset += 4;
+                                    }
+                                }
+                            }
+                            sigma /= mX * mY * mZ;
+                            sigma = Math.sqrt(sigma);
+                            return {
+                                data: data,
+                                sigma: sigma
+                            };
+                        };
+                        return Parser;
+                    }());
+                })(CCP4 = Density.CCP4 || (Density.CCP4 = {}));
+            })(Density = Formats.Density || (Formats.Density = {}));
+        })(Formats = Core.Formats || (Core.Formats = {}));
+    })(Core = LiteMol.Core || (LiteMol.Core = {}));
+})(LiteMol || (LiteMol = {}));
+/*
+ * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ */
+var LiteMol;
+(function (LiteMol) {
+    var Core;
+    (function (Core) {
+        var Formats;
+        (function (Formats) {
+            var Density;
+            (function (Density) {
+                var BRIX;
+                (function (BRIX) {
+                    function parse(buffer) {
+                        return Parser.parse(buffer);
+                    }
+                    BRIX.parse = parse;
+                    ///////////////////////////////////////////////////////////////////////////////
+                    function remove(arrOriginal, elementToRemove) {
+                        return arrOriginal.filter(function (el) { return el !== elementToRemove; });
+                    }
+                    ///////////////////////////////////////////////////////////////////////////////
+                    /**
+                     * Parses CCP4 files.
+                     */
+                    var Parser = (function () {
+                        function Parser() {
+                        }
+                        /**
+                         * Parse BRIX file.
+                         */
+                        Parser.parse = function (buffer) {
+                            var headerSize = 512, endian = false, 
+                            //headerView = new DataView(buffer, 0, headerSize),
+                            headerView = new Uint8Array(buffer, 0, headerSize), 
+                            //sheaderView = String.fromCharCode.apply(null, new Uint8Array(headerView)),
+                            sheaderView = String.fromCharCode.apply(null, headerView), n1 = sheaderView.search('origin'), n2 = sheaderView.search('extent'), n3 = sheaderView.search('grid'), n4 = sheaderView.search('cell'), n5 = sheaderView.search('prod'), n6 = sheaderView.search('plus'), n7 = sheaderView.search('sigma'), sn1 = sheaderView.substring(n1 + 'origin'.length, n2).replace(' ', '').split(' '), sn1xx = remove(sn1, ''), sn2 = sheaderView.substring(n2 + 'extent'.length, n3).split(' '), sn2xx = remove(sn2, ''), sn3 = sheaderView.substring(n3 + 'grid'.length, n4).split(' '), sn3xx = remove(sn3, ''), sn4 = sheaderView.substring(n4 + 'cell'.length, n5).split(' '), sn4xx = remove(sn4, ''), sn5 = sheaderView.substring(n5 + 'prod'.length, n6).split(' '), sn5xx = remove(sn5, ''), sn6 = sheaderView.substring(n6 + 'plus'.length, n7).split(' '), sn6xx = remove(sn6, ''), sn7 = sheaderView.substring(n7 + 'sigma'.length, sheaderView.length).split(' '), sn7xx = remove(sn7, ''), warnings = [];
+                            var mode = 0;
+                            var header = {
+                                extent: sn2xx.map(function (v) { return parseInt(v); }),
+                                mode: mode,
+                                nxyzStart: [0, 0, 0],
+                                grid: sn3xx.map(function (v) { return parseInt(v); }),
+                                cellDimensions: sn4xx.slice(0, 3).map(function (v) { return parseFloat(v); }),
+                                cellAngles: sn4xx.slice(3, 6).map(function (v) { return parseFloat(v); }),
+                                crs2xyz: [1, 2, 3],
+                                min: 0.0,
+                                max: 0.0,
+                                mean: 0.0,
+                                symBytes: 0,
+                                skewFlag: 0,
+                                skewMatrix: 0,
+                                skewTranslation: 0,
+                                origin2k: sn1xx.map(function (v) { return parseFloat(v); }),
+                                prod: sn5xx.map(function (v) { return parseFloat(v); })[0],
+                                plus: sn6xx.map(function (v) { return parseFloat(v); })[0]
+                            };
+                            var dataOffset = 512;
+                            if (dataOffset !== headerSize + header.symBytes) {
+                                if (dataOffset === headerSize) {
+                                    warnings.push("File contains bogus symmetry record.");
+                                }
+                                else if (dataOffset < headerSize) {
+                                    return Formats.ParserResult.error("File appears truncated and doesn't match header.");
+                                }
+                                else if ((dataOffset > headerSize) && (dataOffset < (1024 * 1024))) {
+                                    // Fix for loading SPIDER files which are larger than usual
+                                    // In this specific case, we must absolutely trust the symBytes record
+                                    dataOffset = headerSize + header.symBytes;
+                                    warnings.push("File is larger than expected and doesn't match header. Continuing file load, good luck!");
+                                }
+                                else {
+                                    return Formats.ParserResult.error("File is MUCH larger than expected and doesn't match header.");
+                                }
+                            }
+                            // pretend we've checked the MAP string at offset 52
+                            // pretend we've read the symmetry data
+                            if (header.grid[0] === 0 && header.extent[0] > 0) {
+                                header.grid[0] = header.extent[0] - 1;
+                                warnings.push("Fixed X interval count.");
+                            }
+                            if (header.grid[1] === 0 && header.extent[1] > 0) {
+                                header.grid[1] = header.extent[1] - 1;
+                                warnings.push("Fixed Y interval count.");
+                            }
+                            if (header.grid[2] === 0 && header.extent[2] > 0) {
+                                header.grid[2] = header.extent[2] - 1;
+                                warnings.push("Fixed Z interval count.");
+                            }
+                            if (header.crs2xyz[0] === 0 && header.crs2xyz[1] === 0 && header.crs2xyz[2] === 0) {
+                                warnings.push("All crs2xyz records are zero. Setting crs2xyz to 1, 2, 3.");
+                                header.crs2xyz = [1, 2, 3];
+                            }
+                            if (header.cellDimensions[0] === 0.0 &&
+                                header.cellDimensions[1] === 0.0 &&
+                                header.cellDimensions[2] === 0.0) {
+                                warnings.push("Cell dimensions are all zero. Setting to 1.0, 1.0, 1.0. Map file will not align with other structures.");
+                                header.cellDimensions[0] = 1.0;
+                                header.cellDimensions[1] = 1.0;
+                                header.cellDimensions[2] = 1.0;
+                            }
+                            var alpha = (Math.PI / 180.0) * header.cellAngles[0], beta = (Math.PI / 180.0) * header.cellAngles[1], gamma = (Math.PI / 180.0) * header.cellAngles[2];
+                            var xScale = header.cellDimensions[0] / header.grid[0], yScale = header.cellDimensions[1] / header.grid[1], zScale = header.cellDimensions[2] / header.grid[2];
+                            var z1 = Math.cos(beta), z2 = (Math.cos(alpha) - Math.cos(beta) * Math.cos(gamma)) / Math.sin(gamma), z3 = Math.sqrt(1.0 - z1 * z1 - z2 * z2);
+                            var xAxis = [xScale, 0.0, 0.0], yAxis = [Math.cos(gamma) * yScale, Math.sin(gamma) * yScale, 0.0], zAxis = [z1 * zScale, z2 * zScale, z3 * zScale];
+                            var indices = [0, 0, 0];
+                            indices[header.crs2xyz[0] - 1] = 0;
+                            indices[header.crs2xyz[1] - 1] = 1;
+                            indices[header.crs2xyz[2] - 1] = 2;
+                            var origin;
+                            if (header.origin2k[0] === 0.0 && header.origin2k[1] === 0.0 && header.origin2k[2] === 0.0) {
+                                origin = [
+                                    xAxis[0] * header.nxyzStart[indices[0]] + yAxis[0] * header.nxyzStart[indices[1]] + zAxis[0] * header.nxyzStart[indices[2]],
+                                    yAxis[1] * header.nxyzStart[indices[1]] + zAxis[1] * header.nxyzStart[indices[2]],
+                                    zAxis[2] * header.nxyzStart[indices[2]]
+                                ];
+                            }
+                            else {
+                                // Use ORIGIN records rather than old n[xyz]start records
+                                //   http://www2.mrc-lmb.cam.ac.uk/image2000.html
+                                // XXX the ORIGIN field is only used by the EM community, and
+                                //     has undefined meaning for non-orthogonal maps and/or
+                                //     non-cubic voxels, etc.
+                                origin = [header.origin2k[indices[0]], header.origin2k[indices[1]], header.origin2k[indices[2]]];
+                            }
+                            var extent = [header.extent[indices[0]], header.extent[indices[1]], header.extent[indices[2]]];
+                            var skewMatrix = new Float32Array(16), i, j;
+                            for (i = 0; i < 3; i++) {
+                                for (j = 0; j < 3; j++) {
+                                    skewMatrix[4 * j + i] = 0.0; //header.skewMatrix[3 * i + j];
+                                }
+                                skewMatrix[12 + i] = 0.0; //header.skewTranslation[i];
+                            }
+                            var nativeEndian = new Uint16Array(new Uint8Array([0x12, 0x34]).buffer)[0] === 0x3412;
+                            endian = nativeEndian;
+                            var rawData = Parser.readRawData(new Uint8Array(buffer, headerSize + header.symBytes), endian, extent, header.extent, indices, header.mean, header.prod, header.plus);
+                            var field = new Density.Field3DZYX(rawData.data, extent);
+                            var data = new Density.Data(header.cellDimensions, header.cellAngles, origin, header.skewFlag !== 0, skewMatrix, field, extent, { x: xAxis, y: yAxis, z: zAxis }, [header.nxyzStart[indices[0]], header.nxyzStart[indices[1]], header.nxyzStart[indices[2]]], { min: rawData.minj, max: rawData.maxj, mean: rawData.meanj, sigma: rawData.sigma }, { prod: header.prod, plus: header.plus }); //! added attributes property to store additional information
+                            return Formats.ParserResult.success(data, warnings);
+                        };
+                        //////////////////////////////////////////////////////////////////////////////////////////
+                        Parser.readRawData = function (bytes, endian, extent, headerExtent, indices, mean, prod, plus) {
+                            //! DataView is generally a LOT slower than Uint8Array. For performance reasons I think it would be better to use that.
+                            //! Endian has no effect on individual bytes anyway to my knowledge.
+                            var mX, mY, mZ, cX, cY, cZ, xSize, xySize, offset = 0, v = 0.1, sigma = 0.0, t = 0.1, xbsize, ybsize, zbsize, mi, mj, mk, x, y, z, xxtra, yxtra, zxtra, minj = 0, maxj = 0, meanj = 0, block_size = 8, block_sizez = 8, block_sizey = 8, block_sizex = 8, bsize3 = block_size * block_size * block_size;
+                            //! I think this will need some fixing, because the values are non-integer
+                            //! A small perf trick: use 'value | 0' to tell the runtime the value is an integer.
+                            mX = headerExtent[0] / 8;
+                            mY = headerExtent[1] / 8;
+                            mZ = headerExtent[2] / 8;
+                            //In case of extra cubes
+                            /*
+                            if (headerExtent[0]%8>0) mX++;
+                            if (headerExtent[1]%8>0) mY++;
+                            if (headerExtent[2]%8>0) mZ++;
+                            xxtra=(headerExtent[0]%8);
+                            yxtra=(headerExtent[1]%8);
+                            zxtra=(headerExtent[2]%8);
+                            */
+                            var data = new Float32Array(8 * mX * 8 * mY * 8 * mZ);
+                            xSize = 8 * mX;
+                            xySize = 8 * 8 * mX * mY; //extent[0] * extent[1];
+                            minj = 0.0;
+                            maxj = 0.0;
+                            meanj = 0.0;
+                            //////////////////////////////////////////////////////////////
+                            for (mi = 0; mi < (bsize3 * mX * mY * mZ); mi++) {
+                                v = (bytes[mi] - plus) / prod;
+                                meanj += v;
+                                if (v < minj)
+                                    minj = v;
+                                if (v > maxj)
+                                    maxj = v;
+                            }
+                            //meanj/=(mX*mY*mZ*bsize3);
+                            meanj /= (bsize3 * mX * mY * mZ);
+                            for (cZ = 0; cZ < mZ; cZ++) {
+                                for (cY = 0; cY < mY; cY++) {
+                                    for (cX = 0; cX < mX; cX++) {
+                                        //! cX is suppoed to change the fastest because of the memory layout of the 1D array 
+                                        //if(xxtra>0 && mZ-cZ<=1.0) block_sizez=zxtra;
+                                        //if(xxtra>0 && mY-cY<=1.0) block_sizey=yxtra;
+                                        //if(xxtra>0 && mX-cX<=1.0) block_sizex=xxtra;
+                                        //! changed the ordering mi == X coord, was Z; mk == Z coord, was X
+                                        for (mk = 0; mk < block_sizez; mk++) {
+                                            for (mj = 0; mj < block_sizey; mj++) {
+                                                for (mi = 0; mi < block_sizex; mi++) {
+                                                    v = (bytes[offset + mi + 8 * mj + 8 * 8 * mk] - plus) / prod;
+                                                    //offset+=1;
+                                                    x = (block_sizex * cX + mi);
+                                                    y = (block_sizey * cY + mj);
+                                                    z = (block_sizez * cZ + mk);
+                                                    //! swapped x and z here.
+                                                    data[x + xSize * y + xySize * z] = v;
+                                                    t = v - meanj;
+                                                    sigma += t * t;
+                                                }
+                                            }
+                                        }
+                                        offset += bsize3;
+                                    }
+                                }
+                            }
+                            sigma /= (bsize3 * mX * mY * mZ);
+                            sigma = Math.sqrt(sigma);
+                            //  console.log(sigma);
+                            //  console.log(minj);
+                            //  console.log(maxj);
+                            //  console.log(meanj);
+                            return {
+                                data: data,
+                                sigma: sigma,
+                                minj: minj,
+                                maxj: maxj,
+                                meanj: meanj
+                            };
+                        };
+                        return Parser;
+                    }());
+                })(BRIX = Density.BRIX || (Density.BRIX = {}));
+            })(Density = Formats.Density || (Formats.Density = {}));
+        })(Formats = Core.Formats || (Core.Formats = {}));
+    })(Core = LiteMol.Core || (LiteMol.Core = {}));
+})(LiteMol || (LiteMol = {}));
+/*
+ * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ */
+var LiteMol;
+(function (LiteMol) {
+    var Core;
+    (function (Core) {
+        var Formats;
+        (function (Formats) {
+            var Density;
+            (function (Density) {
+                var SupportedFormats;
+                (function (SupportedFormats) {
+                    SupportedFormats.CCP4 = { name: 'CCP4', extensions: ['.ccp4', '.map'] };
+                    SupportedFormats.BRIX = { name: 'BRIX', extensions: ['.brix'] };
+                    SupportedFormats.All = [SupportedFormats.CCP4, SupportedFormats.BRIX];
+                })(SupportedFormats = Density.SupportedFormats || (Density.SupportedFormats = {}));
+                function parse(format, data, id) {
+                    switch (format.name) {
+                        case SupportedFormats.CCP4.name: {
+                            return Density.CCP4.parse(data);
+                        }
+                        case SupportedFormats.BRIX.name: {
+                            return Density.BRIX.parse(data);
+                        }
+                        default: {
+                            return Formats.ParserResult.error("'" + format + "' is not a supported density data format.");
+                        }
+                    }
+                }
+                Density.parse = parse;
+            })(Density = Formats.Density || (Formats.Density = {}));
+        })(Formats = Core.Formats || (Core.Formats = {}));
+    })(Core = LiteMol.Core || (LiteMol.Core = {}));
+})(LiteMol || (LiteMol = {}));
+/*
+ * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ */
+var LiteMol;
+(function (LiteMol) {
+    var Core;
+    (function (Core) {
+        var Geometry;
+        (function (Geometry) {
+            var LinearAlgebra;
+            (function (LinearAlgebra) {
+                /*
+                 * This code has been modified from https://github.com/toji/gl-matrix/,
+                 * copyright (c) 2015, Brandon Jones, Colin MacKenzie IV.
+                 *
+                 * Permission is hereby granted, free of charge, to any person obtaining a copy
+                 * of this software and associated documentation files (the "Software"), to deal
+                 * in the Software without restriction, including without limitation the rights
+                 * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+                 * copies of the Software, and to permit persons to whom the Software is
+                 * furnished to do so, subject to the following conditions:
+                 */
+                var makeArray = (typeof Float64Array !== 'undefined')
+                    ? function (size) { return (new Float64Array(size)); }
+                    : function (size) { return []; };
+                /**
+                 * Stores a 4x4 matrix in a column major (j * 4 + i indexing) format.
+                 */
+                var Matrix4 = (function () {
+                    function Matrix4() {
+                    }
+                    Matrix4.empty = function () {
+                        return makeArray(16);
+                    };
+                    Matrix4.identity = function () {
+                        var out = makeArray(16);
+                        out[0] = 1;
+                        out[1] = 0;
+                        out[2] = 0;
+                        out[3] = 0;
+                        out[4] = 0;
+                        out[5] = 1;
+                        out[6] = 0;
+                        out[7] = 0;
+                        out[8] = 0;
+                        out[9] = 0;
+                        out[10] = 1;
+                        out[11] = 0;
+                        out[12] = 0;
+                        out[13] = 0;
+                        out[14] = 0;
+                        out[15] = 1;
+                        return out;
+                    };
+                    Matrix4.ofRows = function (rows) {
+                        var out = makeArray(16), i, j, r;
+                        for (i = 0; i < 4; i++) {
+                            r = rows[i];
+                            for (j = 0; j < 4; j++) {
+                                out[4 * j + i] = r[j];
+                            }
+                        }
+                        return out;
+                    };
+                    Matrix4.areEqual = function (a, b, eps) {
+                        for (var i = 0; i < 16; i++) {
+                            if (Math.abs(a[i] - b[i]) > eps) {
+                                return false;
+                            }
+                        }
+                        return true;
+                    };
+                    Matrix4.setValue = function (a, i, j, value) {
+                        a[4 * j + i] = value;
+                    };
+                    Matrix4.copy = function (out, a) {
+                        out[0] = a[0];
+                        out[1] = a[1];
+                        out[2] = a[2];
+                        out[3] = a[3];
+                        out[4] = a[4];
+                        out[5] = a[5];
+                        out[6] = a[6];
+                        out[7] = a[7];
+                        out[8] = a[8];
+                        out[9] = a[9];
+                        out[10] = a[10];
+                        out[11] = a[11];
+                        out[12] = a[12];
+                        out[13] = a[13];
+                        out[14] = a[14];
+                        out[15] = a[15];
+                        return out;
+                    };
+                    Matrix4.clone = function (a) {
+                        return Matrix4.copy(Matrix4.empty(), a);
+                    };
+                    Matrix4.invert = function (out, a) {
+                        var a00 = a[0], a01 = a[1], a02 = a[2], a03 = a[3], a10 = a[4], a11 = a[5], a12 = a[6], a13 = a[7], a20 = a[8], a21 = a[9], a22 = a[10], a23 = a[11], a30 = a[12], a31 = a[13], a32 = a[14], a33 = a[15], b00 = a00 * a11 - a01 * a10, b01 = a00 * a12 - a02 * a10, b02 = a00 * a13 - a03 * a10, b03 = a01 * a12 - a02 * a11, b04 = a01 * a13 - a03 * a11, b05 = a02 * a13 - a03 * a12, b06 = a20 * a31 - a21 * a30, b07 = a20 * a32 - a22 * a30, b08 = a20 * a33 - a23 * a30, b09 = a21 * a32 - a22 * a31, b10 = a21 * a33 - a23 * a31, b11 = a22 * a33 - a23 * a32, 
+                        // Calculate the determinant
+                        det = b00 * b11 - b01 * b10 + b02 * b09 + b03 * b08 - b04 * b07 + b05 * b06;
+                        if (!det) {
+                            return null;
+                        }
+                        det = 1.0 / det;
+                        out[0] = (a11 * b11 - a12 * b10 + a13 * b09) * det;
+                        out[1] = (a02 * b10 - a01 * b11 - a03 * b09) * det;
+                        out[2] = (a31 * b05 - a32 * b04 + a33 * b03) * det;
+                        out[3] = (a22 * b04 - a21 * b05 - a23 * b03) * det;
+                        out[4] = (a12 * b08 - a10 * b11 - a13 * b07) * det;
+                        out[5] = (a00 * b11 - a02 * b08 + a03 * b07) * det;
+                        out[6] = (a32 * b02 - a30 * b05 - a33 * b01) * det;
+                        out[7] = (a20 * b05 - a22 * b02 + a23 * b01) * det;
+                        out[8] = (a10 * b10 - a11 * b08 + a13 * b06) * det;
+                        out[9] = (a01 * b08 - a00 * b10 - a03 * b06) * det;
+                        out[10] = (a30 * b04 - a31 * b02 + a33 * b00) * det;
+                        out[11] = (a21 * b02 - a20 * b04 - a23 * b00) * det;
+                        out[12] = (a11 * b07 - a10 * b09 - a12 * b06) * det;
+                        out[13] = (a00 * b09 - a01 * b07 + a02 * b06) * det;
+                        out[14] = (a31 * b01 - a30 * b03 - a32 * b00) * det;
+                        out[15] = (a20 * b03 - a21 * b01 + a22 * b00) * det;
+                        return out;
+                    };
+                    Matrix4.mul = function (out, a, b) {
+                        var a00 = a[0], a01 = a[1], a02 = a[2], a03 = a[3], a10 = a[4], a11 = a[5], a12 = a[6], a13 = a[7], a20 = a[8], a21 = a[9], a22 = a[10], a23 = a[11], a30 = a[12], a31 = a[13], a32 = a[14], a33 = a[15];
+                        // Cache only the current line of the second matrix
+                        var b0 = b[0], b1 = b[1], b2 = b[2], b3 = b[3];
+                        out[0] = b0 * a00 + b1 * a10 + b2 * a20 + b3 * a30;
+                        out[1] = b0 * a01 + b1 * a11 + b2 * a21 + b3 * a31;
+                        out[2] = b0 * a02 + b1 * a12 + b2 * a22 + b3 * a32;
+                        out[3] = b0 * a03 + b1 * a13 + b2 * a23 + b3 * a33;
+                        b0 = b[4];
+                        b1 = b[5];
+                        b2 = b[6];
+                        b3 = b[7];
+                        out[4] = b0 * a00 + b1 * a10 + b2 * a20 + b3 * a30;
+                        out[5] = b0 * a01 + b1 * a11 + b2 * a21 + b3 * a31;
+                        out[6] = b0 * a02 + b1 * a12 + b2 * a22 + b3 * a32;
+                        out[7] = b0 * a03 + b1 * a13 + b2 * a23 + b3 * a33;
+                        b0 = b[8];
+                        b1 = b[9];
+                        b2 = b[10];
+                        b3 = b[11];
+                        out[8] = b0 * a00 + b1 * a10 + b2 * a20 + b3 * a30;
+                        out[9] = b0 * a01 + b1 * a11 + b2 * a21 + b3 * a31;
+                        out[10] = b0 * a02 + b1 * a12 + b2 * a22 + b3 * a32;
+                        out[11] = b0 * a03 + b1 * a13 + b2 * a23 + b3 * a33;
+                        b0 = b[12];
+                        b1 = b[13];
+                        b2 = b[14];
+                        b3 = b[15];
+                        out[12] = b0 * a00 + b1 * a10 + b2 * a20 + b3 * a30;
+                        out[13] = b0 * a01 + b1 * a11 + b2 * a21 + b3 * a31;
+                        out[14] = b0 * a02 + b1 * a12 + b2 * a22 + b3 * a32;
+                        out[15] = b0 * a03 + b1 * a13 + b2 * a23 + b3 * a33;
+                        return out;
+                    };
+                    Matrix4.translate = function (out, a, v) {
+                        var x = v[0], y = v[1], z = v[2], a00, a01, a02, a03, a10, a11, a12, a13, a20, a21, a22, a23;
+                        if (a === out) {
+                            out[12] = a[0] * x + a[4] * y + a[8] * z + a[12];
+                            out[13] = a[1] * x + a[5] * y + a[9] * z + a[13];
+                            out[14] = a[2] * x + a[6] * y + a[10] * z + a[14];
+                            out[15] = a[3] * x + a[7] * y + a[11] * z + a[15];
+                        }
+                        else {
+                            a00 = a[0];
+                            a01 = a[1];
+                            a02 = a[2];
+                            a03 = a[3];
+                            a10 = a[4];
+                            a11 = a[5];
+                            a12 = a[6];
+                            a13 = a[7];
+                            a20 = a[8];
+                            a21 = a[9];
+                            a22 = a[10];
+                            a23 = a[11];
+                            out[0] = a00;
+                            out[1] = a01;
+                            out[2] = a02;
+                            out[3] = a03;
+                            out[4] = a10;
+                            out[5] = a11;
+                            out[6] = a12;
+                            out[7] = a13;
+                            out[8] = a20;
+                            out[9] = a21;
+                            out[10] = a22;
+                            out[11] = a23;
+                            out[12] = a00 * x + a10 * y + a20 * z + a[12];
+                            out[13] = a01 * x + a11 * y + a21 * z + a[13];
+                            out[14] = a02 * x + a12 * y + a22 * z + a[14];
+                            out[15] = a03 * x + a13 * y + a23 * z + a[15];
+                        }
+                        return out;
+                    };
+                    Matrix4.fromTranslation = function (out, v) {
+                        out[0] = 1;
+                        out[1] = 0;
+                        out[2] = 0;
+                        out[3] = 0;
+                        out[4] = 0;
+                        out[5] = 1;
+                        out[6] = 0;
+                        out[7] = 0;
+                        out[8] = 0;
+                        out[9] = 0;
+                        out[10] = 1;
+                        out[11] = 0;
+                        out[12] = v[0];
+                        out[13] = v[1];
+                        out[14] = v[2];
+                        out[15] = 1;
+                        return out;
+                    };
+                    Matrix4.transformVector3 = function (out, a, m) {
+                        var x = a.x, y = a.y, z = a.z;
+                        out.x = m[0] * x + m[4] * y + m[8] * z + m[12];
+                        out.y = m[1] * x + m[5] * y + m[9] * z + m[13];
+                        out.z = m[2] * x + m[6] * y + m[10] * z + m[14];
+                        //out[3] = m[3] * x + m[7] * y + m[11] * z + m[15] * w;
+                        return out;
+                    };
+                    Matrix4.makeTable = function (m) {
+                        var ret = '';
+                        for (var i = 0; i < 4; i++) {
+                            for (var j = 0; j < 4; j++) {
+                                ret += m[4 * j + i].toString();
+                                if (j < 3)
+                                    ret += ' ';
+                            }
+                            if (i < 3)
+                                ret += '\n';
+                        }
+                        return ret;
+                    };
+                    Matrix4.determinant = function (a) {
+                        var a00 = a[0], a01 = a[1], a02 = a[2], a03 = a[3], a10 = a[4], a11 = a[5], a12 = a[6], a13 = a[7], a20 = a[8], a21 = a[9], a22 = a[10], a23 = a[11], a30 = a[12], a31 = a[13], a32 = a[14], a33 = a[15], b00 = a00 * a11 - a01 * a10, b01 = a00 * a12 - a02 * a10, b02 = a00 * a13 - a03 * a10, b03 = a01 * a12 - a02 * a11, b04 = a01 * a13 - a03 * a11, b05 = a02 * a13 - a03 * a12, b06 = a20 * a31 - a21 * a30, b07 = a20 * a32 - a22 * a30, b08 = a20 * a33 - a23 * a30, b09 = a21 * a32 - a22 * a31, b10 = a21 * a33 - a23 * a31, b11 = a22 * a33 - a23 * a32;
+                        // Calculate the determinant
+                        return b00 * b11 - b01 * b10 + b02 * b09 + b03 * b08 - b04 * b07 + b05 * b06;
+                    };
+                    return Matrix4;
+                }());
+                LinearAlgebra.Matrix4 = Matrix4;
+                var Vector4 = (function () {
+                    function Vector4() {
+                    }
+                    Vector4.create = function () {
+                        var out = makeArray(4);
+                        out[0] = 0;
+                        out[1] = 0;
+                        out[2] = 0;
+                        out[3] = 0;
+                        return out;
+                    };
+                    Vector4.clone = function (a) {
+                        var out = makeArray(4);
+                        out[0] = a[0];
+                        out[1] = a[1];
+                        out[2] = a[2];
+                        out[3] = a[3];
+                        return out;
+                    };
+                    Vector4.fromValues = function (x, y, z, w) {
+                        var out = makeArray(4);
+                        out[0] = x;
+                        out[1] = y;
+                        out[2] = z;
+                        out[3] = w;
+                        return out;
+                    };
+                    Vector4.set = function (out, x, y, z, w) {
+                        out[0] = x;
+                        out[1] = y;
+                        out[2] = z;
+                        out[3] = w;
+                        return out;
+                    };
+                    Vector4.distance = function (a, b) {
+                        var x = b[0] - a[0], y = b[1] - a[1], z = b[2] - a[2], w = b[3] - a[3];
+                        return Math.sqrt(x * x + y * y + z * z + w * w);
+                    };
+                    Vector4.squaredDistance = function (a, b) {
+                        var x = b[0] - a[0], y = b[1] - a[1], z = b[2] - a[2], w = b[3] - a[3];
+                        return x * x + y * y + z * z + w * w;
+                    };
+                    Vector4.norm = function (a) {
+                        var x = a[0], y = a[1], z = a[2], w = a[3];
+                        return Math.sqrt(x * x + y * y + z * z + w * w);
+                    };
+                    Vector4.squaredNorm = function (a) {
+                        var x = a[0], y = a[1], z = a[2], w = a[3];
+                        return x * x + y * y + z * z + w * w;
+                    };
+                    Vector4.transform = function (out, a, m) {
+                        var x = a[0], y = a[1], z = a[2], w = a[3];
+                        out[0] = m[0] * x + m[4] * y + m[8] * z + m[12] * w;
+                        out[1] = m[1] * x + m[5] * y + m[9] * z + m[13] * w;
+                        out[2] = m[2] * x + m[6] * y + m[10] * z + m[14] * w;
+                        out[3] = m[3] * x + m[7] * y + m[11] * z + m[15] * w;
+                        return out;
+                    };
+                    return Vector4;
+                }());
+                LinearAlgebra.Vector4 = Vector4;
+            })(LinearAlgebra = Geometry.LinearAlgebra || (Geometry.LinearAlgebra = {}));
+        })(Geometry = Core.Geometry || (Core.Geometry = {}));
+    })(Core = LiteMol.Core || (LiteMol.Core = {}));
+})(LiteMol || (LiteMol = {}));
+/*
+ * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ */
+var LiteMol;
+(function (LiteMol) {
+    var Core;
+    (function (Core) {
+        var Geometry;
+        (function (Geometry) {
+            /**
+             * A buffer that only remembers the values.
+             */
+            var SubdivisionTree3DResultIndexBuffer = (function () {
+                function SubdivisionTree3DResultIndexBuffer(initialCapacity) {
+                    if (initialCapacity < 1)
+                        initialCapacity = 1;
+                    this.indices = new Int32Array(initialCapacity);
+                    this.count = 0;
+                    this.capacity = initialCapacity;
+                    this.hasPriorities = false;
+                    this.priorities = void 0;
+                }
+                SubdivisionTree3DResultIndexBuffer.prototype.ensureCapacity = function () {
+                    var newCapacity = this.capacity * 2 + 1, newIdx = new Int32Array(newCapacity), i;
+                    if (this.count < 32) {
+                        for (i = 0; i < this.count; i++) {
+                            newIdx[i] = this.indices[i];
+                        }
+                    }
+                    else {
+                        newIdx.set(this.indices);
+                    }
+                    this.indices = newIdx;
+                    this.capacity = newCapacity;
+                };
+                SubdivisionTree3DResultIndexBuffer.prototype.add = function (distSq, index) {
+                    if (this.count + 1 >= this.capacity)
+                        this.ensureCapacity();
+                    this.indices[this.count++] = index;
+                };
+                SubdivisionTree3DResultIndexBuffer.prototype.reset = function () {
+                    this.count = 0;
+                };
+                return SubdivisionTree3DResultIndexBuffer;
+            }());
+            Geometry.SubdivisionTree3DResultIndexBuffer = SubdivisionTree3DResultIndexBuffer;
+            /**
+             * A buffer that remembers values and priorities.
+             */
+            var SubdivisionTree3DResultPriorityBuffer = (function () {
+                function SubdivisionTree3DResultPriorityBuffer(initialCapacity) {
+                    if (initialCapacity < 1)
+                        initialCapacity = 1;
+                    this.indices = new Int32Array(initialCapacity);
+                    this.count = 0;
+                    this.capacity = initialCapacity;
+                    this.hasPriorities = true;
+                    this.priorities = new Float32Array(initialCapacity);
+                }
+                SubdivisionTree3DResultPriorityBuffer.prototype.ensureCapacity = function () {
+                    var newCapacity = this.capacity * 2 + 1, newIdx = new Int32Array(newCapacity), newPrio = new Float32Array(newCapacity), i;
+                    if (this.count < 32) {
+                        for (i = 0; i < this.count; i++) {
+                            newIdx[i] = this.indices[i];
+                            newPrio[i] = this.priorities[i];
+                        }
+                    }
+                    else {
+                        newIdx.set(this.indices);
+                        newPrio.set(this.priorities);
+                    }
+                    this.indices = newIdx;
+                    this.priorities = newPrio;
+                    this.capacity = newCapacity;
+                };
+                SubdivisionTree3DResultPriorityBuffer.prototype.add = function (distSq, index) {
+                    if (this.count + 1 >= this.capacity)
+                        this.ensureCapacity();
+                    this.priorities[this.count] = distSq;
+                    this.indices[this.count++] = index;
+                };
+                SubdivisionTree3DResultPriorityBuffer.prototype.reset = function () {
+                    this.count = 0;
+                };
+                return SubdivisionTree3DResultPriorityBuffer;
+            }());
+            Geometry.SubdivisionTree3DResultPriorityBuffer = SubdivisionTree3DResultPriorityBuffer;
+            /**
+             * Query context. Handles the actual querying.
+             */
+            var SubdivisionTree3DQueryContext = (function () {
+                function SubdivisionTree3DQueryContext(tree, buffer) {
+                    this.tree = tree;
+                    this.indices = tree.indices;
+                    this.positions = tree.positions;
+                    this.buffer = buffer;
+                    this.pivot = [0.1, 0.1, 0.1];
+                    this.radius = 1.1;
+                    this.radiusSq = 1.1 * 1.1;
+                }
+                /**
+                 * Query the tree and store the result to this.buffer. Overwrites the old result.
+                 */
+                SubdivisionTree3DQueryContext.prototype.nearest = function (x, y, z, radius) {
+                    this.pivot[0] = x;
+                    this.pivot[1] = y;
+                    this.pivot[2] = z;
+                    this.radius = radius;
+                    this.radiusSq = radius * radius;
+                    this.buffer.reset();
+                    this.tree.root.nearest(this, 0);
+                };
+                /**
+                 * Query the tree and use the position of the i-th element as pivot.
+                 * Store the result to this.buffer. Overwrites the old result.
+                 */
+                SubdivisionTree3DQueryContext.prototype.nearestIndex = function (index, radius) {
+                    this.pivot[0] = this.positions[3 * index];
+                    this.pivot[1] = this.positions[3 * index + 1];
+                    this.pivot[2] = this.positions[3 * index + 2];
+                    this.radius = radius;
+                    this.radiusSq = radius * radius;
+                    this.buffer.reset();
+                    this.tree.root.nearest(this, 0);
+                };
+                return SubdivisionTree3DQueryContext;
+            }());
+            Geometry.SubdivisionTree3DQueryContext = SubdivisionTree3DQueryContext;
+            /**
+             * A kd-like tree to query 3D data.
+             */
+            var SubdivisionTree3D = (function () {
+                /**
+                 * Takes data and a function that calls SubdivisionTree3DPositionBuilder.add(x, y, z) on each data element.
+                 */
+                function SubdivisionTree3D(data, f, leafSize) {
+                    if (leafSize === void 0) { leafSize = 32; }
+                    var builder = new SubdivisionTree3DBuilder(data, f, leafSize);
+                    this.data = data;
+                    this.root = builder.build();
+                    this.indices = builder.indices;
+                    this.positions = builder.positions;
+                }
+                /**
+                 * Create a context used for querying the data.
+                 */
+                SubdivisionTree3D.prototype.createContextRadius = function (radiusEstimate, includePriorities) {
+                    if (includePriorities === void 0) { includePriorities = false; }
+                    return new SubdivisionTree3DQueryContext(this, includePriorities
+                        ? new SubdivisionTree3DResultPriorityBuffer(Math.max((radiusEstimate * radiusEstimate) | 0, 8))
+                        : new SubdivisionTree3DResultIndexBuffer(Math.max((radiusEstimate * radiusEstimate) | 0, 8)));
+                };
+                return SubdivisionTree3D;
+            }());
+            Geometry.SubdivisionTree3D = SubdivisionTree3D;
+            /**
+             * A builder for position array.
+             */
+            var SubdivisionTree3DPositionBuilder = (function () {
+                function SubdivisionTree3DPositionBuilder(count) {
+                    this.count = 0;
+                    this.data = new Float32Array((count * 3) | 0);
+                    this.bounds = new Box3D();
+                    this.boundsMin = this.bounds.min;
+                    this.boundsMax = this.bounds.max;
+                }
+                SubdivisionTree3DPositionBuilder.prototype.add = function (x, y, z) {
+                    this.data[this.count++] = x;
+                    this.data[this.count++] = y;
+                    this.data[this.count++] = z;
+                    this.boundsMin[0] = Math.min(x, this.boundsMin[0]);
+                    this.boundsMin[1] = Math.min(y, this.boundsMin[1]);
+                    this.boundsMin[2] = Math.min(z, this.boundsMin[2]);
+                    this.boundsMax[0] = Math.max(x, this.boundsMax[0]);
+                    this.boundsMax[1] = Math.max(y, this.boundsMax[1]);
+                    this.boundsMax[2] = Math.max(z, this.boundsMax[2]);
+                };
+                return SubdivisionTree3DPositionBuilder;
+            }());
+            Geometry.SubdivisionTree3DPositionBuilder = SubdivisionTree3DPositionBuilder;
+            /**
+             * A tree node.
+             */
+            var SubdivisionTree3DNode = (function () {
+                function SubdivisionTree3DNode(splitValue, startIndex, endIndex, left, right) {
+                    this.splitValue = splitValue;
+                    this.startIndex = startIndex;
+                    this.endIndex = endIndex;
+                    this.left = left;
+                    this.right = right;
+                }
+                SubdivisionTree3DNode.prototype.nearestLeaf = function (ctx) {
+                    var pivot = ctx.pivot, indices = ctx.indices, positions = ctx.positions, rSq = ctx.radiusSq, dx, dy, dz, o, m, i;
+                    for (i = this.startIndex; i < this.endIndex; i++) {
+                        o = 3 * indices[i];
+                        dx = pivot[0] - positions[o];
+                        dy = pivot[1] - positions[o + 1];
+                        dz = pivot[2] - positions[o + 2];
+                        m = dx * dx + dy * dy + dz * dz;
+                        if (m <= rSq)
+                            ctx.buffer.add(m, indices[i]);
+                    }
+                };
+                SubdivisionTree3DNode.prototype.nearestNode = function (ctx, dim) {
+                    var pivot = ctx.pivot[dim], left = pivot < this.splitValue;
+                    if (left ? pivot + ctx.radius > this.splitValue : pivot - ctx.radius < this.splitValue) {
+                        this.left.nearest(ctx, (dim + 1) % 3);
+                        this.right.nearest(ctx, (dim + 1) % 3);
+                    }
+                    else if (left) {
+                        this.left.nearest(ctx, (dim + 1) % 3);
+                    }
+                    else {
+                        this.right.nearest(ctx, (dim + 1) % 3);
+                    }
+                };
+                SubdivisionTree3DNode.prototype.nearest = function (ctx, dim) {
+                    // check for empty.
+                    if (this.startIndex === this.endIndex)
+                        return;
+                    // is leaf?
+                    if (isNaN(this.splitValue))
+                        this.nearestLeaf(ctx);
+                    else
+                        this.nearestNode(ctx, dim);
+                };
+                return SubdivisionTree3DNode;
+            }());
+            Geometry.SubdivisionTree3DNode = SubdivisionTree3DNode;
+            /**
+             * A helper to store boundary box.
+             */
+            var Box3D = (function () {
+                function Box3D() {
+                    this.min = [Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE];
+                    this.max = [-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE];
+                }
+                return Box3D;
+            }());
+            Geometry.Box3D = Box3D;
+            /**
+             * A helper class to build the tree.
+             */
+            var SubdivisionTree3DBuilder = (function () {
+                function SubdivisionTree3DBuilder(data, f, leafSize) {
+                    var positions = new SubdivisionTree3DPositionBuilder(data.length), indices = new Int32Array(data.length), i;
+                    for (i = 0; i < data.length; i++) {
+                        indices[i] = i;
+                        f(data[i], positions);
+                    }
+                    this.leafSize = leafSize;
+                    this.positions = positions.data;
+                    this.indices = indices;
+                    this.emptyNode = new SubdivisionTree3DNode(NaN, -1, -1, null, null);
+                    this.bounds = positions.bounds;
+                }
+                SubdivisionTree3DBuilder.prototype.split = function (startIndex, endIndex, coord) {
+                    var delta = endIndex - startIndex + 1;
+                    if (delta <= 0) {
+                        return this.emptyNode;
+                    }
+                    else if (delta <= this.leafSize) {
+                        return new SubdivisionTree3DNode(NaN, startIndex, endIndex + 1, this.emptyNode, this.emptyNode);
+                    }
+                    var min = this.bounds.min[coord], max = this.bounds.max[coord], median = 0.5 * (min + max), midIndex = 0, l = startIndex, r = endIndex, t, left, right;
+                    while (l < r) {
+                        t = this.indices[r];
+                        this.indices[r] = this.indices[l];
+                        this.indices[l] = t;
+                        while (l <= endIndex && this.positions[3 * this.indices[l] + coord] <= median)
+                            l++;
+                        while (r >= startIndex && this.positions[3 * this.indices[r] + coord] > median)
+                            r--;
+                    }
+                    midIndex = l - 1;
+                    this.bounds.max[coord] = median;
+                    left = this.split(startIndex, midIndex, (coord + 1) % 3);
+                    this.bounds.max[coord] = max;
+                    this.bounds.min[coord] = median;
+                    right = this.split(midIndex + 1, endIndex, (coord + 1) % 3);
+                    this.bounds.min[coord] = min;
+                    return new SubdivisionTree3DNode(median, startIndex, endIndex + 1, left, right);
+                };
+                SubdivisionTree3DBuilder.prototype.build = function () {
+                    return this.split(0, this.indices.length - 1, 0);
+                };
+                return SubdivisionTree3DBuilder;
+            }());
+        })(Geometry = Core.Geometry || (Core.Geometry = {}));
+    })(Core = LiteMol.Core || (LiteMol.Core = {}));
+})(LiteMol || (LiteMol = {}));
+/*
+ * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ */
+var LiteMol;
+(function (LiteMol) {
+    var Core;
+    (function (Core) {
+        var Geometry;
+        (function (Geometry) {
+            "use strict";
+            var Surface;
+            (function (Surface) {
+                function computeNormals(surface) {
+                    return Core.Computation.create(function (ctx) {
+                        if (surface.normals) {
+                            ctx.resolve(surface);
+                        }
+                        ;
+                        ctx.update('Computing normals...');
+                        ctx.schedule(function () {
+                            var normals = new Float32Array(surface.vertices.length), v = surface.vertices, triangles = surface.triangleIndices, len = triangles.length, f, i;
+                            for (i = 0; i < triangles.length; i += 3) {
+                                var a = 3 * triangles[i], b = 3 * triangles[i + 1], c = 3 * triangles[i + 2];
+                                var nx = v[a + 2] * (v[b + 1] - v[c + 1]) + v[b + 2] * v[c + 1] - v[b + 1] * v[c + 2] + v[a + 1] * (-v[b + 2] + v[c + 2]), ny = -(v[b + 2] * v[c]) + v[a + 2] * (-v[b] + v[c]) + v[a] * (v[b + 2] - v[c + 2]) + v[b] * v[c + 2], nz = v[a + 1] * (v[b] - v[c]) + v[b + 1] * v[c] - v[b] * v[c + 1] + v[a] * (-v[b + 1] + v[b + 1]);
+                                normals[a] += nx;
+                                normals[a + 1] += ny;
+                                normals[a + 2] += nz;
+                                normals[b] += nx;
+                                normals[b + 1] += ny;
+                                normals[b + 2] += nz;
+                                normals[c] += nx;
+                                normals[c + 1] += ny;
+                                normals[c + 2] += nz;
+                            }
+                            for (i = 0; i < normals.length; i += 3) {
+                                var nx = normals[i];
+                                var ny = normals[i + 1];
+                                var nz = normals[i + 2];
+                                f = 1.0 / Math.sqrt(nx * nx + ny * ny + nz * nz);
+                                normals[i] *= f;
+                                normals[i + 1] *= f;
+                                normals[i + 2] *= f;
+                            }
+                            surface.normals = normals;
+                            ctx.resolve(surface);
+                        });
+                    });
+                }
+                Surface.computeNormals = computeNormals;
+                function addVertex(src, i, dst, j) {
+                    dst[3 * j] += src[3 * i];
+                    dst[3 * j + 1] += src[3 * i + 1];
+                    dst[3 * j + 2] += src[3 * i + 2];
+                }
+                function laplacianSmoothIter(surface, counts, vs) {
+                    var triCount = surface.triangleIndices.length, src = surface.vertices;
+                    var triangleIndices = surface.triangleIndices;
+                    for (var i = 0; i < triCount; i += 3) {
+                        var a = triangleIndices[i], b = triangleIndices[i + 1], c = triangleIndices[i + 2];
+                        addVertex(src, b, vs, a);
+                        addVertex(src, c, vs, a);
+                        addVertex(src, a, vs, b);
+                        addVertex(src, c, vs, b);
+                        addVertex(src, a, vs, c);
+                        addVertex(src, b, vs, c);
+                    }
+                    for (var i = 0, _b = surface.vertexCount; i < _b; i++) {
+                        var n = counts[i] + 2;
+                        vs[3 * i] = (vs[3 * i] + 2 * src[3 * i]) / n;
+                        vs[3 * i + 1] = (vs[3 * i + 1] + 2 * src[3 * i + 1]) / n;
+                        vs[3 * i + 2] = (vs[3 * i + 2] + 2 * src[3 * i + 2]) / n;
+                    }
+                }
+                /*
+                 * Smooths the vertices by averaging the neighborhood.
+                 *
+                 * Resets normals. Might replace vertex array.
+                 */
+                function laplacianSmooth(surface, iterCount) {
+                    if (iterCount === void 0) { iterCount = 1; }
+                    if (iterCount < 1)
+                        iterCount = 0;
+                    if (iterCount === 0)
+                        return Core.Computation.resolve(surface);
+                    return Core.Computation.create(function (ctx) {
+                        ctx.update('Smoothing surface...');
+                        var counts = new Int32Array(surface.vertexCount), triCount = surface.triangleIndices.length;
+                        var tris = surface.triangleIndices;
+                        for (var i = 0; i < triCount; i++) {
+                            counts[tris[i]] += 2;
+                        }
+                        var vs = new Float32Array(surface.vertices.length);
+                        var next = function (i) {
+                            if (i >= iterCount) {
+                                ctx.resolve(surface);
+                                return;
+                            }
+                            if (i > 0) {
+                                for (var j = 0, _b = vs.length; j < _b; j++)
+                                    vs[j] = 0;
+                            }
+                            surface.normals = void 0;
+                            laplacianSmoothIter(surface, counts, vs);
+                            var t = surface.vertices;
+                            surface.vertices = vs;
+                            vs = t;
+                            ctx.update('Smoothing surface...', ctx.abortRequest, i + 1, iterCount);
+                            ctx.schedule(function () { return next(i + 1); });
+                        };
+                        next(0);
+                    });
+                }
+                Surface.laplacianSmooth = laplacianSmooth;
+                function computeBoundingSphere(surface) {
+                    return Core.Computation.create(function (ctx) {
+                        if (surface.boundingSphere) {
+                            ctx.resolve(surface);
+                            return;
+                        }
+                        ctx.update('Computing bounding sphere...');
+                        ctx.schedule(function () {
+                            var vertices = surface.vertices;
+                            var x = 0, y = 0, z = 0;
+                            for (var i = 0, _c = surface.vertices.length; i < _c; i += 3) {
+                                x += vertices[i];
+                                y += vertices[i + 1];
+                                z += vertices[i + 2];
+                            }
+                            x /= surface.vertexCount;
+                            y /= surface.vertexCount;
+                            z /= surface.vertexCount;
+                            var r = 0;
+                            for (var i = 0, _c = vertices.length; i < _c; i += 3) {
+                                var dx = x - vertices[i];
+                                var dy = y - vertices[i + 1];
+                                var dz = z - vertices[i + 2];
+                                r = Math.max(r, dx * dx + dy * dy + dz * dz);
+                            }
+                            surface.boundingSphere = {
+                                center: { x: x, y: y, z: z },
+                                radius: Math.sqrt(r)
+                            };
+                            ctx.resolve(surface);
+                        });
+                    });
+                }
+                Surface.computeBoundingSphere = computeBoundingSphere;
+                function transform(surface, t) {
+                    return Core.Computation.create(function (ctx) {
+                        ctx.update('Updating surface...');
+                        ctx.schedule(function () {
+                            var p = { x: 0.1, y: 0.1, z: 0.1 };
+                            var m = Geometry.LinearAlgebra.Matrix4.transformVector3;
+                            var vertices = surface.vertices;
+                            for (var i = 0, _c = surface.vertices.length; i < _c; i += 3) {
+                                p.x = vertices[i];
+                                p.y = vertices[i + 1];
+                                p.z = vertices[i + 2];
+                                m(p, p, t);
+                                vertices[i] = p.x;
+                                vertices[i + 1] = p.y;
+                                vertices[i + 2] = p.z;
+                            }
+                            surface.normals = void 0;
+                            surface.boundingSphere = void 0;
+                            ctx.resolve(surface);
+                        });
+                    });
+                }
+                Surface.transform = transform;
+            })(Surface = Geometry.Surface || (Geometry.Surface = {}));
+        })(Geometry = Core.Geometry || (Core.Geometry = {}));
+    })(Core = LiteMol.Core || (LiteMol.Core = {}));
+})(LiteMol || (LiteMol = {}));
+/*
+ * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ */
+var LiteMol;
+(function (LiteMol) {
+    var Core;
+    (function (Core) {
+        var Geometry;
+        (function (Geometry) {
+            var MarchingCubes;
+            (function (MarchingCubes) {
+                "use strict";
+                // export function computeCubes(parameters: MarchingCubesParameters): MarchingCubesResult {
+                //     let params = <MarchingCubesParameters>Core.Utils.extend({}, parameters);
+                //     if (!params.bottomLeft) params.bottomLeft = [0, 0, 0];
+                //     if (!params.topRight) params.topRight = params.scalarField.dimensions;
+                //      let state = new MarchingCubesState(params),
+                //         minX = params.bottomLeft[0], minY = params.bottomLeft[1], minZ = params.bottomLeft[2],
+                //         maxX = params.topRight[0] - 1, maxY = params.topRight[1] - 1, maxZ = params.topRight[2] - 1;
+                //     for (let k = minZ; k < maxZ; k++) {
+                //         for (let j = minY; j < maxY; j++) {
+                //             for (let i = minX; i < maxX; i++) {
+                //                 state.processCell(i, j, k);
+                //             }
+                //         }
+                //     }
+                //     let vertices = state.vertexBuffer.compact();
+                //     let triangles = state.triangleBuffer.compact();
+                //     state.vertexBuffer = null;
+                //     state.verticesOnEdges = null;
+                //     return new MarchingCubesResult(<Float32Array><any>vertices, <Uint32Array><any>triangles, state.annotate ? state.annotationBuffer.compact() : null);
+                // }
+                function compute(parameters) {
+                    return Core.Computation.create(function (ctx) {
+                        var comp = new MarchingCubesComputation(parameters, ctx);
+                        comp.start();
+                    });
+                }
+                MarchingCubes.compute = compute;
+                var MarchingCubesComputation = (function () {
+                    function MarchingCubesComputation(parameters, ctx) {
+                        var _this = this;
+                        this.ctx = ctx;
+                        this.chunkSize = 80 * 80 * 80;
+                        this.done = 0;
+                        this.k = 0;
+                        this.minX = 0;
+                        this.minY = 0;
+                        this.minZ = 0;
+                        this.maxX = 0;
+                        this.maxY = 0;
+                        this.maxZ = 0;
+                        this._slice = function () {
+                            try {
+                                _this.slice();
+                            }
+                            catch (e) {
+                                _this.ctx.reject('' + e);
+                            }
+                        };
+                        var params = Core.Utils.extend({}, parameters);
+                        if (!params.bottomLeft)
+                            params.bottomLeft = [0, 0, 0];
+                        if (!params.topRight)
+                            params.topRight = params.scalarField.dimensions;
+                        this.state = new MarchingCubesState(params),
+                            this.minX = params.bottomLeft[0];
+                        this.minY = params.bottomLeft[1];
+                        this.minZ = params.bottomLeft[2];
+                        this.maxX = params.topRight[0] - 1;
+                        this.maxY = params.topRight[1] - 1;
+                        this.maxZ = params.topRight[2] - 1;
+                        this.k = this.minZ;
+                        this.size = (this.maxX - this.minX) * (this.maxY - this.minY) * (this.maxZ - this.minZ);
+                        this.sliceSize = (this.maxX - this.minX) * (this.maxY - this.minY);
+                    }
+                    MarchingCubesComputation.prototype.nextSlice = function () {
+                        if (this.ctx.abortRequested) {
+                            this.ctx.abort();
+                            return;
+                        }
+                        this.done += this.sliceSize;
+                        this.ctx.update('Computing surface...', this.ctx.abortRequest, this.done, this.size);
+                        if (this.k >= this.maxZ) {
+                            this.finish();
+                        }
+                        else {
+                            this.ctx.schedule(this._slice);
+                        }
+                    };
+                    MarchingCubesComputation.prototype.slice = function () {
+                        for (var j = this.minY; j < this.maxY; j++) {
+                            for (var i = this.minX; i < this.maxX; i++) {
+                                this.state.processCell(i, j, this.k);
+                            }
+                        }
+                        this.k++;
+                        this.nextSlice();
+                    };
+                    MarchingCubesComputation.prototype.finish = function () {
+                        var vertices = this.state.vertexBuffer.compact();
+                        var triangles = this.state.triangleBuffer.compact();
+                        this.state.vertexBuffer = null;
+                        this.state.verticesOnEdges = null;
+                        var ret = {
+                            vertexCount: (vertices.length / 3) | 0,
+                            triangleCount: (triangles.length / 3) | 0,
+                            vertices: vertices,
+                            triangleIndices: triangles,
+                            annotation: this.state.annotate ? this.state.annotationBuffer.compact() : void 0
+                        };
+                        this.ctx.resolve(ret);
+                    };
+                    MarchingCubesComputation.prototype.start = function () {
+                        this.ctx.update('Computing surface...', this.ctx.abortRequest, 0, this.size);
+                        this.ctx.schedule(this._slice);
+                    };
+                    return MarchingCubesComputation;
+                }());
+                var MarchingCubesState = (function () {
+                    function MarchingCubesState(params) {
+                        this.vertList = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+                        this.i = 0;
+                        this.j = 0;
+                        this.k = 0;
+                        this.nX = params.scalarField.dimensions[0];
+                        this.nY = params.scalarField.dimensions[1];
+                        this.nZ = params.scalarField.dimensions[2];
+                        this.isoLevel = params.isoLevel;
+                        this.scalarField = params.scalarField;
+                        this.annotationField = params.annotationField;
+                        var dX = params.topRight[0] - params.bottomLeft[0], dY = params.topRight[1] - params.bottomLeft[1], dZ = params.topRight[2] - params.bottomLeft[2], vertexBufferSize = Math.min(262144, Math.max(dX * dY * dZ / 16, 1024) | 0), triangleBufferSize = Math.min(1 << 16, vertexBufferSize * 4);
+                        this.vertexBuffer = Core.Utils.ChunkedArrayBuilder.forVertex3D(vertexBufferSize);
+                        this.triangleBuffer = new Core.Utils.ChunkedArrayBuilder(function (size) { return new Uint32Array(size); }, triangleBufferSize, 3);
+                        this.annotate = !!params.annotationField;
+                        if (this.annotate)
+                            this.annotationBuffer = Core.Utils.ChunkedArrayBuilder.forInt32(vertexBufferSize);
+                        this.verticesOnEdges = new Int32Array(3 * this.nX * this.nY * this.nZ);
+                    }
+                    MarchingCubesState.prototype.getAnnotation = function () {
+                        return this.annotationField.get(this.i, this.j, this.k);
+                    };
+                    MarchingCubesState.prototype.getFieldFromIndices = function (i, j, k) {
+                        return this.scalarField.get(i, j, k);
+                    };
+                    MarchingCubesState.prototype.get3dOffsetFromEdgeInfo = function (index) {
+                        return (this.nX * ((this.k + index.k) * this.nY + this.j + index.j) + this.i + index.i) | 0;
+                    };
+                    MarchingCubesState.prototype.interpolate = function (edgeNum) {
+                        var info = MarchingCubes.EdgeIdInfo[edgeNum], edgeId = 3 * this.get3dOffsetFromEdgeInfo(info) + info.e;
+                        var ret = this.verticesOnEdges[edgeId];
+                        if (ret > 0)
+                            return (ret - 1) | 0;
+                        var edge = MarchingCubes.CubeEdges[edgeNum];
+                        var a = edge.a, b = edge.b, li = a.i + this.i, lj = a.j + this.j, lk = a.k + this.k, hi = b.i + this.i, hj = b.j + this.j, hk = b.k + this.k, v0 = this.getFieldFromIndices(li, lj, lk), v1 = this.getFieldFromIndices(hi, hj, hk), t = (this.isoLevel - v0) / (v0 - v1);
+                        var id = this.vertexBuffer.add3(li + t * (li - hi), lj + t * (lj - hj), lk + t * (lk - hk)) | 0;
+                        this.verticesOnEdges[edgeId] = id + 1;
+                        if (this.annotate) {
+                            this.annotationBuffer.add(this.getAnnotation());
+                        }
+                        return id;
+                    };
+                    MarchingCubesState.prototype.processCell = function (i, j, k) {
+                        var tableIndex = 0;
+                        if (this.getFieldFromIndices(i, j, k) < this.isoLevel)
+                            tableIndex |= 1;
+                        if (this.getFieldFromIndices(i + 1, j, k) < this.isoLevel)
+                            tableIndex |= 2;
+                        if (this.getFieldFromIndices(i + 1, j + 1, k) < this.isoLevel)
+                            tableIndex |= 4;
+                        if (this.getFieldFromIndices(i, j + 1, k) < this.isoLevel)
+                            tableIndex |= 8;
+                        if (this.getFieldFromIndices(i, j, k + 1) < this.isoLevel)
+                            tableIndex |= 16;
+                        if (this.getFieldFromIndices(i + 1, j, k + 1) < this.isoLevel)
+                            tableIndex |= 32;
+                        if (this.getFieldFromIndices(i + 1, j + 1, k + 1) < this.isoLevel)
+                            tableIndex |= 64;
+                        if (this.getFieldFromIndices(i, j + 1, k + 1) < this.isoLevel)
+                            tableIndex |= 128;
+                        if (tableIndex === 0 || tableIndex === 255)
+                            return;
+                        this.i = i;
+                        this.j = j;
+                        this.k = k;
+                        var edgeInfo = MarchingCubes.EdgeTable[tableIndex];
+                        if ((edgeInfo & 1) > 0)
+                            this.vertList[0] = this.interpolate(0); // 0 1
+                        if ((edgeInfo & 2) > 0)
+                            this.vertList[1] = this.interpolate(1); // 1 2
+                        if ((edgeInfo & 4) > 0)
+                            this.vertList[2] = this.interpolate(2); // 2 3
+                        if ((edgeInfo & 8) > 0)
+                            this.vertList[3] = this.interpolate(3); // 0 3
+                        if ((edgeInfo & 16) > 0)
+                            this.vertList[4] = this.interpolate(4); // 4 5
+                        if ((edgeInfo & 32) > 0)
+                            this.vertList[5] = this.interpolate(5); // 5 6
+                        if ((edgeInfo & 64) > 0)
+                            this.vertList[6] = this.interpolate(6); // 6 7
+                        if ((edgeInfo & 128) > 0)
+                            this.vertList[7] = this.interpolate(7); // 4 7
+                        if ((edgeInfo & 256) > 0)
+                            this.vertList[8] = this.interpolate(8); // 0 4
+                        if ((edgeInfo & 512) > 0)
+                            this.vertList[9] = this.interpolate(9); // 1 5
+                        if ((edgeInfo & 1024) > 0)
+                            this.vertList[10] = this.interpolate(10); // 2 6
+                        if ((edgeInfo & 2048) > 0)
+                            this.vertList[11] = this.interpolate(11); // 3 7
+                        var triInfo = MarchingCubes.TriTable[tableIndex];
+                        for (var t = 0; t < triInfo.length; t += 3) {
+                            this.triangleBuffer.add3(this.vertList[triInfo[t]], this.vertList[triInfo[t + 1]], this.vertList[triInfo[t + 2]]);
+                        }
+                    };
+                    return MarchingCubesState;
+                }());
+            })(MarchingCubes = Geometry.MarchingCubes || (Geometry.MarchingCubes = {}));
+        })(Geometry = Core.Geometry || (Core.Geometry = {}));
+    })(Core = LiteMol.Core || (LiteMol.Core = {}));
+})(LiteMol || (LiteMol = {}));
+/*
+ * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ */
+var LiteMol;
+(function (LiteMol) {
+    var Core;
+    (function (Core) {
+        var Geometry;
+        (function (Geometry) {
+            var MarchingCubes;
+            (function (MarchingCubes) {
+                var Index = (function () {
+                    function Index(i, j, k) {
+                        this.i = i | 0;
+                        this.j = j | 0;
+                        this.k = k | 0;
+                    }
+                    return Index;
+                }());
+                MarchingCubes.Index = Index;
+                var IndexPair = (function () {
+                    function IndexPair(a, b) {
+                        this.a = a;
+                        this.b = b;
+                    }
+                    return IndexPair;
+                }());
+                MarchingCubes.IndexPair = IndexPair;
+                MarchingCubes.EdgesXY = [
+                    [],
+                    [0, 3],
+                    [0, 1],
+                    [1, 3],
+                    [1, 2],
+                    [0, 1, 1, 2, 2, 3, 0, 3],
+                    [0, 2],
+                    [2, 3],
+                    [2, 3],
+                    [0, 2],
+                    [0, 1, 1, 2, 2, 3, 0, 3],
+                    [1, 2],
+                    [1, 3],
+                    [0, 1],
+                    [0, 3],
+                    []
+                ];
+                MarchingCubes.EdgesXZ = [
+                    [],
+                    [0, 8],
+                    [0, 9],
+                    [9, 8],
+                    [9, 4],
+                    [0, 9, 9, 4, 4, 8, 0, 8],
+                    [0, 4],
+                    [4, 8],
+                    [4, 8],
+                    [0, 4],
+                    [0, 9, 9, 4, 4, 8, 0, 8],
+                    [9, 4],
+                    [9, 8],
+                    [0, 9],
+                    [0, 8],
+                    []
+                ];
+                MarchingCubes.EdgesYZ = [
+                    [],
+                    [3, 8],
+                    [3, 11],
+                    [11, 8],
+                    [11, 7],
+                    [3, 11, 11, 7, 7, 8, 3, 8],
+                    [3, 7],
+                    [7, 8],
+                    [7, 8],
+                    [3, 7],
+                    [3, 11, 11, 7, 7, 8, 3, 8],
+                    [11, 7],
+                    [11, 8],
+                    [3, 11],
+                    [3, 8],
+                    []
+                ];
+                MarchingCubes.CubeVertices = [
+                    new Index(0, 0, 0),
+                    new Index(1, 0, 0),
+                    new Index(1, 1, 0),
+                    new Index(0, 1, 0),
+                    new Index(0, 0, 1),
+                    new Index(1, 0, 1),
+                    new Index(1, 1, 1),
+                    new Index(0, 1, 1),
+                ];
+                MarchingCubes.CubeEdges = [
+                    new IndexPair(MarchingCubes.CubeVertices[0], MarchingCubes.CubeVertices[1]),
+                    new IndexPair(MarchingCubes.CubeVertices[1], MarchingCubes.CubeVertices[2]),
+                    new IndexPair(MarchingCubes.CubeVertices[2], MarchingCubes.CubeVertices[3]),
+                    new IndexPair(MarchingCubes.CubeVertices[3], MarchingCubes.CubeVertices[0]),
+                    new IndexPair(MarchingCubes.CubeVertices[4], MarchingCubes.CubeVertices[5]),
+                    new IndexPair(MarchingCubes.CubeVertices[5], MarchingCubes.CubeVertices[6]),
+                    new IndexPair(MarchingCubes.CubeVertices[6], MarchingCubes.CubeVertices[7]),
+                    new IndexPair(MarchingCubes.CubeVertices[7], MarchingCubes.CubeVertices[4]),
+                    new IndexPair(MarchingCubes.CubeVertices[0], MarchingCubes.CubeVertices[4]),
+                    new IndexPair(MarchingCubes.CubeVertices[1], MarchingCubes.CubeVertices[5]),
+                    new IndexPair(MarchingCubes.CubeVertices[2], MarchingCubes.CubeVertices[6]),
+                    new IndexPair(MarchingCubes.CubeVertices[3], MarchingCubes.CubeVertices[7]),
+                ];
+                MarchingCubes.EdgeIdInfo = [
+                    { i: 0, j: 0, k: 0, e: 0 },
+                    { i: 1, j: 0, k: 0, e: 1 },
+                    { i: 0, j: 1, k: 0, e: 0 },
+                    { i: 0, j: 0, k: 0, e: 1 },
+                    { i: 0, j: 0, k: 1, e: 0 },
+                    { i: 1, j: 0, k: 1, e: 1 },
+                    { i: 0, j: 1, k: 1, e: 0 },
+                    { i: 0, j: 0, k: 1, e: 1 },
+                    { i: 0, j: 0, k: 0, e: 2 },
+                    { i: 1, j: 0, k: 0, e: 2 },
+                    { i: 1, j: 1, k: 0, e: 2 },
+                    { i: 0, j: 1, k: 0, e: 2 }
+                ];
+                // export var EdgeIdInfo = [
+                //     { i: 0, j: 0, k: 0, e: 0 },
+                //     { i: 1, j: 0, k: 0, e: 1 },
+                //     { i: 0, j: 1, k: 0, e: 0 },
+                //     { i: 0, j: 0, k: 0, e: 1 },
+                //     { i: 0, j: 0, k: 0, e: 0 },
+                //     { i: 1, j: 0, k: 0, e: 1 },
+                //     { i: 0, j: 1, k: 0, e: 0 },
+                //     { i: 0, j: 0, k: 0, e: 1 },
+                //     { i: 0, j: 0, k: 0, e: 0 },
+                //     { i: 1, j: 0, k: 0, e: 1 },
+                //     { i: 0, j: 1, k: 0, e: 0 },
+                //     { i: 0, j: 0, k: 0, e: 1 },
+                // ];
+                // Tables EdgeTable and TriTable taken from http://paulbourke.net/geometry/polygonise/
+                MarchingCubes.EdgeTable = [
+                    0x0, 0x109, 0x203, 0x30a, 0x406, 0x50f, 0x605, 0x70c,
+                    0x80c, 0x905, 0xa0f, 0xb06, 0xc0a, 0xd03, 0xe09, 0xf00,
+                    0x190, 0x99, 0x393, 0x29a, 0x596, 0x49f, 0x795, 0x69c,
+                    0x99c, 0x895, 0xb9f, 0xa96, 0xd9a, 0xc93, 0xf99, 0xe90,
+                    0x230, 0x339, 0x33, 0x13a, 0x636, 0x73f, 0x435, 0x53c,
+                    0xa3c, 0xb35, 0x83f, 0x936, 0xe3a, 0xf33, 0xc39, 0xd30,
+                    0x3a0, 0x2a9, 0x1a3, 0xaa, 0x7a6, 0x6af, 0x5a5, 0x4ac,
+                    0xbac, 0xaa5, 0x9af, 0x8a6, 0xfaa, 0xea3, 0xda9, 0xca0,
+                    0x460, 0x569, 0x663, 0x76a, 0x66, 0x16f, 0x265, 0x36c,
+                    0xc6c, 0xd65, 0xe6f, 0xf66, 0x86a, 0x963, 0xa69, 0xb60,
+                    0x5f0, 0x4f9, 0x7f3, 0x6fa, 0x1f6, 0xff, 0x3f5, 0x2fc,
+                    0xdfc, 0xcf5, 0xfff, 0xef6, 0x9fa, 0x8f3, 0xbf9, 0xaf0,
+                    0x650, 0x759, 0x453, 0x55a, 0x256, 0x35f, 0x55, 0x15c,
+                    0xe5c, 0xf55, 0xc5f, 0xd56, 0xa5a, 0xb53, 0x859, 0x950,
+                    0x7c0, 0x6c9, 0x5c3, 0x4ca, 0x3c6, 0x2cf, 0x1c5, 0xcc,
+                    0xfcc, 0xec5, 0xdcf, 0xcc6, 0xbca, 0xac3, 0x9c9, 0x8c0,
+                    0x8c0, 0x9c9, 0xac3, 0xbca, 0xcc6, 0xdcf, 0xec5, 0xfcc,
+                    0xcc, 0x1c5, 0x2cf, 0x3c6, 0x4ca, 0x5c3, 0x6c9, 0x7c0,
+                    0x950, 0x859, 0xb53, 0xa5a, 0xd56, 0xc5f, 0xf55, 0xe5c,
+                    0x15c, 0x55, 0x35f, 0x256, 0x55a, 0x453, 0x759, 0x650,
+                    0xaf0, 0xbf9, 0x8f3, 0x9fa, 0xef6, 0xfff, 0xcf5, 0xdfc,
+                    0x2fc, 0x3f5, 0xff, 0x1f6, 0x6fa, 0x7f3, 0x4f9, 0x5f0,
+                    0xb60, 0xa69, 0x963, 0x86a, 0xf66, 0xe6f, 0xd65, 0xc6c,
+                    0x36c, 0x265, 0x16f, 0x66, 0x76a, 0x663, 0x569, 0x460,
+                    0xca0, 0xda9, 0xea3, 0xfaa, 0x8a6, 0x9af, 0xaa5, 0xbac,
+                    0x4ac, 0x5a5, 0x6af, 0x7a6, 0xaa, 0x1a3, 0x2a9, 0x3a0,
+                    0xd30, 0xc39, 0xf33, 0xe3a, 0x936, 0x83f, 0xb35, 0xa3c,
+                    0x53c, 0x435, 0x73f, 0x636, 0x13a, 0x33, 0x339, 0x230,
+                    0xe90, 0xf99, 0xc93, 0xd9a, 0xa96, 0xb9f, 0x895, 0x99c,
+                    0x69c, 0x795, 0x49f, 0x596, 0x29a, 0x393, 0x99, 0x190,
+                    0xf00, 0xe09, 0xd03, 0xc0a, 0xb06, 0xa0f, 0x905, 0x80c,
+                    0x70c, 0x605, 0x50f, 0x406, 0x30a, 0x203, 0x109, 0x0
+                ];
+                MarchingCubes.TriTable = [
+                    [],
+                    [0, 8, 3],
+                    [0, 1, 9],
+                    [1, 8, 3, 9, 8, 1],
+                    [1, 2, 10],
+                    [0, 8, 3, 1, 2, 10],
+                    [9, 2, 10, 0, 2, 9],
+                    [2, 8, 3, 2, 10, 8, 10, 9, 8],
+                    [3, 11, 2],
+                    [0, 11, 2, 8, 11, 0],
+                    [1, 9, 0, 2, 3, 11],
+                    [1, 11, 2, 1, 9, 11, 9, 8, 11],
+                    [3, 10, 1, 11, 10, 3],
+                    [0, 10, 1, 0, 8, 10, 8, 11, 10],
+                    [3, 9, 0, 3, 11, 9, 11, 10, 9],
+                    [9, 8, 10, 10, 8, 11],
+                    [4, 7, 8],
+                    [4, 3, 0, 7, 3, 4],
+                    [0, 1, 9, 8, 4, 7],
+                    [4, 1, 9, 4, 7, 1, 7, 3, 1],
+                    [1, 2, 10, 8, 4, 7],
+                    [3, 4, 7, 3, 0, 4, 1, 2, 10],
+                    [9, 2, 10, 9, 0, 2, 8, 4, 7],
+                    [2, 10, 9, 2, 9, 7, 2, 7, 3, 7, 9, 4],
+                    [8, 4, 7, 3, 11, 2],
+                    [11, 4, 7, 11, 2, 4, 2, 0, 4],
+                    [9, 0, 1, 8, 4, 7, 2, 3, 11],
+                    [4, 7, 11, 9, 4, 11, 9, 11, 2, 9, 2, 1],
+                    [3, 10, 1, 3, 11, 10, 7, 8, 4],
+                    [1, 11, 10, 1, 4, 11, 1, 0, 4, 7, 11, 4],
+                    [4, 7, 8, 9, 0, 11, 9, 11, 10, 11, 0, 3],
+                    [4, 7, 11, 4, 11, 9, 9, 11, 10],
+                    [9, 5, 4],
+                    [9, 5, 4, 0, 8, 3],
+                    [0, 5, 4, 1, 5, 0],
+                    [8, 5, 4, 8, 3, 5, 3, 1, 5],
+                    [1, 2, 10, 9, 5, 4],
+                    [3, 0, 8, 1, 2, 10, 4, 9, 5],
+                    [5, 2, 10, 5, 4, 2, 4, 0, 2],
+                    [2, 10, 5, 3, 2, 5, 3, 5, 4, 3, 4, 8],
+                    [9, 5, 4, 2, 3, 11],
+                    [0, 11, 2, 0, 8, 11, 4, 9, 5],
+                    [0, 5, 4, 0, 1, 5, 2, 3, 11],
+                    [2, 1, 5, 2, 5, 8, 2, 8, 11, 4, 8, 5],
+                    [10, 3, 11, 10, 1, 3, 9, 5, 4],
+                    [4, 9, 5, 0, 8, 1, 8, 10, 1, 8, 11, 10],
+                    [5, 4, 0, 5, 0, 11, 5, 11, 10, 11, 0, 3],
+                    [5, 4, 8, 5, 8, 10, 10, 8, 11],
+                    [9, 7, 8, 5, 7, 9],
+                    [9, 3, 0, 9, 5, 3, 5, 7, 3],
+                    [0, 7, 8, 0, 1, 7, 1, 5, 7],
+                    [1, 5, 3, 3, 5, 7],
+                    [9, 7, 8, 9, 5, 7, 10, 1, 2],
+                    [10, 1, 2, 9, 5, 0, 5, 3, 0, 5, 7, 3],
+                    [8, 0, 2, 8, 2, 5, 8, 5, 7, 10, 5, 2],
+                    [2, 10, 5, 2, 5, 3, 3, 5, 7],
+                    [7, 9, 5, 7, 8, 9, 3, 11, 2],
+                    [9, 5, 7, 9, 7, 2, 9, 2, 0, 2, 7, 11],
+                    [2, 3, 11, 0, 1, 8, 1, 7, 8, 1, 5, 7],
+                    [11, 2, 1, 11, 1, 7, 7, 1, 5],
+                    [9, 5, 8, 8, 5, 7, 10, 1, 3, 10, 3, 11],
+                    [5, 7, 0, 5, 0, 9, 7, 11, 0, 1, 0, 10, 11, 10, 0],
+                    [11, 10, 0, 11, 0, 3, 10, 5, 0, 8, 0, 7, 5, 7, 0],
+                    [11, 10, 5, 7, 11, 5],
+                    [10, 6, 5],
+                    [0, 8, 3, 5, 10, 6],
+                    [9, 0, 1, 5, 10, 6],
+                    [1, 8, 3, 1, 9, 8, 5, 10, 6],
+                    [1, 6, 5, 2, 6, 1],
+                    [1, 6, 5, 1, 2, 6, 3, 0, 8],
+                    [9, 6, 5, 9, 0, 6, 0, 2, 6],
+                    [5, 9, 8, 5, 8, 2, 5, 2, 6, 3, 2, 8],
+                    [2, 3, 11, 10, 6, 5],
+                    [11, 0, 8, 11, 2, 0, 10, 6, 5],
+                    [0, 1, 9, 2, 3, 11, 5, 10, 6],
+                    [5, 10, 6, 1, 9, 2, 9, 11, 2, 9, 8, 11],
+                    [6, 3, 11, 6, 5, 3, 5, 1, 3],
+                    [0, 8, 11, 0, 11, 5, 0, 5, 1, 5, 11, 6],
+                    [3, 11, 6, 0, 3, 6, 0, 6, 5, 0, 5, 9],
+                    [6, 5, 9, 6, 9, 11, 11, 9, 8],
+                    [5, 10, 6, 4, 7, 8],
+                    [4, 3, 0, 4, 7, 3, 6, 5, 10],
+                    [1, 9, 0, 5, 10, 6, 8, 4, 7],
+                    [10, 6, 5, 1, 9, 7, 1, 7, 3, 7, 9, 4],
+                    [6, 1, 2, 6, 5, 1, 4, 7, 8],
+                    [1, 2, 5, 5, 2, 6, 3, 0, 4, 3, 4, 7],
+                    [8, 4, 7, 9, 0, 5, 0, 6, 5, 0, 2, 6],
+                    [7, 3, 9, 7, 9, 4, 3, 2, 9, 5, 9, 6, 2, 6, 9],
+                    [3, 11, 2, 7, 8, 4, 10, 6, 5],
+                    [5, 10, 6, 4, 7, 2, 4, 2, 0, 2, 7, 11],
+                    [0, 1, 9, 4, 7, 8, 2, 3, 11, 5, 10, 6],
+                    [9, 2, 1, 9, 11, 2, 9, 4, 11, 7, 11, 4, 5, 10, 6],
+                    [8, 4, 7, 3, 11, 5, 3, 5, 1, 5, 11, 6],
+                    [5, 1, 11, 5, 11, 6, 1, 0, 11, 7, 11, 4, 0, 4, 11],
+                    [0, 5, 9, 0, 6, 5, 0, 3, 6, 11, 6, 3, 8, 4, 7],
+                    [6, 5, 9, 6, 9, 11, 4, 7, 9, 7, 11, 9],
+                    [10, 4, 9, 6, 4, 10],
+                    [4, 10, 6, 4, 9, 10, 0, 8, 3],
+                    [10, 0, 1, 10, 6, 0, 6, 4, 0],
+                    [8, 3, 1, 8, 1, 6, 8, 6, 4, 6, 1, 10],
+                    [1, 4, 9, 1, 2, 4, 2, 6, 4],
+                    [3, 0, 8, 1, 2, 9, 2, 4, 9, 2, 6, 4],
+                    [0, 2, 4, 4, 2, 6],
+                    [8, 3, 2, 8, 2, 4, 4, 2, 6],
+                    [10, 4, 9, 10, 6, 4, 11, 2, 3],
+                    [0, 8, 2, 2, 8, 11, 4, 9, 10, 4, 10, 6],
+                    [3, 11, 2, 0, 1, 6, 0, 6, 4, 6, 1, 10],
+                    [6, 4, 1, 6, 1, 10, 4, 8, 1, 2, 1, 11, 8, 11, 1],
+                    [9, 6, 4, 9, 3, 6, 9, 1, 3, 11, 6, 3],
+                    [8, 11, 1, 8, 1, 0, 11, 6, 1, 9, 1, 4, 6, 4, 1],
+                    [3, 11, 6, 3, 6, 0, 0, 6, 4],
+                    [6, 4, 8, 11, 6, 8],
+                    [7, 10, 6, 7, 8, 10, 8, 9, 10],
+                    [0, 7, 3, 0, 10, 7, 0, 9, 10, 6, 7, 10],
+                    [10, 6, 7, 1, 10, 7, 1, 7, 8, 1, 8, 0],
+                    [10, 6, 7, 10, 7, 1, 1, 7, 3],
+                    [1, 2, 6, 1, 6, 8, 1, 8, 9, 8, 6, 7],
+                    [2, 6, 9, 2, 9, 1, 6, 7, 9, 0, 9, 3, 7, 3, 9],
+                    [7, 8, 0, 7, 0, 6, 6, 0, 2],
+                    [7, 3, 2, 6, 7, 2],
+                    [2, 3, 11, 10, 6, 8, 10, 8, 9, 8, 6, 7],
+                    [2, 0, 7, 2, 7, 11, 0, 9, 7, 6, 7, 10, 9, 10, 7],
+                    [1, 8, 0, 1, 7, 8, 1, 10, 7, 6, 7, 10, 2, 3, 11],
+                    [11, 2, 1, 11, 1, 7, 10, 6, 1, 6, 7, 1],
+                    [8, 9, 6, 8, 6, 7, 9, 1, 6, 11, 6, 3, 1, 3, 6],
+                    [0, 9, 1, 11, 6, 7],
+                    [7, 8, 0, 7, 0, 6, 3, 11, 0, 11, 6, 0],
+                    [7, 11, 6],
+                    [7, 6, 11],
+                    [3, 0, 8, 11, 7, 6],
+                    [0, 1, 9, 11, 7, 6],
+                    [8, 1, 9, 8, 3, 1, 11, 7, 6],
+                    [10, 1, 2, 6, 11, 7],
+                    [1, 2, 10, 3, 0, 8, 6, 11, 7],
+                    [2, 9, 0, 2, 10, 9, 6, 11, 7],
+                    [6, 11, 7, 2, 10, 3, 10, 8, 3, 10, 9, 8],
+                    [7, 2, 3, 6, 2, 7],
+                    [7, 0, 8, 7, 6, 0, 6, 2, 0],
+                    [2, 7, 6, 2, 3, 7, 0, 1, 9],
+                    [1, 6, 2, 1, 8, 6, 1, 9, 8, 8, 7, 6],
+                    [10, 7, 6, 10, 1, 7, 1, 3, 7],
+                    [10, 7, 6, 1, 7, 10, 1, 8, 7, 1, 0, 8],
+                    [0, 3, 7, 0, 7, 10, 0, 10, 9, 6, 10, 7],
+                    [7, 6, 10, 7, 10, 8, 8, 10, 9],
+                    [6, 8, 4, 11, 8, 6],
+                    [3, 6, 11, 3, 0, 6, 0, 4, 6],
+                    [8, 6, 11, 8, 4, 6, 9, 0, 1],
+                    [9, 4, 6, 9, 6, 3, 9, 3, 1, 11, 3, 6],
+                    [6, 8, 4, 6, 11, 8, 2, 10, 1],
+                    [1, 2, 10, 3, 0, 11, 0, 6, 11, 0, 4, 6],
+                    [4, 11, 8, 4, 6, 11, 0, 2, 9, 2, 10, 9],
+                    [10, 9, 3, 10, 3, 2, 9, 4, 3, 11, 3, 6, 4, 6, 3],
+                    [8, 2, 3, 8, 4, 2, 4, 6, 2],
+                    [0, 4, 2, 4, 6, 2],
+                    [1, 9, 0, 2, 3, 4, 2, 4, 6, 4, 3, 8],
+                    [1, 9, 4, 1, 4, 2, 2, 4, 6],
+                    [8, 1, 3, 8, 6, 1, 8, 4, 6, 6, 10, 1],
+                    [10, 1, 0, 10, 0, 6, 6, 0, 4],
+                    [4, 6, 3, 4, 3, 8, 6, 10, 3, 0, 3, 9, 10, 9, 3],
+                    [10, 9, 4, 6, 10, 4],
+                    [4, 9, 5, 7, 6, 11],
+                    [0, 8, 3, 4, 9, 5, 11, 7, 6],
+                    [5, 0, 1, 5, 4, 0, 7, 6, 11],
+                    [11, 7, 6, 8, 3, 4, 3, 5, 4, 3, 1, 5],
+                    [9, 5, 4, 10, 1, 2, 7, 6, 11],
+                    [6, 11, 7, 1, 2, 10, 0, 8, 3, 4, 9, 5],
+                    [7, 6, 11, 5, 4, 10, 4, 2, 10, 4, 0, 2],
+                    [3, 4, 8, 3, 5, 4, 3, 2, 5, 10, 5, 2, 11, 7, 6],
+                    [7, 2, 3, 7, 6, 2, 5, 4, 9],
+                    [9, 5, 4, 0, 8, 6, 0, 6, 2, 6, 8, 7],
+                    [3, 6, 2, 3, 7, 6, 1, 5, 0, 5, 4, 0],
+                    [6, 2, 8, 6, 8, 7, 2, 1, 8, 4, 8, 5, 1, 5, 8],
+                    [9, 5, 4, 10, 1, 6, 1, 7, 6, 1, 3, 7],
+                    [1, 6, 10, 1, 7, 6, 1, 0, 7, 8, 7, 0, 9, 5, 4],
+                    [4, 0, 10, 4, 10, 5, 0, 3, 10, 6, 10, 7, 3, 7, 10],
+                    [7, 6, 10, 7, 10, 8, 5, 4, 10, 4, 8, 10],
+                    [6, 9, 5, 6, 11, 9, 11, 8, 9],
+                    [3, 6, 11, 0, 6, 3, 0, 5, 6, 0, 9, 5],
+                    [0, 11, 8, 0, 5, 11, 0, 1, 5, 5, 6, 11],
+                    [6, 11, 3, 6, 3, 5, 5, 3, 1],
+                    [1, 2, 10, 9, 5, 11, 9, 11, 8, 11, 5, 6],
+                    [0, 11, 3, 0, 6, 11, 0, 9, 6, 5, 6, 9, 1, 2, 10],
+                    [11, 8, 5, 11, 5, 6, 8, 0, 5, 10, 5, 2, 0, 2, 5],
+                    [6, 11, 3, 6, 3, 5, 2, 10, 3, 10, 5, 3],
+                    [5, 8, 9, 5, 2, 8, 5, 6, 2, 3, 8, 2],
+                    [9, 5, 6, 9, 6, 0, 0, 6, 2],
+                    [1, 5, 8, 1, 8, 0, 5, 6, 8, 3, 8, 2, 6, 2, 8],
+                    [1, 5, 6, 2, 1, 6],
+                    [1, 3, 6, 1, 6, 10, 3, 8, 6, 5, 6, 9, 8, 9, 6],
+                    [10, 1, 0, 10, 0, 6, 9, 5, 0, 5, 6, 0],
+                    [0, 3, 8, 5, 6, 10],
+                    [10, 5, 6],
+                    [11, 5, 10, 7, 5, 11],
+                    [11, 5, 10, 11, 7, 5, 8, 3, 0],
+                    [5, 11, 7, 5, 10, 11, 1, 9, 0],
+                    [10, 7, 5, 10, 11, 7, 9, 8, 1, 8, 3, 1],
+                    [11, 1, 2, 11, 7, 1, 7, 5, 1],
+                    [0, 8, 3, 1, 2, 7, 1, 7, 5, 7, 2, 11],
+                    [9, 7, 5, 9, 2, 7, 9, 0, 2, 2, 11, 7],
+                    [7, 5, 2, 7, 2, 11, 5, 9, 2, 3, 2, 8, 9, 8, 2],
+                    [2, 5, 10, 2, 3, 5, 3, 7, 5],
+                    [8, 2, 0, 8, 5, 2, 8, 7, 5, 10, 2, 5],
+                    [9, 0, 1, 5, 10, 3, 5, 3, 7, 3, 10, 2],
+                    [9, 8, 2, 9, 2, 1, 8, 7, 2, 10, 2, 5, 7, 5, 2],
+                    [1, 3, 5, 3, 7, 5],
+                    [0, 8, 7, 0, 7, 1, 1, 7, 5],
+                    [9, 0, 3, 9, 3, 5, 5, 3, 7],
+                    [9, 8, 7, 5, 9, 7],
+                    [5, 8, 4, 5, 10, 8, 10, 11, 8],
+                    [5, 0, 4, 5, 11, 0, 5, 10, 11, 11, 3, 0],
+                    [0, 1, 9, 8, 4, 10, 8, 10, 11, 10, 4, 5],
+                    [10, 11, 4, 10, 4, 5, 11, 3, 4, 9, 4, 1, 3, 1, 4],
+                    [2, 5, 1, 2, 8, 5, 2, 11, 8, 4, 5, 8],
+                    [0, 4, 11, 0, 11, 3, 4, 5, 11, 2, 11, 1, 5, 1, 11],
+                    [0, 2, 5, 0, 5, 9, 2, 11, 5, 4, 5, 8, 11, 8, 5],
+                    [9, 4, 5, 2, 11, 3],
+                    [2, 5, 10, 3, 5, 2, 3, 4, 5, 3, 8, 4],
+                    [5, 10, 2, 5, 2, 4, 4, 2, 0],
+                    [3, 10, 2, 3, 5, 10, 3, 8, 5, 4, 5, 8, 0, 1, 9],
+                    [5, 10, 2, 5, 2, 4, 1, 9, 2, 9, 4, 2],
+                    [8, 4, 5, 8, 5, 3, 3, 5, 1],
+                    [0, 4, 5, 1, 0, 5],
+                    [8, 4, 5, 8, 5, 3, 9, 0, 5, 0, 3, 5],
+                    [9, 4, 5],
+                    [4, 11, 7, 4, 9, 11, 9, 10, 11],
+                    [0, 8, 3, 4, 9, 7, 9, 11, 7, 9, 10, 11],
+                    [1, 10, 11, 1, 11, 4, 1, 4, 0, 7, 4, 11],
+                    [3, 1, 4, 3, 4, 8, 1, 10, 4, 7, 4, 11, 10, 11, 4],
+                    [4, 11, 7, 9, 11, 4, 9, 2, 11, 9, 1, 2],
+                    [9, 7, 4, 9, 11, 7, 9, 1, 11, 2, 11, 1, 0, 8, 3],
+                    [11, 7, 4, 11, 4, 2, 2, 4, 0],
+                    [11, 7, 4, 11, 4, 2, 8, 3, 4, 3, 2, 4],
+                    [2, 9, 10, 2, 7, 9, 2, 3, 7, 7, 4, 9],
+                    [9, 10, 7, 9, 7, 4, 10, 2, 7, 8, 7, 0, 2, 0, 7],
+                    [3, 7, 10, 3, 10, 2, 7, 4, 10, 1, 10, 0, 4, 0, 10],
+                    [1, 10, 2, 8, 7, 4],
+                    [4, 9, 1, 4, 1, 7, 7, 1, 3],
+                    [4, 9, 1, 4, 1, 7, 0, 8, 1, 8, 7, 1],
+                    [4, 0, 3, 7, 4, 3],
+                    [4, 8, 7],
+                    [9, 10, 8, 10, 11, 8],
+                    [3, 0, 9, 3, 9, 11, 11, 9, 10],
+                    [0, 1, 10, 0, 10, 8, 8, 10, 11],
+                    [3, 1, 10, 11, 3, 10],
+                    [1, 2, 11, 1, 11, 9, 9, 11, 8],
+                    [3, 0, 9, 3, 9, 11, 1, 2, 9, 2, 11, 9],
+                    [0, 2, 11, 8, 0, 11],
+                    [3, 2, 11],
+                    [2, 3, 8, 2, 8, 10, 10, 8, 9],
+                    [9, 10, 2, 0, 9, 2],
+                    [2, 3, 8, 2, 8, 10, 0, 1, 8, 1, 10, 8],
+                    [1, 10, 2],
+                    [1, 3, 8, 9, 1, 8],
+                    [0, 9, 1],
+                    [0, 3, 8],
+                    []
+                ];
+            })(MarchingCubes = Geometry.MarchingCubes || (Geometry.MarchingCubes = {}));
+        })(Geometry = Core.Geometry || (Core.Geometry = {}));
+    })(Core = LiteMol.Core || (LiteMol.Core = {}));
+})(LiteMol || (LiteMol = {}));
+/*
+ * Copyright(c) 2016 David Sehnal
+    *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+    *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+
+ * Unless required by applicable law or agreed to in writing, software
+    * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+    * limitations under the License.
+ */
+var LiteMol;
+(function (LiteMol) {
+    var Core;
+    (function (Core) {
+        var Geometry;
+        (function (Geometry) {
+            var MolecularSurface;
+            (function (MolecularSurface) {
+                "use strict";
+                var MolecularIsoSurfaceParameters = (function () {
+                    function MolecularIsoSurfaceParameters(params) {
+                        Core.Utils.extend(this, params, {
+                            exactBoundary: false,
+                            boundaryDelta: { dx: 1.5, dy: 1.5, dz: 1.5 },
+                            probeRadius: 1.4,
+                            atomRadii: function () { return 1.0; },
+                            density: 1.1,
+                            interactive: false,
+                            smoothingIterations: 1
+                        });
+                        if (this.exactBoundary)
+                            this.boundaryDelta = { dx: 0, dy: 0, dz: 0 };
+                        if (this.density < 0.3)
+                            this.density = 0.3;
+                        //if (this.probeRadius < 0) this.probeRadius = 0;
+                    }
+                    return MolecularIsoSurfaceParameters;
+                }());
+                MolecularSurface.MolecularIsoSurfaceParameters = MolecularIsoSurfaceParameters;
+                var MolecularIsoFieldComputation = (function () {
+                    function MolecularIsoFieldComputation(inputParameters, ctx) {
+                        var _this = this;
+                        this.inputParameters = inputParameters;
+                        this.ctx = ctx;
+                        this.minX = Number.MAX_VALUE;
+                        this.minY = Number.MAX_VALUE;
+                        this.minZ = Number.MAX_VALUE;
+                        this.maxX = -Number.MAX_VALUE;
+                        this.maxY = -Number.MAX_VALUE;
+                        this.maxZ = -Number.MAX_VALUE;
+                        this.nX = 0;
+                        this.nY = 0;
+                        this.nZ = 0;
+                        this.dX = 0.1;
+                        this.dY = 0.1;
+                        this.dZ = 0.1;
+                        this.field = new Float32Array(0);
+                        this.maxField = new Float32Array(0);
+                        this.proximityMap = new Int32Array(0);
+                        this.minIndex = { i: 0, j: 0, k: 0 };
+                        this.maxIndex = { i: 0, j: 0, k: 0 };
+                        this.currentAtom = 0;
+                        this.chunkSize = 10000;
+                        this._addChunk = function () {
+                            try {
+                                _this.addChunk();
+                            }
+                            catch (e) {
+                                _this.ctx.reject(e);
+                            }
+                        };
+                        this.parameters = new MolecularIsoSurfaceParameters(inputParameters.parameters);
+                        var positions = inputParameters.positions;
+                        this.x = positions.x;
+                        this.y = positions.y;
+                        this.z = positions.z;
+                        this.atomIndices = inputParameters.atomIndices;
+                    }
+                    MolecularIsoFieldComputation.prototype.findBounds = function () {
+                        for (var _i = 0, _a = this.atomIndices; _i < _a.length; _i++) {
+                            var aI = _a[_i];
+                            var r = this.parameters.exactBoundary ? 0 : this.parameters.atomRadius(aI) + this.parameters.probeRadius, xx = this.x[aI], yy = this.y[aI], zz = this.z[aI];
+                            if (r < 0)
+                                continue;
+                            this.minX = Math.min(this.minX, xx - r);
+                            this.minY = Math.min(this.minY, yy - r);
+                            this.minZ = Math.min(this.minZ, zz - r);
+                            this.maxX = Math.max(this.maxX, xx + r);
+                            this.maxY = Math.max(this.maxY, yy + r);
+                            this.maxZ = Math.max(this.maxZ, zz + r);
+                        }
+                        if (this.minX === Number.MAX_VALUE) {
+                            this.minX = this.minY = this.minZ = -1;
+                            this.maxX = this.maxY = this.maxZ = 1;
+                        }
+                        this.minX -= this.parameters.boundaryDelta.dx;
+                        this.minY -= this.parameters.boundaryDelta.dy;
+                        this.minZ -= this.parameters.boundaryDelta.dz;
+                        this.maxX += this.parameters.boundaryDelta.dx;
+                        this.maxY += this.parameters.boundaryDelta.dy;
+                        this.maxZ += this.parameters.boundaryDelta.dz;
+                        this.nX = Math.floor((this.maxX - this.minX) * this.parameters.density);
+                        this.nY = Math.floor((this.maxY - this.minY) * this.parameters.density);
+                        this.nZ = Math.floor((this.maxZ - this.minZ) * this.parameters.density);
+                        this.nX = Math.min(this.nX, 333);
+                        this.nY = Math.min(this.nY, 333);
+                        this.nZ = Math.min(this.nZ, 333);
+                        this.dX = (this.maxX - this.minX) / (this.nX - 1);
+                        this.dY = (this.maxY - this.minY) / (this.nY - 1);
+                        this.dZ = (this.maxZ - this.minZ) / (this.nZ - 1);
+                    };
+                    MolecularIsoFieldComputation.prototype.initData = function () {
+                        var len = this.nX * this.nY * this.nZ;
+                        this.field = new Float32Array(len);
+                        this.maxField = new Float32Array(len);
+                        this.proximityMap = new Int32Array(len);
+                        var mv = -Number.MAX_VALUE;
+                        for (var j = 0, _b = this.proximityMap.length; j < _b; j++) {
+                            this.maxField[j] = mv;
+                            this.proximityMap[j] = -1;
+                        }
+                    };
+                    MolecularIsoFieldComputation.prototype.updateMinIndex = function (x, y, z) {
+                        this.minIndex.i = Math.max((Math.floor((x - this.minX) / this.dX)) | 0, 0);
+                        this.minIndex.j = Math.max((Math.floor((y - this.minY) / this.dY)) | 0, 0);
+                        this.minIndex.k = Math.max((Math.floor((z - this.minZ) / this.dZ)) | 0, 0);
+                    };
+                    MolecularIsoFieldComputation.prototype.updateMaxIndex = function (x, y, z) {
+                        this.maxIndex.i = Math.min((Math.ceil((x - this.minX) / this.dX)) | 0, this.nX);
+                        this.maxIndex.j = Math.min((Math.ceil((y - this.minY) / this.dY)) | 0, this.nY);
+                        this.maxIndex.k = Math.min((Math.ceil((z - this.minZ) / this.dZ)) | 0, this.nZ);
+                    };
+                    MolecularIsoFieldComputation.prototype.addBall = function (aI, strength) {
+                        var strSq = strength * strength;
+                        var cx = this.x[aI], cy = this.y[aI], cz = this.z[aI];
+                        this.updateMinIndex(cx - strength, cy - strength, cz - strength);
+                        this.updateMaxIndex(cx + strength, cy + strength, cz + strength);
+                        var mini = this.minIndex.i, minj = this.minIndex.j, mink = this.minIndex.k;
+                        var maxi = this.maxIndex.i, maxj = this.maxIndex.j, maxk = this.maxIndex.k;
+                        cx = this.minX - cx;
+                        cy = this.minY - cy;
+                        cz = this.minZ - cz;
+                        for (var k = mink; k < maxk; k++) {
+                            var tZ = cz + k * this.dZ, zz = tZ * tZ, oZ = k * this.nY;
+                            for (var j = minj; j < maxj; j++) {
+                                var tY = cy + j * this.dY, yy = zz + tY * tY, oY = this.nX * (oZ + j);
+                                for (var i = mini; i < maxi; i++) {
+                                    var tX = cx + i * this.dX, xx = yy + tX * tX, offset = oY + i;
+                                    var v = strSq / (0.000001 + xx) - 1;
+                                    //let offset = nX * (k * nY + j) + i;
+                                    if (v > this.maxField[offset]) {
+                                        this.proximityMap[offset] = aI;
+                                        this.maxField[offset] = v;
+                                    }
+                                    //if (xx >= maxRsq) continue;
+                                    //let v = strength / Math.sqrt(0.000001 + zz) - 1;
+                                    //v = Math.Exp(-((Dist/AtomRadius)*(Dist/AtomRadius)));
+                                    if (v > 0) {
+                                        this.field[offset] += v;
+                                    }
+                                }
+                            }
+                        }
+                    };
+                    MolecularIsoFieldComputation.prototype.addChunk = function () {
+                        var b = this.atomIndices.length;
+                        var currentChunk = 0;
+                        for (; this.currentAtom < b; this.currentAtom++) {
+                            var aI = this.atomIndices[this.currentAtom];
+                            var r = this.parameters.atomRadius(aI) + this.parameters.probeRadius;
+                            currentChunk++;
+                            if (r < 0)
+                                continue;
+                            this.addBall(aI, r);
+                            if (currentChunk >= this.chunkSize) {
+                                if (this.ctx.abortRequested) {
+                                    this.ctx.abort();
+                                    return;
+                                }
+                                this.ctx.update('Creating field...', this.ctx.abortRequest, this.currentAtom, this.atomIndices.length);
+                                this.ctx.schedule(this._addChunk);
+                                return;
+                            }
+                        }
+                        this.ctx.update('Creating field...', void 0, this.currentAtom, this.atomIndices.length);
+                        this.finish();
+                    };
+                    MolecularIsoFieldComputation.prototype.finish = function () {
+                        this.maxField = null;
+                        var t = Geometry.LinearAlgebra.Matrix4.empty();
+                        Geometry.LinearAlgebra.Matrix4.fromTranslation(t, [this.minX, this.minY, this.minZ]);
+                        t[0] = this.dX;
+                        t[5] = this.dY;
+                        t[10] = this.dZ;
+                        var ret = {
+                            data: {
+                                scalarField: new Core.Formats.Density.Field3DZYX(this.field, [this.nX, this.nY, this.nZ]),
+                                annotationField: this.parameters.interactive ? new Core.Formats.Density.Field3DZYX(this.proximityMap, [this.nX, this.nY, this.nZ]) : void 0,
+                                isoLevel: 0.05
+                            },
+                            bottomLeft: { x: this.minX, y: this.minY, z: this.minZ },
+                            topRight: { x: this.maxX, y: this.maxY, z: this.maxZ },
+                            transform: t,
+                            inputParameters: this.inputParameters,
+                            parameters: this.parameters
+                        };
+                        this.ctx.resolve(ret);
+                    };
+                    MolecularIsoFieldComputation.prototype.start = function () {
+                        var _this = this;
+                        this.ctx.update('Initializing...');
+                        this.ctx.schedule(function () {
+                            try {
+                                _this.findBounds();
+                                _this.initData();
+                            }
+                            catch (e) {
+                                _this.ctx.reject(e);
+                                return;
+                            }
+                            if (_this.ctx.abortRequested) {
+                                _this.ctx.abort();
+                                return;
+                            }
+                            _this.ctx.update('Creating field...', _this.ctx.abortRequest, 0, _this.atomIndices.length);
+                            _this.ctx.schedule(_this._addChunk);
+                        });
+                    };
+                    return MolecularIsoFieldComputation;
+                }());
+                function createResultResultData(field, surface) {
+                    return Core.Computation.resolve({
+                        surface: surface,
+                        usedParameters: field.parameters
+                    });
+                }
+                function createMolecularIsoFieldAsync(parameters) {
+                    return Core.Computation.create(function (ctx) {
+                        var field = new MolecularIsoFieldComputation(parameters, ctx);
+                        field.start();
+                    });
+                }
+                MolecularSurface.createMolecularIsoFieldAsync = createMolecularIsoFieldAsync;
+                function computeMolecularSurfaceAsync(parameters) {
+                    return createMolecularIsoFieldAsync(parameters)
+                        .bind(function (f) {
+                        return Geometry.MarchingCubes.compute(f.data)
+                            .bind(function (s) { return Geometry.Surface.transform(s, f.transform); })
+                            .bind(function (s) { return Geometry.Surface.laplacianSmooth(s, f.inputParameters.parameters.smoothingIterations)
+                            .bind(function (s) { return createResultResultData(f, s); }); });
+                    });
+                }
+                MolecularSurface.computeMolecularSurfaceAsync = computeMolecularSurfaceAsync;
+            })(MolecularSurface = Geometry.MolecularSurface || (Geometry.MolecularSurface = {}));
+        })(Geometry = Core.Geometry || (Core.Geometry = {}));
+    })(Core = LiteMol.Core || (LiteMol.Core = {}));
+})(LiteMol || (LiteMol = {}));
+/*
+ * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ */
+var LiteMol;
+(function (LiteMol) {
+    var Core;
+    (function (Core) {
+        var Structure;
+        (function (Structure) {
+            "use strict";
+            var DataTableColumnDescriptor = (function () {
+                function DataTableColumnDescriptor(name, creator) {
+                    this.name = name;
+                    this.creator = creator;
+                }
+                return DataTableColumnDescriptor;
+            }());
+            Structure.DataTableColumnDescriptor = DataTableColumnDescriptor;
+            var DataTable = (function () {
+                function DataTable(count, source) {
+                    this.count = count;
+                    this.indices = new Int32Array(count);
+                    this.columns = [];
+                    for (var i = 0; i < count; i++) {
+                        this.indices[i] = i;
+                    }
+                    if (source) {
+                        for (var _i = 0, _a = source.columns; _i < _a.length; _i++) {
+                            var col = _a[_i];
+                            var data = source[col.name];
+                            if (data instanceof Core.Utils.ChunkedArrayBuilder) {
+                                data = data.compact();
+                            }
+                            Object.defineProperty(this, col.name, { enumerable: true, configurable: false, writable: false, value: data });
+                            this.columns[this.columns.length] = col;
+                        }
+                    }
+                }
+                DataTable.prototype.clone = function () {
+                    var b = new DataTableBuilder(this.count), cols = [];
+                    for (var _i = 0, _a = this.columns; _i < _a.length; _i++) {
+                        var c = _a[_i];
+                        cols[cols.length] = {
+                            src: this[c.name],
+                            trg: b.addColumn(c.name, c.creator)
+                        };
+                    }
+                    for (var _c = 0, cols_1 = cols; _c < cols_1.length; _c++) {
+                        var c = cols_1[_c];
+                        var s = c.src, t = c.trg;
+                        for (var i = 0, m = this.count; i < m; i++) {
+                            t[i] = s[i];
+                        }
+                    }
+                    return b.seal();
+                };
+                DataTable.prototype.getBuilder = function (count) {
+                    var b = new DataTableBuilder(count);
+                    for (var _i = 0, _a = this.columns; _i < _a.length; _i++) {
+                        var c = _a[_i];
+                        b.addColumn(c.name, c.creator);
+                    }
+                    return b;
+                };
+                DataTable.prototype.getRawData = function () {
+                    var _this = this;
+                    return this.columns.map(function (c) { return _this[c.name]; });
+                };
+                return DataTable;
+            }());
+            Structure.DataTable = DataTable;
+            var DataTableBuilder = (function () {
+                function DataTableBuilder(count) {
+                    this.columns = [];
+                    this.count = count;
+                }
+                DataTableBuilder.prototype.addColumn = function (name, creator) {
+                    var c = creator(this.count);
+                    Object.defineProperty(this, name, { enumerable: true, configurable: false, writable: false, value: c });
+                    this.columns[this.columns.length] = new DataTableColumnDescriptor(name, creator);
+                    return c;
+                };
+                DataTableBuilder.prototype.getRawData = function () {
+                    var _this = this;
+                    return this.columns.map(function (c) { return _this[c.name]; });
+                };
+                /**
+                 * This functions clones the table and defines all its column inside the constructor, hopefully making the JS engine
+                 * use internal class instead of dictionary representation.
+                 */
+                DataTableBuilder.prototype.seal = function () {
+                    return new DataTable(this.count, this);
+                };
+                return DataTableBuilder;
+            }());
+            Structure.DataTableBuilder = DataTableBuilder;
+            (function (EntityType) {
+                EntityType[EntityType["Polymer"] = 0] = "Polymer";
+                EntityType[EntityType["NonPolymer"] = 1] = "NonPolymer";
+                EntityType[EntityType["Water"] = 2] = "Water";
+                EntityType[EntityType["Unknown"] = 3] = "Unknown";
+            })(Structure.EntityType || (Structure.EntityType = {}));
+            var EntityType = Structure.EntityType;
+            (function (BondOrder) {
+                BondOrder[BondOrder["None"] = 0] = "None";
+                BondOrder[BondOrder["Single"] = 1] = "Single";
+                BondOrder[BondOrder["Double"] = 2] = "Double";
+                BondOrder[BondOrder["Triple"] = 3] = "Triple";
+                BondOrder[BondOrder["Quadruple"] = 4] = "Quadruple";
+            })(Structure.BondOrder || (Structure.BondOrder = {}));
+            var BondOrder = Structure.BondOrder;
+            var ComponentBondInfoEntry = (function () {
+                function ComponentBondInfoEntry(id) {
+                    this.id = id;
+                    this.map = new Map();
+                }
+                ComponentBondInfoEntry.prototype.add = function (a, b, order, swap) {
+                    if (swap === void 0) { swap = true; }
+                    var e = this.map.get(a);
+                    if (e !== void 0) {
+                        var f = e.get(b);
+                        if (f === void 0) {
+                            e.set(b, order);
+                        }
+                    }
+                    else {
+                        var map = new Map();
+                        map.set(b, order);
+                        this.map.set(a, map);
+                    }
+                    if (swap)
+                        this.add(b, a, order, false);
+                };
+                return ComponentBondInfoEntry;
+            }());
+            Structure.ComponentBondInfoEntry = ComponentBondInfoEntry;
+            var ComponentBondInfo = (function () {
+                function ComponentBondInfo() {
+                    this.entries = new Map();
+                }
+                ComponentBondInfo.prototype.newEntry = function (id) {
+                    var e = new ComponentBondInfoEntry(id);
+                    this.entries.set(id, e);
+                    return e;
+                };
+                return ComponentBondInfo;
+            }());
+            Structure.ComponentBondInfo = ComponentBondInfo;
+            /**
+             * Identifier for a reside that is a part of the polymer.
+             */
+            var PolyResidueIdentifier = (function () {
+                function PolyResidueIdentifier(asymId, seqNumber, insCode) {
+                    this.asymId = asymId;
+                    this.seqNumber = seqNumber;
+                    this.insCode = insCode;
+                }
+                PolyResidueIdentifier.areEqual = function (a, index, bAsymId, bSeqNumber, bInsCode) {
+                    return a.asymId === bAsymId[index]
+                        && a.seqNumber === bSeqNumber[index]
+                        && a.insCode === bInsCode[index];
+                };
+                PolyResidueIdentifier.compare = function (a, b) {
+                    if (a.asymId === b.asymId) {
+                        if (a.seqNumber === b.seqNumber) {
+                            if (a.insCode === b.insCode)
+                                return 0;
+                            if (a.insCode === void 0)
+                                return -1;
+                            if (b.insCode === void 0)
+                                return 1;
+                            return a.insCode < b.insCode ? -1 : 1;
+                        }
+                        return a.seqNumber < b.seqNumber ? -1 : 1;
+                    }
+                    return a.asymId < b.asymId ? -1 : 1;
+                };
+                PolyResidueIdentifier.compareResidue = function (a, index, bAsymId, bSeqNumber, bInsCode) {
+                    if (a.asymId === bAsymId[index]) {
+                        if (a.seqNumber === bSeqNumber[index]) {
+                            if (a.insCode === bInsCode[index])
+                                return 0;
+                            if (a.insCode === void 0)
+                                return -1;
+                            if (bInsCode[index] === void 0)
+                                return 1;
+                            return a.insCode < bInsCode[index] ? -1 : 1;
+                        }
+                        return a.seqNumber < bSeqNumber[index] ? -1 : 1;
+                    }
+                    return a.asymId < bAsymId[index] ? -1 : 1;
+                };
+                return PolyResidueIdentifier;
+            }());
+            Structure.PolyResidueIdentifier = PolyResidueIdentifier;
+            var SecondaryStructureElement = (function () {
+                function SecondaryStructureElement(type, startResidueId, endResidueId, info) {
+                    if (info === void 0) { info = {}; }
+                    this.type = type;
+                    this.startResidueId = startResidueId;
+                    this.endResidueId = endResidueId;
+                    this.info = info;
+                    this.startResidueIndex = -1;
+                    this.endResidueIndex = -1;
+                }
+                Object.defineProperty(SecondaryStructureElement.prototype, "length", {
+                    get: function () {
+                        return this.endResidueIndex - this.startResidueIndex;
+                    },
+                    enumerable: true,
+                    configurable: true
+                });
+                return SecondaryStructureElement;
+            }());
+            Structure.SecondaryStructureElement = SecondaryStructureElement;
+            var SymmetryInfo = (function () {
+                function SymmetryInfo(spacegroupName, cellSize, cellAngles, toFracTransform, isNonStandardCrytalFrame) {
+                    this.spacegroupName = spacegroupName;
+                    this.cellSize = cellSize;
+                    this.cellAngles = cellAngles;
+                    this.toFracTransform = toFracTransform;
+                    this.isNonStandardCrytalFrame = isNonStandardCrytalFrame;
+                }
+                return SymmetryInfo;
+            }());
+            Structure.SymmetryInfo = SymmetryInfo;
+            /**
+             * Wraps an assembly operator.
+             */
+            var AssemblyOperator = (function () {
+                function AssemblyOperator(id, name, operator) {
+                    this.id = id;
+                    this.name = name;
+                    this.operator = operator;
+                }
+                return AssemblyOperator;
+            }());
+            Structure.AssemblyOperator = AssemblyOperator;
+            /**
+             * Wraps a single assembly gen entry.
+             */
+            var AssemblyGenEntry = (function () {
+                function AssemblyGenEntry(operators, asymIds) {
+                    this.operators = operators;
+                    this.asymIds = asymIds;
+                }
+                return AssemblyGenEntry;
+            }());
+            Structure.AssemblyGenEntry = AssemblyGenEntry;
+            /**
+             * Wraps an assembly generation template.
+             */
+            var AssemblyGen = (function () {
+                function AssemblyGen(name) {
+                    this.name = name;
+                    this.gens = [];
+                }
+                return AssemblyGen;
+            }());
+            Structure.AssemblyGen = AssemblyGen;
+            /**
+             * Information about the assemblies.
+             */
+            var AssemblyInfo = (function () {
+                function AssemblyInfo(operators, assemblies) {
+                    this.operators = operators;
+                    this.assemblies = assemblies;
+                }
+                return AssemblyInfo;
+            }());
+            Structure.AssemblyInfo = AssemblyInfo;
+            (function (MoleculeModelSource) {
+                MoleculeModelSource[MoleculeModelSource["File"] = 0] = "File";
+                MoleculeModelSource[MoleculeModelSource["Computed"] = 1] = "Computed";
+            })(Structure.MoleculeModelSource || (Structure.MoleculeModelSource = {}));
+            var MoleculeModelSource = Structure.MoleculeModelSource;
+            var Operator = (function () {
+                function Operator(matrix, id, isIdentity) {
+                    this.matrix = matrix;
+                    this.id = id;
+                    this.isIdentity = isIdentity;
+                }
+                Operator.prototype.apply = function (v) {
+                    Core.Geometry.LinearAlgebra.Matrix4.transformVector3(v, v, this.matrix);
+                };
+                Operator.applyToModelUnsafe = function (matrix, m) {
+                    var v = { x: 0.1, y: 0.1, z: 0.1 };
+                    var _a = m.atoms, x = _a.x, y = _a.y, z = _a.z;
+                    for (var i = 0, _b = m.atoms.count; i < _b; i++) {
+                        v.x = x[i];
+                        v.y = y[i];
+                        v.z = z[i];
+                        Core.Geometry.LinearAlgebra.Matrix4.transformVector3(v, v, matrix);
+                        x[i] = v.x;
+                        y[i] = v.y;
+                        z[i] = v.z;
+                    }
+                };
+                return Operator;
+            }());
+            Structure.Operator = Operator;
+            var MoleculeModel = (function () {
+                function MoleculeModel(id, modelId, atoms, residues, chains, entities, componentBonds, secondaryStructure, symmetryInfo, assemblyInfo, parent, source, operators) {
+                    this.id = id;
+                    this.modelId = modelId;
+                    this.atoms = atoms;
+                    this.residues = residues;
+                    this.chains = chains;
+                    this.entities = entities;
+                    this.componentBonds = componentBonds;
+                    this.secondaryStructure = secondaryStructure;
+                    this.symmetryInfo = symmetryInfo;
+                    this.assemblyInfo = assemblyInfo;
+                    this.parent = parent;
+                    this.source = source;
+                    this.operators = operators;
+                }
+                Object.defineProperty(MoleculeModel.prototype, "queryContext", {
+                    get: function () {
+                        if (this._queryContext)
+                            return this._queryContext;
+                        this._queryContext = Structure.Query.Context.ofStructure(this);
+                        return this._queryContext;
+                    },
+                    enumerable: true,
+                    configurable: true
+                });
+                MoleculeModel.prototype.query = function (q) {
+                    return Structure.Query.Builder.toQuery(q)(this.queryContext);
+                };
+                return MoleculeModel;
+            }());
+            Structure.MoleculeModel = MoleculeModel;
+            // TODO: refactor this into using a tree structure similar to what the plugin is using, query is then a transformation of the tree
+            var Molecule = (function () {
+                function Molecule(id, models) {
+                    this.id = id;
+                    this.models = models;
+                }
+                return Molecule;
+            }());
+            Structure.Molecule = Molecule;
+        })(Structure = Core.Structure || (Core.Structure = {}));
+    })(Core = LiteMol.Core || (LiteMol.Core = {}));
+})(LiteMol || (LiteMol = {}));
+/*
+ * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ */
+var LiteMol;
+(function (LiteMol) {
+    var Core;
+    (function (Core) {
+        var Structure;
+        (function (Structure) {
+            "use strict";
+            var Mat4 = Core.Geometry.LinearAlgebra.Matrix4;
+            var Vec4 = Core.Geometry.LinearAlgebra.Vector4;
+            var Spacegroup = (function () {
+                function Spacegroup(info) {
+                    this.info = info;
+                    this.temp = Mat4.empty();
+                    this.tempV = new Float64Array(4);
+                    if (SpacegroupTables.Spacegroup[info.spacegroupName] === void 0) {
+                        throw "'" + info.spacegroupName + "' is not a spacegroup recognized by the library.";
+                    }
+                    this.space = this.getSpace();
+                    this.operators = this.getOperators();
+                }
+                Object.defineProperty(Spacegroup.prototype, "operatorCount", {
+                    get: function () {
+                        return this.operators.length;
+                    },
+                    enumerable: true,
+                    configurable: true
+                });
+                Spacegroup.prototype.getOperatorMatrix = function (index, i, j, k, target) {
+                    this.tempV[0] = i;
+                    this.tempV[1] = j;
+                    this.tempV[2] = k;
+                    Mat4.fromTranslation(this.temp, this.tempV);
+                    Mat4.mul(target, Mat4.mul(target, Mat4.mul(target, this.space.fromFrac, this.temp), this.operators[index]), this.space.toFrac);
+                    return target;
+                    //this.temp.setPosition(this.tempV.set(i, j, k));
+                    //return target.copy(this.space.fromFrac).multiply(this.temp).multiply(this.operators[index]).multiply(this.space.toFrac);
+                };
+                Spacegroup.prototype.getSpace = function () {
+                    var toFrac = this.info.toFracTransform, fromFrac = Mat4.empty();
+                    Mat4.invert(fromFrac, toFrac);
+                    return {
+                        toFrac: toFrac,
+                        fromFrac: fromFrac,
+                        baseX: Vec4.transform(Vec4.create(), Vec4.fromValues(1, 0, 0, 1), toFrac),
+                        baseY: Vec4.transform(Vec4.create(), Vec4.fromValues(0, 1, 0, 1), toFrac),
+                        baseZ: Vec4.transform(Vec4.create(), Vec4.fromValues(0, 0, 1, 1), toFrac)
+                    };
+                };
+                Spacegroup.getOperator = function (ids) {
+                    var r1 = SpacegroupTables.Transform[ids[0]], r2 = SpacegroupTables.Transform[ids[1]], r3 = SpacegroupTables.Transform[ids[2]];
+                    return Mat4.ofRows([r1, r2, r3, [0, 0, 0, 1]]);
+                };
+                Spacegroup.prototype.getOperators = function () {
+                    var group = SpacegroupTables.Group[SpacegroupTables.Spacegroup[this.info.spacegroupName]];
+                    return group.map(function (i) { return Spacegroup.getOperator(SpacegroupTables.Operator[i]); });
+                };
+                return Spacegroup;
+            }());
+            Structure.Spacegroup = Spacegroup;
+            var SpacegroupTables;
+            (function (SpacegroupTables) {
+                SpacegroupTables.Transform = [
+                    [1.0, 0.0, 0.0, 0.0],
+                    [0.0, 1.0, 0.0, 0.0],
+                    [0.0, 0.0, 1.0, 0.0],
+                    [-1.0, 0.0, 0.0, 0.0],
+                    [0.0, -1.0, 0.0, 0.0],
+                    [0.0, 0.0, -1.0, 0.0],
+                    [0.0, 1.0, 0.0, 0.5],
+                    [1.0, 0.0, 0.0, 0.5],
+                    [-1.0, 0.0, 0.0, 0.5],
+                    [0.0, 0.0, 1.0, 0.5],
+                    [0.0, -1.0, 0.0, 0.5],
+                    [0.0, 0.0, -1.0, 0.5],
+                    [1.0, 0.0, 0.0, 0.25],
+                    [0.0, -1.0, 0.0, 0.25],
+                    [0.0, 0.0, 1.0, 0.25],
+                    [-1.0, 0.0, 0.0, 0.25],
+                    [0.0, 1.0, 0.0, 0.25],
+                    [0.0, -1.0, 0.0, 0.75],
+                    [0.0, 0.0, 1.0, 0.75],
+                    [0.0, 1.0, 0.0, 0.75],
+                    [1.0, 0.0, 0.0, 0.75],
+                    [-1.0, 0.0, 0.0, 0.75],
+                    [0.0, 0.0, -1.0, 0.25],
+                    [0.0, 0.0, -1.0, 0.75],
+                    [1.0, -1.0, 0.0, 0.0],
+                    [-1.0, 1.0, 0.0, 0.0],
+                    [0.0, 0.0, 1.0, 0.333333333333333],
+                    [0.0, 0.0, 1.0, 0.666666666666667],
+                    [1.0, 0.0, 0.0, 0.666666666666667],
+                    [0.0, 1.0, 0.0, 0.333333333333333],
+                    [0.0, -1.0, 0.0, 0.666666666666667],
+                    [1.0, -1.0, 0.0, 0.333333333333333],
+                    [-1.0, 1.0, 0.0, 0.666666666666667],
+                    [-1.0, 0.0, 0.0, 0.333333333333333],
+                    [1.0, 0.0, 0.0, 0.333333333333333],
+                    [0.0, 1.0, 0.0, 0.666666666666667],
+                    [0.0, -1.0, 0.0, 0.333333333333333],
+                    [1.0, -1.0, 0.0, 0.666666666666667],
+                    [-1.0, 1.0, 0.0, 0.333333333333333],
+                    [-1.0, 0.0, 0.0, 0.666666666666667],
+                    [0.0, 0.0, -1.0, 0.333333333333333],
+                    [0.0, 0.0, -1.0, 0.666666666666667],
+                    [0.0, 0.0, 1.0, 0.833333333333333],
+                    [0.0, 0.0, 1.0, 0.166666666666667],
+                    [0.0, 0.0, -1.0, 0.833333333333333],
+                    [0.0, 0.0, -1.0, 0.166666666666667],
+                ];
+                SpacegroupTables.Operator = [
+                    [0, 1, 2],
+                    [3, 4, 5],
+                    [3, 1, 5],
+                    [3, 6, 5],
+                    [7, 6, 2],
+                    [8, 6, 5],
+                    [0, 4, 2],
+                    [0, 4, 9],
+                    [7, 10, 2],
+                    [7, 10, 9],
+                    [0, 10, 2],
+                    [8, 10, 5],
+                    [3, 1, 11],
+                    [3, 6, 11],
+                    [0, 10, 9],
+                    [8, 6, 11],
+                    [3, 4, 2],
+                    [0, 4, 5],
+                    [3, 4, 9],
+                    [7, 10, 5],
+                    [8, 4, 9],
+                    [8, 10, 9],
+                    [8, 10, 2],
+                    [0, 6, 9],
+                    [3, 10, 9],
+                    [0, 10, 11],
+                    [7, 1, 9],
+                    [8, 1, 11],
+                    [7, 4, 11],
+                    [7, 6, 9],
+                    [7, 10, 11],
+                    [3, 10, 2],
+                    [8, 1, 5],
+                    [0, 4, 11],
+                    [3, 1, 2],
+                    [3, 1, 9],
+                    [7, 4, 2],
+                    [8, 1, 2],
+                    [8, 1, 9],
+                    [3, 6, 9],
+                    [7, 4, 9],
+                    [8, 6, 2],
+                    [8, 6, 9],
+                    [3, 6, 2],
+                    [12, 13, 14],
+                    [15, 16, 14],
+                    [12, 17, 18],
+                    [15, 19, 18],
+                    [20, 13, 18],
+                    [21, 16, 18],
+                    [20, 17, 14],
+                    [21, 19, 14],
+                    [0, 1, 5],
+                    [8, 10, 11],
+                    [7, 6, 11],
+                    [7, 6, 5],
+                    [8, 4, 2],
+                    [7, 4, 5],
+                    [7, 1, 5],
+                    [7, 1, 11],
+                    [0, 10, 5],
+                    [0, 1, 11],
+                    [0, 6, 11],
+                    [0, 6, 5],
+                    [3, 10, 11],
+                    [8, 4, 11],
+                    [15, 13, 22],
+                    [12, 16, 22],
+                    [15, 17, 23],
+                    [12, 19, 23],
+                    [21, 13, 23],
+                    [20, 16, 23],
+                    [21, 17, 22],
+                    [20, 19, 22],
+                    [4, 0, 2],
+                    [1, 3, 2],
+                    [4, 0, 14],
+                    [1, 3, 18],
+                    [4, 0, 9],
+                    [1, 3, 9],
+                    [4, 0, 18],
+                    [1, 3, 14],
+                    [10, 7, 9],
+                    [6, 8, 9],
+                    [4, 7, 14],
+                    [6, 3, 18],
+                    [10, 0, 18],
+                    [1, 8, 14],
+                    [1, 3, 5],
+                    [4, 0, 5],
+                    [6, 8, 11],
+                    [10, 7, 11],
+                    [1, 3, 11],
+                    [4, 0, 11],
+                    [10, 7, 2],
+                    [6, 8, 2],
+                    [3, 10, 22],
+                    [7, 1, 23],
+                    [8, 4, 23],
+                    [0, 6, 22],
+                    [1, 0, 5],
+                    [4, 3, 5],
+                    [1, 0, 23],
+                    [4, 3, 22],
+                    [10, 7, 14],
+                    [6, 8, 18],
+                    [8, 6, 22],
+                    [7, 10, 23],
+                    [4, 3, 11],
+                    [1, 0, 11],
+                    [1, 0, 22],
+                    [4, 3, 23],
+                    [10, 7, 18],
+                    [6, 8, 14],
+                    [8, 6, 23],
+                    [7, 10, 22],
+                    [6, 7, 11],
+                    [10, 8, 11],
+                    [8, 1, 23],
+                    [0, 10, 22],
+                    [3, 6, 22],
+                    [7, 4, 23],
+                    [4, 3, 2],
+                    [1, 0, 2],
+                    [10, 8, 2],
+                    [6, 7, 2],
+                    [4, 3, 9],
+                    [1, 0, 9],
+                    [10, 8, 9],
+                    [6, 7, 9],
+                    [4, 8, 14],
+                    [6, 0, 18],
+                    [10, 3, 18],
+                    [1, 7, 14],
+                    [4, 8, 18],
+                    [6, 0, 14],
+                    [10, 3, 14],
+                    [1, 7, 18],
+                    [6, 7, 5],
+                    [10, 8, 5],
+                    [6, 8, 5],
+                    [10, 7, 5],
+                    [8, 1, 22],
+                    [0, 10, 23],
+                    [3, 6, 23],
+                    [7, 4, 22],
+                    [4, 24, 2],
+                    [25, 3, 2],
+                    [4, 24, 26],
+                    [25, 3, 27],
+                    [4, 24, 27],
+                    [25, 3, 26],
+                    [28, 29, 26],
+                    [30, 31, 26],
+                    [32, 33, 26],
+                    [34, 35, 27],
+                    [36, 37, 27],
+                    [38, 39, 27],
+                    [2, 0, 1],
+                    [1, 2, 0],
+                    [1, 25, 5],
+                    [24, 0, 5],
+                    [39, 36, 40],
+                    [35, 38, 40],
+                    [37, 34, 40],
+                    [33, 30, 41],
+                    [29, 32, 41],
+                    [31, 28, 41],
+                    [5, 3, 4],
+                    [4, 5, 3],
+                    [25, 1, 5],
+                    [0, 24, 5],
+                    [24, 4, 5],
+                    [3, 25, 5],
+                    [4, 3, 41],
+                    [25, 1, 40],
+                    [24, 4, 41],
+                    [3, 25, 40],
+                    [4, 3, 40],
+                    [25, 1, 41],
+                    [24, 4, 40],
+                    [3, 25, 41],
+                    [35, 34, 40],
+                    [37, 36, 40],
+                    [39, 38, 40],
+                    [29, 28, 41],
+                    [31, 30, 41],
+                    [33, 32, 41],
+                    [3, 5, 4],
+                    [5, 4, 3],
+                    [25, 1, 2],
+                    [0, 24, 2],
+                    [24, 4, 2],
+                    [3, 25, 2],
+                    [25, 1, 9],
+                    [0, 24, 9],
+                    [24, 4, 9],
+                    [3, 25, 9],
+                    [30, 33, 26],
+                    [32, 29, 26],
+                    [28, 31, 26],
+                    [36, 39, 27],
+                    [38, 35, 27],
+                    [34, 37, 27],
+                    [0, 2, 1],
+                    [2, 1, 0],
+                    [30, 33, 42],
+                    [32, 29, 42],
+                    [28, 31, 42],
+                    [36, 39, 43],
+                    [38, 35, 43],
+                    [34, 37, 43],
+                    [7, 9, 6],
+                    [9, 6, 7],
+                    [25, 1, 11],
+                    [0, 24, 11],
+                    [24, 4, 11],
+                    [3, 25, 11],
+                    [35, 34, 44],
+                    [37, 36, 44],
+                    [39, 38, 44],
+                    [29, 28, 45],
+                    [31, 30, 45],
+                    [33, 32, 45],
+                    [8, 11, 10],
+                    [11, 10, 8],
+                    [1, 25, 2],
+                    [24, 0, 2],
+                    [1, 25, 42],
+                    [24, 0, 43],
+                    [1, 25, 43],
+                    [24, 0, 42],
+                    [1, 25, 27],
+                    [24, 0, 26],
+                    [1, 25, 26],
+                    [24, 0, 27],
+                    [1, 25, 9],
+                    [24, 0, 9],
+                    [4, 24, 5],
+                    [25, 3, 5],
+                    [4, 24, 11],
+                    [25, 3, 11],
+                    [1, 0, 40],
+                    [4, 3, 44],
+                    [0, 24, 45],
+                    [1, 0, 41],
+                    [4, 3, 45],
+                    [0, 24, 44],
+                    [0, 24, 40],
+                    [0, 24, 41],
+                    [2, 3, 4],
+                    [5, 3, 1],
+                    [5, 0, 4],
+                    [4, 2, 3],
+                    [1, 5, 3],
+                    [4, 5, 0],
+                    [2, 7, 6],
+                    [2, 8, 10],
+                    [5, 8, 6],
+                    [5, 7, 10],
+                    [1, 9, 7],
+                    [4, 9, 8],
+                    [1, 11, 8],
+                    [4, 11, 7],
+                    [9, 0, 6],
+                    [9, 3, 10],
+                    [11, 3, 6],
+                    [11, 0, 10],
+                    [6, 2, 7],
+                    [10, 2, 8],
+                    [6, 5, 8],
+                    [10, 5, 7],
+                    [9, 7, 1],
+                    [9, 8, 4],
+                    [11, 8, 1],
+                    [11, 7, 4],
+                    [6, 9, 0],
+                    [10, 9, 3],
+                    [6, 11, 3],
+                    [10, 11, 0],
+                    [9, 7, 6],
+                    [9, 8, 10],
+                    [11, 8, 6],
+                    [11, 7, 10],
+                    [6, 9, 7],
+                    [10, 9, 8],
+                    [6, 11, 8],
+                    [10, 11, 7],
+                    [2, 3, 10],
+                    [5, 8, 1],
+                    [11, 0, 4],
+                    [10, 2, 3],
+                    [1, 5, 8],
+                    [4, 11, 0],
+                    [5, 0, 1],
+                    [2, 0, 4],
+                    [2, 3, 1],
+                    [1, 5, 0],
+                    [4, 2, 0],
+                    [1, 2, 3],
+                    [11, 8, 10],
+                    [11, 7, 6],
+                    [9, 7, 10],
+                    [9, 8, 6],
+                    [10, 11, 8],
+                    [6, 11, 7],
+                    [10, 9, 7],
+                    [6, 9, 8],
+                    [5, 8, 10],
+                    [5, 7, 6],
+                    [2, 7, 10],
+                    [2, 8, 6],
+                    [4, 11, 8],
+                    [1, 11, 7],
+                    [4, 9, 7],
+                    [1, 9, 8],
+                    [11, 3, 10],
+                    [11, 0, 6],
+                    [9, 0, 10],
+                    [9, 3, 6],
+                    [10, 5, 8],
+                    [6, 5, 7],
+                    [10, 2, 7],
+                    [6, 2, 8],
+                    [11, 8, 4],
+                    [11, 7, 1],
+                    [9, 7, 4],
+                    [9, 8, 1],
+                    [10, 11, 3],
+                    [6, 11, 0],
+                    [10, 9, 0],
+                    [6, 9, 3],
+                    [22, 15, 13],
+                    [22, 12, 16],
+                    [14, 12, 13],
+                    [14, 15, 16],
+                    [13, 22, 15],
+                    [16, 22, 12],
+                    [13, 14, 12],
+                    [16, 14, 15],
+                    [22, 21, 17],
+                    [22, 20, 19],
+                    [14, 20, 17],
+                    [14, 21, 19],
+                    [13, 23, 21],
+                    [16, 23, 20],
+                    [13, 18, 20],
+                    [16, 18, 21],
+                    [23, 15, 17],
+                    [23, 12, 19],
+                    [18, 12, 17],
+                    [18, 15, 19],
+                    [17, 22, 21],
+                    [19, 22, 20],
+                    [17, 14, 20],
+                    [19, 14, 21],
+                    [23, 21, 13],
+                    [23, 20, 16],
+                    [18, 20, 13],
+                    [18, 21, 16],
+                    [17, 23, 15],
+                    [19, 23, 12],
+                    [17, 18, 12],
+                    [19, 18, 15],
+                    [5, 0, 6],
+                    [2, 7, 4],
+                    [9, 3, 1],
+                    [6, 5, 0],
+                    [4, 2, 7],
+                    [1, 9, 3],
+                    [0, 2, 4],
+                    [3, 2, 1],
+                    [0, 5, 1],
+                    [2, 1, 3],
+                    [2, 4, 0],
+                    [5, 1, 0],
+                    [7, 9, 10],
+                    [8, 9, 6],
+                    [7, 11, 6],
+                    [9, 6, 8],
+                    [9, 10, 7],
+                    [11, 6, 7],
+                    [1, 7, 11],
+                    [4, 8, 11],
+                    [1, 8, 9],
+                    [4, 7, 9],
+                    [0, 9, 10],
+                    [3, 9, 6],
+                    [3, 11, 10],
+                    [0, 11, 6],
+                    [2, 6, 8],
+                    [2, 10, 7],
+                    [5, 6, 7],
+                    [5, 10, 8],
+                    [6, 0, 11],
+                    [10, 3, 11],
+                    [6, 3, 9],
+                    [10, 0, 9],
+                    [7, 2, 10],
+                    [8, 2, 6],
+                    [8, 5, 10],
+                    [7, 5, 6],
+                    [9, 1, 8],
+                    [9, 4, 7],
+                    [11, 1, 7],
+                    [11, 4, 8],
+                    [7, 9, 4],
+                    [8, 9, 1],
+                    [8, 11, 4],
+                    [7, 11, 1],
+                    [9, 6, 3],
+                    [9, 10, 0],
+                    [11, 6, 0],
+                    [11, 10, 3],
+                    [19, 12, 23],
+                    [13, 15, 22],
+                    [16, 21, 18],
+                    [17, 20, 14],
+                    [20, 14, 17],
+                    [21, 18, 16],
+                    [15, 22, 13],
+                    [12, 23, 19],
+                    [18, 16, 21],
+                    [14, 17, 20],
+                    [23, 19, 12],
+                    [22, 13, 15],
+                    [19, 20, 22],
+                    [13, 21, 23],
+                    [16, 15, 14],
+                    [17, 12, 18],
+                    [20, 18, 13],
+                    [21, 14, 19],
+                    [15, 23, 17],
+                    [12, 22, 16],
+                    [18, 19, 15],
+                    [14, 13, 12],
+                    [23, 16, 20],
+                    [22, 17, 21],
+                    [16, 12, 22],
+                    [17, 15, 23],
+                    [19, 21, 14],
+                    [13, 20, 18],
+                    [12, 14, 13],
+                    [15, 18, 19],
+                    [21, 22, 17],
+                    [20, 23, 16],
+                    [14, 16, 15],
+                    [18, 17, 12],
+                    [22, 19, 20],
+                    [23, 13, 21],
+                    [16, 20, 23],
+                    [17, 21, 22],
+                    [19, 15, 18],
+                    [13, 12, 14],
+                    [12, 18, 17],
+                    [15, 14, 16],
+                    [21, 23, 13],
+                    [20, 22, 19],
+                    [14, 19, 21],
+                    [18, 13, 20],
+                    [22, 16, 12],
+                    [23, 17, 15],
+                    [19, 12, 22],
+                    [17, 21, 23],
+                    [16, 15, 18],
+                    [13, 20, 14],
+                    [20, 14, 13],
+                    [15, 18, 16],
+                    [21, 23, 17],
+                    [12, 22, 19],
+                    [18, 16, 15],
+                    [14, 13, 20],
+                    [22, 19, 12],
+                    [23, 17, 21],
+                    [3, 2, 4],
+                    [3, 5, 1],
+                    [0, 5, 4],
+                    [2, 4, 3],
+                    [5, 1, 3],
+                    [5, 4, 0],
+                    [1, 7, 9],
+                    [4, 8, 9],
+                    [1, 8, 11],
+                    [4, 7, 11],
+                    [0, 9, 6],
+                    [3, 9, 10],
+                    [3, 11, 6],
+                    [0, 11, 10],
+                    [2, 6, 7],
+                    [2, 10, 8],
+                    [5, 6, 8],
+                    [5, 10, 7],
+                    [6, 0, 9],
+                    [10, 3, 9],
+                    [6, 3, 11],
+                    [10, 0, 11],
+                    [7, 2, 6],
+                    [8, 2, 10],
+                    [8, 5, 6],
+                    [7, 5, 10],
+                    [9, 1, 7],
+                    [9, 4, 8],
+                    [11, 1, 8],
+                    [11, 4, 7],
+                    [7, 9, 1],
+                    [8, 9, 4],
+                    [8, 11, 1],
+                    [7, 11, 4],
+                    [9, 6, 0],
+                    [9, 10, 3],
+                    [11, 6, 3],
+                    [11, 10, 0],
+                    [8, 9, 10],
+                    [8, 11, 6],
+                    [7, 11, 10],
+                    [9, 10, 8],
+                    [11, 6, 8],
+                    [11, 10, 7],
+                    [6, 0, 2],
+                    [10, 3, 2],
+                    [6, 3, 5],
+                    [10, 0, 5],
+                    [7, 2, 1],
+                    [8, 2, 4],
+                    [8, 5, 1],
+                    [7, 5, 4],
+                    [9, 1, 0],
+                    [9, 4, 3],
+                    [11, 1, 3],
+                    [11, 4, 0],
+                    [1, 7, 2],
+                    [4, 8, 2],
+                    [1, 8, 5],
+                    [4, 7, 5],
+                    [0, 9, 1],
+                    [3, 9, 4],
+                    [3, 11, 1],
+                    [0, 11, 4],
+                    [2, 6, 0],
+                    [2, 10, 3],
+                    [5, 6, 3],
+                    [5, 10, 0],
+                    [0, 2, 6],
+                    [3, 2, 10],
+                    [3, 5, 6],
+                    [0, 5, 10],
+                    [2, 1, 7],
+                    [2, 4, 8],
+                    [5, 1, 8],
+                    [5, 4, 7],
+                    [16, 12, 14],
+                    [13, 21, 18],
+                    [19, 15, 23],
+                    [17, 20, 22],
+                    [12, 14, 16],
+                    [21, 18, 13],
+                    [15, 23, 19],
+                    [20, 22, 17],
+                    [14, 16, 12],
+                    [18, 13, 21],
+                    [23, 19, 15],
+                    [22, 17, 20],
+                    [19, 20, 18],
+                    [17, 15, 14],
+                    [16, 21, 22],
+                    [13, 12, 23],
+                    [20, 18, 19],
+                    [15, 14, 17],
+                    [21, 22, 16],
+                    [12, 23, 13],
+                    [18, 19, 20],
+                    [14, 17, 15],
+                    [22, 16, 21],
+                    [23, 13, 12],
+                    [6, 0, 5],
+                    [10, 3, 5],
+                    [6, 3, 2],
+                    [10, 0, 2],
+                    [7, 2, 4],
+                    [8, 2, 1],
+                    [8, 5, 4],
+                    [7, 5, 1],
+                    [9, 1, 3],
+                    [9, 4, 0],
+                    [11, 1, 0],
+                    [11, 4, 3],
+                    [1, 7, 5],
+                    [4, 8, 5],
+                    [1, 8, 2],
+                    [4, 7, 2],
+                    [0, 9, 4],
+                    [3, 9, 1],
+                    [3, 11, 4],
+                    [0, 11, 1],
+                    [2, 6, 3],
+                    [2, 10, 0],
+                    [5, 6, 0],
+                    [5, 10, 3],
+                    [0, 2, 10],
+                    [3, 2, 6],
+                    [3, 5, 10],
+                    [0, 5, 6],
+                    [2, 1, 8],
+                    [2, 4, 7],
+                    [5, 1, 7],
+                    [5, 4, 8],
+                    [21, 17, 23],
+                    [20, 16, 22],
+                    [12, 13, 18],
+                    [15, 19, 14],
+                    [23, 21, 17],
+                    [22, 20, 16],
+                    [18, 12, 13],
+                    [14, 15, 19],
+                    [17, 23, 21],
+                    [16, 22, 20],
+                    [13, 18, 12],
+                    [19, 14, 15],
+                    [21, 13, 22],
+                    [20, 19, 23],
+                    [12, 17, 14],
+                    [15, 16, 18],
+                    [23, 15, 13],
+                    [22, 12, 19],
+                    [18, 20, 17],
+                    [14, 21, 16],
+                    [17, 22, 15],
+                    [16, 23, 12],
+                    [13, 14, 20],
+                    [19, 18, 21],
+                    [15, 17, 22],
+                    [12, 16, 23],
+                    [20, 13, 14],
+                    [21, 19, 18],
+                    [22, 21, 13],
+                    [23, 20, 19],
+                    [14, 12, 17],
+                    [18, 15, 16],
+                    [13, 23, 15],
+                    [19, 22, 12],
+                    [17, 18, 20],
+                    [16, 14, 21],
+                    [15, 13, 23],
+                    [12, 19, 22],
+                    [20, 17, 18],
+                    [21, 16, 14],
+                    [22, 15, 17],
+                    [23, 12, 16],
+                    [14, 20, 13],
+                    [18, 21, 19],
+                    [13, 22, 21],
+                    [19, 23, 20],
+                    [17, 14, 12],
+                    [16, 18, 15],
+                    [6, 5, 3],
+                    [4, 9, 3],
+                    [9, 3, 4],
+                    [5, 7, 4],
+                    [4, 5, 7],
+                    [5, 3, 6],
+                ];
+                SpacegroupTables.Group = [
+                    [0],
+                    [0, 1],
+                    [0, 2],
+                    [0, 3],
+                    [0, 2, 4, 5],
+                    [0, 6],
+                    [0, 7],
+                    [0, 6, 4, 8],
+                    [0, 7, 4, 9],
+                    [0, 6, 2, 1],
+                    [0, 3, 1, 10],
+                    [0, 6, 2, 1, 4, 8, 5, 11],
+                    [0, 12, 1, 7],
+                    [0, 1, 13, 14],
+                    [0, 12, 1, 7, 4, 15, 11, 9],
+                    [0, 16, 2, 17],
+                    [0, 18, 12, 17],
+                    [0, 16, 5, 19],
+                    [0, 20, 13, 19],
+                    [0, 18, 12, 17, 4, 21, 15, 19],
+                    [0, 16, 2, 17, 4, 22, 5, 19],
+                    [0, 16, 2, 17, 23, 24, 13, 25, 26, 20, 27, 28, 4, 22, 5, 19],
+                    [0, 16, 17, 2, 29, 21, 30, 15],
+                    [0, 20, 13, 19, 29, 31, 32, 33],
+                    [0, 16, 6, 34],
+                    [0, 18, 7, 34],
+                    [0, 16, 7, 35],
+                    [0, 16, 36, 37],
+                    [0, 18, 36, 38],
+                    [0, 16, 14, 39],
+                    [0, 20, 40, 34],
+                    [0, 16, 8, 41],
+                    [0, 18, 8, 42],
+                    [0, 16, 9, 42],
+                    [0, 16, 6, 34, 4, 22, 8, 41],
+                    [0, 18, 7, 34, 4, 21, 9, 41],
+                    [0, 16, 7, 35, 4, 22, 9, 42],
+                    [0, 16, 6, 34, 23, 24, 14, 39],
+                    [0, 16, 10, 43, 23, 24, 7, 35],
+                    [0, 16, 36, 37, 23, 24, 9, 42],
+                    [0, 16, 8, 41, 23, 24, 40, 38],
+                    [0, 16, 6, 34, 23, 24, 14, 39, 26, 20, 40, 38, 4, 22, 8, 41],
+                    [0, 16, 44, 45, 23, 24, 46, 47, 26, 20, 48, 49, 4, 22, 50, 51],
+                    [0, 16, 6, 34, 29, 21, 9, 42],
+                    [0, 16, 8, 41, 29, 21, 7, 35],
+                    [0, 16, 36, 37, 29, 21, 14, 39],
+                    [0, 16, 2, 17, 1, 52, 6, 34],
+                    [0, 16, 2, 17, 53, 54, 9, 42],
+                    [0, 16, 12, 33, 1, 52, 7, 35],
+                    [0, 16, 2, 17, 11, 55, 8, 41],
+                    [0, 56, 2, 57, 1, 58, 6, 37],
+                    [0, 56, 15, 25, 1, 58, 9, 39],
+                    [0, 20, 27, 17, 1, 59, 40, 34],
+                    [0, 56, 12, 28, 1, 58, 7, 38],
+                    [0, 16, 5, 19, 1, 52, 8, 41],
+                    [0, 22, 13, 28, 1, 55, 14, 38],
+                    [0, 18, 13, 60, 1, 61, 14, 43],
+                    [0, 16, 15, 30, 1, 52, 9, 42],
+                    [0, 16, 5, 19, 11, 55, 6, 34],
+                    [0, 21, 12, 19, 1, 54, 7, 41],
+                    [0, 20, 13, 19, 1, 59, 14, 41],
+                    [0, 20, 3, 30, 1, 59, 10, 42],
+                    [0, 18, 12, 17, 1, 61, 7, 34, 4, 21, 15, 19, 11, 54, 9, 41],
+                    [0, 24, 13, 17, 1, 62, 14, 34, 4, 20, 27, 19, 11, 59, 40, 41],
+                    [0, 16, 2, 17, 1, 52, 6, 34, 4, 22, 5, 19, 11, 55, 8, 41],
+                    [0, 16, 12, 33, 1, 52, 7, 35, 4, 22, 15, 30, 11, 55, 9, 42],
+                    [0, 31, 3, 17, 1, 63, 10, 34, 4, 56, 32, 19, 11, 58, 36, 41],
+                    [0, 22, 2, 19, 64, 59, 14, 38, 4, 16, 5, 17, 65, 62, 40, 39],
+                    [0, 16, 2, 17, 1, 52, 6, 34, 23, 24, 13, 25, 64, 62, 14, 39, 26, 20, 27, 28, 65, 59, 40, 38, 4, 22, 5, 19, 11, 55, 8, 41],
+                    [0, 16, 2, 17, 66, 67, 44, 45, 23, 24, 13, 25, 68, 69, 46, 47, 26, 20, 27, 28, 70, 71, 48, 49, 4, 22, 5, 19, 72, 73, 50, 51],
+                    [0, 16, 2, 17, 1, 52, 6, 34, 29, 21, 15, 30, 53, 54, 9, 42],
+                    [0, 16, 5, 19, 1, 52, 8, 41, 29, 21, 12, 33, 53, 54, 7, 35],
+                    [0, 20, 13, 19, 1, 59, 14, 41, 29, 31, 32, 33, 53, 63, 36, 35],
+                    [0, 31, 3, 17, 1, 63, 10, 34, 29, 20, 27, 30, 53, 59, 40, 42],
+                    [0, 16, 74, 75],
+                    [0, 18, 76, 77],
+                    [0, 16, 78, 79],
+                    [0, 18, 80, 81],
+                    [0, 16, 74, 75, 29, 21, 82, 83],
+                    [0, 21, 84, 85, 29, 16, 86, 87],
+                    [0, 16, 88, 89],
+                    [0, 16, 88, 89, 29, 21, 90, 91],
+                    [0, 16, 74, 75, 1, 52, 88, 89],
+                    [0, 16, 78, 79, 1, 52, 92, 93],
+                    [0, 16, 94, 95, 11, 55, 88, 89],
+                    [0, 16, 82, 83, 53, 54, 88, 89],
+                    [0, 16, 74, 75, 1, 52, 88, 89, 29, 21, 82, 83, 53, 54, 90, 91],
+                    [0, 21, 84, 85, 96, 97, 88, 91, 29, 16, 86, 87, 98, 99, 90, 89],
+                    [0, 16, 74, 75, 2, 17, 100, 101],
+                    [0, 16, 94, 95, 5, 19, 100, 101],
+                    [0, 18, 76, 77, 2, 33, 102, 103],
+                    [0, 18, 104, 105, 106, 107, 100, 108],
+                    [0, 16, 78, 79, 2, 17, 109, 108],
+                    [0, 16, 82, 83, 15, 30, 100, 101],
+                    [0, 18, 80, 81, 2, 33, 110, 111],
+                    [0, 18, 112, 113, 114, 115, 100, 108],
+                    [0, 16, 74, 75, 2, 17, 100, 101, 29, 21, 82, 83, 15, 30, 116, 117],
+                    [0, 21, 84, 85, 118, 119, 116, 101, 29, 16, 86, 87, 120, 121, 100, 117],
+                    [0, 16, 74, 75, 6, 34, 122, 123],
+                    [0, 16, 74, 75, 8, 41, 124, 125],
+                    [0, 16, 78, 79, 7, 35, 122, 123],
+                    [0, 16, 82, 83, 9, 42, 122, 123],
+                    [0, 16, 74, 75, 7, 35, 126, 127],
+                    [0, 16, 74, 75, 9, 42, 128, 129],
+                    [0, 16, 78, 79, 6, 34, 126, 127],
+                    [0, 16, 78, 79, 8, 41, 128, 129],
+                    [0, 16, 74, 75, 6, 34, 122, 123, 29, 21, 82, 83, 9, 42, 128, 129],
+                    [0, 16, 74, 75, 7, 35, 126, 127, 29, 21, 82, 83, 8, 41, 124, 125],
+                    [0, 21, 84, 85, 6, 42, 130, 131, 29, 16, 86, 87, 9, 34, 132, 133],
+                    [0, 21, 84, 85, 7, 41, 134, 135, 29, 16, 86, 87, 8, 35, 136, 137],
+                    [0, 16, 89, 88, 2, 17, 122, 123],
+                    [0, 16, 89, 88, 12, 33, 126, 127],
+                    [0, 16, 89, 88, 5, 19, 124, 125],
+                    [0, 16, 89, 88, 15, 30, 128, 129],
+                    [0, 16, 88, 89, 6, 34, 100, 101],
+                    [0, 16, 89, 88, 7, 35, 109, 108],
+                    [0, 16, 89, 88, 8, 41, 138, 139],
+                    [0, 16, 89, 88, 9, 42, 116, 117],
+                    [0, 16, 89, 88, 6, 34, 100, 101, 29, 21, 91, 90, 9, 42, 116, 117],
+                    [0, 16, 89, 88, 7, 35, 109, 108, 29, 21, 91, 90, 8, 41, 138, 139],
+                    [0, 16, 89, 88, 2, 17, 122, 123, 29, 21, 91, 90, 15, 30, 128, 129],
+                    [0, 16, 89, 88, 118, 121, 132, 131, 29, 21, 91, 90, 120, 119, 130, 133],
+                    [0, 16, 74, 75, 2, 17, 100, 101, 1, 52, 88, 89, 6, 34, 122, 123],
+                    [0, 16, 74, 75, 12, 33, 109, 108, 1, 52, 88, 89, 7, 35, 126, 127],
+                    [0, 16, 74, 75, 2, 17, 100, 101, 11, 55, 140, 141, 8, 41, 124, 125],
+                    [0, 16, 74, 75, 2, 17, 100, 101, 53, 54, 90, 91, 9, 42, 128, 129],
+                    [0, 16, 74, 75, 5, 19, 138, 139, 1, 52, 88, 89, 8, 41, 124, 125],
+                    [0, 16, 74, 75, 15, 30, 116, 117, 1, 52, 88, 89, 9, 42, 128, 129],
+                    [0, 16, 94, 95, 5, 19, 100, 101, 11, 55, 88, 89, 6, 34, 124, 125],
+                    [0, 16, 94, 95, 15, 30, 109, 108, 11, 55, 88, 89, 7, 35, 128, 129],
+                    [0, 16, 78, 79, 2, 17, 109, 108, 1, 52, 92, 93, 6, 34, 126, 127],
+                    [0, 16, 78, 79, 12, 33, 100, 101, 1, 52, 92, 93, 7, 35, 122, 123],
+                    [0, 16, 82, 83, 12, 33, 138, 139, 53, 54, 88, 89, 8, 41, 126, 127],
+                    [0, 16, 82, 83, 2, 17, 116, 117, 53, 54, 88, 89, 9, 42, 122, 123],
+                    [0, 16, 78, 79, 5, 19, 116, 117, 1, 52, 92, 93, 8, 41, 128, 129],
+                    [0, 16, 82, 83, 15, 30, 100, 101, 1, 52, 90, 91, 9, 42, 122, 123],
+                    [0, 16, 82, 83, 15, 30, 100, 101, 53, 54, 88, 89, 6, 34, 128, 129],
+                    [0, 16, 82, 83, 5, 19, 109, 108, 53, 54, 88, 89, 7, 35, 124, 125],
+                    [0, 16, 74, 75, 2, 17, 100, 101, 1, 52, 88, 89, 6, 34, 122, 123, 29, 21, 82, 83, 15, 30, 116, 117, 53, 54, 90, 91, 9, 42, 128, 129],
+                    [0, 16, 74, 75, 12, 33, 109, 108, 1, 52, 88, 89, 7, 35, 126, 127, 29, 21, 82, 83, 5, 19, 138, 139, 53, 54, 90, 91, 8, 41, 124, 125],
+                    [0, 21, 84, 85, 118, 119, 116, 101, 96, 97, 88, 91, 9, 34, 132, 133, 29, 16, 86, 87, 120, 121, 100, 117, 98, 99, 90, 89, 6, 42, 130, 131],
+                    [0, 21, 84, 85, 142, 143, 138, 108, 96, 97, 88, 91, 8, 35, 136, 137, 29, 16, 86, 87, 144, 145, 109, 139, 98, 99, 90, 89, 7, 41, 134, 135],
+                    [0, 146, 147],
+                    [0, 148, 149],
+                    [0, 150, 151],
+                    [0, 146, 147, 152, 153, 154, 155, 156, 157],
+                    [0, 158, 159],
+                    [0, 146, 147, 1, 160, 161],
+                    [0, 146, 147, 1, 160, 161, 152, 153, 154, 162, 163, 164, 155, 156, 157, 165, 166, 167],
+                    [0, 158, 159, 1, 168, 169],
+                    [0, 146, 147, 101, 170, 171],
+                    [0, 146, 147, 100, 172, 173],
+                    [0, 148, 149, 174, 175, 171],
+                    [0, 148, 149, 100, 176, 177],
+                    [0, 150, 151, 178, 179, 171],
+                    [0, 150, 151, 100, 180, 181],
+                    [0, 146, 147, 100, 172, 173, 152, 153, 154, 182, 183, 184, 155, 156, 157, 185, 186, 187],
+                    [0, 158, 159, 101, 188, 189],
+                    [0, 146, 147, 122, 190, 191],
+                    [0, 146, 147, 123, 192, 193],
+                    [0, 146, 147, 126, 194, 195],
+                    [0, 146, 147, 127, 196, 197],
+                    [0, 146, 147, 122, 190, 191, 152, 153, 154, 198, 199, 200, 155, 156, 157, 201, 202, 203],
+                    [0, 158, 159, 123, 204, 205],
+                    [0, 146, 147, 126, 194, 195, 152, 153, 154, 206, 207, 208, 155, 156, 157, 209, 210, 211],
+                    [0, 158, 159, 129, 212, 213],
+                    [0, 146, 147, 101, 170, 171, 1, 160, 161, 123, 192, 193],
+                    [0, 146, 147, 108, 214, 215, 1, 160, 161, 127, 196, 197],
+                    [0, 146, 147, 100, 172, 173, 1, 160, 161, 122, 190, 191],
+                    [0, 146, 147, 109, 216, 217, 1, 160, 161, 126, 194, 195],
+                    [0, 146, 147, 100, 172, 173, 1, 160, 161, 122, 190, 191, 152, 153, 154, 182, 183, 184, 162, 163, 164, 198, 199, 200, 155, 156, 157, 185, 186, 187, 165, 166, 167, 201, 202, 203],
+                    [0, 158, 159, 101, 188, 189, 1, 168, 169, 123, 204, 205],
+                    [0, 146, 147, 109, 216, 217, 1, 160, 161, 126, 194, 195, 152, 153, 154, 218, 219, 220, 162, 163, 164, 206, 207, 208, 155, 156, 157, 221, 222, 223, 165, 166, 167, 209, 210, 211],
+                    [0, 158, 159, 117, 224, 225, 1, 168, 169, 129, 212, 213],
+                    [0, 146, 147, 16, 226, 227],
+                    [0, 148, 149, 18, 228, 229],
+                    [0, 150, 151, 18, 230, 231],
+                    [0, 150, 151, 16, 232, 233],
+                    [0, 148, 149, 16, 234, 235],
+                    [0, 146, 147, 18, 236, 237],
+                    [0, 146, 147, 52, 238, 239],
+                    [0, 146, 147, 16, 226, 227, 1, 160, 161, 52, 238, 239],
+                    [0, 146, 147, 18, 236, 237, 1, 160, 161, 61, 240, 241],
+                    [0, 146, 147, 16, 226, 227, 100, 172, 173, 101, 170, 171],
+                    [0, 148, 149, 18, 228, 229, 242, 172, 181, 243, 214, 244],
+                    [0, 150, 151, 18, 230, 231, 245, 172, 177, 246, 214, 247],
+                    [0, 150, 151, 16, 232, 233, 245, 172, 177, 174, 170, 248],
+                    [0, 148, 149, 16, 234, 235, 242, 172, 181, 178, 170, 249],
+                    [0, 146, 147, 18, 236, 237, 100, 172, 173, 108, 214, 215],
+                    [0, 146, 147, 16, 226, 227, 122, 190, 191, 123, 192, 193],
+                    [0, 146, 147, 16, 226, 227, 126, 194, 195, 127, 196, 197],
+                    [0, 146, 147, 18, 236, 237, 126, 194, 195, 123, 192, 193],
+                    [0, 146, 147, 18, 236, 237, 122, 190, 191, 127, 196, 197],
+                    [0, 146, 147, 52, 238, 239, 122, 190, 191, 101, 170, 171],
+                    [0, 146, 147, 61, 240, 241, 126, 194, 195, 101, 170, 171],
+                    [0, 146, 147, 52, 238, 239, 100, 172, 173, 123, 192, 193],
+                    [0, 146, 147, 61, 240, 241, 100, 172, 173, 127, 196, 197],
+                    [0, 146, 147, 16, 226, 227, 100, 172, 173, 101, 170, 171, 1, 160, 161, 52, 239, 238, 122, 190, 191, 123, 192, 193],
+                    [0, 146, 147, 16, 226, 227, 109, 216, 217, 108, 214, 215, 1, 160, 161, 52, 239, 238, 126, 194, 195, 127, 196, 197],
+                    [0, 146, 147, 18, 236, 237, 109, 216, 217, 101, 170, 171, 1, 160, 161, 61, 241, 240, 126, 194, 195, 123, 192, 193],
+                    [0, 146, 147, 18, 236, 237, 100, 172, 173, 108, 214, 215, 1, 160, 161, 61, 241, 240, 122, 190, 191, 127, 196, 197],
+                    [0, 16, 2, 17, 158, 250, 251, 252, 159, 253, 254, 255],
+                    [0, 16, 2, 17, 158, 250, 251, 252, 159, 253, 254, 255, 23, 24, 13, 25, 256, 257, 258, 259, 260, 261, 262, 263, 26, 20, 27, 28, 264, 265, 266, 267, 268, 269, 270, 271, 4, 22, 5, 19, 272, 273, 274, 275, 276, 277, 278, 279],
+                    [0, 16, 2, 17, 158, 250, 251, 252, 159, 253, 254, 255, 29, 21, 15, 30, 280, 281, 282, 283, 284, 285, 286, 287],
+                    [0, 20, 13, 19, 158, 273, 266, 259, 159, 261, 278, 271],
+                    [0, 20, 13, 19, 158, 273, 266, 259, 159, 261, 278, 271, 29, 31, 32, 33, 280, 288, 289, 290, 284, 291, 292, 293],
+                    [0, 16, 2, 17, 158, 250, 251, 252, 159, 253, 254, 255, 1, 52, 6, 34, 168, 294, 295, 296, 169, 297, 298, 299],
+                    [0, 16, 2, 17, 158, 250, 251, 252, 159, 253, 254, 255, 53, 54, 9, 42, 300, 301, 302, 303, 304, 305, 306, 307],
+                    [0, 16, 2, 17, 158, 250, 251, 252, 159, 253, 254, 255, 1, 52, 6, 34, 168, 294, 295, 296, 169, 297, 298, 299, 23, 24, 13, 25, 256, 257, 258, 259, 260, 261, 262, 263, 64, 62, 14, 39, 308, 309, 310, 311, 312, 313, 314, 315, 26, 20, 27, 28, 264, 265, 266, 267, 268, 269, 270, 271, 65, 59, 40, 38, 316, 317, 318, 319, 320, 321, 322, 323, 4, 22, 5, 19, 272, 273, 274, 275, 276, 277, 278, 279, 11, 55, 8, 41, 324, 325, 326, 327, 328, 329, 330, 331],
+                    [0, 16, 2, 17, 158, 250, 251, 252, 159, 253, 254, 255, 66, 67, 44, 45, 332, 333, 334, 335, 336, 337, 338, 339, 23, 24, 13, 25, 256, 257, 258, 259, 260, 261, 262, 263, 68, 69, 46, 47, 340, 341, 342, 343, 344, 345, 346, 347, 26, 20, 27, 28, 264, 265, 266, 267, 268, 269, 270, 271, 70, 71, 48, 49, 348, 349, 350, 351, 352, 353, 354, 355, 4, 22, 5, 19, 272, 273, 274, 275, 276, 277, 278, 279, 72, 73, 50, 51, 356, 357, 358, 359, 360, 361, 362, 363],
+                    [0, 16, 2, 17, 158, 250, 251, 252, 159, 253, 254, 255, 1, 52, 6, 34, 168, 294, 295, 296, 169, 297, 298, 299, 29, 21, 15, 30, 280, 281, 282, 283, 284, 285, 286, 287, 53, 54, 9, 42, 300, 301, 302, 303, 304, 305, 306, 307],
+                    [0, 20, 13, 19, 158, 273, 266, 259, 159, 261, 278, 271, 1, 59, 14, 41, 168, 325, 318, 311, 169, 313, 330, 323],
+                    [0, 20, 13, 19, 158, 273, 266, 259, 159, 261, 278, 271, 1, 59, 14, 41, 168, 325, 318, 311, 169, 313, 330, 323, 29, 31, 32, 33, 280, 288, 289, 290, 284, 291, 292, 293, 53, 63, 36, 35, 300, 364, 365, 366, 304, 367, 368, 369],
+                    [0, 16, 2, 17, 158, 250, 251, 252, 159, 253, 254, 255, 100, 101, 75, 74, 370, 371, 188, 372, 373, 374, 375, 189],
+                    [0, 16, 2, 17, 158, 250, 251, 252, 159, 253, 254, 255, 116, 117, 83, 82, 376, 377, 224, 378, 379, 380, 381, 225],
+                    [0, 16, 2, 17, 158, 250, 251, 252, 159, 253, 254, 255, 100, 101, 75, 74, 370, 371, 188, 372, 373, 374, 375, 189, 23, 24, 13, 25, 256, 257, 258, 259, 260, 261, 262, 263, 382, 383, 384, 385, 386, 387, 388, 389, 390, 391, 392, 393, 26, 20, 27, 28, 264, 265, 266, 267, 268, 269, 270, 271, 394, 395, 396, 397, 398, 399, 400, 401, 402, 403, 404, 405, 4, 22, 5, 19, 272, 273, 274, 275, 276, 277, 278, 279, 138, 139, 95, 94, 406, 407, 408, 409, 410, 411, 412, 413],
+                    [0, 24, 5, 28, 158, 265, 258, 275, 159, 277, 270, 263, 414, 415, 416, 417, 418, 419, 420, 421, 422, 423, 424, 425, 23, 16, 27, 19, 256, 273, 251, 267, 260, 269, 278, 255, 426, 427, 428, 429, 430, 431, 432, 433, 434, 435, 436, 437, 26, 22, 13, 17, 264, 250, 274, 259, 268, 261, 254, 279, 438, 439, 440, 441, 442, 443, 444, 445, 446, 447, 448, 449, 4, 20, 2, 25, 272, 257, 266, 252, 276, 253, 262, 271, 450, 451, 452, 453, 454, 455, 456, 457, 458, 459, 460, 461],
+                    [0, 16, 2, 17, 158, 250, 251, 252, 159, 253, 254, 255, 100, 101, 75, 74, 370, 371, 188, 372, 373, 374, 375, 189, 29, 21, 15, 30, 280, 281, 282, 283, 284, 285, 286, 287, 116, 117, 83, 82, 376, 377, 224, 378, 379, 380, 381, 225],
+                    [0, 20, 13, 19, 158, 273, 266, 259, 159, 261, 278, 271, 450, 415, 440, 429, 454, 431, 420, 445, 458, 447, 436, 425],
+                    [0, 20, 13, 19, 158, 273, 266, 259, 159, 261, 278, 271, 462, 463, 464, 465, 466, 467, 468, 469, 470, 471, 472, 473],
+                    [0, 20, 13, 19, 158, 273, 266, 259, 159, 261, 278, 271, 462, 463, 464, 465, 466, 467, 468, 469, 470, 471, 472, 473, 29, 31, 32, 33, 280, 288, 289, 290, 284, 291, 292, 293, 450, 415, 440, 429, 454, 431, 420, 445, 458, 447, 436, 425],
+                    [0, 16, 2, 17, 158, 250, 251, 252, 159, 253, 254, 255, 123, 122, 88, 89, 204, 474, 475, 476, 205, 477, 478, 479],
+                    [0, 16, 2, 17, 158, 250, 251, 252, 159, 253, 254, 255, 123, 122, 88, 89, 204, 474, 475, 476, 205, 477, 478, 479, 23, 24, 13, 25, 256, 257, 258, 259, 260, 261, 262, 263, 480, 481, 482, 483, 484, 485, 486, 487, 488, 489, 490, 491, 26, 20, 27, 28, 264, 265, 266, 267, 268, 269, 270, 271, 492, 493, 494, 495, 496, 497, 498, 499, 500, 501, 502, 503, 4, 22, 5, 19, 272, 273, 274, 275, 276, 277, 278, 279, 125, 124, 140, 141, 504, 505, 506, 507, 508, 509, 510, 511],
+                    [0, 16, 2, 17, 158, 250, 251, 252, 159, 253, 254, 255, 123, 122, 88, 89, 204, 474, 475, 476, 205, 477, 478, 479, 29, 21, 15, 30, 280, 281, 282, 283, 284, 285, 286, 287, 129, 128, 90, 91, 212, 512, 513, 514, 213, 515, 516, 517],
+                    [0, 16, 2, 17, 158, 250, 251, 252, 159, 253, 254, 255, 129, 128, 90, 91, 212, 512, 513, 514, 213, 515, 516, 517],
+                    [0, 16, 2, 17, 158, 250, 251, 252, 159, 253, 254, 255, 129, 128, 90, 91, 212, 512, 513, 514, 213, 515, 516, 517, 23, 24, 13, 25, 256, 257, 258, 259, 260, 261, 262, 263, 518, 519, 520, 521, 522, 523, 524, 525, 526, 527, 528, 529, 26, 20, 27, 28, 264, 265, 266, 267, 268, 269, 270, 271, 530, 531, 532, 533, 534, 535, 536, 537, 538, 539, 540, 541, 4, 22, 5, 19, 272, 273, 274, 275, 276, 277, 278, 279, 127, 126, 92, 93, 542, 543, 544, 545, 546, 547, 548, 549],
+                    [0, 20, 13, 19, 158, 273, 266, 259, 159, 261, 278, 271, 550, 551, 552, 553, 554, 555, 556, 557, 558, 559, 560, 561, 29, 31, 32, 33, 280, 288, 289, 290, 284, 291, 292, 293, 562, 563, 564, 565, 566, 567, 568, 569, 570, 571, 572, 573],
+                    [0, 16, 2, 17, 158, 250, 251, 252, 159, 253, 254, 255, 100, 101, 75, 74, 370, 371, 188, 372, 373, 374, 375, 189, 1, 52, 6, 34, 168, 294, 295, 296, 169, 297, 298, 299, 122, 123, 89, 88, 475, 476, 204, 474, 479, 478, 477, 205],
+                    [0, 16, 2, 17, 158, 250, 251, 252, 159, 253, 254, 255, 100, 101, 75, 74, 370, 371, 188, 372, 373, 374, 375, 189, 53, 54, 9, 42, 300, 301, 302, 303, 304, 305, 306, 307, 128, 129, 91, 90, 513, 514, 212, 512, 517, 516, 515, 213],
+                    [0, 16, 2, 17, 158, 250, 251, 252, 159, 253, 254, 255, 116, 117, 83, 82, 376, 377, 224, 378, 379, 380, 381, 225, 1, 52, 6, 34, 168, 294, 295, 296, 169, 297, 298, 299, 128, 129, 91, 90, 513, 514, 212, 512, 517, 516, 515, 213],
+                    [0, 16, 2, 17, 158, 250, 251, 252, 159, 253, 254, 255, 116, 117, 83, 82, 376, 377, 224, 378, 379, 380, 381, 225, 53, 54, 9, 42, 300, 301, 302, 303, 304, 305, 306, 307, 122, 123, 89, 88, 475, 476, 204, 474, 479, 478, 477, 205],
+                    [0, 16, 2, 17, 158, 250, 251, 252, 159, 253, 254, 255, 100, 101, 75, 74, 370, 371, 188, 372, 373, 374, 375, 189, 1, 52, 6, 34, 168, 294, 295, 296, 169, 297, 298, 299, 122, 123, 89, 88, 475, 476, 204, 474, 479, 478, 477, 205, 23, 24, 13, 25, 256, 257, 258, 259, 260, 261, 262, 263, 382, 383, 384, 385, 386, 387, 388, 389, 390, 391, 392, 393, 64, 62, 14, 39, 308, 309, 310, 311, 312, 313, 314, 315, 481, 480, 483, 482, 486, 487, 484, 485, 491, 490, 489, 488, 26, 20, 27, 28, 264, 265, 266, 267, 268, 269, 270, 271, 394, 395, 396, 397, 398, 399, 400, 401, 402, 403, 404, 405, 65, 59, 40, 38, 316, 317, 318, 319, 320, 321, 322, 323, 493, 492, 495, 494, 498, 499, 496, 497, 503, 502, 501, 500, 4, 22, 5, 19, 272, 273, 274, 275, 276, 277, 278, 279, 138, 139, 95, 94, 406, 407, 408, 409, 410, 411, 412, 413, 11, 55, 8, 41, 324, 325, 326, 327, 328, 329, 330, 331, 124, 125, 141, 140, 506, 507, 504, 505, 511, 510, 509, 508],
+                    [0, 16, 2, 17, 158, 250, 251, 252, 159, 253, 254, 255, 116, 117, 83, 82, 376, 377, 224, 378, 379, 380, 381, 225, 1, 52, 6, 34, 168, 294, 295, 296, 169, 297, 298, 299, 128, 129, 91, 90, 513, 514, 212, 512, 517, 516, 515, 213, 23, 24, 13, 25, 256, 257, 258, 259, 260, 261, 262, 263, 574, 575, 576, 577, 578, 579, 580, 581, 582, 583, 584, 585, 64, 62, 14, 39, 308, 309, 310, 311, 312, 313, 314, 315, 519, 518, 521, 520, 524, 525, 522, 523, 529, 528, 527, 526, 26, 20, 27, 28, 264, 265, 266, 267, 268, 269, 270, 271, 586, 587, 588, 589, 590, 591, 592, 593, 594, 595, 596, 597, 65, 59, 40, 38, 316, 317, 318, 319, 320, 321, 322, 323, 531, 530, 533, 532, 536, 537, 534, 535, 541, 540, 539, 538, 4, 22, 5, 19, 272, 273, 274, 275, 276, 277, 278, 279, 109, 108, 79, 78, 598, 599, 600, 601, 602, 603, 604, 605, 11, 55, 8, 41, 324, 325, 326, 327, 328, 329, 330, 331, 126, 127, 93, 92, 544, 545, 542, 543, 549, 548, 547, 546],
+                    [0, 24, 5, 28, 158, 265, 258, 275, 159, 277, 270, 263, 414, 415, 416, 417, 418, 419, 420, 421, 422, 423, 424, 425, 66, 69, 50, 49, 332, 349, 342, 359, 336, 361, 354, 347, 493, 123, 483, 140, 498, 507, 204, 485, 503, 490, 509, 205, 23, 16, 27, 19, 256, 273, 251, 267, 260, 269, 278, 255, 426, 427, 428, 429, 430, 431, 432, 433, 434, 435, 436, 437, 68, 67, 48, 51, 340, 357, 334, 351, 344, 353, 362, 339, 124, 480, 89, 494, 506, 499, 484, 474, 511, 478, 501, 488, 26, 22, 13, 17, 264, 250, 274, 259, 268, 261, 254, 279, 438, 439, 440, 441, 442, 443, 444, 445, 446, 447, 448, 449, 70, 73, 46, 45, 348, 333, 358, 343, 352, 345, 338, 363, 122, 492, 141, 482, 475, 487, 496, 505, 479, 510, 489, 500, 4, 20, 2, 25, 272, 257, 266, 252, 276, 253, 262, 271, 450, 451, 452, 453, 454, 455, 456, 457, 458, 459, 460, 461, 72, 71, 44, 47, 356, 341, 350, 335, 360, 337, 346, 355, 481, 125, 495, 88, 486, 476, 504, 497, 491, 502, 477, 508],
+                    [0, 24, 5, 28, 158, 265, 258, 275, 159, 277, 270, 263, 414, 415, 416, 417, 418, 419, 420, 421, 422, 423, 424, 425, 606, 607, 608, 609, 610, 611, 612, 613, 614, 615, 616, 617, 531, 129, 521, 92, 536, 545, 212, 523, 541, 528, 547, 213, 23, 16, 27, 19, 256, 273, 251, 267, 260, 269, 278, 255, 426, 427, 428, 429, 430, 431, 432, 433, 434, 435, 436, 437, 618, 619, 620, 621, 622, 623, 624, 625, 626, 627, 628, 629, 126, 518, 91, 532, 544, 537, 522, 512, 549, 516, 539, 526, 26, 22, 13, 17, 264, 250, 274, 259, 268, 261, 254, 279, 438, 439, 440, 441, 442, 443, 444, 445, 446, 447, 448, 449, 630, 631, 632, 633, 634, 635, 636, 637, 638, 639, 640, 641, 128, 530, 93, 520, 513, 525, 534, 543, 517, 548, 527, 538, 4, 20, 2, 25, 272, 257, 266, 252, 276, 253, 262, 271, 450, 451, 452, 453, 454, 455, 456, 457, 458, 459, 460, 461, 642, 643, 644, 645, 646, 647, 648, 649, 650, 651, 652, 653, 519, 127, 533, 90, 524, 514, 542, 535, 529, 540, 515, 546],
+                    [0, 16, 2, 17, 158, 250, 251, 252, 159, 253, 254, 255, 100, 101, 75, 74, 370, 371, 188, 372, 373, 374, 375, 189, 1, 52, 6, 34, 168, 294, 295, 296, 169, 297, 298, 299, 122, 123, 89, 88, 475, 476, 204, 474, 479, 478, 477, 205, 29, 21, 15, 30, 280, 281, 282, 283, 284, 285, 286, 287, 116, 117, 83, 82, 376, 377, 224, 378, 379, 380, 381, 225, 53, 54, 9, 42, 300, 301, 302, 303, 304, 305, 306, 307, 128, 129, 91, 90, 513, 514, 212, 512, 517, 516, 515, 213],
+                    [0, 20, 13, 19, 158, 273, 266, 259, 159, 261, 278, 271, 462, 463, 464, 465, 466, 467, 468, 469, 470, 471, 472, 473, 1, 59, 14, 41, 168, 325, 318, 311, 169, 313, 330, 323, 551, 550, 553, 552, 556, 557, 554, 555, 561, 560, 559, 558, 29, 31, 32, 33, 280, 288, 289, 290, 284, 291, 292, 293, 450, 415, 440, 429, 454, 431, 420, 445, 458, 447, 436, 425, 53, 63, 36, 35, 300, 364, 365, 366, 304, 367, 368, 369, 563, 562, 565, 564, 568, 569, 566, 567, 573, 572, 571, 570],
+                    [0, 16],
+                    [0, 18],
+                    [0, 16, 26, 20],
+                    [0, 2, 23, 13],
+                    [0, 3, 4, 32],
+                    [0, 2, 29, 15],
+                    [0, 3, 29, 27],
+                    [0, 52],
+                    [0, 63],
+                    [0, 52, 26, 59],
+                    [0, 63, 26, 54],
+                    [0, 52, 16, 1],
+                    [0, 18, 1, 61],
+                    [0, 52, 16, 1, 26, 59, 20, 65],
+                    [0, 31, 1, 63],
+                    [0, 1, 24, 62],
+                    [0, 31, 1, 63, 26, 21, 65, 54],
+                    [0, 2, 57, 56],
+                    [0, 60, 3, 16],
+                    [0, 22, 57, 3],
+                    [0, 2, 28, 20],
+                    [0, 17, 13, 24],
+                    [0, 20, 19, 13, 4, 24, 17, 27],
+                    [0, 22, 57, 3, 4, 16, 60, 32],
+                    [0, 22, 57, 3, 23, 20, 30, 12, 26, 24, 33, 15, 4, 16, 60, 32],
+                    [0, 22, 57, 3, 29, 18, 27, 25],
+                    [0, 22, 3, 57, 1, 55, 10, 37],
+                    [0, 22, 385, 396, 3, 57, 109, 117],
+                    [0, 22, 57, 3, 159, 279, 654, 655, 158, 274, 656, 657, 29, 18, 25, 27, 284, 658, 262, 269, 280, 659, 257, 267],
+                ];
+                SpacegroupTables.Spacegroup = {
+                    "P 1": 0,
+                    "P -1": 1,
+                    "P 1 2 1": 2,
+                    "P 1 21 1": 3,
+                    "C 1 2 1": 4,
+                    "P 1 m 1": 5,
+                    "P 1 c 1": 6,
+                    "C 1 m 1": 7,
+                    "C 1 c 1": 8,
+                    "P 1 2/m 1": 9,
+                    "P 1 21/m 1": 10,
+                    "C 1 2/m 1": 11,
+                    "P 1 2/c 1": 12,
+                    "P 1 21/c 1": 13,
+                    "C 1 2/c 1": 14,
+                    "P 2 2 2": 15,
+                    "P 2 2 21": 16,
+                    "P 21 21 2": 17,
+                    "P 21 21 21": 18,
+                    "C 2 2 21": 19,
+                    "C 2 2 2": 20,
+                    "F 2 2 2": 21,
+                    "I 2 2 2": 22,
+                    "I 21 21 21": 23,
+                    "P m m 2": 24,
+                    "P m c 21": 25,
+                    "P c c 2": 26,
+                    "P m a 2": 27,
+                    "P c a 21": 28,
+                    "P n c 2": 29,
+                    "P m n 21": 30,
+                    "P b a 2": 31,
+                    "P n a 21": 32,
+                    "P n n 2": 33,
+                    "C m m 2": 34,
+                    "C m c 21": 35,
+                    "C c c 2": 36,
+                    "A m m 2": 37,
+                    "A b m 2": 38,
+                    "A m a 2": 39,
+                    "A b a 2": 40,
+                    "F m m 2": 41,
+                    "F d d 2": 42,
+                    "I m m 2": 43,
+                    "I b a 2": 44,
+                    "I m a 2": 45,
+                    "P 2/m 2/m 2/m": 46,
+                    "P m m m": 46,
+                    "P 2/n 2/n 2/n": 47,
+                    "P n n n": 47,
+                    "P 2/c 2/c 2/m": 48,
+                    "P c c m": 48,
+                    "P 2/b 2/a 2/n": 49,
+                    "P b a n": 49,
+                    "P 21/m 2/m 2/a": 50,
+                    "P m m a": 50,
+                    "P 2/n 21/n 2/a": 51,
+                    "P n n a": 51,
+                    "P 2/m 2/n 21/a": 52,
+                    "P m n a": 52,
+                    "P 21/c 2/c 2/a": 53,
+                    "P c c a": 53,
+                    "P 21/b 21/a 2/m": 54,
+                    "P b a m": 54,
+                    "P 21/c 21/c 2/n": 55,
+                    "P c c n": 55,
+                    "P 2/b 21/c 21/m": 56,
+                    "P b c m": 56,
+                    "P 21/n 21/n 2/m": 57,
+                    "P n n m": 57,
+                    "P 21/m 21/m 2/n": 58,
+                    "P m m n": 58,
+                    "P 21/b 2/c 21/n": 59,
+                    "P b c n": 59,
+                    "P 21/b 21/c 21/a": 60,
+                    "P b c a": 60,
+                    "P 21/n 21/m 21/a": 61,
+                    "P n m a": 61,
+                    "C 2/m 2/c 21/m": 62,
+                    "C m c m": 62,
+                    "C 2/m 2/c 21/a": 63,
+                    "C m c a": 63,
+                    "C 2/m 2/m 2/m": 64,
+                    "C m m m": 64,
+                    "C 2/c 2/c 2/m": 65,
+                    "C c c m": 65,
+                    "C 2/m 2/m 2/a": 66,
+                    "C m m a": 66,
+                    "C 2/c 2/c 2/a": 67,
+                    "C c c a": 67,
+                    "F 2/m 2/m 2/m": 68,
+                    "F m m m": 68,
+                    "F 2/d 2/d 2/d": 69,
+                    "F d d d": 69,
+                    "I 2/m 2/m 2/m": 70,
+                    "I m m m": 70,
+                    "I 2/b 2/a 2/m": 71,
+                    "I b a m": 71,
+                    "I 21/b 21/c 21/a": 72,
+                    "I b c a": 72,
+                    "I 21/m 21/m 21/a": 73,
+                    "I m m a": 73,
+                    "P 4": 74,
+                    "P 41": 75,
+                    "P 42": 76,
+                    "P 43": 77,
+                    "I 4": 78,
+                    "I 41": 79,
+                    "P -4": 80,
+                    "I -4": 81,
+                    "P 4/m": 82,
+                    "P 42/m": 83,
+                    "P 4/n": 84,
+                    "P 42/n": 85,
+                    "I 4/m": 86,
+                    "I 41/a": 87,
+                    "P 4 2 2": 88,
+                    "P 4 21 2": 89,
+                    "P 41 2 2": 90,
+                    "P 41 21 2": 91,
+                    "P 42 2 2": 92,
+                    "P 42 21 2": 93,
+                    "P 43 2 2": 94,
+                    "P 43 21 2": 95,
+                    "I 4 2 2": 96,
+                    "I 41 2 2": 97,
+                    "P 4 m m": 98,
+                    "P 4 b m": 99,
+                    "P 42 c m": 100,
+                    "P 42 n m": 101,
+                    "P 4 c c": 102,
+                    "P 4 n c": 103,
+                    "P 42 m c": 104,
+                    "P 42 b c": 105,
+                    "I 4 m m": 106,
+                    "I 4 c m": 107,
+                    "I 41 m d": 108,
+                    "I 41 c d": 109,
+                    "P -4 2 m": 110,
+                    "P -4 2 c": 111,
+                    "P -4 21 m": 112,
+                    "P -4 21 c": 113,
+                    "P -4 m 2": 114,
+                    "P -4 c 2": 115,
+                    "P -4 b 2": 116,
+                    "P -4 n 2": 117,
+                    "I -4 m 2": 118,
+                    "I -4 c 2": 119,
+                    "I -4 2 m": 120,
+                    "I -4 2 d": 121,
+                    "P 4/m 2/m 2/m": 122,
+                    "P4/m m m": 122,
+                    "P 4/m 2/c 2/c": 123,
+                    "P4/m c c": 123,
+                    "P 4/n 2/b 2/m": 124,
+                    "P4/n b m": 124,
+                    "P 4/n 2/n 2/c": 125,
+                    "P4/n n c": 125,
+                    "P 4/m 21/b 2/m": 126,
+                    "P4/m b m": 126,
+                    "P 4/m 21/n 2/c": 127,
+                    "P4/m n c": 127,
+                    "P 4/n 21/m 2/m": 128,
+                    "P4/n m m": 128,
+                    "P 4/n 2/c 2/c": 129,
+                    "P4/n c c": 129,
+                    "P 42/m 2/m 2/c": 130,
+                    "P42/m m c": 130,
+                    "P 42/m 2/c 2/m": 131,
+                    "P42/m c m": 131,
+                    "P 42/n 2/b 2/c": 132,
+                    "P42/n b c": 132,
+                    "P 42/n 2/n 2/m": 133,
+                    "P42/n n m": 133,
+                    "P 42/m 21/b 2/c": 134,
+                    "P42/m b c": 134,
+                    "P 42/m 21/n 2/m": 135,
+                    "P42/m n m": 135,
+                    "P 42/n 21/m 2/c": 136,
+                    "P42/n m c": 136,
+                    "P 42/n 21/c 2/m": 137,
+                    "P42/n c m": 137,
+                    "I 4/m 2/m 2/m": 138,
+                    "I4/m m m": 138,
+                    "I 4/m 2/c 2/m": 139,
+                    "I4/m c m": 139,
+                    "I 41/a 2/m 2/d": 140,
+                    "I41/a m d": 140,
+                    "I 41/a 2/c 2/d": 141,
+                    "I41/a c d": 141,
+                    "P 3": 142,
+                    "P 31": 143,
+                    "P 32": 144,
+                    "H 3": 145,
+                    "R 3": 146,
+                    "P -3": 147,
+                    "H -3": 148,
+                    "R -3": 149,
+                    "P 3 1 2": 150,
+                    "P 3 2 1": 151,
+                    "P 31 1 2": 152,
+                    "P 31 2 1": 153,
+                    "P 32 1 2": 154,
+                    "P 32 2 1": 155,
+                    "H 3 2": 156,
+                    "R 3 2": 157,
+                    "P 3 m 1": 158,
+                    "P 3 1 m": 159,
+                    "P 3 c 1": 160,
+                    "P 3 1 c": 161,
+                    "H 3 m": 162,
+                    "R 3 m": 163,
+                    "H 3 c": 164,
+                    "R 3 c": 165,
+                    "P -3 1 2/m": 166,
+                    "P -3 1 m": 166,
+                    "P -3 1 2/c": 167,
+                    "P -3 1 c": 167,
+                    "P -3 2/m 1": 168,
+                    "P -3 m 1": 168,
+                    "P -3 2/c 1": 169,
+                    "P -3 c 1": 169,
+                    "H -3 2/m": 170,
+                    "H -3 m": 170,
+                    "R -3 2/m": 171,
+                    "R -3 m": 171,
+                    "H -3 2/c": 172,
+                    "H -3 c": 172,
+                    "R -3 2/c": 173,
+                    "R -3 c": 173,
+                    "P 6": 174,
+                    "P 61": 175,
+                    "P 65": 176,
+                    "P 62": 177,
+                    "P 64": 178,
+                    "P 63": 179,
+                    "P -6": 180,
+                    "P 6/m": 181,
+                    "P 63/m": 182,
+                    "P 6 2 2": 183,
+                    "P 61 2 2": 184,
+                    "P 65 2 2": 185,
+                    "P 62 2 2": 186,
+                    "P 64 2 2": 187,
+                    "P 63 2 2": 188,
+                    "P 6 m m": 189,
+                    "P 6 c c": 190,
+                    "P 63 c m": 191,
+                    "P 63 m c": 192,
+                    "P -6 m 2": 193,
+                    "P -6 c 2": 194,
+                    "P -6 2 m": 195,
+                    "P -6 2 c": 196,
+                    "P 6/m 2/m 2/m": 197,
+                    "P 6/m m m": 197,
+                    "P 6/m 2/c 2/c": 198,
+                    "P 6/m c c": 198,
+                    "P 63/m 2/c 2/m": 199,
+                    "P 63/m c m": 199,
+                    "P 63/m 2/m 2/c": 200,
+                    "P 63/m m c": 200,
+                    "P 2 3": 201,
+                    "F 2 3": 202,
+                    "I 2 3": 203,
+                    "P 21 3": 204,
+                    "I 21 3": 205,
+                    "P 2/m -3": 206,
+                    "P m -3": 206,
+                    "P 2/n -3": 207,
+                    "P n -3": 207,
+                    "F 2/m -3": 208,
+                    "F m -3": 208,
+                    "F 2/d -3": 209,
+                    "F d -3": 209,
+                    "I 2/m -3": 210,
+                    "I m -3": 210,
+                    "P 21/a -3": 211,
+                    "P a -3": 211,
+                    "I 21/a -3": 212,
+                    "I a -3": 212,
+                    "P 4 3 2": 213,
+                    "P 42 3 2": 214,
+                    "F 4 3 2": 215,
+                    "F 41 3 2": 216,
+                    "I 4 3 2": 217,
+                    "P 43 3 2": 218,
+                    "P 41 3 2": 219,
+                    "I 41 3 2": 220,
+                    "P -4 3 m": 221,
+                    "F -4 3 m": 222,
+                    "I -4 3 m": 223,
+                    "P -4 3 n": 224,
+                    "F -4 3 c": 225,
+                    "I -4 3 d": 226,
+                    "P 4/m -3 2/m": 227,
+                    "P m -3 m": 227,
+                    "P 4/n -3 2/n": 228,
+                    "P n -3 n": 228,
+                    "P 42/m -3 2/n": 229,
+                    "P m -3 n": 229,
+                    "P 42/n -3 2/m": 230,
+                    "P n -3 m": 230,
+                    "F 4/m -3 2/m": 231,
+                    "F m -3 m": 231,
+                    "F 4/m -3 2/c": 232,
+                    "F m -3 c": 232,
+                    "F 41/d -3 2/m": 233,
+                    "F d -3 m": 233,
+                    "F 41/d -3 2/c": 234,
+                    "F d -3 c": 234,
+                    "I 4/m -3 2/m": 235,
+                    "I m -3 m": 235,
+                    "I 41/a -3 2/d": 236,
+                    "I a -3 d": 236,
+                    "P 1 1 2": 237,
+                    "P 1 1 21": 238,
+                    "B 1 1 2": 239,
+                    "B 2": 239,
+                    "A 1 2 1": 240,
+                    "C 1 21 1": 241,
+                    "I 1 2 1": 242,
+                    "I 2": 242,
+                    "I 1 21 1": 243,
+                    "P 1 1 m": 244,
+                    "P 1 1 b": 245,
+                    "B 1 1 m": 246,
+                    "B 1 1 b": 247,
+                    "P 1 1 2/m": 248,
+                    "P 1 1 21/m": 249,
+                    "B 1 1 2/m": 250,
+                    "P 1 1 2/b": 251,
+                    "P 1 1 21/b": 252,
+                    "B 1 1 2/b": 253,
+                    "P 21 2 2": 254,
+                    "P 2 21 2": 255,
+                    "P 21 21 2 (a)": 256,
+                    "P 21 2 21": 257,
+                    "P 2 21 21": 258,
+                    "C 2 2 21a)": 259,
+                    "C 2 2 2a": 260,
+                    "F 2 2 2a": 261,
+                    "I 2 2 2a": 262,
+                    "P 21/m 21/m 2/n a": 263,
+                    "P 42 21 2a": 264,
+                    "I 2 3a": 265,
+                };
+            })(SpacegroupTables = Structure.SpacegroupTables || (Structure.SpacegroupTables = {}));
+        })(Structure = Core.Structure || (Core.Structure = {}));
+    })(Core = LiteMol.Core || (LiteMol.Core = {}));
+})(LiteMol || (LiteMol = {}));
+/*
+ * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ */
+var LiteMol;
+(function (LiteMol) {
+    var Core;
+    (function (Core) {
+        var Structure;
+        (function (Structure) {
+            "use strict";
+            var SymmetryHelpers;
+            (function (SymmetryHelpers) {
+                var Mat4 = Core.Geometry.LinearAlgebra.Matrix4;
+                var Sphere3 = (function () {
+                    function Sphere3(center, radius) {
+                        this.center = center;
+                        this.radius = radius;
+                    }
+                    return Sphere3;
+                }());
+                function getBoudingSphere(arrays, indices) {
+                    var x = arrays.x, y = arrays.y, z = arrays.z;
+                    var center = { x: 0, y: 0, z: 0 };
+                    for (var _i = 0, indices_1 = indices; _i < indices_1.length; _i++) {
+                        var aI = indices_1[_i];
+                        center.x += x[aI];
+                        center.y += y[aI];
+                        center.z += z[aI];
+                    }
+                    var count = indices.length > 0 ? indices.length : 1;
+                    center.x /= count;
+                    center.y /= count;
+                    center.z /= count;
+                    var r = 0;
+                    for (var _a = 0, indices_2 = indices; _a < indices_2.length; _a++) {
+                        var aI = indices_2[_a];
+                        r = Math.max(indexedVectorDistSq(aI, center, arrays), r);
+                    }
+                    return new Sphere3(center, Math.sqrt(r));
+                }
+                function newVec() { return { x: 0, y: 0, z: 0 }; }
+                ;
+                function getSphereDist(c, r, q) {
+                    var dx = c.x - q.center.x, dy = c.y - q.center.y, dz = c.z - q.center.z;
+                    return Math.sqrt(dx * dx + dy * dy + dz * dz) - (r + q.radius);
+                }
+                function isWithinRadius(bounds, i, data, t, r, v) {
+                    v.x = data.x[i];
+                    v.y = data.y[i];
+                    v.z = data.z[i];
+                    Mat4.transformVector3(v, v, t);
+                    return getSphereDist(v, data.r[i], bounds) <= r;
+                }
+                function indexedDistSq(aI, cI, arrays) {
+                    var dx = arrays.x[aI] - arrays.cX[cI], dy = arrays.y[aI] - arrays.cY[cI], dz = arrays.z[aI] - arrays.cZ[cI];
+                    return dx * dx + dy * dy + dz * dz;
+                }
+                function indexedVectorDistSq(aI, v, arrays) {
+                    var dx = arrays.x[aI] - v.x, dy = arrays.y[aI] - v.y, dz = arrays.z[aI] - v.z;
+                    return dx * dx + dy * dy + dz * dz;
+                }
+                var BoundingInfo = (function () {
+                    function BoundingInfo(entities, chains, residues, allAtoms, target) {
+                        this.entities = entities;
+                        this.chains = chains;
+                        this.residues = residues;
+                        this.allAtoms = allAtoms;
+                        this.target = target;
+                    }
+                    return BoundingInfo;
+                }());
+                var SymmetryContext = (function () {
+                    function SymmetryContext(model, boundingInfo, spacegroup, radius) {
+                        this.model = model;
+                        this.boundingInfo = boundingInfo;
+                        this.spacegroup = spacegroup;
+                        this.radius = radius;
+                        this.transform = Mat4.empty();
+                        this.transformed = { x: 0, y: 0, z: 0 };
+                        //posBufferB: Vector3 = { x: 0, y: 0, z: 0 };
+                        this.i = 0;
+                        this.j = 0;
+                        this.k = 0;
+                        this.op = 0;
+                    }
+                    SymmetryContext.prototype.map = function (p) {
+                        return Mat4.transformVector3(this.transformed, p, this.transform);
+                    };
+                    SymmetryContext.prototype.getTransform = function () {
+                        return new SymmetryTransform(this.i, this.j, this.k, this.op, Mat4.clone(this.transform));
+                    };
+                    return SymmetryContext;
+                }());
+                var SymmetryTransform = (function () {
+                    function SymmetryTransform(i, j, k, opIndex, transform) {
+                        this.i = i;
+                        this.j = j;
+                        this.k = k;
+                        this.opIndex = opIndex;
+                        this.transform = transform;
+                        this._id = null;
+                        this.isIdentity = !i && !j && !k && !opIndex;
+                    }
+                    Object.defineProperty(SymmetryTransform.prototype, "id", {
+                        get: function () {
+                            if (this._id)
+                                return this._id;
+                            this._id = (this.opIndex + 1) + "_" + (5 + this.i) + (5 + this.j) + (5 + this.k);
+                            return this._id;
+                        },
+                        enumerable: true,
+                        configurable: true
+                    });
+                    return SymmetryTransform;
+                }());
+                var AssemblyTransform = (function () {
+                    function AssemblyTransform(i, transform) {
+                        this.i = i;
+                        this.transform = transform;
+                        this.isIdentity = this._isIdentity();
+                        this.id = i.toString();
+                    }
+                    AssemblyTransform.prototype._isIdentity = function () {
+                        for (var i = 0; i < 4; i++) {
+                            for (var j = 0; j < 4; j++) {
+                                var v = this.transform[4 * j + i];
+                                if (i === j) {
+                                    if (Math.abs(v - 1) > 0.0000001)
+                                        return false;
+                                }
+                                else if (Math.abs(v) > 0.0000001)
+                                    return false;
+                            }
+                        }
+                        return true;
+                    };
+                    return AssemblyTransform;
+                }());
+                function getBoundingInfo(model, pivotIndices) {
+                    var atoms = model.atoms, residues = model.residues, chains = model.chains, entities = model.entities, x = atoms.x, y = atoms.y, z = atoms.z;
+                    var entityTable = new Structure.DataTableBuilder(entities.count), eX = entityTable.addColumn("x", function (s) { return new Float64Array(s); }), eY = entityTable.addColumn("y", function (s) { return new Float64Array(s); }), eZ = entityTable.addColumn("z", function (s) { return new Float64Array(s); }), eR = entityTable.addColumn("r", function (s) { return new Float64Array(s); }), chainTable = new Structure.DataTableBuilder(chains.count), cX = chainTable.addColumn("x", function (s) { return new Float64Array(s); }), cY = chainTable.addColumn("y", function (s) { return new Float64Array(s); }), cZ = chainTable.addColumn("z", function (s) { return new Float64Array(s); }), cR = chainTable.addColumn("r", function (s) { return new Float64Array(s); }), residueTable = new Structure.DataTableBuilder(residues.count), rX = residueTable.addColumn("x", function (s) { return new Float64Array(s); }), rY = residueTable.addColumn("y", function (s) { return new Float64Array(s); }), rZ = residueTable.addColumn("z", function (s) { return new Float64Array(s); }), rR = residueTable.addColumn("r", function (s) { return new Float64Array(s); });
+                    var allCenter = newVec(), allRadius = 0, pivotCenter = newVec(), pivotRadius = 0, n = 0, eCenter = newVec(), eRadius = 0, cCenter = newVec(), cRadius = 0, rCenter = newVec(), rRadius = 0;
+                    for (var eI = 0, _eC = entities.count; eI < _eC; eI++) {
+                        eCenter.x = 0;
+                        eCenter.y = 0;
+                        eCenter.z = 0;
+                        for (var cI = entities.chainStartIndex[eI], _cC = entities.chainEndIndex[eI]; cI < _cC; cI++) {
+                            cCenter.x = 0;
+                            cCenter.y = 0;
+                            cCenter.z = 0;
+                            for (var rI = chains.residueStartIndex[cI], _rC = chains.residueEndIndex[cI]; rI < _rC; rI++) {
+                                rCenter.x = 0;
+                                rCenter.y = 0;
+                                rCenter.z = 0;
+                                for (var aI = residues.atomStartIndex[rI], _aC = residues.atomEndIndex[rI]; aI < _aC; aI++) {
+                                    rCenter.x += x[aI];
+                                    rCenter.y += y[aI];
+                                    rCenter.z += z[aI];
+                                }
+                                allCenter.x += rCenter.x;
+                                allCenter.y += rCenter.y;
+                                allCenter.z += rCenter.z;
+                                n = residues.atomEndIndex[rI] - residues.atomStartIndex[rI];
+                                cCenter.x += rCenter.x;
+                                cCenter.y += rCenter.y;
+                                cCenter.z += rCenter.z;
+                                rX[rI] = rCenter.x / n;
+                                rY[rI] = rCenter.y / n;
+                                rZ[rI] = rCenter.z / n;
+                            }
+                            eCenter.x += cCenter.x;
+                            eCenter.y += cCenter.y;
+                            eCenter.z += cCenter.z;
+                            n = chains.atomEndIndex[cI] - chains.atomStartIndex[cI];
+                            cX[cI] = cCenter.x / n;
+                            cY[cI] = cCenter.y / n;
+                            cZ[cI] = cCenter.z / n;
+                        }
+                        n = entities.atomEndIndex[eI] - entities.atomStartIndex[eI];
+                        eX[eI] = eCenter.x / n;
+                        eY[eI] = eCenter.y / n;
+                        eZ[eI] = eCenter.z / n;
+                    }
+                    allCenter.x /= atoms.count;
+                    allCenter.y /= atoms.count;
+                    allCenter.z /= atoms.count;
+                    for (var _i = 0, pivotIndices_1 = pivotIndices; _i < pivotIndices_1.length; _i++) {
+                        var aI = pivotIndices_1[_i];
+                        pivotCenter.x += x[aI];
+                        pivotCenter.y += y[aI];
+                        pivotCenter.z += z[aI];
+                    }
+                    var pivotCount = pivotIndices.length > 0 ? pivotIndices.length : 1;
+                    pivotCenter.x /= pivotCount;
+                    pivotCenter.y /= pivotCount;
+                    pivotCenter.z /= pivotCount;
+                    var eDA = { x: x, y: y, z: z, cX: eX, cY: eY, cZ: eZ }, cDA = { x: x, y: y, z: z, cX: cX, cY: cY, cZ: cZ }, rDA = { x: x, y: y, z: z, cX: rX, cY: rY, cZ: rZ };
+                    for (var eI = 0, _eC = entities.count; eI < _eC; eI++) {
+                        eRadius = 0;
+                        for (var cI = entities.chainStartIndex[eI], _cC = entities.chainEndIndex[eI]; cI < _cC; cI++) {
+                            cRadius = 0;
+                            for (var rI = chains.residueStartIndex[cI], _rC = chains.residueEndIndex[cI]; rI < _rC; rI++) {
+                                rRadius = 0;
+                                for (var aI = residues.atomStartIndex[rI], _aC = residues.atomEndIndex[rI]; aI < _aC; aI++) {
+                                    rRadius = Math.max(rRadius, indexedDistSq(aI, rI, rDA));
+                                    cRadius = Math.max(cRadius, indexedDistSq(aI, cI, cDA));
+                                    eRadius = Math.max(eRadius, indexedDistSq(aI, eI, eDA));
+                                    allRadius = Math.max(allRadius, indexedVectorDistSq(aI, allCenter, rDA));
+                                }
+                                rRadius = Math.sqrt(rRadius);
+                                rR[rI] = rRadius;
+                            }
+                            cRadius = Math.sqrt(cRadius);
+                            cR[cI] = cRadius;
+                        }
+                        eRadius = Math.sqrt(eRadius);
+                        eR[eI] = eRadius;
+                    }
+                    allRadius = Math.sqrt(allRadius);
+                    for (var _a = 0, pivotIndices_2 = pivotIndices; _a < pivotIndices_2.length; _a++) {
+                        var aI = pivotIndices_2[_a];
+                        pivotRadius = Math.max(pivotRadius, indexedVectorDistSq(aI, pivotCenter, rDA));
+                    }
+                    pivotRadius = Math.sqrt(pivotRadius);
+                    return new BoundingInfo(entityTable.seal(), chainTable.seal(), residueTable.seal(), new Sphere3(allCenter, allRadius), new Sphere3(pivotCenter, pivotRadius));
+                }
+                function findSuitableTransforms(ctx) {
+                    var bounds = ctx.boundingInfo, sg = ctx.spacegroup;
+                    var ret = [];
+                    ctx.transform = Mat4.identity();
+                    ret[0] = ctx.getTransform();
+                    for (var i = -3; i <= 3; i++) {
+                        for (var j = -3; j <= 3; j++) {
+                            for (var k = -3; k <= 3; k++) {
+                                for (var l = (i === 0 && j === 0 && k === 0 ? 1 : 0), lm = sg.operatorCount; l < lm; l++) {
+                                    //for (let l = 0, lm = sg.operatorCount; l < lm; l++) {                            
+                                    sg.getOperatorMatrix(l, i, j, k, ctx.transform);
+                                    ctx.i = i;
+                                    ctx.k = k;
+                                    ctx.j = j;
+                                    ctx.op = l;
+                                    var t = ctx.map(bounds.allAtoms.center), d = getSphereDist(t, bounds.allAtoms.radius, bounds.target);
+                                    if (d < ctx.radius) {
+                                        ret[ret.length] = ctx.getTransform();
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    return ret;
+                }
+                function getSymmetryResidues(ctx, transforms) {
+                    var bounds = ctx.boundingInfo, radius = ctx.radius, targetBounds = bounds.target;
+                    var model = ctx.model, atoms = model.atoms, residues = model.residues, chains = model.chains, entities = model.entities;
+                    var residueIndices = new Core.Utils.ChunkedArrayBuilder(function (s) { return new Int32Array(s); }, ctx.model.residues.count, 1), operatorIndices = new Core.Utils.ChunkedArrayBuilder(function (s) { return new Int32Array(s); }, ctx.model.residues.count, 1);
+                    var v = { x: 0, y: 0, z: 0 }, opIndex = 0;
+                    var atomCount = 0, chainCount = 0, entityCount = 0;
+                    for (var eI = 0, _eC = entities.count; eI < _eC; eI++) {
+                        //if (!isWithinRadius(hetBounds, eI, bounds.entities, t.transform, radius, v)) continue;
+                        opIndex = 0;
+                        var chainAdded = false;
+                        for (var _i = 0, transforms_1 = transforms; _i < transforms_1.length; _i++) {
+                            var t = transforms_1[_i];
+                            for (var cI = entities.chainStartIndex[eI], _cC = entities.chainEndIndex[eI]; cI < _cC; cI++) {
+                                if (!isWithinRadius(targetBounds, cI, bounds.chains, t.transform, radius, v))
+                                    continue;
+                                var residueAdded = false;
+                                for (var rI = chains.residueStartIndex[cI], _rC = chains.residueEndIndex[cI]; rI < _rC; rI++) {
+                                    if (!isWithinRadius(targetBounds, rI, bounds.residues, t.transform, radius, v))
+                                        continue;
+                                    residueIndices.add(rI);
+                                    operatorIndices.add(opIndex);
+                                    atomCount += residues.atomEndIndex[rI] - residues.atomStartIndex[rI];
+                                    residueAdded = true;
+                                }
+                                if (residueAdded) {
+                                    chainCount += 1;
+                                    chainAdded = true;
+                                }
+                            }
+                            opIndex++;
+                        }
+                        if (chainAdded) {
+                            entityCount++;
+                        }
+                    }
+                    return {
+                        residues: residueIndices.compact(),
+                        operators: operatorIndices.compact(),
+                        atomCount: atomCount,
+                        chainCount: chainCount,
+                        entityCount: entityCount
+                    };
+                }
+                function cloneRow(src, sI, target, tI, c) {
+                    for (var i = 0; i < c; i++) {
+                        target[i][tI] = src[i][sI];
+                    }
+                }
+                // class PartsSorter {
+                //     private ordering: Int32Array;
+                //     private entityIndex: number[];
+                //     private chainIndex: number[];
+                //     private residues: number[];
+                //     private operators: number[];
+                //     private compare(i: number, j: number) {
+                //         let a = this.residues[i], b = this.residues[j];
+                //         let E = this.entityIndex[a] - this.entityIndex[b];
+                //         if (E !== 0) return E;
+                //         let C = this.chainIndex[a] - this.chainIndex[b];
+                //         if (C !== 0) return C;
+                //         let O = this.operators[i] - this.operators[j];
+                //         if (O !== 0) return O;
+                //         return a - b; 
+                //     }
+                //     apply() {
+                //         let buffer = new Int32Array(this.parts.residues.length);
+                //         for (let i = 0, _b = this.ordering.length; i < _b; i++) buffer[i] = this.residues[this.ordering[i]];
+                //         let t = this.parts.residues; 
+                //         this.parts.residues = <any>buffer;
+                //         buffer = <any>t;    
+                //         for (let i = 0, _b = this.ordering.length; i < _b; i++) buffer[i] = this.operators[this.ordering[i]];
+                //         this.parts.operators = <any>buffer;
+                //     }            
+                //     constructor(model: MoleculeModel, private parts: { residues: number[], operators: number[], atomCount: number; chainCount: number }) {
+                //         this.ordering = new Int32Array(parts.residues.length);
+                //         for (let i = 0, _b = this.ordering.length; i < _b; i++) this.ordering[i] = i;                
+                //         let rs = model.residues;
+                //         this.entityIndex = rs.entityIndex;
+                //         this.chainIndex = rs.chainIndex;
+                //         this.residues = parts.residues;
+                //         this.operators = parts.operators;
+                //         Array.prototype.sort.call(this.ordering, (i: number, j: number) => this.compare(i, j));
+                //         this.apply();         
+                //         //console.log(this.ordering);                             
+                //     }
+                // }        
+                function assemble(model, assemblyParts, transforms) {
+                    // let sorter = new PartsSorter(model, assemblyParts);
+                    // sorter.apply();
+                    // sorter = undefined;
+                    //sorted = undefined;
+                    //let partOrdeding = sorted.ordering;
+                    var residues = model.residues, residueChainIndex = residues.chainIndex, residueEntityIndex = residues.entityIndex, residueAtomStartIndex = residues.atomStartIndex, residueAtomEndIndex = residues.atomEndIndex, atoms = model.atoms, x = atoms.x, y = atoms.y, z = atoms.z;
+                    var atomTable = new Structure.DataTableBuilder(assemblyParts.atomCount), atomX, atomY, atomZ, atomId, atomResidue, atomChain, atomEntity, cols = [];
+                    var entityTableBuilder = model.entities.getBuilder(assemblyParts.entityCount), entityTable = entityTableBuilder, srcEntityData = model.entities.getRawData(), entityData = entityTable.getRawData(), entityChainStart = entityTable.chainStartIndex, entityChainEnd = entityTable.chainEndIndex, entityResidueStart = entityTable.residueStartIndex, entityResidueEnd = entityTable.residueEndIndex, entityAtomStart = entityTable.atomStartIndex, entityAtomEnd = entityTable.atomEndIndex, entityOffset = 0;
+                    var chainTableBuilder = model.chains.getBuilder(assemblyParts.chainCount), chainTable = chainTableBuilder, srcChainData = model.chains.getRawData(), chainData = chainTable.getRawData(), chainResidueStart = chainTable.residueStartIndex, chainResidueEnd = chainTable.residueEndIndex, chainAtomStart = chainTable.atomStartIndex, chainAtomEnd = chainTable.atomEndIndex, chainId = chainTable.asymId, chainAuthId = chainTable.authAsymId, chainEntity = chainTable.entityIndex, chainSourceChainIndex = chainTableBuilder.addColumn('sourceChainIndex', function (s) { return new Int32Array(s); }), chainOperatorIndex = chainTableBuilder.addColumn('operatorIndex', function (s) { return new Int32Array(s); }), chainOffset = 0;
+                    var residueTable = model.residues.getBuilder(assemblyParts.residues.length), srcResidueData = model.residues.getRawData(), residueData = residueTable.getRawData(), residueAtomStart = residueTable.atomStartIndex, residueAtomEnd = residueTable.atomEndIndex, residueAsymId = residueTable.asymId, residueAuthAsymId = residueTable.authAsymId, residueChain = residueTable.chainIndex, residueEntity = residueTable.entityIndex;
+                    for (var _i = 0, _a = model.atoms.columns; _i < _a.length; _i++) {
+                        var col = _a[_i];
+                        var c = atomTable.addColumn(col.name, col.creator);
+                        if (col.name === "x")
+                            atomX = c;
+                        else if (col.name === "y")
+                            atomY = c;
+                        else if (col.name === "z")
+                            atomZ = c;
+                        else if (col.name === "residueIndex")
+                            atomResidue = c;
+                        else if (col.name === "chainIndex")
+                            atomChain = c;
+                        else if (col.name === "entityIndex")
+                            atomEntity = c;
+                        else if (col.name === "id")
+                            atomId = c;
+                        else {
+                            cols[cols.length] = {
+                                src: atoms[col.name],
+                                target: c
+                            };
+                        }
+                    }
+                    var assemblyResidueParts = assemblyParts.residues, assemblyOpParts = assemblyParts.operators, temp = { x: 0, y: 0, z: 0 }, atomOffset = 0;
+                    var rI = assemblyResidueParts[0], currentChain = residueChainIndex[rI], currentEntity = residueEntityIndex[rI], currentOp = assemblyOpParts[0], currentAsymId, currentAuthAsymId;
+                    // setup entity table
+                    cloneRow(srcEntityData, residueEntityIndex[rI], entityData, 0, srcEntityData.length);
+                    entityChainStart[0] = 0;
+                    entityResidueStart[0] = 0;
+                    entityAtomStart[0] = 0;
+                    //setup chain table
+                    cloneRow(srcChainData, residueChainIndex[rI], chainData, 0, srcChainData.length);
+                    chainEntity[0] = 0;
+                    chainResidueStart[0] = 0;
+                    chainAtomStart[0] = 0;
+                    currentAsymId = model.chains.asymId[residueChainIndex[rI]];
+                    currentAuthAsymId = model.chains.authAsymId[residueChainIndex[rI]];
+                    var transform = transforms[assemblyOpParts[0]];
+                    if (transform && !transform.isIdentity) {
+                        chainId[chainOffset] = model.chains.asymId[residueChainIndex[rI]] + '-' + transform.id;
+                        chainAuthId[chainOffset] = model.chains.authAsymId[residueChainIndex[rI]] + '-' + transform.id;
+                        chainSourceChainIndex[chainOffset] = residueChainIndex[rI];
+                        chainOperatorIndex[chainOffset] = currentOp;
+                        currentAsymId = chainId[chainOffset];
+                        currentAuthAsymId = chainAuthId[chainOffset];
+                    }
+                    for (var residueOffset = 0, _mi = assemblyResidueParts.length; residueOffset < _mi; residueOffset++) {
+                        rI = assemblyResidueParts[residueOffset];
+                        var opI = assemblyOpParts[residueOffset];
+                        transform = transforms[opI];
+                        cloneRow(srcResidueData, rI, residueData, residueOffset, residueData.length);
+                        var cE = residueEntityIndex[rI], cC = residueChainIndex[rI];
+                        var chainChanged = false;
+                        if (cE !== currentEntity) {
+                            // update chain
+                            chainResidueEnd[chainOffset] = residueOffset;
+                            chainAtomEnd[chainOffset] = atomOffset;
+                            chainOffset += 1;
+                            // update entity
+                            entityChainEnd[entityOffset] = chainOffset;
+                            entityResidueEnd[entityOffset] = residueOffset;
+                            entityAtomEnd[entityOffset] = atomOffset;
+                            // new entity
+                            entityOffset += 1;
+                            cloneRow(srcEntityData, cE, entityData, entityOffset, srcEntityData.length);
+                            entityChainStart[entityOffset] = chainOffset;
+                            entityResidueStart[entityOffset] = residueOffset;
+                            entityAtomStart[entityOffset] = atomOffset;
+                            chainChanged = true;
+                        }
+                        else if (cC !== currentChain) {
+                            // update chain
+                            chainResidueEnd[chainOffset] = residueOffset;
+                            chainAtomEnd[chainOffset] = atomOffset;
+                            chainOffset += 1;
+                            chainChanged = true;
+                        }
+                        else if (opI !== currentOp) {
+                            // update chain
+                            chainResidueEnd[chainOffset] = residueOffset;
+                            chainAtomEnd[chainOffset] = atomOffset;
+                            chainOffset += 1;
+                            chainChanged = true;
+                        }
+                        if (chainChanged) {
+                            // new chain
+                            cloneRow(srcChainData, cC, chainData, chainOffset, srcChainData.length);
+                            chainEntity[chainOffset] = entityOffset;
+                            chainResidueStart[chainOffset] = residueOffset;
+                            chainAtomStart[chainOffset] = atomOffset;
+                            // update the chain identifier if needed
+                            if (!transform.isIdentity) {
+                                chainId[chainOffset] = model.chains.asymId[cC] + '-' + transform.id;
+                                chainAuthId[chainOffset] = model.chains.authAsymId[cC] + '-' + transform.id;
+                            }
+                            chainSourceChainIndex[chainOffset] = cC;
+                            chainOperatorIndex[chainOffset] = opI;
+                            currentAsymId = chainId[chainOffset];
+                            currentAuthAsymId = chainAuthId[chainOffset];
+                        }
+                        currentChain = cC;
+                        currentEntity = cE;
+                        currentOp = opI;
+                        residueChain[residueOffset] = chainOffset;
+                        residueEntity[residueOffset] = entityOffset;
+                        residueAtomStart[residueOffset] = atomOffset;
+                        residueAsymId[residueOffset] = currentAsymId;
+                        residueAuthAsymId[residueOffset] = currentAuthAsymId;
+                        for (var aI = residueAtomStartIndex[rI], _mAI = residueAtomEndIndex[rI]; aI < _mAI; aI++) {
+                            temp.x = x[aI];
+                            temp.y = y[aI];
+                            temp.z = z[aI];
+                            Mat4.transformVector3(temp, temp, transform.transform);
+                            atomX[atomOffset] = temp.x;
+                            atomY[atomOffset] = temp.y;
+                            atomZ[atomOffset] = temp.z;
+                            atomId[atomOffset] = atomOffset + 1;
+                            atomResidue[atomOffset] = residueOffset;
+                            atomChain[atomOffset] = chainOffset;
+                            atomEntity[atomOffset] = entityOffset;
+                            for (var _b = 0, cols_2 = cols; _b < cols_2.length; _b++) {
+                                var c = cols_2[_b];
+                                c.target[atomOffset] = c.src[aI];
+                            }
+                            atomOffset++;
+                        }
+                        residueAtomEnd[residueOffset] = atomOffset;
+                    }
+                    // finalize entity
+                    entityChainEnd[entityOffset] = chainOffset + 1;
+                    entityResidueEnd[entityOffset] = assemblyResidueParts.length;
+                    entityAtomEnd[entityOffset] = atomOffset;
+                    // finalize chain
+                    chainResidueEnd[chainOffset] = assemblyResidueParts.length;
+                    chainAtomEnd[chainOffset] = atomOffset;
+                    var finalAtoms = atomTable.seal(), finalResidues = residueTable.seal(), finalChains = chainTableBuilder.seal(), finalEntities = entityTableBuilder.seal();
+                    // let eIdSet = new Set<number>();
+                    // for (let eId of finalChains.entityIndex) eIdSet.add(eId);
+                    // eIdSet.forEach(x => console.log('ceid', x));
+                    // console.log(assemblyParts.entityCount, finalEntities);
+                    var ss = buildSS(model, assemblyParts, finalResidues);
+                    return new Structure.MoleculeModel(model.id, model.modelId, finalAtoms, finalResidues, finalChains, finalEntities, model.componentBonds, ss, void 0, void 0, model, Structure.MoleculeModelSource.Computed, transforms.map(function (t) { return new Structure.Operator(t.transform, t.id, t.isIdentity); }));
+                }
+                function buildSS(parent, assemblyParts, newResidues) {
+                    var index = parent.residues.secondaryStructureIndex;
+                    var ss = parent.secondaryStructure;
+                    var asymId = newResidues.asymId, seqNumber = newResidues.seqNumber, insCode = newResidues.insCode, secondaryStructureIndex = newResidues.secondaryStructureIndex;
+                    var residues = assemblyParts.residues, operators = assemblyParts.operators;
+                    var count = residues.length;
+                    var ret = [];
+                    var start = 0;
+                    while (start < count) {
+                        var end = start;
+                        var ssI = index[residues[start]], op = operators[start];
+                        while (end < count && operators[end] == op && index[residues[end]] == ssI)
+                            end++;
+                        var s = ss[ssI];
+                        var e = new Structure.SecondaryStructureElement(s.type, new Structure.PolyResidueIdentifier(asymId[start], seqNumber[start], insCode[start]), new Structure.PolyResidueIdentifier(asymId[end - 1], seqNumber[end - 1], insCode[end - 1]), s.info);
+                        e.startResidueIndex = start;
+                        e.endResidueIndex = end;
+                        var updatedSSI = ret.length;
+                        for (var i = start; i < end; i++) {
+                            secondaryStructureIndex[i] = updatedSSI;
+                        }
+                        ret[updatedSSI] = e;
+                        start = end;
+                    }
+                    return ret;
+                }
+                function buildPivotGroupSymmetry(model, radius, pivotsQuery) {
+                    var info = model.symmetryInfo;
+                    if (!info
+                        || info.spacegroupName === "P 1"
+                        || (info.cellSize[0] < 1.1 && info.cellSize[1] < 1.1 && info.cellSize[2] < 1.1)) {
+                        return model;
+                    }
+                    var pivotIndices;
+                    if (!pivotsQuery)
+                        pivotIndices = model.atoms.indices;
+                    else
+                        pivotIndices = model.query(pivotsQuery).unionAtomIndices();
+                    var bounds = getBoundingInfo(model, pivotIndices), spacegroup = new Structure.Spacegroup(model.symmetryInfo), ctx = new SymmetryContext(model, bounds, spacegroup, radius);
+                    var transforms = findSuitableTransforms(ctx), residues = getSymmetryResidues(ctx, transforms);
+                    return assemble(model, residues, transforms);
+                }
+                SymmetryHelpers.buildPivotGroupSymmetry = buildPivotGroupSymmetry;
+                function findMates(model, radius) {
+                    var bounds = getBoudingSphere(model.atoms, model.atoms.indices);
+                    var spacegroup = new Structure.Spacegroup(model.symmetryInfo);
+                    var t = Mat4.empty();
+                    var v = { x: 0, y: 0, z: 0 };
+                    var transforms = [];
+                    for (var i = -3; i <= 3; i++) {
+                        for (var j = -3; j <= 3; j++) {
+                            for (var k = -3; k <= 3; k++) {
+                                for (var op = 0; op < spacegroup.operatorCount; op++) {
+                                    spacegroup.getOperatorMatrix(op, i, j, k, t);
+                                    Mat4.transformVector3(v, bounds.center, t);
+                                    if (getSphereDist(v, bounds.radius, bounds) > radius)
+                                        continue;
+                                    var copy = Mat4.empty();
+                                    Mat4.copy(copy, t);
+                                    transforms.push(new SymmetryTransform(i, j, k, op, copy));
+                                }
+                            }
+                        }
+                    }
+                    return transforms;
+                }
+                function findMateParts(model, transforms) {
+                    var atoms = model.atoms, residues = model.residues, chains = model.chains, entities = model.entities;
+                    var residueIndices = new Core.Utils.ArrayBuilder(function (s) { return new Int32Array(s); }, model.residues.count * transforms.length, 1), operatorIndices = new Core.Utils.ArrayBuilder(function (s) { return new Int32Array(s); }, model.residues.count * transforms.length, 1);
+                    var v = { x: 0, y: 0, z: 0 }, opIndex = 0;
+                    var atomCount = transforms.length * atoms.count;
+                    var chainCount = transforms.length * chains.count;
+                    var entityCount = model.entities.count;
+                    for (var eI = 0, _eC = entities.count; eI < _eC; eI++) {
+                        opIndex = 0;
+                        for (var _i = 0, transforms_2 = transforms; _i < transforms_2.length; _i++) {
+                            var t = transforms_2[_i];
+                            for (var cI = entities.chainStartIndex[eI], _cC = entities.chainEndIndex[eI]; cI < _cC; cI++) {
+                                for (var rI = chains.residueStartIndex[cI], _rC = chains.residueEndIndex[cI]; rI < _rC; rI++) {
+                                    residueIndices.add(rI);
+                                    operatorIndices.add(opIndex);
+                                }
+                            }
+                            opIndex++;
+                        }
+                    }
+                    return {
+                        residues: residueIndices.array,
+                        operators: operatorIndices.array,
+                        atomCount: atomCount,
+                        chainCount: chainCount,
+                        entityCount: entityCount
+                    };
+                }
+                function buildMates(model, radius) {
+                    var info = model.symmetryInfo;
+                    if (!info
+                        || info.spacegroupName === "P 1"
+                        || (info.cellSize[0] < 1.1 && info.cellSize[1] < 1.1 && info.cellSize[2] < 1.1)) {
+                        return model;
+                    }
+                    var transforms = findMates(model, radius);
+                    var parts = findMateParts(model, transforms);
+                    return assemble(model, parts, transforms);
+                }
+                SymmetryHelpers.buildMates = buildMates;
+                function createOperators(operators, list, i, current) {
+                    if (i < 0) {
+                        list[list.length] = current.slice(0);
+                        return;
+                    }
+                    var ops = operators[i], len = ops.length;
+                    for (var j = 0; j < len; j++) {
+                        current[i] = ops[j];
+                        createOperators(operators, list, i - 1, current);
+                    }
+                }
+                function getAssemblyTransforms(model, operators) {
+                    var info = model.assemblyInfo;
+                    var trasnforms = [];
+                    var t = Mat4.empty();
+                    var index = 0;
+                    for (var _i = 0, operators_1 = operators; _i < operators_1.length; _i++) {
+                        var op = operators_1[_i];
+                        var m = Mat4.identity();
+                        //Mat4.copy(m, info.operators[op[0]].operator);
+                        for (var i = 0; i < op.length; i++) {
+                            Mat4.mul(m, m, info.operators[op[i]].operator);
+                        }
+                        index++;
+                        trasnforms[trasnforms.length] = new AssemblyTransform(index, m);
+                    }
+                    return trasnforms;
+                }
+                function getAssemblyParts(model, residueMask, currentTransforms, state) {
+                    var atoms = model.atoms, residues = model.residues, chains = model.chains, entities = model.entities;
+                    var residueIndices = state.residueIndices, //  new Utils.ChunkedArrayBuilder<number>(s => new Int32Array(s), model.residues.count, 1),
+                    operatorIndices = state.operatorIndices; // new Utils.ChunkedArrayBuilder<number>(s => new Int32Array(s), model.residues.count, 1);
+                    var v = { x: 0, y: 0, z: 0 }, opIndex = 0;
+                    var atomCount = 0, chainCount = 0, entityCount = 0;
+                    for (var eI = 0, _eC = entities.count; eI < _eC; eI++) {
+                        opIndex = state.transformsOffset; //0;
+                        var chainAdded = false;
+                        for (var _i = 0, currentTransforms_1 = currentTransforms; _i < currentTransforms_1.length; _i++) {
+                            var t = currentTransforms_1[_i];
+                            for (var cI = entities.chainStartIndex[eI], _cC = entities.chainEndIndex[eI]; cI < _cC; cI++) {
+                                var residueAdded = false;
+                                for (var rI = chains.residueStartIndex[cI], _rC = chains.residueEndIndex[cI]; rI < _rC; rI++) {
+                                    if (!residueMask[rI])
+                                        continue;
+                                    residueIndices.add(rI);
+                                    operatorIndices.add(opIndex);
+                                    atomCount += residues.atomEndIndex[rI] - residues.atomStartIndex[rI];
+                                    residueAdded = true;
+                                }
+                                if (residueAdded) {
+                                    chainCount += 1;
+                                    chainAdded = true;
+                                }
+                            }
+                            opIndex++;
+                        }
+                        if (chainAdded) {
+                            entityCount++;
+                        }
+                    }
+                    state.atomCount += atomCount;
+                    state.chainCount += chainCount;
+                    state.entityCount += entityCount;
+                    // return {
+                    //     residues: residueIndices.compact(),
+                    //     operators: operatorIndices.compact(),
+                    //     atomCount,
+                    //     chainCount,
+                    //     entityCount
+                    // };
+                }
+                function buildAssemblyEntry(model, entry, state) {
+                    var ops = [], currentOp = [];
+                    for (var i_1 = 0; i_1 < entry.operators.length; i_1++)
+                        currentOp[i_1] = "";
+                    createOperators(entry.operators, ops, entry.operators.length - 1, currentOp);
+                    var transforms = getAssemblyTransforms(model, ops);
+                    state.transformsOffset += state.transforms.length;
+                    (_a = state.transforms).push.apply(_a, transforms);
+                    var asymIds = new Set();
+                    entry.asymIds.forEach(function (id) { return asymIds.add(id); });
+                    var residueAsymIds = model.residues.asymId;
+                    var residueCount = model.residues.count;
+                    var mask = state.mask;
+                    for (var i = 0; i < residueCount; i++) {
+                        mask[i] = asymIds.has(residueAsymIds[i]);
+                    }
+                    getAssemblyParts(model, mask, transforms, state);
+                    var _a;
+                }
+                SymmetryHelpers.buildAssemblyEntry = buildAssemblyEntry;
+                function buildAssembly(model, assembly) {
+                    var state = {
+                        atomCount: 0,
+                        chainCount: 0,
+                        entityCount: 0,
+                        transforms: [],
+                        transformsOffset: 0,
+                        mask: new Int8Array(model.residues.count),
+                        residueIndices: new Core.Utils.ChunkedArrayBuilder(function (s) { return new Int32Array(s); }, model.residues.count, 1),
+                        operatorIndices: new Core.Utils.ChunkedArrayBuilder(function (s) { return new Int32Array(s); }, model.residues.count, 1)
+                    };
+                    for (var _i = 0, _a = assembly.gens; _i < _a.length; _i++) {
+                        var a = _a[_i];
+                        buildAssemblyEntry(model, a, state);
+                    }
+                    var parts = {
+                        residues: state.residueIndices.compact(),
+                        operators: state.operatorIndices.compact(),
+                        atomCount: state.atomCount,
+                        chainCount: state.chainCount,
+                        entityCount: state.entityCount
+                    };
+                    return assemble(model, parts, state.transforms);
+                }
+                SymmetryHelpers.buildAssembly = buildAssembly;
+            })(SymmetryHelpers || (SymmetryHelpers = {}));
+            function buildPivotGroupSymmetry(model, radius, pivotsQuery) {
+                return SymmetryHelpers.buildPivotGroupSymmetry(model, radius, pivotsQuery);
+            }
+            Structure.buildPivotGroupSymmetry = buildPivotGroupSymmetry;
+            function buildSymmetryMates(model, radius) {
+                return SymmetryHelpers.buildMates(model, radius);
+            }
+            Structure.buildSymmetryMates = buildSymmetryMates;
+            function buildAssembly(model, assembly) {
+                return SymmetryHelpers.buildAssembly(model, assembly);
+            }
+            Structure.buildAssembly = buildAssembly;
+        })(Structure = Core.Structure || (Core.Structure = {}));
+    })(Core = LiteMol.Core || (LiteMol.Core = {}));
+})(LiteMol || (LiteMol = {}));
+/*
+ * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ */
+var LiteMol;
+(function (LiteMol) {
+    var Core;
+    (function (Core) {
+        var Structure;
+        (function (Structure) {
+            var Query;
+            (function (Query) {
+                /**
+                 * The context of a query.
+                 *
+                 * Stores:
+                 * - the mask of "active" atoms.
+                 * - kd-tree for fast geometry queries.
+                 * - the molecule itself.
+                 *
+                 */
+                var Context = (function () {
+                    function Context(structure, mask) {
+                        this.structure = structure;
+                        this.mask = mask;
+                    }
+                    Object.defineProperty(Context.prototype, "atomCount", {
+                        /**
+                         * Number of atoms in the current context.
+                         */
+                        get: function () {
+                            return this.mask.size;
+                        },
+                        enumerable: true,
+                        configurable: true
+                    });
+                    Object.defineProperty(Context.prototype, "isComplete", {
+                        /**
+                         * Determine if the context contains all atoms of the input model.
+                         */
+                        get: function () {
+                            return this.mask.size === this.structure.atoms.count;
+                        },
+                        enumerable: true,
+                        configurable: true
+                    });
+                    Object.defineProperty(Context.prototype, "tree", {
+                        /**
+                         * Get a kd-tree for the atoms in the current context.
+                         */
+                        get: function () {
+                            if (!this.lazyTree)
+                                this.makeTree();
+                            return this.lazyTree;
+                        },
+                        enumerable: true,
+                        configurable: true
+                    });
+                    /**
+                     * Checks if an atom is included in the current context.
+                     */
+                    Context.prototype.hasAtom = function (index) {
+                        return !!this.mask.has(index);
+                    };
+                    /**
+                     * Checks if an atom from the range is included in the current context.
+                     */
+                    Context.prototype.hasRange = function (start, end) {
+                        for (var i = start; i < end; i++) {
+                            if (this.mask.has(i))
+                                return true;
+                        }
+                        return false;
+                    };
+                    /**
+                     * Create a new context based on the provide structure.
+                     */
+                    Context.ofStructure = function (structure) {
+                        return new Context(structure, Context.Mask.ofStructure(structure));
+                    };
+                    /**
+                     * Create a new context from a sequence of fragments.
+                     */
+                    Context.ofFragments = function (seq) {
+                        return new Context(seq.context.structure, Context.Mask.ofFragments(seq));
+                    };
+                    /**
+                     * Create a new context from a sequence of fragments.
+                     */
+                    Context.ofAtomIndices = function (structure, atomIndices) {
+                        return new Context(structure, Context.Mask.ofIndices(structure, atomIndices));
+                    };
+                    Context.prototype.makeTree = function () {
+                        var data = new Int32Array(this.mask.size), dataCount = 0, _a = this.structure.atoms, x = _a.x, y = _a.y, z = _a.z;
+                        for (var i = 0, _b = this.structure.atoms.count; i < _b; i++) {
+                            if (this.mask.has(i))
+                                data[dataCount++] = i;
+                        }
+                        this.lazyTree = new Core.Geometry.SubdivisionTree3D(data, function (i, b) { return b.add(x[i], y[i], z[i]); });
+                    };
+                    return Context;
+                }());
+                Query.Context = Context;
+                var Context;
+                (function (Context) {
+                    var Mask;
+                    (function (Mask) {
+                        var BitMask = (function () {
+                            function BitMask(mask, size) {
+                                this.mask = mask;
+                                this.size = size;
+                            }
+                            BitMask.prototype.has = function (i) { return this.mask[i]; };
+                            return BitMask;
+                        }());
+                        var AllMask = (function () {
+                            function AllMask(size) {
+                                this.size = size;
+                            }
+                            AllMask.prototype.has = function (i) { return true; };
+                            return AllMask;
+                        }());
+                        function ofStructure(structure) {
+                            return new AllMask(structure.atoms.count);
+                        }
+                        Mask.ofStructure = ofStructure;
+                        function ofIndices(structure, atomIndices) {
+                            var f = atomIndices.length / structure.atoms.count;
+                            if (f < 0.25) {
+                                var set = new Set();
+                                for (var _i = 0, atomIndices_1 = atomIndices; _i < atomIndices_1.length; _i++) {
+                                    var i = atomIndices_1[_i];
+                                    set.add(i);
+                                }
+                                return set;
+                            }
+                            var mask = new Int8Array(structure.atoms.count);
+                            for (var _a = 0, atomIndices_2 = atomIndices; _a < atomIndices_2.length; _a++) {
+                                var i = atomIndices_2[_a];
+                                mask[i] = 1;
+                            }
+                            return new BitMask(mask, atomIndices.length);
+                        }
+                        Mask.ofIndices = ofIndices;
+                        function ofFragments(seq) {
+                            var sizeEstimate = 0;
+                            for (var _i = 0, _a = seq.fragments; _i < _a.length; _i++) {
+                                var f = _a[_i];
+                                sizeEstimate += f.atomCount;
+                            }
+                            var count = seq.context.structure.atoms.count;
+                            if (sizeEstimate / count < 0.25) {
+                                // create set;
+                                var mask = new Set();
+                                for (var _c = 0, _d = seq.fragments; _c < _d.length; _c++) {
+                                    var f = _d[_c];
+                                    for (var _e = 0, _f = f.atomIndices; _e < _f.length; _e++) {
+                                        var i = _f[_e];
+                                        mask.add(i);
+                                    }
+                                }
+                                return mask;
+                            }
+                            else {
+                                var mask = new Int8Array(count);
+                                for (var _g = 0, _h = seq.fragments; _g < _h.length; _g++) {
+                                    var f = _h[_g];
+                                    for (var _j = 0, _k = f.atomIndices; _j < _k.length; _j++) {
+                                        var i = _k[_j];
+                                        mask[i] = 1;
+                                    }
+                                }
+                                var size = 0;
+                                for (var i = 0; i < count; i++) {
+                                    if (mask[i] !== 0)
+                                        size++;
+                                }
+                                return new BitMask(mask, size);
+                            }
+                        }
+                        Mask.ofFragments = ofFragments;
+                    })(Mask = Context.Mask || (Context.Mask = {}));
+                })(Context = Query.Context || (Query.Context = {}));
+                /**
+                 * The basic element of the query language.
+                 * Everything is represented as a fragment.
+                 */
+                var Fragment = (function () {
+                    /**
+                     * Create a fragment from an integer set.
+                     */
+                    function Fragment(context, tag, atomIndices) {
+                        this._hashCode = 0;
+                        this._hashComputed = false;
+                        this.context = context;
+                        this.tag = tag;
+                        this.atomIndices = atomIndices;
+                    }
+                    Object.defineProperty(Fragment.prototype, "hashCode", {
+                        /**
+                         * The hash code of the fragment.
+                         */
+                        get: function () {
+                            if (this._hashComputed)
+                                return this._hashCode;
+                            var code = 23;
+                            for (var _i = 0, _a = this.atomIndices; _i < _a.length; _i++) {
+                                var i = _a[_i];
+                                code = (31 * code + i) | 0;
+                            }
+                            this._hashCode = code;
+                            this._hashComputed = true;
+                            return code;
+                        },
+                        enumerable: true,
+                        configurable: true
+                    });
+                    Object.defineProperty(Fragment.prototype, "id", {
+                        /**
+                         * Id composed of <moleculeid>_<tag>.
+                         */
+                        get: function () {
+                            return this.context.structure.id + "_" + this.tag;
+                        },
+                        enumerable: true,
+                        configurable: true
+                    });
+                    Object.defineProperty(Fragment.prototype, "atomCount", {
+                        /**
+                         * Number of atoms.
+                         */
+                        get: function () {
+                            return this.atomIndices.length;
+                        },
+                        enumerable: true,
+                        configurable: true
+                    });
+                    Object.defineProperty(Fragment.prototype, "isHet", {
+                        /**
+                         * Determines if a fragment is HET based on the tag.
+                         */
+                        get: function () {
+                            var residue = this.context.structure.atoms.residueIndex[this.tag];
+                            return this.context.structure.residues.isHet[residue];
+                        },
+                        enumerable: true,
+                        configurable: true
+                    });
+                    Object.defineProperty(Fragment.prototype, "fingerprint", {
+                        /**
+                         * A sorted list of residue identifiers.
+                         */
+                        get: function () {
+                            if (this._fingerprint)
+                                return this._fingerprint;
+                            var indexList = this.residueIndices, struct = this.context.structure, residues = this.context.structure.residues, cName = residues.name, cAsym = residues.asymId, cSeq = residues.seqNumber, insCode = residues.insCode, names = [];
+                            for (var _i = 0, indexList_1 = indexList; _i < indexList_1.length; _i++) {
+                                var i = indexList_1[_i];
+                                var name_1 = cName[i] + " " + cAsym[i] + " " + cSeq[i];
+                                if (insCode[i])
+                                    name_1 += " i:" + insCode[i];
+                                names[names.length] = name_1;
+                            }
+                            return names.join("-");
+                        },
+                        enumerable: true,
+                        configurable: true
+                    });
+                    Object.defineProperty(Fragment.prototype, "authFingerprint", {
+                        /**
+                         * A sorted list of residue identifiers.
+                         */
+                        get: function () {
+                            if (this._authFingerprint)
+                                return this._authFingerprint;
+                            var indexList = this.residueIndices, struct = this.context.structure, residues = this.context.structure.residues, cName = residues.authName, cAsym = residues.authAsymId, cSeq = residues.authSeqNumber, insCode = residues.insCode, names = [];
+                            for (var _i = 0, indexList_2 = indexList; _i < indexList_2.length; _i++) {
+                                var i = indexList_2[_i];
+                                var name_2 = cName[i] + " " + cAsym[i] + " " + cSeq[i];
+                                if (insCode[i])
+                                    name_2 += " i:" + insCode[i];
+                                names[names.length] = name_2;
+                            }
+                            return names.join("-");
+                        },
+                        enumerable: true,
+                        configurable: true
+                    });
+                    /**
+                     * Executes a query on the current fragment.
+                     */
+                    Fragment.prototype.find = function (what) {
+                        var ctx = Context.ofFragments(new FragmentSeq(this.context, [this]));
+                        return Query.Builder.toQuery(what)(ctx);
+                    };
+                    Fragment.prototype.computeIndices = function () {
+                        if (this._residueIndices)
+                            return;
+                        var residueIndices = new Set(), chainIndices = new Set(), entityIndices = new Set(), rIndices = this.context.structure.atoms.residueIndex, cIndices = this.context.structure.residues.chainIndex, eIndices = this.context.structure.chains.entityIndex;
+                        for (var _i = 0, _a = this.atomIndices; _i < _a.length; _i++) {
+                            var i = _a[_i];
+                            residueIndices.add(rIndices[i]);
+                        }
+                        this._residueIndices = Core.Utils.integerSetToSortedTypedArray(residueIndices);
+                        for (var _c = 0, _d = this._residueIndices; _c < _d.length; _c++) {
+                            var i = _d[_c];
+                            chainIndices.add(cIndices[i]);
+                        }
+                        this._chainIndices = Core.Utils.integerSetToSortedTypedArray(chainIndices);
+                        for (var _e = 0, _f = this._chainIndices; _e < _f.length; _e++) {
+                            var i = _f[_e];
+                            entityIndices.add(eIndices[i]);
+                        }
+                        this._entityIndices = Core.Utils.integerSetToSortedTypedArray(entityIndices);
+                    };
+                    Object.defineProperty(Fragment.prototype, "residueIndices", {
+                        /**
+                         * A sorted list of residue indices.
+                         */
+                        get: function () {
+                            this.computeIndices();
+                            return this._residueIndices;
+                        },
+                        enumerable: true,
+                        configurable: true
+                    });
+                    Object.defineProperty(Fragment.prototype, "chainIndices", {
+                        /**
+                         * A sorted list of chain indices.
+                         */
+                        get: function () {
+                            this.computeIndices();
+                            return this._chainIndices;
+                        },
+                        enumerable: true,
+                        configurable: true
+                    });
+                    Object.defineProperty(Fragment.prototype, "entityIndices", {
+                        /**
+                         * A sorted list of entity indices.
+                         */
+                        get: function () {
+                            this.computeIndices();
+                            return this._entityIndices;
+                        },
+                        enumerable: true,
+                        configurable: true
+                    });
+                    Fragment.areEqual = function (a, b) {
+                        if (a.atomCount !== b.atomCount)
+                            return false;
+                        var xs = a.atomIndices, ys = b.atomIndices;
+                        for (var i = 0; i < xs.length; i++) {
+                            if (xs[i] !== ys[i])
+                                return false;
+                        }
+                        return a.tag === b.tag;
+                    };
+                    /**
+                     * Create a fragment from an integer set.
+                     * Assumes the set is in the given context's mask.
+                     */
+                    Fragment.ofSet = function (context, atomIndices) {
+                        var array = new Int32Array(atomIndices.size), index = 0;
+                        atomIndices.forEach(function (i) { this.array[this.index++] = i; }, { array: array, index: 0 });
+                        Array.prototype.sort.call(array, function (a, b) { return a - b; });
+                        return new Fragment(context, array[0], array);
+                    };
+                    /**
+                     * Create a fragment from an integer array.
+                     * Assumes the set is in the given context's mask.
+                     * Assumes the array is sorted.
+                     */
+                    Fragment.ofArray = function (context, tag, atomIndices) {
+                        return new Fragment(context, tag, atomIndices);
+                    };
+                    /**
+                     * Create a fragment from a single index.
+                     * Assumes the index is in the given context's mask.
+                     */
+                    Fragment.ofIndex = function (context, index) {
+                        var indices = new Int32Array(1);
+                        indices[0] = index;
+                        return new Fragment(context, index, indices);
+                    };
+                    /**
+                     * Create a fragment from a <start,end) range.
+                     * Assumes the fragment is non-empty in the given context's mask.
+                     */
+                    Fragment.ofIndexRange = function (context, start, endExclusive) {
+                        var count = 0;
+                        for (var i = start; i < endExclusive; i++) {
+                            if (context.hasAtom(i))
+                                count++;
+                        }
+                        var atoms = new Int32Array(count), offset = 0;
+                        for (var i = start; i < endExclusive; i++) {
+                            if (context.hasAtom(i))
+                                atoms[offset++] = i;
+                        }
+                        return new Fragment(context, start, atoms);
+                    };
+                    return Fragment;
+                }());
+                Query.Fragment = Fragment;
+                /**
+                 * A sequence of fragments the queries operate on.
+                 */
+                var FragmentSeq = (function () {
+                    function FragmentSeq(context, fragments) {
+                        this.context = context;
+                        this.fragments = fragments;
+                    }
+                    FragmentSeq.empty = function (ctx) {
+                        return new FragmentSeq(ctx, []);
+                    };
+                    Object.defineProperty(FragmentSeq.prototype, "length", {
+                        get: function () {
+                            return this.fragments.length;
+                        },
+                        enumerable: true,
+                        configurable: true
+                    });
+                    /**
+                     * Merges atom indices from all fragments.
+                     */
+                    FragmentSeq.prototype.unionAtomIndices = function () {
+                        if (!this.length)
+                            return [];
+                        if (this.length === 1)
+                            return this.fragments[0].atomIndices;
+                        var map = new Int8Array(this.context.structure.atoms.count), atomCount = 0;
+                        for (var _i = 0, _a = this.fragments; _i < _a.length; _i++) {
+                            var f = _a[_i];
+                            for (var _c = 0, _d = f.atomIndices; _c < _d.length; _c++) {
+                                var i = _d[_c];
+                                map[i] = 1;
+                            }
+                        }
+                        for (var _e = 0, map_1 = map; _e < map_1.length; _e++) {
+                            var i = map_1[_e];
+                            atomCount += i;
+                        }
+                        var ret = new Int32Array(atomCount), offset = 0;
+                        for (var i = 0, _l = map.length; i < _l; i++) {
+                            if (map[i])
+                                ret[offset++] = i;
+                        }
+                        return ret;
+                    };
+                    /**
+                     * Merges atom indices from all fragments into a single fragment.
+                     */
+                    FragmentSeq.prototype.unionFragment = function () {
+                        if (!this.length)
+                            return new Fragment(this.context, 0, new Int32Array(0));
+                        if (this.length === 1)
+                            return this.fragments[0];
+                        var union = this.unionAtomIndices();
+                        return new Fragment(this.context, union[0], union);
+                    };
+                    return FragmentSeq;
+                }());
+                Query.FragmentSeq = FragmentSeq;
+                /**
+                 * A builder that includes all fragments.
+                 */
+                var FragmentSeqBuilder = (function () {
+                    function FragmentSeqBuilder(ctx) {
+                        this.ctx = ctx;
+                        this.fragments = [];
+                    }
+                    FragmentSeqBuilder.prototype.add = function (f) {
+                        this.fragments[this.fragments.length] = f;
+                    };
+                    FragmentSeqBuilder.prototype.getSeq = function () {
+                        return new FragmentSeq(this.ctx, this.fragments);
+                    };
+                    return FragmentSeqBuilder;
+                }());
+                Query.FragmentSeqBuilder = FragmentSeqBuilder;
+                /**
+                 * A builder that includes only unique fragments.
+                 */
+                var HashFragmentSeqBuilder = (function () {
+                    function HashFragmentSeqBuilder(ctx) {
+                        this.ctx = ctx;
+                        this.fragments = [];
+                        this.byHash = new Map();
+                    }
+                    HashFragmentSeqBuilder.prototype.add = function (f) {
+                        var hash = f.hashCode;
+                        if (this.byHash.has(hash)) {
+                            var fs = this.byHash.get(hash);
+                            for (var _i = 0, fs_1 = fs; _i < fs_1.length; _i++) {
+                                var q = fs_1[_i];
+                                if (Fragment.areEqual(f, q))
+                                    return this;
+                            }
+                            this.fragments[this.fragments.length] = f;
+                            fs[fs.length] = f;
+                        }
+                        else {
+                            this.fragments[this.fragments.length] = f;
+                            this.byHash.set(hash, [f]);
+                        }
+                        return this;
+                    };
+                    HashFragmentSeqBuilder.prototype.getSeq = function () {
+                        return new FragmentSeq(this.ctx, this.fragments);
+                    };
+                    return HashFragmentSeqBuilder;
+                }());
+                Query.HashFragmentSeqBuilder = HashFragmentSeqBuilder;
+            })(Query = Structure.Query || (Structure.Query = {}));
+        })(Structure = Core.Structure || (Core.Structure = {}));
+    })(Core = LiteMol.Core || (LiteMol.Core = {}));
+})(LiteMol || (LiteMol = {}));
+/*
+ * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ */
+var LiteMol;
+(function (LiteMol) {
+    var Core;
+    (function (Core) {
+        var Structure;
+        (function (Structure) {
+            var Query;
+            (function (Query) {
+                var Builder;
+                (function (Builder) {
+                    Builder.BuilderPrototype = {};
+                    function registerModifier(name, f) {
+                        Builder.BuilderPrototype[name] = function () {
+                            var args = [];
+                            for (var _i = 0; _i < arguments.length; _i++) {
+                                args[_i - 0] = arguments[_i];
+                            }
+                            return f.call.apply(f, [void 0, this].concat(args));
+                        };
+                    }
+                    Builder.registerModifier = registerModifier;
+                    function build(compile) {
+                        return Object.create(Builder.BuilderPrototype, { compile: { writable: false, configurable: false, value: compile } });
+                    }
+                    Builder.build = build;
+                    function isBuilder(e) {
+                        return !!e.compile;
+                    }
+                    function parse(query) {
+                        if (typeof window === 'undefined')
+                            throw 'parse can only be called from a browser.';
+                        (0, eval)("with (LiteMol.Core.Structure.Query) { window.__LiteMol_query = " + query + "; }");
+                        var q = window.__LiteMol_query;
+                        window.__LiteMol_query = void 0;
+                        return q.compile();
+                    }
+                    Builder.parse = parse;
+                    function toQuery(q) {
+                        var ret;
+                        if (isBuilder(q))
+                            ret = q.compile();
+                        else if (typeof q === 'string' || q instanceof String)
+                            ret = parse(q);
+                        else
+                            ret = q;
+                        return ret;
+                    }
+                    Builder.toQuery = toQuery;
+                })(Builder = Query.Builder || (Query.Builder = {}));
+                function atomsByElement() {
+                    var elements = [];
+                    for (var _i = 0; _i < arguments.length; _i++) {
+                        elements[_i - 0] = arguments[_i];
+                    }
+                    return Builder.build(function () { return Compiler.compileAtoms(elements, function (m) { return m.atoms.elementSymbol; }); });
+                }
+                Query.atomsByElement = atomsByElement;
+                function atomsByName() {
+                    var names = [];
+                    for (var _i = 0; _i < arguments.length; _i++) {
+                        names[_i - 0] = arguments[_i];
+                    }
+                    return Builder.build(function () { return Compiler.compileAtoms(names, function (m) { return m.atoms.name; }); });
+                }
+                Query.atomsByName = atomsByName;
+                function atomsById() {
+                    var ids = [];
+                    for (var _i = 0; _i < arguments.length; _i++) {
+                        ids[_i - 0] = arguments[_i];
+                    }
+                    return Builder.build(function () { return Compiler.compileAtoms(ids, function (m) { return m.atoms.id; }); });
+                }
+                Query.atomsById = atomsById;
+                function residues() {
+                    var ids = [];
+                    for (var _i = 0; _i < arguments.length; _i++) {
+                        ids[_i - 0] = arguments[_i];
+                    }
+                    return Builder.build(function () { return Compiler.compileAtomRanges(false, ids, function (m) { return m.residues; }); });
+                }
+                Query.residues = residues;
+                function chains() {
+                    var ids = [];
+                    for (var _i = 0; _i < arguments.length; _i++) {
+                        ids[_i - 0] = arguments[_i];
+                    }
+                    return Builder.build(function () { return Compiler.compileAtomRanges(false, ids, function (m) { return m.chains; }); });
+                }
+                Query.chains = chains;
+                function entities() {
+                    var ids = [];
+                    for (var _i = 0; _i < arguments.length; _i++) {
+                        ids[_i - 0] = arguments[_i];
+                    }
+                    return Builder.build(function () { return Compiler.compileAtomRanges(false, ids, function (m) { return m.entities; }); });
+                }
+                Query.entities = entities;
+                function notEntities() {
+                    var ids = [];
+                    for (var _i = 0; _i < arguments.length; _i++) {
+                        ids[_i - 0] = arguments[_i];
+                    }
+                    return Builder.build(function () { return Compiler.compileAtomRanges(true, ids, function (m) { return m.entities; }); });
+                }
+                Query.notEntities = notEntities;
+                function everything() { return Builder.build(function () { return Compiler.compileEverything(); }); }
+                Query.everything = everything;
+                function entitiesFromIndices(indices) { return Builder.build(function () { return Compiler.compileFromIndices(false, indices, function (m) { return m.entities; }); }); }
+                Query.entitiesFromIndices = entitiesFromIndices;
+                function chainsFromIndices(indices) { return Builder.build(function () { return Compiler.compileFromIndices(false, indices, function (m) { return m.chains; }); }); }
+                Query.chainsFromIndices = chainsFromIndices;
+                function residuesFromIndices(indices) { return Builder.build(function () { return Compiler.compileFromIndices(false, indices, function (m) { return m.residues; }); }); }
+                Query.residuesFromIndices = residuesFromIndices;
+                function atomsFromIndices(indices) { return Builder.build(function () { return Compiler.compileAtomIndices(indices); }); }
+                Query.atomsFromIndices = atomsFromIndices;
+                function sequence(entityId, asymId, startId, endId) { return Builder.build(function () { return Compiler.compileSequence(entityId, asymId, startId, endId); }); }
+                Query.sequence = sequence;
+                function hetGroups() { return Builder.build(function () { return Compiler.compileHetGroups(); }); }
+                Query.hetGroups = hetGroups;
+                function nonHetPolymer() { return Builder.build(function () { return Compiler.compileNonHetPolymer(); }); }
+                Query.nonHetPolymer = nonHetPolymer;
+                function cartoons() { return or(Builder.build(function () { return Compiler.compilePolymerNames(["CA", "O", "O5'", "C3'", "N3"], false); }), hetGroups(), entities({ type: 'water' })); }
+                Query.cartoons = cartoons;
+                function backbone() { return Builder.build(function () { return Compiler.compilePolymerNames(["N", "CA", "C", "O", "P", "OP1", "OP2", "O3'", "O5'", "C3'", "C5'", "C4"], false); }); }
+                Query.backbone = backbone;
+                function sidechain() { return Builder.build(function () { return Compiler.compilePolymerNames(["N", "CA", "C", "O", "P", "OP1", "OP2", "O3'", "O5'", "C3'", "C5'", "C4"], true); }); }
+                Query.sidechain = sidechain;
+                function atomsInBox(min, max) { return Builder.build(function () { return Compiler.compileAtomsInBox(min, max); }); }
+                Query.atomsInBox = atomsInBox;
+                function or() {
+                    var elements = [];
+                    for (var _i = 0; _i < arguments.length; _i++) {
+                        elements[_i - 0] = arguments[_i];
+                    }
+                    return Builder.build(function () { return Compiler.compileOr(elements); });
+                }
+                Query.or = or;
+                Builder.registerModifier('complement', complement);
+                function complement(q) { return Builder.build(function () { return Compiler.compileComplement(q); }); }
+                Query.complement = complement;
+                Builder.registerModifier('ambientResidues', ambientResidues);
+                function ambientResidues(q, radius) { return Builder.build(function () { return Compiler.compileAmbientResidues(q, radius); }); }
+                Query.ambientResidues = ambientResidues;
+                Builder.registerModifier('wholeResidues', wholeResidues);
+                function wholeResidues(q) { return Builder.build(function () { return Compiler.compileWholeResidues(q); }); }
+                Query.wholeResidues = wholeResidues;
+                Builder.registerModifier('union', union);
+                function union(q) { return Builder.build(function () { return Compiler.compileUnion(q); }); }
+                Query.union = union;
+                Builder.registerModifier('inside', inside);
+                function inside(q, where) { return Builder.build(function () { return Compiler.compileInside(q, where); }); }
+                Query.inside = inside;
+                Builder.registerModifier('intersectWith', intersectWith);
+                function intersectWith(what, where) { return Builder.build(function () { return Compiler.compileIntersectWith(what, where); }); }
+                Query.intersectWith = intersectWith;
+                Builder.registerModifier('flatten', flatten);
+                function flatten(what, selector) { return Builder.build(function () { return Compiler.compileFlatten(what, selector); }); }
+                Query.flatten = flatten;
+                /**
+                 * Shortcuts
+                 */
+                function residuesByName() {
+                    var names = [];
+                    for (var _i = 0; _i < arguments.length; _i++) {
+                        names[_i - 0] = arguments[_i];
+                    }
+                    return residues.apply(void 0, names.map(function (n) { return ({ name: n }); }));
+                }
+                Query.residuesByName = residuesByName;
+                function residuesById() {
+                    var ids = [];
+                    for (var _i = 0; _i < arguments.length; _i++) {
+                        ids[_i - 0] = arguments[_i];
+                    }
+                    return residues.apply(void 0, ids.map(function (id) { return ({ authSeqNumber: id }); }));
+                }
+                Query.residuesById = residuesById;
+                function chainsById() {
+                    var ids = [];
+                    for (var _i = 0; _i < arguments.length; _i++) {
+                        ids[_i - 0] = arguments[_i];
+                    }
+                    return chains.apply(void 0, ids.map(function (id) { return ({ authAsymId: id }); }));
+                }
+                Query.chainsById = chainsById;
+                /**
+                 * Query compilation wrapper.
+                 */
+                var Compiler;
+                (function (Compiler) {
+                    var OptimizedId = (function () {
+                        function OptimizedId(id, arrays) {
+                            this.columns = [];
+                            for (var _i = 0, _a = Object.keys(id); _i < _a.length; _i++) {
+                                var key = _a[_i];
+                                if (id[key] !== void 0 && !!arrays[key]) {
+                                    this.columns.push({ value: id[key], array: arrays[key] });
+                                }
+                            }
+                        }
+                        OptimizedId.prototype.isSatisfied = function (i) {
+                            for (var _i = 0, _a = this.columns; _i < _a.length; _i++) {
+                                var c = _a[_i];
+                                if (c.value !== c.array[i])
+                                    return false;
+                            }
+                            return true;
+                        };
+                        return OptimizedId;
+                    }());
+                    function compileEverything() {
+                        return function (ctx) {
+                            if (ctx.isComplete) {
+                                var atoms = ctx.structure.atoms.indices;
+                                return new Query.FragmentSeq(ctx, [new Query.Fragment(ctx, atoms[0], atoms)]);
+                            }
+                            var indices = new Int32Array(ctx.atomCount);
+                            var offset = 0;
+                            for (var _i = 0, _a = ctx.structure.atoms.indices; _i < _a.length; _i++) {
+                                var i = _a[_i];
+                                if (ctx.hasAtom(i))
+                                    indices[offset++] = i;
+                            }
+                            return new Query.FragmentSeq(ctx, [Query.Fragment.ofArray(ctx, indices[0], indices)]);
+                        };
+                    }
+                    Compiler.compileEverything = compileEverything;
+                    function compileAtoms(elements, sel) {
+                        return function (ctx) {
+                            var set = new Set(elements), data = sel(ctx.structure), fragments = new Query.FragmentSeqBuilder(ctx);
+                            for (var i = 0, _b = data.length; i < _b; i++) {
+                                if (ctx.hasAtom(i) && set.has(data[i]))
+                                    fragments.add(Query.Fragment.ofIndex(ctx, i));
+                            }
+                            return fragments.getSeq();
+                        };
+                    }
+                    Compiler.compileAtoms = compileAtoms;
+                    function compileAtomIndices(indices) {
+                        return function (ctx) {
+                            var count = 0;
+                            for (var _i = 0, indices_3 = indices; _i < indices_3.length; _i++) {
+                                var aI = indices_3[_i];
+                                if (ctx.hasAtom(aI))
+                                    count++;
+                            }
+                            if (!count)
+                                return Query.FragmentSeq.empty(ctx);
+                            var offset = 0;
+                            var f = new Int32Array(count);
+                            for (var _a = 0, indices_4 = indices; _a < indices_4.length; _a++) {
+                                var aI = indices_4[_a];
+                                if (ctx.hasAtom(aI))
+                                    f[offset++] = aI;
+                            }
+                            return new Query.FragmentSeq(ctx, [Query.Fragment.ofArray(ctx, f[0], f)]);
+                        };
+                    }
+                    Compiler.compileAtomIndices = compileAtomIndices;
+                    function compileFromIndices(complement, indices, tableProvider) {
+                        return function (ctx) {
+                            var table = tableProvider(ctx.structure), atomStartIndex = table.atomStartIndex, atomEndIndex = table.atomEndIndex, fragments = new Query.FragmentSeqBuilder(ctx), include = false;
+                            if (complement) {
+                                var exclude = new Set(indices);
+                                var count = table.count;
+                                for (var i = 0; i < count; i++) {
+                                    if (exclude.has(i))
+                                        continue;
+                                    if (!ctx.hasRange(atomStartIndex[i], atomEndIndex[i]))
+                                        continue;
+                                    fragments.add(Query.Fragment.ofIndexRange(ctx, atomStartIndex[i], atomEndIndex[i]));
+                                }
+                            }
+                            else {
+                                for (var _i = 0, indices_5 = indices; _i < indices_5.length; _i++) {
+                                    var i = indices_5[_i];
+                                    if (!ctx.hasRange(atomStartIndex[i], atomEndIndex[i]))
+                                        continue;
+                                    fragments.add(Query.Fragment.ofIndexRange(ctx, atomStartIndex[i], atomEndIndex[i]));
+                                }
+                            }
+                            return fragments.getSeq();
+                        };
+                    }
+                    Compiler.compileFromIndices = compileFromIndices;
+                    function compileAtomRanges(complement, ids, tableProvider) {
+                        return function (ctx) {
+                            var table = tableProvider(ctx.structure), atomIndexStart = table.atomStartIndex, atomIndexEnd = table.atomEndIndex, fragments = new Query.FragmentSeqBuilder(ctx), count = table.count, include = false;
+                            var optimized = ids.map(function (id) { return new OptimizedId(id, table); });
+                            var isEmptyIds = optimized.length === 0;
+                            for (var i = 0; i < count; i++) {
+                                if (!ctx.hasRange(atomIndexStart[i], atomIndexEnd[i]))
+                                    continue;
+                                include = isEmptyIds;
+                                for (var _i = 0, optimized_1 = optimized; _i < optimized_1.length; _i++) {
+                                    var id = optimized_1[_i];
+                                    if (id.isSatisfied(i)) {
+                                        include = true;
+                                        break;
+                                    }
+                                }
+                                if (complement)
+                                    include = !include;
+                                if (include) {
+                                    fragments.add(Query.Fragment.ofIndexRange(ctx, atomIndexStart[i], atomIndexEnd[i]));
+                                }
+                            }
+                            return fragments.getSeq();
+                        };
+                    }
+                    Compiler.compileAtomRanges = compileAtomRanges;
+                    function compileSequence(seqEntityId, seqAsymId, start, end) {
+                        return function (ctx) {
+                            var residues = ctx.structure.residues, chains = ctx.structure.chains, seqNumber = residues.seqNumber, insCode = residues.insCode, chainIndex = residues.chainIndex, atomStartIndex = residues.atomStartIndex, atomEndIndex = residues.atomEndIndex, entityId = chains.entityId, asymId = chains.asymId, count = chains.count, residueStartIndex = chains.residueStartIndex, residueEndIndex = chains.residueEndIndex, fragments = new Query.FragmentSeqBuilder(ctx);
+                            var parent = ctx.structure.parent, sourceChainIndex = ctx.structure.chains.sourceChainIndex, parentAsymId = parent ? parent.chains.asymId : undefined, isComputed = parent && sourceChainIndex;
+                            for (var cI = 0; cI < count; cI++) {
+                                var aId = isComputed ? parentAsymId[sourceChainIndex[cI]] : asymId[cI];
+                                if (entityId[cI] !== seqEntityId || aId !== seqAsymId)
+                                    continue;
+                                var i = residueStartIndex[cI], last = residueEndIndex[cI], startIndex = -1, endIndex = -1;
+                                for (; i < last; i++) {
+                                    if (seqNumber[i] >= start.seqNumber) {
+                                        startIndex = i;
+                                        break;
+                                    }
+                                }
+                                if (i === last)
+                                    continue;
+                                for (i = startIndex; i < last; i++) {
+                                    if (seqNumber[i] >= end.seqNumber) {
+                                        break;
+                                    }
+                                }
+                                endIndex = i;
+                                if (ctx.hasRange(atomStartIndex[startIndex], atomEndIndex[endIndex])) {
+                                    fragments.add(Query.Fragment.ofIndexRange(ctx, atomStartIndex[startIndex], atomEndIndex[endIndex]));
+                                }
+                            }
+                            return fragments.getSeq();
+                        };
+                    }
+                    Compiler.compileSequence = compileSequence;
+                    function compileHetGroups() {
+                        return function (ctx) {
+                            var _a = ctx.structure.residues, atomStartIndex = _a.atomStartIndex, atomEndIndex = _a.atomEndIndex, isHet = _a.isHet, entityIndex = _a.entityIndex, count = _a.count, entityType = ctx.structure.entities.entityType, water = Structure.EntityType.Water, fragments = new Query.FragmentSeqBuilder(ctx);
+                            for (var i = 0; i < count; i++) {
+                                if (!ctx.hasRange(atomStartIndex[i], atomEndIndex[i]))
+                                    continue;
+                                if (entityType[entityIndex[i]] === water)
+                                    continue;
+                                if (isHet[i]) {
+                                    fragments.add(Query.Fragment.ofIndexRange(ctx, atomStartIndex[i], atomEndIndex[i]));
+                                }
+                            }
+                            return fragments.getSeq();
+                        };
+                    }
+                    Compiler.compileHetGroups = compileHetGroups;
+                    function compileNonHetPolymer() {
+                        return function (ctx) {
+                            var _a = ctx.structure.residues, atomStartIndex = _a.atomStartIndex, atomEndIndex = _a.atomEndIndex, isHet = _a.isHet, entityIndex = _a.entityIndex, count = _a.count, _c = ctx.structure.entities, entityType = _c.entityType, entityCount = _c.count, eRS = _c.residueStartIndex, eRE = _c.residueEndIndex, polymer = Structure.EntityType.Polymer, size = 0;
+                            for (var eI = 0; eI < entityCount; eI++) {
+                                if (entityType[eI] !== polymer)
+                                    continue;
+                                for (var rI = eRS[eI], _bR = eRE[eI]; rI < _bR; rI++) {
+                                    for (var aI = atomStartIndex[rI], _bA = atomEndIndex[rI]; aI < _bA; aI++) {
+                                        if (ctx.hasAtom(aI))
+                                            size++;
+                                    }
+                                }
+                            }
+                            if (!size)
+                                return Query.FragmentSeq.empty(ctx);
+                            var f = new Int32Array(size), offset = 0;
+                            for (var eI = 0; eI < entityCount; eI++) {
+                                if (entityType[eI] !== polymer)
+                                    continue;
+                                for (var rI = eRS[eI], _bR = eRE[eI]; rI < _bR; rI++) {
+                                    for (var aI = atomStartIndex[rI], _bA = atomEndIndex[rI]; aI < _bA; aI++) {
+                                        if (ctx.hasAtom(aI))
+                                            f[offset++] = aI;
+                                    }
+                                }
+                            }
+                            return new Query.FragmentSeq(ctx, [Query.Fragment.ofArray(ctx, f[0], f)]);
+                        };
+                    }
+                    Compiler.compileNonHetPolymer = compileNonHetPolymer;
+                    function compileAtomsInBox(min, max) {
+                        return function (ctx) {
+                            var atoms = ctx.structure.atoms, xs = atoms.x, ys = atoms.y, zs = atoms.z, count = atoms.count, fragment = [];
+                            for (var i = 0; i < count; i++) {
+                                if (!ctx.hasAtom(i))
+                                    continue;
+                                var x = xs[i], y = ys[i], z = zs[i];
+                                if (x >= min.x && x <= max.x
+                                    && y >= min.y && y <= max.y
+                                    && z >= min.z && z <= max.z) {
+                                    fragment[fragment.length] = i;
+                                }
+                            }
+                            if (!fragment.length)
+                                return Query.FragmentSeq.empty(ctx);
+                            return new Query.FragmentSeq(ctx, [new Query.Fragment(ctx, fragment[0], fragment)]);
+                        };
+                    }
+                    Compiler.compileAtomsInBox = compileAtomsInBox;
+                    ////function updateBox(f: Fragment,
+                    ////    arrays: { x: number[]; y: number[]; z: number[] },
+                    ////    deltas: { dx: number; dy: number; dz: number },
+                    ////    min: { x: number; y: number; z: number }, max: { x: number; y: number; z: number }) {
+                    ////    min.x = min.y = min.z = Number.MAX_VALUE;
+                    ////    max.x = max.y = max.z = -Number.MAX_VALUE;
+                    ////    for (let i of f.atomIndices) {
+                    ////        let x = arrays.x[i], y = arrays.y[i], z = arrays.z[i];
+                    ////        if (x > max.x) max.x = x;
+                    ////        if (y > max.y) max.y = y;
+                    ////        if (z > max.z) max.z = z;
+                    ////        if (x > min.x) min.x = x;
+                    ////        if (y > min.y) min.y = y;
+                    ////        if (z > min.z) min.z = z;
+                    ////    }
+                    ////    min.x -= deltas.dx;
+                    ////    min.y -= deltas.dy;
+                    ////    min.z -= deltas.dz;
+                    ////    max.x += deltas.dx;
+                    ////    max.y += deltas.dy;
+                    ////    max.z += deltas.dz;
+                    ////}
+                    ////export function compileExtendBox(what: Query, deltas: { dx: number; dy: number; dz: number }) {
+                    ////    return (ctx: Context) => {
+                    ////        let ret = new HashFragmentSeqBuilder(ctx);
+                    ////        let min = { x: 0.1, y: 0.1, z: 0.1 },
+                    ////            max = { x: 0.1, y: 0.1, z: 0.1 },
+                    ////            atoms = { x: ctx.structure.atoms.x, y: ctx.structure.atoms.y, z: ctx.structure.atoms.z },
+                    ////            xs = atoms.x, ys = atoms.y, zs = atoms.z,
+                    ////        for (let f of what(ctx).fragments) {
+                    ////            updateBox(f, atoms, deltas, min, max);
+                    ////            let fragment: number[] = [];
+                    ////            for (let i of f.atomIndices) {
+                    ////                if (!ctx.hasAtom(i)) continue;
+                    ////                let x = xs[i], y = ys[i], z = zs[i];
+                    ////                if (x >= min.x && x <= max.x
+                    ////                    && y >= min.y && y <= max.y
+                    ////                    && z >= min.z && z <= max.z) {
+                    ////                    fragment[fragment.length] = i;
+                    ////                }
+                    ////            }
+                    ////            if (fragment.length > 0) {
+                    ////                //ret.add(Fragment.of)
+                    ////            }
+                    ////        }
+                    ////        return ret.getSeq();
+                    ////    };
+                    ////}
+                    function compileInside(what, where) {
+                        var _what = Builder.toQuery(what);
+                        var _where = Builder.toQuery(where);
+                        return function (ctx) {
+                            return new Query.FragmentSeq(ctx, _what(Query.Context.ofFragments(_where(ctx))).fragments);
+                        };
+                    }
+                    Compiler.compileInside = compileInside;
+                    function narrowFragment(ctx, f, m) {
+                        var count = 0;
+                        for (var _i = 0, _a = f.atomIndices; _i < _a.length; _i++) {
+                            var i = _a[_i];
+                            if (m.has(i))
+                                count++;
+                        }
+                        if (!count)
+                            return void 0;
+                        var ret = new Int32Array(count);
+                        var offset = 0;
+                        for (var _c = 0, _d = f.atomIndices; _c < _d.length; _c++) {
+                            var i = _d[_c];
+                            if (m.has(i))
+                                ret[offset++] = i;
+                        }
+                        return Query.Fragment.ofArray(ctx, ret[0], ret);
+                    }
+                    function compileIntersectWith(what, where) {
+                        var _what = Builder.toQuery(what);
+                        var _where = Builder.toQuery(where);
+                        return function (ctx) {
+                            var fs = _what(ctx);
+                            var map = Query.Context.Mask.ofFragments(_where(ctx));
+                            var ret = new Query.FragmentSeqBuilder(ctx);
+                            for (var _i = 0, _a = fs.fragments; _i < _a.length; _i++) {
+                                var f = _a[_i];
+                                var n = narrowFragment(ctx, f, map);
+                                if (n)
+                                    ret.add(n);
+                            }
+                            return ret.getSeq();
+                        };
+                    }
+                    Compiler.compileIntersectWith = compileIntersectWith;
+                    function compileFilter(what, filter) {
+                        var _what = Builder.toQuery(what);
+                        return function (ctx) {
+                            var src = _what(ctx).fragments, result = new Query.FragmentSeqBuilder(ctx), f;
+                            for (var i = 0; i < src.length; i++) {
+                                f = src[i];
+                                if (filter(f))
+                                    result.add(f);
+                            }
+                            return result.getSeq();
+                        };
+                    }
+                    Compiler.compileFilter = compileFilter;
+                    function compileComplement(what) {
+                        var _what = Builder.toQuery(what);
+                        return function (ctx) {
+                            var mask = Query.Context.Mask.ofFragments(_what(ctx)), count = 0, offset = 0;
+                            for (var i = 0, _b = ctx.structure.atoms.count; i < _b; i++) {
+                                if (ctx.hasAtom(i) && !mask.has(i))
+                                    count++;
+                            }
+                            if (!count)
+                                return Query.FragmentSeq.empty(ctx);
+                            var atoms = new Int32Array(count);
+                            for (var i = 0, _b = ctx.structure.atoms.count; i < _b; i++) {
+                                if (ctx.hasAtom(i) && !mask.has(i))
+                                    atoms[offset++] = i;
+                            }
+                            return new Query.FragmentSeq(ctx, [Query.Fragment.ofArray(ctx, atoms[0], atoms)]);
+                        };
+                    }
+                    Compiler.compileComplement = compileComplement;
+                    function compileOr(queries) {
+                        var _qs = queries.map(function (q) { return Builder.toQuery(q); });
+                        return function (ctx) {
+                            var fragments = new Query.HashFragmentSeqBuilder(ctx);
+                            for (var _i = 0, _qs_1 = _qs; _i < _qs_1.length; _i++) {
+                                var q = _qs_1[_i];
+                                var r = q(ctx);
+                                for (var _a = 0, _c = r.fragments; _a < _c.length; _a++) {
+                                    var f = _c[_a];
+                                    fragments.add(f);
+                                }
+                            }
+                            return fragments.getSeq();
+                        };
+                    }
+                    Compiler.compileOr = compileOr;
+                    function compileUnion(what) {
+                        var _what = Builder.toQuery(what);
+                        return function (ctx) {
+                            var src = _what(ctx).fragments, indices = new Set(), j = 0, atoms;
+                            for (var i = 0; i < src.length; i++) {
+                                atoms = src[i].atomIndices;
+                                for (j = 0; j < atoms.length; j++)
+                                    indices.add(atoms[j]);
+                            }
+                            if (indices.size === 0)
+                                return Query.FragmentSeq.empty(ctx);
+                            return new Query.FragmentSeq(ctx, [Query.Fragment.ofSet(ctx, indices)]);
+                        };
+                    }
+                    Compiler.compileUnion = compileUnion;
+                    function compilePolymerNames(names, complement) {
+                        return function (ctx) {
+                            var structure = ctx.structure, atomNames = structure.atoms.name, indices = [], indexCount = 0;
+                            var allowedNames = new Set(names);
+                            if (complement) {
+                                for (var ei = 0; ei < structure.entities.count; ei++) {
+                                    if (structure.entities.entityType[ei] !== Structure.EntityType.Polymer)
+                                        continue;
+                                    var start = structure.entities.atomStartIndex[ei], end = structure.entities.atomEndIndex[ei];
+                                    for (var i = start; i < end; i++) {
+                                        if (ctx.hasAtom(i) && !allowedNames.has(atomNames[i]))
+                                            indices[indexCount++] = i;
+                                    }
+                                }
+                            }
+                            else {
+                                for (var ei = 0; ei < structure.entities.count; ei++) {
+                                    if (structure.entities.entityType[ei] !== Structure.EntityType.Polymer)
+                                        continue;
+                                    var start = structure.entities.atomStartIndex[ei], end = structure.entities.atomEndIndex[ei];
+                                    for (var i = start; i < end; i++) {
+                                        if (ctx.hasAtom(i) && allowedNames.has(atomNames[i]))
+                                            indices[indexCount++] = i;
+                                    }
+                                }
+                            }
+                            if (!indices.length)
+                                return Query.FragmentSeq.empty(ctx);
+                            return new Query.FragmentSeq(ctx, [Query.Fragment.ofArray(ctx, indices[0], new Int32Array(indices))]);
+                        };
+                    }
+                    Compiler.compilePolymerNames = compilePolymerNames;
+                    function compileAmbientResidues(where, radius) {
+                        var _where = Builder.toQuery(where);
+                        return function (ctx) {
+                            var src = _where(ctx), tree = ctx.tree, radiusCtx = tree.createContextRadius(radius, false), buffer = radiusCtx.buffer, ret = new Query.HashFragmentSeqBuilder(ctx), x = ctx.structure.atoms.x, y = ctx.structure.atoms.y, z = ctx.structure.atoms.z, residueIndex = ctx.structure.atoms.residueIndex, atomStart = ctx.structure.residues.atomStartIndex, atomEnd = ctx.structure.residues.atomEndIndex, residues = new Set(), treeData = tree.data;
+                            for (var _i = 0, _a = src.fragments; _i < _a.length; _i++) {
+                                var f = _a[_i];
+                                residues.clear();
+                                for (var _c = 0, _d = f.atomIndices; _c < _d.length; _c++) {
+                                    var i = _d[_c];
+                                    residues.add(residueIndex[i]);
+                                    radiusCtx.nearest(x[i], y[i], z[i], radius);
+                                    for (var j = 0, _l = buffer.count; j < _l; j++) {
+                                        residues.add(residueIndex[treeData[buffer.indices[j]]]);
+                                    }
+                                }
+                                var atomCount = { count: 0, start: atomStart, end: atomEnd };
+                                residues.forEach(function (r) { this.count += this.end[r] - this.start[r]; }, atomCount);
+                                var indices = new Int32Array(atomCount.count), atomIndices = { indices: indices, offset: 0, start: atomStart, end: atomEnd };
+                                residues.forEach(function (r) {
+                                    for (var i = this.start[r], _l = this.end[r]; i < _l; i++) {
+                                        this.indices[this.offset++] = i;
+                                    }
+                                }, atomIndices);
+                                Array.prototype.sort.call(indices, function (a, b) { return a - b; });
+                                ret.add(Query.Fragment.ofArray(ctx, indices[0], indices));
+                            }
+                            return ret.getSeq();
+                        };
+                    }
+                    Compiler.compileAmbientResidues = compileAmbientResidues;
+                    function compileWholeResidues(where) {
+                        var _where = Builder.toQuery(where);
+                        return function (ctx) {
+                            var src = _where(ctx), ret = new Query.HashFragmentSeqBuilder(ctx), residueIndex = ctx.structure.atoms.residueIndex, atomStart = ctx.structure.residues.atomStartIndex, atomEnd = ctx.structure.residues.atomEndIndex, residues = new Set();
+                            for (var _i = 0, _a = src.fragments; _i < _a.length; _i++) {
+                                var f = _a[_i];
+                                residues.clear();
+                                for (var _c = 0, _d = f.atomIndices; _c < _d.length; _c++) {
+                                    var i = _d[_c];
+                                    residues.add(residueIndex[i]);
+                                }
+                                var atomCount = { count: 0, start: atomStart, end: atomEnd };
+                                residues.forEach(function (r) { this.count += this.end[r] - this.start[r]; }, atomCount);
+                                var indices = new Int32Array(atomCount.count), atomIndices = { indices: indices, offset: 0, start: atomStart, end: atomEnd };
+                                residues.forEach(function (r) {
+                                    for (var i = this.start[r], _l = this.end[r]; i < _l; i++) {
+                                        this.indices[this.offset++] = i;
+                                    }
+                                }, atomIndices);
+                                Array.prototype.sort.call(indices, function (a, b) { return a - b; });
+                                ret.add(Query.Fragment.ofArray(ctx, indices[0], indices));
+                            }
+                            return ret.getSeq();
+                        };
+                    }
+                    Compiler.compileWholeResidues = compileWholeResidues;
+                    function compileFlatten(what, selector) {
+                        var _what = Builder.toQuery(what);
+                        return function (ctx) {
+                            var fs = _what(ctx);
+                            var ret = new Query.HashFragmentSeqBuilder(ctx);
+                            for (var _i = 0, _a = fs.fragments; _i < _a.length; _i++) {
+                                var f = _a[_i];
+                                var xs = selector(f);
+                                for (var _c = 0, _d = xs.fragments; _c < _d.length; _c++) {
+                                    var x = _d[_c];
+                                    ret.add(x);
+                                }
+                            }
+                            return ret.getSeq();
+                        };
+                    }
+                    Compiler.compileFlatten = compileFlatten;
+                })(Compiler = Query.Compiler || (Query.Compiler = {}));
+            })(Query = Structure.Query || (Structure.Query = {}));
+        })(Structure = Core.Structure || (Core.Structure = {}));
+    })(Core = LiteMol.Core || (LiteMol.Core = {}));
+})(LiteMol || (LiteMol = {}));
+/*
+ * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ */
+var LiteMol;
+(function (LiteMol) {
+    var Core;
+    (function (Core) {
+        var Structure;
+        (function (Structure) {
+            var Query;
+            (function (Query) {
+                var Algebraic;
+                (function (Algebraic) {
+                    /**
+                     * Predicates
+                     */
+                    function unaryP(f) { return function (a) { return function (ctx, i) { return f(a(ctx, i)); }; }; }
+                    function binaryP(f) { return function (a, b) { return function (ctx, i) { return f(a(ctx, i), b(ctx, i)); }; }; }
+                    Algebraic.not = unaryP(function (a) { return !a; });
+                    Algebraic.and = binaryP(function (a, b) { return a && b; });
+                    Algebraic.or = binaryP(function (a, b) { return a || b; });
+                    var backboneAtoms = new Set(["N", "CA", "C", "O", "P", "OP1", "OP2", "O3'", "O5'", "C3'", "C5'", "C4"]);
+                    Algebraic.backbone = function (ctx, i) { return Algebraic.entityType(ctx, i) === 'polymer' && backboneAtoms.has(Algebraic.atomName(ctx, i)); };
+                    Algebraic.sidechain = function (ctx, i) { return Algebraic.entityType(ctx, i) === 'polymer' && !backboneAtoms.has(Algebraic.atomName(ctx, i)); };
+                    /**
+                     * Relations
+                     */
+                    function binaryR(f) { return function (a, b) { return function (ctx, i) { return f(a(ctx, i), b(ctx, i)); }; }; }
+                    Algebraic.equal = binaryR(function (a, b) { return a === b; });
+                    Algebraic.notEqual = binaryR(function (a, b) { return a !== b; });
+                    Algebraic.greater = binaryR(function (a, b) { return a > b; });
+                    Algebraic.lesser = binaryR(function (a, b) { return a < b; });
+                    Algebraic.greaterEqual = binaryR(function (a, b) { return a >= b; });
+                    Algebraic.lesserEqual = binaryR(function (a, b) { return a <= b; });
+                    function inRange(s, a, b) { return function (ctx, i) { var v = s(ctx, i); return v >= a && v <= b; }; }
+                    Algebraic.inRange = inRange;
+                    /**
+                     * Selectors
+                     */
+                    function value(v) { return function () { return v; }; }
+                    Algebraic.value = value;
+                    function atomProp(index, table, value) { return function (ctx, i) { var s = ctx.structure; return value(table(s))[index(s.atoms)[i]]; }; }
+                    Algebraic.residueSeqNumber = atomProp(function (m) { return m.residueIndex; }, function (m) { return m.residues; }, function (t) { return t.seqNumber; });
+                    Algebraic.residueName = atomProp(function (m) { return m.residueIndex; }, function (m) { return m.residues; }, function (t) { return t.name; });
+                    Algebraic.elementSymbol = atomProp(function (m) { return m.indices; }, function (m) { return m.atoms; }, function (t) { return t.elementSymbol; });
+                    Algebraic.atomName = atomProp(function (m) { return m.indices; }, function (m) { return m.atoms; }, function (t) { return t.name; });
+                    Algebraic.entityType = atomProp(function (m) { return m.entityIndex; }, function (m) { return m.entities; }, function (t) { return t.type; });
+                    /**
+                     * Query
+                     */
+                    function query(p) {
+                        return Query.Builder.build(function () { return function (ctx) {
+                            var result = [];
+                            for (var i = 0, _b = ctx.structure.atoms.count; i < _b; i++) {
+                                if (ctx.hasAtom(i) && p(ctx, i))
+                                    result[result.length] = i;
+                            }
+                            if (!result.length)
+                                return Query.FragmentSeq.empty(ctx);
+                            return new Query.FragmentSeq(ctx, [Query.Fragment.ofArray(ctx, result[0], new Int32Array(result))]);
+                        }; });
+                    }
+                    Algebraic.query = query;
+                })(Algebraic = Query.Algebraic || (Query.Algebraic = {}));
+            })(Query = Structure.Query || (Structure.Query = {}));
+        })(Structure = Core.Structure || (Core.Structure = {}));
+    })(Core = LiteMol.Core || (LiteMol.Core = {}));
+})(LiteMol || (LiteMol = {}));
+/*
+ * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ */
+var LiteMol;
+(function (LiteMol) {
+    var Core;
+    (function (Core) {
+        var Utils;
+        (function (Utils) {
+            "use strict";
+            function extend(object, source, guard) {
+                var v;
+                var s = source;
+                var o = object;
+                var g = guard;
+                for (var _i = 0, _a = Object.keys(source); _i < _a.length; _i++) {
+                    var k = _a[_i];
+                    v = s[k];
+                    if (v !== void 0)
+                        o[k] = v;
+                    else if (guard)
+                        o[k] = g[k];
+                }
+                if (guard) {
+                    for (var _b = 0, _c = Object.keys(guard); _b < _c.length; _b++) {
+                        var k = _c[_b];
+                        v = o[k];
+                        if (v === void 0)
+                            o[k] = g[k];
+                    }
+                }
+                return object;
+            }
+            Utils.extend = extend;
+            ;
+            function debounce(func, wait) {
+                var args, maxTimeoutId, result, stamp, thisArg, timeoutId, trailingCall, lastCalled = 0, maxWait = 0, trailing = true, leading = false;
+                wait = Math.max(0, wait) || 0;
+                var delayed = function () {
+                    var remaining = wait - (performance.now() - stamp);
+                    if (remaining <= 0) {
+                        if (maxTimeoutId) {
+                            clearTimeout(maxTimeoutId);
+                        }
+                        var isCalled = trailingCall;
+                        maxTimeoutId = timeoutId = trailingCall = void 0;
+                        if (isCalled) {
+                            lastCalled = performance.now();
+                            result = func.apply(thisArg, args);
+                            if (!timeoutId && !maxTimeoutId) {
+                                args = thisArg = null;
+                            }
+                        }
+                    }
+                    else {
+                        timeoutId = setTimeout(delayed, remaining);
+                    }
+                };
+                var maxDelayed = function () {
+                    if (timeoutId) {
+                        clearTimeout(timeoutId);
+                    }
+                    maxTimeoutId = timeoutId = trailingCall = void 0;
+                    if (trailing || (maxWait !== wait)) {
+                        lastCalled = performance.now();
+                        result = func.apply(thisArg, args);
+                        if (!timeoutId && !maxTimeoutId) {
+                            args = thisArg = null;
+                        }
+                    }
+                };
+                return function () {
+                    args = arguments;
+                    stamp = performance.now();
+                    thisArg = this;
+                    trailingCall = trailing && (timeoutId || !leading);
+                    var isCalled = false;
+                    var leadingCall = false;
+                    if (maxWait === 0) {
+                        var leadingCall_1 = leading && !timeoutId;
+                    }
+                    else {
+                        if (!maxTimeoutId && !leading) {
+                            lastCalled = stamp;
+                        }
+                        var remaining = maxWait - (stamp - lastCalled), isCalled_1 = remaining <= 0;
+                        if (isCalled_1) {
+                            if (maxTimeoutId) {
+                                maxTimeoutId = clearTimeout(maxTimeoutId);
+                            }
+                            lastCalled = stamp;
+                            result = func.apply(thisArg, args);
+                        }
+                        else if (!maxTimeoutId) {
+                            maxTimeoutId = setTimeout(maxDelayed, remaining);
+                        }
+                    }
+                    if (isCalled && timeoutId) {
+                        timeoutId = clearTimeout(timeoutId);
+                    }
+                    else if (!timeoutId && wait !== maxWait) {
+                        timeoutId = setTimeout(delayed, wait);
+                    }
+                    if (leadingCall) {
+                        isCalled = true;
+                        result = func.apply(thisArg, args);
+                    }
+                    if (isCalled && !timeoutId && !maxTimeoutId) {
+                        args = thisArg = null;
+                    }
+                    return result;
+                };
+            }
+            Utils.debounce = debounce;
+        })(Utils = Core.Utils || (Core.Utils = {}));
+    })(Core = LiteMol.Core || (LiteMol.Core = {}));
+})(LiteMol || (LiteMol = {}));
+/*
+ * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ */
+var LiteMol;
+(function (LiteMol) {
+    var Core;
+    (function (Core) {
+        var Utils;
+        (function (Utils) {
+            function integerSetToSortedTypedArray(set) {
+                var array = new Int32Array(set.size);
+                set.forEach(function (v) { this.array[this.index++] = v; }, { array: array, index: 0 });
+                Array.prototype.sort.call(array, function (x, y) { return x - y; });
+                return array;
+            }
+            Utils.integerSetToSortedTypedArray = integerSetToSortedTypedArray;
+            /**
+             * A a JS native array with the given size.
+             */
+            function makeNativeIntArray(size) {
+                var arr = [];
+                for (var i = 0; i < size; i++)
+                    arr[i] = 0;
+                return arr;
+            }
+            Utils.makeNativeIntArray = makeNativeIntArray;
+            /**
+             * A a JS native array with the given size.
+             */
+            function makeNativeFloatArray(size) {
+                var arr = [];
+                if (!size)
+                    return arr;
+                arr[0] = 0.1;
+                for (var i = 0; i < size; i++)
+                    arr[i] = 0;
+                return arr;
+            }
+            Utils.makeNativeFloatArray = makeNativeFloatArray;
+            /**
+             * A generic chunked array builder.
+             */
+            var ChunkedArrayBuilder = (function () {
+                function ChunkedArrayBuilder(creator, chunkElementCount, elementSize) {
+                    chunkElementCount = chunkElementCount | 0;
+                    if (chunkElementCount <= 0)
+                        chunkElementCount = 1;
+                    this.elementSize = elementSize;
+                    this.chunkSize = chunkElementCount * elementSize;
+                    this.creator = creator;
+                    this.current = creator(this.chunkSize);
+                    this.parts = [this.current];
+                    this.currentIndex = 0;
+                    this.elementCount = 0;
+                }
+                ChunkedArrayBuilder.prototype.add4 = function (x, y, z, w) {
+                    if (this.currentIndex >= this.chunkSize) {
+                        this.currentIndex = 0;
+                        this.current = this.creator(this.chunkSize);
+                        this.parts[this.parts.length] = this.current;
+                    }
+                    this.current[this.currentIndex++] = x;
+                    this.current[this.currentIndex++] = y;
+                    this.current[this.currentIndex++] = z;
+                    this.current[this.currentIndex++] = w;
+                    return this.elementCount++;
+                };
+                ChunkedArrayBuilder.prototype.add3 = function (x, y, z) {
+                    if (this.currentIndex >= this.chunkSize) {
+                        this.currentIndex = 0;
+                        this.current = this.creator(this.chunkSize);
+                        this.parts[this.parts.length] = this.current;
+                    }
+                    this.current[this.currentIndex++] = x;
+                    this.current[this.currentIndex++] = y;
+                    this.current[this.currentIndex++] = z;
+                    return this.elementCount++;
+                };
+                ChunkedArrayBuilder.prototype.add2 = function (x, y) {
+                    if (this.currentIndex >= this.chunkSize) {
+                        this.currentIndex = 0;
+                        this.current = this.creator(this.chunkSize);
+                        this.parts[this.parts.length] = this.current;
+                    }
+                    this.current[this.currentIndex++] = x;
+                    this.current[this.currentIndex++] = y;
+                    return this.elementCount++;
+                };
+                ChunkedArrayBuilder.prototype.add = function (x) {
+                    if (this.currentIndex >= this.chunkSize) {
+                        this.currentIndex = 0;
+                        this.current = this.creator(this.chunkSize);
+                        this.parts[this.parts.length] = this.current;
+                    }
+                    this.current[this.currentIndex++] = x;
+                    return this.elementCount++;
+                };
+                ChunkedArrayBuilder.prototype.compact = function () {
+                    var ret = this.creator(this.elementSize * this.elementCount), i, j, offset = (this.parts.length - 1) * this.chunkSize, offsetInner = 0, part;
+                    if (this.parts.length > 1) {
+                        if (this.parts[0].buffer) {
+                            for (i = 0; i < this.parts.length - 1; i++) {
+                                ret.set(this.parts[i], this.chunkSize * i);
+                            }
+                        }
+                        else {
+                            for (i = 0; i < this.parts.length - 1; i++) {
+                                offsetInner = this.chunkSize * i;
+                                part = this.parts[i];
+                                for (j = 0; j < this.chunkSize; j++) {
+                                    ret[offsetInner + j] = part[j];
+                                }
+                            }
+                        }
+                    }
+                    if (this.current.buffer && this.currentIndex >= this.chunkSize) {
+                        ret.set(this.current, this.chunkSize * (this.parts.length - 1));
+                    }
+                    else {
+                        for (i = 0; i < this.currentIndex; i++) {
+                            ret[offset + i] = this.current[i];
+                        }
+                    }
+                    return ret;
+                };
+                ChunkedArrayBuilder.forVertex3D = function (chunkVertexCount) {
+                    if (chunkVertexCount === void 0) { chunkVertexCount = 262144; }
+                    return new ChunkedArrayBuilder(function (size) { return new Float32Array(size); }, chunkVertexCount, 3);
+                };
+                ChunkedArrayBuilder.forIndexBuffer = function (chunkIndexCount) {
+                    if (chunkIndexCount === void 0) { chunkIndexCount = 262144; }
+                    return new ChunkedArrayBuilder(function (size) { return new Uint32Array(size); }, chunkIndexCount, 3);
+                };
+                ChunkedArrayBuilder.forTokenIndices = function (chunkTokenCount) {
+                    if (chunkTokenCount === void 0) { chunkTokenCount = 131072; }
+                    return new ChunkedArrayBuilder(function (size) { return new Int32Array(size); }, chunkTokenCount, 2);
+                };
+                ChunkedArrayBuilder.forIndices = function (chunkTokenCount) {
+                    if (chunkTokenCount === void 0) { chunkTokenCount = 131072; }
+                    return new ChunkedArrayBuilder(function (size) { return new Int32Array(size); }, chunkTokenCount, 1);
+                };
+                ChunkedArrayBuilder.forInt32 = function (chunkSize) {
+                    if (chunkSize === void 0) { chunkSize = 131072; }
+                    return new ChunkedArrayBuilder(function (size) { return new Int32Array(size); }, chunkSize, 1);
+                };
+                ChunkedArrayBuilder.forFloat32 = function (chunkSize) {
+                    if (chunkSize === void 0) { chunkSize = 131072; }
+                    return new ChunkedArrayBuilder(function (size) { return new Float32Array(size); }, chunkSize, 1);
+                };
+                ChunkedArrayBuilder.forArray = function (chunkSize) {
+                    if (chunkSize === void 0) { chunkSize = 131072; }
+                    return new ChunkedArrayBuilder(function (size) { return []; }, chunkSize, 1);
+                };
+                return ChunkedArrayBuilder;
+            }());
+            Utils.ChunkedArrayBuilder = ChunkedArrayBuilder;
+            /**
+             * Static size array builder.
+             */
+            var ArrayBuilder = (function () {
+                function ArrayBuilder(creator, chunkElementCount, elementSize) {
+                    chunkElementCount = chunkElementCount | 0;
+                    this.array = creator(chunkElementCount * elementSize);
+                    this.currentIndex = 0;
+                    this.elementCount = 0;
+                }
+                ArrayBuilder.prototype.add3 = function (x, y, z) {
+                    this.array[this.currentIndex++] = x;
+                    this.array[this.currentIndex++] = y;
+                    this.array[this.currentIndex++] = z;
+                    this.elementCount++;
+                };
+                ArrayBuilder.prototype.add2 = function (x, y) {
+                    this.array[this.currentIndex++] = x;
+                    this.array[this.currentIndex++] = y;
+                    this.elementCount++;
+                };
+                ArrayBuilder.prototype.add = function (x) {
+                    this.array[this.currentIndex++] = x;
+                    this.elementCount++;
+                };
+                ArrayBuilder.forVertex3D = function (count) {
+                    return new ArrayBuilder(function (size) { return new Float32Array(size); }, count, 3);
+                };
+                ArrayBuilder.forIndexBuffer = function (count) {
+                    return new ArrayBuilder(function (size) { return new Int32Array(size); }, count, 3);
+                };
+                ArrayBuilder.forTokenIndices = function (count) {
+                    return new ArrayBuilder(function (size) { return new Int32Array(size); }, count, 2);
+                };
+                ArrayBuilder.forIndices = function (count) {
+                    return new ArrayBuilder(function (size) { return new Int32Array(size); }, count, 1);
+                };
+                ArrayBuilder.forInt32 = function (count) {
+                    return new ArrayBuilder(function (size) { return new Int32Array(size); }, count, 1);
+                };
+                ArrayBuilder.forFloat32 = function (count) {
+                    return new ArrayBuilder(function (size) { return new Float32Array(size); }, count, 1);
+                };
+                ArrayBuilder.forArray = function (count) {
+                    return new ArrayBuilder(function (size) { return []; }, count, 1);
+                };
+                return ArrayBuilder;
+            }());
+            Utils.ArrayBuilder = ArrayBuilder;
+        })(Utils = Core.Utils || (Core.Utils = {}));
+    })(Core = LiteMol.Core || (LiteMol.Core = {}));
+})(LiteMol || (LiteMol = {}));
+/*
+ * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ */
+var LiteMol;
+(function (LiteMol) {
+    var Core;
+    (function (Core) {
+        var Utils;
+        (function (Utils) {
+            "use strict";
+            /**
+             * Efficient integer and float parsers.
+             *
+             * For the purposes of parsing numbers from the mmCIF data representations,
+             * up to 4 times faster than JS parseInt/parseFloat.
+             */
+            var FastNumberParsers = (function () {
+                function FastNumberParsers() {
+                }
+                FastNumberParsers.parseInt = function (str, start, end) {
+                    var ret = 0, neg = 1;
+                    if (str.charCodeAt(start) === 45 /* - */) {
+                        neg = -1;
+                        start++;
+                    }
+                    for (; start < end; start++) {
+                        var c = str.charCodeAt(start) - 48;
+                        if (c > 9 || c < 0)
+                            return (neg * ret) | 0;
+                        else
+                            ret = (10 * ret + c) | 0;
+                    }
+                    return neg * ret;
+                };
+                FastNumberParsers.parseScientific = function (main, str, start, end) {
+                    return main * Math.pow(10.0, FastNumberParsers.parseInt(str, start, end));
+                };
+                FastNumberParsers.parseFloat = function (str, start, end) {
+                    var neg = 1.0, ret = 0.0, point = 0.0, div = 1.0;
+                    if (str.charCodeAt(start) === 45) {
+                        neg = -1.0;
+                        ++start;
+                    }
+                    while (start < end) {
+                        var c = str.charCodeAt(start) - 48;
+                        if (c >= 0 && c < 10) {
+                            ret = ret * 10 + c;
+                            ++start;
+                        }
+                        else if (c === -2) {
+                            ++start;
+                            while (start < end) {
+                                c = str.charCodeAt(start) - 48;
+                                if (c >= 0 && c < 10) {
+                                    point = 10.0 * point + c;
+                                    div = 10.0 * div;
+                                    ++start;
+                                }
+                                else if (c === 53 || c === 21) {
+                                    return FastNumberParsers.parseScientific(neg * (ret + point / div), str, start + 1, end);
+                                }
+                                else {
+                                    return neg * (ret + point / div);
+                                }
+                            }
+                            return neg * (ret + point / div);
+                        }
+                        else if (c === 53 || c === 21) {
+                            return FastNumberParsers.parseScientific(neg * ret, str, start + 1, end);
+                        }
+                        else
+                            break;
+                    }
+                    return neg * ret;
+                };
+                return FastNumberParsers;
+            }());
+            Utils.FastNumberParsers = FastNumberParsers;
+        })(Utils = Core.Utils || (Core.Utils = {}));
+    })(Core = LiteMol.Core || (LiteMol.Core = {}));
+})(LiteMol || (LiteMol = {}));
+/*
+ * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ */
+var LiteMol;
+(function (LiteMol) {
+    var Core;
+    (function (Core) {
+        var Utils;
+        (function (Utils) {
+            "use strict";
+            var PerformanceHelper;
+            (function (PerformanceHelper) {
+                PerformanceHelper.perfGetTime = (function () {
+                    if (typeof window !== 'undefined' && window.performance) {
+                        return function () { return window.performance.now(); };
+                    }
+                    else if (typeof process !== 'undefined' && process.hrtime !== 'undefined') {
+                        return function () {
+                            var t = process.hrtime();
+                            return t[0] * 1000 + t[1] / 1000000;
+                        };
+                    }
+                    else {
+                        return function () { return +new Date(); };
+                    }
+                })();
+            })(PerformanceHelper || (PerformanceHelper = {}));
+            var PerformanceMonitor = (function () {
+                function PerformanceMonitor() {
+                    this.starts = new Map();
+                    this.ends = new Map();
+                }
+                PerformanceMonitor.currentTime = function () {
+                    return PerformanceHelper.perfGetTime();
+                };
+                PerformanceMonitor.prototype.start = function (name) {
+                    this.starts.set(name, PerformanceHelper.perfGetTime());
+                };
+                PerformanceMonitor.prototype.end = function (name) {
+                    this.ends.set(name, PerformanceHelper.perfGetTime());
+                };
+                PerformanceMonitor.format = function (t) {
+                    if (isNaN(t))
+                        return 'n/a';
+                    var h = Math.floor(t / (60 * 60 * 1000)), m = Math.floor(t / (60 * 1000) % 60), s = Math.floor(t / 1000 % 60), ms = Math.floor(t % 1000).toString();
+                    while (ms.length < 3)
+                        ms = "0" + ms;
+                    if (h > 0)
+                        return h + "h" + m + "m" + s + "." + ms + "s";
+                    if (m > 0)
+                        return m + "m" + s + "." + ms + "s";
+                    if (s > 0)
+                        return s + "." + ms + "s";
+                    return t.toFixed(0) + "ms";
+                };
+                PerformanceMonitor.prototype.formatTime = function (name) {
+                    return PerformanceMonitor.format(this.time(name));
+                };
+                PerformanceMonitor.prototype.formatTimeSum = function () {
+                    var names = [];
+                    for (var _i = 0; _i < arguments.length; _i++) {
+                        names[_i - 0] = arguments[_i];
+                    }
+                    return PerformanceMonitor.format(this.timeSum.apply(this, names));
+                };
+                // return the time in milliseconds and removes them from the cache.
+                PerformanceMonitor.prototype.time = function (name) {
+                    var start = this.starts.get(name), end = this.ends.get(name);
+                    this.starts.delete(name);
+                    this.ends.delete(name);
+                    return end - start;
+                };
+                PerformanceMonitor.prototype.timeSum = function () {
+                    var _this = this;
+                    var names = [];
+                    for (var _i = 0; _i < arguments.length; _i++) {
+                        names[_i - 0] = arguments[_i];
+                    }
+                    var t = 0;
+                    for (var _a = 0, _b = names.map(function (n) { return _this.ends.get(n) - _this.starts.get(n); }); _a < _b.length; _a++) {
+                        var m = _b[_a];
+                        t += m;
+                    }
+                    return t;
+                };
+                return PerformanceMonitor;
+            }());
+            Utils.PerformanceMonitor = PerformanceMonitor;
+        })(Utils = Core.Utils || (Core.Utils = {}));
+    })(Core = LiteMol.Core || (LiteMol.Core = {}));
+})(LiteMol || (LiteMol = {}));
+  return LiteMol.Core;
+}
+if (typeof module === 'object' && typeof module.exports === 'object') {
+  module.exports = __LiteMol_Core();
+} else if (typeof define === 'function' && define.amd) {
+  define(['require'], function(require) { return __LiteMol_Core(); })
+} else {
+  var __target = !!window ? window : this;
+  if (!__target.LiteMol) __target.LiteMol = {};
+  __target.LiteMol.Core = __LiteMol_Core();
+}
+

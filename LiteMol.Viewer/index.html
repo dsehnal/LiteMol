@@ -1,0 +1,57 @@
+﻿<!DOCTYPE html>
+
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=1" />
+    <title>LiteMol Viewer</title>    
+    <link rel="stylesheet" href="assets/css/LiteMol-plugin.css" type="text/css" />
+    <script src="LiteMol-plugin.js"></script>
+
+    <style>
+        #app {
+            position: relative;
+            margin-top: 80px;
+            margin-bottom: 400px;
+            width: 640px;
+            height: 480px;
+        }    
+
+        #info {
+            font-family: "Helvetica Neue", "Source Sans Pro", Helvetica, Arial, sans-serif;
+            position: fixed;
+            background: #111318;
+            bottom: 0;
+            left: 0;
+            border-top-right-radius: 4px;
+            padding: 6px;
+            z-index: 100001;
+            color: #333;
+            font-size: smaller;
+        }  
+        #info a {
+            font-weight: bold;
+            color: #ccd4e0;
+            text-decoration: none;
+        }
+
+        #info a:hover {
+            text-decoration: underline;
+        }
+        
+        body {
+            font-family: sans-serif;
+            background: white;
+        }
+    </style>
+</head>
+<body>
+    <div id="app"></div>    
+    <div id="info">
+        <a href="https://github.com/dsehnal/litemol" target="_blank" />GitHub</a> 
+        |
+        <a href="http://webchem.ncbr.muni.cz/Wiki/LiteMol:UserManual" target="_blank" />Wiki</a>
+    </div>
+    <script src="LiteMol-viewer.js"></script>
+</body>
+</html>

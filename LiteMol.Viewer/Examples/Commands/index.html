@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=1" />
+    <title>LiteMol Commands Example</title>    
+    <link rel="stylesheet" href="../../assets/css/LiteMol-plugin.css" type="text/css" />
+    <script src="../../LiteMol-plugin.js"></script>
+
+    <style>
+        #app {
+            position: absolute;
+            margin-top: 100px;
+            margin-bottom: 360px;
+            margin-left: 10px;
+            width: 640px;
+            height: 480px;
+            left: 200px;
+            top: 10px;
+            background: blue;
+        }
+        
+        #actions {
+            position: absolute;
+            width: 180px;
+            top: 10px;
+            left: 10px;         
+        }
+        
+        #actions > button {
+            margin-bottom: 5px;
+            display: block;
+            width: 100%;
+        }
+        
+        #interactions {
+            position: absolute;
+            width: 240px;
+            top: 10px;
+            left: 870px;
+            height: 300px;
+            overflow-x: auto;
+            background: #333;
+            color: white;
+            line-height: 26px;  
+            padding: 0 6px;
+        }
+    </style>
+</head>
+<body>
+    <div id='actions'>        
+    </div>
+    
+    <div id='interactions'>
+    </div>
+    
+    <div id="app"></div>
+    <script src="LiteMol-example.js"></script>
+</body>
+</html>

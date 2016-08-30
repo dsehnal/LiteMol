@@ -1,0 +1,20 @@
+{
+	// See http://go.microsoft.com/fwlink/?LinkId=733558
+	"version": "0.1.0",
+	"command": "gulp",
+	"isShellCommand": true,
+	"args": [ "--silent" ],
+	"tasks": [
+        {
+            "taskName": "default",
+            "args": [],
+            "isBuildCommand": true,
+            "isWatching": false,
+            "problemMatcher": [
+                //"$lessCompile",
+                "$tsc"//,
+                //"$jshint"
+            ]
+        }
+    ]
+}

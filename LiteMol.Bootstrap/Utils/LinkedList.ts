@@ -1,0 +1,61 @@
+﻿/*
+ * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ */
+
+namespace LiteMol.Bootstrap.Utils {
+    "use strict";
+
+    export interface LinkedElement<T>  { 
+        previous: T; 
+        next: T; 
+        inList: boolean; 
+    }
+
+    export class LinkedList<T extends LinkedElement<T>> {
+
+        first: T = null;
+        private last: T = null;
+
+        addFirst(item: T) {
+            item.inList = true;
+            if (this.first) this.first.previous = item;
+            item.next = this.first;
+            this.first = item;
+        }
+
+        addLast(item: T) {
+            if (this.last != null) {
+                this.last.next = item;
+            }
+            item.previous = this.last;
+            this.last = item;
+            if (this.first == null) {
+                this.first = item;
+            }
+            item.inList = true;
+        }
+
+        remove(item: T) {
+            if (!item.inList) return;
+
+            item.inList = false;
+
+            if (item.previous !== null) {
+                item.previous.next = item.next;
+            }
+            else if (/*first == item*/ item.previous === null) {
+                this.first = item.next;
+            }
+
+            if (item.next !== null) {
+                item.next.previous = item.previous;
+            }
+            else if (/*last == item*/ item.next === null) {
+                this.last = item.previous;
+            }
+
+            item.next = null;
+            item.previous = null;
+        }
+    }
+}

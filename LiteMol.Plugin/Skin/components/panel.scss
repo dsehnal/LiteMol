@@ -1,0 +1,130 @@
+.lm-panel-header .lm-panel-expander {
+    display: block;
+    width: 100%;
+    text-align: left;
+}
+
+.lm-panel-header {
+    
+    //border-bottom-width: 1px;
+    //border-bottom-style: solid;    
+    height: $row-height;
+    border-color: $border-color;
+    position: relative;
+    
+    //border-radius: $control-spacing 0 0 0;
+    
+    .lm-panel-expander-wrapper {
+        
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 2 * $row-height;
+            
+        button {
+            // width: 100%;
+            
+            display: block;
+            width: 100%;
+            text-align: left;
+            
+            height: $row-height;
+            line-height: $row-height; 
+            border: none;        
+            font-weight: bold;
+            //color: $panel-header-font-color;
+            padding-left: 0;
+            background: darken($default-background, 4%);   
+            //text-align: right!important;
+            
+            .icon {
+                display: inline-block;
+                margin-right: $control-spacing; 
+                width: $row-height;
+                text-align: center;
+            }
+            
+            &:hover {
+                background: darken($default-background, 4%); 
+            }
+        }
+    }
+        
+    .lm-panel-description {
+        
+        color: $font-color;
+        float: right;
+        width: 2 * $row-height;
+        background: darken($default-background, 4%);
+        //margin-right: $row-height;
+        
+        > .icon {
+            display: block;
+            width: $row-height;
+            height: $row-height;
+            line-height: $row-height;
+            text-align: center;
+            font-size: 70%;
+            cursor: default;
+            background: darken($default-background, 4%);  
+            color: darken($font-color, 66%);
+            margin-left: $row-height;
+        }
+        
+        .lm-panel-description-content {
+            @include non-selectable;
+            
+            color: $font-color;
+            display: none;
+            position: absolute;
+            left: 0;
+            width: 100%;
+            background: lighten($form-control-background, 20%);
+            min-height: $row-height;
+            z-index: 1000000;
+            padding: $info-vertical-padding  $control-spacing $info-vertical-padding ($row-height + $control-spacing);
+            text-align: left;
+            //border-bottom: 1px solid darken($default-background, 4%);
+            
+            > .icon {
+                position: absolute;
+                width: $row-height;
+                height: $row-height;
+                line-height: $row-height;
+                text-align: center;
+                font-size: 80%;
+                cursor: default;
+                top: 0;
+                left: 0;
+            }
+        }       
+            
+        &:hover {
+            color: $hover-font-color;
+            > .icon {
+                color: $hover-font-color;
+            }
+            .lm-panel-description-content {
+                display: block;
+            }
+        }
+    }
+}
+
+.lm-panel-body {
+    background: $control-background;
+}
+
+.lm-panel {
+    margin-bottom: $control-spacing;   
+
+    .lm-entity-tree-entry-toggle-visible {
+        position: absolute;
+        top: 0;
+        right: $row-height;
+    } 
+}
+
+.lm-transform-view {
+    padding-top: $control-spacing;
+}
