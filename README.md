@@ -29,7 +29,8 @@ Getting Started
 ========
 
 This repository provides the source code for the LiteMol molecular visualizer. 
-Several examples of usage are also provided.
+Several examples of usage are also provided. It is recommended to use [TypeScript](http://www.typescriptlang.org/) for building apps based 
+on LiteMol (or any other non-trivial JavaScript app for that matter), because you will get code completion and type checking.
 
 If you are interested in using LiteMol for simple visualization and do not need any special functionality, we suggest that you use the [PDB Component Library](http://www.ebi.ac.uk/pdbe/pdb-component-library/doc.html#a_LiteMol).
 
@@ -49,12 +50,12 @@ The code is structured into several parts:
 Examples
 --------
 
-Examples are located in the folder `LiteMol.Viewer/Examples`
+Examples are located in the folder `LiteMol.Viewer/Examples`.
 
-  - `Commands` - Shows how to control the plugin programmatically, how to consume plugin interactions, focus on certain elements in a molecule, etc.
-  - `CustomControls` - Shows how to construct a custom control scheme for the plugin.
-  - `CustomDensity` - Shows how to download a PDB file, parse it, download density data and allow user interaction with them.
-  - `SplitSurface` - Shows how to create two complementary selections and display a surface for each of them.
+  - `Commands` ([view live](http://webchemdev.ncbr.muni.cz/Litemol/Examples/Commands)) - Shows how to control the plugin programmatically, how to consume plugin interactions, focus on certain elements in a molecule, etc.
+  - `CustomControls` ([view live](http://webchemdev.ncbr.muni.cz/Litemol/Examples/CustomControls)) - Shows how to construct a custom control scheme for the plugin.
+  - `CustomDensity` ([view live](http://webchemdev.ncbr.muni.cz/Litemol/Examples/CustomDensity)) - Shows how to download a PDB file, parse it, download density data and allow user interaction with them.
+  - `SplitSurface` ([view live](http://webchemdev.ncbr.muni.cz/Litemol/Examples/SplitSurface)) - Shows how to create two complementary selections and display a surface for each of them.
 
 Building
 ========
@@ -66,6 +67,7 @@ LiteMol is written in TypeScript and needs to be compiled to JavaScript before u
     npm install -g gulp
     npm install -g typescript
     npm install
+    gulp
 
 Any subsequent full LiteMol builds can be done using the command 
 
