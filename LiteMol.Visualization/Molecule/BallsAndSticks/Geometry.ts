@@ -43,16 +43,10 @@ namespace LiteMol.Visualization.Molecule.BallsAndSticks {
 
             let bondLength = 2;
 
-            let tree = new Core.Geometry.SubdivisionTree3D<number>(<any>indices, (i, b) => { b.add(cX[i], cY[i], cZ[i]) }),
-                compBonds = molecule.componentBonds,
-                ctx = tree.createContextRadius(bondLength + 1, false),
-                buffer = ctx.buffer,
-                processed = new Set<number>(),
+            let compBonds = molecule.componentBonds,
                 builder = new Core.Utils.ChunkedArrayBuilder<number>(size => new Int32Array(size), (indices.length * 1.33) | 0, 3),
-                pA = new THREE.Vector3(), pB = new THREE.Vector3(),
                 residueCount = 1,
                 stickCount = 0,
-                cont = true,
                 startAtomIndex = 0, endAtomIndex = 0;
 
             if (molecule.covalentBonds) {
@@ -70,6 +64,13 @@ namespace LiteMol.Visualization.Molecule.BallsAndSticks {
                     residueCount
                 };
             }
+
+            let tree = new Core.Geometry.SubdivisionTree3D<number>(<any>indices, (i, b) => { b.add(cX[i], cY[i], cZ[i]) }),
+                ctx = tree.createContextRadius(bondLength + 1, false),
+                pA = new THREE.Vector3(), pB = new THREE.Vector3(),
+                processed = new Set<number>(),
+                cont = true,
+                buffer = ctx.buffer;
 
             while (startAtomIndex < atomCount) {
 
