@@ -17,7 +17,10 @@ namespace LiteMol.Core.Formats.Molecule.SDF {
 
     function initState(data: string, customId?: string): State {
 
-        let lines = data.split(/(\r\n)|\r|\n/g);
+        let lines = data.split(/[\r\n]+/g);
+
+        let id = lines[0].trim();
+        if (!id.length) id = 'SDF';
 
         let molHeaderInfo = lines[1];
         let molHeaderComment = lines[2];
@@ -27,7 +30,7 @@ namespace LiteMol.Core.Formats.Molecule.SDF {
         let bondCount = +cTabInfo.substr(3, 3);
 
         return <State>{
-            id: customId ? customId : 'SDF',
+            id: customId ? customId : id,
             atomCount,
             bondCount,
             atoms: Structure.DefaultDataTables.forAtoms(atomCount).table,
@@ -50,9 +53,9 @@ namespace LiteMol.Core.Formats.Molecule.SDF {
         atoms.occupancy[i] = 1.0;
         atoms.rowIndex[i] = state.currentLine;
         
-        atoms.x[i] = Utils.FastNumberParsers.parseFloat(line, 0, 10);
-        atoms.y[i] = Utils.FastNumberParsers.parseFloat(line, 10, 10);
-        atoms.z[i] = Utils.FastNumberParsers.parseFloat(line, 20, 10);
+        atoms.x[i] = Utils.FastNumberParsers.parseFloatSkipTrailingWhitespace(line, 0, 10);
+        atoms.y[i] = Utils.FastNumberParsers.parseFloatSkipTrailingWhitespace(line, 10, 20);
+        atoms.z[i] = Utils.FastNumberParsers.parseFloatSkipTrailingWhitespace(line, 20, 30);
     }
 
     function readAtoms(state: State) {
@@ -66,10 +69,10 @@ namespace LiteMol.Core.Formats.Molecule.SDF {
         let line = state.lines[state.currentLine];
         let bonds = state.bonds;
 
-        bonds.atomAIndex[i] = Utils.FastNumberParsers.parseInt(line, 0, 3) - 1;
-        bonds.atomBIndex[i] = Utils.FastNumberParsers.parseInt(line, 3, 3) - 1;
+        bonds.atomAIndex[i] = Utils.FastNumberParsers.parseIntSkipTrailingWhitespace(line, 0, 3) - 1;
+        bonds.atomBIndex[i] = Utils.FastNumberParsers.parseIntSkipTrailingWhitespace(line, 3, 6) - 1;
         
-        switch (Utils.FastNumberParsers.parseInt(line, 6, 3)) {
+        switch (Utils.FastNumberParsers.parseIntSkipTrailingWhitespace(line, 6, 9)) {
             case 1: bonds.type[i] = Structure.BondType.Single; break;
             case 2: bonds.type[i] = Structure.BondType.Double; break;
             case 3: bonds.type[i] = Structure.BondType.Triple; break;
@@ -109,7 +112,7 @@ namespace LiteMol.Core.Formats.Molecule.SDF {
 
         residues.columns.entityId[0]
             = chains.columns.entityId[0]
-            = entities.columns.id[0]
+            = entities.columns.entityId[0]
             = '1';
         
         chains.columns.residueEndIndex[0]
@@ -118,7 +121,7 @@ namespace LiteMol.Core.Formats.Molecule.SDF {
 
         entities.columns.chainEndIndex[0] = 1;
         entities.columns.type[0] = 'non-polymer';
-        entities.columns.typeEnum[0] = Structure.EntityType.NonPolymer;
+        entities.columns.entityType[0] = Structure.EntityType.NonPolymer;
 
         let ssR = new Structure.PolyResidueIdentifier('X', 0, null);
         let ss = [new Structure.SecondaryStructureElement(Structure.SecondaryStructureType.None, ssR, ssR)];
@@ -132,6 +135,7 @@ namespace LiteMol.Core.Formats.Molecule.SDF {
             residues: residues.table,
             chains: chains.table,
             entities: entities.table,
+            covalentBonds: state.bonds,
             componentBonds: void 0,
             secondaryStructure: ss,
             symmetryInfo: void 0,
@@ -146,6 +150,7 @@ namespace LiteMol.Core.Formats.Molecule.SDF {
             readAtoms(state);
             readBonds(state);
             let model = buildModel(state);
+            console.log(model);
             if (state.error) {
                 return ParserResult.error(state.error, state.currentLine + 1);
             }

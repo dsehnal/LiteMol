@@ -1,4 +1,7 @@
-﻿== 1.1.0 ==
+﻿== 1.1.1 ==
+* Fix in "SetCurrentEntity" bug for bound nodes.
+
+== 1.1.0 ==
 * Changed LiteMol.Plugin.Views.Transform.Molecule.CreateFromCif to LiteMol.Plugin.Views.Transform.Molecule.CreateFromMmCif
 * Changed LiteMol.Plugin.Views.Transform.Data.OpenCifMolecule to LiteMol.Plugin.Views.Transform.Molecule.OpenFile
 * Added support for new transforms in Bootstrap that support parsing from multiple formats.

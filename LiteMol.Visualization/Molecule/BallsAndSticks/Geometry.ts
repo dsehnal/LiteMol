@@ -6,6 +6,24 @@ namespace LiteMol.Visualization.Molecule.BallsAndSticks {
     "use strict";
 
     class BallsAndSticksHelper {
+
+        static addPrecomputedBonds(molecule: Core.Structure.MoleculeModel, atomIndices: number[], builder: Core.Utils.ChunkedArrayBuilder<number>) {            
+            let mask = Core.Structure.Query.Context.Mask.ofIndices(molecule, atomIndices);            
+            let stickCount = 0;
+            let residueCount = 0;
+
+            let { atomAIndex, atomBIndex, type, count } = molecule.covalentBonds;
+            for (let i = 0; i < count; i++) {
+                let a = atomAIndex[i], b = atomBIndex[i];
+                if (!mask.has(a) || !mask.has(b)) continue;
+                let order = type[i];
+                if (order < 1 || order > 4) order = 1;
+                builder.add3(a, b, order);
+                stickCount += order;
+            }
+            return stickCount;
+        }
+
         static analyze(molecule: Core.Structure.MoleculeModel, atomIndices: number[]) {
             let indices: Int32Array,
                 atomCount = 0;
@@ -37,6 +55,21 @@ namespace LiteMol.Visualization.Molecule.BallsAndSticks {
                 cont = true,
                 startAtomIndex = 0, endAtomIndex = 0;
 
+            if (molecule.covalentBonds) {
+                stickCount = BallsAndSticksHelper.addPrecomputedBonds(molecule, atomIndices, builder);
+                while (startAtomIndex < atomCount) {
+                    let rIndex = atomResidueIndex[indices[startAtomIndex]];
+                    endAtomIndex = startAtomIndex;
+                    while (endAtomIndex < atomCount && atomResidueIndex[indices[endAtomIndex]] == rIndex) endAtomIndex++;
+                    residueCount++;
+                    startAtomIndex = endAtomIndex;
+                }    
+                return {
+                    bonds: builder.compact(),
+                    stickCount,
+                    residueCount
+                };
+            }
 
             while (startAtomIndex < atomCount) {
 
@@ -123,8 +156,8 @@ namespace LiteMol.Visualization.Molecule.BallsAndSticks {
 
             return {
                 bonds: builder.compact(),
-                stickCount: stickCount,
-                residueCount: residueCount
+                stickCount,
+                residueCount
             };
         }
                 

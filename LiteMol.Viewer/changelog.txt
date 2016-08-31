@@ -1,3 +1,8 @@
+1.1.1
+-----
+* Added basic SDF support.
+* Improved the behaviour of selecting the next node when the current one is removed.
+
 1.1.0
 -----
 * This version is the result of refactoring the "format" support in the Core to better support different formats in the future.

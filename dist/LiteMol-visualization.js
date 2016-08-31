@@ -35189,7 +35189,7 @@ var LiteMol;
 (function (LiteMol) {
     var Visualization;
     (function (Visualization) {
-        Visualization.VERSION = { number: "1.2.8", date: "August 15 2016" };
+        Visualization.VERSION = { number: "1.3.0", date: "August 31 2016" };
     })(Visualization = LiteMol.Visualization || (LiteMol.Visualization = {}));
 })(LiteMol || (LiteMol = {}));
 var LiteMol;
@@ -37834,6 +37834,23 @@ var LiteMol;
                 var BallsAndSticksHelper = (function () {
                     function BallsAndSticksHelper() {
                     }
+                    BallsAndSticksHelper.addPrecomputedBonds = function (molecule, atomIndices, builder) {
+                        var mask = LiteMol.Core.Structure.Query.Context.Mask.ofIndices(molecule, atomIndices);
+                        var stickCount = 0;
+                        var residueCount = 0;
+                        var _a = molecule.covalentBonds, atomAIndex = _a.atomAIndex, atomBIndex = _a.atomBIndex, type = _a.type, count = _a.count;
+                        for (var i = 0; i < count; i++) {
+                            var a = atomAIndex[i], b = atomBIndex[i];
+                            if (!mask.has(a) || !mask.has(b))
+                                continue;
+                            var order = type[i];
+                            if (order < 1 || order > 4)
+                                order = 1;
+                            builder.add3(a, b, order);
+                            stickCount += order;
+                        }
+                        return stickCount;
+                    };
                     BallsAndSticksHelper.analyze = function (molecule, atomIndices) {
                         var indices, atomCount = 0;
                         indices = atomIndices;
@@ -37841,6 +37858,22 @@ var LiteMol;
                         var atoms = molecule.atoms, cX = atoms.x, cY = atoms.y, cZ = atoms.z, elementSymbol = atoms.elementSymbol, atomName = atoms.name, altLoc = atoms.altLoc, atomResidueIndex = atoms.residueIndex, atomEntityIndex = atoms.entityIndex, entityType = molecule.entities.entityType, waterType = LiteMol.Core.Structure.EntityType.Water, residueName = molecule.residues.name;
                         var bondLength = 2;
                         var tree = new LiteMol.Core.Geometry.SubdivisionTree3D(indices, function (i, b) { b.add(cX[i], cY[i], cZ[i]); }), compBonds = molecule.componentBonds, ctx = tree.createContextRadius(bondLength + 1, false), buffer = ctx.buffer, processed = new Set(), builder = new LiteMol.Core.Utils.ChunkedArrayBuilder(function (size) { return new Int32Array(size); }, (indices.length * 1.33) | 0, 3), pA = new Visualization.THREE.Vector3(), pB = new Visualization.THREE.Vector3(), residueCount = 1, stickCount = 0, cont = true, startAtomIndex = 0, endAtomIndex = 0;
+                        if (molecule.covalentBonds) {
+                            stickCount = BallsAndSticksHelper.addPrecomputedBonds(molecule, atomIndices, builder);
+                            while (startAtomIndex < atomCount) {
+                                var rIndex = atomResidueIndex[indices[startAtomIndex]];
+                                endAtomIndex = startAtomIndex;
+                                while (endAtomIndex < atomCount && atomResidueIndex[indices[endAtomIndex]] == rIndex)
+                                    endAtomIndex++;
+                                residueCount++;
+                                startAtomIndex = endAtomIndex;
+                            }
+                            return {
+                                bonds: builder.compact(),
+                                stickCount: stickCount,
+                                residueCount: residueCount
+                            };
+                        }
                         while (startAtomIndex < atomCount) {
                             var rIndex = atomResidueIndex[indices[startAtomIndex]];
                             endAtomIndex = startAtomIndex;

@@ -54,7 +54,7 @@ namespace LiteMol.Core.Formats.Molecule {
                 case SupportedFormats.SDF.name: {
                     ctx.update('Parsing...');
                     ctx.schedule(() => {
-                        let mol = SDF.parse(data as string, id !== void 0 ? id : 'SDF');
+                        let mol = SDF.parse(data as string, id);
                         if (mol.error) { ctx.reject(mol.error.toString()); return; }
                         ctx.resolve(ParserResult.success(mol.result));
                     });

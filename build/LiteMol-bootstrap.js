@@ -5195,7 +5195,7 @@ var LiteMol;
 (function (LiteMol) {
     var Bootstrap;
     (function (Bootstrap) {
-        Bootstrap.VERSION = { number: "1.1.0", date: "Aug 30 2016" };
+        Bootstrap.VERSION = { number: "1.1.1", date: "Aug 31 2016" };
     })(Bootstrap = LiteMol.Bootstrap || (LiteMol.Bootstrap = {}));
 })(LiteMol || (LiteMol = {}));
 /*
@@ -6606,11 +6606,16 @@ var LiteMol;
                 Bootstrap.Command.Entity.SetCurrent.dispatch(tree.context, tree.root);
             }
             function notifyRemoved(ctx, node) {
+                var current = ctx.currentEntity;
+                var hasCurrent = false;
                 Tree.Node.forEach(node, function (n) {
                     _removeRef(ctx.tree, n);
                     Bootstrap.Event.Tree.NodeRemoved.dispatch(ctx, n);
                     n.tree = void 0;
+                    if (n === current)
+                        hasCurrent = true;
                 });
+                return hasCurrent;
             }
             function remove(node) {
                 if (!node || !node.tree)
@@ -6625,13 +6630,14 @@ var LiteMol;
                 var ctx = node.tree.context;
                 Tree.Node.removeChild(parent, node);
                 Bootstrap.Entity.nodeUpdated(parent);
-                notifyRemoved(ctx, node);
-                if (!isHidden) {
+                var hasCurrent = notifyRemoved(ctx, node);
+                if (hasCurrent && !isHidden) {
                     var foundSibling = false;
                     for (var i = index; i >= 0; i--) {
                         if (parent.children[i] && !Tree.Node.isHidden(parent.children[i])) {
                             Bootstrap.Command.Entity.SetCurrent.dispatch(ctx, parent.children[i]);
                             foundSibling = true;
+                            break;
                         }
                     }
                     if (!foundSibling) {

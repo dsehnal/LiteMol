@@ -1,4 +1,7 @@
-﻿== 2.3.0 ==
+﻿== 2.3.1 ==
+* Adding MOL/SDF support.
+
+== 2.3.0 ==
 * Refactoring of "Formats" namespace to enable easier support for additional formats.
   - Formats.Cif is now Formats.CIF
   - Moved Formats.Cif.mmCif to Formats.Molecule.mmCIF

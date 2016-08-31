@@ -1,4 +1,7 @@
-﻿== 1.1.0 ==
+﻿== 1.1.1 ==
+* Fix in selecting the next entity when the current one is removed.
+
+== 1.1.0 ==
 * Added more parsing transforms for molecules (CreateFromString) and density (CreateFromBinary)
 * Renamed Entity.Transformer.Molecule.CreateFromCif to Entity.Transformer.Molecule.CreateFromMmCif
 * Updated Entity.Transformer.Molecule.downloadMoleculeSource to support multiple formats.

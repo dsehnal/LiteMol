@@ -405,8 +405,8 @@ namespace LiteMol.Core.Structure {
         export function forEntities(count: number) {
             let builder = new DataTableBuilder(count);
             let columns = { 
-                id: builder.addColumn("Id", size => <string[]>[]),
-                typeEnum: builder.addColumn("Type", size => <Structure.EntityType[]>[]),
+                entityId: builder.addColumn("entityId", size => <string[]>[]),
+                entityType: builder.addColumn("entityType", size => <Structure.EntityType[]>[]),
                 type: builder.addColumn("type", size => <string[]>[]),
                 atomStartIndex: builder.addColumn("atomStartIndex", size => new Int32Array(size)),
                 atomEndIndex: builder.addColumn("atomEndIndex", size => new Int32Array(size)),

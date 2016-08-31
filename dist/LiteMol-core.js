@@ -8083,7 +8083,7 @@ var LiteMol;
 (function (LiteMol) {
     var Core;
     (function (Core) {
-        Core.VERSION = { number: "2.3.0", date: "Aug 30 2016" };
+        Core.VERSION = { number: "2.3.1", date: "Aug 31 2016" };
     })(Core = LiteMol.Core || (LiteMol.Core = {}));
 })(LiteMol || (LiteMol = {}));
 /*
@@ -10726,14 +10726,17 @@ var LiteMol;
                 var SDF;
                 (function (SDF) {
                     function initState(data, customId) {
-                        var lines = data.split(/(\r\n)|\r|\n/g);
+                        var lines = data.split(/[\r\n]+/g);
+                        var id = lines[0].trim();
+                        if (!id.length)
+                            id = 'SDF';
                         var molHeaderInfo = lines[1];
                         var molHeaderComment = lines[2];
                         var cTabInfo = lines[3];
                         var atomCount = +cTabInfo.substr(0, 3);
                         var bondCount = +cTabInfo.substr(3, 3);
                         return {
-                            id: customId ? customId : 'SDF',
+                            id: customId ? customId : id,
                             atomCount: atomCount,
                             bondCount: bondCount,
                             atoms: Core.Structure.DefaultDataTables.forAtoms(atomCount).table,
@@ -10753,9 +10756,9 @@ var LiteMol;
                         atoms.authName[i] = es;
                         atoms.occupancy[i] = 1.0;
                         atoms.rowIndex[i] = state.currentLine;
-                        atoms.x[i] = Core.Utils.FastNumberParsers.parseFloat(line, 0, 10);
-                        atoms.y[i] = Core.Utils.FastNumberParsers.parseFloat(line, 10, 10);
-                        atoms.z[i] = Core.Utils.FastNumberParsers.parseFloat(line, 20, 10);
+                        atoms.x[i] = Core.Utils.FastNumberParsers.parseFloatSkipTrailingWhitespace(line, 0, 10);
+                        atoms.y[i] = Core.Utils.FastNumberParsers.parseFloatSkipTrailingWhitespace(line, 10, 20);
+                        atoms.z[i] = Core.Utils.FastNumberParsers.parseFloatSkipTrailingWhitespace(line, 20, 30);
                     }
                     function readAtoms(state) {
                         for (var i = 0; i < state.atomCount; i++) {
@@ -10766,9 +10769,9 @@ var LiteMol;
                     function readBond(i, state) {
                         var line = state.lines[state.currentLine];
                         var bonds = state.bonds;
-                        bonds.atomAIndex[i] = Core.Utils.FastNumberParsers.parseInt(line, 0, 3) - 1;
-                        bonds.atomBIndex[i] = Core.Utils.FastNumberParsers.parseInt(line, 3, 3) - 1;
-                        switch (Core.Utils.FastNumberParsers.parseInt(line, 6, 3)) {
+                        bonds.atomAIndex[i] = Core.Utils.FastNumberParsers.parseIntSkipTrailingWhitespace(line, 0, 3) - 1;
+                        bonds.atomBIndex[i] = Core.Utils.FastNumberParsers.parseIntSkipTrailingWhitespace(line, 3, 6) - 1;
+                        switch (Core.Utils.FastNumberParsers.parseIntSkipTrailingWhitespace(line, 6, 9)) {
                             case 1:
                                 bonds.type[i] = 1 /* Single */;
                                 break;
@@ -10809,14 +10812,14 @@ var LiteMol;
                                         = 'X';
                         residues.columns.entityId[0]
                             = chains.columns.entityId[0]
-                                = entities.columns.id[0]
+                                = entities.columns.entityId[0]
                                     = '1';
                         chains.columns.residueEndIndex[0]
                             = entities.columns.residueEndIndex[0]
                                 = 0;
                         entities.columns.chainEndIndex[0] = 1;
                         entities.columns.type[0] = 'non-polymer';
-                        entities.columns.typeEnum[0] = Core.Structure.EntityType.NonPolymer;
+                        entities.columns.entityType[0] = Core.Structure.EntityType.NonPolymer;
                         var ssR = new Core.Structure.PolyResidueIdentifier('X', 0, null);
                         var ss = [new Core.Structure.SecondaryStructureElement(0 /* None */, ssR, ssR)];
                         ss[0].startResidueIndex = 0;
@@ -10828,6 +10831,7 @@ var LiteMol;
                             residues: residues.table,
                             chains: chains.table,
                             entities: entities.table,
+                            covalentBonds: state.bonds,
                             componentBonds: void 0,
                             secondaryStructure: ss,
                             symmetryInfo: void 0,
@@ -10841,6 +10845,7 @@ var LiteMol;
                             readAtoms(state);
                             readBonds(state);
                             var model = buildModel(state);
+                            console.log(model);
                             if (state.error) {
                                 return Formats.ParserResult.error(state.error, state.currentLine + 1);
                             }
@@ -10931,7 +10936,7 @@ var LiteMol;
                             case SupportedFormats.SDF.name: {
                                 ctx.update('Parsing...');
                                 ctx.schedule(function () {
-                                    var mol = Molecule.SDF.parse(data, id !== void 0 ? id : 'SDF');
+                                    var mol = Molecule.SDF.parse(data, id);
                                     if (mol.error) {
                                         ctx.reject(mol.error.toString());
                                         return;
@@ -13570,8 +13575,8 @@ var LiteMol;
                 function forEntities(count) {
                     var builder = new DataTableBuilder(count);
                     var columns = {
-                        id: builder.addColumn("Id", function (size) { return []; }),
-                        typeEnum: builder.addColumn("Type", function (size) { return []; }),
+                        entityId: builder.addColumn("entityId", function (size) { return []; }),
+                        entityType: builder.addColumn("entityType", function (size) { return []; }),
                         type: builder.addColumn("type", function (size) { return []; }),
                         atomStartIndex: builder.addColumn("atomStartIndex", function (size) { return new Int32Array(size); }),
                         atomEndIndex: builder.addColumn("atomEndIndex", function (size) { return new Int32Array(size); }),
@@ -17392,23 +17397,28 @@ var LiteMol;
 /*
  * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
+/**
+ * Efficient integer and float parsers.
+ *
+ * For the purposes of parsing numbers from the mmCIF data representations,
+ * up to 4 times faster than JS parseInt/parseFloat.
+ */
 var LiteMol;
 (function (LiteMol) {
     var Core;
     (function (Core) {
         var Utils;
         (function (Utils) {
-            "use strict";
-            /**
-             * Efficient integer and float parsers.
-             *
-             * For the purposes of parsing numbers from the mmCIF data representations,
-             * up to 4 times faster than JS parseInt/parseFloat.
-             */
-            var FastNumberParsers = (function () {
-                function FastNumberParsers() {
+            var FastNumberParsers;
+            (function (FastNumberParsers) {
+                "use strict";
+                function parseIntSkipTrailingWhitespace(str, start, end) {
+                    while (start < end && str.charCodeAt(start) === 32)
+                        start++;
+                    return parseInt(str, start, end);
                 }
-                FastNumberParsers.parseInt = function (str, start, end) {
+                FastNumberParsers.parseIntSkipTrailingWhitespace = parseIntSkipTrailingWhitespace;
+                function parseInt(str, start, end) {
                     var ret = 0, neg = 1;
                     if (str.charCodeAt(start) === 45 /* - */) {
                         neg = -1;
@@ -17422,11 +17432,19 @@ var LiteMol;
                             ret = (10 * ret + c) | 0;
                     }
                     return neg * ret;
-                };
-                FastNumberParsers.parseScientific = function (main, str, start, end) {
-                    return main * Math.pow(10.0, FastNumberParsers.parseInt(str, start, end));
-                };
-                FastNumberParsers.parseFloat = function (str, start, end) {
+                }
+                FastNumberParsers.parseInt = parseInt;
+                function parseScientific(main, str, start, end) {
+                    return main * Math.pow(10.0, parseInt(str, start, end));
+                }
+                FastNumberParsers.parseScientific = parseScientific;
+                function parseFloatSkipTrailingWhitespace(str, start, end) {
+                    while (start < end && str.charCodeAt(start) === 32)
+                        start++;
+                    return parseFloat(str, start, end);
+                }
+                FastNumberParsers.parseFloatSkipTrailingWhitespace = parseFloatSkipTrailingWhitespace;
+                function parseFloat(str, start, end) {
                     var neg = 1.0, ret = 0.0, point = 0.0, div = 1.0;
                     if (str.charCodeAt(start) === 45) {
                         neg = -1.0;
@@ -17448,7 +17466,7 @@ var LiteMol;
                                     ++start;
                                 }
                                 else if (c === 53 || c === 21) {
-                                    return FastNumberParsers.parseScientific(neg * (ret + point / div), str, start + 1, end);
+                                    return parseScientific(neg * (ret + point / div), str, start + 1, end);
                                 }
                                 else {
                                     return neg * (ret + point / div);
@@ -17457,16 +17475,15 @@ var LiteMol;
                             return neg * (ret + point / div);
                         }
                         else if (c === 53 || c === 21) {
-                            return FastNumberParsers.parseScientific(neg * ret, str, start + 1, end);
+                            return parseScientific(neg * ret, str, start + 1, end);
                         }
                         else
                             break;
                     }
                     return neg * ret;
-                };
-                return FastNumberParsers;
-            }());
-            Utils.FastNumberParsers = FastNumberParsers;
+                }
+                FastNumberParsers.parseFloat = parseFloat;
+            })(FastNumberParsers = Utils.FastNumberParsers || (Utils.FastNumberParsers = {}));
         })(Utils = Core.Utils || (Core.Utils = {}));
     })(Core = LiteMol.Core || (LiteMol.Core = {}));
 })(LiteMol || (LiteMol = {}));

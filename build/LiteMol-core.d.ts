@@ -2086,8 +2086,8 @@ declare namespace LiteMol.Core.Structure {
         function forEntities(count: number): {
             table: DefaultEntityTableSchema;
             columns: {
-                id: string[];
-                typeEnum: EntityType[];
+                entityId: string[];
+                entityType: EntityType[];
                 type: string[];
                 atomStartIndex: Int32Array;
                 atomEndIndex: Int32Array;
@@ -2596,18 +2596,18 @@ declare namespace LiteMol.Core.Utils {
         constructor(creator: (size: number) => any, chunkElementCount: number, elementSize: number);
     }
 }
-declare namespace LiteMol.Core.Utils {
-    /**
-     * Efficient integer and float parsers.
-     *
-     * For the purposes of parsing numbers from the mmCIF data representations,
-     * up to 4 times faster than JS parseInt/parseFloat.
-     */
-    class FastNumberParsers {
-        static parseInt(str: string, start: number, end: number): number;
-        static parseScientific(main: number, str: string, start: number, end: number): number;
-        static parseFloat(str: string, start: number, end: number): number;
-    }
+/**
+ * Efficient integer and float parsers.
+ *
+ * For the purposes of parsing numbers from the mmCIF data representations,
+ * up to 4 times faster than JS parseInt/parseFloat.
+ */
+declare namespace LiteMol.Core.Utils.FastNumberParsers {
+    function parseIntSkipTrailingWhitespace(str: string, start: number, end: number): number;
+    function parseInt(str: string, start: number, end: number): number;
+    function parseScientific(main: number, str: string, start: number, end: number): number;
+    function parseFloatSkipTrailingWhitespace(str: string, start: number, end: number): number;
+    function parseFloat(str: string, start: number, end: number): number;
 }
 declare namespace LiteMol.Core.Utils {
     class PerformanceMonitor {

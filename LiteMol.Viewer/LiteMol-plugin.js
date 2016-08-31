@@ -8148,7 +8148,7 @@ var LiteMol;
 (function (LiteMol) {
     var Core;
     (function (Core) {
-        Core.VERSION = { number: "2.3.0", date: "Aug 30 2016" };
+        Core.VERSION = { number: "2.3.1", date: "Aug 31 2016" };
     })(Core = LiteMol.Core || (LiteMol.Core = {}));
 })(LiteMol || (LiteMol = {}));
 /*
@@ -10791,14 +10791,17 @@ var LiteMol;
                 var SDF;
                 (function (SDF) {
                     function initState(data, customId) {
-                        var lines = data.split(/(\r\n)|\r|\n/g);
+                        var lines = data.split(/[\r\n]+/g);
+                        var id = lines[0].trim();
+                        if (!id.length)
+                            id = 'SDF';
                         var molHeaderInfo = lines[1];
                         var molHeaderComment = lines[2];
                         var cTabInfo = lines[3];
                         var atomCount = +cTabInfo.substr(0, 3);
                         var bondCount = +cTabInfo.substr(3, 3);
                         return {
-                            id: customId ? customId : 'SDF',
+                            id: customId ? customId : id,
                             atomCount: atomCount,
                             bondCount: bondCount,
                             atoms: Core.Structure.DefaultDataTables.forAtoms(atomCount).table,
@@ -10818,9 +10821,9 @@ var LiteMol;
                         atoms.authName[i] = es;
                         atoms.occupancy[i] = 1.0;
                         atoms.rowIndex[i] = state.currentLine;
-                        atoms.x[i] = Core.Utils.FastNumberParsers.parseFloat(line, 0, 10);
-                        atoms.y[i] = Core.Utils.FastNumberParsers.parseFloat(line, 10, 10);
-                        atoms.z[i] = Core.Utils.FastNumberParsers.parseFloat(line, 20, 10);
+                        atoms.x[i] = Core.Utils.FastNumberParsers.parseFloatSkipTrailingWhitespace(line, 0, 10);
+                        atoms.y[i] = Core.Utils.FastNumberParsers.parseFloatSkipTrailingWhitespace(line, 10, 20);
+                        atoms.z[i] = Core.Utils.FastNumberParsers.parseFloatSkipTrailingWhitespace(line, 20, 30);
                     }
                     function readAtoms(state) {
                         for (var i = 0; i < state.atomCount; i++) {
@@ -10831,9 +10834,9 @@ var LiteMol;
                     function readBond(i, state) {
                         var line = state.lines[state.currentLine];
                         var bonds = state.bonds;
-                        bonds.atomAIndex[i] = Core.Utils.FastNumberParsers.parseInt(line, 0, 3) - 1;
-                        bonds.atomBIndex[i] = Core.Utils.FastNumberParsers.parseInt(line, 3, 3) - 1;
-                        switch (Core.Utils.FastNumberParsers.parseInt(line, 6, 3)) {
+                        bonds.atomAIndex[i] = Core.Utils.FastNumberParsers.parseIntSkipTrailingWhitespace(line, 0, 3) - 1;
+                        bonds.atomBIndex[i] = Core.Utils.FastNumberParsers.parseIntSkipTrailingWhitespace(line, 3, 6) - 1;
+                        switch (Core.Utils.FastNumberParsers.parseIntSkipTrailingWhitespace(line, 6, 9)) {
                             case 1:
                                 bonds.type[i] = 1 /* Single */;
                                 break;
@@ -10874,14 +10877,14 @@ var LiteMol;
                                         = 'X';
                         residues.columns.entityId[0]
                             = chains.columns.entityId[0]
-                                = entities.columns.id[0]
+                                = entities.columns.entityId[0]
                                     = '1';
                         chains.columns.residueEndIndex[0]
                             = entities.columns.residueEndIndex[0]
                                 = 0;
                         entities.columns.chainEndIndex[0] = 1;
                         entities.columns.type[0] = 'non-polymer';
-                        entities.columns.typeEnum[0] = Core.Structure.EntityType.NonPolymer;
+                        entities.columns.entityType[0] = Core.Structure.EntityType.NonPolymer;
                         var ssR = new Core.Structure.PolyResidueIdentifier('X', 0, null);
                         var ss = [new Core.Structure.SecondaryStructureElement(0 /* None */, ssR, ssR)];
                         ss[0].startResidueIndex = 0;
@@ -10893,6 +10896,7 @@ var LiteMol;
                             residues: residues.table,
                             chains: chains.table,
                             entities: entities.table,
+                            covalentBonds: state.bonds,
                             componentBonds: void 0,
                             secondaryStructure: ss,
                             symmetryInfo: void 0,
@@ -10906,6 +10910,7 @@ var LiteMol;
                             readAtoms(state);
                             readBonds(state);
                             var model = buildModel(state);
+                            console.log(model);
                             if (state.error) {
                                 return Formats.ParserResult.error(state.error, state.currentLine + 1);
                             }
@@ -10996,7 +11001,7 @@ var LiteMol;
                             case SupportedFormats.SDF.name: {
                                 ctx.update('Parsing...');
                                 ctx.schedule(function () {
-                                    var mol = Molecule.SDF.parse(data, id !== void 0 ? id : 'SDF');
+                                    var mol = Molecule.SDF.parse(data, id);
                                     if (mol.error) {
                                         ctx.reject(mol.error.toString());
                                         return;
@@ -13635,8 +13640,8 @@ var LiteMol;
                 function forEntities(count) {
                     var builder = new DataTableBuilder(count);
                     var columns = {
-                        id: builder.addColumn("Id", function (size) { return []; }),
-                        typeEnum: builder.addColumn("Type", function (size) { return []; }),
+                        entityId: builder.addColumn("entityId", function (size) { return []; }),
+                        entityType: builder.addColumn("entityType", function (size) { return []; }),
                         type: builder.addColumn("type", function (size) { return []; }),
                         atomStartIndex: builder.addColumn("atomStartIndex", function (size) { return new Int32Array(size); }),
                         atomEndIndex: builder.addColumn("atomEndIndex", function (size) { return new Int32Array(size); }),
@@ -17457,23 +17462,28 @@ var LiteMol;
 /*
  * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
+/**
+ * Efficient integer and float parsers.
+ *
+ * For the purposes of parsing numbers from the mmCIF data representations,
+ * up to 4 times faster than JS parseInt/parseFloat.
+ */
 var LiteMol;
 (function (LiteMol) {
     var Core;
     (function (Core) {
         var Utils;
         (function (Utils) {
-            "use strict";
-            /**
-             * Efficient integer and float parsers.
-             *
-             * For the purposes of parsing numbers from the mmCIF data representations,
-             * up to 4 times faster than JS parseInt/parseFloat.
-             */
-            var FastNumberParsers = (function () {
-                function FastNumberParsers() {
+            var FastNumberParsers;
+            (function (FastNumberParsers) {
+                "use strict";
+                function parseIntSkipTrailingWhitespace(str, start, end) {
+                    while (start < end && str.charCodeAt(start) === 32)
+                        start++;
+                    return parseInt(str, start, end);
                 }
-                FastNumberParsers.parseInt = function (str, start, end) {
+                FastNumberParsers.parseIntSkipTrailingWhitespace = parseIntSkipTrailingWhitespace;
+                function parseInt(str, start, end) {
                     var ret = 0, neg = 1;
                     if (str.charCodeAt(start) === 45 /* - */) {
                         neg = -1;
@@ -17487,11 +17497,19 @@ var LiteMol;
                             ret = (10 * ret + c) | 0;
                     }
                     return neg * ret;
-                };
-                FastNumberParsers.parseScientific = function (main, str, start, end) {
-                    return main * Math.pow(10.0, FastNumberParsers.parseInt(str, start, end));
-                };
-                FastNumberParsers.parseFloat = function (str, start, end) {
+                }
+                FastNumberParsers.parseInt = parseInt;
+                function parseScientific(main, str, start, end) {
+                    return main * Math.pow(10.0, parseInt(str, start, end));
+                }
+                FastNumberParsers.parseScientific = parseScientific;
+                function parseFloatSkipTrailingWhitespace(str, start, end) {
+                    while (start < end && str.charCodeAt(start) === 32)
+                        start++;
+                    return parseFloat(str, start, end);
+                }
+                FastNumberParsers.parseFloatSkipTrailingWhitespace = parseFloatSkipTrailingWhitespace;
+                function parseFloat(str, start, end) {
                     var neg = 1.0, ret = 0.0, point = 0.0, div = 1.0;
                     if (str.charCodeAt(start) === 45) {
                         neg = -1.0;
@@ -17513,7 +17531,7 @@ var LiteMol;
                                     ++start;
                                 }
                                 else if (c === 53 || c === 21) {
-                                    return FastNumberParsers.parseScientific(neg * (ret + point / div), str, start + 1, end);
+                                    return parseScientific(neg * (ret + point / div), str, start + 1, end);
                                 }
                                 else {
                                     return neg * (ret + point / div);
@@ -17522,16 +17540,15 @@ var LiteMol;
                             return neg * (ret + point / div);
                         }
                         else if (c === 53 || c === 21) {
-                            return FastNumberParsers.parseScientific(neg * ret, str, start + 1, end);
+                            return parseScientific(neg * ret, str, start + 1, end);
                         }
                         else
                             break;
                     }
                     return neg * ret;
-                };
-                return FastNumberParsers;
-            }());
-            Utils.FastNumberParsers = FastNumberParsers;
+                }
+                FastNumberParsers.parseFloat = parseFloat;
+            })(FastNumberParsers = Utils.FastNumberParsers || (Utils.FastNumberParsers = {}));
         })(Utils = Core.Utils || (Core.Utils = {}));
     })(Core = LiteMol.Core || (LiteMol.Core = {}));
 })(LiteMol || (LiteMol = {}));
@@ -52814,7 +52831,7 @@ var LiteMol;
 (function (LiteMol) {
     var Visualization;
     (function (Visualization) {
-        Visualization.VERSION = { number: "1.2.8", date: "August 15 2016" };
+        Visualization.VERSION = { number: "1.3.0", date: "August 31 2016" };
     })(Visualization = LiteMol.Visualization || (LiteMol.Visualization = {}));
 })(LiteMol || (LiteMol = {}));
 var LiteMol;
@@ -55459,6 +55476,23 @@ var LiteMol;
                 var BallsAndSticksHelper = (function () {
                     function BallsAndSticksHelper() {
                     }
+                    BallsAndSticksHelper.addPrecomputedBonds = function (molecule, atomIndices, builder) {
+                        var mask = LiteMol.Core.Structure.Query.Context.Mask.ofIndices(molecule, atomIndices);
+                        var stickCount = 0;
+                        var residueCount = 0;
+                        var _a = molecule.covalentBonds, atomAIndex = _a.atomAIndex, atomBIndex = _a.atomBIndex, type = _a.type, count = _a.count;
+                        for (var i = 0; i < count; i++) {
+                            var a = atomAIndex[i], b = atomBIndex[i];
+                            if (!mask.has(a) || !mask.has(b))
+                                continue;
+                            var order = type[i];
+                            if (order < 1 || order > 4)
+                                order = 1;
+                            builder.add3(a, b, order);
+                            stickCount += order;
+                        }
+                        return stickCount;
+                    };
                     BallsAndSticksHelper.analyze = function (molecule, atomIndices) {
                         var indices, atomCount = 0;
                         indices = atomIndices;
@@ -55466,6 +55500,22 @@ var LiteMol;
                         var atoms = molecule.atoms, cX = atoms.x, cY = atoms.y, cZ = atoms.z, elementSymbol = atoms.elementSymbol, atomName = atoms.name, altLoc = atoms.altLoc, atomResidueIndex = atoms.residueIndex, atomEntityIndex = atoms.entityIndex, entityType = molecule.entities.entityType, waterType = LiteMol.Core.Structure.EntityType.Water, residueName = molecule.residues.name;
                         var bondLength = 2;
                         var tree = new LiteMol.Core.Geometry.SubdivisionTree3D(indices, function (i, b) { b.add(cX[i], cY[i], cZ[i]); }), compBonds = molecule.componentBonds, ctx = tree.createContextRadius(bondLength + 1, false), buffer = ctx.buffer, processed = new Set(), builder = new LiteMol.Core.Utils.ChunkedArrayBuilder(function (size) { return new Int32Array(size); }, (indices.length * 1.33) | 0, 3), pA = new Visualization.THREE.Vector3(), pB = new Visualization.THREE.Vector3(), residueCount = 1, stickCount = 0, cont = true, startAtomIndex = 0, endAtomIndex = 0;
+                        if (molecule.covalentBonds) {
+                            stickCount = BallsAndSticksHelper.addPrecomputedBonds(molecule, atomIndices, builder);
+                            while (startAtomIndex < atomCount) {
+                                var rIndex = atomResidueIndex[indices[startAtomIndex]];
+                                endAtomIndex = startAtomIndex;
+                                while (endAtomIndex < atomCount && atomResidueIndex[indices[endAtomIndex]] == rIndex)
+                                    endAtomIndex++;
+                                residueCount++;
+                                startAtomIndex = endAtomIndex;
+                            }
+                            return {
+                                bonds: builder.compact(),
+                                stickCount: stickCount,
+                                residueCount: residueCount
+                            };
+                        }
                         while (startAtomIndex < atomCount) {
                             var rIndex = atomResidueIndex[indices[startAtomIndex]];
                             endAtomIndex = startAtomIndex;
@@ -62456,7 +62506,7 @@ var LiteMol;
 (function (LiteMol) {
     var Bootstrap;
     (function (Bootstrap) {
-        Bootstrap.VERSION = { number: "1.1.0", date: "Aug 30 2016" };
+        Bootstrap.VERSION = { number: "1.1.1", date: "Aug 31 2016" };
     })(Bootstrap = LiteMol.Bootstrap || (LiteMol.Bootstrap = {}));
 })(LiteMol || (LiteMol = {}));
 /*
@@ -63867,11 +63917,16 @@ var LiteMol;
                 Bootstrap.Command.Entity.SetCurrent.dispatch(tree.context, tree.root);
             }
             function notifyRemoved(ctx, node) {
+                var current = ctx.currentEntity;
+                var hasCurrent = false;
                 Tree.Node.forEach(node, function (n) {
                     _removeRef(ctx.tree, n);
                     Bootstrap.Event.Tree.NodeRemoved.dispatch(ctx, n);
                     n.tree = void 0;
+                    if (n === current)
+                        hasCurrent = true;
                 });
+                return hasCurrent;
             }
             function remove(node) {
                 if (!node || !node.tree)
@@ -63886,13 +63941,14 @@ var LiteMol;
                 var ctx = node.tree.context;
                 Tree.Node.removeChild(parent, node);
                 Bootstrap.Entity.nodeUpdated(parent);
-                notifyRemoved(ctx, node);
-                if (!isHidden) {
+                var hasCurrent = notifyRemoved(ctx, node);
+                if (hasCurrent && !isHidden) {
                     var foundSibling = false;
                     for (var i = index; i >= 0; i--) {
                         if (parent.children[i] && !Tree.Node.isHidden(parent.children[i])) {
                             Bootstrap.Command.Entity.SetCurrent.dispatch(ctx, parent.children[i]);
                             foundSibling = true;
+                            break;
                         }
                     }
                     if (!foundSibling) {
@@ -72297,7 +72353,7 @@ var LiteMol;
 (function (LiteMol) {
     var Plugin;
     (function (Plugin) {
-        Plugin.VERSION = { number: "1.0.6", date: "July 26 2016" };
+        Plugin.VERSION = { number: "1.1.1", date: "Aug 31 2016" };
     })(Plugin = LiteMol.Plugin || (LiteMol.Plugin = {}));
 })(LiteMol || (LiteMol = {}));
 /*

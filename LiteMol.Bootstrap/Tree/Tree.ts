@@ -113,11 +113,15 @@ namespace LiteMol.Bootstrap {
         } 
                 
         function notifyRemoved<T extends Node.Any>(ctx: Context, node: T) {
+            let current = ctx.currentEntity;
+            let hasCurrent = false;
             Node.forEach(node, n => {
                 _removeRef(<any>ctx.tree, n);
                 Event.Tree.NodeRemoved.dispatch(ctx, n);                
                 n.tree = void 0;
+                if (n === current) hasCurrent = true;
             });
+            return hasCurrent;
         }
         
         export function remove<T extends Tree.Node.Any>(node: T) {                        
@@ -134,14 +138,15 @@ namespace LiteMol.Bootstrap {
                     
             Node.removeChild(parent, node);    
             Entity.nodeUpdated(parent);
-            notifyRemoved(ctx, node);
+            let hasCurrent = notifyRemoved(ctx, node);
             
-            if (!isHidden) {          
+            if (hasCurrent && !isHidden) {          
                 let foundSibling = false;
                 for (let i = index; i >= 0; i--) {
                     if (parent.children[i] && !Node.isHidden(parent.children[i])) {
                         Command.Entity.SetCurrent.dispatch(ctx, parent.children[i]);
                         foundSibling = true;
+                        break;
                     }       
                 }
 

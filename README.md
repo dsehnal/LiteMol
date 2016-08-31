@@ -125,7 +125,6 @@ These features are planned to be introduced during the first half of 2017.
   * Streamline the process of extension creation.
   * Support for dynamic extension loading.
 * Support for saving and restoring the state of the application.
-* Support for additional input formats (SDF/MOL, MOL2).
 * More visual primitives (spheres, cylinders, arrows, etc.)
 * Support for labels in the 3D scene.  
 * Improved internal data representation of molecules.
@@ -141,6 +140,7 @@ These features are on our TODO list. Feature requests from users are always welc
 * Animation support:
     * Animating camera.
     * Animating individual parts of the scene.
+* Support for additional input formats (e.g. MOL2, but mostly driven by user demand).
 
 **Non-core features**
 * Additional display modes. 
