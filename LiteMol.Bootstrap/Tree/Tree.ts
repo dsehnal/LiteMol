@@ -126,7 +126,7 @@ namespace LiteMol.Bootstrap {
                 clearRoot(node.tree);
                 return;
             }            
-            
+
             let isHidden = Node.isHidden(node);
             let index = node.index;
             let parent = node.parent;    
@@ -136,12 +136,18 @@ namespace LiteMol.Bootstrap {
             Entity.nodeUpdated(parent);
             notifyRemoved(ctx, node);
             
-            if (!isHidden) {            
-                if (parent.children[index] && !Node.isHidden(parent.children[index])) {
-                    Command.Entity.SetCurrent.dispatch(ctx, parent.children[index]);
-                } else {
-                    Command.Entity.SetCurrent.dispatch(ctx, parent);
+            if (!isHidden) {          
+                let foundSibling = false;
+                for (let i = index; i >= 0; i--) {
+                    if (parent.children[i] && !Node.isHidden(parent.children[i])) {
+                        Command.Entity.SetCurrent.dispatch(ctx, parent.children[i]);
+                        foundSibling = true;
+                    }       
                 }
+
+                if (!foundSibling) {
+                    Command.Entity.SetCurrent.dispatch(ctx, parent);
+                }                    
             }
                      
             if (node.transform.props.isBinding && !parent.children.length) {

@@ -748,12 +748,19 @@ namespace LiteMol.Core.Structure {
                
             let ss = buildSS(model, assemblyParts, finalResidues);
             
-            return new MoleculeModel(
-                model.id, model.modelId,
-                finalAtoms, finalResidues, finalChains, finalEntities,
-                model.componentBonds, ss, void 0, void 0,
-                model, MoleculeModelSource.Computed,
-                transforms.map(t => new Operator(t.transform, t.id, t.isIdentity)));
+            return new MoleculeModel({
+                id: model.id, 
+                modelId: model.modelId,
+                atoms: finalAtoms, 
+                residues: finalResidues,
+                chains: finalChains, 
+                entities: finalEntities,
+                componentBonds: model.componentBonds, 
+                secondaryStructure: ss,
+                parent: model, 
+                source: MoleculeModelSource.Computed,
+                operators: transforms.map(t => new Operator(t.transform, t.id, t.isIdentity))
+            });
         }
 
         function buildSS(parent: MoleculeModel,

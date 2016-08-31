@@ -848,17 +848,17 @@ namespace LiteMol.Core.Formats.Molecule.mmCIF {
                 entry = info.newEntry(id);
             }
 
-            let t: Structure.BondOrder;
+            let t: Structure.BondType;
 
             switch (order.toLowerCase()) {
-                case "sing": t = Structure.BondOrder.Single; break;
+                case "sing": t = Structure.BondType.Single; break;
                 case "doub":
                 case "delo":
-                    t = Structure.BondOrder.Double;
+                    t = Structure.BondType.Double;
                     break;
-                case "trip": t = Structure.BondOrder.Triple; break;
-                case "quad": t = Structure.BondOrder.Quadruple; break;
-                default: t = Structure.BondOrder.Single; break;
+                case "trip": t = Structure.BondType.Triple; break;
+                case "quad": t = Structure.BondType.Aromatic; break;
+                default: t = Structure.BondType.Unknown; break;
             }
 
             entry.add(nameA, nameB, t);
@@ -884,20 +884,19 @@ namespace LiteMol.Core.Formats.Molecule.mmCIF {
         assignSecondaryStructureIndex(structure.residues, ss); 
         
         return {
-            model: new Structure.MoleculeModel(
+            model: new Structure.MoleculeModel({
                 id,
                 modelId,
                 atoms,
-                structure.residues,
-                structure.chains,
-                structure.entities,
-                getComponentBonds(data.getCategory("_chem_comp_bond")),
-                ss,
-                getSymmetryInfo(data),
-                getAssemblyInfo(data),
-                undefined,
-                Structure.MoleculeModelSource.File,
-                undefined),
+                residues: structure.residues,
+                chains: structure.chains,
+                entities: structure.entities,
+                componentBonds: getComponentBonds(data.getCategory("_chem_comp_bond")),
+                secondaryStructure: ss,
+                symmetryInfo: getSymmetryInfo(data),
+                assemblyInfo: getAssemblyInfo(data),
+                source: Structure.MoleculeModelSource.File
+            }),
             endRow
         };
     }

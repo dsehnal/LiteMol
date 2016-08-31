@@ -112,14 +112,25 @@ namespace LiteMol.Core.Structure {
         Unknown = 3
     }
 
+    export const enum BondType {
+        Unknown         = 0,
 
-    export enum BondOrder { None = 0, Single = 1, Double = 2, Triple = 3, Quadruple = 4 }
+        Single          = 1,
+        Double          = 2,
+        Triple          = 3,
+        Aromatic        = 4,
+
+        Metallic        = 5,
+        Ion             = 6,
+        Hydrogen        = 7,
+        DisulfideBridge = 8 
+    }
 
     export class ComponentBondInfoEntry {        
 
-        map: Map<string, Map<string, BondOrder>> = new Map<string, Map<string, BondOrder>>();
+        map: Map<string, Map<string, BondType>> = new Map<string, Map<string, BondType>>();
 
-        add(a: string, b: string, order: BondOrder, swap = true) {
+        add(a: string, b: string, order: BondType, swap = true) {
 
             let e = this.map.get(a);
             if (e !== void 0) {
@@ -128,7 +139,7 @@ namespace LiteMol.Core.Structure {
                     e.set(b, order);
                 }
             } else {
-                let map = new Map<string, BondOrder>();
+                let map = new Map<string, BondType>();
                 map.set(b, order);
                 this.map.set(a, map);
             }
@@ -323,6 +334,102 @@ namespace LiteMol.Core.Structure {
         type: string[];
     }
 
+    export interface DefaultBondTableSchema extends DataTable {
+        atomAIndex: number[];
+        atomBIndex: number[];
+        type: BondType[];
+    }
+
+    /**
+     * Default Builders
+     */
+
+    export namespace DefaultDataTables {
+        export function forAtoms(count: number) {
+            let builder = new DataTableBuilder(count);
+            let columns = { 
+                id: builder.addColumn("id", size => new Int32Array(size)),
+                x: builder.addColumn("x", size => new Float32Array(size)),
+                y: builder.addColumn("y", size => new Float32Array(size)),
+                z: builder.addColumn("z", size => new Float32Array(size)),
+                altLoc: builder.addColumn("altLoc", size => []),
+                rowIndex: builder.addColumn("rowIndex", size => new Int32Array(size)),
+                residueIndex: builder.addColumn("residueIndex", size => new Int32Array(size)),
+                chainIndex: builder.addColumn("chainIndex", size => new Int32Array(size)),
+                entityIndex: builder.addColumn("entityIndex", size => new Int32Array(size)),
+                name: <string[]>builder.addColumn("name", size => []),
+                elementSymbol: <string[]>builder.addColumn("elementSymbol", size => []),
+                occupancy: builder.addColumn("occupancy", size => new Float32Array(size)),
+                tempFactor: builder.addColumn("tempFactor", size => new Float32Array(size)),
+                authName: <string[]>builder.addColumn("authName", size => [])
+            }
+            return { table: builder.seal<DefaultAtomTableSchema>(), columns };
+        }
+
+        export function forResidues(count: number) {
+            let builder = new DataTableBuilder(count);
+            let columns = { 
+                name: builder.addColumn("name", size => <string[]>[]),
+                seqNumber: builder.addColumn("seqNumber", size => new Int32Array(size)),
+                asymId: builder.addColumn("asymId", size => <string[]>[]),
+                authName: builder.addColumn("authName", size => <string[]>[]),
+                authSeqNumber: builder.addColumn("authSeqNumber", size => new Int32Array(size)),
+                authAsymId: builder.addColumn("authAsymId", size => <string[]>[]),
+                insCode: builder.addColumn("insCode", size => <string[]>[]),
+                entityId: builder.addColumn("entityId", size => <string[]>[]),
+                isHet: builder.addColumn("isHet", size => new Int8Array(size)),
+                atomStartIndex: builder.addColumn("atomStartIndex", size => new Int32Array(size)),
+                atomEndIndex: builder.addColumn("atomEndIndex", size => new Int32Array(size)),
+                chainIndex: builder.addColumn("chainIndex", size => new Int32Array(size)),
+                entityIndex: builder.addColumn("entityIndex", size => new Int32Array(size)),
+                secondaryStructureIndex: builder.addColumn("secondaryStructureIndex", size => new Int32Array(size)),
+            }
+            return { table: builder.seal<DefaultResidueTableSchema>(), columns };
+        }
+
+        export function forChains(count: number) {
+            let builder = new DataTableBuilder(count);
+            let columns = { 
+                asymId: builder.addColumn("asymId", size => <string[]>[]),
+                entityId: builder.addColumn("entityId", size => <string[]>[]),
+                authAsymId: builder.addColumn("authAsymId", size => <string[]>[]),
+                atomStartIndex: builder.addColumn("atomStartIndex", size => new Int32Array(size)),
+                atomEndIndex: builder.addColumn("atomEndIndex", size => new Int32Array(size)),
+                residueStartIndex: builder.addColumn("residueStartIndex", size => new Int32Array(size)),
+                residueEndIndex: builder.addColumn("residueEndIndex", size => new Int32Array(size)),
+                entityIndex: builder.addColumn("entityIndex", size => new Int32Array(size)),
+            }
+            return { table: builder.seal<DefaultChainTableSchema>(), columns };
+        }
+
+        export function forEntities(count: number) {
+            let builder = new DataTableBuilder(count);
+            let columns = { 
+                id: builder.addColumn("Id", size => <string[]>[]),
+                typeEnum: builder.addColumn("Type", size => <Structure.EntityType[]>[]),
+                type: builder.addColumn("type", size => <string[]>[]),
+                atomStartIndex: builder.addColumn("atomStartIndex", size => new Int32Array(size)),
+                atomEndIndex: builder.addColumn("atomEndIndex", size => new Int32Array(size)),
+                residueStartIndex: builder.addColumn("residueStartIndex", size => new Int32Array(size)),
+                residueEndIndex: builder.addColumn("residueEndIndex", size => new Int32Array(size)),
+                chainStartIndex: builder.addColumn("chainStartIndex", size => new Int32Array(size)),
+                chainEndIndex: builder.addColumn("chainEndIndex", size => new Int32Array(size))
+            }
+            return { table: builder.seal<DefaultEntityTableSchema>(), columns };
+        }
+
+        export function forBonds(count: number) {
+            let builder = new DataTableBuilder(count);
+            let columns = { 
+                atomAIndex: builder.addColumn("atomAIndex", size => new Int32Array(size)),
+                atomBIndex: builder.addColumn("atomBIndex", size => new Int32Array(size)),
+                type: builder.addColumn("type", size => new Int8Array(size))
+            }
+            return { table: builder.seal<DefaultBondTableSchema>(), columns };
+        }
+
+    }
+
     export enum MoleculeModelSource {
         File,
         Computed
@@ -348,10 +455,44 @@ namespace LiteMol.Core.Structure {
             
         }
     }
+
+    export interface IMoleculeModelData {
+        id: string,
+        modelId: string,
+        atoms: DefaultAtomTableSchema,
+        residues: DefaultResidueTableSchema,
+        chains: DefaultChainTableSchema,
+        entities: DefaultEntityTableSchema,
+        covalentBonds?: DefaultBondTableSchema,
+        nonCovalentbonds?: DefaultBondTableSchema, 
+        componentBonds?: ComponentBondInfo,        
+        secondaryStructure: SecondaryStructureElement[],
+        symmetryInfo?: SymmetryInfo,
+        assemblyInfo?: AssemblyInfo,
+        parent?: MoleculeModel,
+        source: MoleculeModelSource,
+        operators?: Operator[]
+    }
     
-    export class MoleculeModel {
+    export class MoleculeModel implements IMoleculeModelData {
 
         private _queryContext: Query.Context;
+
+        id: string;
+        modelId: string;
+        atoms: DefaultAtomTableSchema;
+        residues: DefaultResidueTableSchema;
+        chains: DefaultChainTableSchema;
+        entities: DefaultEntityTableSchema;
+        covalentBonds: DefaultBondTableSchema;
+        nonCovalentbonds: DefaultBondTableSchema;
+        componentBonds: ComponentBondInfo;
+        secondaryStructure: SecondaryStructureElement[];
+        symmetryInfo: SymmetryInfo;
+        assemblyInfo: AssemblyInfo;
+        parent: MoleculeModel;
+        source: MoleculeModelSource;
+        operators: Operator[];
 
         get queryContext() {
             if (this._queryContext) return this._queryContext;
@@ -363,21 +504,22 @@ namespace LiteMol.Core.Structure {
             return Query.Builder.toQuery(q)(this.queryContext);
         }
 
-        constructor(
-            public id: string,
-            public modelId: string,
-            public atoms: DefaultAtomTableSchema,
-            public residues: DefaultResidueTableSchema,
-            public chains: DefaultChainTableSchema,
-            public entities: DefaultEntityTableSchema,
-            public componentBonds: ComponentBondInfo,
-            public secondaryStructure: SecondaryStructureElement[],
-            public symmetryInfo: SymmetryInfo,
-            public assemblyInfo: AssemblyInfo,
-            public parent: MoleculeModel,
-            public source: MoleculeModelSource,
-            public operators: Operator[]) {
-            
+        constructor(data: IMoleculeModelData) {
+            this.id = data.id;
+            this.modelId = data.modelId;
+            this.atoms = data.atoms;
+            this.residues = data.residues;
+            this.chains = data.chains;
+            this.entities = data.entities;
+            this.covalentBonds = data.covalentBonds;
+            this.nonCovalentbonds = data.nonCovalentbonds;
+            this.componentBonds = data.componentBonds;
+            this.secondaryStructure = data.secondaryStructure;
+            this.symmetryInfo = data.symmetryInfo;
+            this.assemblyInfo = data.assemblyInfo;
+            this.parent = data.parent;
+            this.source = data.source;
+            this.operators = data.operators;
         }
     }
 

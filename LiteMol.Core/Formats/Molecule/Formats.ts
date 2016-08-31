@@ -7,8 +7,9 @@ namespace LiteMol.Core.Formats.Molecule {
     export namespace SupportedFormats {
         export const mmCIF: FormatInfo = { name: 'mmCIF', extensions: ['.cif'] };
         export const PDB: FormatInfo = { name: 'PDB', extensions: ['.pdb','.ent'] };
+        export const SDF: FormatInfo = { name: 'SDF', extensions: ['.sdf','.mol'] };
 
-        export const All = [ mmCIF, PDB ];
+        export const All = [ mmCIF, PDB, SDF ];
     }
 
     export function parse(format: FormatInfo, data: string | ArrayBuffer, id?: string): Computation<ParserResult<Structure.Molecule>> {
@@ -47,6 +48,15 @@ namespace LiteMol.Core.Formats.Molecule {
                                 ctx.reject(`${e}`);    
                             }
                         });
+                    });
+                    break;
+                }
+                case SupportedFormats.SDF.name: {
+                    ctx.update('Parsing...');
+                    ctx.schedule(() => {
+                        let mol = SDF.parse(data as string, id !== void 0 ? id : 'SDF');
+                        if (mol.error) { ctx.reject(mol.error.toString()); return; }
+                        ctx.resolve(ParserResult.success(mol.result));
                     });
                     break;
                 }

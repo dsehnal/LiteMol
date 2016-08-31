@@ -6631,10 +6631,14 @@ var LiteMol;
                 Bootstrap.Entity.nodeUpdated(parent);
                 notifyRemoved(ctx, node);
                 if (!isHidden) {
-                    if (parent.children[index] && !Tree.Node.isHidden(parent.children[index])) {
-                        Bootstrap.Command.Entity.SetCurrent.dispatch(ctx, parent.children[index]);
+                    var foundSibling = false;
+                    for (var i = index; i >= 0; i--) {
+                        if (parent.children[i] && !Tree.Node.isHidden(parent.children[i])) {
+                            Bootstrap.Command.Entity.SetCurrent.dispatch(ctx, parent.children[i]);
+                            foundSibling = true;
+                        }
                     }
-                    else {
+                    if (!foundSibling) {
                         Bootstrap.Command.Entity.SetCurrent.dispatch(ctx, parent);
                     }
                 }
@@ -8251,8 +8255,9 @@ var LiteMol;
             Entity.toggleExpanded = toggleExpanded;
             function setCurrent(e) {
                 var old = e.tree.context.currentEntity;
-                if (old === e || (e && e.isHidden))
+                if (old === e || (e && e.isHidden)) {
                     return;
+                }
                 var n = e.parent;
                 while (n.parent !== n) {
                     if (n.isHidden) {

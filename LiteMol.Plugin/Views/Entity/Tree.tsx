@@ -62,7 +62,7 @@ namespace LiteMol.Plugin.Views.Entity {
                 if (e.data === node) {
                     if (node.version !== this.renderedVersion) this.forceUpdate();
                     if (this.ctx.currentEntity === node && this.isFullyBound()) {
-                        Bootstrap.Command.Entity.SetCurrent.dispatch(this.ctx, node.children[0]);
+                        setTimeout(Bootstrap.Command.Entity.SetCurrent.dispatch(this.ctx, node.children[0]), 0);
                     }
                 }
             });

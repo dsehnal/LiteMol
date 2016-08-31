@@ -20,9 +20,11 @@ namespace LiteMol.Bootstrap.Entity {
         nodeUpdated(e);     
     }
         
-    export function setCurrent(e: Entity.Any) {        
+    export function setCurrent(e: Entity.Any) {    
         let old = e.tree.context.currentEntity;        
-        if (old === e || (e && e.isHidden)) return;
+        if (old === e || (e && e.isHidden)) {
+            return;
+        }
         let n = e.parent;
         while (n.parent !== n) { 
             if (n.isHidden) {

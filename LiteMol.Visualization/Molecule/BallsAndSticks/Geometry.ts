@@ -64,8 +64,8 @@ namespace LiteMol.Visualization.Molecule.BallsAndSticks {
                             if (altA !== altB) continue;
 
                             let order = pairs.get(atomName[iB]);
-                            
-                            if (order) {
+                            if (order !== void 0) {
+                                if (order < 1 || order > 4) order = 1;
                                 builder.add3(iA, iB, order);
                                 stickCount += order;
                             }

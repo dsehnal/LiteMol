@@ -10058,20 +10058,20 @@ var LiteMol;
                             var t = void 0;
                             switch (order.toLowerCase()) {
                                 case "sing":
-                                    t = Core.Structure.BondOrder.Single;
+                                    t = 1 /* Single */;
                                     break;
                                 case "doub":
                                 case "delo":
-                                    t = Core.Structure.BondOrder.Double;
+                                    t = 2 /* Double */;
                                     break;
                                 case "trip":
-                                    t = Core.Structure.BondOrder.Triple;
+                                    t = 3 /* Triple */;
                                     break;
                                 case "quad":
-                                    t = Core.Structure.BondOrder.Quadruple;
+                                    t = 4 /* Aromatic */;
                                     break;
                                 default:
-                                    t = Core.Structure.BondOrder.Single;
+                                    t = 0 /* Unknown */;
                                     break;
                             }
                             entry.add(nameA, nameB, t);
@@ -10088,7 +10088,19 @@ var LiteMol;
                         var ss = getSecondaryStructureInfo(data, atoms, structure);
                         assignSecondaryStructureIndex(structure.residues, ss);
                         return {
-                            model: new Core.Structure.MoleculeModel(id, modelId, atoms, structure.residues, structure.chains, structure.entities, getComponentBonds(data.getCategory("_chem_comp_bond")), ss, getSymmetryInfo(data), getAssemblyInfo(data), undefined, Core.Structure.MoleculeModelSource.File, undefined),
+                            model: new Core.Structure.MoleculeModel({
+                                id: id,
+                                modelId: modelId,
+                                atoms: atoms,
+                                residues: structure.residues,
+                                chains: structure.chains,
+                                entities: structure.entities,
+                                componentBonds: getComponentBonds(data.getCategory("_chem_comp_bond")),
+                                secondaryStructure: ss,
+                                symmetryInfo: getSymmetryInfo(data),
+                                assemblyInfo: getAssemblyInfo(data),
+                                source: Core.Structure.MoleculeModelSource.File
+                            }),
                             endRow: endRow
                         };
                     }
@@ -10703,6 +10715,148 @@ var LiteMol;
 /*
  * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
+var LiteMol;
+(function (LiteMol) {
+    var Core;
+    (function (Core) {
+        var Formats;
+        (function (Formats) {
+            var Molecule;
+            (function (Molecule) {
+                var SDF;
+                (function (SDF) {
+                    function initState(data, customId) {
+                        var lines = data.split(/(\r\n)|\r|\n/g);
+                        var molHeaderInfo = lines[1];
+                        var molHeaderComment = lines[2];
+                        var cTabInfo = lines[3];
+                        var atomCount = +cTabInfo.substr(0, 3);
+                        var bondCount = +cTabInfo.substr(3, 3);
+                        return {
+                            id: customId ? customId : 'SDF',
+                            atomCount: atomCount,
+                            bondCount: bondCount,
+                            atoms: Core.Structure.DefaultDataTables.forAtoms(atomCount).table,
+                            bonds: Core.Structure.DefaultDataTables.forBonds(bondCount).table,
+                            lines: lines,
+                            currentLine: 4,
+                            error: void 0,
+                        };
+                    }
+                    function readAtom(i, state) {
+                        var line = state.lines[state.currentLine];
+                        var atoms = state.atoms;
+                        var es = Formats.ShortStringPool.getString(line.substr(31, 3).trim());
+                        atoms.id[i] = i;
+                        atoms.elementSymbol[i] = es;
+                        atoms.name[i] = es;
+                        atoms.authName[i] = es;
+                        atoms.occupancy[i] = 1.0;
+                        atoms.rowIndex[i] = state.currentLine;
+                        atoms.x[i] = Core.Utils.FastNumberParsers.parseFloat(line, 0, 10);
+                        atoms.y[i] = Core.Utils.FastNumberParsers.parseFloat(line, 10, 10);
+                        atoms.z[i] = Core.Utils.FastNumberParsers.parseFloat(line, 20, 10);
+                    }
+                    function readAtoms(state) {
+                        for (var i = 0; i < state.atomCount; i++) {
+                            readAtom(i, state);
+                            state.currentLine++;
+                        }
+                    }
+                    function readBond(i, state) {
+                        var line = state.lines[state.currentLine];
+                        var bonds = state.bonds;
+                        bonds.atomAIndex[i] = Core.Utils.FastNumberParsers.parseInt(line, 0, 3) - 1;
+                        bonds.atomBIndex[i] = Core.Utils.FastNumberParsers.parseInt(line, 3, 3) - 1;
+                        switch (Core.Utils.FastNumberParsers.parseInt(line, 6, 3)) {
+                            case 1:
+                                bonds.type[i] = 1 /* Single */;
+                                break;
+                            case 2:
+                                bonds.type[i] = 2 /* Double */;
+                                break;
+                            case 3:
+                                bonds.type[i] = 3 /* Triple */;
+                                break;
+                            case 4:
+                                bonds.type[i] = 4 /* Aromatic */;
+                                break;
+                            default:
+                                bonds.type[i] = 0 /* Unknown */;
+                                break;
+                        }
+                    }
+                    function readBonds(state) {
+                        for (var i = 0; i < state.bondCount; i++) {
+                            readBond(i, state);
+                            state.currentLine++;
+                        }
+                    }
+                    function buildModel(state) {
+                        var residues = Core.Structure.DefaultDataTables.forResidues(1), chains = Core.Structure.DefaultDataTables.forChains(1), entities = Core.Structure.DefaultDataTables.forEntities(1);
+                        residues.columns.isHet[0] = 1;
+                        residues.columns.insCode[0] = null;
+                        residues.columns.name[0]
+                            = residues.columns.authName[0] = 'UNK';
+                        residues.columns.atomEndIndex[0]
+                            = chains.columns.atomEndIndex[0]
+                                = entities.columns.atomEndIndex[0]
+                                    = state.atomCount;
+                        residues.columns.asymId[0]
+                            = residues.columns.authAsymId[0]
+                                = chains.columns.asymId[0]
+                                    = chains.columns.authAsymId[0]
+                                        = 'X';
+                        residues.columns.entityId[0]
+                            = chains.columns.entityId[0]
+                                = entities.columns.id[0]
+                                    = '1';
+                        chains.columns.residueEndIndex[0]
+                            = entities.columns.residueEndIndex[0]
+                                = 0;
+                        entities.columns.chainEndIndex[0] = 1;
+                        entities.columns.type[0] = 'non-polymer';
+                        entities.columns.typeEnum[0] = Core.Structure.EntityType.NonPolymer;
+                        var ssR = new Core.Structure.PolyResidueIdentifier('X', 0, null);
+                        var ss = [new Core.Structure.SecondaryStructureElement(0 /* None */, ssR, ssR)];
+                        ss[0].startResidueIndex = 0;
+                        ss[0].endResidueIndex = 1;
+                        return new Core.Structure.MoleculeModel({
+                            id: state.id,
+                            modelId: '1',
+                            atoms: state.atoms,
+                            residues: residues.table,
+                            chains: chains.table,
+                            entities: entities.table,
+                            componentBonds: void 0,
+                            secondaryStructure: ss,
+                            symmetryInfo: void 0,
+                            assemblyInfo: void 0,
+                            source: Core.Structure.MoleculeModelSource.File
+                        });
+                    }
+                    function parse(data, id) {
+                        try {
+                            var state = initState(data, id);
+                            readAtoms(state);
+                            readBonds(state);
+                            var model = buildModel(state);
+                            if (state.error) {
+                                return Formats.ParserResult.error(state.error, state.currentLine + 1);
+                            }
+                            var molecule = new Core.Structure.Molecule(id ? id : state.id, [model]);
+                            return Formats.ParserResult.success(molecule);
+                        }
+                        catch (e) {
+                            return Formats.ParserResult.error("" + e);
+                        }
+                    }
+                    SDF.parse = parse;
+                })(SDF = Molecule.SDF || (Molecule.SDF = {}));
+            })(Molecule = Formats.Molecule || (Formats.Molecule = {}));
+        })(Formats = Core.Formats || (Core.Formats = {}));
+    })(Core = LiteMol.Core || (LiteMol.Core = {}));
+})(LiteMol || (LiteMol = {}));
 /*
  * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
@@ -10718,7 +10872,8 @@ var LiteMol;
                 (function (SupportedFormats) {
                     SupportedFormats.mmCIF = { name: 'mmCIF', extensions: ['.cif'] };
                     SupportedFormats.PDB = { name: 'PDB', extensions: ['.pdb', '.ent'] };
-                    SupportedFormats.All = [SupportedFormats.mmCIF, SupportedFormats.PDB];
+                    SupportedFormats.SDF = { name: 'SDF', extensions: ['.sdf', '.mol'] };
+                    SupportedFormats.All = [SupportedFormats.mmCIF, SupportedFormats.PDB, SupportedFormats.SDF];
                 })(SupportedFormats = Molecule.SupportedFormats || (Molecule.SupportedFormats = {}));
                 function parse(format, data, id) {
                     return Core.Computation.create(function (ctx) {
@@ -10770,6 +10925,18 @@ var LiteMol;
                                             ctx.reject("" + e);
                                         }
                                     });
+                                });
+                                break;
+                            }
+                            case SupportedFormats.SDF.name: {
+                                ctx.update('Parsing...');
+                                ctx.schedule(function () {
+                                    var mol = Molecule.SDF.parse(data, id !== void 0 ? id : 'SDF');
+                                    if (mol.error) {
+                                        ctx.reject(mol.error.toString());
+                                        return;
+                                    }
+                                    ctx.resolve(Formats.ParserResult.success(mol.result));
                                 });
                                 break;
                             }
@@ -13178,14 +13345,6 @@ var LiteMol;
                 EntityType[EntityType["Unknown"] = 3] = "Unknown";
             })(Structure.EntityType || (Structure.EntityType = {}));
             var EntityType = Structure.EntityType;
-            (function (BondOrder) {
-                BondOrder[BondOrder["None"] = 0] = "None";
-                BondOrder[BondOrder["Single"] = 1] = "Single";
-                BondOrder[BondOrder["Double"] = 2] = "Double";
-                BondOrder[BondOrder["Triple"] = 3] = "Triple";
-                BondOrder[BondOrder["Quadruple"] = 4] = "Quadruple";
-            })(Structure.BondOrder || (Structure.BondOrder = {}));
-            var BondOrder = Structure.BondOrder;
             var ComponentBondInfoEntry = (function () {
                 function ComponentBondInfoEntry(id) {
                     this.id = id;
@@ -13346,6 +13505,95 @@ var LiteMol;
                 return AssemblyInfo;
             }());
             Structure.AssemblyInfo = AssemblyInfo;
+            /**
+             * Default Builders
+             */
+            var DefaultDataTables;
+            (function (DefaultDataTables) {
+                function forAtoms(count) {
+                    var builder = new DataTableBuilder(count);
+                    var columns = {
+                        id: builder.addColumn("id", function (size) { return new Int32Array(size); }),
+                        x: builder.addColumn("x", function (size) { return new Float32Array(size); }),
+                        y: builder.addColumn("y", function (size) { return new Float32Array(size); }),
+                        z: builder.addColumn("z", function (size) { return new Float32Array(size); }),
+                        altLoc: builder.addColumn("altLoc", function (size) { return []; }),
+                        rowIndex: builder.addColumn("rowIndex", function (size) { return new Int32Array(size); }),
+                        residueIndex: builder.addColumn("residueIndex", function (size) { return new Int32Array(size); }),
+                        chainIndex: builder.addColumn("chainIndex", function (size) { return new Int32Array(size); }),
+                        entityIndex: builder.addColumn("entityIndex", function (size) { return new Int32Array(size); }),
+                        name: builder.addColumn("name", function (size) { return []; }),
+                        elementSymbol: builder.addColumn("elementSymbol", function (size) { return []; }),
+                        occupancy: builder.addColumn("occupancy", function (size) { return new Float32Array(size); }),
+                        tempFactor: builder.addColumn("tempFactor", function (size) { return new Float32Array(size); }),
+                        authName: builder.addColumn("authName", function (size) { return []; })
+                    };
+                    return { table: builder.seal(), columns: columns };
+                }
+                DefaultDataTables.forAtoms = forAtoms;
+                function forResidues(count) {
+                    var builder = new DataTableBuilder(count);
+                    var columns = {
+                        name: builder.addColumn("name", function (size) { return []; }),
+                        seqNumber: builder.addColumn("seqNumber", function (size) { return new Int32Array(size); }),
+                        asymId: builder.addColumn("asymId", function (size) { return []; }),
+                        authName: builder.addColumn("authName", function (size) { return []; }),
+                        authSeqNumber: builder.addColumn("authSeqNumber", function (size) { return new Int32Array(size); }),
+                        authAsymId: builder.addColumn("authAsymId", function (size) { return []; }),
+                        insCode: builder.addColumn("insCode", function (size) { return []; }),
+                        entityId: builder.addColumn("entityId", function (size) { return []; }),
+                        isHet: builder.addColumn("isHet", function (size) { return new Int8Array(size); }),
+                        atomStartIndex: builder.addColumn("atomStartIndex", function (size) { return new Int32Array(size); }),
+                        atomEndIndex: builder.addColumn("atomEndIndex", function (size) { return new Int32Array(size); }),
+                        chainIndex: builder.addColumn("chainIndex", function (size) { return new Int32Array(size); }),
+                        entityIndex: builder.addColumn("entityIndex", function (size) { return new Int32Array(size); }),
+                        secondaryStructureIndex: builder.addColumn("secondaryStructureIndex", function (size) { return new Int32Array(size); }),
+                    };
+                    return { table: builder.seal(), columns: columns };
+                }
+                DefaultDataTables.forResidues = forResidues;
+                function forChains(count) {
+                    var builder = new DataTableBuilder(count);
+                    var columns = {
+                        asymId: builder.addColumn("asymId", function (size) { return []; }),
+                        entityId: builder.addColumn("entityId", function (size) { return []; }),
+                        authAsymId: builder.addColumn("authAsymId", function (size) { return []; }),
+                        atomStartIndex: builder.addColumn("atomStartIndex", function (size) { return new Int32Array(size); }),
+                        atomEndIndex: builder.addColumn("atomEndIndex", function (size) { return new Int32Array(size); }),
+                        residueStartIndex: builder.addColumn("residueStartIndex", function (size) { return new Int32Array(size); }),
+                        residueEndIndex: builder.addColumn("residueEndIndex", function (size) { return new Int32Array(size); }),
+                        entityIndex: builder.addColumn("entityIndex", function (size) { return new Int32Array(size); }),
+                    };
+                    return { table: builder.seal(), columns: columns };
+                }
+                DefaultDataTables.forChains = forChains;
+                function forEntities(count) {
+                    var builder = new DataTableBuilder(count);
+                    var columns = {
+                        id: builder.addColumn("Id", function (size) { return []; }),
+                        typeEnum: builder.addColumn("Type", function (size) { return []; }),
+                        type: builder.addColumn("type", function (size) { return []; }),
+                        atomStartIndex: builder.addColumn("atomStartIndex", function (size) { return new Int32Array(size); }),
+                        atomEndIndex: builder.addColumn("atomEndIndex", function (size) { return new Int32Array(size); }),
+                        residueStartIndex: builder.addColumn("residueStartIndex", function (size) { return new Int32Array(size); }),
+                        residueEndIndex: builder.addColumn("residueEndIndex", function (size) { return new Int32Array(size); }),
+                        chainStartIndex: builder.addColumn("chainStartIndex", function (size) { return new Int32Array(size); }),
+                        chainEndIndex: builder.addColumn("chainEndIndex", function (size) { return new Int32Array(size); })
+                    };
+                    return { table: builder.seal(), columns: columns };
+                }
+                DefaultDataTables.forEntities = forEntities;
+                function forBonds(count) {
+                    var builder = new DataTableBuilder(count);
+                    var columns = {
+                        atomAIndex: builder.addColumn("atomAIndex", function (size) { return new Int32Array(size); }),
+                        atomBIndex: builder.addColumn("atomBIndex", function (size) { return new Int32Array(size); }),
+                        type: builder.addColumn("type", function (size) { return new Int8Array(size); })
+                    };
+                    return { table: builder.seal(), columns: columns };
+                }
+                DefaultDataTables.forBonds = forBonds;
+            })(DefaultDataTables = Structure.DefaultDataTables || (Structure.DefaultDataTables = {}));
             (function (MoleculeModelSource) {
                 MoleculeModelSource[MoleculeModelSource["File"] = 0] = "File";
                 MoleculeModelSource[MoleculeModelSource["Computed"] = 1] = "Computed";
@@ -13377,20 +13625,22 @@ var LiteMol;
             }());
             Structure.Operator = Operator;
             var MoleculeModel = (function () {
-                function MoleculeModel(id, modelId, atoms, residues, chains, entities, componentBonds, secondaryStructure, symmetryInfo, assemblyInfo, parent, source, operators) {
-                    this.id = id;
-                    this.modelId = modelId;
-                    this.atoms = atoms;
-                    this.residues = residues;
-                    this.chains = chains;
-                    this.entities = entities;
-                    this.componentBonds = componentBonds;
-                    this.secondaryStructure = secondaryStructure;
-                    this.symmetryInfo = symmetryInfo;
-                    this.assemblyInfo = assemblyInfo;
-                    this.parent = parent;
-                    this.source = source;
-                    this.operators = operators;
+                function MoleculeModel(data) {
+                    this.id = data.id;
+                    this.modelId = data.modelId;
+                    this.atoms = data.atoms;
+                    this.residues = data.residues;
+                    this.chains = data.chains;
+                    this.entities = data.entities;
+                    this.covalentBonds = data.covalentBonds;
+                    this.nonCovalentbonds = data.nonCovalentbonds;
+                    this.componentBonds = data.componentBonds;
+                    this.secondaryStructure = data.secondaryStructure;
+                    this.symmetryInfo = data.symmetryInfo;
+                    this.assemblyInfo = data.assemblyInfo;
+                    this.parent = data.parent;
+                    this.source = data.source;
+                    this.operators = data.operators;
                 }
                 Object.defineProperty(MoleculeModel.prototype, "queryContext", {
                     get: function () {
@@ -15303,7 +15553,19 @@ var LiteMol;
                     // eIdSet.forEach(x => console.log('ceid', x));
                     // console.log(assemblyParts.entityCount, finalEntities);
                     var ss = buildSS(model, assemblyParts, finalResidues);
-                    return new Structure.MoleculeModel(model.id, model.modelId, finalAtoms, finalResidues, finalChains, finalEntities, model.componentBonds, ss, void 0, void 0, model, Structure.MoleculeModelSource.Computed, transforms.map(function (t) { return new Structure.Operator(t.transform, t.id, t.isIdentity); }));
+                    return new Structure.MoleculeModel({
+                        id: model.id,
+                        modelId: model.modelId,
+                        atoms: finalAtoms,
+                        residues: finalResidues,
+                        chains: finalChains,
+                        entities: finalEntities,
+                        componentBonds: model.componentBonds,
+                        secondaryStructure: ss,
+                        parent: model,
+                        source: Structure.MoleculeModelSource.Computed,
+                        operators: transforms.map(function (t) { return new Structure.Operator(t.transform, t.id, t.isIdentity); })
+                    });
                 }
                 function buildSS(parent, assemblyParts, newResidues) {
                     var index = parent.residues.secondaryStructureIndex;

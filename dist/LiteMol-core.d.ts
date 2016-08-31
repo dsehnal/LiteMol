@@ -1406,11 +1406,13 @@ declare namespace LiteMol.Core.Formats.Molecule.PDB {
     function toCifFile(id: string, data: string): ParserResult<CIF.File>;
 }
 declare namespace LiteMol.Core.Formats.Molecule.SDF {
+    function parse(data: string, id?: string): ParserResult<Structure.Molecule>;
 }
 declare namespace LiteMol.Core.Formats.Molecule {
     namespace SupportedFormats {
         const mmCIF: FormatInfo;
         const PDB: FormatInfo;
+        const SDF: FormatInfo;
         const All: FormatInfo[];
     }
     function parse(format: FormatInfo, data: string | ArrayBuffer, id?: string): Computation<ParserResult<Structure.Molecule>>;
@@ -1865,17 +1867,21 @@ declare namespace LiteMol.Core.Structure {
         Water = 2,
         Unknown = 3,
     }
-    enum BondOrder {
-        None = 0,
+    const enum BondType {
+        Unknown = 0,
         Single = 1,
         Double = 2,
         Triple = 3,
-        Quadruple = 4,
+        Aromatic = 4,
+        Metallic = 5,
+        Ion = 6,
+        Hydrogen = 7,
+        DisulfideBridge = 8,
     }
     class ComponentBondInfoEntry {
         id: string;
-        map: Map<string, Map<string, BondOrder>>;
-        add(a: string, b: string, order: BondOrder, swap?: boolean): void;
+        map: Map<string, Map<string, BondType>>;
+        add(a: string, b: string, order: BondType, swap?: boolean): void;
         constructor(id: string);
     }
     class ComponentBondInfo {
@@ -2017,6 +2023,89 @@ declare namespace LiteMol.Core.Structure {
         chainEndIndex: number[];
         type: string[];
     }
+    interface DefaultBondTableSchema extends DataTable {
+        atomAIndex: number[];
+        atomBIndex: number[];
+        type: BondType[];
+    }
+    /**
+     * Default Builders
+     */
+    namespace DefaultDataTables {
+        function forAtoms(count: number): {
+            table: DefaultAtomTableSchema;
+            columns: {
+                id: Int32Array;
+                x: Float32Array;
+                y: Float32Array;
+                z: Float32Array;
+                altLoc: any[];
+                rowIndex: Int32Array;
+                residueIndex: Int32Array;
+                chainIndex: Int32Array;
+                entityIndex: Int32Array;
+                name: string[];
+                elementSymbol: string[];
+                occupancy: Float32Array;
+                tempFactor: Float32Array;
+                authName: string[];
+            };
+        };
+        function forResidues(count: number): {
+            table: DefaultResidueTableSchema;
+            columns: {
+                name: string[];
+                seqNumber: Int32Array;
+                asymId: string[];
+                authName: string[];
+                authSeqNumber: Int32Array;
+                authAsymId: string[];
+                insCode: string[];
+                entityId: string[];
+                isHet: Int8Array;
+                atomStartIndex: Int32Array;
+                atomEndIndex: Int32Array;
+                chainIndex: Int32Array;
+                entityIndex: Int32Array;
+                secondaryStructureIndex: Int32Array;
+            };
+        };
+        function forChains(count: number): {
+            table: DefaultChainTableSchema;
+            columns: {
+                asymId: string[];
+                entityId: string[];
+                authAsymId: string[];
+                atomStartIndex: Int32Array;
+                atomEndIndex: Int32Array;
+                residueStartIndex: Int32Array;
+                residueEndIndex: Int32Array;
+                entityIndex: Int32Array;
+            };
+        };
+        function forEntities(count: number): {
+            table: DefaultEntityTableSchema;
+            columns: {
+                id: string[];
+                typeEnum: EntityType[];
+                type: string[];
+                atomStartIndex: Int32Array;
+                atomEndIndex: Int32Array;
+                residueStartIndex: Int32Array;
+                residueEndIndex: Int32Array;
+                chainStartIndex: Int32Array;
+                chainEndIndex: Int32Array;
+            };
+        };
+        function forBonds(count: number): {
+            table: DefaultBondTableSchema;
+            columns: {
+                atomAIndex: Int32Array;
+                atomBIndex: Int32Array;
+                type: Int8Array;
+            };
+        };
+    }
     enum MoleculeModelSource {
         File = 0,
         Computed = 1,
@@ -2029,13 +2118,33 @@ declare namespace LiteMol.Core.Structure {
         static applyToModelUnsafe(matrix: number[], m: MoleculeModel): void;
         constructor(matrix: number[], id: string, isIdentity: boolean);
     }
-    class MoleculeModel {
+    interface IMoleculeModelData {
         id: string;
         modelId: string;
         atoms: DefaultAtomTableSchema;
         residues: DefaultResidueTableSchema;
         chains: DefaultChainTableSchema;
         entities: DefaultEntityTableSchema;
+        covalentBonds?: DefaultBondTableSchema;
+        nonCovalentbonds?: DefaultBondTableSchema;
+        componentBonds?: ComponentBondInfo;
+        secondaryStructure: SecondaryStructureElement[];
+        symmetryInfo?: SymmetryInfo;
+        assemblyInfo?: AssemblyInfo;
+        parent?: MoleculeModel;
+        source: MoleculeModelSource;
+        operators?: Operator[];
+    }
+    class MoleculeModel implements IMoleculeModelData {
+        private _queryContext;
+        id: string;
+        modelId: string;
+        atoms: DefaultAtomTableSchema;
+        residues: DefaultResidueTableSchema;
+        chains: DefaultChainTableSchema;
+        entities: DefaultEntityTableSchema;
+        covalentBonds: DefaultBondTableSchema;
+        nonCovalentbonds: DefaultBondTableSchema;
         componentBonds: ComponentBondInfo;
         secondaryStructure: SecondaryStructureElement[];
         symmetryInfo: SymmetryInfo;
@@ -2043,10 +2152,9 @@ declare namespace LiteMol.Core.Structure {
         parent: MoleculeModel;
         source: MoleculeModelSource;
         operators: Operator[];
-        private _queryContext;
         queryContext: Query.Context;
         query(q: Query.Source): Query.FragmentSeq;
-        constructor(id: string, modelId: string, atoms: DefaultAtomTableSchema, residues: DefaultResidueTableSchema, chains: DefaultChainTableSchema, entities: DefaultEntityTableSchema, componentBonds: ComponentBondInfo, secondaryStructure: SecondaryStructureElement[], symmetryInfo: SymmetryInfo, assemblyInfo: AssemblyInfo, parent: MoleculeModel, source: MoleculeModelSource, operators: Operator[]);
+        constructor(data: IMoleculeModelData);
     }
     class Molecule {
         id: string;
