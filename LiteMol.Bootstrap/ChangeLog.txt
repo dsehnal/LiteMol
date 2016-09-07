@@ -1,4 +1,7 @@
-﻿== 1.1.1 ==
+﻿== 1.1.2 ==
+* Fixed a bug where updating molecule visual coloring led to mutating the default theme.
+
+== 1.1.1 ==
 * Fix in selecting the next entity when the current one is removed.
 
 == 1.1.0 ==

@@ -10,8 +10,8 @@ namespace LiteMol.Custom {
 
     export const DownloadAndCreate = Bootstrap.Tree.Transformer.action<Entity.Root, Entity.Action, { id?: string }>({
         id: 'litemol-custom_density_example-download-and-create',
-        name: 'PDBe Validation Report',
-        description: 'Download Validation Report from PDBe',
+        name: 'Data',
+        description: 'Download molecule and 2Fo-Fc density.',
         from: [Entity.Root],
         to: [Entity.Action],
         defaultParams: () => ({ id: '1cbs' }),
@@ -27,7 +27,7 @@ namespace LiteMol.Custom {
         // Download the PDB file and create it's representation
         action.add(a, <Bootstrap.Tree.Transformer.To<Bootstrap.Entity.Data.String>>Transformer.Data.Download, { url: `http://www.ebi.ac.uk/pdbe/entry-files/pdb${id}.ent`, type: 'String', id })
             .then(Transformer.Molecule.CreateFromString, { format: LiteMol.Core.Formats.Molecule.SupportedFormats.PDB }, { })
-            .then(Transformer.Molecule.CreateModel, { modelIndex: 0 }, { })
+            .then(Transformer.Molecule.CreateModel, { modelIndex: 0 })
             .then(Transformer.Molecule.CreateMacromoleculeVisual, { het: true, polymer: true, water: true }, { })
             //.then(<any>Transformer.Molecule.CreateVisual, { style: Bootstrap.Visualization.Molecule.Default.ForType.get('BallsAndSticks') }, {}) // this can be used insteadf of the CreateMacromoleculeVisual
 

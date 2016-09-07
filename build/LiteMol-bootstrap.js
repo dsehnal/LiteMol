@@ -5195,7 +5195,7 @@ var LiteMol;
 (function (LiteMol) {
     var Bootstrap;
     (function (Bootstrap) {
-        Bootstrap.VERSION = { number: "1.1.1", date: "Aug 31 2016" };
+        Bootstrap.VERSION = { number: "1.1.2", date: "Sep 7 2016" };
     })(Bootstrap = LiteMol.Bootstrap || (LiteMol.Bootstrap = {}));
 })(LiteMol || (LiteMol = {}));
 /*
@@ -8773,7 +8773,7 @@ var LiteMol;
                         var ti = t.params.style.theme;
                         var theme = ti.template.provider(a, Bootstrap.Visualization.Theme.getProps(ti));
                         model.applyTheme(theme);
-                        b.props.style.theme = ti;
+                        b.props.style = t.params.style;
                         //Entity.forceUpdate(b);
                         Entity.nodeUpdated(b);
                         return Bootstrap.Task.resolve(t.transformer.info.name, 'Background', Bootstrap.Tree.Node.Null);

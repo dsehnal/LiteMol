@@ -304,7 +304,7 @@ namespace LiteMol.Bootstrap.Entity.Transformer.Molecule {
             let ti = t.params.style.theme;
             let theme = ti.template.provider(a, Visualization.Theme.getProps(ti));
             model.applyTheme(theme);
-            b.props.style.theme = ti;
+            b.props.style = t.params.style;
             //Entity.forceUpdate(b);
             Entity.nodeUpdated(b);
             return Task.resolve(t.transformer.info.name, 'Background', Tree.Node.Null); 

@@ -46,7 +46,7 @@ namespace LiteMol.Bootstrap.Components.Transform {
                     this.setState(<any>{ params: updated, issues: isInvalid, canApply: false });
                     return;
                 }
-            }    
+            }
             let isDirty = !Utils.deepEqual(this.anchorParams, updated);
             this.setState({ params: updated, isDirty, issues: void 0, canApply: true });
         }

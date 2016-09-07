@@ -128,6 +128,7 @@ These features are planned to be introduced during the first half of 2017.
 * More visual primitives (spheres, cylinders, arrows, etc.)
 * Support for labels in the 3D scene.  
 * Improved internal data representation of molecules.
+* Secondary structure detection.
 * Restructure the code and update the build process to support NPM.
 
 Long term goals

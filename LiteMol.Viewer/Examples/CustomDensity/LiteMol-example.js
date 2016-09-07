@@ -10,8 +10,8 @@ var LiteMol;
         var Transformer = Bootstrap.Entity.Transformer;
         Custom.DownloadAndCreate = Bootstrap.Tree.Transformer.action({
             id: 'litemol-custom_density_example-download-and-create',
-            name: 'PDBe Validation Report',
-            description: 'Download Validation Report from PDBe',
+            name: 'Data',
+            description: 'Download molecule and 2Fo-Fc density.',
             from: [Entity.Root],
             to: [Entity.Action],
             defaultParams: function () { return ({ id: '1cbs' }); },
@@ -24,7 +24,7 @@ var LiteMol;
             // Download the PDB file and create it's representation
             action.add(a, Transformer.Data.Download, { url: "http://www.ebi.ac.uk/pdbe/entry-files/pdb" + id + ".ent", type: 'String', id: id })
                 .then(Transformer.Molecule.CreateFromString, { format: LiteMol.Core.Formats.Molecule.SupportedFormats.PDB }, {})
-                .then(Transformer.Molecule.CreateModel, { modelIndex: 0 }, {})
+                .then(Transformer.Molecule.CreateModel, { modelIndex: 0 })
                 .then(Transformer.Molecule.CreateMacromoleculeVisual, { het: true, polymer: true, water: true }, {});
             //.then(<any>Transformer.Molecule.CreateVisual, { style: Bootstrap.Visualization.Molecule.Default.ForType.get('BallsAndSticks') }, {}) // this can be used insteadf of the CreateMacromoleculeVisual
             // Download the density and enable the interactive density display
