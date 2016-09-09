@@ -4092,6 +4092,17 @@ declare namespace LiteMol.Core.Formats {
         static getString(key: string): string;
     }
 }
+declare namespace LiteMol.Core.Formats.MsgPack {
+    function encode(value: any): Uint8Array;
+}
+declare namespace LiteMol.Core.Formats.MsgPack {
+    function decode(buffer: Uint8Array): any;
+}
+declare namespace LiteMol.Core.Formats.MsgPack {
+    function utf8Write(data: Uint8Array, offset: number, str: string): void;
+    function utf8Read(data: Uint8Array, offset: number, length: number): string;
+    function utf8ByteCount(str: string): number;
+}
 declare namespace LiteMol.Core.Formats.CIF {
     /**
      * Represents the input file.
@@ -4431,6 +4442,103 @@ declare namespace LiteMol.Core.Formats.CIF {
 }
 declare namespace LiteMol.Core.Formats.CIF {
     function parse(data: string): ParserResult<File>;
+}
+declare namespace LiteMol.Core.Formats.BinaryCIF {
+    /**
+     * Inspired by https://github.com/rcsb/mmtf-javascript/
+     * by Alexander Rose <alexander.rose@weirdbyte.de>, MIT License, Copyright (c) 2016
+     */
+    type Encoding = Encoding.Value | Encoding.ByteArray | Encoding.FixedPoint | Encoding.RunLength | Encoding.Delta | Encoding.IntegerPacking | Encoding.StringArray;
+    interface EncodedData {
+        encoding: Encoding[];
+        data: Uint8Array;
+    }
+    namespace Encoding {
+        const enum DataType {
+            Int8 = 0,
+            Int16 = 1,
+            Int32 = 2,
+            Float32 = 3,
+            Float64 = 4,
+        }
+        const enum IntDataType {
+            Int8 = 0,
+            Int16 = 1,
+            Int32 = 2,
+        }
+        function getIntDataType(data: (Int8Array | Int16Array | Int32Array | number[])): IntDataType;
+        interface Value {
+            kind: 'Value';
+            value: any;
+        }
+        interface ByteArray {
+            kind: 'ByteArray';
+            type: DataType;
+        }
+        interface FixedPoint {
+            kind: 'FixedPoint';
+            factor: number;
+        }
+        interface RunLength {
+            kind: 'RunLength';
+            srcType: IntDataType;
+            srcSize: number;
+        }
+        interface Delta {
+            kind: 'Delta';
+            srcType: IntDataType;
+        }
+        interface IntegerPacking {
+            kind: 'IntegerPacking';
+            byteCount: number;
+            srcSize: number;
+        }
+        interface StringArray {
+            kind: 'StringArray';
+            dataEncoding: Encoding[];
+            stringData: string;
+            offsetEncoding: Encoding[];
+            offsets: Uint8Array;
+        }
+    }
+}
+declare namespace LiteMol.Core.Formats.BinaryCIF {
+    /**
+     * Fixed point, delta, RLE, integer packing adopted from https://github.com/rcsb/mmtf-javascript/
+     * by Alexander Rose <alexander.rose@weirdbyte.de>, MIT License, Copyright (c) 2016
+     */
+    class Encoder {
+        private latestData;
+        private encoding;
+        by(f: (data: any) => Encoder.Result): this;
+        encode(): EncodedData;
+        constructor(data: any);
+        static of(data: any): Encoder;
+    }
+    namespace Encoder {
+        interface Result {
+            encoding: Encoding;
+            data: any;
+        }
+        type Provider = (data: any) => Result;
+        function value(value: any): Result;
+        function int16(data: Int16Array): Result;
+        function int32(data: Int32Array): Result;
+        function float32(data: Float32Array): Result;
+        function float64(data: Float64Array): Result;
+        function fixedPoint(factor: number): Provider;
+        function runLength(data: (Int8Array | Int16Array | Int32Array | number[])): Result;
+        function delta(data: (Int8Array | Int16Array | Int32Array | number[])): Result;
+        function integerPacking(byteCount: number): Provider;
+        function stringArray(data: string[]): Result;
+    }
+}
+declare namespace LiteMol.Core.Formats.BinaryCIF {
+    /**
+     * Fixed point, delta, RLE, integer packing adopted from https://github.com/rcsb/mmtf-javascript/
+     * by Alexander Rose <alexander.rose@weirdbyte.de>, MIT License, Copyright (c) 2016
+     */
+    function decode(data: EncodedData): any;
 }
 declare namespace LiteMol.Core.Formats.Molecule.mmCIF {
     function ofDataBlock(data: CIF.Block): Structure.Molecule;
