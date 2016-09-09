@@ -5,11 +5,6 @@
 namespace LiteMol.Core.Formats.BinaryCIF {
     "use strict";
     
-    /**
-     * Inspired by https://github.com/rcsb/mmtf-javascript/
-     * by Alexander Rose <alexander.rose@weirdbyte.de>, MIT License, Copyright (c) 2016
-     */
-
     export type Encoding = Encoding.Value | Encoding.ByteArray | Encoding.FixedPoint | Encoding.RunLength | Encoding.Delta | Encoding.IntegerPacking | Encoding.StringArray;
 
     export interface EncodedData {

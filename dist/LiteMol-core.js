@@ -10156,30 +10156,34 @@ var LiteMol;
                  * by Alexander Rose <alexander.rose@weirdbyte.de>, MIT License, Copyright (c) 2016
                  */
                 var Encoder = (function () {
-                    function Encoder(data) {
-                        this.encoding = [];
-                        this.latestData = data;
+                    function Encoder(providers) {
+                        this.providers = providers;
                     }
-                    Encoder.prototype.by = function (f) {
-                        var r = f(this.latestData);
-                        this.latestData = r.data;
-                        this.encoding.push(r.encoding);
-                        return this;
+                    Encoder.prototype.and = function (f) {
+                        return new Encoder(this.providers.concat([f]));
                     };
-                    Encoder.prototype.encode = function () {
+                    Encoder.prototype.encode = function (data) {
+                        var encoding = [];
+                        for (var _i = 0, _a = this.providers; _i < _a.length; _i++) {
+                            var p = _a[_i];
+                            var t = p(data);
+                            data = t.data;
+                            encoding.push(t.encoding);
+                        }
                         return {
-                            encoding: this.encoding,
-                            data: this.latestData
+                            encoding: encoding,
+                            data: data
                         };
-                    };
-                    Encoder.of = function (data) {
-                        return new Encoder(data);
                     };
                     return Encoder;
                 }());
                 BinaryCIF.Encoder = Encoder;
                 var Encoder;
                 (function (Encoder) {
+                    function by(f) {
+                        return new Encoder([f]);
+                    }
+                    Encoder.by = by;
                     function dataView(array) {
                         return new DataView(array.buffer, array.byteOffset, array.byteLength);
                     }
@@ -10368,6 +10372,7 @@ var LiteMol;
                         var accLength = 0;
                         var offsets = new Core.Utils.ChunkedArrayBuilder(function (s) { return new Int32Array(s); }, 1024, 1);
                         var output = new Int32Array(data.length);
+                        var bigCount = 0;
                         offsets.add(0);
                         var i = 0;
                         for (var _i = 0, data_1 = data; _i < data_1.length; _i++) {
@@ -10384,13 +10389,12 @@ var LiteMol;
                                 offsets.add(accLength);
                             }
                             output[i++] = index;
+                            if (index >= 0x7f)
+                                bigCount++;
                         }
-                        var encOffsets = Encoder.of(offsets.compact()).by(delta).by(integerPacking(2)).by(int16).encode();
-                        var encOutput1 = Encoder.of(output).by(delta).by(runLength).by(integerPacking(1)).encode();
-                        var encOutput2 = Encoder.of(output).by(delta).by(runLength).by(integerPacking(2)).encode();
-                        var encOutput = encOutput1;
-                        if (encOutput2.data.length < encOutput.data.length)
-                            encOutput = encOutput2;
+                        var encOffsets = Encoder.by(delta).and(integerPacking(2)).and(int16).encode(offsets.compact());
+                        var bigFraction = bigCount / data.length;
+                        var encOutput = Encoder.by(delta).and(runLength).and(integerPacking(bigFraction > 0.25 ? 2 : 1)).encode(output);
                         return {
                             encoding: { kind: 'StringArray', dataEncoding: encOutput.encoding, stringData: strings.join(''), offsetEncoding: encOffsets.encoding, offsets: encOffsets.data },
                             data: encOutput.data

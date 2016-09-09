@@ -11,30 +11,25 @@ namespace LiteMol.Core.Formats.BinaryCIF {
      */
 
     export class Encoder {
-
-        private latestData: any;
-        private encoding: Encoding[] = [];
-
-        by(f: (data: any) => Encoder.Result) {
-            let r = f(this.latestData);
-            this.latestData = r.data;
-            this.encoding.push(r.encoding);
-            return this;
+        and(f: Encoder.Provider) {
+            return new Encoder(this.providers.concat([f]));
         }
 
-        encode(): EncodedData {
+        encode(data: any): EncodedData {
+            let encoding: Encoding[] = [];
+            for (let p of this.providers) {
+                let t = p(data);
+                data = t.data;
+                encoding.push(t.encoding);
+            }
             return {
-                encoding: this.encoding,
-                data: this.latestData
+                encoding,
+                data
             }
         }
 
-        constructor(data: any) {
-            this.latestData = data;
-        }
-
-        static of(data: any) {
-            return new Encoder(data);
+        constructor(private providers: Encoder.Provider[]) {
+            
         }
     }
 
@@ -48,6 +43,10 @@ namespace LiteMol.Core.Formats.BinaryCIF {
         }
 
         export type Provider = (data: any) => Result
+
+        export function by(f: Provider) {
+            return new Encoder([f]);
+        }
 
         function dataView(array: TypedArray) {
             return new DataView(array.buffer, array.byteOffset, array.byteLength);
@@ -231,12 +230,12 @@ namespace LiteMol.Core.Formats.BinaryCIF {
         export function integerPacking(byteCount: number): Provider { return data => _integerPacking(data, byteCount); }
 
         export function stringArray(data: string[]): Result {
-
             let map = new Map<string, number>();
             let strings: string[] = [];
             let accLength = 0;
             let offsets = new Utils.ChunkedArrayBuilder<number>(s => new Int32Array(s), 1024, 1);
             let output = new Int32Array(data.length);
+            let bigCount = 0;
 
             offsets.add(0);
             let i = 0;
@@ -255,15 +254,14 @@ namespace LiteMol.Core.Formats.BinaryCIF {
                     offsets.add(accLength);
                 } 
                 output[i++] = index;
+                if (index >= 0x7f) bigCount++;
             }
 
-            let encOffsets = Encoder.of(offsets.compact()).by(delta).by(integerPacking(2)).by(int16).encode();
+            let encOffsets = Encoder.by(delta).and(integerPacking(2)).and(int16).encode(offsets.compact());
             
-            let encOutput1 = Encoder.of(output).by(delta).by(runLength).by(integerPacking(1)).encode();
-            let encOutput2 = Encoder.of(output).by(delta).by(runLength).by(integerPacking(2)).encode();
-            let encOutput = encOutput1;
-            if (encOutput2.data.length < encOutput.data.length) encOutput = encOutput2;
-
+            let bigFraction = bigCount / data.length;
+            let encOutput = Encoder.by(delta).and(runLength).and(integerPacking(bigFraction > 0.25 ? 2 : 1)).encode(output);
+            
             return {
                 encoding: { kind: 'StringArray', dataEncoding: encOutput.encoding, stringData: strings.join(''), offsetEncoding: encOffsets.encoding, offsets: encOffsets.data },
                 data: encOutput.data

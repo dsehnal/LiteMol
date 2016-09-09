@@ -4444,10 +4444,6 @@ declare namespace LiteMol.Core.Formats.CIF {
     function parse(data: string): ParserResult<File>;
 }
 declare namespace LiteMol.Core.Formats.BinaryCIF {
-    /**
-     * Inspired by https://github.com/rcsb/mmtf-javascript/
-     * by Alexander Rose <alexander.rose@weirdbyte.de>, MIT License, Copyright (c) 2016
-     */
     type Encoding = Encoding.Value | Encoding.ByteArray | Encoding.FixedPoint | Encoding.RunLength | Encoding.Delta | Encoding.IntegerPacking | Encoding.StringArray;
     interface EncodedData {
         encoding: Encoding[];
@@ -4508,12 +4504,10 @@ declare namespace LiteMol.Core.Formats.BinaryCIF {
      * by Alexander Rose <alexander.rose@weirdbyte.de>, MIT License, Copyright (c) 2016
      */
     class Encoder {
-        private latestData;
-        private encoding;
-        by(f: (data: any) => Encoder.Result): this;
-        encode(): EncodedData;
-        constructor(data: any);
-        static of(data: any): Encoder;
+        private providers;
+        and(f: Encoder.Provider): Encoder;
+        encode(data: any): EncodedData;
+        constructor(providers: Encoder.Provider[]);
     }
     namespace Encoder {
         interface Result {
@@ -4521,6 +4515,7 @@ declare namespace LiteMol.Core.Formats.BinaryCIF {
             data: any;
         }
         type Provider = (data: any) => Result;
+        function by(f: Provider): Encoder;
         function value(value: any): Result;
         function int16(data: Int16Array): Result;
         function int32(data: Int32Array): Result;
