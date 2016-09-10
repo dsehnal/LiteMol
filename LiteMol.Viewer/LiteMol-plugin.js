@@ -10235,6 +10235,9 @@ var LiteMol;
                             data = t.data;
                             encoding.push(t.encoding);
                         }
+                        if (!(data instanceof Uint8Array)) {
+                            throw new Error('The encoding must result in a Uint8Array. Fix your encoding chain.');
+                        }
                         return {
                             encoding: encoding,
                             data: data
@@ -10259,6 +10262,13 @@ var LiteMol;
                         };
                     }
                     Encoder.value = value;
+                    function int8(data) {
+                        return {
+                            encoding: { kind: 'ByteArray', type: 0 /* Int8 */ },
+                            data: new Uint8Array(data.buffer, data.byteOffset)
+                        };
+                    }
+                    Encoder.int8 = int8;
                     function int16(data) {
                         var result = new Uint8Array(data.length * 2);
                         var view = dataView(result);
@@ -10442,6 +10452,11 @@ var LiteMol;
                         var i = 0;
                         for (var _i = 0, data_1 = data; _i < data_1.length; _i++) {
                             var s = data_1[_i];
+                            // handle null strings.
+                            if (s === null || s === void 0) {
+                                output[i++] = -1;
+                                continue;
+                            }
                             var index = map.get(s);
                             if (index === void 0) {
                                 // increment the length
@@ -10459,7 +10474,10 @@ var LiteMol;
                         }
                         var encOffsets = Encoder.by(delta).and(integerPacking(2)).and(int16).encode(offsets.compact());
                         var bigFraction = bigCount / data.length;
-                        var encOutput = Encoder.by(delta).and(runLength).and(integerPacking(bigFraction > 0.25 ? 2 : 1)).encode(output);
+                        var encOutput = bigFraction > 0.25
+                            ? Encoder.by(delta).and(runLength).and(integerPacking(2)).and(int16).encode(output)
+                            : Encoder.by(delta).and(runLength).and(integerPacking(1)).and(int8).encode(output);
+                        console.log(encOffsets.data instanceof Uint8Array, encOutput.data instanceof Uint8Array);
                         return {
                             encoding: { kind: 'StringArray', dataEncoding: encOutput.encoding, stringData: strings.join(''), offsetEncoding: encOffsets.encoding, offsets: encOffsets.data },
                             data: encOutput.data
@@ -10502,7 +10520,7 @@ var LiteMol;
                             case 'Value': return encoding.value;
                             case 'ByteArray': {
                                 switch (encoding.type) {
-                                    case 0 /* Int8 */: return new Int8Array(data.buffer, data.byteOffset, data.byteLength);
+                                    case 0 /* Int8 */: return int8(data);
                                     case 1 /* Int16 */: return int16(data);
                                     case 2 /* Int32 */: return int32(data);
                                     case 3 /* Float32 */: return float32(data);
@@ -10519,6 +10537,9 @@ var LiteMol;
                     Decoder.decodeStep = decodeStep;
                     function dataView(array) {
                         return new DataView(array.buffer, array.byteOffset, array.byteLength);
+                    }
+                    function int8(data) {
+                        return new Int8Array(data.buffer, data.byteOffset);
                     }
                     function int16(data) {
                         var n = (data.length / 2) | 0;
@@ -10621,6 +10642,10 @@ var LiteMol;
                         var result = [];
                         for (var _i = 0, indices_1 = indices; _i < indices_1.length; _i++) {
                             var i = indices_1[_i];
+                            if (i < 0) {
+                                result[result.length] = null;
+                                continue;
+                            }
                             var v = cache.get(i);
                             if (v === void 0) {
                                 v = str.substring(i, i + 1);

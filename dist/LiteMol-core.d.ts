@@ -1413,6 +1413,7 @@ declare namespace LiteMol.Core.Formats.BinaryCIF {
         type Provider = (data: any) => Result;
         function by(f: Provider): Encoder;
         function value(value: any): Result;
+        function int8(data: Int16Array): Result;
         function int16(data: Int16Array): Result;
         function int32(data: Int32Array): Result;
         function float32(data: Float32Array): Result;

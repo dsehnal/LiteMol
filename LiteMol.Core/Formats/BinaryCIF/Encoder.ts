@@ -22,6 +22,9 @@ namespace LiteMol.Core.Formats.BinaryCIF {
                 data = t.data;
                 encoding.push(t.encoding);
             }
+            if (!(data instanceof Uint8Array)) {
+                throw new Error('The encoding must result in a Uint8Array. Fix your encoding chain.');
+            }
             return {
                 encoding,
                 data
@@ -56,6 +59,13 @@ namespace LiteMol.Core.Formats.BinaryCIF {
             return {
                 encoding: { kind: 'Value', value },
                 data: void 0
+            };
+        }
+
+        export function int8(data: Int16Array): Result {
+            return {
+                encoding: { kind: 'ByteArray', type: Encoding.DataType.Int8 },
+                data: new Uint8Array(data.buffer, data.byteOffset)
             };
         }
 
@@ -240,6 +250,12 @@ namespace LiteMol.Core.Formats.BinaryCIF {
             offsets.add(0);
             let i = 0;
             for (let s of data) {
+                // handle null strings.
+                if (s === null || s === void 0) {
+                    output[i++] = -1;
+                    continue;
+                }
+
                 let index = map.get(s);
                 if (index === void 0) {
                     // increment the length
@@ -257,10 +273,13 @@ namespace LiteMol.Core.Formats.BinaryCIF {
                 if (index >= 0x7f) bigCount++;
             }
 
-            let encOffsets = Encoder.by(delta).and(integerPacking(2)).and(int16).encode(offsets.compact());
-            
+            let encOffsets = Encoder.by(delta).and(integerPacking(2)).and(int16).encode(offsets.compact());            
             let bigFraction = bigCount / data.length;
-            let encOutput = Encoder.by(delta).and(runLength).and(integerPacking(bigFraction > 0.25 ? 2 : 1)).encode(output);
+            let encOutput = bigFraction > 0.25 
+                ? Encoder.by(delta).and(runLength).and(integerPacking(2)).and(int16).encode(output)
+                : Encoder.by(delta).and(runLength).and(integerPacking(1)).and(int8).encode(output);
+
+            console.log(encOffsets.data instanceof Uint8Array, encOutput.data instanceof Uint8Array);
             
             return {
                 encoding: { kind: 'StringArray', dataEncoding: encOutput.encoding, stringData: strings.join(''), offsetEncoding: encOffsets.encoding, offsets: encOffsets.data },

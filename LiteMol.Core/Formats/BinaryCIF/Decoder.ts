@@ -25,7 +25,7 @@ namespace LiteMol.Core.Formats.BinaryCIF {
                 case 'Value': return (encoding as Encoding.Value).value;
                 case 'ByteArray': {
                     switch ((encoding as Encoding.ByteArray).type) {
-                        case Encoding.DataType.Int8: return new Int8Array(data.buffer, data.byteOffset, data.byteLength);
+                        case Encoding.DataType.Int8: return int8(data);
                         case Encoding.DataType.Int16: return int16(data);
                         case Encoding.DataType.Int32: return int32(data);
                         case Encoding.DataType.Float32: return float32(data);
@@ -43,6 +43,10 @@ namespace LiteMol.Core.Formats.BinaryCIF {
         type TypedArray = { buffer: ArrayBuffer, byteOffset: number, byteLength: number }
         function dataView(array: TypedArray) {
             return new DataView(array.buffer, array.byteOffset, array.byteLength);
+        }
+
+        function int8(data: Uint8Array) {
+            return new Int8Array(data.buffer, data.byteOffset);
         }
 
         function int16(data: Uint8Array) {
@@ -153,6 +157,11 @@ namespace LiteMol.Core.Formats.BinaryCIF {
             let cache = new Map<number, string>();
             let result:string[] = [];
             for (let i of indices) {
+                if (i < 0) {
+                    result[result.length] = null;    
+                    continue;
+                }
+
                 let v = cache.get(i);
                 if (v === void 0) {
                     v = str.substring(i, i + 1);
