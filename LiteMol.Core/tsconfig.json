@@ -23,9 +23,9 @@
     // FORMATS
     "Formats/Common.ts",
 
-    "Formats/MsgPack/Encode.ts",
-    "Formats/MsgPack/Decode.ts",
-    "Formats/MsgPack/Utf8.ts",
+    "Formats/MessagePack/Encode.ts",
+    "Formats/MessagePack/Decode.ts",
+    "Formats/MessagePack/Utf8.ts",
 
     "Formats/CIF/Dictionary.ts",    
     "Formats/CIF/Parser.ts",

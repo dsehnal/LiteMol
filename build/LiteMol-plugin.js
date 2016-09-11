@@ -8421,8 +8421,8 @@ var LiteMol;
     (function (Core) {
         var Formats;
         (function (Formats) {
-            var MsgPack;
-            (function (MsgPack) {
+            var MessagePack;
+            (function (MessagePack) {
                 /*
                  * Adapted from https://github.com/rcsb/mmtf-javascript
                  * by Alexander Rose <alexander.rose@weirdbyte.de>, MIT License, Copyright (c) 2016
@@ -8434,12 +8434,12 @@ var LiteMol;
                     encodeInternal(value, view, bytes, 0);
                     return bytes;
                 }
-                MsgPack.encode = encode;
+                MessagePack.encode = encode;
                 function encodedSize(value) {
                     var type = typeof value;
                     // Raw Bytes
                     if (type === "string") {
-                        var length_1 = MsgPack.utf8ByteCount(value);
+                        var length_1 = MessagePack.utf8ByteCount(value);
                         if (length_1 < 0x20) {
                             return 1 + length_1;
                         }
@@ -8537,32 +8537,32 @@ var LiteMol;
                     var type = typeof value;
                     // Strings Bytes
                     if (type === "string") {
-                        var length_4 = MsgPack.utf8ByteCount(value);
+                        var length_4 = MessagePack.utf8ByteCount(value);
                         // fix str
                         if (length_4 < 0x20) {
                             view.setUint8(offset, length_4 | 0xa0);
-                            MsgPack.utf8Write(bytes, offset + 1, value);
+                            MessagePack.utf8Write(bytes, offset + 1, value);
                             return 1 + length_4;
                         }
                         // str 8
                         if (length_4 < 0x100) {
                             view.setUint8(offset, 0xd9);
                             view.setUint8(offset + 1, length_4);
-                            MsgPack.utf8Write(bytes, offset + 2, value);
+                            MessagePack.utf8Write(bytes, offset + 2, value);
                             return 2 + length_4;
                         }
                         // str 16
                         if (length_4 < 0x10000) {
                             view.setUint8(offset, 0xda);
                             view.setUint16(offset + 1, length_4);
-                            MsgPack.utf8Write(bytes, offset + 3, value);
+                            MessagePack.utf8Write(bytes, offset + 3, value);
                             return 3 + length_4;
                         }
                         // str 32
                         if (length_4 < 0x100000000) {
                             view.setUint8(offset, 0xdb);
                             view.setUint32(offset + 1, length_4);
-                            MsgPack.utf8Write(bytes, offset + 5, value);
+                            MessagePack.utf8Write(bytes, offset + 5, value);
                             return 5 + length_4;
                         }
                     }
@@ -8705,7 +8705,7 @@ var LiteMol;
                     }
                     throw new Error("Unknown type " + type);
                 }
-            })(MsgPack = Formats.MsgPack || (Formats.MsgPack = {}));
+            })(MessagePack = Formats.MessagePack || (Formats.MessagePack = {}));
         })(Formats = Core.Formats || (Core.Formats = {}));
     })(Core = LiteMol.Core || (LiteMol.Core = {}));
 })(LiteMol || (LiteMol = {}));
@@ -8718,8 +8718,8 @@ var LiteMol;
     (function (Core) {
         var Formats;
         (function (Formats) {
-            var MsgPack;
-            (function (MsgPack) {
+            var MessagePack;
+            (function (MessagePack) {
                 /*
                  * Adapted from https://github.com/rcsb/mmtf-javascript
                  * by Alexander Rose <alexander.rose@weirdbyte.de>, MIT License, Copyright (c) 2016
@@ -8760,21 +8760,23 @@ var LiteMol;
                      * @return {String} decoded string
                      */
                     function str(length) {
-                        var array = buffer.subarray(offset, offset + length);
-                        offset += length;
-                        // limit number of arguments to String.fromCharCode to something
-                        // browsers can handle, see http://stackoverflow.com/a/22747272
-                        var chunkSize = 0xffff;
-                        if (length > chunkSize) {
-                            var c = [];
-                            for (var i = 0; i < array.length; i += chunkSize) {
-                                c.push(String.fromCharCode.apply(null, array.subarray(i, i + chunkSize)));
-                            }
-                            return c.join("");
-                        }
-                        else {
-                            return String.fromCharCode.apply(null, array);
-                        }
+                        return MessagePack.utf8Read(buffer, offset, length);
+                        // let array = buffer.subarray(offset, offset + length);
+                        // offset += length;
+                        // // limit number of arguments to String.fromCharCode to something
+                        // // browsers can handle, see http://stackoverflow.com/a/22747272
+                        // let chunkSize = 0xffff;
+                        // if (length > chunkSize) {
+                        //     let c: string[] = [];
+                        //     for (let i = 0; i < array.length; i += chunkSize) {
+                        //         c.push(String.fromCharCode.apply(
+                        //             null, array.subarray(i, i + chunkSize)
+                        //         ));
+                        //     }
+                        //     return c.join("");
+                        // } else {
+                        //     return String.fromCharCode.apply(null, array);
+                        // }
                     }
                     /**
                      * decode array
@@ -8782,7 +8784,7 @@ var LiteMol;
                      * @return {Array} decoded array
                      */
                     function array(length) {
-                        var value = new Array(length);
+                        var value = []; // new Array(length);
                         for (var i = 0; i < length; i++) {
                             value[i] = parse();
                         }
@@ -8933,8 +8935,8 @@ var LiteMol;
                     // start the recursive parsing
                     return parse();
                 }
-                MsgPack.decode = decode;
-            })(MsgPack = Formats.MsgPack || (Formats.MsgPack = {}));
+                MessagePack.decode = decode;
+            })(MessagePack = Formats.MessagePack || (Formats.MessagePack = {}));
         })(Formats = Core.Formats || (Core.Formats = {}));
     })(Core = LiteMol.Core || (LiteMol.Core = {}));
 })(LiteMol || (LiteMol = {}));
@@ -8947,8 +8949,8 @@ var LiteMol;
     (function (Core) {
         var Formats;
         (function (Formats) {
-            var MsgPack;
-            (function (MsgPack) {
+            var MessagePack;
+            (function (MessagePack) {
                 /*
                  * Adapted from https://github.com/rcsb/mmtf-javascript
                  * by Alexander Rose <alexander.rose@weirdbyte.de>, MIT License, Copyright (c) 2016
@@ -8986,7 +8988,7 @@ var LiteMol;
                         throw new Error("bad codepoint " + codePoint);
                     }
                 }
-                MsgPack.utf8Write = utf8Write;
+                MessagePack.utf8Write = utf8Write;
                 function utf8Read(data, offset, length) {
                     var str = [];
                     for (var i = offset, end = offset + length; i < end; i++) {
@@ -9021,7 +9023,7 @@ var LiteMol;
                     }
                     return str.join('');
                 }
-                MsgPack.utf8Read = utf8Read;
+                MessagePack.utf8Read = utf8Read;
                 function utf8ByteCount(str) {
                     var count = 0;
                     for (var i = 0, l = str.length; i < l; i++) {
@@ -9046,8 +9048,8 @@ var LiteMol;
                     }
                     return count;
                 }
-                MsgPack.utf8ByteCount = utf8ByteCount;
-            })(MsgPack = Formats.MsgPack || (Formats.MsgPack = {}));
+                MessagePack.utf8ByteCount = utf8ByteCount;
+            })(MessagePack = Formats.MessagePack || (Formats.MessagePack = {}));
         })(Formats = Core.Formats || (Core.Formats = {}));
     })(Core = LiteMol.Core || (LiteMol.Core = {}));
 })(LiteMol || (LiteMol = {}));

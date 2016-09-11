@@ -2,7 +2,7 @@
  * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
 
-namespace LiteMol.Core.Formats.MsgPack {
+namespace LiteMol.Core.Formats.MessagePack {
 
     /* 
      * Adapted from https://github.com/rcsb/mmtf-javascript
@@ -49,22 +49,25 @@ namespace LiteMol.Core.Formats.MsgPack {
          * @return {String} decoded string
          */
         function str(length: number) {
-            let array = buffer.subarray(offset, offset + length);
-            offset += length;
-            // limit number of arguments to String.fromCharCode to something
-            // browsers can handle, see http://stackoverflow.com/a/22747272
-            let chunkSize = 0xffff;
-            if (length > chunkSize) {
-                let c: string[] = [];
-                for (let i = 0; i < array.length; i += chunkSize) {
-                    c.push(String.fromCharCode.apply(
-                        null, array.subarray(i, i + chunkSize)
-                    ));
-                }
-                return c.join("");
-            } else {
-                return String.fromCharCode.apply(null, array);
-            }
+
+            return utf8Read(buffer, offset, length);
+
+            // let array = buffer.subarray(offset, offset + length);
+            // offset += length;
+            // // limit number of arguments to String.fromCharCode to something
+            // // browsers can handle, see http://stackoverflow.com/a/22747272
+            // let chunkSize = 0xffff;
+            // if (length > chunkSize) {
+            //     let c: string[] = [];
+            //     for (let i = 0; i < array.length; i += chunkSize) {
+            //         c.push(String.fromCharCode.apply(
+            //             null, array.subarray(i, i + chunkSize)
+            //         ));
+            //     }
+            //     return c.join("");
+            // } else {
+            //     return String.fromCharCode.apply(null, array);
+            // }
         }
 
         /**
@@ -73,7 +76,7 @@ namespace LiteMol.Core.Formats.MsgPack {
          * @return {Array} decoded array
          */
         function array(length: number) {
-            let value = new Array(length);
+            let value:any[] = [];// new Array(length);
             for (let i = 0; i < length; i++) {
                 value[i] = parse();
             }

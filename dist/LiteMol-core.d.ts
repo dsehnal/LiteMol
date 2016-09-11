@@ -988,13 +988,13 @@ declare namespace LiteMol.Core.Formats {
         static getString(key: string): string;
     }
 }
-declare namespace LiteMol.Core.Formats.MsgPack {
+declare namespace LiteMol.Core.Formats.MessagePack {
     function encode(value: any): Uint8Array;
 }
-declare namespace LiteMol.Core.Formats.MsgPack {
+declare namespace LiteMol.Core.Formats.MessagePack {
     function decode(buffer: Uint8Array): any;
 }
-declare namespace LiteMol.Core.Formats.MsgPack {
+declare namespace LiteMol.Core.Formats.MessagePack {
     function utf8Write(data: Uint8Array, offset: number, str: string): void;
     function utf8Read(data: Uint8Array, offset: number, length: number): string;
     function utf8ByteCount(str: string): number;
