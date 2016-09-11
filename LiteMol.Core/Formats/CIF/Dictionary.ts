@@ -201,7 +201,43 @@ namespace LiteMol.Core.Formats.CIF {
     /**
      * Represents a single column of a CIF category.
      */
-    export class Column {
+    export interface IColumn {
+
+        /**
+         * Returns the raw string value at given row.
+         */
+        getRaw(row: number): string;
+
+        /**
+         * Returns the string value at given row.
+         */
+        getString(row: number): string;
+
+        /**
+         * Returns the integer value at given row.
+         */
+        getInteger(row: number): number;
+
+        /**
+         * Returns the float value at given row.
+         */
+        getFloat(row: number): number;
+
+        /**
+         * Returns true if the token has the specified string value.
+         */
+        stringEquals(row: number, value: string): boolean;
+
+        /**
+         * Returns true if the value is not defined (. or ? token).
+         */
+        isUndefined(row: number):boolean;
+    }
+
+    /**
+     * Represents a single column of a CIF category.
+     */
+    export class Column implements IColumn {
 
         /**
          * Returns the raw string value at given row.
@@ -248,6 +284,19 @@ namespace LiteMol.Core.Formats.CIF {
         constructor(private category: Category, public name: string, public index: number) {
         }
     }
+
+    /**
+     * Represents a single column of a CIF category that has all values undefined.
+     */
+    class UndefinedColumn implements IColumn {
+        getRaw(row: number): string { return '.'; };
+        getString(row: number): string { return null; };
+        getInteger(row: number): number { return 0; }
+        getFloat(row: number): number { return 0.0; }
+        stringEquals(row: number, value: string):boolean { return value === null; }
+        isUndefined(row: number) { return true; }
+    }
+    const UndefinedColumnInstance = new UndefinedColumn();
 
     /**
      * Represents a single CIF category.
@@ -338,8 +387,8 @@ namespace LiteMol.Core.Formats.CIF {
          * Get a column object that makes accessing data easier.
          * @returns undefined if the column isn't present, the Column object otherwise.
          */
-        getColumn(name: string) {
-            return this.columnWrappers[name];
+        getColumn(name: string): IColumn {
+            return this.columnWrappers[name] || UndefinedColumnInstance;
         }
 
         /**

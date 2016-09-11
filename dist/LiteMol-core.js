@@ -9189,6 +9189,23 @@ var LiteMol;
                 }());
                 CIF.Column = Column;
                 /**
+                 * Represents a single column of a CIF category that has all values undefined.
+                 */
+                var UndefinedColumn = (function () {
+                    function UndefinedColumn() {
+                    }
+                    UndefinedColumn.prototype.getRaw = function (row) { return '.'; };
+                    ;
+                    UndefinedColumn.prototype.getString = function (row) { return null; };
+                    ;
+                    UndefinedColumn.prototype.getInteger = function (row) { return 0; };
+                    UndefinedColumn.prototype.getFloat = function (row) { return 0.0; };
+                    UndefinedColumn.prototype.stringEquals = function (row, value) { return value === null; };
+                    UndefinedColumn.prototype.isUndefined = function (row) { return true; };
+                    return UndefinedColumn;
+                }());
+                var UndefinedColumnInstance = new UndefinedColumn();
+                /**
                  * Represents a single CIF category.
                  */
                 var Category = (function () {
@@ -9256,7 +9273,7 @@ var LiteMol;
                      * @returns undefined if the column isn't present, the Column object otherwise.
                      */
                     Category.prototype.getColumn = function (name) {
-                        return this.columnWrappers[name];
+                        return this.columnWrappers[name] || UndefinedColumnInstance;
                     };
                     /**
                      * Updates the range of the token given by the column and row.
@@ -10412,7 +10429,6 @@ var LiteMol;
                         var encOutput = bigFraction > 0.25
                             ? Encoder.by(delta).and(runLength).and(integerPacking(2)).and(int16).encode(output)
                             : Encoder.by(delta).and(runLength).and(integerPacking(1)).and(int8).encode(output);
-                        console.log(encOffsets.data instanceof Uint8Array, encOutput.data instanceof Uint8Array);
                         return {
                             encoding: { kind: 'StringArray', dataEncoding: encOutput.encoding, stringData: strings.join(''), offsetEncoding: encOffsets.encoding, offsets: encOffsets.data },
                             data: encOutput.data

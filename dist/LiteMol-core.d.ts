@@ -1111,7 +1111,36 @@ declare namespace LiteMol.Core.Formats.CIF {
     /**
      * Represents a single column of a CIF category.
      */
-    class Column {
+    interface IColumn {
+        /**
+         * Returns the raw string value at given row.
+         */
+        getRaw(row: number): string;
+        /**
+         * Returns the string value at given row.
+         */
+        getString(row: number): string;
+        /**
+         * Returns the integer value at given row.
+         */
+        getInteger(row: number): number;
+        /**
+         * Returns the float value at given row.
+         */
+        getFloat(row: number): number;
+        /**
+         * Returns true if the token has the specified string value.
+         */
+        stringEquals(row: number, value: string): boolean;
+        /**
+         * Returns true if the value is not defined (. or ? token).
+         */
+        isUndefined(row: number): boolean;
+    }
+    /**
+     * Represents a single column of a CIF category.
+     */
+    class Column implements IColumn {
         private category;
         name: string;
         index: number;
@@ -1208,7 +1237,7 @@ declare namespace LiteMol.Core.Formats.CIF {
          * Get a column object that makes accessing data easier.
          * @returns undefined if the column isn't present, the Column object otherwise.
          */
-        getColumn(name: string): Column;
+        getColumn(name: string): IColumn;
         /**
          * Updates the range of the token given by the column and row.
          */

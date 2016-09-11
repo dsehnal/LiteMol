@@ -278,8 +278,6 @@ namespace LiteMol.Core.Formats.BinaryCIF {
             let encOutput = bigFraction > 0.25 
                 ? Encoder.by(delta).and(runLength).and(integerPacking(2)).and(int16).encode(output)
                 : Encoder.by(delta).and(runLength).and(integerPacking(1)).and(int8).encode(output);
-
-            console.log(encOffsets.data instanceof Uint8Array, encOutput.data instanceof Uint8Array);
             
             return {
                 encoding: { kind: 'StringArray', dataEncoding: encOutput.encoding, stringData: strings.join(''), offsetEncoding: encOffsets.encoding, offsets: encOffsets.data },
