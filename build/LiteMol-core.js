@@ -10642,7 +10642,6 @@ var LiteMol;
                             prev = row;
                         }
                         var modelId = !modelNumCol.isDefined ? '1' : modelNumCol.getString(startRow);
-                        console.log('atoms', atoms.seal());
                         return {
                             atoms: atoms.seal(),
                             modelId: modelId,
@@ -11193,27 +11192,21 @@ var LiteMol;
                         };
                     }
                     function ofDataBlock(data) {
-                        try {
-                            var models = [], atomSite = data.getCategory('_atom_site'), startRow = 0;
-                            if (!atomSite) {
-                                throw "'_atom_site' category is missing in the input.";
-                            }
-                            var entry = data.getCategory('_entry'), id = void 0;
-                            if (entry && entry.getColumn('id').isDefined)
-                                id = entry.getColumn('id').getString(0);
-                            else
-                                id = data.header;
-                            while (startRow < atomSite.rowCount) {
-                                var _a = getModel(startRow, data), model = _a.model, endRow = _a.endRow;
-                                models.push(model);
-                                startRow = endRow;
-                            }
-                            return new Core.Structure.Molecule(id, models);
+                        var models = [], atomSite = data.getCategory('_atom_site'), startRow = 0;
+                        if (!atomSite) {
+                            throw "'_atom_site' category is missing in the input.";
                         }
-                        catch (e) {
-                            console.log(e);
-                            throw e;
+                        var entry = data.getCategory('_entry'), id;
+                        if (entry && entry.getColumn('id').isDefined)
+                            id = entry.getColumn('id').getString(0);
+                        else
+                            id = data.header;
+                        while (startRow < atomSite.rowCount) {
+                            var _a = getModel(startRow, data), model = _a.model, endRow = _a.endRow;
+                            models.push(model);
+                            startRow = endRow;
                         }
+                        return new Core.Structure.Molecule(id, models);
                     }
                     mmCIF.ofDataBlock = ofDataBlock;
                 })(mmCIF = Molecule.mmCIF || (Molecule.mmCIF = {}));

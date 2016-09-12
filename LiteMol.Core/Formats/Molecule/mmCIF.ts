@@ -101,8 +101,6 @@ namespace LiteMol.Core.Formats.Molecule.mmCIF {
         }
         
         let modelId = !modelNumCol.isDefined ? '1' : modelNumCol.getString(startRow);
-        
-        console.log('atoms', <Structure.DefaultAtomTableSchema>atoms.seal());
 
         return {
             atoms: <Structure.DefaultAtomTableSchema>atoms.seal(),
@@ -856,31 +854,25 @@ namespace LiteMol.Core.Formats.Molecule.mmCIF {
     }
 
     export function ofDataBlock(data: CIF.DataBlock): Structure.Molecule {
+        let models: Structure.MoleculeModel[] = [],
+            atomSite = data.getCategory('_atom_site'),
+            startRow = 0;
 
-        try {
-            let models: Structure.MoleculeModel[] = [],
-                atomSite = data.getCategory('_atom_site'),
-                startRow = 0;
-
-            if (!atomSite) {
-                throw `'_atom_site' category is missing in the input.`;
-            }
-
-            let entry = data.getCategory('_entry'),
-                id: string;
-
-            if (entry && entry.getColumn('id').isDefined) id = entry.getColumn('id').getString(0);
-            else id = data.header;
-            
-            while (startRow < atomSite.rowCount) {
-                let { model, endRow } = getModel(startRow, data);
-                models.push(model);
-                startRow = endRow;
-            }
-            return new Structure.Molecule(id, models);
-        } catch (e) {
-            console.log(e);
-            throw e;
+        if (!atomSite) {
+            throw `'_atom_site' category is missing in the input.`;
         }
+
+        let entry = data.getCategory('_entry'),
+            id: string;
+
+        if (entry && entry.getColumn('id').isDefined) id = entry.getColumn('id').getString(0);
+        else id = data.header;
+        
+        while (startRow < atomSite.rowCount) {
+            let { model, endRow } = getModel(startRow, data);
+            models.push(model);
+            startRow = endRow;
+        }
+        return new Structure.Molecule(id, models);
     }
 }
