@@ -3079,7 +3079,7 @@ declare namespace LiteMol.Plugin {
     class Instance implements Bootstrap.Plugin.Instance {
         private spec;
         private target;
-        private _componentMap;
+        private componentMap;
         private transformersInfo;
         context: Context;
         private compose();

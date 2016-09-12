@@ -75193,7 +75193,7 @@ var LiteMol;
             function Instance(spec, target) {
                 this.spec = spec;
                 this.target = target;
-                this._componentMap = new Map();
+                this.componentMap = new Map();
                 this.transformersInfo = new Map();
                 this.context = new LiteMol.Bootstrap.Context(this);
                 this.init();
@@ -75220,11 +75220,11 @@ var LiteMol;
                 for (var _f = 0, _g = this.spec.components; _f < _g.length; _f++) {
                     var cs = _g[_f];
                     var info = cs(this.context);
-                    if (this._componentMap.has(info.key)) {
+                    if (this.componentMap.has(info.key)) {
                         throw "Component with key '" + info.key + "' was already added. Fix your spec.";
                     }
                     targets[info.region].components.push(info);
-                    this._componentMap.set(info.key, info);
+                    this.componentMap.set(info.key, info);
                 }
                 return targets;
             };
@@ -75235,7 +75235,7 @@ var LiteMol;
                 this.context.dispatcher.finished();
                 Plugin.ReactDOM.unmountComponentAtNode(this.target);
                 this.context = void 0;
-                this._componentMap = void 0;
+                this.componentMap = void 0;
                 this.spec = void 0;
                 this.target = void 0;
             };

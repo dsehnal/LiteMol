@@ -36,7 +36,7 @@ namespace LiteMol.Plugin {
     }
            
     export class Instance implements Bootstrap.Plugin.Instance {
-        private _componentMap = new Map<string, Bootstrap.Components.ComponentInfo>();  
+        private componentMap = new Map<string, Bootstrap.Components.ComponentInfo>();  
         private transformersInfo = new Map<string, TransformerInfo>(); 
                   
         context = new Bootstrap.Context(this);
@@ -60,12 +60,12 @@ namespace LiteMol.Plugin {
                         
             for (let cs of this.spec.components) {
                 let info = cs(this.context);
-                if (this._componentMap.has(info.key)) {
+                if (this.componentMap.has(info.key)) {
                     throw `Component with key '${info.key}' was already added. Fix your spec.`;
                 }
                                 
                 targets[info.region].components.push(info);
-                this._componentMap.set(info.key, info);
+                this.componentMap.set(info.key, info);
             }
             
             
@@ -80,7 +80,7 @@ namespace LiteMol.Plugin {
             this.context.dispatcher.finished();
             ReactDOM.unmountComponentAtNode(this.target);
             this.context = void 0;
-            this._componentMap = void 0;
+            this.componentMap = void 0;
             this.spec = void 0;
             this.target = void 0;
         }
