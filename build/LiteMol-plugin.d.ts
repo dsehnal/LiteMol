@@ -3052,7 +3052,7 @@ declare namespace LiteMol.Plugin {
         controller: Bootstrap.Components.Component<any>;
     } & any>;
     import LayoutRegion = Bootstrap.Components.LayoutRegion;
-    interface TransformerInfo extends Bootstrap.Plugin.ITransformerInfo {
+    interface TransformerInfo extends Bootstrap.Plugin.TransformerInfo {
         transformer: Bootstrap.Tree.Transformer.Any;
         view: ViewDefinition;
         initiallyCollapsed?: boolean;
@@ -3076,7 +3076,7 @@ declare namespace LiteMol.Plugin {
         };
         components: ComponentProvider[];
     }
-    class Instance implements Bootstrap.Plugin.IInstance {
+    class Instance implements Bootstrap.Plugin.Instance {
         private spec;
         private target;
         private _componentMap;
@@ -4549,7 +4549,7 @@ declare namespace LiteMol.Core.Formats.Molecule {
     function parse(format: FormatInfo, data: string | ArrayBuffer, id?: string): Computation<ParserResult<Structure.Molecule>>;
 }
 declare namespace LiteMol.Core.Formats.Density {
-    interface IField3D {
+    interface Field3D {
         dimensions: number[];
         length: number;
         getAt(idx: number): number;
@@ -4558,7 +4558,7 @@ declare namespace LiteMol.Core.Formats.Density {
         set(i: number, j: number, k: number, v: number): void;
         fill(v: number): void;
     }
-    class Field3DZYX implements IField3D {
+    class Field3DZYX implements Field3D {
         data: number[];
         dimensions: number[];
         private nX;
@@ -4591,7 +4591,7 @@ declare namespace LiteMol.Core.Formats.Density {
         /**
          * 3D volumetric data.
          */
-        data: IField3D;
+        data: Field3D;
         /**
          * X, Y, Z dimensions of the data matrix.
          */
@@ -4643,7 +4643,7 @@ declare namespace LiteMol.Core.Formats.Density {
          * If normalized, de-normalize the data.
          */
         denormalize(): void;
-        constructor(cellSize: number[], cellAngles: number[], origin: number[], hasSkewMatrix: boolean, skewMatrix: number[], data: IField3D, dataDimensions: number[], basis: {
+        constructor(cellSize: number[], cellAngles: number[], origin: number[], hasSkewMatrix: boolean, skewMatrix: number[], data: Field3D, dataDimensions: number[], basis: {
             x: number[];
             y: number[];
             z: number[];
@@ -4724,7 +4724,7 @@ declare namespace LiteMol.Core.Geometry {
     /**
      * Basic shape of the result buffer for range queries.
      */
-    interface ISubdivisionTree3DResultBuffer {
+    interface SubdivisionTree3DResultBuffer {
         count: number;
         indices: number[];
         hasPriorities: boolean;
@@ -4735,7 +4735,7 @@ declare namespace LiteMol.Core.Geometry {
     /**
      * A buffer that only remembers the values.
      */
-    class SubdivisionTree3DResultIndexBuffer implements ISubdivisionTree3DResultBuffer {
+    class SubdivisionTree3DResultIndexBuffer implements SubdivisionTree3DResultBuffer {
         private capacity;
         count: number;
         indices: number[];
@@ -4749,7 +4749,7 @@ declare namespace LiteMol.Core.Geometry {
     /**
      * A buffer that remembers values and priorities.
      */
-    class SubdivisionTree3DResultPriorityBuffer implements ISubdivisionTree3DResultBuffer {
+    class SubdivisionTree3DResultPriorityBuffer implements SubdivisionTree3DResultBuffer {
         private capacity;
         count: number;
         indices: number[];
@@ -4770,7 +4770,7 @@ declare namespace LiteMol.Core.Geometry {
         radiusSq: number;
         indices: number[];
         positions: number[];
-        buffer: ISubdivisionTree3DResultBuffer;
+        buffer: SubdivisionTree3DResultBuffer;
         /**
          * Query the tree and store the result to this.buffer. Overwrites the old result.
          */
@@ -4780,7 +4780,7 @@ declare namespace LiteMol.Core.Geometry {
          * Store the result to this.buffer. Overwrites the old result.
          */
         nearestIndex(index: number, radius: number): void;
-        constructor(tree: SubdivisionTree3D<T>, buffer: ISubdivisionTree3DResultBuffer);
+        constructor(tree: SubdivisionTree3D<T>, buffer: SubdivisionTree3DResultBuffer);
     }
     /**
      * A kd-like tree to query 3D data.
@@ -4883,10 +4883,10 @@ declare namespace LiteMol.Core.Geometry.MarchingCubes {
      */
     interface MarchingCubesParameters {
         isoLevel: number;
-        scalarField: Formats.Density.IField3D;
+        scalarField: Formats.Density.Field3D;
         bottomLeft?: number[];
         topRight?: number[];
-        annotationField?: Formats.Density.IField3D;
+        annotationField?: Formats.Density.Field3D;
     }
     function compute(parameters: MarchingCubesParameters): Computation<Surface>;
 }
@@ -4917,7 +4917,7 @@ declare namespace LiteMol.Core.Geometry.MarchingCubes {
     var TriTable: number[][];
 }
 declare namespace LiteMol.Core.Geometry.MolecularSurface {
-    interface IMolecularIsoSurfaceParameters {
+    interface MolecularIsoSurfaceParameters {
         exactBoundary?: boolean;
         boundaryDelta?: {
             dx: number;
@@ -4929,21 +4929,6 @@ declare namespace LiteMol.Core.Geometry.MolecularSurface {
         density?: number;
         interactive?: boolean;
         smoothingIterations?: number;
-    }
-    class MolecularIsoSurfaceParameters implements IMolecularIsoSurfaceParameters {
-        exactBoundary: boolean;
-        boundaryDelta: {
-            dx: number;
-            dy: number;
-            dz: number;
-        };
-        probeRadius: number;
-        atomRadius: (i: number) => number;
-        defaultAtomRadius: number;
-        density: number;
-        interactive: boolean;
-        smoothingIterations: number;
-        constructor(params?: IMolecularIsoSurfaceParameters);
     }
     interface MolecularIsoField {
         data: Geometry.MarchingCubes.MarchingCubesParameters;
@@ -4961,7 +4946,7 @@ declare namespace LiteMol.Core.Geometry.MolecularSurface {
     interface MolecularSurfaceInputParameters {
         positions: Core.Structure.PositionTableSchema;
         atomIndices: number[];
-        parameters?: IMolecularIsoSurfaceParameters;
+        parameters?: MolecularIsoSurfaceParameters;
     }
     function computeMolecularSurfaceAsync(parameters: MolecularSurfaceInputParameters): Computation<MolecularIsoSurfaceGeometryData>;
 }
@@ -5249,7 +5234,7 @@ declare namespace LiteMol.Core.Structure {
         static applyToModelUnsafe(matrix: number[], m: MoleculeModel): void;
         constructor(matrix: number[], id: string, isIdentity: boolean);
     }
-    interface IMoleculeModelData {
+    interface MoleculeModelData {
         id: string;
         modelId: string;
         atoms: DefaultAtomTableSchema;
@@ -5266,7 +5251,7 @@ declare namespace LiteMol.Core.Structure {
         source: MoleculeModelSource;
         operators?: Operator[];
     }
-    class MoleculeModel implements IMoleculeModelData {
+    class MoleculeModel implements MoleculeModelData {
         private _queryContext;
         id: string;
         modelId: string;
@@ -5285,7 +5270,7 @@ declare namespace LiteMol.Core.Structure {
         operators: Operator[];
         queryContext: Query.Context;
         query(q: Query.Source): Query.FragmentSeq;
-        constructor(data: IMoleculeModelData);
+        constructor(data: MoleculeModelData);
     }
     class Molecule {
         id: string;
@@ -16323,7 +16308,7 @@ declare namespace LiteMol.Bootstrap {
         get(key: string): any;
     }
     class Context {
-        plugin: Plugin.IInstance;
+        plugin: Plugin.Instance;
         id: string;
         dispatcher: Service.Dispatcher;
         logger: Service.Logger;
@@ -16340,17 +16325,17 @@ declare namespace LiteMol.Bootstrap {
         settings: Settings;
         createLayout(targets: Components.LayoutTarget[], target: HTMLElement): void;
         select(selector: Tree.Selector<Entity.Any>): Entity.Any[];
-        constructor(plugin?: Plugin.IInstance);
+        constructor(plugin?: Plugin.Instance);
     }
 }
 declare namespace LiteMol.Bootstrap.Plugin {
-    interface ITransformerInfo {
+    interface TransformerInfo {
         transformer: Bootstrap.Tree.Transformer.Any;
         view: any;
         initiallyCollapsed?: boolean;
     }
-    interface IInstance {
-        getTransformerInfo(transformer: Bootstrap.Tree.Transformer.Any): ITransformerInfo;
+    interface Instance {
+        getTransformerInfo(transformer: Bootstrap.Tree.Transformer.Any): TransformerInfo;
     }
 }
 declare namespace LiteMol.Bootstrap {

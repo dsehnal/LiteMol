@@ -6,13 +6,13 @@
 namespace LiteMol.Bootstrap.Plugin {
     "use strict";
 
-    export interface ITransformerInfo {
+    export interface TransformerInfo {
         transformer: Bootstrap.Tree.Transformer.Any,
         view: any,
         initiallyCollapsed?: boolean
     }
 
-    export interface IInstance {
-        getTransformerInfo(transformer: Bootstrap.Tree.Transformer.Any): ITransformerInfo;
+    export interface Instance {
+        getTransformerInfo(transformer: Bootstrap.Tree.Transformer.Any): TransformerInfo;
     }
 }

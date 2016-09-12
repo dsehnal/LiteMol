@@ -44,7 +44,7 @@ namespace LiteMol.Bootstrap {
             return Tree.Selection.select<Entity.Any>(selector, this.tree);
         }
         
-        constructor(public plugin?: Plugin.IInstance) {
+        constructor(public plugin?: Plugin.Instance) {
             initEventsAndCommands(this);
         }
     }   

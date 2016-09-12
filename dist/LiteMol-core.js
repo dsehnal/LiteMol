@@ -14072,19 +14072,7 @@ var LiteMol;
     })(Core = LiteMol.Core || (LiteMol.Core = {}));
 })(LiteMol || (LiteMol = {}));
 /*
- * Copyright(c) 2016 David Sehnal
-    *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
-    *
- *   http://www.apache.org/licenses/LICENSE-2.0
-
- * Unless required by applicable law or agreed to in writing, software
-    * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
-    * limitations under the License.
+ * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
 var LiteMol;
 (function (LiteMol) {
@@ -14095,8 +14083,8 @@ var LiteMol;
             var MolecularSurface;
             (function (MolecularSurface) {
                 "use strict";
-                var MolecularIsoSurfaceParameters = (function () {
-                    function MolecularIsoSurfaceParameters(params) {
+                var MolecularIsoSurfaceParametersWrapper = (function () {
+                    function MolecularIsoSurfaceParametersWrapper(params) {
                         Core.Utils.extend(this, params, {
                             exactBoundary: false,
                             boundaryDelta: { dx: 1.5, dy: 1.5, dz: 1.5 },
@@ -14112,9 +14100,8 @@ var LiteMol;
                             this.density = 0.3;
                         //if (this.probeRadius < 0) this.probeRadius = 0;
                     }
-                    return MolecularIsoSurfaceParameters;
+                    return MolecularIsoSurfaceParametersWrapper;
                 }());
-                MolecularSurface.MolecularIsoSurfaceParameters = MolecularIsoSurfaceParameters;
                 var MolecularIsoFieldComputation = (function () {
                     function MolecularIsoFieldComputation(inputParameters, ctx) {
                         var _this = this;
@@ -14147,7 +14134,7 @@ var LiteMol;
                                 _this.ctx.reject(e);
                             }
                         };
-                        this.parameters = new MolecularIsoSurfaceParameters(inputParameters.parameters);
+                        this.parameters = new MolecularIsoSurfaceParametersWrapper(inputParameters.parameters);
                         var positions = inputParameters.positions;
                         this.x = positions.x;
                         this.y = positions.y;

@@ -10,12 +10,12 @@ namespace LiteMol.Core.Geometry.MarchingCubes {
      */
     export interface MarchingCubesParameters {
         isoLevel: number;
-        scalarField: Formats.Density.IField3D;        
+        scalarField: Formats.Density.Field3D;        
 
         bottomLeft?: number[];
         topRight?: number[];
 
-        annotationField?: Formats.Density.IField3D;
+        annotationField?: Formats.Density.Field3D;
     }
 
     // export function computeCubes(parameters: MarchingCubesParameters): MarchingCubesResult {
@@ -144,8 +144,8 @@ namespace LiteMol.Core.Geometry.MarchingCubes {
     class MarchingCubesState {
         nX: number; nY: number; nZ: number;
         isoLevel: number;
-        scalarField: Formats.Density.IField3D;
-        annotationField: Formats.Density.IField3D;
+        scalarField: Formats.Density.Field3D;
+        annotationField: Formats.Density.Field3D;
         annotate: boolean;
 
         verticesOnEdges: Int32Array;

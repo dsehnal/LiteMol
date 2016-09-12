@@ -5,7 +5,7 @@
 namespace LiteMol.Core.Formats.Density {
     "use strict";
  
-    export interface IField3D {
+    export interface Field3D {
         dimensions: number[];   
         length: number;
         getAt(idx: number): number;     
@@ -15,7 +15,7 @@ namespace LiteMol.Core.Formats.Density {
         fill(v: number): void;
     }
     
-    export class Field3DZYX implements IField3D {
+    export class Field3DZYX implements Field3D {
         
         private nX: number;
         private nY: number;
@@ -77,7 +77,7 @@ namespace LiteMol.Core.Formats.Density {
         /**
          * 3D volumetric data.
          */
-        data: IField3D;
+        data: Field3D;
 
         /**
          * X, Y, Z dimensions of the data matrix.
@@ -162,7 +162,7 @@ namespace LiteMol.Core.Formats.Density {
         
         constructor(
             cellSize: number[], cellAngles: number[], origin: number[], hasSkewMatrix: boolean, skewMatrix: number[],
-            data: IField3D, dataDimensions: number[], basis: { x: number[]; y: number[]; z: number[] }, startOffset: number[],
+            data: Field3D, dataDimensions: number[], basis: { x: number[]; y: number[]; z: number[] }, startOffset: number[],
             valuesInfo: { min: number; max: number; mean: number; sigma: number }, attributes?: { [key: string]: any }) {
 
             this.cellSize = cellSize;

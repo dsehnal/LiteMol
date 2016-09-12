@@ -7,7 +7,7 @@ namespace LiteMol.Core.Geometry {
     /**
      * Basic shape of the result buffer for range queries.
      */
-    export interface ISubdivisionTree3DResultBuffer {
+    export interface SubdivisionTree3DResultBuffer {
         count: number;
         indices: number[];
 
@@ -21,7 +21,7 @@ namespace LiteMol.Core.Geometry {
     /**
      * A buffer that only remembers the values.
      */
-    export class SubdivisionTree3DResultIndexBuffer implements ISubdivisionTree3DResultBuffer {
+    export class SubdivisionTree3DResultIndexBuffer implements SubdivisionTree3DResultBuffer {
         private capacity: number;
 
         count: number;
@@ -69,7 +69,7 @@ namespace LiteMol.Core.Geometry {
     /**
      * A buffer that remembers values and priorities.
      */
-    export class SubdivisionTree3DResultPriorityBuffer implements ISubdivisionTree3DResultBuffer {
+    export class SubdivisionTree3DResultPriorityBuffer implements SubdivisionTree3DResultBuffer {
         private capacity: number;
 
         count: number;
@@ -131,7 +131,7 @@ namespace LiteMol.Core.Geometry {
         indices: number[];
         positions: number[];
         
-        buffer: ISubdivisionTree3DResultBuffer;  
+        buffer: SubdivisionTree3DResultBuffer;  
         
         /**
          * Query the tree and store the result to this.buffer. Overwrites the old result.
@@ -162,7 +162,7 @@ namespace LiteMol.Core.Geometry {
             this.tree.root.nearest(this, 0);
         }
 
-        constructor(tree: SubdivisionTree3D<T>, buffer: ISubdivisionTree3DResultBuffer) {
+        constructor(tree: SubdivisionTree3D<T>, buffer: SubdivisionTree3DResultBuffer) {
             this.tree = tree;
             this.indices = tree.indices;
             this.positions = tree.positions;

@@ -1,23 +1,11 @@
 ﻿/*
- * Copyright(c) 2016 David Sehnal
-    *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
-    *
- *   http://www.apache.org/licenses/LICENSE-2.0
-
- * Unless required by applicable law or agreed to in writing, software
-    * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
-    * limitations under the License.
+ * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
 
 namespace LiteMol.Core.Geometry.MolecularSurface {
     "use strict";
 
-    export interface IMolecularIsoSurfaceParameters {
+    export interface MolecularIsoSurfaceParameters {
         exactBoundary?: boolean;
         boundaryDelta?: { dx: number; dy: number; dz: number };
         probeRadius?: number;
@@ -27,8 +15,7 @@ namespace LiteMol.Core.Geometry.MolecularSurface {
         smoothingIterations?: number;
     }
 
-
-    export class MolecularIsoSurfaceParameters implements IMolecularIsoSurfaceParameters {
+    class MolecularIsoSurfaceParametersWrapper implements MolecularIsoSurfaceParameters {
 
         exactBoundary: boolean;
         boundaryDelta: { dx: number; dy: number; dz: number };
@@ -39,9 +26,9 @@ namespace LiteMol.Core.Geometry.MolecularSurface {
         interactive: boolean;
         smoothingIterations: number;
 
-        constructor(params?: IMolecularIsoSurfaceParameters) {
+        constructor(params?: MolecularIsoSurfaceParameters) {
 
-            Core.Utils.extend(this, params, <IMolecularIsoSurfaceParameters>{
+            Core.Utils.extend(this, params, <MolecularIsoSurfaceParameters>{
                 exactBoundary: false,
                 boundaryDelta: { dx: 1.5, dy: 1.5, dz: 1.5 },
                 probeRadius: 1.4,
@@ -69,7 +56,7 @@ namespace LiteMol.Core.Geometry.MolecularSurface {
     class MolecularIsoFieldComputation {
 
         constructor(private inputParameters: MolecularSurfaceInputParameters, private ctx: Computation.Context<MolecularIsoField>) {
-            this.parameters = new MolecularIsoSurfaceParameters(inputParameters.parameters);
+            this.parameters = new MolecularIsoSurfaceParametersWrapper(inputParameters.parameters);
             let positions = inputParameters.positions;
             this.x = positions.x;
             this.y = positions.y;
@@ -79,7 +66,7 @@ namespace LiteMol.Core.Geometry.MolecularSurface {
 
         atomIndices: number[];
 
-        parameters: MolecularIsoSurfaceParameters;
+        parameters: MolecularIsoSurfaceParametersWrapper;
 
         x: number[]; y: number[]; z: number[];
 
@@ -318,7 +305,7 @@ namespace LiteMol.Core.Geometry.MolecularSurface {
     export interface MolecularSurfaceInputParameters {
         positions: Core.Structure.PositionTableSchema,
         atomIndices: number[],
-        parameters?: IMolecularIsoSurfaceParameters
+        parameters?: MolecularIsoSurfaceParameters
     } 
     
     export function computeMolecularSurfaceAsync(parameters: MolecularSurfaceInputParameters): Computation<MolecularIsoSurfaceGeometryData> {

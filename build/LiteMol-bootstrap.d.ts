@@ -3913,7 +3913,7 @@ declare namespace LiteMol.Bootstrap {
         get(key: string): any;
     }
     class Context {
-        plugin: Plugin.IInstance;
+        plugin: Plugin.Instance;
         id: string;
         dispatcher: Service.Dispatcher;
         logger: Service.Logger;
@@ -3930,17 +3930,17 @@ declare namespace LiteMol.Bootstrap {
         settings: Settings;
         createLayout(targets: Components.LayoutTarget[], target: HTMLElement): void;
         select(selector: Tree.Selector<Entity.Any>): Entity.Any[];
-        constructor(plugin?: Plugin.IInstance);
+        constructor(plugin?: Plugin.Instance);
     }
 }
 declare namespace LiteMol.Bootstrap.Plugin {
-    interface ITransformerInfo {
+    interface TransformerInfo {
         transformer: Bootstrap.Tree.Transformer.Any;
         view: any;
         initiallyCollapsed?: boolean;
     }
-    interface IInstance {
-        getTransformerInfo(transformer: Bootstrap.Tree.Transformer.Any): ITransformerInfo;
+    interface Instance {
+        getTransformerInfo(transformer: Bootstrap.Tree.Transformer.Any): TransformerInfo;
     }
 }
 declare namespace LiteMol.Bootstrap {

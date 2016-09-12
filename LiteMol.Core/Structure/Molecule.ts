@@ -456,7 +456,7 @@ namespace LiteMol.Core.Structure {
         }
     }
 
-    export interface IMoleculeModelData {
+    export interface MoleculeModelData {
         id: string,
         modelId: string,
         atoms: DefaultAtomTableSchema,
@@ -474,7 +474,7 @@ namespace LiteMol.Core.Structure {
         operators?: Operator[]
     }
     
-    export class MoleculeModel implements IMoleculeModelData {
+    export class MoleculeModel implements MoleculeModelData {
 
         private _queryContext: Query.Context;
 
@@ -504,7 +504,7 @@ namespace LiteMol.Core.Structure {
             return Query.Builder.toQuery(q)(this.queryContext);
         }
 
-        constructor(data: IMoleculeModelData) {
+        constructor(data: MoleculeModelData) {
             this.id = data.id;
             this.modelId = data.modelId;
             this.atoms = data.atoms;

@@ -9,11 +9,8 @@ namespace LiteMol.Plugin {
     export type ViewDefinition =  React.ComponentClass<{ controller: Bootstrap.Components.Component<any> } & any>;
     
     import LayoutRegion = Bootstrap.Components.LayoutRegion;
-    //export type ContextView = React.ComponentClass<{ context: Bootstrap.Context }>;
     
-    //export type ViewDefinition = ViewDefinitionBase<any>
-    
-    export interface TransformerInfo extends Bootstrap.Plugin.ITransformerInfo {
+    export interface TransformerInfo extends Bootstrap.Plugin.TransformerInfo {
         transformer: Bootstrap.Tree.Transformer.Any,
         view: ViewDefinition,
         initiallyCollapsed?: boolean
@@ -38,14 +35,13 @@ namespace LiteMol.Plugin {
         components: ComponentProvider[]
     }
            
-    export class Instance implements Bootstrap.Plugin.IInstance {
+    export class Instance implements Bootstrap.Plugin.Instance {
         private _componentMap = new Map<string, Bootstrap.Components.ComponentInfo>();  
         private transformersInfo = new Map<string, TransformerInfo>(); 
                   
         context = new Bootstrap.Context(this);
         
-        private compose() {
-            
+        private compose() {            
             for (let s of Object.keys(this.spec.settings)) {
                 if (!Object.prototype.hasOwnProperty.call(this.spec.settings, s)) continue;
                 this.context.settings.set(s, this.spec.settings[s]);
@@ -113,13 +109,10 @@ namespace LiteMol.Plugin {
             this.context.createLayout(targets, this.target);        
         }
 
-        constructor(private spec: Specification, private target: HTMLElement) {
-                        
+        constructor(private spec: Specification, private target: HTMLElement) {                        
             this.init();
-            ReactDOM.render(React.createElement(this.spec.layoutView, { controller: this.context.layout }), target);
-                        
+            ReactDOM.render(React.createElement(this.spec.layoutView, { controller: this.context.layout }), target);                        
             Bootstrap.Command.Entity.SetCurrent.dispatch(this.context, this.context.tree.root);            
-            //this.context.logger.message(`LiteMol Plugin ${VERSION.number} (core ${Core.VERSION.number}, visualization ${Core.VERSION.number}, bootstrap ${Bootstrap.VERSION.number})`);
         }
     }
 }
