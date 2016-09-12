@@ -946,6 +946,9 @@ declare namespace LiteMol.Core.Formats {
         name: string;
         extensions: string[];
         isBinary?: boolean;
+        parse: (data: string | ArrayBuffer, params?: {
+            id?: string;
+        }) => Computation<ParserResult<any>>;
     }
     namespace FormatInfo {
         function formatRegExp(info: FormatInfo): RegExp;
@@ -1442,7 +1445,6 @@ declare namespace LiteMol.Core.Formats.Molecule {
         const SDF: FormatInfo;
         const All: FormatInfo[];
     }
-    function parse(format: FormatInfo, data: string | ArrayBuffer, id?: string): Computation<ParserResult<Structure.Molecule>>;
 }
 declare namespace LiteMol.Core.Formats.Density {
     interface Field3D {
@@ -1565,7 +1567,6 @@ declare namespace LiteMol.Core.Formats.Density {
         const DSN6: FormatInfo;
         const All: FormatInfo[];
     }
-    function parse(format: FormatInfo, data: string | ArrayBuffer, id?: string): ParserResult<Data>;
 }
 declare namespace LiteMol.Core.Geometry.LinearAlgebra {
     type ObjectVec3 = {

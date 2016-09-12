@@ -9,7 +9,8 @@ namespace LiteMol.Core.Formats {
         name: string,
         // a list of extensions, including the ., e.g. ['.cif']
         extensions: string[],
-        isBinary?: boolean
+        isBinary?: boolean,
+        parse: (data: string | ArrayBuffer, params?: { id?: string }) => Computation<ParserResult<any>> 
     }
 
     export namespace FormatInfo {

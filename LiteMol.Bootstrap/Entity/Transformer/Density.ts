@@ -20,21 +20,18 @@ namespace LiteMol.Bootstrap.Entity.Transformer.Density {
             isUpdatable: true,
             defaultParams: () => ({ format: LiteMol.Core.Formats.Density.SupportedFormats.CCP4, normalize: false })
         }, (ctx, a, t) => { 
-            return Task.create<Entity.Density.Data>(`Parse Density (${a.props.label})`, 'Normal', ctx => {
-                ctx.update('Parsing...');               
-                ctx.schedule(() => {      
-                    let format = t.params.format || LiteMol.Core.Formats.Density.SupportedFormats.CCP4;           
-                    let data = LiteMol.Core.Formats.Density.parse(format, a.props.data);     
+            return Task.fromComputation(`Parse Density (${a.props.label})`, 'Normal', t.params.format.parse(a.props.data))
+                .setReportTime(true) 
+                .bind(`Create Density (${a.props.label})`, 'Silent', data => {
                     if (data.error) {
-                        ctx.reject(data.error.toString());
-                        return;
+                        return Task.reject(`Create Density (${a.props.label})`, 'Background', data.error.toString());
                     }               
                     if (t.params.normalize) {
                          data.result.normalize();
                     }
-                    ctx.resolve(Entity.Density.Data.create(t, { label: t.params.id ? t.params.id : 'Density Data', data: data.result, description: t.params.normalize ? 'Normalized' : '' }));
-                });
-            }).setReportTime(true);
+                    let e = Entity.Density.Data.create(t, { label: t.params.id ? t.params.id : 'Density Data', data: data.result, description: t.params.normalize ? 'Normalized' : '' });
+                    return Task.resolve(`Create Density (${a.props.label})`, 'Background', e);
+                }); 
         }, (ctx, b, t) => {            
             if (b.props.data.isNormalized === t.params.normalize) return Task.resolve('Density', 'Background', Tree.Node.Null);
             

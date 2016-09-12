@@ -8564,7 +8564,7 @@ var LiteMol;
                         to: [Entity.Molecule.Molecule],
                         defaultParams: function (ctx) { return ({ format: LiteMol.Core.Formats.Molecule.SupportedFormats.mmCIF }); }
                     }, function (ctx, a, t) {
-                        return Bootstrap.Task.fromComputation("Create Molecule (" + a.props.label + ")", 'Normal', LiteMol.Core.Formats.Molecule.parse(t.params.format, a.props.data, t.params.customId))
+                        return Bootstrap.Task.fromComputation("Create Molecule (" + a.props.label + ")", 'Normal', t.params.format.parse(a.props.data, { id: t.params.customId }))
                             .setReportTime(true)
                             .bind("Create Molecule (" + a.props.label + ")", 'Silent', function (r) {
                             if (r.error)
@@ -8930,21 +8930,18 @@ var LiteMol;
                         isUpdatable: true,
                         defaultParams: function () { return ({ format: LiteMol.Core.Formats.Density.SupportedFormats.CCP4, normalize: false }); }
                     }, function (ctx, a, t) {
-                        return Bootstrap.Task.create("Parse Density (" + a.props.label + ")", 'Normal', function (ctx) {
-                            ctx.update('Parsing...');
-                            ctx.schedule(function () {
-                                var format = t.params.format || LiteMol.Core.Formats.Density.SupportedFormats.CCP4;
-                                var data = LiteMol.Core.Formats.Density.parse(format, a.props.data);
-                                if (data.error) {
-                                    ctx.reject(data.error.toString());
-                                    return;
-                                }
-                                if (t.params.normalize) {
-                                    data.result.normalize();
-                                }
-                                ctx.resolve(Entity.Density.Data.create(t, { label: t.params.id ? t.params.id : 'Density Data', data: data.result, description: t.params.normalize ? 'Normalized' : '' }));
-                            });
-                        }).setReportTime(true);
+                        return Bootstrap.Task.fromComputation("Parse Density (" + a.props.label + ")", 'Normal', t.params.format.parse(a.props.data))
+                            .setReportTime(true)
+                            .bind("Create Density (" + a.props.label + ")", 'Silent', function (data) {
+                            if (data.error) {
+                                return Bootstrap.Task.reject("Create Density (" + a.props.label + ")", 'Background', data.error.toString());
+                            }
+                            if (t.params.normalize) {
+                                data.result.normalize();
+                            }
+                            var e = Entity.Density.Data.create(t, { label: t.params.id ? t.params.id : 'Density Data', data: data.result, description: t.params.normalize ? 'Normalized' : '' });
+                            return Bootstrap.Task.resolve("Create Density (" + a.props.label + ")", 'Background', e);
+                        });
                     }, function (ctx, b, t) {
                         if (b.props.data.isNormalized === t.params.normalize)
                             return Bootstrap.Task.resolve('Density', 'Background', Bootstrap.Tree.Node.Null);

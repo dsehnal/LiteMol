@@ -52,7 +52,7 @@ namespace LiteMol.Bootstrap.Entity.Transformer.Molecule {
             defaultParams: (ctx) => ({ format: LiteMol.Core.Formats.Molecule.SupportedFormats.mmCIF })
         }, (ctx, a, t) => {
 
-            return Task.fromComputation(`Create Molecule (${a.props.label})`, 'Normal', Core.Formats.Molecule.parse(t.params.format, a.props.data, t.params.customId))
+            return Task.fromComputation(`Create Molecule (${a.props.label})`, 'Normal', t.params.format.parse(a.props.data, { id: t.params.customId }))
                 .setReportTime(true) 
                 .bind(`Create Molecule (${a.props.label})`, 'Silent', r => {
                     if (r.error) return Task.reject(`Create Molecule (${a.props.label})`, 'Background', r.error.toString());

@@ -11962,15 +11962,9 @@ var LiteMol;
             (function (Molecule) {
                 var SupportedFormats;
                 (function (SupportedFormats) {
-                    SupportedFormats.mmCIF = { name: 'mmCIF', extensions: ['.cif'] };
-                    SupportedFormats.PDB = { name: 'PDB', extensions: ['.pdb', '.ent'] };
-                    SupportedFormats.SDF = { name: 'SDF', extensions: ['.sdf', '.mol'] };
-                    SupportedFormats.All = [SupportedFormats.mmCIF, SupportedFormats.PDB, SupportedFormats.SDF];
-                })(SupportedFormats = Molecule.SupportedFormats || (Molecule.SupportedFormats = {}));
-                function parse(format, data, id) {
-                    return Core.Computation.create(function (ctx) {
-                        switch (format.name) {
-                            case SupportedFormats.mmCIF.name: {
+                    SupportedFormats.mmCIF = { name: 'mmCIF', extensions: ['.cif'], parse: function (data, _a) {
+                            var id = _a.id;
+                            return Core.Computation.create(function (ctx) {
                                 ctx.update('Parsing...');
                                 ctx.schedule(function () {
                                     var file = Formats.CIF.Text.parse(data);
@@ -11993,9 +11987,11 @@ var LiteMol;
                                         }
                                     });
                                 });
-                                break;
-                            }
-                            case SupportedFormats.PDB.name: {
+                            });
+                        } };
+                    SupportedFormats.PDB = { name: 'PDB', extensions: ['.pdb', '.ent'], parse: function (data, _a) {
+                            var id = _a.id;
+                            return Core.Computation.create(function (ctx) {
                                 ctx.update('Parsing...');
                                 ctx.schedule(function () {
                                     var file = Molecule.PDB.toCifFile(id !== void 0 ? id : 'PDB', data);
@@ -12018,9 +12014,11 @@ var LiteMol;
                                         }
                                     });
                                 });
-                                break;
-                            }
-                            case SupportedFormats.SDF.name: {
+                            });
+                        } };
+                    SupportedFormats.SDF = { name: 'SDF', extensions: ['.sdf', '.mol'], parse: function (data, _a) {
+                            var id = _a.id;
+                            return Core.Computation.create(function (ctx) {
                                 ctx.update('Parsing...');
                                 ctx.schedule(function () {
                                     var mol = Molecule.SDF.parse(data, id);
@@ -12030,16 +12028,10 @@ var LiteMol;
                                     }
                                     ctx.resolve(Formats.ParserResult.success(mol.result));
                                 });
-                                break;
-                            }
-                            default: {
-                                ctx.reject("'" + format + "' is not a supported molecule format.");
-                                break;
-                            }
-                        }
-                    });
-                }
-                Molecule.parse = parse;
+                            });
+                        } };
+                    SupportedFormats.All = [SupportedFormats.mmCIF, SupportedFormats.PDB, SupportedFormats.SDF];
+                })(SupportedFormats = Molecule.SupportedFormats || (Molecule.SupportedFormats = {}));
             })(Molecule = Formats.Molecule || (Formats.Molecule = {}));
         })(Formats = Core.Formats || (Core.Formats = {}));
     })(Core = LiteMol.Core || (LiteMol.Core = {}));
@@ -12617,26 +12609,23 @@ var LiteMol;
         (function (Formats) {
             var Density;
             (function (Density) {
+                function parse(data, name, parser) {
+                    return Core.Computation.create(function (ctx) {
+                        ctx.update("Parsing " + name + "...");
+                        try {
+                            ctx.resolve(parser(data));
+                        }
+                        catch (e) {
+                            ctx.reject('' + e);
+                        }
+                    });
+                }
                 var SupportedFormats;
                 (function (SupportedFormats) {
-                    SupportedFormats.CCP4 = { name: 'CCP4', extensions: ['.ccp4', '.map'] };
-                    SupportedFormats.DSN6 = { name: 'DSN6', extensions: ['.dsn6'] };
+                    SupportedFormats.CCP4 = { name: 'CCP4', extensions: ['.ccp4', '.map'], isBinary: true, parse: function (data) { return parse(data, 'CCP4', function (d) { return Density.CCP4.parse(d); }); } };
+                    SupportedFormats.DSN6 = { name: 'DSN6', extensions: ['.dsn6'], isBinary: true, parse: function (data) { return parse(data, 'DSN6', function (d) { return Density.DSN6.parse(d); }); } };
                     SupportedFormats.All = [SupportedFormats.CCP4, SupportedFormats.DSN6];
                 })(SupportedFormats = Density.SupportedFormats || (Density.SupportedFormats = {}));
-                function parse(format, data, id) {
-                    switch (format.name) {
-                        case SupportedFormats.CCP4.name: {
-                            return Density.CCP4.parse(data);
-                        }
-                        case SupportedFormats.DSN6.name: {
-                            return Density.DSN6.parse(data);
-                        }
-                        default: {
-                            return Formats.ParserResult.error("'" + format + "' is not a supported density data format.");
-                        }
-                    }
-                }
-                Density.parse = parse;
             })(Density = Formats.Density || (Formats.Density = {}));
         })(Formats = Core.Formats || (Core.Formats = {}));
     })(Core = LiteMol.Core || (LiteMol.Core = {}));

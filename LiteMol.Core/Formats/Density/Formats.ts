@@ -4,24 +4,21 @@
 
 namespace LiteMol.Core.Formats.Density {
     
-    export namespace SupportedFormats {
-        export const CCP4: FormatInfo = { name: 'CCP4', extensions: ['.ccp4', '.map'] };
-        export const DSN6: FormatInfo = { name: 'DSN6', extensions: ['.dsn6'] };
-
-        export const All = [ CCP4, DSN6 ];
+    function parse(data: string | ArrayBuffer, name: string, parser: (data: string | ArrayBuffer) => ParserResult<Data>) {
+        return Computation.create(ctx => {
+            ctx.update(`Parsing ${name}...`);
+            try {
+                ctx.resolve(parser(data));
+            } catch (e) {
+                ctx.reject('' + e);
+            }
+        })
     }
 
-    export function parse(format: FormatInfo, data: string | ArrayBuffer, id?: string): ParserResult<Data> {
-        switch (format.name) {
-            case SupportedFormats.CCP4.name: {
-                return CCP4.parse(data as ArrayBuffer);
-            }
-            case SupportedFormats.DSN6.name: {
-                return DSN6.parse(data as ArrayBuffer);
-            }
-            default: {
-                return ParserResult.error(`'${format}' is not a supported density data format.`);
-            }
-        }
+    export namespace SupportedFormats {
+        export const CCP4: FormatInfo = { name: 'CCP4', extensions: ['.ccp4', '.map'], isBinary: true, parse: data => parse(data, 'CCP4', d => Density.CCP4.parse(d as ArrayBuffer)) };
+        export const DSN6: FormatInfo = { name: 'DSN6', extensions: ['.dsn6'], isBinary: true, parse: data => parse(data, 'DSN6', d => Density.DSN6.parse(d as ArrayBuffer)) };
+
+        export const All = [ CCP4, DSN6 ];
     }
 }
