@@ -18,7 +18,7 @@ namespace LiteMol.Core.Formats.Molecule {
                 case SupportedFormats.mmCIF.name: {
                     ctx.update('Parsing...');
                     ctx.schedule(() => {
-                        let file = CIF.parse(data as string);
+                        let file = CIF.Text.parse(data as string);
                         if (file.error) { ctx.reject(file.error.toString()); return; }
                         if (!file.result.dataBlocks.length) { ctx.reject(`The CIF data does not contain a data block.`); return; }
                         ctx.update('Creating representation...');

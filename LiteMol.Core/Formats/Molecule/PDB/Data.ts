@@ -31,7 +31,7 @@ namespace LiteMol.Core.Formats.Molecule.PDB {
                 `3 water nat water 0.0 0 ? ? ? ?`
             ].join('\n');
             
-            return CIF.parse(data).result.dataBlocks[0].getCategory('_entity');
+            return CIF.Text.parse(data).result.dataBlocks[0].getCategory('_entity') as CIF.Text.Category;
         }
         
         toCifFile(): CIF.File {
@@ -43,17 +43,17 @@ namespace LiteMol.Core.Formats.Molecule.PDB {
                 data: this.data
             };
 
-            let file = new CIF.File(this.data);
+            let file = new CIF.Text.File(this.data);
 
-            let block = new CIF.Block(file, this.header.id);
+            let block = new CIF.Text.DataBlock(this.data, this.header.id);
             file.dataBlocks.push(block);
                         
             block.addCategory(this.makeEntities());
 
             if (this.crystInfo) {
                 let { cell, symm } = this.crystInfo.toCifCategory(this.header.id);
-                block.addCategory(cell);
-                block.addCategory(symm);
+                block.addCategory(cell as CIF.Text.Category);
+                block.addCategory(symm as CIF.Text.Category);
             }
 
             block.addCategory(this.models.toCifCategory(block, helpers));
@@ -110,7 +110,7 @@ namespace LiteMol.Core.Formats.Molecule.PDB {
                 `_symmetry.space_group_name_Hall            ?`
             ].join('\n');
 
-            let cif = CIF.parse(data).result.dataBlocks[0];
+            let cif = CIF.Text.parse(data).result.dataBlocks[0];
 
             return {
                 cell: cif.getCategory('_cell'),
@@ -337,7 +337,7 @@ namespace LiteMol.Core.Formats.Molecule.PDB {
     }
 
     export class ModelsData {
-        toCifCategory(block: CIF.Block, helpers: HelperData): CIF.Category {
+        toCifCategory(block: CIF.Text.DataBlock, helpers: HelperData): CIF.Text.Category {
 
             let atomCount = 0;
             for (let m of this.models) {
@@ -351,7 +351,7 @@ namespace LiteMol.Core.Formats.Molecule.PDB {
                 m.writeCifTokens(m.idToken, tokens, helpers);
             }
 
-            return new CIF.Category(block.data, "_atom_site", 0, 0, ModelData.COLUMNS, tokens.array, atomCount * 26); 
+            return new CIF.Text.Category(block.data, "_atom_site", 0, 0, ModelData.COLUMNS, tokens.array, atomCount * 26); 
         }
 
         constructor(public models: ModelData[]) {

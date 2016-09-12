@@ -5199,7 +5199,7 @@ var LiteMol;
 (function (LiteMol) {
     var Bootstrap;
     (function (Bootstrap) {
-        Bootstrap.VERSION = { number: "1.1.2", date: "Sep 7 2016" };
+        Bootstrap.VERSION = { number: "1.1.3", date: "Sep 12 2016" };
     })(Bootstrap = LiteMol.Bootstrap || (LiteMol.Bootstrap = {}));
 })(LiteMol || (LiteMol = {}));
 /*
@@ -8881,7 +8881,7 @@ var LiteMol;
                         return Bootstrap.Task.create("CIF Parse (" + a.props.label + ")", 'Normal', function (ctx) {
                             ctx.update('Parsing...');
                             ctx.schedule(function () {
-                                var d = LiteMol.Core.Formats.CIF.parse(a.props.data);
+                                var d = LiteMol.Core.Formats.CIF.Text.parse(a.props.data);
                                 if (d.error) {
                                     ctx.reject(d.error.toString());
                                     return;
@@ -9052,7 +9052,7 @@ var LiteMol;
                             defaultParams: function () { return ({}); }
                         }, function (ctx, a, t) {
                             return Bootstrap.Task.create('Load', 'Silent', function (ctx) {
-                                var cif = LiteMol.Core.Formats.CIF.parse(t.params.data).result;
+                                var cif = LiteMol.Core.Formats.CIF.Text.parse(t.params.data).result;
                                 var model = LiteMol.Core.Formats.Molecule.mmCIF.ofDataBlock(cif.dataBlocks[0]).models[0];
                                 if (t.params.transform)
                                     LiteMol.Core.Structure.Operator.applyToModelUnsafe(t.params.transform, model);

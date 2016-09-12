@@ -8080,7 +8080,7 @@ var LiteMol;
 (function (LiteMol) {
     var Core;
     (function (Core) {
-        Core.VERSION = { number: "2.3.1", date: "Aug 31 2016" };
+        Core.VERSION = { number: "2.4.0", date: "Sep 12 2016" };
     })(Core = LiteMol.Core || (LiteMol.Core = {}));
 })(LiteMol || (LiteMol = {}));
 /*
@@ -8991,6 +8991,107 @@ var LiteMol;
 /*
  * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
+var LiteMol;
+(function (LiteMol) {
+    var Core;
+    (function (Core) {
+        var Formats;
+        (function (Formats) {
+            var CIF;
+            (function (CIF) {
+                "use strict";
+                /**
+                 * Represents a column that is not present.
+                 */
+                var _UndefinedColumn = (function () {
+                    function _UndefinedColumn() {
+                        this.isDefined = false;
+                    }
+                    _UndefinedColumn.prototype.getString = function (row) { return null; };
+                    ;
+                    _UndefinedColumn.prototype.getInteger = function (row) { return 0; };
+                    _UndefinedColumn.prototype.getFloat = function (row) { return 0.0; };
+                    _UndefinedColumn.prototype.isValueUndefined = function (row) { return true; };
+                    _UndefinedColumn.prototype.areValuesEqual = function (rowA, rowB) { return true; };
+                    _UndefinedColumn.prototype.stringEquals = function (row, value) { return value === null; };
+                    return _UndefinedColumn;
+                }());
+                CIF.UndefinedColumn = new _UndefinedColumn();
+                /**
+                 * Helper functions for categoies.
+                 */
+                var Category;
+                (function (Category) {
+                    /**
+                     * Extracts a matrix from a category from a specified rowIndex.
+                     *
+                     * _category.matrix[1][1] v11
+                     * ....
+                     * ....
+                     * _category.matrix[rows][cols] vRowsCols
+                     */
+                    function getMatrix(category, field, rows, cols, rowIndex) {
+                        var ret = [];
+                        for (var i = 1; i <= rows; i++) {
+                            var row = [];
+                            for (var j = 1; j <= cols; j++) {
+                                row[j - 1] = category.getColumn(field + "[" + i + "][" + j + "]").getFloat(rowIndex);
+                            }
+                            ret[i - 1] = row;
+                        }
+                        return ret;
+                    }
+                    Category.getMatrix = getMatrix;
+                    /**
+                     * Extracts a vector from a category from a specified rowIndex.
+                     *
+                     * _category.matrix[1][1] v11
+                     * ....
+                     * ....
+                     * _category.matrix[rows][cols] vRowsCols
+                     */
+                    function getVector(category, field, rows, cols, rowIndex) {
+                        var ret = [];
+                        for (var i = 1; i <= rows; i++) {
+                            ret[i - 1] = category.getColumn(field + "[" + i + "]").getFloat(rowIndex);
+                        }
+                        return ret;
+                    }
+                    Category.getVector = getVector;
+                    /**
+                     * Extracts a 3D transform given by a 3x3 matrix and a translation vector from a category from a specified row.
+                     * The transform is represented a column major matrix stored as 1D array.
+                     *
+                     * _category.matrix[1][1] m11
+                     * ....
+                     * ....
+                     * _category.matrix[3][3] m33
+                     * _category.translation[1] t1
+                     * _category.translation[1][1] m11
+                     *
+                     * @example
+                     * Category.getTransform(_atom_sites, 'fract_transf_matrix', 'fract_transf_vector', 0)
+                     */
+                    function getTransform(category, matrixField, translationField, row) {
+                        var ret = Core.Geometry.LinearAlgebra.Matrix4.identity(), i, j, c;
+                        for (i = 1; i <= 3; i++) {
+                            for (j = 1; j <= 3; j++) {
+                                c = matrixField + "[" + i + "][" + j + "]";
+                                Core.Geometry.LinearAlgebra.Matrix4.setValue(ret, i - 1, j - 1, category.getColumn(matrixField + "[" + i + "][" + j + "]").getFloat(row));
+                            }
+                            Core.Geometry.LinearAlgebra.Matrix4.setValue(ret, i - 1, 3, category.getColumn(translationField + "[" + i + "]").getFloat(row));
+                        }
+                        return ret;
+                    }
+                    Category.getTransform = getTransform;
+                })(Category = CIF.Category || (CIF.Category = {}));
+            })(CIF = Formats.CIF || (Formats.CIF = {}));
+        })(Formats = Core.Formats || (Core.Formats = {}));
+    })(Core = LiteMol.Core || (LiteMol.Core = {}));
+})(LiteMol || (LiteMol = {}));
+/*
+ * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ */
 /*
     On data representation of molecular files
 
@@ -9036,576 +9137,211 @@ var LiteMol;
         (function (Formats) {
             var CIF;
             (function (CIF) {
-                "use strict";
-                var ShortStringPool = Formats.ShortStringPool;
-                /**
-                 * Represents the input file.
-                 */
-                var File = (function () {
-                    function File(data) {
-                        this.data = data;
-                        this.dataBlocks = [];
-                    }
+                var Text;
+                (function (Text) {
+                    "use strict";
+                    var ShortStringPool = Formats.ShortStringPool;
                     /**
-                     * Adds a block.
+                     * Represents the input file.
                      */
-                    File.prototype.addBlock = function (block) {
-                        this.dataBlocks[this.dataBlocks.length] = block;
-                    };
-                    File.prototype.toJSON = function () {
-                        return this.dataBlocks.map(function (b) { return b.toJSON(); });
-                    };
-                    return File;
-                }());
-                CIF.File = File;
-                /**
-                 * Represents a single data block.
-                 */
-                var Block = (function () {
-                    function Block(file, header) {
-                        this.file = file;
-                        this.header = header;
-                        this.data = file.data;
-                        this.categoryList = [];
-                        this.additionalData = {};
-                        this.categoryMap = {};
-                    }
-                    Object.defineProperty(Block.prototype, "categories", {
-                        /**
-                         * Categories of the block.
-                         * block.categories._atom_site / ['_atom_site']
-                         */
-                        get: function () {
-                            return this.categoryMap;
-                        },
-                        enumerable: true,
-                        configurable: true
-                    });
-                    /**
-                     * Adds a category.
-                     */
-                    Block.prototype.addCategory = function (category) {
-                        this.categoryList[this.categoryList.length] = category;
-                        this.categoryMap[category.name] = category;
-                    };
-                    /**
-                     * Gets a category by its name.
-                     */
-                    Block.prototype.getCategory = function (name) {
-                        return this.categoryMap[name];
-                    };
-                    /**
-                     * Determines if a given category is present.
-                     */
-                    Block.prototype.hasCategory = function (name) {
-                        return this.categoryMap[name] !== void 0;
-                    };
-                    Block.prototype.toJSON = function () {
-                        return {
-                            id: this.header,
-                            categories: this.categoryList.map(function (c) { return c.toJSON(); }),
-                            additionalData: this.additionalData
+                    var File = (function () {
+                        function File(data) {
+                            /**
+                             * Data blocks inside the file. If no data block is present, a "default" one is created.
+                             */
+                            this.dataBlocks = [];
+                            this.data = data;
+                        }
+                        File.prototype.toJSON = function () {
+                            return this.dataBlocks.map(function (b) { return b.toJSON(); });
                         };
-                    };
-                    return Block;
-                }());
-                CIF.Block = Block;
-                /**
-                 * A context for easy (but slower) querying of category data.
-                 */
-                var CategoryQueryRowContext = (function () {
-                    function CategoryQueryRowContext(category, rowNumber) {
-                        this.category = category;
-                        this.rowNumber = rowNumber;
-                    }
+                        return File;
+                    }());
+                    Text.File = File;
                     /**
-                     * Get a string value of the row.
+                     * Represents a single data block.
                      */
-                    CategoryQueryRowContext.prototype.getString = function (column) {
-                        return this.category.getStringValue(column, this.rowNumber);
-                    };
-                    /**
-                     * Get an integer value of the row.
-                     */
-                    CategoryQueryRowContext.prototype.getInt = function (column) {
-                        return this.category.getIntValue(column, this.rowNumber);
-                    };
-                    /**
-                     * Get a float value of the row.
-                     */
-                    CategoryQueryRowContext.prototype.getFloat = function (column) {
-                        return this.category.getFloatValue(column, this.rowNumber);
-                    };
-                    return CategoryQueryRowContext;
-                }());
-                CIF.CategoryQueryRowContext = CategoryQueryRowContext;
-                /**
-                 * Represents a single column of a CIF category.
-                 */
-                var Column = (function () {
-                    function Column(category, name, index) {
-                        this.category = category;
-                        this.name = name;
-                        this.index = index;
-                    }
-                    /**
-                     * Returns the raw string value at given row.
-                     */
-                    Column.prototype.getRaw = function (row) {
-                        return this.category.getRawValueFromIndex(this.index, row);
-                    };
-                    /**
-                     * Returns the string value at given row.
-                     */
-                    Column.prototype.getString = function (row) {
-                        return this.category.getStringValueFromIndex(this.index, row);
-                    };
-                    /**
-                     * Returns the integer value at given row.
-                     */
-                    Column.prototype.getInteger = function (row) {
-                        return this.category.getIntValueFromIndex(this.index, row);
-                    };
-                    /**
-                     * Returns the float value at given row.
-                     */
-                    Column.prototype.getFloat = function (row) {
-                        return this.category.getFloatValueFromIndex(this.index, row);
-                    };
-                    /**
-                     * Returns true if the token has the specified string value.
-                     */
-                    Column.prototype.stringEquals = function (row, value) {
-                        return this.category.valueEqual(this.index, row, value);
-                    };
-                    /**
-                     * Returns true if the value is not defined (. or ? token).
-                     */
-                    Column.prototype.isUndefined = function (row) {
-                        return this.category.isValueUndefinedFromIndex(this.index, row);
-                    };
-                    return Column;
-                }());
-                CIF.Column = Column;
-                /**
-                 * Represents a single column of a CIF category that has all values undefined.
-                 */
-                var UndefinedColumn = (function () {
-                    function UndefinedColumn() {
-                    }
-                    UndefinedColumn.prototype.getRaw = function (row) { return '.'; };
-                    ;
-                    UndefinedColumn.prototype.getString = function (row) { return null; };
-                    ;
-                    UndefinedColumn.prototype.getInteger = function (row) { return 0; };
-                    UndefinedColumn.prototype.getFloat = function (row) { return 0.0; };
-                    UndefinedColumn.prototype.stringEquals = function (row, value) { return value === null; };
-                    UndefinedColumn.prototype.isUndefined = function (row) { return true; };
-                    return UndefinedColumn;
-                }());
-                var UndefinedColumnInstance = new UndefinedColumn();
-                /**
-                 * Represents a single CIF category.
-                 */
-                var Category = (function () {
-                    function Category(data, name, startIndex, endIndex, columns, tokens, tokenCount) {
-                        this.name = name;
-                        this.columnNames = columns;
-                        this.tokens = tokens;
-                        this.data = data;
-                        this.startIndex = startIndex;
-                        this.endIndex = endIndex;
-                        this.columnCount = this.columnNames.length;
-                        this.rowCount = (tokenCount / this.columnNames.length) | 0; //((this.tokens.length / 2) / this.columns.length) | 0;
-                        this.tokenCount = tokenCount;
-                        this.columnIndices = {};
-                        this.columnWrappers = {};
-                        this._columnArray = [];
-                        this.shortColumnWrappers = {};
-                        for (var i = 0; i < this.columnNames.length; i++) {
-                            this.columnIndices[this.columnNames[i]] = i;
-                            var col = new Column(this, this.columnNames[i], i);
-                            this.columnWrappers[this.columnNames[i]] = col;
-                            this.shortColumnWrappers[this.columnNames[i].substr(name.length + 1)] = col;
-                            this._columnArray[i] = col;
+                    var DataBlock = (function () {
+                        function DataBlock(data, header) {
+                            this.header = header;
+                            this.data = data;
+                            this.categoryList = [];
+                            this.additionalData = {};
+                            this.categoryMap = {};
                         }
-                    }
-                    Object.defineProperty(Category.prototype, "columns", {
+                        Object.defineProperty(DataBlock.prototype, "categories", {
+                            /**
+                             * Categories of the block.
+                             * block.categories._atom_site / ['_atom_site']
+                             */
+                            get: function () {
+                                return this.categoryList;
+                            },
+                            enumerable: true,
+                            configurable: true
+                        });
                         /**
-                         * The column wrappers used to access the colummns.
-                         * Can be accessed for example as category.columns.id.
+                         * Gets a category by its name.
                          */
-                        get: function () {
-                            return this.shortColumnWrappers;
-                        },
-                        enumerable: true,
-                        configurable: true
-                    });
-                    Object.defineProperty(Category.prototype, "columnArray", {
+                        DataBlock.prototype.getCategory = function (name) {
+                            return this.categoryMap[name];
+                        };
                         /**
-                         * The array of column wrappers used to access the colummns.
+                         * Adds a category.
                          */
-                        get: function () {
-                            return this._columnArray;
-                        },
-                        enumerable: true,
-                        configurable: true
-                    });
+                        DataBlock.prototype.addCategory = function (category) {
+                            this.categoryList[this.categoryList.length] = category;
+                            this.categoryMap[category.name] = category;
+                        };
+                        DataBlock.prototype.toJSON = function () {
+                            return {
+                                id: this.header,
+                                categories: this.categoryList.map(function (c) { return c.toJSON(); }),
+                                additionalData: this.additionalData
+                            };
+                        };
+                        return DataBlock;
+                    }());
+                    Text.DataBlock = DataBlock;
                     /**
-                     * Compute the token index.
+                     * Represents a single CIF category.
                      */
-                    Category.prototype.getTokenIndex = function (row, columnIndex) {
-                        return row * this.columnCount + columnIndex;
-                    };
+                    var Category = (function () {
+                        function Category(data, name, startIndex, endIndex, columns, tokens, tokenCount) {
+                            this.name = name;
+                            this.tokens = tokens;
+                            this.data = data;
+                            this.startIndex = startIndex;
+                            this.endIndex = endIndex;
+                            this.columnCount = columns.length;
+                            this.rowCount = (tokenCount / columns.length) | 0;
+                            this.columnWrappers = {};
+                            this.columnList = [];
+                            for (var i = 0; i < columns.length; i++) {
+                                var colName = columns[i].substr(name.length + 1);
+                                var col = new Column(this, data, colName, i);
+                                this.columnWrappers[colName] = col;
+                                this.columnList.push(col);
+                            }
+                        }
+                        Object.defineProperty(Category.prototype, "columns", {
+                            /**
+                             * The array of columns.
+                             */
+                            get: function () {
+                                return this.columnList;
+                            },
+                            enumerable: true,
+                            configurable: true
+                        });
+                        /**
+                         * Compute the token index.
+                         */
+                        Category.prototype.getTokenIndex = function (row, columnIndex) {
+                            return row * this.columnCount + columnIndex;
+                        };
+                        /**
+                         * Get a column object that makes accessing data easier.
+                         * @returns undefined if the column isn't present, the Column object otherwise.
+                         */
+                        Category.prototype.getColumn = function (name) {
+                            return this.columnWrappers[name] || CIF.UndefinedColumn;
+                        };
+                        Category.prototype.toJSON = function () {
+                            var rows = [], data = this.data, tokens = this.tokens;
+                            var colNames = this.columns.map(function (c) { return c.name; });
+                            for (var i = 0; i < this.rowCount; i++) {
+                                var item = {};
+                                for (var j = 0; j < this.columnCount; j++) {
+                                    var tk = (i * this.columnCount + j) * 2;
+                                    item[colNames[j]] = ShortStringPool.getString(data.substring(tokens[tk], tokens[tk + 1]));
+                                }
+                                rows[i] = item;
+                            }
+                            return { name: this.name, columns: colNames, rows: rows };
+                        };
+                        return Category;
+                    }());
+                    Text.Category = Category;
                     /**
-                     * Get index of a columns.
-                     * @returns -1 if the column isn't present, the index otherwise.
+                     * Represents a single column of a CIF category.
                      */
-                    Category.prototype.getColumnIndex = function (name) {
-                        var idx = this.columnIndices[name];
-                        if (idx !== undefined)
-                            return idx;
-                        return -1;
-                    };
-                    /**
-                     * Get a column object that makes accessing data easier.
-                     * @returns undefined if the column isn't present, the Column object otherwise.
-                     */
-                    Category.prototype.getColumn = function (name) {
-                        return this.columnWrappers[name] || UndefinedColumnInstance;
-                    };
-                    /**
-                     * Updates the range of the token given by the column and row.
-                     */
-                    Category.prototype.updateTokenRange = function (columnIndex, row, token) {
-                        var offset = 2 * (row * this.columnCount + columnIndex);
-                        token.start = this.tokens[offset];
-                        token.end = this.tokens[offset + 1];
-                    };
-                    /**
-                     * Updates the range of the token given by its index.
-                     */
-                    Category.prototype.updateTokenIndexRange = function (tokenIndex, token) {
-                        token.start = this.tokens[2 * tokenIndex];
-                        token.end = this.tokens[2 * tokenIndex + 1];
-                    };
-                    /**
-                     * Determines if the token at the given index is . or ?.
-                     */
-                    Category.prototype.isTokenUndefined = function (index) {
-                        var s = this.tokens[2 * index];
-                        if (this.tokens[2 * index + 1] - s !== 1)
-                            return;
-                        var v = this.data.charCodeAt(s);
-                        return v === 46 /* . */ || v === 63 /* ? */;
-                    };
-                    /**
-                     * Determines if the token at the given range is . or ?.
-                     */
-                    Category.prototype.isTokenRangeUndefined = function (start, end) {
-                        if (end - start !== 1)
-                            return;
-                        var v = this.data.charCodeAt(start);
-                        return v === 46 /* . */ || v === 63 /* ? */;
-                    };
-                    /**
-                     * Determines if a column value is defined (has to be present and not . nor ?).
-                     */
-                    Category.prototype.isValueUndefined = function (column, row) {
-                        if (row === void 0) { row = 0; }
-                        row = row | 0;
-                        var c = this.getColumnIndex(column);
-                        if (c < 0)
-                            return true;
-                        return this.isTokenUndefined(row * this.columnCount + c);
-                    };
-                    /**
-                     * Determines if a column value is defined (has to be present and not . nor ?).
-                     */
-                    Category.prototype.isValueUndefinedFromIndex = function (columnIndex, row) {
-                        row = row | 0;
-                        if (columnIndex < 0)
-                            return true;
-                        return this.isTokenUndefined(row * this.columnCount + columnIndex);
-                    };
-                    /**
-                     * Returns the length of the given token;
-                     */
-                    Category.prototype.getTokenLengthFromIndex = function (columnIndex, row) {
-                        if (columnIndex < 0)
-                            return 0;
-                        var i = (row * this.columnCount + columnIndex) * 2;
-                        return this.tokens[i + 1] - this.tokens[i];
-                    };
-                    /**
-                     * Get a string value from a token at a given index.
-                     */
-                    Category.prototype.getStringValueFromToken = function (index) {
-                        var s = this.tokens[2 * index], e = this.tokens[2 * index + 1];
-                        if (e - s === 1) {
-                            var v = this.data.charCodeAt(s);
-                            if (v === 46 /* . */ || v === 63 /* ? */)
+                    var Column = (function () {
+                        function Column(category, data, name, index) {
+                            this.data = data;
+                            this.name = name;
+                            this.index = index;
+                            this.isDefined = true;
+                            this.tokens = category.tokens;
+                            this.columnCount = category.columnCount;
+                        }
+                        /**
+                         * Returns the string value at given row.
+                         */
+                        Column.prototype.getString = function (row) {
+                            var i = (row * this.columnCount + this.index) * 2;
+                            var ret = ShortStringPool.getString(this.data.substring(this.tokens[i], this.tokens[i + 1]));
+                            if (ret === "." || ret === "?")
                                 return null;
-                        }
-                        var ret = ShortStringPool.getString(this.data.substring(s, e));
-                        return ret;
-                    };
-                    /**
-                     * Returns the string value of the column.
-                     * @returns null if not present or ./?.
-                     */
-                    Category.prototype.getStringValue = function (column, row) {
-                        if (row === void 0) { row = 0; }
-                        row = row | 0;
-                        var col = this.getColumnIndex(column);
-                        if (col < 0)
-                            return null;
-                        return this.getStringValueFromToken(row * this.columnCount + col);
-                    };
-                    /**
-                     * Returns the string value of the column.
-                     * @returns Default if not present or ./?.
-                     */
-                    Category.prototype.getStringValueOrDefault = function (column, defaultValue, row) {
-                        if (defaultValue === void 0) { defaultValue = ""; }
-                        if (row === void 0) { row = 0; }
-                        var ret = this.getStringValue(column, row);
-                        if (!ret)
-                            return defaultValue;
-                        return ret;
-                    };
-                    /**
-                     * Returns the float value of the column.
-                     * @returns NaN if not present or ./?.
-                     */
-                    Category.prototype.getFloatValue = function (column, row) {
-                        if (row === void 0) { row = 0; }
-                        row = row | 0;
-                        var col = this.getColumnIndex(column);
-                        if (col < 0)
-                            return NaN;
-                        var i = (row * this.columnCount + col) * 2, s = this.tokens[i], e = this.tokens[i + 1];
-                        if (e - s === 1) {
+                            return ret;
+                        };
+                        /**
+                         * Returns the integer value at given row.
+                         */
+                        Column.prototype.getInteger = function (row) {
+                            var i = (row * this.columnCount + this.index) * 2;
+                            return Core.Utils.FastNumberParsers.parseInt(this.data, this.tokens[i], this.tokens[i + 1]);
+                        };
+                        /**
+                         * Returns the float value at given row.
+                         */
+                        Column.prototype.getFloat = function (row) {
+                            var i = (row * this.columnCount + this.index) * 2;
+                            return Core.Utils.FastNumberParsers.parseFloat(this.data, this.tokens[i], this.tokens[i + 1]);
+                        };
+                        /**
+                         * Returns true if the token has the specified string value.
+                         */
+                        Column.prototype.stringEquals = function (row, value) {
+                            var aIndex = (row * this.columnCount + this.index) * 2, s = this.tokens[aIndex], len = value.length;
+                            if (len !== this.tokens[aIndex + 1] - s)
+                                return false;
+                            for (var i = 0; i < len; i++) {
+                                if (this.data.charCodeAt(i + s) !== value.charCodeAt(i))
+                                    return false;
+                            }
+                            return true;
+                        };
+                        /**
+                         * Determines if values at the given rows are equal.
+                         */
+                        Column.prototype.areValuesEqual = function (rowA, rowB) {
+                            var aIndex = (rowA * this.columnCount + this.index) * 2, bIndex = (rowB * this.columnCount + this.index) * 2;
+                            var aS = this.tokens[aIndex], bS = this.tokens[bIndex], len = this.tokens[aIndex + 1] - aS;
+                            if (len !== this.tokens[bIndex + 1] - bS)
+                                return false;
+                            for (var i = 0; i < len; i++) {
+                                if (this.data.charCodeAt(i + aS) !== this.data.charCodeAt(i + bS)) {
+                                    return false;
+                                }
+                            }
+                            return true;
+                        };
+                        /**
+                         * Returns true if the value is not defined (. or ? token).
+                         */
+                        Column.prototype.isValueUndefined = function (row) {
+                            var index = row * this.columnCount + this.index;
+                            var s = this.tokens[2 * index];
+                            if (this.tokens[2 * index + 1] - s !== 1)
+                                return false;
                             var v = this.data.charCodeAt(s);
-                            if (v === 46 /* . */ || v === 63 /* ? */)
-                                return NaN;
-                        }
-                        return Core.Utils.FastNumberParsers.parseFloat(this.data, this.tokens[i], this.tokens[i + 1]);
-                    };
-                    /**
-                     * Returns the float value of the column.
-                     * @returns Default if not present or ./?.
-                     */
-                    Category.prototype.getFloatValueOrDefault = function (column, defaultValue, row) {
-                        if (defaultValue === void 0) { defaultValue = 0; }
-                        if (row === void 0) { row = 0; }
-                        var ret = this.getFloatValue(column, row);
-                        if (isNaN(ret))
-                            return defaultValue;
-                        return ret;
-                    };
-                    /**
-                     * Returns the integer value of the column.
-                     * @returns NaN if not present or ./?.
-                     */
-                    Category.prototype.getIntValue = function (column, row) {
-                        if (row === void 0) { row = 0; }
-                        row = row | 0;
-                        var col = this.getColumnIndex(column);
-                        if (col < 0)
-                            return NaN;
-                        var i = (row * this.columnCount + col) * 2, s = this.tokens[i], e = this.tokens[i + 1];
-                        if (e - s === 1) {
-                            var v = this.data.charCodeAt(s);
-                            if (v === 46 /* . */ || v === 63 /* ? */)
-                                return NaN;
-                        }
-                        return Core.Utils.FastNumberParsers.parseInt(this.data, this.tokens[i], this.tokens[i + 1]);
-                    };
-                    /**
-                      * Returns the float value of the column.
-                      * @returns Default if not present or ./?.
-                      */
-                    Category.prototype.getIntValueOrDefault = function (column, defaultValue, row) {
-                        if (defaultValue === void 0) { defaultValue = 0; }
-                        if (row === void 0) { row = 0; }
-                        var ret = this.getIntValue(column, row);
-                        if (isNaN(ret))
-                            return defaultValue;
-                        return ret;
-                    };
-                    /**
-                     * Returns the raw value of the column (does not do null check for ./?).
-                     */
-                    Category.prototype.getRawValueFromIndex = function (columnIndex, row) {
-                        if (columnIndex < 0)
-                            return null;
-                        var i = (row * this.columnCount + columnIndex) * 2;
-                        return ShortStringPool.getString(this.data.substring(this.tokens[i], this.tokens[i + 1]));
-                    };
-                    /**
-                     * Returns the string value of the column.
-                     */
-                    Category.prototype.getStringValueFromIndex = function (columnIndex, row) {
-                        if (columnIndex < 0)
-                            return null;
-                        var i = (row * this.columnCount + columnIndex) * 2;
-                        var ret = ShortStringPool.getString(this.data.substring(this.tokens[i], this.tokens[i + 1]));
-                        if (ret === "." || ret === "?")
-                            return null;
-                        return ret;
-                    };
-                    /**
-                     * Returns the integer value of the column.
-                     */
-                    Category.prototype.getIntValueFromIndex = function (columnIndex, row) {
-                        if (columnIndex < 0)
-                            return NaN;
-                        var i = (row * this.columnCount + columnIndex) * 2;
-                        return Core.Utils.FastNumberParsers.parseInt(this.data, this.tokens[i], this.tokens[i + 1]);
-                    };
-                    /**
-                     * Returns the integer value of the column.
-                     */
-                    Category.prototype.getFloatValueFromIndex = function (columnIndex, row) {
-                        if (columnIndex < 0)
-                            return NaN;
-                        var i = (row * this.columnCount + columnIndex) * 2;
-                        return Core.Utils.FastNumberParsers.parseFloat(this.data, this.tokens[i], this.tokens[i + 1]);
-                    };
-                    /**
-                     * Returns a matrix constructed from a given field: category.field[1..rows][1..cols]
-                     */
-                    Category.prototype.getMatrix = function (field, rows, cols, rowIndex) {
-                        var ret = [], row;
-                        for (var i = 1; i <= rows; i++) {
-                            row = [];
-                            for (var j = 1; j <= cols; j++) {
-                                var c = field + "[" + i + "][" + j + "]";
-                                if (this.isValueUndefined(c, rowIndex))
-                                    return undefined;
-                                row[j - 1] = this.getFloatValue(c, rowIndex);
-                            }
-                            ret[i - 1] = row;
-                        }
-                        return ret;
-                    };
-                    /**
-                     * Returns a vector constructed from a given field: category.field[1..rows]
-                     */
-                    Category.prototype.getVector = function (field, rows, cols, rowIndex) {
-                        var ret = [];
-                        for (var i = 1; i <= rows; i++) {
-                            var c = field + "[" + i + "]";
-                            if (this.isValueUndefined(c, rowIndex))
-                                return undefined;
-                            ret[i - 1] = this.getFloatValue(c, rowIndex);
-                        }
-                        return ret;
-                    };
-                    Category.prototype.getTransform = function (row, matrix, vector) {
-                        var ret = Core.Geometry.LinearAlgebra.Matrix4.identity(), i, j, c;
-                        for (i = 1; i <= 3; i++) {
-                            for (j = 1; j <= 3; j++) {
-                                c = matrix + "[" + i + "][" + j + "]";
-                                if (this.isValueUndefined(c, row))
-                                    return undefined;
-                                Core.Geometry.LinearAlgebra.Matrix4.setValue(ret, i - 1, j - 1, this.getFloatValue(c, row));
-                            }
-                            c = vector + "[" + i + "]";
-                            Core.Geometry.LinearAlgebra.Matrix4.setValue(ret, i - 1, 3, this.getFloatValue(c, row));
-                        }
-                        return ret;
-                    };
-                    /**
-                     * Determines if two tokens have the same string value.
-                     */
-                    Category.prototype.areTokensEqual = function (aIndex, bIndex) {
-                        var aS = this.tokens[aIndex * 2], bS = this.tokens[bIndex * 2], len = this.tokens[aIndex * 2 + 1] - aS;
-                        if (len !== this.tokens[bIndex * 2 + 1] - bS)
-                            return false;
-                        for (var i = 0; i < len; i++) {
-                            if (this.data.charCodeAt(i + aS) !== this.data.charCodeAt(i + bS))
-                                return false;
-                        }
-                        return true;
-                    };
-                    /**
-                     * Determines if a token contains a given string.
-                     */
-                    Category.prototype.tokenEqual = function (aIndex, value) {
-                        var s = this.tokens[aIndex * 2], len = value.length;
-                        if (len !== this.tokens[aIndex * 2 + 1] - s)
-                            return false;
-                        for (var i = 0; i < len; i++) {
-                            if (this.data.charCodeAt(i + s) !== value.charCodeAt(i))
-                                return false;
-                        }
-                        return true;
-                    };
-                    /**
-                     * Determines if a value contains a given string.
-                     */
-                    Category.prototype.valueEqual = function (columnIndex, row, value) {
-                        var aIndex = (row * this.columnCount + columnIndex) * 2, s = this.tokens[aIndex], len = value.length;
-                        if (len !== this.tokens[aIndex + 1] - s)
-                            return false;
-                        for (var i = 0; i < len; i++) {
-                            if (this.data.charCodeAt(i + s) !== value.charCodeAt(i))
-                                return false;
-                        }
-                        return true;
-                    };
-                    /**
-                     * Maps the rows to an user defined representation.
-                     *
-                     * @example
-                     *   // returns an array objects with id and type properties.
-                     *   category.select(row => { id: row.getInt("_entity.id"), type: row.getString("_entity.type") })
-                     */
-                    Category.prototype.select = function (selector) {
-                        var ret = [];
-                        for (var i = 0; i < this.rowCount; i++) {
-                            ret[i] = selector(new CategoryQueryRowContext(this, i));
-                        }
-                        return ret;
-                    };
-                    /**
-                     * Maps the rows that satisfy a condition to an user defined representation.
-                     *
-                     * @example
-                     *   // returns entity ids of entities with weight > 1000.
-                     *   category.selectWhere(
-                     *     row => row.getFloat("_entity.weight") > 1000,
-                     *     row => row.getInt("_entity.id"))
-                     */
-                    Category.prototype.selectWhere = function (condition, selector) {
-                        var ret = [];
-                        for (var i = 0; i < this.rowCount; i++) {
-                            var ctx = new CategoryQueryRowContext(this, i);
-                            if (condition(ctx)) {
-                                ret[ret.length] = selector(ctx);
-                            }
-                        }
-                        return ret;
-                    };
-                    Category.prototype.toJSON = function () {
-                        var _this = this;
-                        var rows = [], data = this.data, tokens = this.tokens;
-                        var colNames = this.columnNames.map(function (c) { return c.substr(_this.name.length + 1); });
-                        for (var i = 0; i < this.rowCount; i++) {
-                            var item = {};
-                            for (var j = 0; j < this.columnCount; j++) {
-                                var tk = (i * this.columnCount + j) * 2;
-                                item[colNames[j]] = ShortStringPool.getString(data.substring(tokens[tk], tokens[tk + 1]));
-                            }
-                            rows[i] = item;
-                        }
-                        return { name: this.name, columns: colNames, rows: rows };
-                    };
-                    return Category;
-                }());
-                CIF.Category = Category;
+                            return v === 46 /* . */ || v === 63 /* ? */;
+                        };
+                        return Column;
+                    }());
+                    Text.Column = Column;
+                })(Text = CIF.Text || (CIF.Text = {}));
             })(CIF = Formats.CIF || (Formats.CIF = {}));
         })(Formats = Core.Formats || (Core.Formats = {}));
     })(Core = LiteMol.Core || (LiteMol.Core = {}));
@@ -9621,506 +9357,509 @@ var LiteMol;
         (function (Formats) {
             var CIF;
             (function (CIF) {
-                "use strict";
-                /**
-                 * Cif tokenizer .. d'oh.
-                 */
-                var CifTokenizer = (function () {
-                    function CifTokenizer(data) {
-                        this.data = data;
-                        this.length = data.length;
-                        this.position = 0;
-                        this.currentTokenStart = 0;
-                        this.currentTokenEnd = 0;
-                        this.currentTokenType = 6 /* End */;
-                        this.currentLineNumber = 1;
-                        this.isEscaped = false;
-                    }
+                var Text;
+                (function (Text) {
+                    "use strict";
                     /**
-                     * Eat everything until a whitespace/newline occurs.
+                     * Cif tokenizer .. d'oh.
                      */
-                    CifTokenizer.prototype.eatValue = function () {
-                        while (this.position < this.length) {
-                            switch (this.data.charCodeAt(this.position)) {
-                                case 9: // \t
-                                case 10: // \n
-                                case 13: // \r
-                                case 32:
-                                    this.currentTokenEnd = this.position;
-                                    return;
-                                default:
-                                    ++this.position;
-                                    break;
-                            }
+                    var CifTokenizer = (function () {
+                        function CifTokenizer(data) {
+                            this.data = data;
+                            this.length = data.length;
+                            this.position = 0;
+                            this.currentTokenStart = 0;
+                            this.currentTokenEnd = 0;
+                            this.currentTokenType = 6 /* End */;
+                            this.currentLineNumber = 1;
+                            this.isEscaped = false;
                         }
-                        this.currentTokenEnd = this.position;
-                    };
-                    /**
-                     * Eats an escaped values. Handles the "degenerate" cases as well.
-                     *
-                     * "Degenerate" cases:
-                     * - 'xx'x' => xx'x
-                     * - 'xxxNEWLINE => 'xxx
-                     *
-                     */
-                    CifTokenizer.prototype.eatEscaped = function (esc) {
-                        var next, c;
-                        ++this.position;
-                        while (this.position < this.length) {
-                            c = this.data.charCodeAt(this.position);
-                            if (c === esc) {
-                                next = this.data.charCodeAt(this.position + 1);
-                                switch (next) {
+                        /**
+                         * Eat everything until a whitespace/newline occurs.
+                         */
+                        CifTokenizer.prototype.eatValue = function () {
+                            while (this.position < this.length) {
+                                switch (this.data.charCodeAt(this.position)) {
                                     case 9: // \t
                                     case 10: // \n
                                     case 13: // \r
                                     case 32:
-                                        // get rid of the quotes.
-                                        this.currentTokenStart++;
                                         this.currentTokenEnd = this.position;
-                                        this.isEscaped = true;
-                                        ++this.position;
                                         return;
                                     default:
-                                        if (next === void 0) {
+                                        ++this.position;
+                                        break;
+                                }
+                            }
+                            this.currentTokenEnd = this.position;
+                        };
+                        /**
+                         * Eats an escaped values. Handles the "degenerate" cases as well.
+                         *
+                         * "Degenerate" cases:
+                         * - 'xx'x' => xx'x
+                         * - 'xxxNEWLINE => 'xxx
+                         *
+                         */
+                        CifTokenizer.prototype.eatEscaped = function (esc) {
+                            var next, c;
+                            ++this.position;
+                            while (this.position < this.length) {
+                                c = this.data.charCodeAt(this.position);
+                                if (c === esc) {
+                                    next = this.data.charCodeAt(this.position + 1);
+                                    switch (next) {
+                                        case 9: // \t
+                                        case 10: // \n
+                                        case 13: // \r
+                                        case 32:
                                             // get rid of the quotes.
                                             this.currentTokenStart++;
                                             this.currentTokenEnd = this.position;
                                             this.isEscaped = true;
                                             ++this.position;
                                             return;
-                                        }
-                                        ++this.position;
-                                        break;
+                                        default:
+                                            if (next === void 0) {
+                                                // get rid of the quotes.
+                                                this.currentTokenStart++;
+                                                this.currentTokenEnd = this.position;
+                                                this.isEscaped = true;
+                                                ++this.position;
+                                                return;
+                                            }
+                                            ++this.position;
+                                            break;
+                                    }
+                                }
+                                else {
+                                    // handle 'xxxNEWLINE => 'xxx
+                                    if (c === 10 || c === 13) {
+                                        this.currentTokenEnd = this.position;
+                                        return;
+                                    }
+                                    ++this.position;
                                 }
                             }
-                            else {
-                                // handle 'xxxNEWLINE => 'xxx
+                            this.currentTokenEnd = this.position;
+                        };
+                        /**
+                         * Eats a multiline token of the form NL;....NL;
+                         */
+                        CifTokenizer.prototype.eatMultiline = function () {
+                            var prev = 59, pos = this.position + 1, c;
+                            while (pos < this.length) {
+                                c = this.data.charCodeAt(pos);
+                                if (c === 59 && (prev === 10 || prev === 13)) {
+                                    this.position = pos + 1;
+                                    // get rid of the ;
+                                    this.currentTokenStart++;
+                                    // remove trailing newlines
+                                    pos--;
+                                    c = this.data.charCodeAt(pos);
+                                    while (c === 10 || c === 13) {
+                                        pos--;
+                                        c = this.data.charCodeAt(pos);
+                                    }
+                                    this.currentTokenEnd = pos + 1;
+                                    this.isEscaped = true;
+                                    return;
+                                }
+                                else {
+                                    // handle line numbers
+                                    if (c === 13) {
+                                        this.currentLineNumber++;
+                                    }
+                                    else if (c === 10 && prev !== 13) {
+                                        this.currentLineNumber++;
+                                    }
+                                    prev = c;
+                                    ++pos;
+                                }
+                            }
+                            this.position = pos;
+                            return prev;
+                        };
+                        /**
+                         * Skips until \n or \r occurs -- therefore the newlines get handled by the "skipWhitespace" function.
+                         */
+                        CifTokenizer.prototype.skipCommentLine = function () {
+                            while (this.position < this.length) {
+                                var c = this.data.charCodeAt(this.position);
                                 if (c === 10 || c === 13) {
-                                    this.currentTokenEnd = this.position;
                                     return;
                                 }
                                 ++this.position;
                             }
-                        }
-                        this.currentTokenEnd = this.position;
-                    };
-                    /**
-                     * Eats a multiline token of the form NL;....NL;
-                     */
-                    CifTokenizer.prototype.eatMultiline = function () {
-                        var prev = 59, pos = this.position + 1, c;
-                        while (pos < this.length) {
-                            c = this.data.charCodeAt(pos);
-                            if (c === 59 && (prev === 10 || prev === 13)) {
-                                this.position = pos + 1;
-                                // get rid of the ;
-                                this.currentTokenStart++;
-                                // remove trailing newlines
-                                pos--;
-                                c = this.data.charCodeAt(pos);
-                                while (c === 10 || c === 13) {
-                                    pos--;
-                                    c = this.data.charCodeAt(pos);
-                                }
-                                this.currentTokenEnd = pos + 1;
-                                this.isEscaped = true;
-                                return;
-                            }
-                            else {
-                                // handle line numbers
-                                if (c === 13) {
-                                    this.currentLineNumber++;
-                                }
-                                else if (c === 10 && prev !== 13) {
-                                    this.currentLineNumber++;
-                                }
-                                prev = c;
-                                ++pos;
-                            }
-                        }
-                        this.position = pos;
-                        return prev;
-                    };
-                    /**
-                     * Skips until \n or \r occurs -- therefore the newlines get handled by the "skipWhitespace" function.
-                     */
-                    CifTokenizer.prototype.skipCommentLine = function () {
-                        while (this.position < this.length) {
-                            var c = this.data.charCodeAt(this.position);
-                            if (c === 10 || c === 13) {
-                                return;
-                            }
-                            ++this.position;
-                        }
-                    };
-                    /**
-                     * Skips all the whitespace - space, tab, newline, CR
-                     * Handles incrementing line count.
-                     */
-                    CifTokenizer.prototype.skipWhitespace = function () {
-                        var prev = 10;
-                        while (this.position < this.length) {
-                            var c = this.data.charCodeAt(this.position);
-                            switch (c) {
-                                case 9: // '\t'
-                                case 32:
-                                    prev = c;
-                                    ++this.position;
-                                    break;
-                                case 10:
-                                    // handle \r\n
-                                    if (prev !== 13) {
+                        };
+                        /**
+                         * Skips all the whitespace - space, tab, newline, CR
+                         * Handles incrementing line count.
+                         */
+                        CifTokenizer.prototype.skipWhitespace = function () {
+                            var prev = 10;
+                            while (this.position < this.length) {
+                                var c = this.data.charCodeAt(this.position);
+                                switch (c) {
+                                    case 9: // '\t'
+                                    case 32:
+                                        prev = c;
+                                        ++this.position;
+                                        break;
+                                    case 10:
+                                        // handle \r\n
+                                        if (prev !== 13) {
+                                            ++this.currentLineNumber;
+                                        }
+                                        prev = c;
+                                        ++this.position;
+                                        break;
+                                    case 13:
+                                        prev = c;
+                                        ++this.position;
                                         ++this.currentLineNumber;
-                                    }
-                                    prev = c;
-                                    ++this.position;
+                                        break;
+                                    default:
+                                        return prev;
+                                }
+                            }
+                            return prev;
+                        };
+                        CifTokenizer.prototype.isData = function () {
+                            // here we already assume the 5th char is _ and that the length >= 5
+                            // d/D
+                            var c = this.data.charCodeAt(this.currentTokenStart);
+                            if (c !== 68 && c !== 100)
+                                return false;
+                            // a/A
+                            c = this.data.charCodeAt(this.currentTokenStart + 1);
+                            if (c !== 65 && c !== 97)
+                                return false;
+                            // t/t
+                            c = this.data.charCodeAt(this.currentTokenStart + 2);
+                            if (c !== 84 && c !== 116)
+                                return false;
+                            // a/A
+                            c = this.data.charCodeAt(this.currentTokenStart + 3);
+                            if (c !== 65 && c !== 97)
+                                return false;
+                            return true;
+                        };
+                        CifTokenizer.prototype.isSave = function () {
+                            // here we already assume the 5th char is _ and that the length >= 5
+                            // s/S
+                            var c = this.data.charCodeAt(this.currentTokenStart);
+                            if (c !== 83 && c !== 115)
+                                return false;
+                            // a/A
+                            c = this.data.charCodeAt(this.currentTokenStart + 1);
+                            if (c !== 65 && c !== 97)
+                                return false;
+                            // v/V
+                            c = this.data.charCodeAt(this.currentTokenStart + 2);
+                            if (c !== 86 && c !== 118)
+                                return false;
+                            // e/E
+                            c = this.data.charCodeAt(this.currentTokenStart + 3);
+                            if (c !== 69 && c !== 101)
+                                return false;
+                            return true;
+                        };
+                        CifTokenizer.prototype.isLoop = function () {
+                            // here we already assume the 5th char is _ and that the length >= 5
+                            if (this.currentTokenEnd - this.currentTokenStart !== 5)
+                                return false;
+                            // l/L
+                            var c = this.data.charCodeAt(this.currentTokenStart);
+                            if (c !== 76 && c !== 108)
+                                return false;
+                            // o/O
+                            c = this.data.charCodeAt(this.currentTokenStart + 1);
+                            if (c !== 79 && c !== 111)
+                                return false;
+                            // o/O
+                            c = this.data.charCodeAt(this.currentTokenStart + 2);
+                            if (c !== 79 && c !== 111)
+                                return false;
+                            // p/P
+                            c = this.data.charCodeAt(this.currentTokenStart + 3);
+                            if (c !== 80 && c !== 112)
+                                return false;
+                            return true;
+                        };
+                        /**
+                         * Checks if the current token shares the namespace with string at <start,end).
+                         */
+                        CifTokenizer.prototype.isNamespace = function (start, end) {
+                            var i, nsLen = end - start, offset = this.currentTokenStart - start, tokenLen = this.currentTokenEnd - this.currentTokenStart;
+                            if (tokenLen < nsLen)
+                                return false;
+                            for (i = start; i < end; ++i) {
+                                if (this.data.charCodeAt(i) !== this.data.charCodeAt(i + offset))
+                                    return false;
+                            }
+                            if (nsLen === tokenLen)
+                                return true;
+                            if (this.data.charCodeAt(i + offset) === 46) {
+                                return true;
+                            }
+                            return false;
+                        };
+                        /**
+                         * Returns the index of '.' in the current token. If no '.' is present, returns currentTokenEnd.
+                         */
+                        CifTokenizer.prototype.getNamespaceEnd = function () {
+                            var i;
+                            for (i = this.currentTokenStart; i < this.currentTokenEnd; ++i) {
+                                if (this.data.charCodeAt(i) === 46)
+                                    return i;
+                            }
+                            return i;
+                        };
+                        /**
+                         * Get the namespace string. endIndex is obtained by the getNamespaceEnd() function.
+                         */
+                        CifTokenizer.prototype.getNamespace = function (endIndex) {
+                            return this.data.substring(this.currentTokenStart, endIndex);
+                        };
+                        /**
+                         * String representation of the current token.
+                         */
+                        CifTokenizer.prototype.getTokenString = function () {
+                            return this.data.substring(this.currentTokenStart, this.currentTokenEnd);
+                        };
+                        /**
+                         * Move to the next token.
+                         */
+                        CifTokenizer.prototype.moveNextInternal = function () {
+                            var prev = this.skipWhitespace(), c;
+                            if (this.position >= this.length) {
+                                this.currentTokenType = 6 /* End */;
+                                return;
+                            }
+                            this.currentTokenStart = this.position;
+                            this.currentTokenEnd = this.position;
+                            this.isEscaped = false;
+                            c = this.data.charCodeAt(this.position);
+                            switch (c) {
+                                case 35:
+                                    this.skipCommentLine();
+                                    this.currentTokenType = 5 /* Comment */;
                                     break;
-                                case 13:
-                                    prev = c;
-                                    ++this.position;
-                                    ++this.currentLineNumber;
+                                case 34: // ", escaped value
+                                case 39:
+                                    this.eatEscaped(c);
+                                    this.currentTokenType = 3 /* Value */;
+                                    break;
+                                case 59:
+                                    // multiline value must start at the beginning of the line.
+                                    if (prev === 10 || prev === 13) {
+                                        this.eatMultiline();
+                                    }
+                                    else {
+                                        this.eatValue();
+                                    }
+                                    this.currentTokenType = 3 /* Value */;
                                     break;
                                 default:
-                                    return prev;
-                            }
-                        }
-                        return prev;
-                    };
-                    CifTokenizer.prototype.isData = function () {
-                        // here we already assume the 5th char is _ and that the length >= 5
-                        // d/D
-                        var c = this.data.charCodeAt(this.currentTokenStart);
-                        if (c !== 68 && c !== 100)
-                            return false;
-                        // a/A
-                        c = this.data.charCodeAt(this.currentTokenStart + 1);
-                        if (c !== 65 && c !== 97)
-                            return false;
-                        // t/t
-                        c = this.data.charCodeAt(this.currentTokenStart + 2);
-                        if (c !== 84 && c !== 116)
-                            return false;
-                        // a/A
-                        c = this.data.charCodeAt(this.currentTokenStart + 3);
-                        if (c !== 65 && c !== 97)
-                            return false;
-                        return true;
-                    };
-                    CifTokenizer.prototype.isSave = function () {
-                        // here we already assume the 5th char is _ and that the length >= 5
-                        // s/S
-                        var c = this.data.charCodeAt(this.currentTokenStart);
-                        if (c !== 83 && c !== 115)
-                            return false;
-                        // a/A
-                        c = this.data.charCodeAt(this.currentTokenStart + 1);
-                        if (c !== 65 && c !== 97)
-                            return false;
-                        // v/V
-                        c = this.data.charCodeAt(this.currentTokenStart + 2);
-                        if (c !== 86 && c !== 118)
-                            return false;
-                        // e/E
-                        c = this.data.charCodeAt(this.currentTokenStart + 3);
-                        if (c !== 69 && c !== 101)
-                            return false;
-                        return true;
-                    };
-                    CifTokenizer.prototype.isLoop = function () {
-                        // here we already assume the 5th char is _ and that the length >= 5
-                        if (this.currentTokenEnd - this.currentTokenStart !== 5)
-                            return false;
-                        // l/L
-                        var c = this.data.charCodeAt(this.currentTokenStart);
-                        if (c !== 76 && c !== 108)
-                            return false;
-                        // o/O
-                        c = this.data.charCodeAt(this.currentTokenStart + 1);
-                        if (c !== 79 && c !== 111)
-                            return false;
-                        // o/O
-                        c = this.data.charCodeAt(this.currentTokenStart + 2);
-                        if (c !== 79 && c !== 111)
-                            return false;
-                        // p/P
-                        c = this.data.charCodeAt(this.currentTokenStart + 3);
-                        if (c !== 80 && c !== 112)
-                            return false;
-                        return true;
-                    };
-                    /**
-                     * Checks if the current token shares the namespace with string at <start,end).
-                     */
-                    CifTokenizer.prototype.isNamespace = function (start, end) {
-                        var i, nsLen = end - start, offset = this.currentTokenStart - start, tokenLen = this.currentTokenEnd - this.currentTokenStart;
-                        if (tokenLen < nsLen)
-                            return false;
-                        for (i = start; i < end; ++i) {
-                            if (this.data.charCodeAt(i) !== this.data.charCodeAt(i + offset))
-                                return false;
-                        }
-                        if (nsLen === tokenLen)
-                            return true;
-                        if (this.data.charCodeAt(i + offset) === 46) {
-                            return true;
-                        }
-                        return false;
-                    };
-                    /**
-                     * Returns the index of '.' in the current token. If no '.' is present, returns currentTokenEnd.
-                     */
-                    CifTokenizer.prototype.getNamespaceEnd = function () {
-                        var i;
-                        for (i = this.currentTokenStart; i < this.currentTokenEnd; ++i) {
-                            if (this.data.charCodeAt(i) === 46)
-                                return i;
-                        }
-                        return i;
-                    };
-                    /**
-                     * Get the namespace string. endIndex is obtained by the getNamespaceEnd() function.
-                     */
-                    CifTokenizer.prototype.getNamespace = function (endIndex) {
-                        return this.data.substring(this.currentTokenStart, endIndex);
-                    };
-                    /**
-                     * String representation of the current token.
-                     */
-                    CifTokenizer.prototype.getTokenString = function () {
-                        return this.data.substring(this.currentTokenStart, this.currentTokenEnd);
-                    };
-                    /**
-                     * Move to the next token.
-                     */
-                    CifTokenizer.prototype.moveNextInternal = function () {
-                        var prev = this.skipWhitespace(), c;
-                        if (this.position >= this.length) {
-                            this.currentTokenType = 6 /* End */;
-                            return;
-                        }
-                        this.currentTokenStart = this.position;
-                        this.currentTokenEnd = this.position;
-                        this.isEscaped = false;
-                        c = this.data.charCodeAt(this.position);
-                        switch (c) {
-                            case 35:
-                                this.skipCommentLine();
-                                this.currentTokenType = 5 /* Comment */;
-                                break;
-                            case 34: // ", escaped value
-                            case 39:
-                                this.eatEscaped(c);
-                                this.currentTokenType = 3 /* Value */;
-                                break;
-                            case 59:
-                                // multiline value must start at the beginning of the line.
-                                if (prev === 10 || prev === 13) {
-                                    this.eatMultiline();
-                                }
-                                else {
                                     this.eatValue();
-                                }
-                                this.currentTokenType = 3 /* Value */;
-                                break;
-                            default:
-                                this.eatValue();
-                                // escaped is always Value
-                                if (this.isEscaped) {
-                                    this.currentTokenType = 3 /* Value */;
-                                }
-                                else if (this.data.charCodeAt(this.currentTokenStart) === 95) {
-                                    this.currentTokenType = 4 /* ColumnName */;
-                                }
-                                else if (this.currentTokenEnd - this.currentTokenStart >= 5 && this.data.charCodeAt(this.currentTokenStart + 4) === 95) {
-                                    if (this.isData())
-                                        this.currentTokenType = 0 /* Data */;
-                                    else if (this.isSave())
-                                        this.currentTokenType = 1 /* Save */;
-                                    else if (this.isLoop())
-                                        this.currentTokenType = 2 /* Loop */;
-                                    else
+                                    // escaped is always Value
+                                    if (this.isEscaped) {
                                         this.currentTokenType = 3 /* Value */;
-                                }
-                                else {
-                                    this.currentTokenType = 3 /* Value */;
-                                }
-                                break;
-                        }
-                    };
-                    /**
-                     * Moves to the next non-comment token.
-                     */
-                    CifTokenizer.prototype.moveNext = function () {
-                        this.moveNextInternal();
-                        while (this.currentTokenType === 5 /* Comment */)
+                                    }
+                                    else if (this.data.charCodeAt(this.currentTokenStart) === 95) {
+                                        this.currentTokenType = 4 /* ColumnName */;
+                                    }
+                                    else if (this.currentTokenEnd - this.currentTokenStart >= 5 && this.data.charCodeAt(this.currentTokenStart + 4) === 95) {
+                                        if (this.isData())
+                                            this.currentTokenType = 0 /* Data */;
+                                        else if (this.isSave())
+                                            this.currentTokenType = 1 /* Save */;
+                                        else if (this.isLoop())
+                                            this.currentTokenType = 2 /* Loop */;
+                                        else
+                                            this.currentTokenType = 3 /* Value */;
+                                    }
+                                    else {
+                                        this.currentTokenType = 3 /* Value */;
+                                    }
+                                    break;
+                            }
+                        };
+                        /**
+                         * Moves to the next non-comment token.
+                         */
+                        CifTokenizer.prototype.moveNext = function () {
                             this.moveNextInternal();
-                    };
-                    return CifTokenizer;
-                }());
-                /**
-                 * mmCIF parser.
-                 *
-                 * Trying to be as close to the specification http://www.iucr.org/resources/cif/spec/version1.1/cifsyntax
-                 *
-                 * Differences I'm aware of:
-                 * - Except keywords (data_, loop_, save_) everything is case sensitive.
-                 * - The tokens . and ? are treated the same as the values '.' and '?'.
-                 * - Ignores \ in the multiline values:
-                 *     ;abc\
-                 *     efg
-                 *     ;
-                 *   should have the value 'abcefg' but will have the value 'abc\\nefg' instead.
-                 *   Post processing of this is left to the consumer of the data.
-                 * - Similarly, things like punctuation (\', ..) are left to be processed by the user if needed.
-                 *
-                 */
-                var Parser = (function () {
-                    function Parser() {
-                    }
+                            while (this.currentTokenType === 5 /* Comment */)
+                                this.moveNextInternal();
+                        };
+                        return CifTokenizer;
+                    }());
                     /**
-                     * Reads a category containing a single row.
+                     * mmCIF parser.
+                     *
+                     * Trying to be as close to the specification http://www.iucr.org/resources/cif/spec/version1.1/cifsyntax
+                     *
+                     * Differences I'm aware of:
+                     * - Except keywords (data_, loop_, save_) everything is case sensitive.
+                     * - The tokens . and ? are treated the same as the values '.' and '?'.
+                     * - Ignores \ in the multiline values:
+                     *     ;abc\
+                     *     efg
+                     *     ;
+                     *   should have the value 'abcefg' but will have the value 'abc\\nefg' instead.
+                     *   Post processing of this is left to the consumer of the data.
+                     * - Similarly, things like punctuation (\', ..) are left to be processed by the user if needed.
+                     *
                      */
-                    Parser.handleSingle = function (tokenizer, block) {
-                        var nsStart = tokenizer.currentTokenStart, nsEnd = tokenizer.getNamespaceEnd(), name = tokenizer.getNamespace(nsEnd), column, columns = [], tokens = new Formats.TokenIndexBuilder(512), tokenCount = 0;
-                        while (tokenizer.currentTokenType === 4 /* ColumnName */ && tokenizer.isNamespace(nsStart, nsEnd)) {
-                            column = tokenizer.getTokenString();
+                    var Parser = (function () {
+                        function Parser() {
+                        }
+                        /**
+                         * Reads a category containing a single row.
+                         */
+                        Parser.handleSingle = function (tokenizer, block) {
+                            var nsStart = tokenizer.currentTokenStart, nsEnd = tokenizer.getNamespaceEnd(), name = tokenizer.getNamespace(nsEnd), column, columns = [], tokens = new Formats.TokenIndexBuilder(512), tokenCount = 0;
+                            while (tokenizer.currentTokenType === 4 /* ColumnName */ && tokenizer.isNamespace(nsStart, nsEnd)) {
+                                column = tokenizer.getTokenString();
+                                tokenizer.moveNext();
+                                if (tokenizer.currentTokenType !== 3 /* Value */) {
+                                    return {
+                                        hasError: true,
+                                        errorLine: tokenizer.currentLineNumber,
+                                        errorMessage: "Expected value."
+                                    };
+                                }
+                                columns[columns.length] = column;
+                                tokens.addToken(tokenizer.currentTokenStart, tokenizer.currentTokenEnd);
+                                tokenCount++;
+                                tokenizer.moveNext();
+                            }
+                            block.addCategory(new Text.Category(block.data, name, nsStart, tokenizer.currentTokenStart, columns, tokens.tokens, tokenCount));
+                            return {
+                                hasError: false,
+                                errorLine: 0,
+                                errorMessage: ""
+                            };
+                        };
+                        /**
+                         * Reads a loop.
+                         */
+                        Parser.handleLoop = function (tokenizer, block) {
+                            var start = tokenizer.currentTokenStart, loopLine = tokenizer.currentLineNumber;
                             tokenizer.moveNext();
-                            if (tokenizer.currentTokenType !== 3 /* Value */) {
+                            var name = tokenizer.getNamespace(tokenizer.getNamespaceEnd()), columns = [], tokens = new Formats.TokenIndexBuilder(name === "_atom_site" ? (block.data.length / 1.85) | 0 : 1024), tokenCount = 0;
+                            while (tokenizer.currentTokenType === 4 /* ColumnName */) {
+                                columns[columns.length] = tokenizer.getTokenString();
+                                tokenizer.moveNext();
+                            }
+                            while (tokenizer.currentTokenType === 3 /* Value */) {
+                                tokens.addToken(tokenizer.currentTokenStart, tokenizer.currentTokenEnd);
+                                tokenCount++;
+                                tokenizer.moveNext();
+                            }
+                            if (tokenCount % columns.length !== 0) {
                                 return {
                                     hasError: true,
                                     errorLine: tokenizer.currentLineNumber,
-                                    errorMessage: "Expected value."
+                                    errorMessage: "The number of values for loop starting at line " + loopLine + " is not a multiple of the number of columns."
                                 };
                             }
-                            columns[columns.length] = column;
-                            tokens.addToken(tokenizer.currentTokenStart, tokenizer.currentTokenEnd);
-                            tokenCount++;
-                            tokenizer.moveNext();
-                        }
-                        block.addCategory(new CIF.Category(block.data, name, nsStart, tokenizer.currentTokenStart, columns, tokens.tokens, tokenCount));
-                        return {
-                            hasError: false,
-                            errorLine: 0,
-                            errorMessage: ""
-                        };
-                    };
-                    /**
-                     * Reads a loop.
-                     */
-                    Parser.handleLoop = function (tokenizer, block) {
-                        var start = tokenizer.currentTokenStart, loopLine = tokenizer.currentLineNumber;
-                        tokenizer.moveNext();
-                        var name = tokenizer.getNamespace(tokenizer.getNamespaceEnd()), columns = [], tokens = new Formats.TokenIndexBuilder(name === "_atom_site" ? (block.data.length / 1.85) | 0 : 1024), tokenCount = 0;
-                        while (tokenizer.currentTokenType === 4 /* ColumnName */) {
-                            columns[columns.length] = tokenizer.getTokenString();
-                            tokenizer.moveNext();
-                        }
-                        while (tokenizer.currentTokenType === 3 /* Value */) {
-                            tokens.addToken(tokenizer.currentTokenStart, tokenizer.currentTokenEnd);
-                            tokenCount++;
-                            tokenizer.moveNext();
-                        }
-                        if (tokenCount % columns.length !== 0) {
+                            block.addCategory(new Text.Category(block.data, name, start, tokenizer.currentTokenStart, columns, tokens.tokens, tokenCount));
                             return {
-                                hasError: true,
-                                errorLine: tokenizer.currentLineNumber,
-                                errorMessage: "The number of values for loop starting at line " + loopLine + " is not a multiple of the number of columns."
+                                hasError: false,
+                                errorLine: 0,
+                                errorMessage: ""
                             };
-                        }
-                        block.addCategory(new CIF.Category(block.data, name, start, tokenizer.currentTokenStart, columns, tokens.tokens, tokenCount));
-                        return {
-                            hasError: false,
-                            errorLine: 0,
-                            errorMessage: ""
                         };
-                    };
-                    /**
-                     * Creates an error result.
-                     */
-                    Parser.error = function (line, message) {
-                        return Formats.ParserResult.error(message, line);
-                    };
-                    /**
-                     * Creates a data result.
-                     */
-                    Parser.result = function (data) {
-                        return Formats.ParserResult.success(data);
-                    };
-                    /**
-                     * Parses an mmCIF file.
-                     *
-                     * @returns CifParserResult wrapper of the result.
-                     */
-                    Parser.parse = function (data) {
-                        var tokenizer = new CifTokenizer(data), cat, id, file = new CIF.File(data), block = new CIF.Block(file, "default"), saveFrame = new CIF.Block(file, "empty"), inSaveFrame = false, blockSaveFrames;
-                        tokenizer.moveNext();
-                        while (tokenizer.currentTokenType !== 6 /* End */) {
-                            var token = tokenizer.currentTokenType;
-                            // Data block
-                            if (token === 0 /* Data */) {
-                                if (inSaveFrame) {
-                                    return Parser.error(tokenizer.currentLineNumber, "Unexpected data block inside a save frame.");
-                                }
-                                if (block.categoryList.length > 0) {
-                                    file.addBlock(block);
-                                }
-                                block = new CIF.Block(file, data.substring(tokenizer.currentTokenStart + 5, tokenizer.currentTokenEnd));
-                                tokenizer.moveNext();
-                            }
-                            else if (token === 1 /* Save */) {
-                                id = data.substring(tokenizer.currentTokenStart + 5, tokenizer.currentTokenEnd);
-                                if (id.length === 0) {
-                                    if (saveFrame.categoryList.length > 0) {
-                                        blockSaveFrames = block.additionalData["saveFrames"];
-                                        if (!blockSaveFrames) {
-                                            blockSaveFrames = [];
-                                            block.additionalData["saveFrames"] = blockSaveFrames;
-                                        }
-                                        blockSaveFrames[blockSaveFrames.length] = saveFrame;
+                        /**
+                         * Creates an error result.
+                         */
+                        Parser.error = function (line, message) {
+                            return Formats.ParserResult.error(message, line);
+                        };
+                        /**
+                         * Creates a data result.
+                         */
+                        Parser.result = function (data) {
+                            return Formats.ParserResult.success(data);
+                        };
+                        /**
+                         * Parses an mmCIF file.
+                         *
+                         * @returns CifParserResult wrapper of the result.
+                         */
+                        Parser.parse = function (data) {
+                            var tokenizer = new CifTokenizer(data), cat, id, file = new Text.File(data), block = new Text.DataBlock(data, "default"), saveFrame = new Text.DataBlock(data, "empty"), inSaveFrame = false, blockSaveFrames;
+                            tokenizer.moveNext();
+                            while (tokenizer.currentTokenType !== 6 /* End */) {
+                                var token = tokenizer.currentTokenType;
+                                // Data block
+                                if (token === 0 /* Data */) {
+                                    if (inSaveFrame) {
+                                        return Parser.error(tokenizer.currentLineNumber, "Unexpected data block inside a save frame.");
                                     }
-                                    inSaveFrame = false;
+                                    if (block.categories.length > 0) {
+                                        file.dataBlocks.push(block);
+                                    }
+                                    block = new Text.DataBlock(data, data.substring(tokenizer.currentTokenStart + 5, tokenizer.currentTokenEnd));
+                                    tokenizer.moveNext();
+                                }
+                                else if (token === 1 /* Save */) {
+                                    id = data.substring(tokenizer.currentTokenStart + 5, tokenizer.currentTokenEnd);
+                                    if (id.length === 0) {
+                                        if (saveFrame.categories.length > 0) {
+                                            blockSaveFrames = block.additionalData["saveFrames"];
+                                            if (!blockSaveFrames) {
+                                                blockSaveFrames = [];
+                                                block.additionalData["saveFrames"] = blockSaveFrames;
+                                            }
+                                            blockSaveFrames[blockSaveFrames.length] = saveFrame;
+                                        }
+                                        inSaveFrame = false;
+                                    }
+                                    else {
+                                        if (inSaveFrame) {
+                                            return Parser.error(tokenizer.currentLineNumber, "Save frames cannot be nested.");
+                                        }
+                                        inSaveFrame = true;
+                                        saveFrame = new Text.DataBlock(data, id);
+                                    }
+                                    tokenizer.moveNext();
+                                }
+                                else if (token === 2 /* Loop */) {
+                                    cat = Parser.handleLoop(tokenizer, inSaveFrame ? saveFrame : block);
+                                    if (cat.hasError) {
+                                        return Parser.error(cat.errorLine, cat.errorMessage);
+                                    }
+                                }
+                                else if (token === 4 /* ColumnName */) {
+                                    cat = Parser.handleSingle(tokenizer, inSaveFrame ? saveFrame : block);
+                                    if (cat.hasError) {
+                                        return Parser.error(cat.errorLine, cat.errorMessage);
+                                    }
                                 }
                                 else {
-                                    if (inSaveFrame) {
-                                        return Parser.error(tokenizer.currentLineNumber, "Save frames cannot be nested.");
-                                    }
-                                    inSaveFrame = true;
-                                    saveFrame = new CIF.Block(file, id);
-                                }
-                                tokenizer.moveNext();
-                            }
-                            else if (token === 2 /* Loop */) {
-                                cat = Parser.handleLoop(tokenizer, inSaveFrame ? saveFrame : block);
-                                if (cat.hasError) {
-                                    return Parser.error(cat.errorLine, cat.errorMessage);
+                                    return Parser.error(tokenizer.currentLineNumber, "Unexpected token. Expected data_, loop_, or data name.");
                                 }
                             }
-                            else if (token === 4 /* ColumnName */) {
-                                cat = Parser.handleSingle(tokenizer, inSaveFrame ? saveFrame : block);
-                                if (cat.hasError) {
-                                    return Parser.error(cat.errorLine, cat.errorMessage);
-                                }
+                            // Check if the latest save frame was closed.
+                            if (inSaveFrame) {
+                                return Parser.error(tokenizer.currentLineNumber, "Unfinished save frame (`" + saveFrame.header + "`).");
                             }
-                            else {
-                                return Parser.error(tokenizer.currentLineNumber, "Unexpected token. Expected data_, loop_, or data name.");
+                            if (block.categories.length > 0) {
+                                file.dataBlocks.push(block);
                             }
-                        }
-                        // Check if the latest save frame was closed.
-                        if (inSaveFrame) {
-                            return Parser.error(tokenizer.currentLineNumber, "Unfinished save frame (`" + saveFrame.header + "`).");
-                        }
-                        if (block.categoryList.length > 0) {
-                            file.addBlock(block);
-                        }
-                        return Parser.result(file);
-                    };
-                    return Parser;
-                }());
-                function parse(data) {
-                    return Parser.parse(data);
-                }
-                CIF.parse = parse;
+                            return Parser.result(file);
+                        };
+                        return Parser;
+                    }());
+                    function parse(data) {
+                        return Parser.parse(data);
+                    }
+                    Text.parse = parse;
+                })(Text = CIF.Text || (CIF.Text = {}));
             })(CIF = Formats.CIF || (Formats.CIF = {}));
         })(Formats = Core.Formats || (Core.Formats = {}));
     })(Core = LiteMol.Core || (LiteMol.Core = {}));
@@ -10610,6 +10349,236 @@ var LiteMol;
         })(Formats = Core.Formats || (Core.Formats = {}));
     })(Core = LiteMol.Core || (LiteMol.Core = {}));
 })(LiteMol || (LiteMol = {}));
+// /*
+//  * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+//  */
+// namespace LiteMol.Core.Formats.BinaryCif {
+//     "use strict";
+//     const enum BinaryCifToken {        
+//         UnknownPrefix = 0x0,         
+//         Dot           = 0x00,         
+//         Question      = 0x01,
+//         StringPrefix = 0x1,         
+//         String1      = 0x11,         
+//         String2      = 0x12,         
+//         String3      = 0x13,         
+//         String4      = 0x14,
+//         StringTablePrefix = 0x2,         
+//         StringTable1      = 0x21,         
+//         StringTable2      = 0x22,         
+//         StringTable3      = 0x23,         
+//         StringTable4      = 0x24,
+//         FloatPrefix = 0x3,         
+//         Float32     = 0x31,         
+//         Float64     = 0x32,
+//         IntPrefix = 0x4,         
+//         Int1      = 0x41,         
+//         Int2      = 0x42,         
+//         Int3      = 0x43,         
+//         Int4      = 0x44,
+//         ElementPrefix = 0x9,         
+//         Data          = 0x90,         
+//         Save          = 0x91,         
+//         Namespace     = 0x92
+//     }
+//     /**
+//      * A generic parser result.
+//      */
+//     export class ParserResult {
+//         static error(message: string, line = -1) {
+//             return new ParserResult(true, message, line, [], void 0);
+//         }
+//         static success(result: File, warnings: string[] = []) {
+//             return new ParserResult(false, "", -1, warnings, result);
+//         }
+//         constructor(
+//             public hasError: boolean,
+//             public errorMessage: string,
+//             public errorLine: number,
+//             public warnings: string[],
+//             public result: File) { }
+//     }
+//     class Tokenizer {
+//         private data: DataView;
+//         private littleEndian = false;
+//         stringTable: string[] = [];
+//         position: number = 0;
+//         skipTo(offset: number) {
+//             this.position = offset;
+//         }
+//         private strArrays: Uint8Array[] = [];
+//         private readString(n: number) {
+//             var offset = this.position;            
+//             this.position += n;
+//             var codes = this.strArrays[n];
+//             if (!codes) codes = new Uint8Array(n);
+//             for (var i = 0; i < n; i++) {
+//                 codes[i] = this.data.getUint8(offset + i);
+//             }
+//             return String.fromCharCode.apply(null, codes);
+//         }
+//         readInt(n: number) {
+//             var offset = this.position;
+//             this.position += n;
+//             switch (n) {
+//                 case 1: return this.data.getInt8(offset);
+//                 case 2: return this.data.getInt16(offset, this.littleEndian);
+//                 case 3: return (this.data.getInt8(offset) << 16) | this.data.getInt16(offset, this.littleEndian);
+//                 case 4: return this.data.getInt32(offset, this.littleEndian);
+//                 default: throw "Integer value too big";
+//             }
+//         }
+//         readUint(n: number) {
+//             var offset = this.position;
+//             this.position += n;
+//             switch (n) {
+//                 case 1: return this.data.getUint8(offset);
+//                 case 2: return this.data.getUint16(offset, this.littleEndian);
+//                 case 3: return (this.data.getUint8(offset) << 16) | this.data.getUint16(offset, this.littleEndian);
+//                 case 4: return this.data.getUint32(offset, this.littleEndian);
+//                 default: throw "Integer value too big";
+//             }
+//         }
+//         readByte() {
+//             return this.data.getUint8(this.position++);
+//         }
+//         readValue(): string {
+//             var t = this.data.getInt8(this.position),
+//                 u = (t >> 4) & 0xF, l = t & 0xF;
+//             this.position++;
+//             switch (u) {
+//                 case BinaryCifToken.UnknownPrefix: return !l ? "." : "?";
+//                 case BinaryCifToken.StringPrefix: return this.readString(this.readUint(l));
+//                 case BinaryCifToken.StringTablePrefix: return this.stringTable[this.readUint(l)]
+//                 case BinaryCifToken.FloatPrefix:
+//                     this.position += 4 * l;
+//                     return this.readValue();
+//                 case BinaryCifToken.IntPrefix:
+//                     this.position += l;
+//                     return this.readValue();
+//                 default:
+//                     throw "Invalid BCIF format.";
+//             }
+//         }
+//         private _NaN = Number.NaN;
+//         fillValue(i: number, str: string[], int: number[], float: number[]): void {
+//             var t = this.data.getUint8(this.position),
+//                 u = (t >> 4) & 0xF, l = t & 0xF;
+//             this.position++;
+//             switch (u) {
+//                 case BinaryCifToken.UnknownPrefix:
+//                     str[i] = !l ? "." : "?";
+//                     //int[i] = this._NaN;
+//                     //float[i] = this._NaN;
+//                     return;
+//                 case BinaryCifToken.StringPrefix:
+//                     str[i] = this.readString(this.readUint(l));
+//                     //int[i] = this._NaN;
+//                     //float[i] = this._NaN;
+//                     return;
+//                 case BinaryCifToken.StringTablePrefix:
+//                     //console.log("table", l);
+//                     str[i] = this.stringTable[this.readUint(l)];
+//                     //int[i] = this._NaN;
+//                     //float[i] = this._NaN;
+//                     return;
+//                 case BinaryCifToken.FloatPrefix:
+//                     //console.log("float", l);
+//                     //var f = l == 1
+//                     //    ? this.data.getFloat32(this.position, this.littleEndian)
+//                     //    : this.data.getFloat64(this.position, this.littleEndian);
+//                     this.position += 4 * l;
+//                     str[i] = this.readValue();
+//                     //int[i] = f | 0;
+//                     //float[i] = f;
+//                     return;
+//                 case BinaryCifToken.IntPrefix:
+//                     //console.log("int", l);
+//                     //var ii = this.readInt(l);
+//                     this.position += l;
+//                     str[i] = this.readValue();
+//                     //int[i] = ii;
+//                     //float[i] = ii;
+//                     return;
+//                 default:
+//                     throw "Invalid BCIF format.";
+//             }
+//         }
+//         skipValue(): void {
+//             var t = this.data.getInt8(this.position),
+//                 u = (t >> 4) & 0xF, l = t & 0xF;
+//             this.position++;
+//             switch (u) {
+//                 case BinaryCifToken.UnknownPrefix: return;
+//                 case BinaryCifToken.StringPrefix: this.position += this.readUint(l); return;
+//                 case BinaryCifToken.StringTablePrefix: this.position += this.readUint(l); return;
+//                 case BinaryCifToken.FloatPrefix:
+//                     this.position += 4 * l;
+//                     this.skipValue();
+//                     return;
+//                 case BinaryCifToken.IntPrefix:
+//                     this.position += l;
+//                     this.skipValue();
+//                     return;
+//                 default:
+//                     throw "Invalid BCIF format.";
+//             }
+//         }
+//         private readStringTable() {
+//             var count = this.readUint(4);
+//             for (var i = 0; i < count; i++) {
+//                 this.stringTable[i] = this.readValue();
+//             }            
+//         }
+//         constructor(buffer: ArrayBuffer) {         
+//             for (var i = 0; i < 100; i++) this.strArrays[i] = new Uint8Array(i);
+//             this.data = new DataView(buffer, 0, buffer.byteLength);
+//             if (this.readValue() !== "BCIF" || this.readValue() !== "v2") throw "Invalid BCIF format.";
+//             this.readStringTable();
+//         }
+//     }
+//     export class Parser {
+//         private static readElement(tokenizer: Tokenizer): any {
+//             tokenizer.readByte(); // skip type;
+//             tokenizer.readUint(4); // skip length
+//             var category = tokenizer.readValue(),
+//                 columnCount = tokenizer.readUint(4),
+//                 columns: string[] = [];
+//             for (let i = 0; i < columnCount; i++) columns[columns.length] = tokenizer.readValue();
+//             var tokenCount = tokenizer.readUint(4),
+//                 str: string[] = [],
+//                 //str = new Int32Array(tokenCount),
+//                 int = new Int32Array(0),
+//                 float = new Float64Array(0);
+//             for (let i = 0; i < tokenCount; i++) tokenizer.fillValue(i, <any>str, <any>int, <any>float);
+//             return { category, columns, str, int, float };
+//         }
+//         private static readFrame(tokenizer: Tokenizer): any {
+//             var frameType = "";
+//             switch (tokenizer.readByte()) {
+//                 case BinaryCifToken.Data: frameType = "data"; break;
+//                 case BinaryCifToken.Save: frameType = "save"; break;
+//                 default: throw "Invalid BCIF format.";
+//             }
+//             tokenizer.readUint(4); // skip length
+//             var id = tokenizer.readValue(), count = tokenizer.readUint(4),
+//                 elements: any[] = [];
+//             for (var i = 0; i < count; i++) {
+//                 elements[elements.length] = Parser.readElement(tokenizer);
+//             }
+//             return { id, elements };
+//         }
+//         static parse(buffer: ArrayBuffer) {            
+//             var tokenizer = new Tokenizer(buffer);
+//             var frameCount = tokenizer.readUint(4),
+//                 frames: any[] = [];
+//             for (var i = 0; i < frameCount; i++) {
+//                 frames[frames.length] = this.readFrame(tokenizer);
+//             }
+//             return frames;
+//         }
+//     }
+// } 
 /*
  * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
@@ -10624,93 +10593,56 @@ var LiteMol;
                 var mmCIF;
                 (function (mmCIF) {
                     "use strict";
-                    function getModelEndRow(startRow, category) {
-                        var size = category.rowCount, modelNumCol = category.getColumnIndex("_atom_site.pdbx_PDB_model_num"), currentOffset = 0, colCount = category.columnCount, startOffset = startRow * colCount + modelNumCol, i = 0;
-                        if (modelNumCol < 0)
+                    function getModelEndRow(startRow, _atom_site) {
+                        var size = _atom_site.rowCount, modelNum = _atom_site.getColumn('pdbx_PDB_model_num'), i = 0;
+                        if (!modelNum.isDefined)
                             return size;
-                        for (i = startRow; i < size; i++) {
-                            currentOffset = i * colCount;
-                            if (!category.areTokensEqual(startOffset, currentOffset + modelNumCol)) {
+                        for (i = startRow + 1; i < size; i++) {
+                            if (!modelNum.areValuesEqual(i - 1, i))
                                 break;
-                            }
                         }
                         return i;
                     }
                     function buildModelAtomTable(startRow, category) {
                         var endRow = getModelEndRow(startRow, category);
-                        var colCount = category.columnCount, atoms = new Core.Structure.DataTableBuilder(endRow - startRow), id = atoms.addColumn("id", function (size) { return new Int32Array(size); }), idX = category.getColumnIndex("_atom_site.id"), pX = atoms.addColumn("x", function (size) { return new Float32Array(size); }), pXX = category.getColumnIndex("_atom_site.Cartn_x"), pY = atoms.addColumn("y", function (size) { return new Float32Array(size); }), pYX = category.getColumnIndex("_atom_site.Cartn_y"), pZ = atoms.addColumn("z", function (size) { return new Float32Array(size); }), pZX = category.getColumnIndex("_atom_site.Cartn_z"), altLoc = atoms.addColumn("altLoc", function (size) { return []; }), altLocX = category.getColumnIndex("_atom_site.label_alt_id"), rowIndex = atoms.addColumn("rowIndex", function (size) { return new Int32Array(size); }), residueIndex = atoms.addColumn("residueIndex", function (size) { return new Int32Array(size); }), chainIndex = atoms.addColumn("chainIndex", function (size) { return new Int32Array(size); }), entityIndex = atoms.addColumn("entityIndex", function (size) { return new Int32Array(size); }), name = atoms.addColumn("name", function (size) { return []; }), nameX = category.getColumnIndex("_atom_site.label_atom_id"), elementSymbol = atoms.addColumn("elementSymbol", function (size) { return []; }), elementSymbolX = category.getColumnIndex("_atom_site.type_symbol"), occupancy = atoms.addColumn("occupancy", function (size) { return new Float32Array(size); }), occupancyX = category.getColumnIndex("_atom_site.occupancy"), tempFactor = atoms.addColumn("tempFactor", function (size) { return new Float32Array(size); }), tempFactorX = category.getColumnIndex("_atom_site.B_iso_or_equiv"), authName = atoms.addColumn("authName", function (size) { return []; }), authNameX = category.getColumnIndex("_atom_site.auth_atom_id");
-                        var resSeqNumberCol = category.getColumnIndex("_atom_site.label_seq_id"), asymIdCol = category.getColumnIndex("_atom_site.label_asym_id"), entityCol = category.getColumnIndex("_atom_site.label_entity_id"), insCodeCol = category.getColumnIndex("_atom_site.pdbx_PDB_ins_code"), authResSeqNumberCol = category.getColumnIndex("_atom_site.auth_seq_id"), modelNumCol = category.getColumnIndex("_atom_site.pdbx_PDB_model_num"), 
-                        //authAsymIdCol = category.getColumnIndex("_atom_site.auth_asym_id"),
-                        currentResidueNumberToken = resSeqNumberCol, currentAsymIdToken = asymIdCol, currentInsCodeToken = insCodeCol, currentAuthResidueNumberToken = authResSeqNumberCol, 
-                        //currentAuthAsymIdToken = authAsymIdCol,
-                        currentEntityToken = entityCol, currentOffset = 0, newResidue = false, newChain = false, numChains = 0, numResidues = 0, numEntities = 0;
+                        var colCount = category.columnCount, atoms = new Core.Structure.DataTableBuilder(endRow - startRow), id = atoms.addColumn('id', function (size) { return new Int32Array(size); }), idCol = category.getColumn('id'), pX = atoms.addColumn('x', function (size) { return new Float32Array(size); }), pXCol = category.getColumn('Cartn_x'), pY = atoms.addColumn('y', function (size) { return new Float32Array(size); }), pYCol = category.getColumn('Cartn_y'), pZ = atoms.addColumn('z', function (size) { return new Float32Array(size); }), pZCol = category.getColumn('Cartn_z'), altLoc = atoms.addColumn('altLoc', function (size) { return []; }), altLocCol = category.getColumn('label_alt_id'), rowIndex = atoms.addColumn('rowIndex', function (size) { return new Int32Array(size); }), residueIndex = atoms.addColumn('residueIndex', function (size) { return new Int32Array(size); }), chainIndex = atoms.addColumn('chainIndex', function (size) { return new Int32Array(size); }), entityIndex = atoms.addColumn('entityIndex', function (size) { return new Int32Array(size); }), name = atoms.addColumn('name', function (size) { return []; }), nameCol = category.getColumn('label_atom_id'), elementSymbol = atoms.addColumn('elementSymbol', function (size) { return []; }), elementSymbolCol = category.getColumn('type_symbol'), occupancy = atoms.addColumn('occupancy', function (size) { return new Float32Array(size); }), occupancyCol = category.getColumn('occupancy'), tempFactor = atoms.addColumn('tempFactor', function (size) { return new Float32Array(size); }), tempFactorCol = category.getColumn('B_iso_or_equiv'), authName = atoms.addColumn('authName', function (size) { return []; }), authNameCol = category.getColumn('auth_atom_id');
+                        var resSeqNumberCol = category.getColumn('label_seq_id'), asymIdCol = category.getColumn('label_asym_id'), entityIdCol = category.getColumn('label_entity_id'), insCodeCol = category.getColumn('pdbx_PDB_ins_code'), authResSeqNumberCol = category.getColumn('auth_seq_id'), modelNumCol = category.getColumn('pdbx_PDB_model_num'), numChains = 0, numResidues = 0, numEntities = 0;
+                        var prev = startRow;
                         for (var row = startRow; row < endRow; row++) {
                             var index = row - startRow;
-                            currentOffset = row * colCount;
-                            id[index] = category.getIntValueFromIndex(idX, row);
-                            pX[index] = category.getFloatValueFromIndex(pXX, row);
-                            pY[index] = category.getFloatValueFromIndex(pYX, row);
-                            pZ[index] = category.getFloatValueFromIndex(pZX, row);
-                            name[index] = category.getStringValueFromIndex(nameX, row);
-                            authName[index] = category.getStringValueFromIndex(authNameX, row);
-                            elementSymbol[index] = category.getStringValueFromIndex(elementSymbolX, row);
-                            altLoc[index] = category.getStringValueFromIndex(altLocX, row);
-                            occupancy[index] = category.getFloatValueFromIndex(occupancyX, row);
-                            tempFactor[index] = category.getFloatValueFromIndex(tempFactorX, row);
-                            newResidue = false;
-                            newChain = false;
-                            if (category.isTokenUndefined(currentResidueNumberToken)) {
-                                // handle HET residues
-                                newResidue =
-                                    !category.areTokensEqual(currentAuthResidueNumberToken, currentOffset + authResSeqNumberCol);
-                            }
-                            else {
-                                newResidue =
-                                    !category.areTokensEqual(currentResidueNumberToken, currentOffset + resSeqNumberCol)
-                                        || !category.areTokensEqual(currentInsCodeToken, currentOffset + insCodeCol);
-                            }
-                            if (newResidue) {
-                                numResidues++;
-                                currentResidueNumberToken = currentOffset + resSeqNumberCol;
-                                currentAuthResidueNumberToken = currentOffset + authResSeqNumberCol;
-                                currentInsCodeToken = currentOffset + insCodeCol;
-                            }
-                            if (!category.areTokensEqual(currentAsymIdToken, currentOffset + asymIdCol)) {
-                                // handle new chain
+                            id[index] = idCol.getInteger(row);
+                            pX[index] = pXCol.getFloat(row);
+                            pY[index] = pYCol.getFloat(row);
+                            pZ[index] = pZCol.getFloat(row);
+                            name[index] = nameCol.getString(row);
+                            authName[index] = authNameCol.getString(row);
+                            elementSymbol[index] = elementSymbolCol.getString(row);
+                            altLoc[index] = altLocCol.getString(row);
+                            occupancy[index] = occupancyCol.getFloat(row);
+                            tempFactor[index] = tempFactorCol.getFloat(row);
+                            var newChain = false;
+                            var newResidue = !authResSeqNumberCol.areValuesEqual(prev, row) || !insCodeCol.areValuesEqual(prev, row);
+                            if (!asymIdCol.areValuesEqual(prev, row)) {
                                 newChain = true;
-                                numChains++;
-                                currentAsymIdToken = currentOffset + asymIdCol;
-                                if (!newResidue) {
-                                    newResidue = true;
-                                    numResidues++;
-                                    currentResidueNumberToken = currentOffset + resSeqNumberCol;
-                                    currentAuthResidueNumberToken = currentOffset + authResSeqNumberCol;
-                                    currentInsCodeToken = currentOffset + insCodeCol;
-                                }
+                                newResidue = true;
                             }
-                            if (!category.areTokensEqual(currentEntityToken, currentOffset + entityCol)) {
-                                // handle new entity
+                            if (!entityIdCol.areValuesEqual(prev, row)) {
                                 numEntities++;
-                                currentEntityToken = currentOffset + entityCol;
-                                if (!newChain) {
-                                    newChain = true;
-                                    numChains++;
-                                    currentAsymIdToken = currentOffset + asymIdCol;
-                                }
-                                if (!newResidue) {
-                                    newResidue = true;
-                                    numResidues++;
-                                    currentResidueNumberToken = currentOffset + resSeqNumberCol;
-                                    currentAuthResidueNumberToken = currentOffset + authResSeqNumberCol;
-                                    currentInsCodeToken = currentOffset + insCodeCol;
-                                }
+                                newChain = true;
+                                newResidue = true;
                             }
+                            if (newResidue)
+                                numResidues++;
+                            if (newChain)
+                                numChains++;
                             rowIndex[index] = row;
                             residueIndex[index] = numResidues;
                             chainIndex[index] = numChains;
                             entityIndex[index] = numEntities;
+                            prev = row;
                         }
-                        var modelId = modelNumCol < 0 ? "1" : category.getStringValue("_atom_site.pdbx_PDB_model_num", startRow);
+                        var modelId = !modelNumCol.isDefined ? '1' : modelNumCol.getString(startRow);
+                        console.log('atoms', atoms.seal());
                         return {
                             atoms: atoms.seal(),
                             modelId: modelId,
@@ -10718,19 +10650,19 @@ var LiteMol;
                         };
                     }
                     function buildStructure(category, atoms) {
-                        var count = atoms.count, residueIndexCol = atoms.residueIndex, chainIndexCol = atoms.chainIndex, entityIndexCol = atoms.entityIndex, residues = new Core.Structure.DataTableBuilder(atoms.residueIndex[atoms.count - 1] + 1), chains = new Core.Structure.DataTableBuilder(atoms.chainIndex[atoms.count - 1] + 1), entities = new Core.Structure.DataTableBuilder(atoms.entityIndex[atoms.count - 1] + 1), residueName = residues.addColumn("name", function (size) { return []; }), residueSeqNumber = residues.addColumn("seqNumber", function (size) { return new Int32Array(size); }), residueAsymId = residues.addColumn("asymId", function (size) { return []; }), residueAuthName = residues.addColumn("authName", function (size) { return []; }), residueAuthSeqNumber = residues.addColumn("authSeqNumber", function (size) { return new Int32Array(size); }), residueAuthAsymId = residues.addColumn("authAsymId", function (size) { return []; }), residueInsertionCode = residues.addColumn("insCode", function (size) { return []; }), residueEntityId = residues.addColumn("entityId", function (size) { return []; }), residueIsHet = residues.addColumn("isHet", function (size) { return new Int8Array(size); }), residueAtomStartIndex = residues.addColumn("atomStartIndex", function (size) { return new Int32Array(size); }), residueAtomEndIndex = residues.addColumn("atomEndIndex", function (size) { return new Int32Array(size); }), residueChainIndex = residues.addColumn("chainIndex", function (size) { return new Int32Array(size); }), residueEntityIndex = residues.addColumn("entityIndex", function (size) { return new Int32Array(size); }), residueSecondaryStructureIndex = residues.addColumn("secondaryStructureIndex", function (size) { return new Int32Array(size); }), chainAsymId = chains.addColumn("asymId", function (size) { return []; }), chainEntityId = chains.addColumn("entityId", function (size) { return []; }), chainAuthAsymId = chains.addColumn("authAsymId", function (size) { return []; }), chainAtomStartIndex = chains.addColumn("atomStartIndex", function (size) { return new Int32Array(size); }), chainAtomEndIndex = chains.addColumn("atomEndIndex", function (size) { return new Int32Array(size); }), chainResidueStartIndex = chains.addColumn("residueStartIndex", function (size) { return new Int32Array(size); }), chainResidueEndIndex = chains.addColumn("residueEndIndex", function (size) { return new Int32Array(size); }), chainEntityIndex = chains.addColumn("entityIndex", function (size) { return new Int32Array(size); }), entityId = entities.addColumn("entityId", function (size) { return []; }), entityTypeEnum = entities.addColumn("entityType", function (size) { return []; }), entityType = entities.addColumn("type", function (size) { return []; }), entityAtomStartIndex = entities.addColumn("atomStartIndex", function (size) { return new Int32Array(size); }), entityAtomEndIndex = entities.addColumn("atomEndIndex", function (size) { return new Int32Array(size); }), entityResidueStartIndex = entities.addColumn("residueStartIndex", function (size) { return new Int32Array(size); }), entityResidueEndIndex = entities.addColumn("residueEndIndex", function (size) { return new Int32Array(size); }), entityChainStartIndex = entities.addColumn("chainStartIndex", function (size) { return new Int32Array(size); }), entityChainEndIndex = entities.addColumn("chainEndIndex", function (size) { return new Int32Array(size); }), resNameCol = category.getColumnIndex("_atom_site.label_comp_id"), resSeqNumberCol = category.getColumnIndex("_atom_site.label_seq_id"), asymIdCol = category.getColumnIndex("_atom_site.label_asym_id"), authResNameCol = category.getColumnIndex("_atom_site.auth_comp_id"), authResSeqNumberCol = category.getColumnIndex("_atom_site.auth_seq_id"), authAsymIdCol = category.getColumnIndex("_atom_site.auth_asym_id"), isHetCol = category.getColumnIndex("_atom_site.group_PDB"), entityCol = category.getColumnIndex("_atom_site.label_entity_id"), insCodeCol = category.getColumnIndex("_atom_site.pdbx_PDB_ins_code"), residueStart = 0, chainStart = 0, entityStart = 0, entityChainStart = 0, entityResidueStart = 0, chainResidueStart = 0, currentResidue = 0, currentChain = 0, currentEntity = 0;
+                        var count = atoms.count, residueIndexCol = atoms.residueIndex, chainIndexCol = atoms.chainIndex, entityIndexCol = atoms.entityIndex, residues = new Core.Structure.DataTableBuilder(atoms.residueIndex[atoms.count - 1] + 1), chains = new Core.Structure.DataTableBuilder(atoms.chainIndex[atoms.count - 1] + 1), entities = new Core.Structure.DataTableBuilder(atoms.entityIndex[atoms.count - 1] + 1), residueName = residues.addColumn('name', function (size) { return []; }), residueSeqNumber = residues.addColumn('seqNumber', function (size) { return new Int32Array(size); }), residueAsymId = residues.addColumn('asymId', function (size) { return []; }), residueAuthName = residues.addColumn('authName', function (size) { return []; }), residueAuthSeqNumber = residues.addColumn('authSeqNumber', function (size) { return new Int32Array(size); }), residueAuthAsymId = residues.addColumn('authAsymId', function (size) { return []; }), residueInsertionCode = residues.addColumn('insCode', function (size) { return []; }), residueEntityId = residues.addColumn('entityId', function (size) { return []; }), residueIsHet = residues.addColumn('isHet', function (size) { return new Int8Array(size); }), residueAtomStartIndex = residues.addColumn('atomStartIndex', function (size) { return new Int32Array(size); }), residueAtomEndIndex = residues.addColumn('atomEndIndex', function (size) { return new Int32Array(size); }), residueChainIndex = residues.addColumn('chainIndex', function (size) { return new Int32Array(size); }), residueEntityIndex = residues.addColumn('entityIndex', function (size) { return new Int32Array(size); }), residueSecondaryStructureIndex = residues.addColumn('secondaryStructureIndex', function (size) { return new Int32Array(size); }), chainAsymId = chains.addColumn('asymId', function (size) { return []; }), chainEntityId = chains.addColumn('entityId', function (size) { return []; }), chainAuthAsymId = chains.addColumn('authAsymId', function (size) { return []; }), chainAtomStartIndex = chains.addColumn('atomStartIndex', function (size) { return new Int32Array(size); }), chainAtomEndIndex = chains.addColumn('atomEndIndex', function (size) { return new Int32Array(size); }), chainResidueStartIndex = chains.addColumn('residueStartIndex', function (size) { return new Int32Array(size); }), chainResidueEndIndex = chains.addColumn('residueEndIndex', function (size) { return new Int32Array(size); }), chainEntityIndex = chains.addColumn('entityIndex', function (size) { return new Int32Array(size); }), entityId = entities.addColumn('entityId', function (size) { return []; }), entityTypeEnum = entities.addColumn('entityType', function (size) { return []; }), entityType = entities.addColumn('type', function (size) { return []; }), entityAtomStartIndex = entities.addColumn('atomStartIndex', function (size) { return new Int32Array(size); }), entityAtomEndIndex = entities.addColumn('atomEndIndex', function (size) { return new Int32Array(size); }), entityResidueStartIndex = entities.addColumn('residueStartIndex', function (size) { return new Int32Array(size); }), entityResidueEndIndex = entities.addColumn('residueEndIndex', function (size) { return new Int32Array(size); }), entityChainStartIndex = entities.addColumn('chainStartIndex', function (size) { return new Int32Array(size); }), entityChainEndIndex = entities.addColumn('chainEndIndex', function (size) { return new Int32Array(size); }), resNameCol = category.getColumn('label_comp_id'), resSeqNumberCol = category.getColumn('label_seq_id'), asymIdCol = category.getColumn('label_asym_id'), authResNameCol = category.getColumn('auth_comp_id'), authResSeqNumberCol = category.getColumn('auth_seq_id'), authAsymIdCol = category.getColumn('auth_asym_id'), isHetCol = category.getColumn('group_PDB'), entityCol = category.getColumn('label_entity_id'), insCodeCol = category.getColumn('pdbx_PDB_ins_code'), residueStart = 0, chainStart = 0, entityStart = 0, entityChainStart = 0, entityResidueStart = 0, chainResidueStart = 0, currentResidue = 0, currentChain = 0, currentEntity = 0;
                         var i = 0;
                         for (i = 0; i < count; i++) {
                             if (residueIndexCol[i] !== residueIndexCol[residueStart]) {
-                                residueName[currentResidue] = category.getStringValueFromIndex(resNameCol, residueStart);
-                                residueSeqNumber[currentResidue] = category.getIntValueFromIndex(resSeqNumberCol, residueStart);
-                                residueAsymId[currentResidue] = category.getStringValueFromIndex(asymIdCol, residueStart);
-                                residueAuthName[currentResidue] = category.getStringValueFromIndex(authResNameCol, residueStart);
-                                residueAuthSeqNumber[currentResidue] = category.getIntValueFromIndex(authResSeqNumberCol, residueStart);
-                                residueAuthAsymId[currentResidue] = category.getStringValueFromIndex(authAsymIdCol, residueStart);
-                                residueInsertionCode[currentResidue] = category.getStringValueFromIndex(insCodeCol, residueStart);
-                                residueEntityId[currentResidue] = category.getStringValueFromIndex(entityCol, residueStart);
-                                residueIsHet[currentResidue] = category.valueEqual(isHetCol, residueStart, "HETATM") ? 1 : 0;
+                                residueName[currentResidue] = resNameCol.getString(residueStart);
+                                residueSeqNumber[currentResidue] = resSeqNumberCol.getInteger(residueStart);
+                                residueAsymId[currentResidue] = asymIdCol.getString(residueStart);
+                                residueAuthName[currentResidue] = authResNameCol.getString(residueStart);
+                                residueAuthSeqNumber[currentResidue] = authResSeqNumberCol.getInteger(residueStart);
+                                residueAuthAsymId[currentResidue] = authAsymIdCol.getString(residueStart);
+                                residueInsertionCode[currentResidue] = insCodeCol.getString(residueStart);
+                                residueEntityId[currentResidue] = entityCol.getString(residueStart);
+                                residueIsHet[currentResidue] = isHetCol.stringEquals(residueStart, 'HETATM') ? 1 : 0;
                                 residueAtomStartIndex[currentResidue] = residueStart;
                                 residueAtomEndIndex[currentResidue] = i;
                                 residueChainIndex[currentResidue] = currentChain;
@@ -10739,9 +10671,9 @@ var LiteMol;
                                 residueStart = i;
                             }
                             if (chainIndexCol[i] !== chainIndexCol[chainStart]) {
-                                chainAsymId[currentChain] = category.getStringValueFromIndex(asymIdCol, chainStart);
-                                chainAuthAsymId[currentChain] = category.getStringValueFromIndex(authAsymIdCol, chainStart);
-                                chainEntityId[currentChain] = category.getStringValueFromIndex(entityCol, chainStart);
+                                chainAsymId[currentChain] = asymIdCol.getString(chainStart);
+                                chainAuthAsymId[currentChain] = authAsymIdCol.getString(chainStart);
+                                chainEntityId[currentChain] = entityCol.getString(chainStart);
                                 chainResidueStartIndex[currentChain] = chainResidueStart;
                                 chainResidueEndIndex[currentChain] = currentResidue;
                                 chainAtomStartIndex[currentChain] = chainStart;
@@ -10752,7 +10684,7 @@ var LiteMol;
                                 chainResidueStart = currentResidue;
                             }
                             if (entityIndexCol[i] !== entityIndexCol[entityStart]) {
-                                entityId[currentEntity] = category.getStringValueFromIndex(entityCol, entityStart);
+                                entityId[currentEntity] = entityCol.getString(entityStart);
                                 entityTypeEnum[currentEntity] = Core.Structure.EntityType.Unknown;
                                 entityType[currentEntity] = 'unknown';
                                 entityAtomStartIndex[currentEntity] = entityStart;
@@ -10768,7 +10700,7 @@ var LiteMol;
                             }
                         }
                         // entity
-                        entityId[currentEntity] = category.getStringValueFromIndex(entityCol, entityStart);
+                        entityId[currentEntity] = entityCol.getString(entityStart);
                         entityTypeEnum[currentEntity] = Core.Structure.EntityType.Unknown;
                         entityType[currentEntity] = 'unknown';
                         entityAtomStartIndex[currentEntity] = entityStart;
@@ -10778,27 +10710,27 @@ var LiteMol;
                         entityChainStartIndex[currentEntity] = entityChainStart;
                         entityChainEndIndex[currentEntity] = currentChain + 1;
                         // chain
-                        chainAsymId[currentChain] = category.getStringValueFromIndex(asymIdCol, chainStart);
-                        chainAuthAsymId[currentChain] = category.getStringValueFromIndex(authAsymIdCol, chainStart);
-                        chainEntityId[currentChain] = category.getStringValueFromIndex(entityCol, chainStart);
+                        chainAsymId[currentChain] = asymIdCol.getString(chainStart);
+                        chainAuthAsymId[currentChain] = authAsymIdCol.getString(chainStart);
+                        chainEntityId[currentChain] = entityCol.getString(chainStart);
                         chainResidueStartIndex[currentChain] = chainResidueStart;
                         chainResidueEndIndex[currentChain] = currentResidue + 1;
                         chainAtomStartIndex[currentChain] = chainStart;
                         chainAtomEndIndex[currentChain] = i;
                         chainEntityIndex[currentChain] = currentEntity;
                         // residue
-                        residueName[currentResidue] = category.getStringValueFromIndex(resNameCol, residueStart);
-                        residueSeqNumber[currentResidue] = category.getIntValueFromIndex(resSeqNumberCol, residueStart);
-                        residueAsymId[currentResidue] = category.getStringValueFromIndex(asymIdCol, residueStart);
-                        residueAuthName[currentResidue] = category.getStringValueFromIndex(authResNameCol, residueStart);
-                        residueAuthSeqNumber[currentResidue] = category.getIntValueFromIndex(authResSeqNumberCol, residueStart);
-                        residueAuthAsymId[currentResidue] = category.getStringValueFromIndex(authAsymIdCol, residueStart);
-                        residueInsertionCode[currentResidue] = category.getStringValueFromIndex(insCodeCol, residueStart);
+                        residueName[currentResidue] = resNameCol.getString(residueStart);
+                        residueSeqNumber[currentResidue] = resSeqNumberCol.getInteger(residueStart);
+                        residueAsymId[currentResidue] = asymIdCol.getString(residueStart);
+                        residueAuthName[currentResidue] = authResNameCol.getString(residueStart);
+                        residueAuthSeqNumber[currentResidue] = authResSeqNumberCol.getInteger(residueStart);
+                        residueAuthAsymId[currentResidue] = authAsymIdCol.getString(residueStart);
+                        residueInsertionCode[currentResidue] = insCodeCol.getString(residueStart);
                         residueAtomStartIndex[currentResidue] = residueStart;
                         residueAtomEndIndex[currentResidue] = i;
                         residueChainIndex[currentResidue] = currentChain;
                         residueEntityIndex[currentResidue] = currentEntity;
-                        residueIsHet[currentResidue] = category.valueEqual(isHetCol, residueStart, "HETATM") ? 1 : 0;
+                        residueIsHet[currentResidue] = isHetCol.stringEquals(residueStart, 'HETATM') ? 1 : 0;
                         return {
                             residues: residues.seal(),
                             chains: chains.seal(),
@@ -10813,26 +10745,26 @@ var LiteMol;
                         if (!category) {
                             return;
                         }
-                        var dataEnum = {}, data = {}, et;
+                        var dataEnum = {}, data = {}, et, typeCol = category.getColumn('type'), idCol = category.getColumn('id');
                         for (i = 0; i < category.rowCount; i++) {
-                            var t = (category.getStringValue("_entity.type", i) || "").toLowerCase();
+                            var t = (typeCol.getString(i) || '').toLowerCase();
                             switch (t) {
-                                case "polymer":
+                                case 'polymer':
                                     et = Core.Structure.EntityType.Polymer;
                                     break;
-                                case "non-polymer":
+                                case 'non-polymer':
                                     et = Core.Structure.EntityType.NonPolymer;
                                     break;
-                                case "water":
+                                case 'water':
                                     et = Core.Structure.EntityType.Water;
                                     break;
                                 default:
                                     et = Core.Structure.EntityType.Unknown;
                                     break;
                             }
-                            var eId = category.getStringValue("_entity.id", i);
+                            var eId = idCol.getString(i);
                             dataEnum[eId] = et;
-                            data[eId] = t !== "" ? t : "unknown";
+                            data[eId] = t !== '' ? t : 'unknown';
                         }
                         for (i = 0; i < entities.count; i++) {
                             et = dataEnum[entities.entityId[i]];
@@ -10842,10 +10774,10 @@ var LiteMol;
                             }
                         }
                     }
-                    function residueIdfromColumns(cat, row, asymId, seqNum, insCode) {
-                        return new Core.Structure.PolyResidueIdentifier(cat.getStringValue(asymId, row), cat.getIntValue(seqNum, row), cat.getStringValue(insCode, row));
+                    function residueIdfromColumns(row, asymId, seqNum, insCode) {
+                        return new Core.Structure.PolyResidueIdentifier(asymId.getString(row), seqNum.getInteger(row), insCode.getString(row));
                     }
-                    var aminoAcidNames = { "ALA": true, "ARG": true, "ASP": true, "CYS": true, "GLN": true, "GLU": true, "GLY": true, "HIS": true, "ILE": true, "LEU": true, "LYS": true, "MET": true, "PHE": true, "PRO": true, "SER": true, "THR": true, "TRP": true, "TYR": true, "VAL": true, "ASN": true, "PYL": true, "SEC": true };
+                    var aminoAcidNames = { 'ALA': true, 'ARG': true, 'ASP': true, 'CYS': true, 'GLN': true, 'GLU': true, 'GLY': true, 'HIS': true, 'ILE': true, 'LEU': true, 'LYS': true, 'MET': true, 'PHE': true, 'PRO': true, 'SER': true, 'THR': true, 'TRP': true, 'TYR': true, 'VAL': true, 'ASN': true, 'PYL': true, 'SEC': true };
                     function isResidueAminoSeq(atoms, residues, entities, index) {
                         if (entities.entityType[residues.entityIndex[index]] !== Core.Structure.EntityType.Polymer)
                             return false;
@@ -10853,11 +10785,11 @@ var LiteMol;
                         var ca = false, o = false, names = atoms.name, assigned = 0;
                         for (var i = residues.atomStartIndex[index], max = residues.atomEndIndex[index]; i < max; i++) {
                             var n = names[i];
-                            if (!ca && n === "CA") {
+                            if (!ca && n === 'CA') {
                                 ca = true;
                                 assigned++;
                             }
-                            else if (!o && n === "O") {
+                            else if (!o && n === 'O') {
                                 o = true;
                                 assigned++;
                             }
@@ -10880,7 +10812,7 @@ var LiteMol;
                                 c3 = true;
                                 assigned++;
                             }
-                            else if (!n3 && n === "N3") {
+                            else if (!n3 && n === 'N3') {
                                 n3 = true;
                                 assigned++;
                             }
@@ -10959,22 +10891,22 @@ var LiteMol;
                         return ret;
                     }
                     function updateSSIndicesAndFilterEmpty(elements, structure) {
-                        var residues = structure.residues, count = residues.count, asymId = residues.asymId, seqNumber = residues.seqNumber, insCode = residues.insCode, inSS = false, currentElement, endPivot, key = "", starts = new Map(), ends = new Map();
+                        var residues = structure.residues, count = residues.count, asymId = residues.asymId, seqNumber = residues.seqNumber, insCode = residues.insCode, inSS = false, currentElement, endPivot, key = '', starts = new Map(), ends = new Map();
                         for (var _i = 0, elements_2 = elements; _i < elements_2.length; _i++) {
                             var e = elements_2[_i];
-                            key = e.startResidueId.asymId + " " + e.startResidueId.seqNumber;
+                            key = e.startResidueId.asymId + ' ' + e.startResidueId.seqNumber;
                             if (e.startResidueId.insCode)
-                                key += " " + e.startResidueId.insCode;
+                                key += ' ' + e.startResidueId.insCode;
                             starts.set(key, e);
-                            key = e.endResidueId.asymId + " " + e.endResidueId.seqNumber;
+                            key = e.endResidueId.asymId + ' ' + e.endResidueId.seqNumber;
                             if (e.endResidueId.insCode)
-                                key += " " + e.endResidueId.insCode;
+                                key += ' ' + e.endResidueId.insCode;
                             ends.set(key, e);
                         }
                         for (var i = 0; i < count; i++) {
-                            key = asymId[i] + " " + seqNumber[i];
+                            key = asymId[i] + ' ' + seqNumber[i];
                             if (insCode[i])
-                                key += " " + insCode[i];
+                                key += ' ' + insCode[i];
                             currentElement = starts.get(key);
                             if (currentElement) {
                                 currentElement.startResidueIndex = i;
@@ -11029,34 +10961,50 @@ var LiteMol;
                     }
                     function getSecondaryStructureInfo(data, atoms, structure) {
                         var input = [], elements = [];
-                        var _struct_conf = data.getCategory("_struct_conf"), _struct_sheet_range = data.getCategory("_struct_sheet_range"), i;
+                        var _struct_conf = data.getCategory('_struct_conf'), _struct_sheet_range = data.getCategory('_struct_sheet_range'), i;
                         if (_struct_conf) {
-                            var type_id_col = _struct_conf.getColumn("_struct_conf.conf_type_id");
+                            var type_id_col = _struct_conf.getColumn('conf_type_id');
                             if (type_id_col) {
+                                var beg_label_asym_id = _struct_conf.getColumn('beg_label_asym_id');
+                                var beg_label_seq_id = _struct_conf.getColumn('beg_label_seq_id');
+                                var pdbx_beg_PDB_ins_code = _struct_conf.getColumn('pdbx_beg_PDB_ins_code');
+                                var end_label_asym_id = _struct_conf.getColumn('end_label_asym_id');
+                                var end_label_seq_id = _struct_conf.getColumn('end_label_seq_id');
+                                var pdbx_end_PDB_ins_code = _struct_conf.getColumn('pdbx_end_PDB_ins_code');
+                                var pdbx_PDB_helix_class = _struct_conf.getColumn('pdbx_PDB_helix_class');
                                 for (i = 0; i < _struct_conf.rowCount; i++) {
                                     var type = void 0;
                                     switch (type_id_col.getString(i).toUpperCase()) {
-                                        case "HELX_P":
+                                        case 'HELX_P':
                                             type = 1 /* Helix */;
                                             break;
-                                        case "TURN_P":
+                                        case 'TURN_P':
                                             type = 2 /* Turn */;
                                             break;
                                     }
                                     if (!type)
                                         continue;
-                                    input[input.length] = new Core.Structure.SecondaryStructureElement(type, residueIdfromColumns(_struct_conf, i, "_struct_conf.beg_label_asym_id", "_struct_conf.beg_label_seq_id", "_struct_conf.pdbx_beg_PDB_ins_code"), residueIdfromColumns(_struct_conf, i, "_struct_conf.end_label_asym_id", "_struct_conf.end_label_seq_id", "_struct_conf.pdbx_end_PDB_ins_code"), {
-                                        helixClass: _struct_conf.getStringValue("_struct_conf.pdbx_PDB_helix_class", i)
+                                    input[input.length] = new Core.Structure.SecondaryStructureElement(type, residueIdfromColumns(i, beg_label_asym_id, beg_label_seq_id, pdbx_beg_PDB_ins_code), residueIdfromColumns(i, end_label_asym_id, end_label_seq_id, pdbx_end_PDB_ins_code), {
+                                        helixClass: pdbx_PDB_helix_class.getString(i)
                                     });
                                 }
                             }
                         }
                         if (_struct_sheet_range) {
+                            var beg_label_asym_id = _struct_sheet_range.getColumn('beg_label_asym_id');
+                            var beg_label_seq_id = _struct_sheet_range.getColumn('beg_label_seq_id');
+                            var pdbx_beg_PDB_ins_code = _struct_sheet_range.getColumn('pdbx_beg_PDB_ins_code');
+                            var end_label_asym_id = _struct_sheet_range.getColumn('end_label_asym_id');
+                            var end_label_seq_id = _struct_sheet_range.getColumn('end_label_seq_id');
+                            var pdbx_end_PDB_ins_code = _struct_sheet_range.getColumn('pdbx_end_PDB_ins_code');
+                            var symmetry = _struct_sheet_range.getColumn('symmetry');
+                            var sheet_id = _struct_sheet_range.getColumn('sheet_id');
+                            var id = _struct_sheet_range.getColumn('id');
                             for (i = 0; i < _struct_sheet_range.rowCount; i++) {
-                                input[input.length] = new Core.Structure.SecondaryStructureElement(3 /* Sheet */, residueIdfromColumns(_struct_sheet_range, i, "_struct_sheet_range.beg_label_asym_id", "_struct_sheet_range.beg_label_seq_id", "_struct_sheet_range.pdbx_beg_PDB_ins_code"), residueIdfromColumns(_struct_sheet_range, i, "_struct_sheet_range.end_label_asym_id", "_struct_sheet_range.end_label_seq_id", "_struct_sheet_range.pdbx_end_PDB_ins_code"), {
-                                    symmetry: _struct_sheet_range.getStringValue("_struct_sheet_range.symmetry", i),
-                                    sheetId: _struct_sheet_range.getStringValue("_struct_sheet_range.sheet_id", i),
-                                    id: _struct_sheet_range.getStringValue("_struct_sheet_range.id", i)
+                                input[input.length] = new Core.Structure.SecondaryStructureElement(3 /* Sheet */, residueIdfromColumns(i, beg_label_asym_id, beg_label_seq_id, pdbx_beg_PDB_ins_code), residueIdfromColumns(i, end_label_asym_id, end_label_seq_id, pdbx_end_PDB_ins_code), {
+                                    symmetry: symmetry.getString(i),
+                                    sheetId: sheet_id.getString(i),
+                                    id: sheet_id.getString(i)
                                 });
                             }
                         }
@@ -11102,8 +11050,8 @@ var LiteMol;
                             groups[groups.length] = g[1];
                         groups.forEach(function (g) {
                             var group = [];
-                            g.split(",").forEach(function (e) {
-                                var dashIndex = e.indexOf("-");
+                            g.split(',').forEach(function (e) {
+                                var dashIndex = e.indexOf('-');
                                 if (dashIndex > 0) {
                                     var from = parseInt(e.substring(0, dashIndex)), to = parseInt(e.substr(dashIndex + 1));
                                     for (var i = from; i <= to; i++)
@@ -11118,43 +11066,46 @@ var LiteMol;
                         return ret;
                     }
                     function getAssemblyInfo(data) {
-                        var _info = data.getCategory("_pdbx_struct_assembly"), _gen = data.getCategory("_pdbx_struct_assembly_gen"), _opers = data.getCategory("_pdbx_struct_oper_list");
+                        var _info = data.getCategory('_pdbx_struct_assembly'), _gen = data.getCategory('_pdbx_struct_assembly_gen'), _opers = data.getCategory('_pdbx_struct_oper_list');
                         if (!_info || !_gen || !_opers) {
                             return null;
                         }
                         var i, opers = {}, gens = [], genMap = new Map();
+                        var assembly_id = _gen.getColumn('assembly_id');
+                        var oper_expression = _gen.getColumn('assembly_id');
+                        var asym_id_list = _gen.getColumn('assembly_id');
                         for (i = 0; i < _gen.rowCount; i++) {
-                            var id = _gen.getStringValue("_pdbx_struct_assembly_gen.assembly_id", i);
+                            var id = assembly_id.getString(i);
                             var entry = genMap.get(id);
                             if (!entry) {
                                 entry = new Core.Structure.AssemblyGen(id);
                                 genMap.set(id, entry);
                                 gens.push(entry);
                             }
-                            entry.gens.push(new Core.Structure.AssemblyGenEntry(parseOperatorList(_gen.getStringValue("_pdbx_struct_assembly_gen.oper_expression", i)), _gen.getStringValue("_pdbx_struct_assembly_gen.asym_id_list", i).split(",")));
+                            entry.gens.push(new Core.Structure.AssemblyGenEntry(parseOperatorList(oper_expression.getString(i)), asym_id_list.getString(i).split(',')));
                         }
+                        var _pdbx_struct_oper_list_id = _opers.getColumn('id');
+                        var _pdbx_struct_oper_list_name = _opers.getColumn('name');
                         for (i = 0; i < _opers.rowCount; i++) {
-                            var oper = _opers.getTransform(i, "_pdbx_struct_oper_list.matrix", "_pdbx_struct_oper_list.vector");
+                            var oper = Formats.CIF.Category.getTransform(_opers, 'matrix', 'vector', i);
                             if (!oper) {
                                 return null;
                             }
-                            var op = new Core.Structure.AssemblyOperator(_opers.getStringValue("_pdbx_struct_oper_list.id", i), _opers.getStringValue("_pdbx_struct_oper_list.name", i), oper);
+                            var op = new Core.Structure.AssemblyOperator(_pdbx_struct_oper_list_id.getString(i), _pdbx_struct_oper_list_name.getString(i), oper);
                             opers[op.id] = op;
                         }
                         return new Core.Structure.AssemblyInfo(opers, gens);
                     }
                     function getSymmetryInfo(data) {
-                        var _cell = data.getCategory("_cell"), _symmetry = data.getCategory("_symmetry"), _atom_sites = data.getCategory("_atom_sites");
-                        var spacegroupName = "", cellSize = [1.0, 1.0, 1.0], cellAngles = [90.0, 90.0, 90.0], toFracTransform = Core.Geometry.LinearAlgebra.Matrix4.identity(), isNonStandardCrytalFrame = false;
+                        var _cell = data.getCategory('_cell'), _symmetry = data.getCategory('_symmetry'), _atom_sites = data.getCategory('_atom_sites');
+                        var spacegroupName = '', cellSize = [1.0, 1.0, 1.0], cellAngles = [90.0, 90.0, 90.0], toFracTransform = Core.Geometry.LinearAlgebra.Matrix4.identity(), isNonStandardCrytalFrame = false;
                         if (!_cell || !_symmetry) {
                             return null;
                         }
-                        spacegroupName = _symmetry.getStringValue("_symmetry.space_group_name_H-M");
-                        cellSize = [_cell.getFloatValue("_cell.length_a"), _cell.getFloatValue("_cell.length_b"), _cell.getFloatValue("_cell.length_c")];
-                        cellAngles = [_cell.getFloatValue("_cell.angle_alpha"), _cell.getFloatValue("_cell.angle_beta"), _cell.getFloatValue("_cell.angle_gamma")];
-                        if (_symmetry.isValueUndefined("_symmetry.space_group_name_H-M")
-                            || _cell.isValueUndefined("_cell.length_a") || _cell.isValueUndefined("_cell.length_b") || _cell.isValueUndefined("_cell.length_c")
-                            || _cell.isValueUndefined("_cell.angle_alpha") || _cell.isValueUndefined("_cell.angle_beta") || _cell.isValueUndefined("_cell.angle_gamma")) {
+                        spacegroupName = _symmetry.getColumn('space_group_name_H-M').getString(0);
+                        cellSize = [_cell.getColumn('length_a').getFloat(0), _cell.getColumn('length_b').getFloat(0), _cell.getColumn('length_c').getFloat(0)];
+                        cellAngles = [_cell.getColumn('angle_alpha').getFloat(0), _cell.getColumn('angle_beta').getFloat(0), _cell.getColumn('angle_gamma').getFloat(0)];
+                        if (!spacegroupName || cellSize.every(function (s) { return isNaN(s) || s === 0.0; }) || cellSize.every(function (s) { return isNaN(s) || s === 0.0; })) {
                             return null;
                         }
                         var sq = function (x) { return x * x; };
@@ -11168,10 +11119,7 @@ var LiteMol;
                         var toFracComputed = Core.Geometry.LinearAlgebra.Matrix4.identity();
                         Core.Geometry.LinearAlgebra.Matrix4.invert(toFracComputed, fromFrac);
                         if (_atom_sites) {
-                            var transform = _atom_sites.getTransform(0, "_atom_sites.fract_transf_matrix", "_atom_sites.fract_transf_vector");
-                            //console.log("CIF", JSON.stringify(Array.prototype.slice.call(transform, 0).map((x: any) => x.toFixed(6))));
-                            //console.log("COMP", JSON.stringify(Array.prototype.slice.call(toFracComputed, 0).map((x: any) => x.toFixed(6))));
-                            //console.log("COMP", JSON.stringify(Array.prototype.slice.call(fromFrac, 0).map((x: any) => x.toFixed(6))));
+                            var transform = Formats.CIF.Category.getTransform(_atom_sites, 'fract_transf_matrix', 'fract_transf_vector', 0);
                             if (transform) {
                                 toFracTransform = transform;
                                 if (!Core.Geometry.LinearAlgebra.Matrix4.areEqual(toFracComputed, transform, 0.0001)) {
@@ -11188,26 +11136,26 @@ var LiteMol;
                         if (!category || !category.rowCount)
                             return undefined;
                         var info = new Core.Structure.ComponentBondInfo();
-                        var idCol = category.getColumnIndex("_chem_comp_bond.comp_id"), nameACol = category.getColumnIndex("_chem_comp_bond.atom_id_1"), nameBCol = category.getColumnIndex("_chem_comp_bond.atom_id_2"), orderCol = category.getColumnIndex("_chem_comp_bond.value_order"), count = category.rowCount;
-                        var entry = info.newEntry(category.getStringValueFromIndex(idCol, 0));
+                        var idCol = category.getColumn('comp_id'), nameACol = category.getColumn('atom_id_1'), nameBCol = category.getColumn('atom_id_2'), orderCol = category.getColumn('value_order'), count = category.rowCount;
+                        var entry = info.newEntry(idCol.getString(0));
                         for (var i = 0; i < count; i++) {
-                            var id = category.getStringValueFromIndex(idCol, i), nameA = category.getStringValueFromIndex(nameACol, i), nameB = category.getStringValueFromIndex(nameBCol, i), order = category.getStringValueFromIndex(orderCol, i);
+                            var id = idCol.getString(i), nameA = nameACol.getString(i), nameB = nameBCol.getString(i), order = orderCol.getString(i);
                             if (entry.id !== id) {
                                 entry = info.newEntry(id);
                             }
                             var t = void 0;
                             switch (order.toLowerCase()) {
-                                case "sing":
+                                case 'sing':
                                     t = 1 /* Single */;
                                     break;
-                                case "doub":
-                                case "delo":
+                                case 'doub':
+                                case 'delo':
                                     t = 2 /* Double */;
                                     break;
-                                case "trip":
+                                case 'trip':
                                     t = 3 /* Triple */;
                                     break;
-                                case "quad":
+                                case 'quad':
                                     t = 4 /* Aromatic */;
                                     break;
                                 default:
@@ -11219,12 +11167,12 @@ var LiteMol;
                         return info;
                     }
                     function getModel(startRow, data) {
-                        var _a = buildModelAtomTable(startRow, data.getCategory("_atom_site")), atoms = _a.atoms, modelId = _a.modelId, endRow = _a.endRow, structure = buildStructure(data.getCategory("_atom_site"), atoms), entry = data.getCategory("_entry"), id;
-                        if (entry && entry.getColumnIndex("_entry.id") >= 0)
-                            id = entry.getStringValue("_entry.id");
+                        var _a = buildModelAtomTable(startRow, data.getCategory('_atom_site')), atoms = _a.atoms, modelId = _a.modelId, endRow = _a.endRow, structure = buildStructure(data.getCategory('_atom_site'), atoms), entry = data.getCategory('_entry'), id;
+                        if (entry && entry.getColumn('id').isDefined)
+                            id = entry.getColumn('id').getString(0);
                         else
                             id = data.header;
-                        assignEntityTypes(data.getCategory("_entity"), structure.entities);
+                        assignEntityTypes(data.getCategory('_entity'), structure.entities);
                         var ss = getSecondaryStructureInfo(data, atoms, structure);
                         assignSecondaryStructureIndex(structure.residues, ss);
                         return {
@@ -11235,7 +11183,7 @@ var LiteMol;
                                 residues: structure.residues,
                                 chains: structure.chains,
                                 entities: structure.entities,
-                                componentBonds: getComponentBonds(data.getCategory("_chem_comp_bond")),
+                                componentBonds: getComponentBonds(data.getCategory('_chem_comp_bond')),
                                 secondaryStructure: ss,
                                 symmetryInfo: getSymmetryInfo(data),
                                 assemblyInfo: getAssemblyInfo(data),
@@ -11245,21 +11193,27 @@ var LiteMol;
                         };
                     }
                     function ofDataBlock(data) {
-                        var models = [], atomSite = data.getCategory("_atom_site"), startRow = 0;
-                        if (!atomSite) {
-                            throw "'_atom_site' category is missing in the input.";
+                        try {
+                            var models = [], atomSite = data.getCategory('_atom_site'), startRow = 0;
+                            if (!atomSite) {
+                                throw "'_atom_site' category is missing in the input.";
+                            }
+                            var entry = data.getCategory('_entry'), id = void 0;
+                            if (entry && entry.getColumn('id').isDefined)
+                                id = entry.getColumn('id').getString(0);
+                            else
+                                id = data.header;
+                            while (startRow < atomSite.rowCount) {
+                                var _a = getModel(startRow, data), model = _a.model, endRow = _a.endRow;
+                                models.push(model);
+                                startRow = endRow;
+                            }
+                            return new Core.Structure.Molecule(id, models);
                         }
-                        var entry = data.getCategory("_entry"), id;
-                        if (entry && entry.getColumnIndex("_entry.id") >= 0)
-                            id = entry.getStringValue("_entry.id");
-                        else
-                            id = data.header;
-                        while (startRow < atomSite.rowCount) {
-                            var _a = getModel(startRow, data), model = _a.model, endRow = _a.endRow;
-                            models.push(model);
-                            startRow = endRow;
+                        catch (e) {
+                            console.log(e);
+                            throw e;
                         }
-                        return new Core.Structure.Molecule(id, models);
                     }
                     mmCIF.ofDataBlock = ofDataBlock;
                 })(mmCIF = Molecule.mmCIF || (Molecule.mmCIF = {}));
@@ -11306,7 +11260,7 @@ var LiteMol;
                                 "2 non-polymer syn non-polymer 0.0 0 ? ? ? ?",
                                 "3 water nat water 0.0 0 ? ? ? ?"
                             ].join('\n');
-                            return Formats.CIF.parse(data).result.dataBlocks[0].getCategory('_entity');
+                            return Formats.CIF.Text.parse(data).result.dataBlocks[0].getCategory('_entity');
                         };
                         MoleculeData.prototype.toCifFile = function () {
                             var helpers = {
@@ -11315,8 +11269,8 @@ var LiteMol;
                                 numberTokens: PDB.Parser.getNumberRanges(this.data.length),
                                 data: this.data
                             };
-                            var file = new Formats.CIF.File(this.data);
-                            var block = new Formats.CIF.Block(file, this.header.id);
+                            var file = new Formats.CIF.Text.File(this.data);
+                            var block = new Formats.CIF.Text.DataBlock(this.data, this.header.id);
                             file.dataBlocks.push(block);
                             block.addCategory(this.makeEntities());
                             if (this.crystInfo) {
@@ -11370,7 +11324,7 @@ var LiteMol;
                                 "_symmetry.Int_Tables_number                ?",
                                 "_symmetry.space_group_name_Hall            ?"
                             ].join('\n');
-                            var cif = Formats.CIF.parse(data).result.dataBlocks[0];
+                            var cif = Formats.CIF.Text.parse(data).result.dataBlocks[0];
                             return {
                                 cell: cif.getCategory('_cell'),
                                 symm: cif.getCategory('_symmetry')
@@ -11573,7 +11527,7 @@ var LiteMol;
                                 var m = _c[_b];
                                 m.writeCifTokens(m.idToken, tokens, helpers);
                             }
-                            return new Formats.CIF.Category(block.data, "_atom_site", 0, 0, ModelData.COLUMNS, tokens.array, atomCount * 26);
+                            return new Formats.CIF.Text.Category(block.data, "_atom_site", 0, 0, ModelData.COLUMNS, tokens.array, atomCount * 26);
                         };
                         return ModelsData;
                     }());
@@ -12026,7 +11980,7 @@ var LiteMol;
                             case SupportedFormats.mmCIF.name: {
                                 ctx.update('Parsing...');
                                 ctx.schedule(function () {
-                                    var file = Formats.CIF.parse(data);
+                                    var file = Formats.CIF.Text.parse(data);
                                     if (file.error) {
                                         ctx.reject(file.error.toString());
                                         return;
@@ -12232,21 +12186,20 @@ var LiteMol;
                     /**
                      * Parses CCP4 files.
                      */
-                    var Parser = (function () {
-                        function Parser() {
-                        }
-                        Parser.getArray = function (r, offset, count) {
+                    var Parser;
+                    (function (Parser) {
+                        function getArray(r, offset, count) {
                             var ret = [];
                             for (var i = 0; i < count; i++) {
                                 ret[i] = r(offset + i);
                             }
                             return ret;
-                        };
+                        }
                         /**
                          * Parse CCP4 file according to spec at http://www.ccp4.ac.uk/html/maplib.html
                          * Inspired by PyMOL implementation of the parser.
                          */
-                        Parser.parse = function (buffer) {
+                        function parse(buffer) {
                             var headerSize = 1024, endian = false, headerView = new DataView(buffer, 0, headerSize), warnings = [];
                             var mode = headerView.getInt32(3 * 4, false);
                             if (mode !== 2) {
@@ -12258,22 +12211,22 @@ var LiteMol;
                             }
                             var readInt = function (o) { return headerView.getInt32(o * 4, endian); }, readFloat = function (o) { return headerView.getFloat32(o * 4, endian); };
                             var header = {
-                                extent: Parser.getArray(readInt, 0, 3),
+                                extent: getArray(readInt, 0, 3),
                                 mode: mode,
-                                nxyzStart: Parser.getArray(readInt, 4, 3),
-                                grid: Parser.getArray(readInt, 7, 3),
-                                cellDimensions: Parser.getArray(readFloat, 10, 3),
-                                cellAngles: Parser.getArray(readFloat, 13, 3),
-                                crs2xyz: Parser.getArray(readInt, 16, 3),
+                                nxyzStart: getArray(readInt, 4, 3),
+                                grid: getArray(readInt, 7, 3),
+                                cellDimensions: getArray(readFloat, 10, 3),
+                                cellAngles: getArray(readFloat, 13, 3),
+                                crs2xyz: getArray(readInt, 16, 3),
                                 min: readFloat(19),
                                 max: readFloat(20),
                                 mean: readFloat(21),
                                 spacegroupNumber: readInt(22),
                                 symBytes: readInt(23),
                                 skewFlag: readInt(24),
-                                skewMatrix: Parser.getArray(readFloat, 25, 9),
-                                skewTranslation: Parser.getArray(readFloat, 34, 3),
-                                origin2k: Parser.getArray(readFloat, 49, 3)
+                                skewMatrix: getArray(readFloat, 25, 9),
+                                skewTranslation: getArray(readFloat, 34, 3),
+                                origin2k: getArray(readFloat, 49, 3)
                             };
                             var dataOffset = buffer.byteLength - 4 * header.extent[0] * header.extent[1] * header.extent[2];
                             if (dataOffset !== headerSize + header.symBytes) {
@@ -12355,13 +12308,14 @@ var LiteMol;
                             }
                             var nativeEndian = new Uint16Array(new Uint8Array([0x12, 0x34]).buffer)[0] === 0x3412;
                             var rawData = endian === nativeEndian
-                                ? Parser.readRawData1(new Float32Array(buffer, headerSize + header.symBytes, extent[0] * extent[1] * extent[2]), endian, extent, header.extent, indices, header.mean)
-                                : Parser.readRawData(new DataView(buffer, headerSize + header.symBytes), endian, extent, header.extent, indices, header.mean);
+                                ? readRawData1(new Float32Array(buffer, headerSize + header.symBytes, extent[0] * extent[1] * extent[2]), endian, extent, header.extent, indices, header.mean)
+                                : readRawData(new DataView(buffer, headerSize + header.symBytes), endian, extent, header.extent, indices, header.mean);
                             var field = new Density.Field3DZYX(rawData.data, extent);
                             var data = new Density.Data(header.cellDimensions, header.cellAngles, origin, header.skewFlag !== 0, skewMatrix, field, extent, { x: xAxis, y: yAxis, z: zAxis }, [header.nxyzStart[indices[0]], header.nxyzStart[indices[1]], header.nxyzStart[indices[2]]], { min: header.min, max: header.max, mean: header.mean, sigma: rawData.sigma }, { spacegroupIndex: header.spacegroupNumber - 1 });
                             return Formats.ParserResult.success(data, warnings);
-                        };
-                        Parser.normalizeData = function (data, mean, stddev) {
+                        }
+                        Parser.parse = parse;
+                        function normalizeData(data, mean, stddev) {
                             var min = Number.POSITIVE_INFINITY, max = Number.NEGATIVE_INFINITY;
                             for (var i = 0, _l = data.length; i < _l; i++) {
                                 var v = (data[i] - mean) / stddev;
@@ -12372,8 +12326,8 @@ var LiteMol;
                                     max = v;
                             }
                             return { min: min, max: max };
-                        };
-                        Parser.readRawData1 = function (view, endian, extent, headerExtent, indices, mean) {
+                        }
+                        function readRawData1(view, endian, extent, headerExtent, indices, mean) {
                             var data = new Float32Array(extent[0] * extent[1] * extent[2]), coord = [0, 0, 0], mX, mY, mZ, cX, cY, cZ, xSize, xySize, offset = 0, v = 0.1, sigma = 0.0, t = 0.1, iX = indices[0], iY = indices[1], iZ = indices[2];
                             //mX = extent[indices[0]];
                             //mY = extent[indices[1]];  
@@ -12403,8 +12357,8 @@ var LiteMol;
                                 data: data,
                                 sigma: sigma
                             };
-                        };
-                        Parser.readRawData = function (view, endian, extent, headerExtent, indices, mean) {
+                        }
+                        function readRawData(view, endian, extent, headerExtent, indices, mean) {
                             var data = new Float32Array(extent[0] * extent[1] * extent[2]), coord = [0, 0, 0], mX, mY, mZ, cX, cY, cZ, xSize, xySize, offset = 0, v = 0.1, sigma = 0.0, t = 0.1, iX = indices[0], iY = indices[1], iZ = indices[2];
                             mX = headerExtent[0];
                             mY = headerExtent[1];
@@ -12431,9 +12385,8 @@ var LiteMol;
                                 data: data,
                                 sigma: sigma
                             };
-                        };
-                        return Parser;
-                    }());
+                        }
+                    })(Parser || (Parser = {}));
                 })(CCP4 = Density.CCP4 || (Density.CCP4 = {}));
             })(Density = Formats.Density || (Formats.Density = {}));
         })(Formats = Core.Formats || (Core.Formats = {}));
@@ -12450,27 +12403,24 @@ var LiteMol;
         (function (Formats) {
             var Density;
             (function (Density) {
-                var BRIX;
-                (function (BRIX) {
+                var DSN6;
+                (function (DSN6) {
                     function parse(buffer) {
                         return Parser.parse(buffer);
                     }
-                    BRIX.parse = parse;
-                    ///////////////////////////////////////////////////////////////////////////////
+                    DSN6.parse = parse;
                     function remove(arrOriginal, elementToRemove) {
                         return arrOriginal.filter(function (el) { return el !== elementToRemove; });
                     }
-                    ///////////////////////////////////////////////////////////////////////////////
                     /**
-                     * Parses CCP4 files.
+                     * Parses DSN6 files.
                      */
-                    var Parser = (function () {
-                        function Parser() {
-                        }
+                    var Parser;
+                    (function (Parser) {
                         /**
-                         * Parse BRIX file.
+                         * Parse DNS6 file.
                          */
-                        Parser.parse = function (buffer) {
+                        function parse(buffer) {
                             var headerSize = 512, endian = false, 
                             //headerView = new DataView(buffer, 0, headerSize),
                             headerView = new Uint8Array(buffer, 0, headerSize), 
@@ -12574,13 +12524,14 @@ var LiteMol;
                             }
                             var nativeEndian = new Uint16Array(new Uint8Array([0x12, 0x34]).buffer)[0] === 0x3412;
                             endian = nativeEndian;
-                            var rawData = Parser.readRawData(new Uint8Array(buffer, headerSize + header.symBytes), endian, extent, header.extent, indices, header.mean, header.prod, header.plus);
+                            var rawData = readRawData(new Uint8Array(buffer, headerSize + header.symBytes), endian, extent, header.extent, indices, header.mean, header.prod, header.plus);
                             var field = new Density.Field3DZYX(rawData.data, extent);
                             var data = new Density.Data(header.cellDimensions, header.cellAngles, origin, header.skewFlag !== 0, skewMatrix, field, extent, { x: xAxis, y: yAxis, z: zAxis }, [header.nxyzStart[indices[0]], header.nxyzStart[indices[1]], header.nxyzStart[indices[2]]], { min: rawData.minj, max: rawData.maxj, mean: rawData.meanj, sigma: rawData.sigma }, { prod: header.prod, plus: header.plus }); //! added attributes property to store additional information
                             return Formats.ParserResult.success(data, warnings);
-                        };
+                        }
+                        Parser.parse = parse;
                         //////////////////////////////////////////////////////////////////////////////////////////
-                        Parser.readRawData = function (bytes, endian, extent, headerExtent, indices, mean, prod, plus) {
+                        function readRawData(bytes, endian, extent, headerExtent, indices, mean, prod, plus) {
                             //! DataView is generally a LOT slower than Uint8Array. For performance reasons I think it would be better to use that.
                             //! Endian has no effect on individual bytes anyway to my knowledge.
                             var mX, mY, mZ, cX, cY, cZ, xSize, xySize, offset = 0, v = 0.1, sigma = 0.0, t = 0.1, xbsize, ybsize, zbsize, mi, mj, mk, x, y, z, xxtra, yxtra, zxtra, minj = 0, maxj = 0, meanj = 0, block_size = 8, block_sizez = 8, block_sizey = 8, block_sizex = 8, bsize3 = block_size * block_size * block_size;
@@ -12655,10 +12606,9 @@ var LiteMol;
                                 maxj: maxj,
                                 meanj: meanj
                             };
-                        };
-                        return Parser;
-                    }());
-                })(BRIX = Density.BRIX || (Density.BRIX = {}));
+                        }
+                    })(Parser || (Parser = {}));
+                })(DSN6 = Density.DSN6 || (Density.DSN6 = {}));
             })(Density = Formats.Density || (Formats.Density = {}));
         })(Formats = Core.Formats || (Core.Formats = {}));
     })(Core = LiteMol.Core || (LiteMol.Core = {}));
@@ -12677,16 +12627,16 @@ var LiteMol;
                 var SupportedFormats;
                 (function (SupportedFormats) {
                     SupportedFormats.CCP4 = { name: 'CCP4', extensions: ['.ccp4', '.map'] };
-                    SupportedFormats.BRIX = { name: 'BRIX', extensions: ['.brix'] };
-                    SupportedFormats.All = [SupportedFormats.CCP4, SupportedFormats.BRIX];
+                    SupportedFormats.DSN6 = { name: 'DSN6', extensions: ['.dsn6'] };
+                    SupportedFormats.All = [SupportedFormats.CCP4, SupportedFormats.DSN6];
                 })(SupportedFormats = Density.SupportedFormats || (Density.SupportedFormats = {}));
                 function parse(format, data, id) {
                     switch (format.name) {
                         case SupportedFormats.CCP4.name: {
                             return Density.CCP4.parse(data);
                         }
-                        case SupportedFormats.BRIX.name: {
-                            return Density.BRIX.parse(data);
+                        case SupportedFormats.DSN6.name: {
+                            return Density.DSN6.parse(data);
                         }
                         default: {
                             return Formats.ParserResult.error("'" + format + "' is not a supported density data format.");

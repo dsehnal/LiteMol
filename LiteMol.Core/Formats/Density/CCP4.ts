@@ -12,9 +12,9 @@ namespace LiteMol.Core.Formats.Density.CCP4 {
     /**
      * Parses CCP4 files.
      */
-    class Parser {
+    namespace Parser {
 
-        private static getArray(r: (offset: number) => number, offset: number, count: number) {
+        function getArray(r: (offset: number) => number, offset: number, count: number) {
             let ret:number[] = [];
             for (let i = 0; i < count; i++) {
                 ret[i] = r(offset + i);
@@ -26,7 +26,7 @@ namespace LiteMol.Core.Formats.Density.CCP4 {
          * Parse CCP4 file according to spec at http://www.ccp4.ac.uk/html/maplib.html
          * Inspired by PyMOL implementation of the parser.
          */
-        static parse(buffer: ArrayBuffer): ParserResult<Data> {
+        export function parse(buffer: ArrayBuffer): ParserResult<Data> {
             let headerSize = 1024,
                 endian = false,
                 headerView = new DataView(buffer, 0, headerSize),
@@ -43,22 +43,22 @@ namespace LiteMol.Core.Formats.Density.CCP4 {
 
             let readInt = (o: number) => headerView.getInt32(o * 4, endian), readFloat = (o: number) => headerView.getFloat32(o * 4, endian);
             let header = {
-                extent: Parser.getArray(readInt, 0, 3),
+                extent: getArray(readInt, 0, 3),
                 mode: mode,
-                nxyzStart: Parser.getArray(readInt, 4, 3),
-                grid: Parser.getArray(readInt, 7, 3),
-                cellDimensions: Parser.getArray(readFloat, 10, 3),
-                cellAngles: Parser.getArray(readFloat, 13, 3),
-                crs2xyz: Parser.getArray(readInt, 16, 3),
+                nxyzStart: getArray(readInt, 4, 3),
+                grid: getArray(readInt, 7, 3),
+                cellDimensions: getArray(readFloat, 10, 3),
+                cellAngles: getArray(readFloat, 13, 3),
+                crs2xyz: getArray(readInt, 16, 3),
                 min: readFloat(19),
                 max: readFloat(20),
                 mean: readFloat(21),
                 spacegroupNumber: readInt(22),
                 symBytes: readInt(23),
                 skewFlag: readInt(24),
-                skewMatrix: Parser.getArray(readFloat, 25, 9),
-                skewTranslation: Parser.getArray(readFloat, 34, 3),
-                origin2k: Parser.getArray(readFloat, 49, 3)
+                skewMatrix: getArray(readFloat, 25, 9),
+                skewTranslation: getArray(readFloat, 34, 3),
+                origin2k: getArray(readFloat, 49, 3)
             };
 
             let dataOffset = buffer.byteLength - 4 * header.extent[0] * header.extent[1] * header.extent[2];
@@ -161,8 +161,8 @@ namespace LiteMol.Core.Formats.Density.CCP4 {
             let nativeEndian = new Uint16Array(new Uint8Array([0x12, 0x34]).buffer)[0] === 0x3412;
             let rawData =
                 endian === nativeEndian
-                    ? Parser.readRawData1(new Float32Array(buffer, headerSize + header.symBytes, extent[0] * extent[1] * extent[2]), endian, extent, header.extent, indices, header.mean)
-                    : Parser.readRawData(new DataView(buffer, headerSize + header.symBytes), endian, extent, header.extent, indices, header.mean);
+                    ? readRawData1(new Float32Array(buffer, headerSize + header.symBytes, extent[0] * extent[1] * extent[2]), endian, extent, header.extent, indices, header.mean)
+                    : readRawData(new DataView(buffer, headerSize + header.symBytes), endian, extent, header.extent, indices, header.mean);
             
             let field = new Field3DZYX(<any>rawData.data, extent);                    
                                      
@@ -177,7 +177,7 @@ namespace LiteMol.Core.Formats.Density.CCP4 {
             return ParserResult.success(data, warnings);
         }
 
-        private static normalizeData(data: Float32Array, mean: number, stddev: number) {
+        function normalizeData(data: Float32Array, mean: number, stddev: number) {
 
             let min = Number.POSITIVE_INFINITY, max = Number.NEGATIVE_INFINITY;
             for (let i = 0, _l = data.length; i < _l; i++) {
@@ -190,7 +190,7 @@ namespace LiteMol.Core.Formats.Density.CCP4 {
             return { min, max };
         }
         
-        private static readRawData1(view: Float32Array, endian: boolean, extent: number[], headerExtent: number[], indices: number[], mean: number): { data: Float32Array, sigma: number } {
+        function readRawData1(view: Float32Array, endian: boolean, extent: number[], headerExtent: number[], indices: number[], mean: number): { data: Float32Array, sigma: number } {
             let data = new Float32Array(extent[0] * extent[1] * extent[2]),
                 coord = [0, 0, 0],
                 mX: number, mY: number, mZ: number,
@@ -234,7 +234,7 @@ namespace LiteMol.Core.Formats.Density.CCP4 {
         }
 
 
-        private static readRawData(view: DataView, endian: boolean, extent: number[], headerExtent: number[], indices: number[], mean: number): { data: Float32Array, sigma: number } {
+        function readRawData(view: DataView, endian: boolean, extent: number[], headerExtent: number[], indices: number[], mean: number): { data: Float32Array, sigma: number } {
             let data = new Float32Array(extent[0] * extent[1] * extent[2]),
                 coord = [0, 0, 0],
                 mX: number, mY: number, mZ: number,

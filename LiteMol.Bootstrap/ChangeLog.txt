@@ -1,4 +1,7 @@
-﻿== 1.1.2 ==
+﻿== 1.1.3 ==
+* Updated to match Core version 2.4.
+
+== 1.1.2 ==
 * Fixed a bug where updating molecule visual coloring led to mutating the default theme.
 
 == 1.1.1 ==

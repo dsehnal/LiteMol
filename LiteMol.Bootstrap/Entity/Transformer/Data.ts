@@ -68,7 +68,7 @@ namespace LiteMol.Bootstrap.Entity.Transformer.Data {
             return Task.create<Entity.Data.CifDictionary>(`CIF Parse (${a.props.label})`, 'Normal', ctx => {
                 ctx.update('Parsing...');
                 ctx.schedule(() => {
-                    let d = Core.Formats.CIF.parse(a.props.data);
+                    let d = Core.Formats.CIF.Text.parse(a.props.data);
                     if (d.error) {
                         ctx.reject(d.error.toString());
                         return;

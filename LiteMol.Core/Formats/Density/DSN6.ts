@@ -2,26 +2,25 @@
  * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
 
-namespace LiteMol.Core.Formats.Density.BRIX {
+namespace LiteMol.Core.Formats.Density.DSN6 {
 
     export function parse(buffer: ArrayBuffer) {
         return Parser.parse(buffer);
     }
 
-    ///////////////////////////////////////////////////////////////////////////////
     function remove(arrOriginal: string[], elementToRemove: string) {
         return arrOriginal.filter(el => el !== elementToRemove);
     }
-    ///////////////////////////////////////////////////////////////////////////////
+
     /**
-     * Parses CCP4 files.
+     * Parses DSN6 files.
      */
-    class Parser {
+    namespace Parser {
 
         /**
-         * Parse BRIX file.
+         * Parse DNS6 file.
          */
-        static parse(buffer: ArrayBuffer): ParserResult<Data> {
+        export function parse(buffer: ArrayBuffer): ParserResult<Data> {
             let headerSize = 512,
                 endian = false,
                 //headerView = new DataView(buffer, 0, headerSize),
@@ -169,7 +168,7 @@ namespace LiteMol.Core.Formats.Density.BRIX {
             let nativeEndian = new Uint16Array(new Uint8Array([0x12, 0x34]).buffer)[0] === 0x3412;
 
             endian = nativeEndian
-            let rawData = Parser.readRawData(new Uint8Array(buffer, headerSize + header.symBytes), endian, extent, header.extent, indices, header.mean, header.prod, header.plus);
+            let rawData = readRawData(new Uint8Array(buffer, headerSize + header.symBytes), endian, extent, header.extent, indices, header.mean, header.prod, header.plus);
 
             let field = new Field3DZYX(<any>rawData.data, extent);
 
@@ -185,7 +184,7 @@ namespace LiteMol.Core.Formats.Density.BRIX {
         }
 
         //////////////////////////////////////////////////////////////////////////////////////////
-        private static readRawData(bytes: Uint8Array, endian: boolean, extent: number[], headerExtent: number[], indices: number[], mean: number, prod: number, plus: number): { data: Float32Array, sigma: number, minj: number, maxj: number, meanj: number } {            
+        function readRawData(bytes: Uint8Array, endian: boolean, extent: number[], headerExtent: number[], indices: number[], mean: number, prod: number, plus: number): { data: Float32Array, sigma: number, minj: number, maxj: number, meanj: number } {            
             //! DataView is generally a LOT slower than Uint8Array. For performance reasons I think it would be better to use that.
             //! Endian has no effect on individual bytes anyway to my knowledge.
             

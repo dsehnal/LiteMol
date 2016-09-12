@@ -1,4 +1,9 @@
-﻿== 2.3.1 ==
+﻿== 2.4.0 ==
+* Refactored CIF support. The CIF access is now a lot more streamlined.
+* Added support for BinarCIF.
+* Renamed Formats.Density.BRIX to Formats.Density.DSN6 
+
+== 2.3.1 ==
 * Adding MOL/SDF support.
 
 == 2.3.0 ==

@@ -3,5 +3,5 @@
  */
 
 namespace LiteMol.Core {
-    export var VERSION = { number: "2.3.1", date: "Aug 31 2016" };
+    export var VERSION = { number: "2.4.0", date: "Sep 12 2016" };
 } 

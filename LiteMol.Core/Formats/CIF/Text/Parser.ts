@@ -2,7 +2,7 @@
  * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
 
-namespace LiteMol.Core.Formats.CIF {
+namespace LiteMol.Core.Formats.CIF.Text {
     "use strict";
     
     /**
@@ -404,7 +404,7 @@ namespace LiteMol.Core.Formats.CIF {
         /**
          * Reads a category containing a single row.
          */
-        private static handleSingle(tokenizer: CifTokenizer, block: Block): CifCategoryResult {
+        private static handleSingle(tokenizer: CifTokenizer, block: DataBlock): CifCategoryResult {
             let nsStart = tokenizer.currentTokenStart, nsEnd = tokenizer.getNamespaceEnd(),
                 name = tokenizer.getNamespace(nsEnd),
 
@@ -442,7 +442,7 @@ namespace LiteMol.Core.Formats.CIF {
         /**
          * Reads a loop.
          */
-        private static handleLoop(tokenizer: CifTokenizer, block: Block): CifCategoryResult {
+        private static handleLoop(tokenizer: CifTokenizer, block: DataBlock): CifCategoryResult {
             let start = tokenizer.currentTokenStart,
                 loopLine = tokenizer.currentLineNumber;
 
@@ -502,8 +502,8 @@ namespace LiteMol.Core.Formats.CIF {
         static parse(data: string): ParserResult<CIF.File> {
             let tokenizer = new CifTokenizer(data), cat: CifCategoryResult, id:string,
                 file = new File(data),
-                block = new Block(file, "default"),
-                saveFrame = new Block(file, "empty"),
+                block = new DataBlock(data, "default"),
+                saveFrame = new DataBlock(data, "empty"),
                 inSaveFrame = false,
                 blockSaveFrames: any; 
                                    
@@ -516,17 +516,17 @@ namespace LiteMol.Core.Formats.CIF {
                     if (inSaveFrame) {
                         return Parser.error(tokenizer.currentLineNumber, "Unexpected data block inside a save frame.");
                     }
-                    if (block.categoryList.length > 0) {
-                        file.addBlock(block);
+                    if (block.categories.length > 0) {
+                        file.dataBlocks.push(block);
                     }
-                    block = new Block(file, data.substring(tokenizer.currentTokenStart + 5, tokenizer.currentTokenEnd));
+                    block = new DataBlock(data, data.substring(tokenizer.currentTokenStart + 5, tokenizer.currentTokenEnd));
                     tokenizer.moveNext();
                 // Save frame
                 } else if (token === CifTokenType.Save) {
                     id = data.substring(tokenizer.currentTokenStart + 5, tokenizer.currentTokenEnd);
                     
                     if (id.length === 0) {
-                        if (saveFrame.categoryList.length > 0) {
+                        if (saveFrame.categories.length > 0) {
                             blockSaveFrames = block.additionalData["saveFrames"];
                             if (!blockSaveFrames) {
                                 blockSaveFrames = [];
@@ -540,7 +540,7 @@ namespace LiteMol.Core.Formats.CIF {
                             return Parser.error(tokenizer.currentLineNumber, "Save frames cannot be nested.");
                         }
                         inSaveFrame = true;
-                        saveFrame = new Block(file, id);
+                        saveFrame = new DataBlock(data, id);
                     }
                     tokenizer.moveNext();
                 // Loop
@@ -566,8 +566,8 @@ namespace LiteMol.Core.Formats.CIF {
                 return Parser.error(tokenizer.currentLineNumber, "Unfinished save frame (`" + saveFrame.header + "`).");
             }
 
-            if (block.categoryList.length > 0) {
-                file.addBlock(block);
+            if (block.categories.length > 0) {
+                file.dataBlocks.push(block);
             }
 
             return Parser.result(file);

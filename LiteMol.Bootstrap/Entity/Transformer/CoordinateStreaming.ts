@@ -40,7 +40,7 @@ namespace LiteMol.Bootstrap.Entity.Transformer.Molecule.CoordinateStreaming {
         }, (ctx, a, t) => {      
             
             return Task.create<Entity.Molecule.Model>('Load', 'Silent', ctx => {
-                let cif = Core.Formats.CIF.parse(t.params.data).result;
+                let cif = Core.Formats.CIF.Text.parse(t.params.data).result;
                 let model = Core.Formats.Molecule.mmCIF.ofDataBlock(cif.dataBlocks[0]).models[0];
                 if (t.params.transform) Core.Structure.Operator.applyToModelUnsafe(t.params.transform, model); 
                 ctx.resolve(Entity.Molecule.Model.create(t, { label: 'part', model }));

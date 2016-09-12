@@ -1001,9 +1001,111 @@ declare namespace LiteMol.Core.Formats.MessagePack {
 }
 declare namespace LiteMol.Core.Formats.CIF {
     /**
+     * Represents a "CIF FILE" with one or more data blocks.
+     */
+    interface File {
+        dataBlocks: DataBlock[];
+        toJSON(): any;
+    }
+    /**
+     * Represents a single CIF data block that contains categories and possibly
+     * additonal data such as save frames.
+     *
+     * Example:
+     * data_HEADER
+     * _category1.field1
+     * ...
+     * ...
+     * _categoryN.fieldN
+     */
+    interface DataBlock {
+        header: string;
+        categories: Category[];
+        additionalData: {
+            [name: string]: any;
+        };
+        getCategory(name: string): Category;
+        toJSON(): any;
+    }
+    /**
+     * Represents that CIF category with multiple fields represented as columns.
+     *
+     * Example:
+     * _category.field1
+     * _category.field2
+     * ...
+     */
+    interface Category {
+        name: string;
+        rowCount: number;
+        columnCount: number;
+        columns: Column[];
+        /**
+         * If a field with the given name is not present, returns UndefinedColumn.
+         *
+         * Columns are accessed by their field name only, i.e.
+         * _category.field is accessed by
+         * category.getColumn('field')
+         */
+        getColumn(name: string): Column;
+    }
+    /**
+     * A columns represents a single field of a CIF category.
+     */
+    interface Column {
+        isDefined: boolean;
+        isValueUndefined(row: number): boolean;
+        getString(row: number): string;
+        getInteger(row: number): number;
+        getFloat(row: number): number;
+        areValuesEqual(rowA: number, rowB: number): boolean;
+        stringEquals(row: number, value: string): boolean;
+    }
+    const UndefinedColumn: Column;
+    /**
+     * Helper functions for categoies.
+     */
+    namespace Category {
+        /**
+         * Extracts a matrix from a category from a specified rowIndex.
+         *
+         * _category.matrix[1][1] v11
+         * ....
+         * ....
+         * _category.matrix[rows][cols] vRowsCols
+         */
+        function getMatrix(category: Category, field: string, rows: number, cols: number, rowIndex: number): number[][];
+        /**
+         * Extracts a vector from a category from a specified rowIndex.
+         *
+         * _category.matrix[1][1] v11
+         * ....
+         * ....
+         * _category.matrix[rows][cols] vRowsCols
+         */
+        function getVector(category: Category, field: string, rows: number, cols: number, rowIndex: number): number[];
+        /**
+         * Extracts a 3D transform given by a 3x3 matrix and a translation vector from a category from a specified row.
+         * The transform is represented a column major matrix stored as 1D array.
+         *
+         * _category.matrix[1][1] m11
+         * ....
+         * ....
+         * _category.matrix[3][3] m33
+         * _category.translation[1] t1
+         * _category.translation[1][1] m11
+         *
+         * @example
+         * Category.getTransform(_atom_sites, 'fract_transf_matrix', 'fract_transf_vector', 0)
+         */
+        function getTransform(category: Category, matrixField: string, translationField: string, row: number): number[];
+    }
+}
+declare namespace LiteMol.Core.Formats.CIF.Text {
+    /**
      * Represents the input file.
      */
-    class File {
+    class File implements CIF.File {
         /**
          * The input string.
          *
@@ -1019,11 +1121,7 @@ declare namespace LiteMol.Core.Formats.CIF {
         /**
          * Data blocks inside the file. If no data block is present, a "default" one is created.
          */
-        dataBlocks: Block[];
-        /**
-         * Adds a block.
-         */
-        addBlock(block: Block): void;
+        dataBlocks: DataBlock[];
         toJSON(): {
             id: string;
             categories: any[];
@@ -1036,12 +1134,9 @@ declare namespace LiteMol.Core.Formats.CIF {
     /**
      * Represents a single data block.
      */
-    class Block {
+    class DataBlock implements CIF.DataBlock {
         private categoryMap;
-        /**
-         * The "file" the data block is in.
-         */
-        file: File;
+        private categoryList;
         /**
          * The input mmCIF string (same as file.data)
          */
@@ -1052,15 +1147,9 @@ declare namespace LiteMol.Core.Formats.CIF {
         header: string;
         /**
          * Categories of the block.
-         */
-        categoryList: Category[];
-        /**
-         * Categories of the block.
          * block.categories._atom_site / ['_atom_site']
          */
-        categories: {
-            [name: string]: Category;
-        };
+        categories: Category[];
         /**
          * Additional data such as save frames for mmCIF file.
          */
@@ -1068,17 +1157,13 @@ declare namespace LiteMol.Core.Formats.CIF {
             [name: string]: any;
         };
         /**
-         * Adds a category.
-         */
-        addCategory(category: Category): void;
-        /**
          * Gets a category by its name.
          */
         getCategory(name: string): Category;
         /**
-         * Determines if a given category is present.
+         * Adds a category.
          */
-        hasCategory(name: string): boolean;
+        addCategory(category: Category): void;
         toJSON(): {
             id: string;
             categories: any[];
@@ -1086,119 +1171,23 @@ declare namespace LiteMol.Core.Formats.CIF {
                 [name: string]: any;
             };
         };
-        constructor(file: File, header: string);
-    }
-    /**
-     * A context for easy (but slower) querying of category data.
-     */
-    class CategoryQueryRowContext {
-        category: Category;
-        rowNumber: number;
-        /**
-         * Get a string value of the row.
-         */
-        getString(column: string): string;
-        /**
-         * Get an integer value of the row.
-         */
-        getInt(column: string): number;
-        /**
-         * Get a float value of the row.
-         */
-        getFloat(column: string): number;
-        constructor(category: Category, rowNumber: number);
-    }
-    /**
-     * Represents a single column of a CIF category.
-     */
-    interface IColumn {
-        /**
-         * Returns the raw string value at given row.
-         */
-        getRaw(row: number): string;
-        /**
-         * Returns the string value at given row.
-         */
-        getString(row: number): string;
-        /**
-         * Returns the integer value at given row.
-         */
-        getInteger(row: number): number;
-        /**
-         * Returns the float value at given row.
-         */
-        getFloat(row: number): number;
-        /**
-         * Returns true if the token has the specified string value.
-         */
-        stringEquals(row: number, value: string): boolean;
-        /**
-         * Returns true if the value is not defined (. or ? token).
-         */
-        isUndefined(row: number): boolean;
-    }
-    /**
-     * Represents a single column of a CIF category.
-     */
-    class Column implements IColumn {
-        private category;
-        name: string;
-        index: number;
-        /**
-         * Returns the raw string value at given row.
-         */
-        getRaw(row: number): string;
-        /**
-         * Returns the string value at given row.
-         */
-        getString(row: number): string;
-        /**
-         * Returns the integer value at given row.
-         */
-        getInteger(row: number): number;
-        /**
-         * Returns the float value at given row.
-         */
-        getFloat(row: number): number;
-        /**
-         * Returns true if the token has the specified string value.
-         */
-        stringEquals(row: number, value: string): boolean;
-        /**
-         * Returns true if the value is not defined (. or ? token).
-         */
-        isUndefined(row: number): boolean;
-        constructor(category: Category, name: string, index: number);
+        constructor(data: string, header: string);
     }
     /**
      * Represents a single CIF category.
      */
-    class Category {
+    class Category implements CIF.Category {
         private data;
-        private columnIndices;
         private columnWrappers;
-        private shortColumnWrappers;
-        private _columnArray;
+        private columnList;
         /**
          * Name of the category.
          */
         name: string;
         /**
-         * The column names of the category.
-         * Includes the full name, i.e. _namespace.columns.
+         * The array of columns.
          */
-        columnNames: string[];
-        /**
-         * The column wrappers used to access the colummns.
-         * Can be accessed for example as category.columns.id.
-         */
-        columns: {
-            [name: string]: Column;
-        };
-        /**
-         * The array of column wrappers used to access the colummns.
-         */
-        columnArray: Column[];
+        columns: Column[];
         /**
          * Number of columns in the category.
          */
@@ -1207,10 +1196,6 @@ declare namespace LiteMol.Core.Formats.CIF {
          * Number of rows in the category.
          */
         rowCount: number;
-        /**
-         * Number of tokens.
-         */
-        tokenCount: number;
         /**
          * Pairs of (start at index 2 * i, end at index 2 * i + 1) indices to the data string.
          * The "end" character is not included (for it's iterated as for (i = start; i < end; i++)).
@@ -1229,144 +1214,53 @@ declare namespace LiteMol.Core.Formats.CIF {
          */
         getTokenIndex(row: number, columnIndex: number): number;
         /**
-         * Get index of a columns.
-         * @returns -1 if the column isn't present, the index otherwise.
-         */
-        getColumnIndex(name: string): number;
-        /**
          * Get a column object that makes accessing data easier.
          * @returns undefined if the column isn't present, the Column object otherwise.
          */
-        getColumn(name: string): IColumn;
-        /**
-         * Updates the range of the token given by the column and row.
-         */
-        updateTokenRange(columnIndex: number, row: number, token: {
-            start: number;
-            end: number;
-        }): void;
-        /**
-         * Updates the range of the token given by its index.
-         */
-        updateTokenIndexRange(tokenIndex: number, token: {
-            start: number;
-            end: number;
-        }): void;
-        /**
-         * Determines if the token at the given index is . or ?.
-         */
-        isTokenUndefined(index: number): boolean;
-        /**
-         * Determines if the token at the given range is . or ?.
-         */
-        isTokenRangeUndefined(start: number, end: number): boolean;
-        /**
-         * Determines if a column value is defined (has to be present and not . nor ?).
-         */
-        isValueUndefined(column: string, row?: number): boolean;
-        /**
-         * Determines if a column value is defined (has to be present and not . nor ?).
-         */
-        isValueUndefinedFromIndex(columnIndex: number, row: number): boolean;
-        /**
-         * Returns the length of the given token;
-         */
-        getTokenLengthFromIndex(columnIndex: number, row: number): number;
-        /**
-         * Get a string value from a token at a given index.
-         */
-        getStringValueFromToken(index: number): string;
-        /**
-         * Returns the string value of the column.
-         * @returns null if not present or ./?.
-         */
-        getStringValue(column: string, row?: number): string;
-        /**
-         * Returns the string value of the column.
-         * @returns Default if not present or ./?.
-         */
-        getStringValueOrDefault(column: string, defaultValue?: string, row?: number): string;
-        /**
-         * Returns the float value of the column.
-         * @returns NaN if not present or ./?.
-         */
-        getFloatValue(column: string, row?: number): number;
-        /**
-         * Returns the float value of the column.
-         * @returns Default if not present or ./?.
-         */
-        getFloatValueOrDefault(column: string, defaultValue?: number, row?: number): number;
-        /**
-         * Returns the integer value of the column.
-         * @returns NaN if not present or ./?.
-         */
-        getIntValue(column: string, row?: number): number;
-        /**
-          * Returns the float value of the column.
-          * @returns Default if not present or ./?.
-          */
-        getIntValueOrDefault(column: string, defaultValue?: number, row?: number): number;
-        /**
-         * Returns the raw value of the column (does not do null check for ./?).
-         */
-        getRawValueFromIndex(columnIndex: number, row: number): string;
-        /**
-         * Returns the string value of the column.
-         */
-        getStringValueFromIndex(columnIndex: number, row: number): string;
-        /**
-         * Returns the integer value of the column.
-         */
-        getIntValueFromIndex(columnIndex: number, row: number): number;
-        /**
-         * Returns the integer value of the column.
-         */
-        getFloatValueFromIndex(columnIndex: number, row: number): number;
-        /**
-         * Returns a matrix constructed from a given field: category.field[1..rows][1..cols]
-         */
-        getMatrix(field: string, rows: number, cols: number, rowIndex: number): number[][];
-        /**
-         * Returns a vector constructed from a given field: category.field[1..rows]
-         */
-        getVector(field: string, rows: number, cols: number, rowIndex: number): number[];
-        getTransform(row: number, matrix: string, vector: string): number[];
-        /**
-         * Determines if two tokens have the same string value.
-         */
-        areTokensEqual(aIndex: number, bIndex: number): boolean;
-        /**
-         * Determines if a token contains a given string.
-         */
-        tokenEqual(aIndex: number, value: string): boolean;
-        /**
-         * Determines if a value contains a given string.
-         */
-        valueEqual(columnIndex: number, row: number, value: string): boolean;
-        /**
-         * Maps the rows to an user defined representation.
-         *
-         * @example
-         *   // returns an array objects with id and type properties.
-         *   category.select(row => { id: row.getInt("_entity.id"), type: row.getString("_entity.type") })
-         */
-        select<T>(selector: (ctx: CategoryQueryRowContext) => T): T[];
-        /**
-         * Maps the rows that satisfy a condition to an user defined representation.
-         *
-         * @example
-         *   // returns entity ids of entities with weight > 1000.
-         *   category.selectWhere(
-         *     row => row.getFloat("_entity.weight") > 1000,
-         *     row => row.getInt("_entity.id"))
-         */
-        selectWhere<T>(condition: (ctx: CategoryQueryRowContext) => boolean, selector: (ctx: CategoryQueryRowContext) => T): T[];
+        getColumn(name: string): CIF.Column;
         constructor(data: string, name: string, startIndex: number, endIndex: number, columns: string[], tokens: number[], tokenCount: number);
         toJSON(): any;
     }
+    /**
+     * Represents a single column of a CIF category.
+     */
+    class Column implements CIF.Column {
+        private data;
+        name: string;
+        index: number;
+        private tokens;
+        private columnCount;
+        private rowCount;
+        isDefined: boolean;
+        /**
+         * Returns the string value at given row.
+         */
+        getString(row: number): string;
+        /**
+         * Returns the integer value at given row.
+         */
+        getInteger(row: number): number;
+        /**
+         * Returns the float value at given row.
+         */
+        getFloat(row: number): number;
+        /**
+         * Returns true if the token has the specified string value.
+         */
+        stringEquals(row: number, value: string): boolean;
+        /**
+         * Determines if values at the given rows are equal.
+         */
+        areValuesEqual(rowA: number, rowB: number): boolean;
+        /**
+         * Returns true if the value is not defined (. or ? token).
+         */
+        isValueUndefined(row: number): boolean;
+        constructor(category: Category, data: string, name: string, index: number);
+    }
 }
-declare namespace LiteMol.Core.Formats.CIF {
-    function parse(data: string): ParserResult<File>;
+declare namespace LiteMol.Core.Formats.CIF.Text {
+    function parse(data: string): ParserResult<CIF.File>;
 }
 declare namespace LiteMol.Core.Formats.BinaryCIF {
     type Encoding = Encoding.Value | Encoding.ByteArray | Encoding.FixedPoint | Encoding.RunLength | Encoding.Delta | Encoding.IntegerPacking | Encoding.StringArray;
@@ -1462,7 +1356,7 @@ declare namespace LiteMol.Core.Formats.BinaryCIF {
     function decode(data: EncodedData): any;
 }
 declare namespace LiteMol.Core.Formats.Molecule.mmCIF {
-    function ofDataBlock(data: CIF.Block): Structure.Molecule;
+    function ofDataBlock(data: CIF.DataBlock): Structure.Molecule;
 }
 declare namespace LiteMol.Core.Formats.Molecule.PDB {
     type TokenRange = {
@@ -1520,7 +1414,7 @@ declare namespace LiteMol.Core.Formats.Molecule.PDB {
     }
     class ModelsData {
         models: ModelData[];
-        toCifCategory(block: CIF.Block, helpers: HelperData): CIF.Category;
+        toCifCategory(block: CIF.Text.DataBlock, helpers: HelperData): CIF.Text.Category;
         constructor(models: ModelData[]);
     }
 }
@@ -1662,13 +1556,13 @@ declare namespace LiteMol.Core.Formats.Density {
 declare namespace LiteMol.Core.Formats.Density.CCP4 {
     function parse(buffer: ArrayBuffer): ParserResult<Data>;
 }
-declare namespace LiteMol.Core.Formats.Density.BRIX {
+declare namespace LiteMol.Core.Formats.Density.DSN6 {
     function parse(buffer: ArrayBuffer): ParserResult<Data>;
 }
 declare namespace LiteMol.Core.Formats.Density {
     namespace SupportedFormats {
         const CCP4: FormatInfo;
-        const BRIX: FormatInfo;
+        const DSN6: FormatInfo;
         const All: FormatInfo[];
     }
     function parse(format: FormatInfo, data: string | ArrayBuffer, id?: string): ParserResult<Data>;

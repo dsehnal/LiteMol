@@ -28,11 +28,13 @@
     "Formats/MessagePack/Utf8.ts",
 
     "Formats/CIF/Dictionary.ts",    
-    "Formats/CIF/Parser.ts",
-
-    "Formats/BinaryCIF/Encoding.ts",
-    "Formats/BinaryCIF/Encoder.ts",
-    "Formats/BinaryCIF/Decoder.ts",
+    "Formats/CIF/Text/Dictionary.ts",
+    "Formats/CIF/Text/Parser.ts",
+    "Formats/CIF/Binary/Dictionary.ts",
+    "Formats/CIF/Binary/Encoding.ts",
+    "Formats/CIF/Binary/Encoder.ts",
+    "Formats/CIF/Binary/Decoder.ts",
+    "Formats/CIF/Binary/Parser.ts",
 
     "Formats/Molecule/mmCIF.ts",
     "Formats/Molecule/PDB/Data.ts",
@@ -42,7 +44,7 @@
     
     "Formats/Density/Data.ts",
     "Formats/Density/CCP4.ts",
-    "Formats/Density/BRIX.ts",
+    "Formats/Density/DSN6.ts",
     "Formats/Density/Formats.ts",
 
     // GEOMETRY
