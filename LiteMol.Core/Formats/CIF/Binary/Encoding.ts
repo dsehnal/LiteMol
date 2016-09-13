@@ -5,10 +5,43 @@
 namespace LiteMol.Core.Formats.BinaryCIF {
     "use strict";
     
-    export type Encoding = Encoding.Value | Encoding.ByteArray | Encoding.FixedPoint | Encoding.RunLength | Encoding.Delta | Encoding.IntegerPacking | Encoding.StringArray;
+    export const VERSION = '0.1.0';
+
+    export type Encoding = Encoding.Value | Encoding.ByteArray | Encoding.FixedPoint | Encoding.RunLength | Encoding.Delta | Encoding.IntegerPacking | Encoding.StringArray
+
+    export interface EncodedFile {
+        version: string,
+        encoder: string,
+        dataBlocks: EncodedDataBlock[]
+    }
+
+    export interface EncodedDataBlock {
+        header: string,    
+        categories: EncodedCategory[],  
+    }
+
+    export interface EncodedCategory {
+        name: string,
+        columns: EncodedColumn[],
+    }
+
+    export interface EncodedColumn {
+        name: string,
+        data: EncodedData,
+
+        /**
+         * The mask represents the presence or absent of particular "CIF value".
+         * If the mask is not set, every value is present.
+         * 
+         * 0 = Value is present
+         * 1 = . = value not specified
+         * 2 = ? = value unknown
+         */
+        mask?: EncodedData
+    }
 
     export interface EncodedData {
-        encoding: Encoding[],
+        encoding: Encoding[],        
         data: Uint8Array
     }
 
@@ -17,21 +50,25 @@ namespace LiteMol.Core.Formats.BinaryCIF {
             Int8,
             Int16,
             Int32,
+            Uint8,
             Float32,
             Float64            
         }
 
-        export const enum IntDataType {
+        export const enum IntDataType {            
             Int8,
             Int16,
-            Int32
+            Int32,
+            Uint8
         }
 
         export function getIntDataType(data: (Int8Array | Int16Array | Int32Array | number[])): IntDataType {
             let srcType: Encoding.IntDataType;
             if (data instanceof Int8Array) srcType = Encoding.IntDataType.Int8;
             else if (data instanceof Int16Array) srcType = Encoding.IntDataType.Int16;
-            else if (data instanceof Int32Array) srcType = Encoding.IntDataType.Int32;  
+            else if (data instanceof Int32Array) srcType = Encoding.IntDataType.Int32;
+            else if (data instanceof Uint8Array) srcType = Encoding.IntDataType.Uint8;
+            else throw new Error('Unsupported integer data type.');  
             return srcType;
         }
 

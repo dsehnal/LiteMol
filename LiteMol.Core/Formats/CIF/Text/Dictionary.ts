@@ -315,12 +315,14 @@ namespace LiteMol.Core.Formats.CIF.Text {
         /**
          * Returns true if the value is not defined (. or ? token).
          */
-        isValueUndefined(row: number) {
+        getValuePresence(row: number) {
             let index = row * this.columnCount + this.index;
             let s = this.tokens[2 * index];
-            if (this.tokens[2 * index + 1] - s !== 1) return false;
+            if (this.tokens[2 * index + 1] - s !== 1) return ValuePresence.Present;
             let v = this.data.charCodeAt(s);
-            return v === 46 /* . */ || v === 63 /* ? */;
+            if (v === 46 /* . */) return ValuePresence.NotSpecified;
+            if (v === 63 /* ? */) return ValuePresence.Unknown;
+            return ValuePresence.Present;
         }
 
         constructor(category: Category, private data: string, public name: string, public index: number) {

@@ -38,7 +38,8 @@ namespace LiteMol.Core.Formats.MessagePack {
          * @return {Uint8Array} decoded array
          */
         function bin(length: number) {
-            let value = buffer.subarray(offset, offset + length);
+            let value = new Uint8Array(buffer.buffer, offset, length); 
+                //buffer.subarray(offset, offset + length);
             offset += length;
             return value;
         }

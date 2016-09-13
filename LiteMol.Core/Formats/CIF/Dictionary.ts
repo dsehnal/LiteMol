@@ -55,16 +55,25 @@ namespace LiteMol.Core.Formats.CIF {
          */
         getColumn(name: string): Column;
     }
+
+    export const enum ValuePresence {
+        Present = 0,
+        NotSpecified = 1,
+        Unknown = 2
+    }
     
     /**
      * A columns represents a single field of a CIF category.
      */
     export interface Column {
         isDefined: boolean;
-        isValueUndefined(row: number):boolean;
+        
         getString(row: number): string;
         getInteger(row: number): number;
         getFloat(row: number): number;        
+        
+        getValuePresence(row: number): ValuePresence;
+        
         areValuesEqual(rowA: number, rowB: number): boolean;
         stringEquals(row: number, value: string): boolean;
     }
@@ -74,12 +83,10 @@ namespace LiteMol.Core.Formats.CIF {
      */
     class _UndefinedColumn implements Column {
         isDefined = false;
-
         getString(row: number): string { return null; };
         getInteger(row: number): number { return 0; }
         getFloat(row: number): number { return 0.0; }
-
-        isValueUndefined(row: number) { return true; }
+        getValuePresence(row: number): ValuePresence { return ValuePresence.NotSpecified; }
         areValuesEqual(rowA: number, rowB: number): boolean { return true; }
         stringEquals(row: number, value: string):boolean { return value === null; }
     }

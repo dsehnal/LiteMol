@@ -62,7 +62,14 @@ namespace LiteMol.Core.Formats.BinaryCIF {
             };
         }
 
-        export function int8(data: Int16Array): Result {
+        export function uint8(data: Int16Array): Result {
+            return {
+                encoding: { kind: 'ByteArray', type: Encoding.DataType.Uint8 },
+                data: data
+            };
+        }
+
+        export function int8(data: Int8Array): Result {
             return {
                 encoding: { kind: 'ByteArray', type: Encoding.DataType.Int8 },
                 data: new Uint8Array(data.buffer, data.byteOffset)
@@ -129,7 +136,7 @@ namespace LiteMol.Core.Formats.BinaryCIF {
         }
         export function fixedPoint(factor: number): Provider { return data => _fixedPoint(data, factor); }
 
-        export function runLength(data: (Int8Array | Int16Array | Int32Array | number[])): Result {
+        export function runLength(data: (Uint8Array | Int8Array | Int16Array | Int32Array | number[])): Result {
             let srcType = Encoding.getIntDataType(data);
             if (srcType === void 0) {
                 data = new Int32Array(data);

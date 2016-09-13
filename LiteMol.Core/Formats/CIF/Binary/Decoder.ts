@@ -25,6 +25,7 @@ namespace LiteMol.Core.Formats.BinaryCIF {
                 case 'Value': return (encoding as Encoding.Value).value;
                 case 'ByteArray': {
                     switch ((encoding as Encoding.ByteArray).type) {
+                        case Encoding.DataType.Uint8: return data;
                         case Encoding.DataType.Int8: return int8(data);
                         case Encoding.DataType.Int16: return int16(data);
                         case Encoding.DataType.Int32: return int32(data);
@@ -102,6 +103,8 @@ namespace LiteMol.Core.Formats.BinaryCIF {
                 case Encoding.IntDataType.Int8: return new Int8Array(size);
                 case Encoding.IntDataType.Int16: return new Int16Array(size);
                 case Encoding.IntDataType.Int32: return new Int32Array(size);
+                case Encoding.IntDataType.Uint8: return new Uint8Array(size);
+                default: throw new Error('Unsupported integer data type.');
             }
         }
 

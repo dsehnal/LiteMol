@@ -4156,15 +4156,20 @@ declare namespace LiteMol.Core.Formats.CIF {
          */
         getColumn(name: string): Column;
     }
+    const enum ValuePresence {
+        Present = 0,
+        NotSpecified = 1,
+        Unknown = 2,
+    }
     /**
      * A columns represents a single field of a CIF category.
      */
     interface Column {
         isDefined: boolean;
-        isValueUndefined(row: number): boolean;
         getString(row: number): string;
         getInteger(row: number): number;
         getFloat(row: number): number;
+        getValuePresence(row: number): ValuePresence;
         areValuesEqual(rowA: number, rowB: number): boolean;
         stringEquals(row: number, value: string): boolean;
     }
@@ -4362,7 +4367,7 @@ declare namespace LiteMol.Core.Formats.CIF.Text {
         /**
          * Returns true if the value is not defined (. or ? token).
          */
-        isValueUndefined(row: number): boolean;
+        getValuePresence(row: number): ValuePresence;
         constructor(category: Category, data: string, name: string, index: number);
     }
 }
@@ -4370,7 +4375,34 @@ declare namespace LiteMol.Core.Formats.CIF.Text {
     function parse(data: string): ParserResult<CIF.File>;
 }
 declare namespace LiteMol.Core.Formats.BinaryCIF {
+    const VERSION: string;
     type Encoding = Encoding.Value | Encoding.ByteArray | Encoding.FixedPoint | Encoding.RunLength | Encoding.Delta | Encoding.IntegerPacking | Encoding.StringArray;
+    interface EncodedFile {
+        version: string;
+        encoder: string;
+        dataBlocks: EncodedDataBlock[];
+    }
+    interface EncodedDataBlock {
+        header: string;
+        categories: EncodedCategory[];
+    }
+    interface EncodedCategory {
+        name: string;
+        columns: EncodedColumn[];
+    }
+    interface EncodedColumn {
+        name: string;
+        data: EncodedData;
+        /**
+         * The mask represents the presence or absent of particular "CIF value".
+         * If the mask is not set, every value is present.
+         *
+         * 0 = Value is present
+         * 1 = . = value not specified
+         * 2 = ? = value unknown
+         */
+        mask?: EncodedData;
+    }
     interface EncodedData {
         encoding: Encoding[];
         data: Uint8Array;
@@ -4380,13 +4412,15 @@ declare namespace LiteMol.Core.Formats.BinaryCIF {
             Int8 = 0,
             Int16 = 1,
             Int32 = 2,
-            Float32 = 3,
-            Float64 = 4,
+            Uint8 = 3,
+            Float32 = 4,
+            Float64 = 5,
         }
         const enum IntDataType {
             Int8 = 0,
             Int16 = 1,
             Int32 = 2,
+            Uint8 = 3,
         }
         function getIntDataType(data: (Int8Array | Int16Array | Int32Array | number[])): IntDataType;
         interface Value {
@@ -4443,13 +4477,14 @@ declare namespace LiteMol.Core.Formats.BinaryCIF {
         type Provider = (data: any) => Result;
         function by(f: Provider): Encoder;
         function value(value: any): Result;
-        function int8(data: Int16Array): Result;
+        function uint8(data: Int16Array): Result;
+        function int8(data: Int8Array): Result;
         function int16(data: Int16Array): Result;
         function int32(data: Int32Array): Result;
         function float32(data: Float32Array): Result;
         function float64(data: Float64Array): Result;
         function fixedPoint(factor: number): Provider;
-        function runLength(data: (Int8Array | Int16Array | Int32Array | number[])): Result;
+        function runLength(data: (Uint8Array | Int8Array | Int16Array | Int32Array | number[])): Result;
         function delta(data: (Int8Array | Int16Array | Int32Array | number[])): Result;
         function integerPacking(byteCount: number): Provider;
         function stringArray(data: string[]): Result;

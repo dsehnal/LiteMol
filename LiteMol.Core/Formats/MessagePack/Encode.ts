@@ -79,7 +79,7 @@ namespace LiteMol.Core.Formats.MessagePack {
         }
 
         // Boolean, null
-        if (type === "boolean" || value === null) return 1;
+        if (type === "boolean" || value === null || value === void 0) return 1;
 
         // Container Types
         if (type === "object") {
@@ -239,7 +239,7 @@ namespace LiteMol.Core.Formats.MessagePack {
         }
 
         // null
-        if (value === null) {
+        if (value === null || value === undefined) {
             view.setUint8(offset, 0xc0);
             return 1;
         }

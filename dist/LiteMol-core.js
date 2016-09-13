@@ -8439,7 +8439,7 @@ var LiteMol;
                         throw new Error("Number too small -0x" + value.toString(16).substr(1));
                     }
                     // Boolean, null
-                    if (type === "boolean" || value === null)
+                    if (type === "boolean" || value === null || value === void 0)
                         return 1;
                     // Container Types
                     if (type === "object") {
@@ -8592,7 +8592,7 @@ var LiteMol;
                         throw new Error("Number too small -0x" + (-value).toString(16).substr(1));
                     }
                     // null
-                    if (value === null) {
+                    if (value === null || value === undefined) {
                         view.setUint8(offset, 0xc0);
                         return 1;
                     }
@@ -8688,7 +8688,8 @@ var LiteMol;
                      * @return {Uint8Array} decoded array
                      */
                     function bin(length) {
-                        var value = buffer.subarray(offset, offset + length);
+                        var value = new Uint8Array(buffer.buffer, offset, length);
+                        //buffer.subarray(offset, offset + length);
                         offset += length;
                         return value;
                     }
@@ -9014,7 +9015,7 @@ var LiteMol;
                     ;
                     _UndefinedColumn.prototype.getInteger = function (row) { return 0; };
                     _UndefinedColumn.prototype.getFloat = function (row) { return 0.0; };
-                    _UndefinedColumn.prototype.isValueUndefined = function (row) { return true; };
+                    _UndefinedColumn.prototype.getValuePresence = function (row) { return 1 /* NotSpecified */; };
                     _UndefinedColumn.prototype.areValuesEqual = function (rowA, rowB) { return true; };
                     _UndefinedColumn.prototype.stringEquals = function (row, value) { return value === null; };
                     return _UndefinedColumn;
@@ -9333,13 +9334,17 @@ var LiteMol;
                         /**
                          * Returns true if the value is not defined (. or ? token).
                          */
-                        Column.prototype.isValueUndefined = function (row) {
+                        Column.prototype.getValuePresence = function (row) {
                             var index = row * this.columnCount + this.index;
                             var s = this.tokens[2 * index];
                             if (this.tokens[2 * index + 1] - s !== 1)
-                                return false;
+                                return 0 /* Present */;
                             var v = this.data.charCodeAt(s);
-                            return v === 46 /* . */ || v === 63 /* ? */;
+                            if (v === 46 /* . */)
+                                return 1 /* NotSpecified */;
+                            if (v === 63 /* ? */)
+                                return 2 /* Unknown */;
+                            return 0 /* Present */;
                         };
                         return Column;
                     }());
@@ -9879,6 +9884,7 @@ var LiteMol;
             var BinaryCIF;
             (function (BinaryCIF) {
                 "use strict";
+                BinaryCIF.VERSION = '0.1.0';
                 var Encoding;
                 (function (Encoding) {
                     function getIntDataType(data) {
@@ -9889,6 +9895,10 @@ var LiteMol;
                             srcType = 1 /* Int16 */;
                         else if (data instanceof Int32Array)
                             srcType = 2 /* Int32 */;
+                        else if (data instanceof Uint8Array)
+                            srcType = 3 /* Uint8 */;
+                        else
+                            throw new Error('Unsupported integer data type.');
                         return srcType;
                     }
                     Encoding.getIntDataType = getIntDataType;
@@ -9955,6 +9965,13 @@ var LiteMol;
                         };
                     }
                     Encoder.value = value;
+                    function uint8(data) {
+                        return {
+                            encoding: { kind: 'ByteArray', type: 3 /* Uint8 */ },
+                            data: data
+                        };
+                    }
+                    Encoder.uint8 = uint8;
                     function int8(data) {
                         return {
                             encoding: { kind: 'ByteArray', type: 0 /* Int8 */ },
@@ -9993,7 +10010,7 @@ var LiteMol;
                             view.setFloat32(4 * i, data[i]);
                         }
                         return {
-                            encoding: { kind: 'ByteArray', type: 3 /* Float32 */ },
+                            encoding: { kind: 'ByteArray', type: 4 /* Float32 */ },
                             data: result
                         };
                     }
@@ -10005,7 +10022,7 @@ var LiteMol;
                             view.setFloat64(8 * i, data[i]);
                         }
                         return {
-                            encoding: { kind: 'ByteArray', type: 4 /* Float64 */ },
+                            encoding: { kind: 'ByteArray', type: 5 /* Float64 */ },
                             data: result
                         };
                     }
@@ -10212,11 +10229,12 @@ var LiteMol;
                             case 'Value': return encoding.value;
                             case 'ByteArray': {
                                 switch (encoding.type) {
+                                    case 3 /* Uint8 */: return data;
                                     case 0 /* Int8 */: return int8(data);
                                     case 1 /* Int16 */: return int16(data);
                                     case 2 /* Int32 */: return int32(data);
-                                    case 3 /* Float32 */: return float32(data);
-                                    case 4 /* Float64 */: return float64(data);
+                                    case 4 /* Float32 */: return float32(data);
+                                    case 5 /* Float64 */: return float64(data);
                                 }
                             }
                             case 'FixedPoint': return fixedPoint(data, encoding);
@@ -10281,6 +10299,8 @@ var LiteMol;
                             case 0 /* Int8 */: return new Int8Array(size);
                             case 1 /* Int16 */: return new Int16Array(size);
                             case 2 /* Int32 */: return new Int32Array(size);
+                            case 3 /* Uint8 */: return new Uint8Array(size);
+                            default: throw new Error('Unsupported integer data type.');
                         }
                     }
                     function runLength(data, encoding) {
