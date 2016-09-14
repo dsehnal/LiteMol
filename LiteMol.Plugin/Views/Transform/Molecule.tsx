@@ -7,7 +7,7 @@ namespace LiteMol.Plugin.Views.Transform.Molecule {
     
     import Transformer = Bootstrap.Entity.Transformer
 
-    export class CreateFromString extends Transform.ControllerBase<Bootstrap.Components.Transform.Controller<Transformer.Molecule.CreateFromStringParams>, Transformer.Molecule.CreateFromStringParams> {        
+    export class CreateFromData extends Transform.ControllerBase<Bootstrap.Components.Transform.Controller<Transformer.Molecule.CreateFromDataParams>, Transformer.Molecule.CreateFromDataParams> {        
         protected renderControls() {            
             let params = this.params;
             return <div>

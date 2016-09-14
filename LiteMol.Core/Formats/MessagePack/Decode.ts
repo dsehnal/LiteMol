@@ -50,9 +50,9 @@ namespace LiteMol.Core.Formats.MessagePack {
          * @return {String} decoded string
          */
         function str(length: number) {
-
-            return utf8Read(buffer, offset, length);
-
+            let value = utf8Read(buffer, offset, length);
+            offset += length;
+            return value;
             // let array = buffer.subarray(offset, offset + length);
             // offset += length;
             // // limit number of arguments to String.fromCharCode to something

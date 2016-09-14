@@ -44,7 +44,7 @@ namespace LiteMol.Core.Formats.CIF {
         name: string;
         rowCount: number;
         columnCount: number;
-        columns: Column[];
+        columnNames: string[];
 
         /**
          * If a field with the given name is not present, returns UndefinedColumn. 
@@ -54,6 +54,8 @@ namespace LiteMol.Core.Formats.CIF {
          * category.getColumn('field')
          */
         getColumn(name: string): Column;
+
+        toJSON(): any;
     }
 
     export const enum ValuePresence {

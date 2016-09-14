@@ -9,7 +9,7 @@ namespace LiteMol.Plugin.Views.Transform.Density {
     
     const IsoValue = (props: { onChange: (v: number)=> void, min: number, max: number, value: number }) => <Controls.Slider label='Iso Value (\u03C3)' {...props} step={0.001}  /> 
     
-    export class ParseBinary extends Transform.ControllerBase<Bootstrap.Components.Transform.Controller<Transformer.Density.ParseBinaryParams>, Transformer.Density.ParseBinaryParams> {        
+    export class ParseData extends Transform.ControllerBase<Bootstrap.Components.Transform.Controller<Transformer.Density.ParseDataParams>, Transformer.Density.ParseDataParams> {        
         protected renderControls() {            
             let params = this.params;
             let info: any[];

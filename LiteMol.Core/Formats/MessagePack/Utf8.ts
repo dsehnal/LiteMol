@@ -82,7 +82,7 @@ namespace LiteMol.Core.Formats.MessagePack {
                     ((data[++i] & 0x3f) << 0)
                 );
                 continue;
-            }
+            }            
             throw new Error("Invalid byte " + byte.toString(16));
         }
         return str.join('');

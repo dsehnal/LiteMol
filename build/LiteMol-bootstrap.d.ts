@@ -3517,11 +3517,11 @@ declare namespace LiteMol.Bootstrap.Entity.Transformer.Molecule {
         file?: File;
     }
     const OpenMoleculeFromFile: Tree.Transformer<Root, Action, OpenMoleculeFromFileParams>;
-    interface CreateFromStringParams {
+    interface CreateFromDataParams {
         format?: Core.Formats.FormatInfo;
         customId?: string;
     }
-    const CreateFromString: Tree.Transformer<Entity.Data.String, Entity.Molecule.Molecule, CreateFromStringParams>;
+    const CreateFromData: Tree.Transformer<Entity.Data.String | Entity.Data.Binary, Entity.Molecule.Molecule, CreateFromDataParams>;
     interface CreateFromMmCifParams {
         blockIndex?: number;
     }
@@ -3595,12 +3595,12 @@ declare namespace LiteMol.Bootstrap.Entity.Transformer.Data {
     const ParseJson: Tree.Transformer<Entity.Data.String, Entity.Data.Json, ParseJsonParams>;
 }
 declare namespace LiteMol.Bootstrap.Entity.Transformer.Density {
-    interface ParseBinaryParams {
+    interface ParseDataParams {
         id?: string;
         format?: LiteMol.Core.Formats.FormatInfo;
         normalize?: boolean;
     }
-    const ParseBinary: Tree.Transformer<Entity.Data.Binary, Entity.Density.Data, ParseBinaryParams>;
+    const ParseData: Tree.Transformer<Entity.Data.String | Entity.Data.Binary, Entity.Density.Data, ParseDataParams>;
     interface CreateVisualParams {
         style?: Visualization.Density.Style;
     }

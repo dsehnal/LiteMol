@@ -30,9 +30,9 @@ namespace LiteMol.Viewer {
             { transformer: Transformer.Data.OpenFile, view: Views.Transform.Data.OpenFile, initiallyCollapsed: true },
             
             // Raw data transforms
-            { transformer: Transformer.Molecule.CreateFromString, view: Views.Transform.Molecule.CreateFromString },
+            { transformer: Transformer.Molecule.CreateFromData, view: Views.Transform.Molecule.CreateFromData },
             { transformer: Transformer.Data.ParseCif, view: Views.Transform.Empty },
-            { transformer: Transformer.Density.ParseBinary, view: Views.Transform.Density.ParseBinary },
+            { transformer: Transformer.Density.ParseData, view: Views.Transform.Density.ParseData },
             
             // Molecule(model) transforms
             { transformer: Transformer.Molecule.CreateFromMmCif, view: Views.Transform.Molecule.CreateFromMmCif },

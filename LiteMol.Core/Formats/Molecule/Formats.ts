@@ -25,6 +25,26 @@ namespace LiteMol.Core.Formats.Molecule {
             });
         }};
 
+        export const mmBCIF: FormatInfo = { name: 'mmBCIF', extensions: ['.bcif'], isBinary: true, parse: (data, { id }) => {
+            return Computation.create<ParserResult<Structure.Molecule>>(ctx => {
+                ctx.update('Parsing...');
+                ctx.schedule(() => {
+                    let file = CIF.Binary.parse(data as ArrayBuffer);
+                    if (file.error) { ctx.reject(file.error.toString()); return; }
+                    if (!file.result.dataBlocks.length) { ctx.reject(`The BinaryCIF data does not contain a data block.`); return; }
+                    ctx.update('Creating representation...');
+                    ctx.schedule(() => {
+                        try {
+                            let mol = Molecule.mmCIF.ofDataBlock(file.result.dataBlocks[0]);
+                            ctx.resolve(ParserResult.success(mol, file.result.dataBlocks.length > 1 ? [`The input data contains multiple data blocks, only the first one was parsed. To parse all data blocks, use the function 'mmCIF.ofDataBlock' separately for each block.`] : void 0));
+                        } catch (e) {
+                            ctx.reject(`${e}`);
+                        }
+                    });
+                });
+            });
+        }};
+
         export const PDB: FormatInfo = { name: 'PDB', extensions: ['.pdb','.ent'], parse: (data, { id }) => {
             return Computation.create<ParserResult<Structure.Molecule>>(ctx => {
                 ctx.update('Parsing...');
@@ -56,6 +76,6 @@ namespace LiteMol.Core.Formats.Molecule {
             });
         }};
 
-        export const All = [ mmCIF, PDB, SDF ];
+        export const All = [ mmCIF, mmBCIF, PDB, SDF ];
     }
 }

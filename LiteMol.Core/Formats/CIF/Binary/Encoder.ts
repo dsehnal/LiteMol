@@ -2,7 +2,7 @@
  * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
 
-namespace LiteMol.Core.Formats.BinaryCIF {
+namespace LiteMol.Core.Formats.CIF.Binary {
     "use strict";
     
     /**
@@ -53,13 +53,6 @@ namespace LiteMol.Core.Formats.BinaryCIF {
 
         function dataView(array: TypedArray) {
             return new DataView(array.buffer, array.byteOffset, array.byteLength);
-        }
-
-        export function value(value: any): Result {
-            return {
-                encoding: { kind: 'Value', value },
-                data: void 0
-            };
         }
 
         export function uint8(data: Int16Array): Result {

@@ -2,12 +2,12 @@
  * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
 
-namespace LiteMol.Core.Formats.BinaryCIF {
+namespace LiteMol.Core.Formats.CIF.Binary {
     "use strict";
     
     export const VERSION = '0.1.0';
 
-    export type Encoding = Encoding.Value | Encoding.ByteArray | Encoding.FixedPoint | Encoding.RunLength | Encoding.Delta | Encoding.IntegerPacking | Encoding.StringArray
+    export type Encoding = Encoding.ByteArray | Encoding.FixedPoint | Encoding.RunLength | Encoding.Delta | Encoding.IntegerPacking | Encoding.StringArray
 
     export interface EncodedFile {
         version: string,
@@ -22,6 +22,7 @@ namespace LiteMol.Core.Formats.BinaryCIF {
 
     export interface EncodedCategory {
         name: string,
+        rowCount: number,
         columns: EncodedColumn[],
     }
 
@@ -70,12 +71,6 @@ namespace LiteMol.Core.Formats.BinaryCIF {
             else if (data instanceof Uint8Array) srcType = Encoding.IntDataType.Uint8;
             else throw new Error('Unsupported integer data type.');  
             return srcType;
-        }
-
-        // type[] -> Uint8[]
-        export interface Value {
-            kind: 'Value',
-            value: any
         }
         
         // type[] -> Uint8[]

@@ -18,36 +18,44 @@ namespace LiteMol.Bootstrap.Entity.Transformer.Molecule {
             to: [Action],
             defaultParams: ctx => ({ id: params.defaultId, format: LiteMol.Core.Formats.Molecule.SupportedFormats.mmCIF }),
             validateParams: p => (!p.id || !p.id.trim().length) ? [`Enter ${params.isFullUrl ? 'Url' : 'Id'}`] : void 0
-        }, (context, a, t) => Tree.Transform.build()
-            .add(a, <Tree.Transformer.To<Entity.Data.String>>Data.Download, { url: params.urlTemplate(t.params.id.trim()), type: 'String', id: t.params.id, description: params.name })
-            .then(CreateFromString, { format: params.specificFormat ? params.specificFormat : t.params.format }, { isBinding: true })
-            .then(Molecule.CreateModel, { modelIndex: 0 }, { isBinding: false }))
+        }, (context, a, t) => {
+            let format = params.specificFormat ? params.specificFormat : t.params.format;
+            return Tree.Transform.build()
+                .add(a, <Tree.Transformer.To<Entity.Data.String | Entity.Data.Binary>>Data.Download, { url: params.urlTemplate(t.params.id.trim()), type: format.isBinary ? 'Binary' : 'String', id: t.params.id, description: params.name })
+                .then(CreateFromData, { format: params.specificFormat ? params.specificFormat : t.params.format }, { isBinding: true })
+                .then(Molecule.CreateModel, { modelIndex: 0 }, { isBinding: false })
+        })
     }    
     
     export interface OpenMoleculeFromFileParams { file?: File  }
     export const OpenMoleculeFromFile = Tree.Transformer.action<Root, Action, OpenMoleculeFromFileParams>({
         id: 'molecule-open-from-file',
         name: 'Molecule from File',
-        description: 'Open a molecule from a file (mmCIF, PDB, SDF/MOL).',
+        description: `Open a molecule from a file (${LiteMol.Core.Formats.Molecule.SupportedFormats.All.map(f => f.name).join(', ')}).`,
         from: [Root],
         to: [Action],
         defaultParams: ctx => ({ format: LiteMol.Core.Formats.Molecule.SupportedFormats.mmCIF }),
-        validateParams: p => !p.file ? ['Select a file'] : !LiteMol.Core.Formats.FormatInfo.getFormat(p.file.name, LiteMol.Core.Formats.Molecule.SupportedFormats.All) ? ['Select a supported (.cif,.pdb,.ent) file.'] : void 0
-    }, (context, a, t) => Tree.Transform.build()
-        .add(a, <Tree.Transformer.To<Entity.Data.String>>Data.OpenFile, { file: t.params.file, type: 'String' })
-        .then(CreateFromString, { format: LiteMol.Core.Formats.FormatInfo.getFormat(t.params.file.name, LiteMol.Core.Formats.Molecule.SupportedFormats.All) }, { isBinding: true })
-        .then(Molecule.CreateModel, { modelIndex: 0 }, { isBinding: false }))
+        validateParams: p => !p.file ? ['Select a file'] : !LiteMol.Core.Formats.FormatInfo.getFormat(p.file.name, LiteMol.Core.Formats.Molecule.SupportedFormats.All) 
+            ?  [`Select a supported file format (${[].concat(LiteMol.Core.Formats.Molecule.SupportedFormats.All.map(f => f.extensions)).join(', ')}).`] 
+            : void 0
+    }, (context, a, t) => {
+        let format = LiteMol.Core.Formats.FormatInfo.getFormat(t.params.file.name, LiteMol.Core.Formats.Molecule.SupportedFormats.All);
+        return Tree.Transform.build()
+            .add(a, <Tree.Transformer.To<Entity.Data.String | Entity.Data.Binary>>Data.OpenFile, { file: t.params.file, type: format.isBinary ? 'Binary' : 'String' })
+            .then(CreateFromData, { format }, { isBinding: true })
+            .then(Molecule.CreateModel, { modelIndex: 0 }, { isBinding: false })
+    })
 
-    export interface CreateFromStringParams {
+    export interface CreateFromDataParams {
         format?: Core.Formats.FormatInfo,
         customId?: string
     } 
     
-    export const CreateFromString = Tree.Transformer.create<Entity.Data.String, Entity.Molecule.Molecule, CreateFromStringParams>({
-            id: 'molecule-create-from-string',
+    export const CreateFromData = Tree.Transformer.create<Entity.Data.String | Entity.Data.Binary, Entity.Molecule.Molecule, CreateFromDataParams>({
+            id: 'molecule-create-from-data',
             name: 'Molecule',
-            description: 'Create a molecule from string data.',
-            from: [Entity.Data.String],
+            description: 'Create a molecule from string or binary data.',
+            from: [Entity.Data.String, Entity.Data.Binary],
             to: [Entity.Molecule.Molecule],
             defaultParams: (ctx) => ({ format: LiteMol.Core.Formats.Molecule.SupportedFormats.mmCIF })
         }, (ctx, a, t) => {

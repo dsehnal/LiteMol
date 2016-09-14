@@ -62,7 +62,7 @@ var LiteMol;
                     var group = action.add(a, Transformer.Basic.CreateGroup, { label: id, description: 'Density' }, { ref: t.props.ref });
                     var diff = group
                         .then(Transformer.Data.Download, { url: "http://www.ebi.ac.uk/pdbe/coordinates/files/" + id + "_diff.ccp4", type: 'Binary', id: t.params.id, description: 'Fo-Fc' })
-                        .then(Transformer.Density.ParseBinary, { format: LiteMol.Core.Formats.Density.SupportedFormats.CCP4, id: 'Fo-Fc', normalize: false }, { isBinding: true });
+                        .then(Transformer.Density.ParseData, { format: LiteMol.Core.Formats.Density.SupportedFormats.CCP4, id: 'Fo-Fc', normalize: false }, { isBinding: true });
                     diff
                         .then(Transformer.Density.CreateVisualBehaviour, {
                         id: 'Fo-Fc(-ve)',
@@ -91,7 +91,7 @@ var LiteMol;
                     });
                     var base = group
                         .then(Transformer.Data.Download, { url: "http://www.ebi.ac.uk/pdbe/coordinates/files/" + id + ".ccp4", type: 'Binary', id: t.params.id, description: '2Fo-Fc' })
-                        .then(Transformer.Density.ParseBinary, { format: LiteMol.Core.Formats.Density.SupportedFormats.CCP4, id: '2Fo-Fc', normalize: false }, { isBinding: true })
+                        .then(Transformer.Density.ParseData, { format: LiteMol.Core.Formats.Density.SupportedFormats.CCP4, id: '2Fo-Fc', normalize: false }, { isBinding: true })
                         .then(Transformer.Density.CreateVisualBehaviour, {
                         id: '2Fo-Fc',
                         isoSigmaMin: 0,
@@ -709,9 +709,9 @@ var LiteMol;
                 { transformer: Transformer.Data.Download, view: Views.Transform.Data.Download, initiallyCollapsed: true },
                 { transformer: Transformer.Data.OpenFile, view: Views.Transform.Data.OpenFile, initiallyCollapsed: true },
                 // Raw data transforms
-                { transformer: Transformer.Molecule.CreateFromString, view: Views.Transform.Molecule.CreateFromString },
+                { transformer: Transformer.Molecule.CreateFromData, view: Views.Transform.Molecule.CreateFromData },
                 { transformer: Transformer.Data.ParseCif, view: Views.Transform.Empty },
-                { transformer: Transformer.Density.ParseBinary, view: Views.Transform.Density.ParseBinary },
+                { transformer: Transformer.Density.ParseData, view: Views.Transform.Density.ParseData },
                 // Molecule(model) transforms
                 { transformer: Transformer.Molecule.CreateFromMmCif, view: Views.Transform.Molecule.CreateFromMmCif },
                 { transformer: Transformer.Molecule.CreateModel, view: Views.Transform.Molecule.CreateModel, initiallyCollapsed: true },

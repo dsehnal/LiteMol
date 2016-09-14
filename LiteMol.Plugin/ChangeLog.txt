@@ -1,4 +1,8 @@
-﻿== 1.1.1 ==
+﻿== 1.1.2 ==
+* Views.Transform.Molecule.CreateFromString => Views.Transform.Molecule.CreateFromData
+* Views.Transform.Density.ParseBinary => Views.Transform.Density.ParseData
+
+== 1.1.1 ==
 * Fix in "SetCurrentEntity" bug for bound nodes.
 
 == 1.1.0 ==

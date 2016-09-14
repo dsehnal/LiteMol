@@ -6,16 +6,16 @@
 namespace LiteMol.Bootstrap.Entity.Transformer.Density {
     "use strict";
   
-    export interface ParseBinaryParams {
+    export interface ParseDataParams {
         id?: string,
         format?: LiteMol.Core.Formats.FormatInfo,
         normalize?: boolean
     } 
-    export const ParseBinary = Tree.Transformer.create<Entity.Data.Binary, Entity.Density.Data, ParseBinaryParams>({
+    export const ParseData = Tree.Transformer.create<Entity.Data.String | Entity.Data.Binary, Entity.Density.Data, ParseDataParams>({
             id: 'density-parse-binary',
             name: 'Density Data',
             description: 'Parse density from binary data.',
-            from: [Entity.Data.Binary],
+            from: [Entity.Data.String, Entity.Data.Binary],
             to: [Entity.Density.Data],
             isUpdatable: true,
             defaultParams: () => ({ format: LiteMol.Core.Formats.Density.SupportedFormats.CCP4, normalize: false })

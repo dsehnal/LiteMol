@@ -8761,7 +8761,9 @@ var LiteMol;
                      * @return {String} decoded string
                      */
                     function str(length) {
-                        return MessagePack.utf8Read(buffer, offset, length);
+                        var value = MessagePack.utf8Read(buffer, offset, length);
+                        offset += length;
+                        return value;
                         // let array = buffer.subarray(offset, offset + length);
                         // offset += length;
                         // // limit number of arguments to String.fromCharCode to something
@@ -9282,30 +9284,24 @@ var LiteMol;
                             this.columnCount = columns.length;
                             this.rowCount = (tokenCount / columns.length) | 0;
                             this.columnWrappers = {};
-                            this.columnList = [];
+                            this.columnNameList = [];
                             for (var i = 0; i < columns.length; i++) {
                                 var colName = columns[i].substr(name.length + 1);
                                 var col = new Column(this, data, colName, i);
                                 this.columnWrappers[colName] = col;
-                                this.columnList.push(col);
+                                this.columnNameList.push(colName);
                             }
                         }
-                        Object.defineProperty(Category.prototype, "columns", {
+                        Object.defineProperty(Category.prototype, "columnNames", {
                             /**
                              * The array of columns.
                              */
                             get: function () {
-                                return this.columnList;
+                                return this.columnNameList;
                             },
                             enumerable: true,
                             configurable: true
                         });
-                        /**
-                         * Compute the token index.
-                         */
-                        Category.prototype.getTokenIndex = function (row, columnIndex) {
-                            return row * this.columnCount + columnIndex;
-                        };
                         /**
                          * Get a column object that makes accessing data easier.
                          * @returns undefined if the column isn't present, the Column object otherwise.
@@ -9315,7 +9311,7 @@ var LiteMol;
                         };
                         Category.prototype.toJSON = function () {
                             var rows = [], data = this.data, tokens = this.tokens;
-                            var colNames = this.columns.map(function (c) { return c.name; });
+                            var colNames = this.columnNameList;
                             for (var i = 0; i < this.rowCount; i++) {
                                 var item = {};
                                 for (var j = 0; j < this.columnCount; j++) {
@@ -9943,29 +9939,173 @@ var LiteMol;
     (function (Core) {
         var Formats;
         (function (Formats) {
-            var BinaryCIF;
-            (function (BinaryCIF) {
-                "use strict";
-                BinaryCIF.VERSION = '0.1.0';
-                var Encoding;
-                (function (Encoding) {
-                    function getIntDataType(data) {
-                        var srcType;
-                        if (data instanceof Int8Array)
-                            srcType = 0 /* Int8 */;
-                        else if (data instanceof Int16Array)
-                            srcType = 1 /* Int16 */;
-                        else if (data instanceof Int32Array)
-                            srcType = 2 /* Int32 */;
-                        else if (data instanceof Uint8Array)
-                            srcType = 3 /* Uint8 */;
-                        else
-                            throw new Error('Unsupported integer data type.');
-                        return srcType;
+            var CIF;
+            (function (CIF) {
+                var Binary;
+                (function (Binary) {
+                    "use strict";
+                    var File = (function () {
+                        function File(data) {
+                            this.dataBlocks = data.dataBlocks.map(function (b) { return new DataBlock(b); });
+                        }
+                        File.prototype.toJSON = function () {
+                            return this.dataBlocks.map(function (b) { return b.toJSON(); });
+                        };
+                        return File;
+                    }());
+                    Binary.File = File;
+                    var DataBlock = (function () {
+                        function DataBlock(data) {
+                            this.additionalData = {};
+                            this.header = data.header;
+                            this.categoryList = data.categories.map(function (c) { return new Category(c); });
+                            this.categoryMap = {};
+                            for (var _i = 0, _a = this.categoryList; _i < _a.length; _i++) {
+                                var c = _a[_i];
+                                this.categoryMap[c.name] = c;
+                            }
+                        }
+                        Object.defineProperty(DataBlock.prototype, "categories", {
+                            get: function () { return this.categoryList; },
+                            enumerable: true,
+                            configurable: true
+                        });
+                        DataBlock.prototype.getCategory = function (name) { return this.categoryMap[name]; };
+                        DataBlock.prototype.toJSON = function () {
+                            return {
+                                id: this.header,
+                                categories: this.categoryList.map(function (c) { return c.toJSON(); }),
+                                additionalData: this.additionalData
+                            };
+                        };
+                        return DataBlock;
+                    }());
+                    Binary.DataBlock = DataBlock;
+                    var Category = (function () {
+                        function Category(data) {
+                            this.name = data.name;
+                            this.columnCount = data.columns.length;
+                            this.rowCount = data.rowCount;
+                            this.columnNameList = [];
+                            this.encodedColumns = {};
+                            this.columnWrappers = {};
+                            for (var _i = 0, _a = data.columns; _i < _a.length; _i++) {
+                                var c = _a[_i];
+                                this.encodedColumns[c.name] = c;
+                                this.columnWrappers[c.name] = null;
+                                this.columnNameList.push(c.name);
+                            }
+                        }
+                        Object.defineProperty(Category.prototype, "columnNames", {
+                            get: function () { return this.columnNameList; },
+                            enumerable: true,
+                            configurable: true
+                        });
+                        Category.prototype.getColumn = function (name) {
+                            var c = this.columnWrappers[name];
+                            if (c)
+                                return c;
+                            var w = this.encodedColumns[name];
+                            if (w) {
+                                c = wrapColumn(w);
+                                this.columnWrappers[name] = c;
+                                return c;
+                            }
+                            return CIF.UndefinedColumn;
+                        };
+                        Category.prototype.toJSON = function () {
+                            var _this = this;
+                            var rows = [];
+                            var columns = this.columnNameList.map(function (name) { return ({ name: name, column: _this.getColumn(name) }); });
+                            for (var i = 0; i < this.rowCount; i++) {
+                                var item = {};
+                                for (var _i = 0, columns_1 = columns; _i < columns_1.length; _i++) {
+                                    var c = columns_1[_i];
+                                    var d = c.column.getValuePresence(i);
+                                    if (d === 0 /* Present */)
+                                        item[c.name] = c.column.getString(i);
+                                    else if (d === 1 /* NotSpecified */)
+                                        item[c.name] = '.';
+                                    else
+                                        item[c.name] = '?';
+                                }
+                                rows[i] = item;
+                            }
+                            return { name: this.name, columns: this.columnNames, rows: rows };
+                        };
+                        return Category;
+                    }());
+                    Binary.Category = Category;
+                    function wrapColumn(column) {
+                        if (!column.data.data)
+                            return CIF.UndefinedColumn;
+                        var data = Binary.decode(column.data);
+                        var mask;
+                        if (column.mask)
+                            mask = Binary.decode(column.mask);
+                        if (data.buffer && data.byteLength && data.BYTES_PER_ELEMENT) {
+                            return mask ? new MaskedNumericColumn(data, mask) : new NumericColumn(data);
+                        }
+                        return mask ? new MaskedStringColumn(data, mask) : new StringColumn(data);
                     }
-                    Encoding.getIntDataType = getIntDataType;
-                })(Encoding = BinaryCIF.Encoding || (BinaryCIF.Encoding = {}));
-            })(BinaryCIF = Formats.BinaryCIF || (Formats.BinaryCIF = {}));
+                    var NumericColumn = (function () {
+                        function NumericColumn(data) {
+                            this.data = data;
+                            this.isDefined = true;
+                        }
+                        NumericColumn.prototype.getString = function (row) { return "" + this.data[row]; };
+                        NumericColumn.prototype.getInteger = function (row) { return this.data[row] | 0; };
+                        NumericColumn.prototype.getFloat = function (row) { return 1.0 * this.data[row]; };
+                        NumericColumn.prototype.stringEquals = function (row, value) { return this.data[row] === Core.Utils.FastNumberParsers.parseFloat(value, 0, value.length); };
+                        NumericColumn.prototype.areValuesEqual = function (rowA, rowB) { return this.data[rowA] === this.data[rowB]; };
+                        NumericColumn.prototype.getValuePresence = function (row) { return 0 /* Present */; };
+                        return NumericColumn;
+                    }());
+                    var MaskedNumericColumn = (function () {
+                        function MaskedNumericColumn(data, mask) {
+                            this.data = data;
+                            this.mask = mask;
+                            this.isDefined = true;
+                        }
+                        MaskedNumericColumn.prototype.getString = function (row) { return this.mask[row] === 0 /* Present */ ? "" + this.data[row] : null; };
+                        MaskedNumericColumn.prototype.getInteger = function (row) { return this.mask[row] === 0 /* Present */ ? this.data[row] : 0; };
+                        MaskedNumericColumn.prototype.getFloat = function (row) { return this.mask[row] === 0 /* Present */ ? this.data[row] : 0; };
+                        MaskedNumericColumn.prototype.stringEquals = function (row, value) { return this.mask[row] === 0 /* Present */ ? this.data[row] === Core.Utils.FastNumberParsers.parseFloat(value, 0, value.length) : value === null || value === void 0; };
+                        MaskedNumericColumn.prototype.areValuesEqual = function (rowA, rowB) { return this.data[rowA] === this.data[rowB]; };
+                        MaskedNumericColumn.prototype.getValuePresence = function (row) { return this.mask[row]; };
+                        return MaskedNumericColumn;
+                    }());
+                    var StringColumn = (function () {
+                        function StringColumn(data) {
+                            this.data = data;
+                            this.isDefined = true;
+                        }
+                        StringColumn.prototype.getString = function (row) { return this.data[row]; };
+                        StringColumn.prototype.getInteger = function (row) { var v = this.data[row]; return Core.Utils.FastNumberParsers.parseInt(v, 0, v.length); };
+                        StringColumn.prototype.getFloat = function (row) { var v = this.data[row]; return Core.Utils.FastNumberParsers.parseFloat(v, 0, v.length); };
+                        StringColumn.prototype.stringEquals = function (row, value) { return this.data[row] === value; };
+                        StringColumn.prototype.areValuesEqual = function (rowA, rowB) { return this.data[rowA] === this.data[rowB]; };
+                        StringColumn.prototype.getValuePresence = function (row) { return 0 /* Present */; };
+                        return StringColumn;
+                    }());
+                    var MaskedStringColumn = (function () {
+                        function MaskedStringColumn(data, mask) {
+                            this.data = data;
+                            this.mask = mask;
+                            this.isDefined = true;
+                        }
+                        MaskedStringColumn.prototype.getString = function (row) { return this.mask[row] === 0 /* Present */ ? this.data[row] : null; };
+                        MaskedStringColumn.prototype.getInteger = function (row) { if (this.mask[row] !== 0 /* Present */)
+                            return 0; var v = this.data[row]; return Core.Utils.FastNumberParsers.parseInt(v, 0, v.length); };
+                        MaskedStringColumn.prototype.getFloat = function (row) { if (this.mask[row] !== 0 /* Present */)
+                            return 0; var v = this.data[row]; return Core.Utils.FastNumberParsers.parseFloat(v, 0, v.length); };
+                        MaskedStringColumn.prototype.stringEquals = function (row, value) { return this.data[row] === value; };
+                        MaskedStringColumn.prototype.areValuesEqual = function (rowA, rowB) { return this.data[rowA] === this.data[rowB]; };
+                        MaskedStringColumn.prototype.getValuePresence = function (row) { return this.mask[row]; };
+                        return MaskedStringColumn;
+                    }());
+                })(Binary = CIF.Binary || (CIF.Binary = {}));
+            })(CIF = Formats.CIF || (Formats.CIF = {}));
         })(Formats = Core.Formats || (Core.Formats = {}));
     })(Core = LiteMol.Core || (LiteMol.Core = {}));
 })(LiteMol || (LiteMol = {}));
@@ -9978,285 +10118,319 @@ var LiteMol;
     (function (Core) {
         var Formats;
         (function (Formats) {
-            var BinaryCIF;
-            (function (BinaryCIF) {
-                "use strict";
-                /**
-                 * Fixed point, delta, RLE, integer packing adopted from https://github.com/rcsb/mmtf-javascript/
-                 * by Alexander Rose <alexander.rose@weirdbyte.de>, MIT License, Copyright (c) 2016
-                 */
-                var Encoder = (function () {
-                    function Encoder(providers) {
-                        this.providers = providers;
-                    }
-                    Encoder.prototype.and = function (f) {
-                        return new Encoder(this.providers.concat([f]));
-                    };
-                    Encoder.prototype.encode = function (data) {
-                        var encoding = [];
-                        for (var _i = 0, _a = this.providers; _i < _a.length; _i++) {
-                            var p = _a[_i];
-                            var t = p(data);
-                            data = t.data;
-                            encoding.push(t.encoding);
+            var CIF;
+            (function (CIF) {
+                var Binary;
+                (function (Binary) {
+                    "use strict";
+                    Binary.VERSION = '0.1.0';
+                    var Encoding;
+                    (function (Encoding) {
+                        function getIntDataType(data) {
+                            var srcType;
+                            if (data instanceof Int8Array)
+                                srcType = 0 /* Int8 */;
+                            else if (data instanceof Int16Array)
+                                srcType = 1 /* Int16 */;
+                            else if (data instanceof Int32Array)
+                                srcType = 2 /* Int32 */;
+                            else if (data instanceof Uint8Array)
+                                srcType = 3 /* Uint8 */;
+                            else
+                                throw new Error('Unsupported integer data type.');
+                            return srcType;
                         }
-                        if (!(data instanceof Uint8Array)) {
-                            throw new Error('The encoding must result in a Uint8Array. Fix your encoding chain.');
+                        Encoding.getIntDataType = getIntDataType;
+                    })(Encoding = Binary.Encoding || (Binary.Encoding = {}));
+                })(Binary = CIF.Binary || (CIF.Binary = {}));
+            })(CIF = Formats.CIF || (Formats.CIF = {}));
+        })(Formats = Core.Formats || (Core.Formats = {}));
+    })(Core = LiteMol.Core || (LiteMol.Core = {}));
+})(LiteMol || (LiteMol = {}));
+/*
+ * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ */
+var LiteMol;
+(function (LiteMol) {
+    var Core;
+    (function (Core) {
+        var Formats;
+        (function (Formats) {
+            var CIF;
+            (function (CIF) {
+                var Binary;
+                (function (Binary) {
+                    "use strict";
+                    /**
+                     * Fixed point, delta, RLE, integer packing adopted from https://github.com/rcsb/mmtf-javascript/
+                     * by Alexander Rose <alexander.rose@weirdbyte.de>, MIT License, Copyright (c) 2016
+                     */
+                    var Encoder = (function () {
+                        function Encoder(providers) {
+                            this.providers = providers;
                         }
-                        return {
-                            encoding: encoding,
-                            data: data
+                        Encoder.prototype.and = function (f) {
+                            return new Encoder(this.providers.concat([f]));
                         };
-                    };
-                    return Encoder;
-                }());
-                BinaryCIF.Encoder = Encoder;
-                var Encoder;
-                (function (Encoder) {
-                    function by(f) {
-                        return new Encoder([f]);
-                    }
-                    Encoder.by = by;
-                    function dataView(array) {
-                        return new DataView(array.buffer, array.byteOffset, array.byteLength);
-                    }
-                    function value(value) {
-                        return {
-                            encoding: { kind: 'Value', value: value },
-                            data: void 0
-                        };
-                    }
-                    Encoder.value = value;
-                    function uint8(data) {
-                        return {
-                            encoding: { kind: 'ByteArray', type: 3 /* Uint8 */ },
-                            data: data
-                        };
-                    }
-                    Encoder.uint8 = uint8;
-                    function int8(data) {
-                        return {
-                            encoding: { kind: 'ByteArray', type: 0 /* Int8 */ },
-                            data: new Uint8Array(data.buffer, data.byteOffset)
-                        };
-                    }
-                    Encoder.int8 = int8;
-                    function int16(data) {
-                        var result = new Uint8Array(data.length * 2);
-                        var view = dataView(result);
-                        for (var i = 0, n = data.length; i < n; i++) {
-                            view.setInt16(2 * i, data[i]);
-                        }
-                        return {
-                            encoding: { kind: 'ByteArray', type: 1 /* Int16 */ },
-                            data: result
-                        };
-                    }
-                    Encoder.int16 = int16;
-                    function int32(data) {
-                        var result = new Uint8Array(data.length * 4);
-                        var view = dataView(result);
-                        for (var i = 0, n = data.length; i < n; i++) {
-                            view.setInt32(4 * i, data[i]);
-                        }
-                        return {
-                            encoding: { kind: 'ByteArray', type: 2 /* Int32 */ },
-                            data: result
-                        };
-                    }
-                    Encoder.int32 = int32;
-                    function float32(data) {
-                        var result = new Uint8Array(data.length * 4);
-                        var view = dataView(result);
-                        for (var i = 0, n = data.length; i < n; i++) {
-                            view.setFloat32(4 * i, data[i]);
-                        }
-                        return {
-                            encoding: { kind: 'ByteArray', type: 4 /* Float32 */ },
-                            data: result
-                        };
-                    }
-                    Encoder.float32 = float32;
-                    function float64(data) {
-                        var result = new Uint8Array(data.length * 8);
-                        var view = dataView(result);
-                        for (var i = 0, n = data.length; i < n; i++) {
-                            view.setFloat64(8 * i, data[i]);
-                        }
-                        return {
-                            encoding: { kind: 'ByteArray', type: 5 /* Float64 */ },
-                            data: result
-                        };
-                    }
-                    Encoder.float64 = float64;
-                    function _fixedPoint(data, factor) {
-                        var result = new Int32Array(data.length);
-                        for (var i = 0, n = data.length; i < n; i++) {
-                            result[i] = Math.round(data[i] * factor);
-                        }
-                        return {
-                            encoding: { kind: 'FixedPoint', factor: factor },
-                            data: result
-                        };
-                    }
-                    function fixedPoint(factor) { return function (data) { return _fixedPoint(data, factor); }; }
-                    Encoder.fixedPoint = fixedPoint;
-                    function runLength(data) {
-                        var srcType = BinaryCIF.Encoding.getIntDataType(data);
-                        if (srcType === void 0) {
-                            data = new Int32Array(data);
-                            srcType = 2 /* Int32 */;
-                        }
-                        if (!data.length) {
+                        Encoder.prototype.encode = function (data) {
+                            var encoding = [];
+                            for (var _i = 0, _a = this.providers; _i < _a.length; _i++) {
+                                var p = _a[_i];
+                                var t = p(data);
+                                data = t.data;
+                                encoding.push(t.encoding);
+                            }
+                            if (!(data instanceof Uint8Array)) {
+                                throw new Error('The encoding must result in a Uint8Array. Fix your encoding chain.');
+                            }
                             return {
-                                encoding: { kind: 'RunLength', srcType: srcType, srcSize: 0 },
-                                data: new Int32Array(0)
+                                encoding: encoding,
+                                data: data
+                            };
+                        };
+                        return Encoder;
+                    }());
+                    Binary.Encoder = Encoder;
+                    var Encoder;
+                    (function (Encoder) {
+                        function by(f) {
+                            return new Encoder([f]);
+                        }
+                        Encoder.by = by;
+                        function dataView(array) {
+                            return new DataView(array.buffer, array.byteOffset, array.byteLength);
+                        }
+                        function uint8(data) {
+                            return {
+                                encoding: { kind: 'ByteArray', type: 3 /* Uint8 */ },
+                                data: data
                             };
                         }
-                        // calculate output size
-                        var fullLength = 2;
-                        for (var i = 1, il = data.length; i < il; i++) {
-                            if (data[i - 1] !== data[i]) {
-                                fullLength += 2;
-                            }
+                        Encoder.uint8 = uint8;
+                        function int8(data) {
+                            return {
+                                encoding: { kind: 'ByteArray', type: 0 /* Int8 */ },
+                                data: new Uint8Array(data.buffer, data.byteOffset)
+                            };
                         }
-                        var output = new Int32Array(fullLength);
-                        var offset = 0;
-                        var runLength = 1;
-                        for (var i = 1, il = data.length; i < il; i++) {
-                            if (data[i - 1] !== data[i]) {
-                                output[offset] = data[i - 1];
-                                output[offset + 1] = runLength;
-                                runLength = 1;
-                                offset += 2;
+                        Encoder.int8 = int8;
+                        function int16(data) {
+                            var result = new Uint8Array(data.length * 2);
+                            var view = dataView(result);
+                            for (var i = 0, n = data.length; i < n; i++) {
+                                view.setInt16(2 * i, data[i]);
                             }
-                            else {
-                                ++runLength;
+                            return {
+                                encoding: { kind: 'ByteArray', type: 1 /* Int16 */ },
+                                data: result
+                            };
+                        }
+                        Encoder.int16 = int16;
+                        function int32(data) {
+                            var result = new Uint8Array(data.length * 4);
+                            var view = dataView(result);
+                            for (var i = 0, n = data.length; i < n; i++) {
+                                view.setInt32(4 * i, data[i]);
                             }
+                            return {
+                                encoding: { kind: 'ByteArray', type: 2 /* Int32 */ },
+                                data: result
+                            };
                         }
-                        output[offset] = data[data.length - 1];
-                        output[offset + 1] = runLength;
-                        return {
-                            encoding: { kind: 'RunLength', srcType: srcType, srcSize: data.length },
-                            data: output
-                        };
-                    }
-                    Encoder.runLength = runLength;
-                    function delta(data) {
-                        var srcType = BinaryCIF.Encoding.getIntDataType(data);
-                        if (srcType === void 0) {
-                            data = new Int32Array(data);
-                            srcType = 2 /* Int32 */;
+                        Encoder.int32 = int32;
+                        function float32(data) {
+                            var result = new Uint8Array(data.length * 4);
+                            var view = dataView(result);
+                            for (var i = 0, n = data.length; i < n; i++) {
+                                view.setFloat32(4 * i, data[i]);
+                            }
+                            return {
+                                encoding: { kind: 'ByteArray', type: 4 /* Float32 */ },
+                                data: result
+                            };
                         }
-                        if (!data.length) {
+                        Encoder.float32 = float32;
+                        function float64(data) {
+                            var result = new Uint8Array(data.length * 8);
+                            var view = dataView(result);
+                            for (var i = 0, n = data.length; i < n; i++) {
+                                view.setFloat64(8 * i, data[i]);
+                            }
+                            return {
+                                encoding: { kind: 'ByteArray', type: 5 /* Float64 */ },
+                                data: result
+                            };
+                        }
+                        Encoder.float64 = float64;
+                        function _fixedPoint(data, factor) {
+                            var result = new Int32Array(data.length);
+                            for (var i = 0, n = data.length; i < n; i++) {
+                                result[i] = Math.round(data[i] * factor);
+                            }
+                            return {
+                                encoding: { kind: 'FixedPoint', factor: factor },
+                                data: result
+                            };
+                        }
+                        function fixedPoint(factor) { return function (data) { return _fixedPoint(data, factor); }; }
+                        Encoder.fixedPoint = fixedPoint;
+                        function runLength(data) {
+                            var srcType = Binary.Encoding.getIntDataType(data);
+                            if (srcType === void 0) {
+                                data = new Int32Array(data);
+                                srcType = 2 /* Int32 */;
+                            }
+                            if (!data.length) {
+                                return {
+                                    encoding: { kind: 'RunLength', srcType: srcType, srcSize: 0 },
+                                    data: new Int32Array(0)
+                                };
+                            }
+                            // calculate output size
+                            var fullLength = 2;
+                            for (var i = 1, il = data.length; i < il; i++) {
+                                if (data[i - 1] !== data[i]) {
+                                    fullLength += 2;
+                                }
+                            }
+                            var output = new Int32Array(fullLength);
+                            var offset = 0;
+                            var runLength = 1;
+                            for (var i = 1, il = data.length; i < il; i++) {
+                                if (data[i - 1] !== data[i]) {
+                                    output[offset] = data[i - 1];
+                                    output[offset + 1] = runLength;
+                                    runLength = 1;
+                                    offset += 2;
+                                }
+                                else {
+                                    ++runLength;
+                                }
+                            }
+                            output[offset] = data[data.length - 1];
+                            output[offset + 1] = runLength;
+                            return {
+                                encoding: { kind: 'RunLength', srcType: srcType, srcSize: data.length },
+                                data: output
+                            };
+                        }
+                        Encoder.runLength = runLength;
+                        function delta(data) {
+                            var srcType = Binary.Encoding.getIntDataType(data);
+                            if (srcType === void 0) {
+                                data = new Int32Array(data);
+                                srcType = 2 /* Int32 */;
+                            }
+                            if (!data.length) {
+                                return {
+                                    encoding: { kind: 'Delta', srcType: srcType },
+                                    data: new data.constructor(0)
+                                };
+                            }
+                            var output = new data.constructor(data.length);
+                            output[0] = data[0];
+                            for (var i = 1, n = data.length; i < n; i++) {
+                                output[i] = data[i] - data[i - 1];
+                            }
                             return {
                                 encoding: { kind: 'Delta', srcType: srcType },
-                                data: new data.constructor(0)
+                                data: output
                             };
                         }
-                        var output = new data.constructor(data.length);
-                        output[0] = data[0];
-                        for (var i = 1, n = data.length; i < n; i++) {
-                            output[i] = data[i] - data[i - 1];
-                        }
-                        return {
-                            encoding: { kind: 'Delta', srcType: srcType },
-                            data: output
-                        };
-                    }
-                    Encoder.delta = delta;
-                    function _integerPacking(data, byteCount) {
-                        var upperLimit = byteCount === 1 ? 0x7F : 0x7FFF;
-                        var lowerLimit = -upperLimit - 1;
-                        var n = data.length;
-                        var size = 0;
-                        for (var i = 0; i < n; i++) {
-                            var value_1 = data[i];
-                            if (value_1 === 0) {
-                                ++size;
-                            }
-                            else if (value_1 === upperLimit || value_1 === lowerLimit) {
-                                size += 2;
-                            }
-                            else if (value_1 > 0) {
-                                size += Math.ceil(value_1 / upperLimit);
-                            }
-                            else {
-                                size += Math.ceil(value_1 / lowerLimit);
-                            }
-                        }
-                        var output = byteCount === 1 ? new Int8Array(size) : new Int16Array(size);
-                        var j = 0;
-                        for (var i = 0; i < n; i++) {
-                            var value_2 = data[i];
-                            if (value_2 >= 0) {
-                                while (value_2 >= upperLimit) {
-                                    output[j] = upperLimit;
-                                    ++j;
-                                    value_2 -= upperLimit;
+                        Encoder.delta = delta;
+                        function _integerPacking(data, byteCount) {
+                            var upperLimit = byteCount === 1 ? 0x7F : 0x7FFF;
+                            var lowerLimit = -upperLimit - 1;
+                            var n = data.length;
+                            var size = 0;
+                            for (var i = 0; i < n; i++) {
+                                var value = data[i];
+                                if (value === 0) {
+                                    ++size;
+                                }
+                                else if (value === upperLimit || value === lowerLimit) {
+                                    size += 2;
+                                }
+                                else if (value > 0) {
+                                    size += Math.ceil(value / upperLimit);
+                                }
+                                else {
+                                    size += Math.ceil(value / lowerLimit);
                                 }
                             }
-                            else {
-                                while (value_2 <= lowerLimit) {
-                                    output[j] = lowerLimit;
-                                    ++j;
-                                    value_2 -= lowerLimit;
+                            var output = byteCount === 1 ? new Int8Array(size) : new Int16Array(size);
+                            var j = 0;
+                            for (var i = 0; i < n; i++) {
+                                var value = data[i];
+                                if (value >= 0) {
+                                    while (value >= upperLimit) {
+                                        output[j] = upperLimit;
+                                        ++j;
+                                        value -= upperLimit;
+                                    }
                                 }
+                                else {
+                                    while (value <= lowerLimit) {
+                                        output[j] = lowerLimit;
+                                        ++j;
+                                        value -= lowerLimit;
+                                    }
+                                }
+                                output[j] = value;
+                                ++j;
                             }
-                            output[j] = value_2;
-                            ++j;
+                            return {
+                                encoding: { kind: 'IntegerPacking', byteCount: byteCount, srcSize: n },
+                                data: output
+                            };
                         }
-                        return {
-                            encoding: { kind: 'IntegerPacking', byteCount: byteCount, srcSize: n },
-                            data: output
-                        };
-                    }
-                    function integerPacking(byteCount) { return function (data) { return _integerPacking(data, byteCount); }; }
-                    Encoder.integerPacking = integerPacking;
-                    function stringArray(data) {
-                        var map = new Map();
-                        var strings = [];
-                        var accLength = 0;
-                        var offsets = new Core.Utils.ChunkedArrayBuilder(function (s) { return new Int32Array(s); }, 1024, 1);
-                        var output = new Int32Array(data.length);
-                        var bigCount = 0;
-                        offsets.add(0);
-                        var i = 0;
-                        for (var _i = 0, data_1 = data; _i < data_1.length; _i++) {
-                            var s = data_1[_i];
-                            // handle null strings.
-                            if (s === null || s === void 0) {
-                                output[i++] = -1;
-                                continue;
+                        function integerPacking(byteCount) { return function (data) { return _integerPacking(data, byteCount); }; }
+                        Encoder.integerPacking = integerPacking;
+                        function stringArray(data) {
+                            var map = new Map();
+                            var strings = [];
+                            var accLength = 0;
+                            var offsets = new Core.Utils.ChunkedArrayBuilder(function (s) { return new Int32Array(s); }, 1024, 1);
+                            var output = new Int32Array(data.length);
+                            var bigCount = 0;
+                            offsets.add(0);
+                            var i = 0;
+                            for (var _i = 0, data_1 = data; _i < data_1.length; _i++) {
+                                var s = data_1[_i];
+                                // handle null strings.
+                                if (s === null || s === void 0) {
+                                    output[i++] = -1;
+                                    continue;
+                                }
+                                var index = map.get(s);
+                                if (index === void 0) {
+                                    // increment the length
+                                    accLength += s.length;
+                                    // store the string and index                   
+                                    index = strings.length;
+                                    strings[index] = s;
+                                    map.set(s, index);
+                                    // write the offset
+                                    offsets.add(accLength);
+                                }
+                                output[i++] = index;
+                                if (index >= 0x7f)
+                                    bigCount++;
                             }
-                            var index = map.get(s);
-                            if (index === void 0) {
-                                // increment the length
-                                accLength += s.length;
-                                // store the string and index                   
-                                index = strings.length;
-                                strings[index] = s;
-                                map.set(s, index);
-                                // write the offset
-                                offsets.add(accLength);
-                            }
-                            output[i++] = index;
-                            if (index >= 0x7f)
-                                bigCount++;
+                            var encOffsets = Encoder.by(delta).and(integerPacking(2)).and(int16).encode(offsets.compact());
+                            var bigFraction = bigCount / data.length;
+                            var encOutput = bigFraction > 0.25
+                                ? Encoder.by(delta).and(runLength).and(integerPacking(2)).and(int16).encode(output)
+                                : Encoder.by(delta).and(runLength).and(integerPacking(1)).and(int8).encode(output);
+                            return {
+                                encoding: { kind: 'StringArray', dataEncoding: encOutput.encoding, stringData: strings.join(''), offsetEncoding: encOffsets.encoding, offsets: encOffsets.data },
+                                data: encOutput.data
+                            };
                         }
-                        var encOffsets = Encoder.by(delta).and(integerPacking(2)).and(int16).encode(offsets.compact());
-                        var bigFraction = bigCount / data.length;
-                        var encOutput = bigFraction > 0.25
-                            ? Encoder.by(delta).and(runLength).and(integerPacking(2)).and(int16).encode(output)
-                            : Encoder.by(delta).and(runLength).and(integerPacking(1)).and(int8).encode(output);
-                        return {
-                            encoding: { kind: 'StringArray', dataEncoding: encOutput.encoding, stringData: strings.join(''), offsetEncoding: encOffsets.encoding, offsets: encOffsets.data },
-                            data: encOutput.data
-                        };
-                    }
-                    Encoder.stringArray = stringArray;
-                })(Encoder = BinaryCIF.Encoder || (BinaryCIF.Encoder = {}));
-            })(BinaryCIF = Formats.BinaryCIF || (Formats.BinaryCIF = {}));
+                        Encoder.stringArray = stringArray;
+                    })(Encoder = Binary.Encoder || (Binary.Encoder = {}));
+                })(Binary = CIF.Binary || (CIF.Binary = {}));
+            })(CIF = Formats.CIF || (Formats.CIF = {}));
         })(Formats = Core.Formats || (Core.Formats = {}));
     })(Core = LiteMol.Core || (LiteMol.Core = {}));
 })(LiteMol || (LiteMol = {}));
@@ -10269,401 +10443,203 @@ var LiteMol;
     (function (Core) {
         var Formats;
         (function (Formats) {
-            var BinaryCIF;
-            (function (BinaryCIF) {
-                "use strict";
-                /**
-                 * Fixed point, delta, RLE, integer packing adopted from https://github.com/rcsb/mmtf-javascript/
-                 * by Alexander Rose <alexander.rose@weirdbyte.de>, MIT License, Copyright (c) 2016
-                 */
-                function decode(data) {
-                    var current = data.data;
-                    for (var i = data.encoding.length - 1; i >= 0; i--) {
-                        current = Decoder.decodeStep(current, data.encoding[i]);
+            var CIF;
+            (function (CIF) {
+                var Binary;
+                (function (Binary) {
+                    "use strict";
+                    /**
+                     * Fixed point, delta, RLE, integer packing adopted from https://github.com/rcsb/mmtf-javascript/
+                     * by Alexander Rose <alexander.rose@weirdbyte.de>, MIT License, Copyright (c) 2016
+                     */
+                    function decode(data) {
+                        var current = data.data;
+                        for (var i = data.encoding.length - 1; i >= 0; i--) {
+                            current = Decoder.decodeStep(current, data.encoding[i]);
+                        }
+                        return current;
                     }
-                    return current;
-                }
-                BinaryCIF.decode = decode;
-                var Decoder;
-                (function (Decoder) {
-                    function decodeStep(data, encoding) {
-                        switch (encoding.kind) {
-                            case 'Value': return encoding.value;
-                            case 'ByteArray': {
-                                switch (encoding.type) {
-                                    case 3 /* Uint8 */: return data;
-                                    case 0 /* Int8 */: return int8(data);
-                                    case 1 /* Int16 */: return int16(data);
-                                    case 2 /* Int32 */: return int32(data);
-                                    case 4 /* Float32 */: return float32(data);
-                                    case 5 /* Float64 */: return float64(data);
+                    Binary.decode = decode;
+                    var Decoder;
+                    (function (Decoder) {
+                        function decodeStep(data, encoding) {
+                            switch (encoding.kind) {
+                                case 'ByteArray': {
+                                    switch (encoding.type) {
+                                        case 3 /* Uint8 */: return data;
+                                        case 0 /* Int8 */: return int8(data);
+                                        case 1 /* Int16 */: return int16(data);
+                                        case 2 /* Int32 */: return int32(data);
+                                        case 4 /* Float32 */: return float32(data);
+                                        case 5 /* Float64 */: return float64(data);
+                                    }
+                                }
+                                case 'FixedPoint': return fixedPoint(data, encoding);
+                                case 'RunLength': return runLength(data, encoding);
+                                case 'Delta': return delta(data, encoding);
+                                case 'IntegerPacking': return integerPacking(data, encoding);
+                                case 'StringArray': return stringArray(data, encoding);
+                            }
+                        }
+                        Decoder.decodeStep = decodeStep;
+                        function dataView(array) {
+                            return new DataView(array.buffer, array.byteOffset, array.byteLength);
+                        }
+                        function int8(data) {
+                            return new Int8Array(data.buffer, data.byteOffset);
+                        }
+                        function int16(data) {
+                            var n = (data.length / 2) | 0;
+                            var output = new Int16Array(n);
+                            for (var i = 0, i2 = 0; i < n; i++, i2 += 2) {
+                                output[i] = data[i2] << 8 ^ data[i2 + 1] << 0;
+                            }
+                            return output;
+                        }
+                        function int32(data) {
+                            var n = (data.length / 4) | 0;
+                            var output = new Int32Array(n);
+                            for (var i = 0, i4 = 0; i < n; i++, i4 += 4) {
+                                output[i] = data[i4] << 24 ^ data[i4 + 1] << 16 ^ data[i4 + 2] << 8 ^ data[i4 + 3] << 0;
+                            }
+                            return output;
+                        }
+                        function float32(data) {
+                            var n = (data.length / 4) | 0;
+                            var output = new Float32Array((data.length / 4) | 0);
+                            var src = dataView(data);
+                            for (var i = 0, i4 = 0; i < n; i++, i4 += 4) {
+                                output[i] = src.getFloat32(i4);
+                            }
+                            return output;
+                        }
+                        function float64(data) {
+                            var n = (data.length / 8) | 0;
+                            var output = new Float64Array((data.length / 8) | 0);
+                            var src = dataView(data);
+                            for (var i = 0, i8 = 0; i < n; i++, i8 += 4) {
+                                output[i] = src.getFloat64(i8);
+                            }
+                            return output;
+                        }
+                        function fixedPoint(data, encoding) {
+                            var n = data.length;
+                            var output = new Float32Array(n);
+                            var f = 1 / encoding.factor;
+                            for (var i = 0; i < n; i++) {
+                                output[i] = f * data[i];
+                            }
+                            return output;
+                        }
+                        function getIntArray(type, size) {
+                            switch (type) {
+                                case 0 /* Int8 */: return new Int8Array(size);
+                                case 1 /* Int16 */: return new Int16Array(size);
+                                case 2 /* Int32 */: return new Int32Array(size);
+                                case 3 /* Uint8 */: return new Uint8Array(size);
+                                default: throw new Error('Unsupported integer data type.');
+                            }
+                        }
+                        function runLength(data, encoding) {
+                            var output = getIntArray(encoding.srcType, encoding.srcSize);
+                            var dataOffset = 0;
+                            for (var i = 0, il = data.length; i < il; i += 2) {
+                                var value = data[i]; // value to be repeated
+                                var length_7 = data[i + 1]; // number of repeats
+                                for (var j = 0; j < length_7; ++j) {
+                                    output[dataOffset++] = value;
                                 }
                             }
-                            case 'FixedPoint': return fixedPoint(data, encoding);
-                            case 'RunLength': return runLength(data, encoding);
-                            case 'Delta': return delta(data, encoding);
-                            case 'IntegerPacking': return integerPacking(data, encoding);
-                            case 'StringArray': return stringArray(data, encoding);
-                        }
-                    }
-                    Decoder.decodeStep = decodeStep;
-                    function dataView(array) {
-                        return new DataView(array.buffer, array.byteOffset, array.byteLength);
-                    }
-                    function int8(data) {
-                        return new Int8Array(data.buffer, data.byteOffset);
-                    }
-                    function int16(data) {
-                        var n = (data.length / 2) | 0;
-                        var output = new Int16Array(n);
-                        for (var i = 0, i2 = 0; i < n; i++, i2 += 2) {
-                            output[i] = data[i2] << 8 ^ data[i2 + 1] << 0;
-                        }
-                        return output;
-                    }
-                    function int32(data) {
-                        var n = (data.length / 4) | 0;
-                        var output = new Int32Array(n);
-                        for (var i = 0, i4 = 0; i < n; i++, i4 += 4) {
-                            output[i] = data[i4] << 24 ^ data[i4 + 1] << 16 ^ data[i4 + 2] << 8 ^ data[i4 + 3] << 0;
-                        }
-                        return output;
-                    }
-                    function float32(data) {
-                        var n = (data.length / 4) | 0;
-                        var output = new Float32Array((data.length / 4) | 0);
-                        var src = dataView(data);
-                        for (var i = 0, i4 = 0; i < n; i++, i4 += 4) {
-                            output[i] = src.getFloat32(i4);
-                        }
-                        return output;
-                    }
-                    function float64(data) {
-                        var n = (data.length / 8) | 0;
-                        var output = new Float64Array((data.length / 8) | 0);
-                        var src = dataView(data);
-                        for (var i = 0, i8 = 0; i < n; i++, i8 += 4) {
-                            output[i] = src.getFloat64(i8);
-                        }
-                        return output;
-                    }
-                    function fixedPoint(data, encoding) {
-                        var n = data.length;
-                        var output = new Float32Array(n);
-                        var f = 1 / encoding.factor;
-                        for (var i = 0; i < n; i++) {
-                            output[i] = f * data[i];
-                        }
-                        return output;
-                    }
-                    function getIntArray(type, size) {
-                        switch (type) {
-                            case 0 /* Int8 */: return new Int8Array(size);
-                            case 1 /* Int16 */: return new Int16Array(size);
-                            case 2 /* Int32 */: return new Int32Array(size);
-                            case 3 /* Uint8 */: return new Uint8Array(size);
-                            default: throw new Error('Unsupported integer data type.');
-                        }
-                    }
-                    function runLength(data, encoding) {
-                        var output = getIntArray(encoding.srcType, encoding.srcSize);
-                        var dataOffset = 0;
-                        for (var i = 0, il = data.length; i < il; i += 2) {
-                            var value = data[i]; // value to be repeated
-                            var length_7 = data[i + 1]; // number of repeats
-                            for (var j = 0; j < length_7; ++j) {
-                                output[dataOffset++] = value;
-                            }
-                        }
-                        return output;
-                    }
-                    function delta(data, encoding) {
-                        var n = data.length;
-                        var output = getIntArray(encoding.srcType, n);
-                        if (!n)
                             return output;
-                        output[0] = data[0];
-                        for (var i = 1; i < n; ++i) {
-                            output[i] = data[i] + output[i - 1];
                         }
-                        return output;
-                    }
-                    function integerPacking(data, encoding) {
-                        var upperLimit = data instanceof Int8Array ? 0x7F : 0x7FFF;
-                        var lowerLimit = -upperLimit - 1;
-                        var n = data.length;
-                        var output = new Int32Array(encoding.srcSize);
-                        var i = 0;
-                        var j = 0;
-                        while (i < n) {
-                            var value = 0;
-                            while (data[i] === upperLimit || data[i] === lowerLimit) {
+                        function delta(data, encoding) {
+                            var n = data.length;
+                            var output = getIntArray(encoding.srcType, n);
+                            if (!n)
+                                return output;
+                            output[0] = data[0];
+                            for (var i = 1; i < n; ++i) {
+                                output[i] = data[i] + output[i - 1];
+                            }
+                            return output;
+                        }
+                        function integerPacking(data, encoding) {
+                            var upperLimit = data instanceof Int8Array ? 0x7F : 0x7FFF;
+                            var lowerLimit = -upperLimit - 1;
+                            var n = data.length;
+                            var output = new Int32Array(encoding.srcSize);
+                            var i = 0;
+                            var j = 0;
+                            while (i < n) {
+                                var value = 0;
+                                while (data[i] === upperLimit || data[i] === lowerLimit) {
+                                    value += data[i];
+                                    ++i;
+                                }
                                 value += data[i];
                                 ++i;
+                                output[j] = value;
+                                ++j;
                             }
-                            value += data[i];
-                            ++i;
-                            output[j] = value;
-                            ++j;
+                            return output;
                         }
-                        return output;
-                    }
-                    function stringArray(data, encoding) {
-                        var str = encoding.stringData;
-                        var offsets = decode({ encoding: encoding.offsetEncoding, data: encoding.offsets });
-                        var indices = decode({ encoding: encoding.dataEncoding, data: data });
-                        var cache = new Map();
-                        var result = [];
-                        for (var _i = 0, indices_1 = indices; _i < indices_1.length; _i++) {
-                            var i = indices_1[_i];
-                            if (i < 0) {
-                                result[result.length] = null;
-                                continue;
+                        function stringArray(data, encoding) {
+                            var str = encoding.stringData;
+                            var offsets = decode({ encoding: encoding.offsetEncoding, data: encoding.offsets });
+                            var indices = decode({ encoding: encoding.dataEncoding, data: data });
+                            var cache = new Map();
+                            var result = [];
+                            for (var _i = 0, indices_1 = indices; _i < indices_1.length; _i++) {
+                                var i = indices_1[_i];
+                                if (i < 0) {
+                                    result[result.length] = null;
+                                    continue;
+                                }
+                                var v = cache.get(i);
+                                if (v === void 0) {
+                                    v = str.substring(offsets[i], offsets[i + 1]);
+                                    cache.set(i, v);
+                                }
+                                result[result.length] = v;
                             }
-                            var v = cache.get(i);
-                            if (v === void 0) {
-                                v = str.substring(i, i + 1);
-                                cache.set(i, v);
-                            }
-                            result[result.length] = v;
+                            return result;
                         }
-                        return result;
-                    }
-                })(Decoder || (Decoder = {}));
-            })(BinaryCIF = Formats.BinaryCIF || (Formats.BinaryCIF = {}));
+                    })(Decoder || (Decoder = {}));
+                })(Binary = CIF.Binary || (CIF.Binary = {}));
+            })(CIF = Formats.CIF || (Formats.CIF = {}));
         })(Formats = Core.Formats || (Core.Formats = {}));
     })(Core = LiteMol.Core || (LiteMol.Core = {}));
 })(LiteMol || (LiteMol = {}));
-// /*
-//  * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
-//  */
-// namespace LiteMol.Core.Formats.BinaryCif {
-//     "use strict";
-//     const enum BinaryCifToken {        
-//         UnknownPrefix = 0x0,         
-//         Dot           = 0x00,         
-//         Question      = 0x01,
-//         StringPrefix = 0x1,         
-//         String1      = 0x11,         
-//         String2      = 0x12,         
-//         String3      = 0x13,         
-//         String4      = 0x14,
-//         StringTablePrefix = 0x2,         
-//         StringTable1      = 0x21,         
-//         StringTable2      = 0x22,         
-//         StringTable3      = 0x23,         
-//         StringTable4      = 0x24,
-//         FloatPrefix = 0x3,         
-//         Float32     = 0x31,         
-//         Float64     = 0x32,
-//         IntPrefix = 0x4,         
-//         Int1      = 0x41,         
-//         Int2      = 0x42,         
-//         Int3      = 0x43,         
-//         Int4      = 0x44,
-//         ElementPrefix = 0x9,         
-//         Data          = 0x90,         
-//         Save          = 0x91,         
-//         Namespace     = 0x92
-//     }
-//     /**
-//      * A generic parser result.
-//      */
-//     export class ParserResult {
-//         static error(message: string, line = -1) {
-//             return new ParserResult(true, message, line, [], void 0);
-//         }
-//         static success(result: File, warnings: string[] = []) {
-//             return new ParserResult(false, "", -1, warnings, result);
-//         }
-//         constructor(
-//             public hasError: boolean,
-//             public errorMessage: string,
-//             public errorLine: number,
-//             public warnings: string[],
-//             public result: File) { }
-//     }
-//     class Tokenizer {
-//         private data: DataView;
-//         private littleEndian = false;
-//         stringTable: string[] = [];
-//         position: number = 0;
-//         skipTo(offset: number) {
-//             this.position = offset;
-//         }
-//         private strArrays: Uint8Array[] = [];
-//         private readString(n: number) {
-//             var offset = this.position;            
-//             this.position += n;
-//             var codes = this.strArrays[n];
-//             if (!codes) codes = new Uint8Array(n);
-//             for (var i = 0; i < n; i++) {
-//                 codes[i] = this.data.getUint8(offset + i);
-//             }
-//             return String.fromCharCode.apply(null, codes);
-//         }
-//         readInt(n: number) {
-//             var offset = this.position;
-//             this.position += n;
-//             switch (n) {
-//                 case 1: return this.data.getInt8(offset);
-//                 case 2: return this.data.getInt16(offset, this.littleEndian);
-//                 case 3: return (this.data.getInt8(offset) << 16) | this.data.getInt16(offset, this.littleEndian);
-//                 case 4: return this.data.getInt32(offset, this.littleEndian);
-//                 default: throw "Integer value too big";
-//             }
-//         }
-//         readUint(n: number) {
-//             var offset = this.position;
-//             this.position += n;
-//             switch (n) {
-//                 case 1: return this.data.getUint8(offset);
-//                 case 2: return this.data.getUint16(offset, this.littleEndian);
-//                 case 3: return (this.data.getUint8(offset) << 16) | this.data.getUint16(offset, this.littleEndian);
-//                 case 4: return this.data.getUint32(offset, this.littleEndian);
-//                 default: throw "Integer value too big";
-//             }
-//         }
-//         readByte() {
-//             return this.data.getUint8(this.position++);
-//         }
-//         readValue(): string {
-//             var t = this.data.getInt8(this.position),
-//                 u = (t >> 4) & 0xF, l = t & 0xF;
-//             this.position++;
-//             switch (u) {
-//                 case BinaryCifToken.UnknownPrefix: return !l ? "." : "?";
-//                 case BinaryCifToken.StringPrefix: return this.readString(this.readUint(l));
-//                 case BinaryCifToken.StringTablePrefix: return this.stringTable[this.readUint(l)]
-//                 case BinaryCifToken.FloatPrefix:
-//                     this.position += 4 * l;
-//                     return this.readValue();
-//                 case BinaryCifToken.IntPrefix:
-//                     this.position += l;
-//                     return this.readValue();
-//                 default:
-//                     throw "Invalid BCIF format.";
-//             }
-//         }
-//         private _NaN = Number.NaN;
-//         fillValue(i: number, str: string[], int: number[], float: number[]): void {
-//             var t = this.data.getUint8(this.position),
-//                 u = (t >> 4) & 0xF, l = t & 0xF;
-//             this.position++;
-//             switch (u) {
-//                 case BinaryCifToken.UnknownPrefix:
-//                     str[i] = !l ? "." : "?";
-//                     //int[i] = this._NaN;
-//                     //float[i] = this._NaN;
-//                     return;
-//                 case BinaryCifToken.StringPrefix:
-//                     str[i] = this.readString(this.readUint(l));
-//                     //int[i] = this._NaN;
-//                     //float[i] = this._NaN;
-//                     return;
-//                 case BinaryCifToken.StringTablePrefix:
-//                     //console.log("table", l);
-//                     str[i] = this.stringTable[this.readUint(l)];
-//                     //int[i] = this._NaN;
-//                     //float[i] = this._NaN;
-//                     return;
-//                 case BinaryCifToken.FloatPrefix:
-//                     //console.log("float", l);
-//                     //var f = l == 1
-//                     //    ? this.data.getFloat32(this.position, this.littleEndian)
-//                     //    : this.data.getFloat64(this.position, this.littleEndian);
-//                     this.position += 4 * l;
-//                     str[i] = this.readValue();
-//                     //int[i] = f | 0;
-//                     //float[i] = f;
-//                     return;
-//                 case BinaryCifToken.IntPrefix:
-//                     //console.log("int", l);
-//                     //var ii = this.readInt(l);
-//                     this.position += l;
-//                     str[i] = this.readValue();
-//                     //int[i] = ii;
-//                     //float[i] = ii;
-//                     return;
-//                 default:
-//                     throw "Invalid BCIF format.";
-//             }
-//         }
-//         skipValue(): void {
-//             var t = this.data.getInt8(this.position),
-//                 u = (t >> 4) & 0xF, l = t & 0xF;
-//             this.position++;
-//             switch (u) {
-//                 case BinaryCifToken.UnknownPrefix: return;
-//                 case BinaryCifToken.StringPrefix: this.position += this.readUint(l); return;
-//                 case BinaryCifToken.StringTablePrefix: this.position += this.readUint(l); return;
-//                 case BinaryCifToken.FloatPrefix:
-//                     this.position += 4 * l;
-//                     this.skipValue();
-//                     return;
-//                 case BinaryCifToken.IntPrefix:
-//                     this.position += l;
-//                     this.skipValue();
-//                     return;
-//                 default:
-//                     throw "Invalid BCIF format.";
-//             }
-//         }
-//         private readStringTable() {
-//             var count = this.readUint(4);
-//             for (var i = 0; i < count; i++) {
-//                 this.stringTable[i] = this.readValue();
-//             }            
-//         }
-//         constructor(buffer: ArrayBuffer) {         
-//             for (var i = 0; i < 100; i++) this.strArrays[i] = new Uint8Array(i);
-//             this.data = new DataView(buffer, 0, buffer.byteLength);
-//             if (this.readValue() !== "BCIF" || this.readValue() !== "v2") throw "Invalid BCIF format.";
-//             this.readStringTable();
-//         }
-//     }
-//     export class Parser {
-//         private static readElement(tokenizer: Tokenizer): any {
-//             tokenizer.readByte(); // skip type;
-//             tokenizer.readUint(4); // skip length
-//             var category = tokenizer.readValue(),
-//                 columnCount = tokenizer.readUint(4),
-//                 columns: string[] = [];
-//             for (let i = 0; i < columnCount; i++) columns[columns.length] = tokenizer.readValue();
-//             var tokenCount = tokenizer.readUint(4),
-//                 str: string[] = [],
-//                 //str = new Int32Array(tokenCount),
-//                 int = new Int32Array(0),
-//                 float = new Float64Array(0);
-//             for (let i = 0; i < tokenCount; i++) tokenizer.fillValue(i, <any>str, <any>int, <any>float);
-//             return { category, columns, str, int, float };
-//         }
-//         private static readFrame(tokenizer: Tokenizer): any {
-//             var frameType = "";
-//             switch (tokenizer.readByte()) {
-//                 case BinaryCifToken.Data: frameType = "data"; break;
-//                 case BinaryCifToken.Save: frameType = "save"; break;
-//                 default: throw "Invalid BCIF format.";
-//             }
-//             tokenizer.readUint(4); // skip length
-//             var id = tokenizer.readValue(), count = tokenizer.readUint(4),
-//                 elements: any[] = [];
-//             for (var i = 0; i < count; i++) {
-//                 elements[elements.length] = Parser.readElement(tokenizer);
-//             }
-//             return { id, elements };
-//         }
-//         static parse(buffer: ArrayBuffer) {            
-//             var tokenizer = new Tokenizer(buffer);
-//             var frameCount = tokenizer.readUint(4),
-//                 frames: any[] = [];
-//             for (var i = 0; i < frameCount; i++) {
-//                 frames[frames.length] = this.readFrame(tokenizer);
-//             }
-//             return frames;
-//         }
-//     }
-// } 
+/*
+ * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ */
+var LiteMol;
+(function (LiteMol) {
+    var Core;
+    (function (Core) {
+        var Formats;
+        (function (Formats) {
+            var CIF;
+            (function (CIF) {
+                var Binary;
+                (function (Binary) {
+                    "use strict";
+                    function parse(data) {
+                        var array = new Uint8Array(data);
+                        var unpacked = Formats.MessagePack.decode(array);
+                        //console.log(unpacked);
+                        var file = new Binary.File(unpacked);
+                        return Formats.ParserResult.success(file);
+                        //console.log('file', file);
+                        //console.log(file.toJSON());
+                        //return ParserResult.error("Not implemented");
+                    }
+                    Binary.parse = parse;
+                })(Binary = CIF.Binary || (CIF.Binary = {}));
+            })(CIF = Formats.CIF || (Formats.CIF = {}));
+        })(Formats = Core.Formats || (Core.Formats = {}));
+    })(Core = LiteMol.Core || (LiteMol.Core = {}));
+})(LiteMol || (LiteMol = {}));
 /*
  * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
@@ -12074,6 +12050,33 @@ var LiteMol;
                                 });
                             });
                         } };
+                    SupportedFormats.mmBCIF = { name: 'mmBCIF', extensions: ['.bcif'], isBinary: true, parse: function (data, _a) {
+                            var id = _a.id;
+                            return Core.Computation.create(function (ctx) {
+                                ctx.update('Parsing...');
+                                ctx.schedule(function () {
+                                    var file = Formats.CIF.Binary.parse(data);
+                                    if (file.error) {
+                                        ctx.reject(file.error.toString());
+                                        return;
+                                    }
+                                    if (!file.result.dataBlocks.length) {
+                                        ctx.reject("The BinaryCIF data does not contain a data block.");
+                                        return;
+                                    }
+                                    ctx.update('Creating representation...');
+                                    ctx.schedule(function () {
+                                        try {
+                                            var mol = Molecule.mmCIF.ofDataBlock(file.result.dataBlocks[0]);
+                                            ctx.resolve(Formats.ParserResult.success(mol, file.result.dataBlocks.length > 1 ? ["The input data contains multiple data blocks, only the first one was parsed. To parse all data blocks, use the function 'mmCIF.ofDataBlock' separately for each block."] : void 0));
+                                        }
+                                        catch (e) {
+                                            ctx.reject("" + e);
+                                        }
+                                    });
+                                });
+                            });
+                        } };
                     SupportedFormats.PDB = { name: 'PDB', extensions: ['.pdb', '.ent'], parse: function (data, _a) {
                             var id = _a.id;
                             return Core.Computation.create(function (ctx) {
@@ -12115,7 +12118,7 @@ var LiteMol;
                                 });
                             });
                         } };
-                    SupportedFormats.All = [SupportedFormats.mmCIF, SupportedFormats.PDB, SupportedFormats.SDF];
+                    SupportedFormats.All = [SupportedFormats.mmCIF, SupportedFormats.mmBCIF, SupportedFormats.PDB, SupportedFormats.SDF];
                 })(SupportedFormats = Molecule.SupportedFormats || (Molecule.SupportedFormats = {}));
             })(Molecule = Formats.Molecule || (Formats.Molecule = {}));
         })(Formats = Core.Formats || (Core.Formats = {}));
@@ -66929,29 +66932,37 @@ var LiteMol;
                             to: [Entity.Action],
                             defaultParams: function (ctx) { return ({ id: params.defaultId, format: LiteMol.Core.Formats.Molecule.SupportedFormats.mmCIF }); },
                             validateParams: function (p) { return (!p.id || !p.id.trim().length) ? [("Enter " + (params.isFullUrl ? 'Url' : 'Id'))] : void 0; }
-                        }, function (context, a, t) { return Bootstrap.Tree.Transform.build()
-                            .add(a, Transformer.Data.Download, { url: params.urlTemplate(t.params.id.trim()), type: 'String', id: t.params.id, description: params.name })
-                            .then(Molecule.CreateFromString, { format: params.specificFormat ? params.specificFormat : t.params.format }, { isBinding: true })
-                            .then(Molecule.CreateModel, { modelIndex: 0 }, { isBinding: false }); });
+                        }, function (context, a, t) {
+                            var format = params.specificFormat ? params.specificFormat : t.params.format;
+                            return Bootstrap.Tree.Transform.build()
+                                .add(a, Transformer.Data.Download, { url: params.urlTemplate(t.params.id.trim()), type: format.isBinary ? 'Binary' : 'String', id: t.params.id, description: params.name })
+                                .then(Molecule.CreateFromData, { format: params.specificFormat ? params.specificFormat : t.params.format }, { isBinding: true })
+                                .then(Molecule.CreateModel, { modelIndex: 0 }, { isBinding: false });
+                        });
                     }
                     Molecule.downloadMoleculeSource = downloadMoleculeSource;
                     Molecule.OpenMoleculeFromFile = Bootstrap.Tree.Transformer.action({
                         id: 'molecule-open-from-file',
                         name: 'Molecule from File',
-                        description: 'Open a molecule from a file (mmCIF, PDB, SDF/MOL).',
+                        description: "Open a molecule from a file (" + LiteMol.Core.Formats.Molecule.SupportedFormats.All.map(function (f) { return f.name; }).join(', ') + ").",
                         from: [Entity.Root],
                         to: [Entity.Action],
                         defaultParams: function (ctx) { return ({ format: LiteMol.Core.Formats.Molecule.SupportedFormats.mmCIF }); },
-                        validateParams: function (p) { return !p.file ? ['Select a file'] : !LiteMol.Core.Formats.FormatInfo.getFormat(p.file.name, LiteMol.Core.Formats.Molecule.SupportedFormats.All) ? ['Select a supported (.cif,.pdb,.ent) file.'] : void 0; }
-                    }, function (context, a, t) { return Bootstrap.Tree.Transform.build()
-                        .add(a, Transformer.Data.OpenFile, { file: t.params.file, type: 'String' })
-                        .then(Molecule.CreateFromString, { format: LiteMol.Core.Formats.FormatInfo.getFormat(t.params.file.name, LiteMol.Core.Formats.Molecule.SupportedFormats.All) }, { isBinding: true })
-                        .then(Molecule.CreateModel, { modelIndex: 0 }, { isBinding: false }); });
-                    Molecule.CreateFromString = Bootstrap.Tree.Transformer.create({
-                        id: 'molecule-create-from-string',
+                        validateParams: function (p) { return !p.file ? ['Select a file'] : !LiteMol.Core.Formats.FormatInfo.getFormat(p.file.name, LiteMol.Core.Formats.Molecule.SupportedFormats.All)
+                            ? [("Select a supported file format (" + [].concat(LiteMol.Core.Formats.Molecule.SupportedFormats.All.map(function (f) { return f.extensions; })).join(', ') + ").")]
+                            : void 0; }
+                    }, function (context, a, t) {
+                        var format = LiteMol.Core.Formats.FormatInfo.getFormat(t.params.file.name, LiteMol.Core.Formats.Molecule.SupportedFormats.All);
+                        return Bootstrap.Tree.Transform.build()
+                            .add(a, Transformer.Data.OpenFile, { file: t.params.file, type: format.isBinary ? 'Binary' : 'String' })
+                            .then(Molecule.CreateFromData, { format: format }, { isBinding: true })
+                            .then(Molecule.CreateModel, { modelIndex: 0 }, { isBinding: false });
+                    });
+                    Molecule.CreateFromData = Bootstrap.Tree.Transformer.create({
+                        id: 'molecule-create-from-data',
                         name: 'Molecule',
-                        description: 'Create a molecule from string data.',
-                        from: [Entity.Data.String],
+                        description: 'Create a molecule from string or binary data.',
+                        from: [Entity.Data.String, Entity.Data.Binary],
                         to: [Entity.Molecule.Molecule],
                         defaultParams: function (ctx) { return ({ format: LiteMol.Core.Formats.Molecule.SupportedFormats.mmCIF }); }
                     }, function (ctx, a, t) {
@@ -67312,11 +67323,11 @@ var LiteMol;
                 var Density;
                 (function (Density) {
                     "use strict";
-                    Density.ParseBinary = Bootstrap.Tree.Transformer.create({
+                    Density.ParseData = Bootstrap.Tree.Transformer.create({
                         id: 'density-parse-binary',
                         name: 'Density Data',
                         description: 'Parse density from binary data.',
-                        from: [Entity.Data.Binary],
+                        from: [Entity.Data.String, Entity.Data.Binary],
                         to: [Entity.Density.Data],
                         isUpdatable: true,
                         defaultParams: function () { return ({ format: LiteMol.Core.Formats.Density.SupportedFormats.CCP4, normalize: false }); }
@@ -68005,6 +68016,7 @@ var LiteMol;
                 catch (e) {
                 }
             }
+            function selectedMoleculeCreateFromData(p, a) { return p.format.name; }
             function selectDownload(p) { return p.url; }
             function selectQuery(p) { return p.queryString; }
             function selectAssembly(p, a) {
@@ -68068,12 +68080,13 @@ var LiteMol;
                     }
                     Bootstrap.Event.Tree.TransformerApply.getStream(context).subscribe(function (e) {
                         trackTransform(context, 'Download', Bootstrap.Entity.Transformer.Data.Download, e.data.a, e.data.t, selectDownload, gaId);
+                        trackTransform(context, 'Create Molecule From Data', Bootstrap.Entity.Transformer.Molecule.CreateFromData, e.data.a, e.data.t, selectedMoleculeCreateFromData, gaId);
                         trackTransform(context, 'Create Model Selecion', Bootstrap.Entity.Transformer.Molecule.CreateSelection, e.data.a, e.data.t, selectQuery, gaId);
                         trackTransform(context, 'Create Assembly', Bootstrap.Entity.Transformer.Molecule.CreateAssembly, e.data.a, e.data.t, selectAssembly, gaId);
                         trackTransform(context, 'Create Symmetry', Bootstrap.Entity.Transformer.Molecule.CreateSymmetryMates, e.data.a, e.data.t, selectCrystalSymmetry, gaId);
                         trackTransform(context, 'Create Visual', Bootstrap.Entity.Transformer.Molecule.CreateVisual, e.data.a, e.data.t, selectVisual, gaId);
                         trackTransform(context, 'Coordinate Streaming', Bootstrap.Entity.Transformer.Molecule.CoordinateStreaming.CreateBehaviour, e.data.a, e.data.t, selectStreaming, gaId);
-                        trackTransform(context, 'Parse Density', Bootstrap.Entity.Transformer.Density.ParseBinary, e.data.a, e.data.t, selectDensity, gaId);
+                        trackTransform(context, 'Parse Density', Bootstrap.Entity.Transformer.Density.ParseData, e.data.a, e.data.t, selectDensity, gaId);
                         trackTransform(context, 'Create Model Selection', Bootstrap.Entity.Transformer.Molecule.CreateSelection, e.data.a, e.data.t, selectSelection, gaId);
                     });
                 };
@@ -73430,7 +73443,7 @@ var LiteMol;
 (function (LiteMol) {
     var Plugin;
     (function (Plugin) {
-        Plugin.VERSION = { number: "1.1.1", date: "Aug 31 2016" };
+        Plugin.VERSION = { number: "1.1.2", date: "Sep 14 2016" };
     })(Plugin = LiteMol.Plugin || (LiteMol.Plugin = {}));
 })(LiteMol || (LiteMol = {}));
 /*
@@ -74213,19 +74226,19 @@ var LiteMol;
                 var Molecule;
                 (function (Molecule) {
                     "use strict";
-                    var CreateFromString = (function (_super) {
-                        __extends(CreateFromString, _super);
-                        function CreateFromString() {
+                    var CreateFromData = (function (_super) {
+                        __extends(CreateFromData, _super);
+                        function CreateFromData() {
                             _super.apply(this, arguments);
                         }
-                        CreateFromString.prototype.renderControls = function () {
+                        CreateFromData.prototype.renderControls = function () {
                             var _this = this;
                             var params = this.params;
                             return Plugin.React.createElement("div", null, Plugin.React.createElement(Plugin.Controls.OptionsGroup, {options: LiteMol.Core.Formats.Molecule.SupportedFormats.All, caption: function (s) { return s.name; }, current: params.format, onChange: function (o) { return _this.updateParams({ format: o }); }, label: 'Format'}));
                         };
-                        return CreateFromString;
+                        return CreateFromData;
                     }(Transform.ControllerBase));
-                    Molecule.CreateFromString = CreateFromString;
+                    Molecule.CreateFromData = CreateFromData;
                     var DownloadFromUrl = (function (_super) {
                         __extends(DownloadFromUrl, _super);
                         function DownloadFromUrl() {
@@ -74446,12 +74459,12 @@ var LiteMol;
                 (function (Density) {
                     "use strict";
                     var IsoValue = function (props) { return Plugin.React.createElement(Plugin.Controls.Slider, __assign({label: 'Iso Value (\u03C3)'}, props, {step: 0.001})); };
-                    var ParseBinary = (function (_super) {
-                        __extends(ParseBinary, _super);
-                        function ParseBinary() {
+                    var ParseData = (function (_super) {
+                        __extends(ParseData, _super);
+                        function ParseData() {
                             _super.apply(this, arguments);
                         }
-                        ParseBinary.prototype.renderControls = function () {
+                        ParseData.prototype.renderControls = function () {
                             var _this = this;
                             var params = this.params;
                             var info;
@@ -74463,9 +74476,9 @@ var LiteMol;
                             }
                             return Plugin.React.createElement("div", null, Plugin.React.createElement(Plugin.Controls.OptionsGroup, {options: LiteMol.Core.Formats.Density.SupportedFormats.All, caption: function (s) { return s.name; }, current: params.format, onChange: function (o) { return _this.updateParams({ format: o }); }, label: 'Format'}), Plugin.React.createElement(Plugin.Controls.Toggle, {onChange: function (v) { return _this.controller.updateParams({ normalize: v }); }, value: normalize, label: 'Normalized'}));
                         };
-                        return ParseBinary;
+                        return ParseData;
                     }(Transform.ControllerBase));
-                    Density.ParseBinary = ParseBinary;
+                    Density.ParseData = ParseData;
                     var CreateVisual = (function (_super) {
                         __extends(CreateVisual, _super);
                         function CreateVisual() {
@@ -75306,9 +75319,9 @@ var LiteMol;
                     { transformer: Transformer.Data.Download, view: Plugin.Views.Transform.Data.Download, initiallyCollapsed: true },
                     { transformer: Transformer.Data.OpenFile, view: Plugin.Views.Transform.Data.OpenFile, initiallyCollapsed: true },
                     // Raw data transforms
-                    { transformer: Transformer.Molecule.CreateFromString, view: Plugin.Views.Transform.Molecule.CreateFromString },
+                    { transformer: Transformer.Molecule.CreateFromData, view: Plugin.Views.Transform.Molecule.CreateFromData },
                     { transformer: Transformer.Data.ParseCif, view: Plugin.Views.Transform.Empty },
-                    { transformer: Transformer.Density.ParseBinary, view: Plugin.Views.Transform.Density.ParseBinary },
+                    { transformer: Transformer.Density.ParseData, view: Plugin.Views.Transform.Density.ParseData },
                     // Molecule(model) transforms
                     { transformer: Transformer.Molecule.CreateFromMmCif, view: Plugin.Views.Transform.Molecule.CreateFromMmCif },
                     { transformer: Transformer.Molecule.CreateModel, view: Plugin.Views.Transform.Molecule.CreateModel, initiallyCollapsed: true },

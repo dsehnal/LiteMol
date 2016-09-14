@@ -128,8 +128,7 @@ namespace LiteMol.Core.Formats.CIF.Text {
                 categories: this.categoryList.map(c => c.toJSON()),
                 additionalData: this.additionalData
             };
-        }
-        
+        }        
 
         constructor(data: string, header: string) {
             this.header = header;
@@ -146,7 +145,7 @@ namespace LiteMol.Core.Formats.CIF.Text {
     export class Category implements CIF.Category {
         private data: string;
         private columnWrappers: { [name: string]: Column };
-        private columnList: Column[];
+        private columnNameList: string[];
         
         /**
          * Name of the category.
@@ -156,8 +155,8 @@ namespace LiteMol.Core.Formats.CIF.Text {
         /**
          * The array of columns.
          */
-        get columns() {
-            return this.columnList;
+        get columnNames() {
+            return this.columnNameList;
         }
                 
         /**
@@ -185,13 +184,6 @@ namespace LiteMol.Core.Formats.CIF.Text {
          * Start index of the category in the input string.
          */
         endIndex: number;
-
-        /**
-         * Compute the token index.
-         */
-        getTokenIndex(row: number, columnIndex: number) {
-            return row * this.columnCount + columnIndex;
-        }
         
         /**
          * Get a column object that makes accessing data easier.
@@ -216,20 +208,20 @@ namespace LiteMol.Core.Formats.CIF.Text {
             this.rowCount = (tokenCount / columns.length) | 0; 
 
             this.columnWrappers = {};
-            this.columnList = [];
+            this.columnNameList = [];
             for (let i = 0; i < columns.length; i++) {
                 let colName = columns[i].substr(name.length + 1);
                 let col = new Column(this, data, colName, i);
                 this.columnWrappers[colName] = col; 
-                this.columnList.push(col);
+                this.columnNameList.push(colName);
             }
         }
         
-        toJSON(): any {
+        toJSON() {
             let rows: any[] = [],
                 data = this.data, tokens = this.tokens;
             
-            let colNames = this.columns.map(c => c.name);
+            let colNames = this.columnNameList;
             
             for (let i = 0; i < this.rowCount; i++) {
                 let item:any = {};

@@ -2,7 +2,7 @@
  * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
 
-namespace LiteMol.Core.Formats.BinaryCIF {
+namespace LiteMol.Core.Formats.CIF.Binary {
     "use strict";
     
     /**
@@ -22,7 +22,6 @@ namespace LiteMol.Core.Formats.BinaryCIF {
 
         export function decodeStep(data: any, encoding: Encoding): any {
             switch (encoding.kind) {
-                case 'Value': return (encoding as Encoding.Value).value;
                 case 'ByteArray': {
                     switch ((encoding as Encoding.ByteArray).type) {
                         case Encoding.DataType.Uint8: return data;
@@ -164,10 +163,9 @@ namespace LiteMol.Core.Formats.BinaryCIF {
                     result[result.length] = null;    
                     continue;
                 }
-
                 let v = cache.get(i);
                 if (v === void 0) {
-                    v = str.substring(i, i + 1);
+                    v = str.substring(offsets[i], offsets[i + 1]);
                     cache.set(i, v);
                 }
                 result[result.length] = v;

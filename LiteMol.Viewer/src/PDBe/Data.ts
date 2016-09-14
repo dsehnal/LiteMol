@@ -40,8 +40,8 @@ namespace LiteMol.Viewer.PDBe.Data {
         let group = action.add(a, Transformer.Basic.CreateGroup, { label: id, description: 'Density' }, { ref: t.props.ref })
             
         let diff = group
-            .then(<Bootstrap.Tree.Transformer.To<Entity.Data.Binary>>Transformer.Data.Download, { url: `http://www.ebi.ac.uk/pdbe/coordinates/files/${id}_diff.ccp4`, type: 'Binary', id: t.params.id, description: 'Fo-Fc' })
-            .then(Transformer.Density.ParseBinary, { format: LiteMol.Core.Formats.Density.SupportedFormats.CCP4, id: 'Fo-Fc', normalize: false }, { isBinding: true });
+            .then(<Bootstrap.Tree.Transformer.To<Entity.Data.Binary | Entity.Data.String>>Transformer.Data.Download, { url: `http://www.ebi.ac.uk/pdbe/coordinates/files/${id}_diff.ccp4`, type: 'Binary', id: t.params.id, description: 'Fo-Fc' })
+            .then(Transformer.Density.ParseData, { format: LiteMol.Core.Formats.Density.SupportedFormats.CCP4, id: 'Fo-Fc', normalize: false }, { isBinding: true });
             
         diff
             .then(Transformer.Density.CreateVisualBehaviour, {
@@ -72,8 +72,8 @@ namespace LiteMol.Viewer.PDBe.Data {
             });            
         
         let base = group
-            .then(<Bootstrap.Tree.Transformer.To<Entity.Data.Binary>>Transformer.Data.Download, { url: `http://www.ebi.ac.uk/pdbe/coordinates/files/${id}.ccp4`, type: 'Binary', id: t.params.id, description: '2Fo-Fc' })
-            .then(Transformer.Density.ParseBinary, { format: LiteMol.Core.Formats.Density.SupportedFormats.CCP4, id: '2Fo-Fc', normalize: false }, { isBinding: true })
+            .then(<Bootstrap.Tree.Transformer.To<Entity.Data.Binary | Entity.Data.String>>Transformer.Data.Download, { url: `http://www.ebi.ac.uk/pdbe/coordinates/files/${id}.ccp4`, type: 'Binary', id: t.params.id, description: '2Fo-Fc' })
+            .then(Transformer.Density.ParseData, { format: LiteMol.Core.Formats.Density.SupportedFormats.CCP4, id: '2Fo-Fc', normalize: false }, { isBinding: true })
             .then(Transformer.Density.CreateVisualBehaviour, {  
                 id: '2Fo-Fc',
                 isoSigmaMin: 0,

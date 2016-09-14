@@ -18,8 +18,9 @@ namespace LiteMol.Bootstrap.Behaviour {
         } catch (e) {
             //console.log('error', e);
         }
-    }    
+    }  
     
+    function selectedMoleculeCreateFromData(p: Entity.Transformer.Molecule.CreateFromDataParams, a: Entity.Any) { return p.format.name; }    
     function selectDownload(p: Entity.Transformer.Data.DownloadParams) { return p.url; }
     function selectQuery(p: Entity.Transformer.Molecule.CreateSelectionParams) { return p.queryString; }
     function selectAssembly(p: Entity.Transformer.Molecule.CreateAssemblyParams, a: Entity.Any) {
@@ -41,13 +42,13 @@ namespace LiteMol.Bootstrap.Behaviour {
         if (!m) return void 0; 
         return m.props.model.id + ' $(server)$ ' + p.server;
     }
-    
+        
     function selectVisual(p: Entity.Transformer.Molecule.CreateVisualParams, a: Entity.Any) {
         if (Tree.Node.isHidden(a)) return void 0;
         return p.style.type;         
     }
 
-    function selectDensity(p: Entity.Transformer.Density.ParseBinaryParams) { return '$(format)$ ' + p.format; }
+    function selectDensity(p: Entity.Transformer.Density.ParseDataParams) { return '$(format)$ ' + p.format; }
 
     function selectSelection(p: Entity.Transformer.Molecule.CreateSelectionParams, a: Entity.Any) {
         return p.queryString;         
@@ -76,12 +77,13 @@ namespace LiteMol.Bootstrap.Behaviour {
             
             Event.Tree.TransformerApply.getStream(context).subscribe(e => {                
                 trackTransform(context, 'Download', Entity.Transformer.Data.Download, e.data.a, e.data.t, selectDownload, gaId);
+                trackTransform(context, 'Create Molecule From Data', Entity.Transformer.Molecule.CreateFromData, e.data.a, e.data.t, selectedMoleculeCreateFromData, gaId);
                 trackTransform(context, 'Create Model Selecion', Entity.Transformer.Molecule.CreateSelection, e.data.a, e.data.t, selectQuery, gaId);
                 trackTransform(context, 'Create Assembly', Entity.Transformer.Molecule.CreateAssembly, e.data.a, e.data.t, selectAssembly, gaId);
                 trackTransform(context, 'Create Symmetry', Entity.Transformer.Molecule.CreateSymmetryMates, e.data.a, e.data.t, selectCrystalSymmetry, gaId);
                 trackTransform(context, 'Create Visual', Entity.Transformer.Molecule.CreateVisual, e.data.a, e.data.t, selectVisual, gaId);
                 trackTransform(context, 'Coordinate Streaming', Entity.Transformer.Molecule.CoordinateStreaming.CreateBehaviour, e.data.a, e.data.t, selectStreaming, gaId);
-                trackTransform(context, 'Parse Density', Entity.Transformer.Density.ParseBinary, e.data.a, e.data.t, selectDensity, gaId);
+                trackTransform(context, 'Parse Density', Entity.Transformer.Density.ParseData, e.data.a, e.data.t, selectDensity, gaId);
                 trackTransform(context, 'Create Model Selection', Entity.Transformer.Molecule.CreateSelection, e.data.a, e.data.t, selectSelection, gaId);
             });            
         };

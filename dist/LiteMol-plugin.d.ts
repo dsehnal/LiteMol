@@ -2833,7 +2833,7 @@ declare namespace LiteMol.Plugin.Views.Transform.Data {
 }
 declare namespace LiteMol.Plugin.Views.Transform.Molecule {
     import Transformer = Bootstrap.Entity.Transformer;
-    class CreateFromString extends Transform.ControllerBase<Bootstrap.Components.Transform.Controller<Transformer.Molecule.CreateFromStringParams>, Transformer.Molecule.CreateFromStringParams> {
+    class CreateFromData extends Transform.ControllerBase<Bootstrap.Components.Transform.Controller<Transformer.Molecule.CreateFromDataParams>, Transformer.Molecule.CreateFromDataParams> {
         protected renderControls(): JSX.Element;
     }
     class DownloadFromUrl extends Transform.ControllerBase<Bootstrap.Components.Transform.Controller<Transformer.Molecule.DownloadMoleculeSourceParams>, Transformer.Molecule.DownloadMoleculeSourceParams> {
@@ -2873,7 +2873,7 @@ declare namespace LiteMol.Plugin.Views.Transform.Molecule {
 }
 declare namespace LiteMol.Plugin.Views.Transform.Density {
     import Transformer = Bootstrap.Entity.Transformer;
-    class ParseBinary extends Transform.ControllerBase<Bootstrap.Components.Transform.Controller<Transformer.Density.ParseBinaryParams>, Transformer.Density.ParseBinaryParams> {
+    class ParseData extends Transform.ControllerBase<Bootstrap.Components.Transform.Controller<Transformer.Density.ParseDataParams>, Transformer.Density.ParseDataParams> {
         protected renderControls(): JSX.Element;
     }
     class CreateVisual extends Transform.ControllerBase<Bootstrap.Components.Transform.DensityVisual, Transformer.Density.CreateVisualParams> {
@@ -4146,7 +4146,7 @@ declare namespace LiteMol.Core.Formats.CIF {
         name: string;
         rowCount: number;
         columnCount: number;
-        columns: Column[];
+        columnNames: string[];
         /**
          * If a field with the given name is not present, returns UndefinedColumn.
          *
@@ -4155,6 +4155,7 @@ declare namespace LiteMol.Core.Formats.CIF {
          * category.getColumn('field')
          */
         getColumn(name: string): Column;
+        toJSON(): any;
     }
     const enum ValuePresence {
         Present = 0,
@@ -4236,7 +4237,11 @@ declare namespace LiteMol.Core.Formats.CIF.Text {
         dataBlocks: DataBlock[];
         toJSON(): {
             id: string;
-            categories: any[];
+            categories: {
+                name: string;
+                columns: string[];
+                rows: any[];
+            }[];
             additionalData: {
                 [name: string]: any;
             };
@@ -4278,7 +4283,11 @@ declare namespace LiteMol.Core.Formats.CIF.Text {
         addCategory(category: Category): void;
         toJSON(): {
             id: string;
-            categories: any[];
+            categories: {
+                name: string;
+                columns: string[];
+                rows: any[];
+            }[];
             additionalData: {
                 [name: string]: any;
             };
@@ -4291,7 +4300,7 @@ declare namespace LiteMol.Core.Formats.CIF.Text {
     class Category implements CIF.Category {
         private data;
         private columnWrappers;
-        private columnList;
+        private columnNameList;
         /**
          * Name of the category.
          */
@@ -4299,7 +4308,7 @@ declare namespace LiteMol.Core.Formats.CIF.Text {
         /**
          * The array of columns.
          */
-        columns: Column[];
+        columnNames: string[];
         /**
          * Number of columns in the category.
          */
@@ -4322,16 +4331,16 @@ declare namespace LiteMol.Core.Formats.CIF.Text {
          */
         endIndex: number;
         /**
-         * Compute the token index.
-         */
-        getTokenIndex(row: number, columnIndex: number): number;
-        /**
          * Get a column object that makes accessing data easier.
          * @returns undefined if the column isn't present, the Column object otherwise.
          */
         getColumn(name: string): CIF.Column;
         constructor(data: string, name: string, startIndex: number, endIndex: number, columns: string[], tokens: number[], tokenCount: number);
-        toJSON(): any;
+        toJSON(): {
+            name: string;
+            columns: string[];
+            rows: any[];
+        };
     }
     /**
      * Represents a single column of a CIF category.
@@ -4374,9 +4383,64 @@ declare namespace LiteMol.Core.Formats.CIF.Text {
 declare namespace LiteMol.Core.Formats.CIF.Text {
     function parse(data: string): ParserResult<CIF.File>;
 }
-declare namespace LiteMol.Core.Formats.BinaryCIF {
+declare namespace LiteMol.Core.Formats.CIF.Binary {
+    class File implements CIF.File {
+        dataBlocks: DataBlock[];
+        toJSON(): {
+            id: string;
+            categories: {
+                name: string;
+                columns: string[];
+                rows: any[];
+            }[];
+            additionalData: {
+                [name: string]: any;
+            };
+        }[];
+        constructor(data: EncodedFile);
+    }
+    class DataBlock implements CIF.DataBlock {
+        private categoryMap;
+        private categoryList;
+        header: string;
+        additionalData: {
+            [name: string]: any;
+        };
+        categories: Category[];
+        getCategory(name: string): Category;
+        toJSON(): {
+            id: string;
+            categories: {
+                name: string;
+                columns: string[];
+                rows: any[];
+            }[];
+            additionalData: {
+                [name: string]: any;
+            };
+        };
+        constructor(data: EncodedDataBlock);
+    }
+    class Category implements CIF.Category {
+        private encodedColumns;
+        private columnWrappers;
+        private columnNameList;
+        name: string;
+        columnCount: number;
+        rowCount: number;
+        columnNames: string[];
+        getColumn(name: string): CIF.Column;
+        toJSON(): {
+            name: string;
+            columns: string[];
+            rows: any[];
+        };
+        constructor(data: EncodedCategory);
+    }
+}
+declare namespace LiteMol.Core.Formats.CIF.Binary {
     const VERSION: string;
-    type Encoding = Encoding.Value | Encoding.ByteArray | Encoding.FixedPoint | Encoding.RunLength | Encoding.Delta | Encoding.IntegerPacking | Encoding.StringArray;
+    type Encoding = Encoding.ByteArray | Encoding.FixedPoint | Encoding.RunLength | Encoding.Delta | Encoding.IntegerPacking | Encoding.StringArray;
     interface EncodedFile {
         version: string;
         encoder: string;
@@ -4388,6 +4452,7 @@ declare namespace LiteMol.Core.Formats.BinaryCIF {
     }
     interface EncodedCategory {
         name: string;
+        rowCount: number;
         columns: EncodedColumn[];
     }
     interface EncodedColumn {
@@ -4423,10 +4488,6 @@ declare namespace LiteMol.Core.Formats.BinaryCIF {
             Uint8 = 3,
         }
         function getIntDataType(data: (Int8Array | Int16Array | Int32Array | number[])): IntDataType;
-        interface Value {
-            kind: 'Value';
-            value: any;
-        }
         interface ByteArray {
             kind: 'ByteArray';
             type: DataType;
@@ -4458,7 +4519,7 @@ declare namespace LiteMol.Core.Formats.BinaryCIF {
         }
     }
 }
-declare namespace LiteMol.Core.Formats.BinaryCIF {
+declare namespace LiteMol.Core.Formats.CIF.Binary {
     /**
      * Fixed point, delta, RLE, integer packing adopted from https://github.com/rcsb/mmtf-javascript/
      * by Alexander Rose <alexander.rose@weirdbyte.de>, MIT License, Copyright (c) 2016
@@ -4476,7 +4537,6 @@ declare namespace LiteMol.Core.Formats.BinaryCIF {
         }
         type Provider = (data: any) => Result;
         function by(f: Provider): Encoder;
-        function value(value: any): Result;
         function uint8(data: Int16Array): Result;
         function int8(data: Int8Array): Result;
         function int16(data: Int16Array): Result;
@@ -4490,12 +4550,15 @@ declare namespace LiteMol.Core.Formats.BinaryCIF {
         function stringArray(data: string[]): Result;
     }
 }
-declare namespace LiteMol.Core.Formats.BinaryCIF {
+declare namespace LiteMol.Core.Formats.CIF.Binary {
     /**
      * Fixed point, delta, RLE, integer packing adopted from https://github.com/rcsb/mmtf-javascript/
      * by Alexander Rose <alexander.rose@weirdbyte.de>, MIT License, Copyright (c) 2016
      */
     function decode(data: EncodedData): any;
+}
+declare namespace LiteMol.Core.Formats.CIF.Binary {
+    function parse(data: ArrayBuffer): ParserResult<CIF.File>;
 }
 declare namespace LiteMol.Core.Formats.Molecule.mmCIF {
     function ofDataBlock(data: CIF.DataBlock): Structure.Molecule;
@@ -4580,6 +4643,7 @@ declare namespace LiteMol.Core.Formats.Molecule.SDF {
 declare namespace LiteMol.Core.Formats.Molecule {
     namespace SupportedFormats {
         const mmCIF: FormatInfo;
+        const mmBCIF: FormatInfo;
         const PDB: FormatInfo;
         const SDF: FormatInfo;
         const All: FormatInfo[];
@@ -15948,11 +16012,11 @@ declare namespace LiteMol.Bootstrap.Entity.Transformer.Molecule {
         file?: File;
     }
     const OpenMoleculeFromFile: Tree.Transformer<Root, Action, OpenMoleculeFromFileParams>;
-    interface CreateFromStringParams {
+    interface CreateFromDataParams {
         format?: Core.Formats.FormatInfo;
         customId?: string;
     }
-    const CreateFromString: Tree.Transformer<Entity.Data.String, Entity.Molecule.Molecule, CreateFromStringParams>;
+    const CreateFromData: Tree.Transformer<Entity.Data.String | Entity.Data.Binary, Entity.Molecule.Molecule, CreateFromDataParams>;
     interface CreateFromMmCifParams {
         blockIndex?: number;
     }
@@ -16026,12 +16090,12 @@ declare namespace LiteMol.Bootstrap.Entity.Transformer.Data {
     const ParseJson: Tree.Transformer<Entity.Data.String, Entity.Data.Json, ParseJsonParams>;
 }
 declare namespace LiteMol.Bootstrap.Entity.Transformer.Density {
-    interface ParseBinaryParams {
+    interface ParseDataParams {
         id?: string;
         format?: LiteMol.Core.Formats.FormatInfo;
         normalize?: boolean;
     }
-    const ParseBinary: Tree.Transformer<Entity.Data.Binary, Entity.Density.Data, ParseBinaryParams>;
+    const ParseData: Tree.Transformer<Entity.Data.String | Entity.Data.Binary, Entity.Density.Data, ParseDataParams>;
     interface CreateVisualParams {
         style?: Visualization.Density.Style;
     }

@@ -8538,29 +8538,37 @@ var LiteMol;
                             to: [Entity.Action],
                             defaultParams: function (ctx) { return ({ id: params.defaultId, format: LiteMol.Core.Formats.Molecule.SupportedFormats.mmCIF }); },
                             validateParams: function (p) { return (!p.id || !p.id.trim().length) ? [("Enter " + (params.isFullUrl ? 'Url' : 'Id'))] : void 0; }
-                        }, function (context, a, t) { return Bootstrap.Tree.Transform.build()
-                            .add(a, Transformer.Data.Download, { url: params.urlTemplate(t.params.id.trim()), type: 'String', id: t.params.id, description: params.name })
-                            .then(Molecule.CreateFromString, { format: params.specificFormat ? params.specificFormat : t.params.format }, { isBinding: true })
-                            .then(Molecule.CreateModel, { modelIndex: 0 }, { isBinding: false }); });
+                        }, function (context, a, t) {
+                            var format = params.specificFormat ? params.specificFormat : t.params.format;
+                            return Bootstrap.Tree.Transform.build()
+                                .add(a, Transformer.Data.Download, { url: params.urlTemplate(t.params.id.trim()), type: format.isBinary ? 'Binary' : 'String', id: t.params.id, description: params.name })
+                                .then(Molecule.CreateFromData, { format: params.specificFormat ? params.specificFormat : t.params.format }, { isBinding: true })
+                                .then(Molecule.CreateModel, { modelIndex: 0 }, { isBinding: false });
+                        });
                     }
                     Molecule.downloadMoleculeSource = downloadMoleculeSource;
                     Molecule.OpenMoleculeFromFile = Bootstrap.Tree.Transformer.action({
                         id: 'molecule-open-from-file',
                         name: 'Molecule from File',
-                        description: 'Open a molecule from a file (mmCIF, PDB, SDF/MOL).',
+                        description: "Open a molecule from a file (" + LiteMol.Core.Formats.Molecule.SupportedFormats.All.map(function (f) { return f.name; }).join(', ') + ").",
                         from: [Entity.Root],
                         to: [Entity.Action],
                         defaultParams: function (ctx) { return ({ format: LiteMol.Core.Formats.Molecule.SupportedFormats.mmCIF }); },
-                        validateParams: function (p) { return !p.file ? ['Select a file'] : !LiteMol.Core.Formats.FormatInfo.getFormat(p.file.name, LiteMol.Core.Formats.Molecule.SupportedFormats.All) ? ['Select a supported (.cif,.pdb,.ent) file.'] : void 0; }
-                    }, function (context, a, t) { return Bootstrap.Tree.Transform.build()
-                        .add(a, Transformer.Data.OpenFile, { file: t.params.file, type: 'String' })
-                        .then(Molecule.CreateFromString, { format: LiteMol.Core.Formats.FormatInfo.getFormat(t.params.file.name, LiteMol.Core.Formats.Molecule.SupportedFormats.All) }, { isBinding: true })
-                        .then(Molecule.CreateModel, { modelIndex: 0 }, { isBinding: false }); });
-                    Molecule.CreateFromString = Bootstrap.Tree.Transformer.create({
-                        id: 'molecule-create-from-string',
+                        validateParams: function (p) { return !p.file ? ['Select a file'] : !LiteMol.Core.Formats.FormatInfo.getFormat(p.file.name, LiteMol.Core.Formats.Molecule.SupportedFormats.All)
+                            ? [("Select a supported file format (" + [].concat(LiteMol.Core.Formats.Molecule.SupportedFormats.All.map(function (f) { return f.extensions; })).join(', ') + ").")]
+                            : void 0; }
+                    }, function (context, a, t) {
+                        var format = LiteMol.Core.Formats.FormatInfo.getFormat(t.params.file.name, LiteMol.Core.Formats.Molecule.SupportedFormats.All);
+                        return Bootstrap.Tree.Transform.build()
+                            .add(a, Transformer.Data.OpenFile, { file: t.params.file, type: format.isBinary ? 'Binary' : 'String' })
+                            .then(Molecule.CreateFromData, { format: format }, { isBinding: true })
+                            .then(Molecule.CreateModel, { modelIndex: 0 }, { isBinding: false });
+                    });
+                    Molecule.CreateFromData = Bootstrap.Tree.Transformer.create({
+                        id: 'molecule-create-from-data',
                         name: 'Molecule',
-                        description: 'Create a molecule from string data.',
-                        from: [Entity.Data.String],
+                        description: 'Create a molecule from string or binary data.',
+                        from: [Entity.Data.String, Entity.Data.Binary],
                         to: [Entity.Molecule.Molecule],
                         defaultParams: function (ctx) { return ({ format: LiteMol.Core.Formats.Molecule.SupportedFormats.mmCIF }); }
                     }, function (ctx, a, t) {
@@ -8921,11 +8929,11 @@ var LiteMol;
                 var Density;
                 (function (Density) {
                     "use strict";
-                    Density.ParseBinary = Bootstrap.Tree.Transformer.create({
+                    Density.ParseData = Bootstrap.Tree.Transformer.create({
                         id: 'density-parse-binary',
                         name: 'Density Data',
                         description: 'Parse density from binary data.',
-                        from: [Entity.Data.Binary],
+                        from: [Entity.Data.String, Entity.Data.Binary],
                         to: [Entity.Density.Data],
                         isUpdatable: true,
                         defaultParams: function () { return ({ format: LiteMol.Core.Formats.Density.SupportedFormats.CCP4, normalize: false }); }
@@ -9614,6 +9622,7 @@ var LiteMol;
                 catch (e) {
                 }
             }
+            function selectedMoleculeCreateFromData(p, a) { return p.format.name; }
             function selectDownload(p) { return p.url; }
             function selectQuery(p) { return p.queryString; }
             function selectAssembly(p, a) {
@@ -9677,12 +9686,13 @@ var LiteMol;
                     }
                     Bootstrap.Event.Tree.TransformerApply.getStream(context).subscribe(function (e) {
                         trackTransform(context, 'Download', Bootstrap.Entity.Transformer.Data.Download, e.data.a, e.data.t, selectDownload, gaId);
+                        trackTransform(context, 'Create Molecule From Data', Bootstrap.Entity.Transformer.Molecule.CreateFromData, e.data.a, e.data.t, selectedMoleculeCreateFromData, gaId);
                         trackTransform(context, 'Create Model Selecion', Bootstrap.Entity.Transformer.Molecule.CreateSelection, e.data.a, e.data.t, selectQuery, gaId);
                         trackTransform(context, 'Create Assembly', Bootstrap.Entity.Transformer.Molecule.CreateAssembly, e.data.a, e.data.t, selectAssembly, gaId);
                         trackTransform(context, 'Create Symmetry', Bootstrap.Entity.Transformer.Molecule.CreateSymmetryMates, e.data.a, e.data.t, selectCrystalSymmetry, gaId);
                         trackTransform(context, 'Create Visual', Bootstrap.Entity.Transformer.Molecule.CreateVisual, e.data.a, e.data.t, selectVisual, gaId);
                         trackTransform(context, 'Coordinate Streaming', Bootstrap.Entity.Transformer.Molecule.CoordinateStreaming.CreateBehaviour, e.data.a, e.data.t, selectStreaming, gaId);
-                        trackTransform(context, 'Parse Density', Bootstrap.Entity.Transformer.Density.ParseBinary, e.data.a, e.data.t, selectDensity, gaId);
+                        trackTransform(context, 'Parse Density', Bootstrap.Entity.Transformer.Density.ParseData, e.data.a, e.data.t, selectDensity, gaId);
                         trackTransform(context, 'Create Model Selection', Bootstrap.Entity.Transformer.Molecule.CreateSelection, e.data.a, e.data.t, selectSelection, gaId);
                     });
                 };
