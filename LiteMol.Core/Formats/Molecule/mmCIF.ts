@@ -689,8 +689,8 @@ namespace LiteMol.Core.Formats.Molecule.mmCIF {
             genMap = new Map<string, Structure.AssemblyGen>();
 
         let assembly_id = _gen.getColumn('assembly_id');
-        let oper_expression = _gen.getColumn('assembly_id');
-        let asym_id_list = _gen.getColumn('assembly_id');
+        let oper_expression = _gen.getColumn('oper_expression');
+        let asym_id_list = _gen.getColumn('asym_id_list');
         for (i = 0; i < _gen.rowCount; i++) {
             
             let id = assembly_id.getString(i);

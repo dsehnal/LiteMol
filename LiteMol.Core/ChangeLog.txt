@@ -1,5 +1,6 @@
 ﻿== 2.4.1 ==
 * A bugfix in BinaryCIF decoder.
+* A bugfix in mmCIF assembly parsing.
 
 == 2.4.0 ==
 * Refactored CIF support. The CIF access is now a lot more streamlined.

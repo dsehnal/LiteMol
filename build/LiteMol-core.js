@@ -11059,8 +11059,8 @@ var LiteMol;
                         }
                         var i, opers = {}, gens = [], genMap = new Map();
                         var assembly_id = _gen.getColumn('assembly_id');
-                        var oper_expression = _gen.getColumn('assembly_id');
-                        var asym_id_list = _gen.getColumn('assembly_id');
+                        var oper_expression = _gen.getColumn('oper_expression');
+                        var asym_id_list = _gen.getColumn('asym_id_list');
                         for (i = 0; i < _gen.rowCount; i++) {
                             var id = assembly_id.getString(i);
                             var entry = genMap.get(id);
