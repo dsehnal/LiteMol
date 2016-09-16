@@ -70,7 +70,7 @@ namespace LiteMol.Core.Formats.CIF.Binary {
 
         function float32(data: Uint8Array) {
             let n = (data.length / 4) | 0;
-            let output = new Float32Array((data.length / 4) | 0);
+            let output = new Float32Array(n);
             let src = dataView(data);
             for (let i = 0, i4 = 0; i < n; i++, i4 += 4) {
                 output[i] = src.getFloat32(i4);
@@ -80,9 +80,9 @@ namespace LiteMol.Core.Formats.CIF.Binary {
 
         function float64(data: Uint8Array) {
             let n = (data.length / 8) | 0;
-            let output = new Float64Array((data.length / 8) | 0);
+            let output = new Float64Array(n);
             let src = dataView(data);
-            for (let i = 0, i8 = 0; i < n; i++, i8 += 4) {
+            for (let i = 0, i8 = 0; i < n; i++, i8 += 8) {
                 output[i] = src.getFloat64(i8);
             }
             return output;

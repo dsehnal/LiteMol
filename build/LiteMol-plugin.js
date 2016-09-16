@@ -8145,7 +8145,7 @@ var LiteMol;
 (function (LiteMol) {
     var Core;
     (function (Core) {
-        Core.VERSION = { number: "2.4.0", date: "Sep 16 2016" };
+        Core.VERSION = { number: "2.4.1", date: "Sep 17 2016" };
     })(Core = LiteMol.Core || (LiteMol.Core = {}));
 })(LiteMol || (LiteMol = {}));
 /*
@@ -10496,7 +10496,7 @@ var LiteMol;
                         }
                         function float32(data) {
                             var n = (data.length / 4) | 0;
-                            var output = new Float32Array((data.length / 4) | 0);
+                            var output = new Float32Array(n);
                             var src = dataView(data);
                             for (var i = 0, i4 = 0; i < n; i++, i4 += 4) {
                                 output[i] = src.getFloat32(i4);
@@ -10505,9 +10505,9 @@ var LiteMol;
                         }
                         function float64(data) {
                             var n = (data.length / 8) | 0;
-                            var output = new Float64Array((data.length / 8) | 0);
+                            var output = new Float64Array(n);
                             var src = dataView(data);
-                            for (var i = 0, i8 = 0; i < n; i++, i8 += 4) {
+                            for (var i = 0, i8 = 0; i < n; i++, i8 += 8) {
                                 output[i] = src.getFloat64(i8);
                             }
                             return output;
