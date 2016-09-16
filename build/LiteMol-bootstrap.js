@@ -8894,6 +8894,26 @@ var LiteMol;
                             });
                         }).setReportTime(true);
                     });
+                    Data.ParseBinaryCif = Bootstrap.Tree.Transformer.create({
+                        id: 'data-parse-binary-cif',
+                        name: 'CIF Dictionary',
+                        description: 'Parse CIF dictionary from BinaryCIF data.',
+                        from: [Entity.Data.Binary],
+                        to: [Entity.Data.CifDictionary],
+                        defaultParams: function () { return ({}); }
+                    }, function (ctx, a, t) {
+                        return Bootstrap.Task.create("BinaryCIF Parse (" + a.props.label + ")", 'Normal', function (ctx) {
+                            ctx.update('Parsing...');
+                            ctx.schedule(function () {
+                                var d = LiteMol.Core.Formats.CIF.Binary.parse(a.props.data);
+                                if (d.error) {
+                                    ctx.reject(d.error.toString());
+                                    return;
+                                }
+                                ctx.resolve(Entity.Data.CifDictionary.create(t, { label: t.params.id ? t.params.id : 'CIF Dictionary', description: t.params.description, dictionary: d.result }));
+                            });
+                        }).setReportTime(true);
+                    });
                     Data.ParseJson = Bootstrap.Tree.Transformer.create({
                         id: 'data-parse-json',
                         name: 'JSON',

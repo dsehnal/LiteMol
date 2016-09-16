@@ -1,0 +1,19 @@
+{
+  "compileOnSave": false,
+  "compilerOptions": {
+    "noImplicitAny": true,
+    "noEmitOnError": true,
+    "removeComments": false,
+    "sourceMap": false,
+    "declaration": false,
+    "target": "es5",
+    "jsx": "react",
+    "out": "LiteMol-example.js"
+  },
+  "files": [
+    "../../../lib/es6-collections.d.ts",
+    "../../../dist/LiteMol-core.d.ts",
+            
+    "./src/App.ts"
+  ]
+}

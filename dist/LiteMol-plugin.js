@@ -8753,8 +8753,14 @@ var LiteMol;
                      * @return {Uint8Array} decoded array
                      */
                     function bin(length) {
-                        var value = new Uint8Array(buffer.buffer, offset, length);
-                        //buffer.subarray(offset, offset + length);
+                        ////let value = buffer.subarray(offset, offset + length); //new Uint8Array(buffer.buffer, offset, length);
+                        // This approach wastes a bit of memory to trade for speed.
+                        // it turns out that using the view created by subarray probably uses DataView
+                        // in the background, which causes the element access to be several times slower
+                        // than creating the new byte array.
+                        var value = new Uint8Array(length);
+                        for (var i = 0; i < length; i++)
+                            value[i] = buffer[i + offset];
                         offset += length;
                         return value;
                     }
@@ -8767,22 +8773,6 @@ var LiteMol;
                         var value = MessagePack.utf8Read(buffer, offset, length);
                         offset += length;
                         return value;
-                        // let array = buffer.subarray(offset, offset + length);
-                        // offset += length;
-                        // // limit number of arguments to String.fromCharCode to something
-                        // // browsers can handle, see http://stackoverflow.com/a/22747272
-                        // let chunkSize = 0xffff;
-                        // if (length > chunkSize) {
-                        //     let c: string[] = [];
-                        //     for (let i = 0; i < array.length; i += chunkSize) {
-                        //         c.push(String.fromCharCode.apply(
-                        //             null, array.subarray(i, i + chunkSize)
-                        //         ));
-                        //     }
-                        //     return c.join("");
-                        // } else {
-                        //     return String.fromCharCode.apply(null, array);
-                        // }
                     }
                     /**
                      * decode array
@@ -10486,10 +10476,10 @@ var LiteMol;
                         }
                         Decoder.decodeStep = decodeStep;
                         function dataView(array) {
-                            return new DataView(array.buffer, array.byteOffset, array.byteLength);
+                            return new DataView(array.buffer, array.byteOffset > 0 ? array.byteOffset : void 0, array.byteLength);
                         }
                         function int8(data) {
-                            return new Int8Array(data.buffer, data.byteOffset);
+                            return new Int8Array(data.buffer, data.byteOffset > 0 ? data.byteOffset : void 0);
                         }
                         function int16(data) {
                             var n = (data.length / 2) | 0;
@@ -10574,15 +10564,16 @@ var LiteMol;
                             var i = 0;
                             var j = 0;
                             while (i < n) {
-                                var value = 0;
-                                while (data[i] === upperLimit || data[i] === lowerLimit) {
-                                    value += data[i];
-                                    ++i;
+                                var value = 0, t = data[i];
+                                while (t === upperLimit || t === lowerLimit) {
+                                    value += t;
+                                    i++;
+                                    t = data[i];
                                 }
-                                value += data[i];
-                                ++i;
+                                value += t;
                                 output[j] = value;
-                                ++j;
+                                i++;
+                                j++;
                             }
                             return output;
                         }
@@ -10628,14 +10619,15 @@ var LiteMol;
                 (function (Binary) {
                     "use strict";
                     function parse(data) {
-                        var array = new Uint8Array(data);
-                        var unpacked = Formats.MessagePack.decode(array);
-                        //console.log(unpacked);
-                        var file = new Binary.File(unpacked);
-                        return Formats.ParserResult.success(file);
-                        //console.log('file', file);
-                        //console.log(file.toJSON());
-                        //return ParserResult.error("Not implemented");
+                        try {
+                            var array = new Uint8Array(data);
+                            var unpacked = Formats.MessagePack.decode(array);
+                            var file = new Binary.File(unpacked);
+                            return Formats.ParserResult.success(file);
+                        }
+                        catch (e) {
+                            return Formats.ParserResult.error('' + e);
+                        }
                     }
                     Binary.parse = parse;
                 })(Binary = CIF.Binary || (CIF.Binary = {}));
@@ -67283,6 +67275,26 @@ var LiteMol;
                             ctx.update('Parsing...');
                             ctx.schedule(function () {
                                 var d = LiteMol.Core.Formats.CIF.Text.parse(a.props.data);
+                                if (d.error) {
+                                    ctx.reject(d.error.toString());
+                                    return;
+                                }
+                                ctx.resolve(Entity.Data.CifDictionary.create(t, { label: t.params.id ? t.params.id : 'CIF Dictionary', description: t.params.description, dictionary: d.result }));
+                            });
+                        }).setReportTime(true);
+                    });
+                    Data.ParseBinaryCif = Bootstrap.Tree.Transformer.create({
+                        id: 'data-parse-binary-cif',
+                        name: 'CIF Dictionary',
+                        description: 'Parse CIF dictionary from BinaryCIF data.',
+                        from: [Entity.Data.Binary],
+                        to: [Entity.Data.CifDictionary],
+                        defaultParams: function () { return ({}); }
+                    }, function (ctx, a, t) {
+                        return Bootstrap.Task.create("BinaryCIF Parse (" + a.props.label + ")", 'Normal', function (ctx) {
+                            ctx.update('Parsing...');
+                            ctx.schedule(function () {
+                                var d = LiteMol.Core.Formats.CIF.Binary.parse(a.props.data);
                                 if (d.error) {
                                     ctx.reject(d.error.toString());
                                     return;

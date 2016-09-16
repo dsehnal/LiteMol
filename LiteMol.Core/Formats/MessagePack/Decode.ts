@@ -38,8 +38,14 @@ namespace LiteMol.Core.Formats.MessagePack {
          * @return {Uint8Array} decoded array
          */
         function bin(length: number) {
-            let value = new Uint8Array(buffer.buffer, offset, length); 
-                //buffer.subarray(offset, offset + length);
+            ////let value = buffer.subarray(offset, offset + length); //new Uint8Array(buffer.buffer, offset, length);
+
+            // This approach wastes a bit of memory to trade for speed.
+            // it turns out that using the view created by subarray probably uses DataView
+            // in the background, which causes the element access to be several times slower
+            // than creating the new byte array.
+            let value = new Uint8Array(length);
+            for (let i = 0; i < length; i++) value[i] = buffer[i + offset];
             offset += length;
             return value;
         }
@@ -53,22 +59,6 @@ namespace LiteMol.Core.Formats.MessagePack {
             let value = utf8Read(buffer, offset, length);
             offset += length;
             return value;
-            // let array = buffer.subarray(offset, offset + length);
-            // offset += length;
-            // // limit number of arguments to String.fromCharCode to something
-            // // browsers can handle, see http://stackoverflow.com/a/22747272
-            // let chunkSize = 0xffff;
-            // if (length > chunkSize) {
-            //     let c: string[] = [];
-            //     for (let i = 0; i < array.length; i += chunkSize) {
-            //         c.push(String.fromCharCode.apply(
-            //             null, array.subarray(i, i + chunkSize)
-            //         ));
-            //     }
-            //     return c.join("");
-            // } else {
-            //     return String.fromCharCode.apply(null, array);
-            // }
         }
 
         /**

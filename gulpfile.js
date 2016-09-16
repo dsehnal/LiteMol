@@ -43,7 +43,7 @@ function Viewer() {
         .pipe(plugins.sass().on('error', plugins.sass.logError))
         .pipe(gulp.dest('./LiteMol.Viewer/assets/css'));
         
-    var js =  gulp.src(['./dist/LiteMol-plugin.js'])
+    var js =  gulp.src(['./dist/LiteMol-plugin.js', './dist/LiteMol-core.js'])
         .pipe(gulp.dest('./LiteMol.Viewer'));
    
    console.log('Building Viewer and Examples');
@@ -56,6 +56,7 @@ function Viewer() {
       buildts('./LiteMol.Viewer/Examples/CustomControls'),
       buildts('./LiteMol.Viewer/Examples/CustomDensity'),
       buildts('./LiteMol.Viewer/Examples/SplitSurface'),
+      buildts('./LiteMol.Viewer/Examples/BinaryCIFInspect'),
    ]);    
 }
 

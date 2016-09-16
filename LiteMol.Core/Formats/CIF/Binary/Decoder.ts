@@ -42,11 +42,12 @@ namespace LiteMol.Core.Formats.CIF.Binary {
 
         type TypedArray = { buffer: ArrayBuffer, byteOffset: number, byteLength: number }
         function dataView(array: TypedArray) {
-            return new DataView(array.buffer, array.byteOffset, array.byteLength);
+            return new DataView(array.buffer, array.byteOffset > 0 ? array.byteOffset : void 0, array.byteLength);
         }
 
         function int8(data: Uint8Array) {
-            return new Int8Array(data.buffer, data.byteOffset);
+
+            return new Int8Array(data.buffer, data.byteOffset > 0 ? data.byteOffset : void 0);
         }
 
         function int16(data: Uint8Array) {
@@ -139,15 +140,16 @@ namespace LiteMol.Core.Formats.CIF.Binary {
             let i = 0;
             let j = 0;
             while (i < n) {
-                let value = 0;
-                while (data[i] === upperLimit || data[i] === lowerLimit) {
-                    value += data[i];
-                    ++i;
+                let value = 0, t = data[i];
+                while (t === upperLimit || t === lowerLimit) {
+                    value += t;
+                    i++;
+                    t = data[i];
                 }
-                value += data[i];
-                ++i;
+                value += t;
                 output[j] = value;
-                ++j;
+                i++;
+                j++;
             }
             return output;
         }

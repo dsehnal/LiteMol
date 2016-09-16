@@ -20,4 +20,18 @@ namespace LiteMol.Viewer.PDBe.Views {
             </div>
         }        
     }
+
+    export class DownloadBinaryCIFFromCoordinateServerView extends LiteMol.Plugin.Views.Transform.ControllerBase<
+        Bootstrap.Components.Transform.Controller<Data.DownloadBinaryCIFFromCoordinateServerParams>,  
+        Data.DownloadBinaryCIFFromCoordinateServerParams> {
+        
+        protected renderControls() {            
+            let params = this.params;                                                           
+            return <div>
+                <Controls.OptionsGroup options={['Cartoon', 'Full']} caption={s => s} current={params.type} onChange={(o) => this.updateParams({ type: o }) } label='Type' />
+                <Controls.TextBoxGroup value={params.id} onChange={(v) => this.updateParams({ id: v })} label='Id' onEnter={e => this.applyEnter(e) } placeholder='Enter pdb id...' />
+                <Controls.TextBoxGroup value={params.serverUrl} onChange={(v) => this.updateParams({ serverUrl: v })} label='Coord. Server' onEnter={e => this.applyEnter(e) } placeholder='Enter server URL...' />
+            </div>
+        }        
+    }
 }

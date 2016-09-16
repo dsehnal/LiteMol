@@ -16,6 +16,7 @@ namespace LiteMol.Viewer {
             'molecule.model.defaultAssemblyName': '1', 
             'molecule.coordinateStreaming.defaultId': '1jj2',
             'molecule.coordinateStreaming.defaultServer': 'http://webchemdev.ncbr.muni.cz/CoordinateServer',
+            'molecule.downloadBinaryCIFFromCoordinateServer.server': 'http://webchemdev.ncbr.muni.cz/CoordinateServer',
             'molecule.coordinateStreaming.defaultRadius': 10,
             'density.defaultVisualBehaviourRadius': 5
         },
@@ -23,6 +24,7 @@ namespace LiteMol.Viewer {
             // Root transforms -- things that load data.
             { transformer: PDBe.Data.DownloadMolecule, view: Views.Transform.Data.WithIdField },
             { transformer: PDBe.Data.DownloadDensity, view: Views.Transform.Data.WithIdField },
+            { transformer: PDBe.Data.DownloadBinaryCIFFromCoordinateServer, view: Viewer.PDBe.Views.DownloadBinaryCIFFromCoordinateServerView, initiallyCollapsed: true },
             { transformer: Transformer.Molecule.CoordinateStreaming.InitStreaming, view: Views.Transform.Molecule.InitCoordinateStreaming, initiallyCollapsed: true },
             { transformer: DataSources.DownloadMolecule, view: Views.Transform.Molecule.DownloadFromUrl, initiallyCollapsed: true },
             { transformer: Transformer.Molecule.OpenMoleculeFromFile, view: Views.Transform.Molecule.OpenFile, initiallyCollapsed: true },                
@@ -32,6 +34,7 @@ namespace LiteMol.Viewer {
             // Raw data transforms
             { transformer: Transformer.Molecule.CreateFromData, view: Views.Transform.Molecule.CreateFromData },
             { transformer: Transformer.Data.ParseCif, view: Views.Transform.Empty },
+            { transformer: Transformer.Data.ParseBinaryCif, view: Views.Transform.Empty },
             { transformer: Transformer.Density.ParseData, view: Views.Transform.Density.ParseData },
             
             // Molecule(model) transforms

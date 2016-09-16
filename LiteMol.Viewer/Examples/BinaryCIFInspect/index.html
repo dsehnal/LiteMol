@@ -1,0 +1,75 @@
+﻿<!DOCTYPE html>
+
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=1" />
+    <title>LiteMol BinaryCIF Inspect Example</title>    
+    <script src="../../LiteMol-core.js"></script>
+
+    <style>          
+        body {
+            font-family: sans-serif;
+        }
+
+        .lm-layout-right .lm-layout-scrollable {
+            top: 10px !important;
+        }
+
+        .panel {
+            flex: 1 auto;
+            background: #cbcbcb;
+            padding: 4px;
+            box-sizing: border-box;
+            border: 1px solid #999
+        }
+
+        .status {
+            font-weight: bold;
+            margin: 4px;
+            font-size: smaller;
+        }
+
+        .panel textarea {
+            flex: 1 auto;
+            min-height: 200px;
+            height: 600px;
+        }
+    </style>
+</head>
+<body>
+    <div style='display: flex'>
+        <div class='panel' style='margin-right: 4px' id='cif-data'>
+            <div style='font-weight: bold; margin-bottom: 4px'>CIF Data</div>
+            <div style='display: flex'>
+                <input  style='flex: 1 80%' type='text' placeholder="CIF Data URL" value="http://webchemdev.ncbr.muni.cz/CoordinateServer/1tqn/het" />
+                <button  style='flex: 1 auto'>Fetch</button>
+            </div>
+            <div class='status'>
+                Fetch CIF data...
+            </div>
+            <div style='display: flex'>
+                <textarea></textarea>
+            </div>
+        </div>
+        <div class='panel' id='binarycif-data'>
+            <div style='font-weight: bold; margin-bottom: 4px'>BinaryCIF Data</div>
+            <div style='display: flex'>
+                <input  style='flex: 1 80%' type='text' placeholder="CIF Data URL" value="http://webchemdev.ncbr.muni.cz/CoordinateServer/1tqn/het?encoding=bcif" />
+                <button  style='flex: 1 auto'>Fetch</button>
+            </div>
+            <div class='status'>
+                Fetch BinaryCIF data...
+            </div>
+            <div style='display: flex'>
+                <textarea></textarea>
+            </div>
+        </div>
+    </div>
+    <div style='text-align: center; font-size: smaller; color: #424242'>
+        Note: This app is made for inspecting small results only. This is because it uses an "expensive" JSON representation of the resulting CIF. If you want to work 
+        with the CIF data, use the LiteMol.Core.Formats.CIF.File/DataBlock/Category/Column interfaces defined in 'LiteMol.Core/Formats/CIF/Dictionary.ts'.
+    </div>    
+    <script src="LiteMol-example.js"></script>
+</body>
+</html>

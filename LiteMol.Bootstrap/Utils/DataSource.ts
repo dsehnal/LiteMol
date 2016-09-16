@@ -89,7 +89,7 @@ namespace LiteMol.Bootstrap.Utils {
         ctx.update(action);                
         data.onerror = e => {
             let error = (<FileReader>e.target).error;
-            return ctx.reject(error ? error : 'Failed.');
+            ctx.reject(error ? error : 'Failed.');
         };
         data.onabort = () => ctx.abort();
         

@@ -56,6 +56,7 @@ Examples are located in the folder `LiteMol.Viewer/Examples`.
   - `CustomControls` ([view live](http://webchemdev.ncbr.muni.cz/Litemol/Examples/CustomControls)) - Shows how to construct a custom control scheme for the plugin.
   - `CustomDensity` ([view live](http://webchemdev.ncbr.muni.cz/Litemol/Examples/CustomDensity)) - Shows how to download a PDB file, parse it, download density data and allow user interaction with them.
   - `SplitSurface` ([view live](http://webchemdev.ncbr.muni.cz/Litemol/Examples/SplitSurface)) - Shows how to create two complementary selections and display a surface for each of them.
+  - `BinaryCIFInspect` ([view live](http://webchemdev.ncbr.muni.cz/Litemol/Examples/BinaryCIFInspect)) - A simple app that enables a comparison of data inside CIF and BinaryCIF. Also shows how to use the LiteMol.Core code directly without including/instancing the plugin.
 
 Building
 ========

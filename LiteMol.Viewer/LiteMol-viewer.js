@@ -12,7 +12,9 @@ var LiteMol;
     (function (Viewer) {
         var DataSources;
         (function (DataSources) {
-            DataSources.DownloadMolecule = LiteMol.Bootstrap.Entity.Transformer.Molecule.downloadMoleculeSource({
+            var Bootstrap = LiteMol.Bootstrap;
+            var Entity = Bootstrap.Entity;
+            DataSources.DownloadMolecule = Entity.Transformer.Molecule.downloadMoleculeSource({
                 sourceId: 'url-molecule',
                 name: 'Url',
                 description: 'Download a molecule from the specified Url (if the host server supports cross domain requests).',
@@ -46,6 +48,23 @@ var LiteMol;
                     defaultId: '1cbs',
                     specificFormat: LiteMol.Core.Formats.Molecule.SupportedFormats.mmCIF,
                     urlTemplate: function (id) { return ("http://www.ebi.ac.uk/pdbe/static/entry/" + id.toLowerCase() + "_updated.cif"); }
+                });
+                Data.DownloadBinaryCIFFromCoordinateServer = Bootstrap.Tree.Transformer.action({
+                    id: 'molecule-download-bcif-from-coordinate-server',
+                    name: 'Molecule (BinaryCIF)',
+                    description: 'Download full or cartoon representation of a PDB entry from the CoordinateServer.',
+                    from: [Entity.Root],
+                    to: [Entity.Action],
+                    defaultParams: function (ctx) { return ({ id: '1jj2', type: 'Cartoon', serverUrl: ctx.settings.get('molecule.downloadBinaryCIFFromCoordinateServer.server') ? ctx.settings.get('molecule.downloadBinaryCIFFromCoordinateServer.server') : 'http://webchemdev.ncbr.muni.cz/CoordinateServer' }); },
+                    validateParams: function (p) { return (!p.id || !p.id.trim().length) ? ['Enter Id'] : (!p.serverUrl || !p.serverUrl.trim().length) ? ['Enter CoordinateServer base URL'] : void 0; },
+                }, function (context, a, t) {
+                    var query = t.params.type === 'Cartoon' ? 'cartoon' : 'full';
+                    var id = t.params.id.toLowerCase().trim();
+                    var url = "" + t.params.serverUrl + (t.params.serverUrl[t.params.serverUrl.length - 1] === '/' ? '' : '/') + id + "/" + query + "?encoding=bcif";
+                    return Bootstrap.Tree.Transform.build()
+                        .add(a, Entity.Transformer.Data.Download, { url: url, type: 'Binary', id: id })
+                        .then(Entity.Transformer.Molecule.CreateFromData, { format: LiteMol.Core.Formats.Molecule.SupportedFormats.mmBCIF }, { isBinding: true })
+                        .then(Entity.Transformer.Molecule.CreateModel, { modelIndex: 0 }, { isBinding: false });
                 });
                 // this creates the electron density based on the spec you sent me
                 Data.DownloadDensity = Bootstrap.Tree.Transformer.action({
@@ -675,6 +694,19 @@ var LiteMol;
                     return CreateSequenceAnnotationView;
                 }(LiteMol.Plugin.Views.Transform.ControllerBase));
                 Views.CreateSequenceAnnotationView = CreateSequenceAnnotationView;
+                var DownloadBinaryCIFFromCoordinateServerView = (function (_super) {
+                    __extends(DownloadBinaryCIFFromCoordinateServerView, _super);
+                    function DownloadBinaryCIFFromCoordinateServerView() {
+                        _super.apply(this, arguments);
+                    }
+                    DownloadBinaryCIFFromCoordinateServerView.prototype.renderControls = function () {
+                        var _this = this;
+                        var params = this.params;
+                        return React.createElement("div", null, React.createElement(Controls.OptionsGroup, {options: ['Cartoon', 'Full'], caption: function (s) { return s; }, current: params.type, onChange: function (o) { return _this.updateParams({ type: o }); }, label: 'Type'}), React.createElement(Controls.TextBoxGroup, {value: params.id, onChange: function (v) { return _this.updateParams({ id: v }); }, label: 'Id', onEnter: function (e) { return _this.applyEnter(e); }, placeholder: 'Enter pdb id...'}), React.createElement(Controls.TextBoxGroup, {value: params.serverUrl, onChange: function (v) { return _this.updateParams({ serverUrl: v }); }, label: 'Coord. Server', onEnter: function (e) { return _this.applyEnter(e); }, placeholder: 'Enter server URL...'}));
+                    };
+                    return DownloadBinaryCIFFromCoordinateServerView;
+                }(LiteMol.Plugin.Views.Transform.ControllerBase));
+                Views.DownloadBinaryCIFFromCoordinateServerView = DownloadBinaryCIFFromCoordinateServerView;
             })(Views = PDBe.Views || (PDBe.Views = {}));
         })(PDBe = Viewer.PDBe || (Viewer.PDBe = {}));
     })(Viewer = LiteMol.Viewer || (LiteMol.Viewer = {}));
@@ -696,6 +728,7 @@ var LiteMol;
                 'molecule.model.defaultAssemblyName': '1',
                 'molecule.coordinateStreaming.defaultId': '1jj2',
                 'molecule.coordinateStreaming.defaultServer': 'http://webchemdev.ncbr.muni.cz/CoordinateServer',
+                'molecule.downloadBinaryCIFFromCoordinateServer.server': 'http://webchemdev.ncbr.muni.cz/CoordinateServer',
                 'molecule.coordinateStreaming.defaultRadius': 10,
                 'density.defaultVisualBehaviourRadius': 5
             },
@@ -703,6 +736,7 @@ var LiteMol;
                 // Root transforms -- things that load data.
                 { transformer: Viewer.PDBe.Data.DownloadMolecule, view: Views.Transform.Data.WithIdField },
                 { transformer: Viewer.PDBe.Data.DownloadDensity, view: Views.Transform.Data.WithIdField },
+                { transformer: Viewer.PDBe.Data.DownloadBinaryCIFFromCoordinateServer, view: Viewer.PDBe.Views.DownloadBinaryCIFFromCoordinateServerView, initiallyCollapsed: true },
                 { transformer: Transformer.Molecule.CoordinateStreaming.InitStreaming, view: Views.Transform.Molecule.InitCoordinateStreaming, initiallyCollapsed: true },
                 { transformer: Viewer.DataSources.DownloadMolecule, view: Views.Transform.Molecule.DownloadFromUrl, initiallyCollapsed: true },
                 { transformer: Transformer.Molecule.OpenMoleculeFromFile, view: Views.Transform.Molecule.OpenFile, initiallyCollapsed: true },
@@ -711,6 +745,7 @@ var LiteMol;
                 // Raw data transforms
                 { transformer: Transformer.Molecule.CreateFromData, view: Views.Transform.Molecule.CreateFromData },
                 { transformer: Transformer.Data.ParseCif, view: Views.Transform.Empty },
+                { transformer: Transformer.Data.ParseBinaryCif, view: Views.Transform.Empty },
                 { transformer: Transformer.Density.ParseData, view: Views.Transform.Density.ParseData },
                 // Molecule(model) transforms
                 { transformer: Transformer.Molecule.CreateFromMmCif, view: Views.Transform.Molecule.CreateFromMmCif },

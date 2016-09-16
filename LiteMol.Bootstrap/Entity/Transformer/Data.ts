@@ -77,6 +77,29 @@ namespace LiteMol.Bootstrap.Entity.Transformer.Data {
                 });
             }).setReportTime(true);
         }       
+    );   
+
+    export interface ParseBinaryCifParams { id?: string, description?: string }
+    export const ParseBinaryCif = Tree.Transformer.create<Entity.Data.Binary, Entity.Data.CifDictionary, ParseBinaryCifParams>({
+            id: 'data-parse-binary-cif',
+            name: 'CIF Dictionary',
+            description: 'Parse CIF dictionary from BinaryCIF data.',
+            from: [Entity.Data.Binary],
+            to: [Entity.Data.CifDictionary],
+            defaultParams: () => ({})
+        }, (ctx, a, t) => { 
+            return Task.create<Entity.Data.CifDictionary>(`BinaryCIF Parse (${a.props.label})`, 'Normal', ctx => {
+                ctx.update('Parsing...');
+                ctx.schedule(() => {
+                    let d = Core.Formats.CIF.Binary.parse(a.props.data);
+                    if (d.error) {
+                        ctx.reject(d.error.toString());
+                        return;
+                    }
+                    ctx.resolve(Entity.Data.CifDictionary.create(t, { label: t.params.id ? t.params.id : 'CIF Dictionary', description: t.params.description, dictionary: d.result }));
+                });
+            }).setReportTime(true);
+        }       
     );         
         
     export interface ParseJsonParams { id?: string, description?: string }

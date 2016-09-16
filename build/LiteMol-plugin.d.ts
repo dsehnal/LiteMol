@@ -16083,6 +16083,11 @@ declare namespace LiteMol.Bootstrap.Entity.Transformer.Data {
         description?: string;
     }
     const ParseCif: Tree.Transformer<Entity.Data.String, Entity.Data.CifDictionary, ParseCifParams>;
+    interface ParseBinaryCifParams {
+        id?: string;
+        description?: string;
+    }
+    const ParseBinaryCif: Tree.Transformer<Entity.Data.Binary, Entity.Data.CifDictionary, ParseBinaryCifParams>;
     interface ParseJsonParams {
         id?: string;
         description?: string;

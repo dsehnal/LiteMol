@@ -12,7 +12,9 @@ var LiteMol;
     (function (Viewer) {
         var DataSources;
         (function (DataSources) {
-            DataSources.DownloadMolecule = LiteMol.Bootstrap.Entity.Transformer.Molecule.downloadMoleculeSource({
+            var Bootstrap = LiteMol.Bootstrap;
+            var Entity = Bootstrap.Entity;
+            DataSources.DownloadMolecule = Entity.Transformer.Molecule.downloadMoleculeSource({
                 sourceId: 'url-molecule',
                 name: 'Url',
                 description: 'Download a molecule from the specified Url (if the host server supports cross domain requests).',
@@ -46,6 +48,23 @@ var LiteMol;
                     defaultId: '1cbs',
                     specificFormat: LiteMol.Core.Formats.Molecule.SupportedFormats.mmCIF,
                     urlTemplate: function (id) { return ("http://www.ebi.ac.uk/pdbe/static/entry/" + id.toLowerCase() + "_updated.cif"); }
+                });
+                Data.DownloadBinaryCIFFromCoordinateServer = Bootstrap.Tree.Transformer.action({
+                    id: 'molecule-download-bcif-from-coordinate-server',
+                    name: 'Molecule (BinaryCIF)',
+                    description: 'Download full or cartoon representation of a PDB entry from the CoordinateServer.',
+                    from: [Entity.Root],
+                    to: [Entity.Action],
+                    defaultParams: function (ctx) { return ({ id: '1jj2', type: 'Cartoon', serverUrl: ctx.settings.get('molecule.downloadBinaryCIFFromCoordinateServer.server') ? ctx.settings.get('molecule.downloadBinaryCIFFromCoordinateServer.server') : 'http://webchemdev.ncbr.muni.cz/CoordinateServer' }); },
+                    validateParams: function (p) { return (!p.id || !p.id.trim().length) ? ['Enter Id'] : (!p.serverUrl || !p.serverUrl.trim().length) ? ['Enter CoordinateServer base URL'] : void 0; },
+                }, function (context, a, t) {
+                    var query = t.params.type === 'Cartoon' ? 'cartoon' : 'full';
+                    var id = t.params.id.toLowerCase().trim();
+                    var url = "" + t.params.serverUrl + (t.params.serverUrl[t.params.serverUrl.length - 1] === '/' ? '' : '/') + id + "/" + query + "?encoding=bcif";
+                    return Bootstrap.Tree.Transform.build()
+                        .add(a, Entity.Transformer.Data.Download, { url: url, type: 'Binary', id: id })
+                        .then(Entity.Transformer.Molecule.CreateFromData, { format: LiteMol.Core.Formats.Molecule.SupportedFormats.mmBCIF }, { isBinding: true })
+                        .then(Entity.Transformer.Molecule.CreateModel, { modelIndex: 0 }, { isBinding: false });
                 });
                 // this creates the electron density based on the spec you sent me
                 Data.DownloadDensity = Bootstrap.Tree.Transformer.action({
