@@ -55,12 +55,12 @@ var LiteMol;
                     description: 'Download full or cartoon representation of a PDB entry from the CoordinateServer.',
                     from: [Entity.Root],
                     to: [Entity.Action],
-                    defaultParams: function (ctx) { return ({ id: '1jj2', type: 'Cartoon', serverUrl: ctx.settings.get('molecule.downloadBinaryCIFFromCoordinateServer.server') ? ctx.settings.get('molecule.downloadBinaryCIFFromCoordinateServer.server') : 'http://webchemdev.ncbr.muni.cz/CoordinateServer' }); },
+                    defaultParams: function (ctx) { return ({ id: '1jj2', type: 'Cartoon', lowPrecisionCoords: true, serverUrl: ctx.settings.get('molecule.downloadBinaryCIFFromCoordinateServer.server') ? ctx.settings.get('molecule.downloadBinaryCIFFromCoordinateServer.server') : 'http://webchemdev.ncbr.muni.cz/CoordinateServer' }); },
                     validateParams: function (p) { return (!p.id || !p.id.trim().length) ? ['Enter Id'] : (!p.serverUrl || !p.serverUrl.trim().length) ? ['Enter CoordinateServer base URL'] : void 0; },
                 }, function (context, a, t) {
                     var query = t.params.type === 'Cartoon' ? 'cartoon' : 'full';
                     var id = t.params.id.toLowerCase().trim();
-                    var url = "" + t.params.serverUrl + (t.params.serverUrl[t.params.serverUrl.length - 1] === '/' ? '' : '/') + id + "/" + query + "?encoding=bcif";
+                    var url = "" + t.params.serverUrl + (t.params.serverUrl[t.params.serverUrl.length - 1] === '/' ? '' : '/') + id + "/" + query + "?encoding=bcif&lowPrecisionCoords=" + (t.params.lowPrecisionCoords ? '1' : '2');
                     return Bootstrap.Tree.Transform.build()
                         .add(a, Entity.Transformer.Data.Download, { url: url, type: 'Binary', id: id })
                         .then(Entity.Transformer.Molecule.CreateFromData, { format: LiteMol.Core.Formats.Molecule.SupportedFormats.mmBCIF }, { isBinding: true })
@@ -702,7 +702,7 @@ var LiteMol;
                     DownloadBinaryCIFFromCoordinateServerView.prototype.renderControls = function () {
                         var _this = this;
                         var params = this.params;
-                        return React.createElement("div", null, React.createElement(Controls.OptionsGroup, {options: ['Cartoon', 'Full'], caption: function (s) { return s; }, current: params.type, onChange: function (o) { return _this.updateParams({ type: o }); }, label: 'Type'}), React.createElement(Controls.TextBoxGroup, {value: params.id, onChange: function (v) { return _this.updateParams({ id: v }); }, label: 'Id', onEnter: function (e) { return _this.applyEnter(e); }, placeholder: 'Enter pdb id...'}), React.createElement(Controls.TextBoxGroup, {value: params.serverUrl, onChange: function (v) { return _this.updateParams({ serverUrl: v }); }, label: 'Coord. Server', onEnter: function (e) { return _this.applyEnter(e); }, placeholder: 'Enter server URL...'}));
+                        return React.createElement("div", null, React.createElement(Controls.TextBoxGroup, {value: params.id, onChange: function (v) { return _this.updateParams({ id: v }); }, label: 'Id', onEnter: function (e) { return _this.applyEnter(e); }, placeholder: 'Enter pdb id...'}), React.createElement(Controls.OptionsGroup, {options: ['Cartoon', 'Full'], caption: function (s) { return s; }, current: params.type, onChange: function (o) { return _this.updateParams({ type: o }); }, label: 'Type', title: 'Determines whether to send all atoms or just atoms that are needed for the Cartoon representation.'}), React.createElement(Controls.Toggle, {onChange: function (v) { return _this.updateParams({ lowPrecisionCoords: v }); }, value: params.lowPrecisionCoords, label: 'Low Precicion', title: 'If on, sends coordinates with 1 digit precision instead of 3. This saves up to 50% of data that need to be sent.'}), React.createElement(Controls.TextBoxGroup, {value: params.serverUrl, onChange: function (v) { return _this.updateParams({ serverUrl: v }); }, label: 'Server', title: 'The base URL of the CoordinateServer.', onEnter: function (e) { return _this.applyEnter(e); }, placeholder: 'Enter server URL...'}));
                     };
                     return DownloadBinaryCIFFromCoordinateServerView;
                 }(LiteMol.Plugin.Views.Transform.ControllerBase));
@@ -815,7 +815,7 @@ var LiteMol;
 (function (LiteMol) {
     var Viewer;
     (function (Viewer) {
-        var version = '1.1.1';
+        var version = '1.1.2';
         var plugin = new LiteMol.Plugin.Instance(Viewer.PluginSpec, document.getElementById('app'));
         plugin.context.logger.message("LiteMol Viewer " + version);
         LiteMol.Bootstrap.Command.Layout.SetState.dispatch(plugin.context, { isExpanded: true });

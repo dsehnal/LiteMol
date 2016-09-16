@@ -5303,7 +5303,7 @@ var LiteMol;
                 ctx.update(action);
                 data.onerror = function (e) {
                     var error = e.target.error;
-                    return ctx.reject(error ? error : 'Failed.');
+                    ctx.reject(error ? error : 'Failed.');
                 };
                 data.onabort = function () { return ctx.abort(); };
                 var abort = function () { return data.abort(); };

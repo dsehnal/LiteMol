@@ -26,6 +26,7 @@ namespace LiteMol.Viewer.PDBe.Data {
     export interface DownloadBinaryCIFFromCoordinateServerParams {
         id?: string,
         type?: 'Cartoon' | 'Full',
+        lowPrecisionCoords?: boolean,
         serverUrl?: string
     }
     export const DownloadBinaryCIFFromCoordinateServer = Bootstrap.Tree.Transformer.action<Entity.Root, Entity.Action, DownloadBinaryCIFFromCoordinateServerParams>({
@@ -34,12 +35,12 @@ namespace LiteMol.Viewer.PDBe.Data {
         description: 'Download full or cartoon representation of a PDB entry from the CoordinateServer.',
         from: [Entity.Root],
         to: [Entity.Action],
-        defaultParams: (ctx) => ({ id: '1jj2', type: 'Cartoon', serverUrl: ctx.settings.get('molecule.downloadBinaryCIFFromCoordinateServer.server') ? ctx.settings.get('molecule.downloadBinaryCIFFromCoordinateServer.server') : 'http://webchemdev.ncbr.muni.cz/CoordinateServer' }),
+        defaultParams: (ctx) => ({ id: '1jj2', type: 'Cartoon', lowPrecisionCoords: true, serverUrl: ctx.settings.get('molecule.downloadBinaryCIFFromCoordinateServer.server') ? ctx.settings.get('molecule.downloadBinaryCIFFromCoordinateServer.server') : 'http://webchemdev.ncbr.muni.cz/CoordinateServer' }),
         validateParams: p => (!p.id || !p.id.trim().length) ? ['Enter Id'] : (!p.serverUrl || !p.serverUrl.trim().length) ? ['Enter CoordinateServer base URL'] : void 0,  
     }, (context, a, t) => {
         let query = t.params.type === 'Cartoon' ? 'cartoon' : 'full';
         let id = t.params.id.toLowerCase().trim();
-        let url = `${t.params.serverUrl}${t.params.serverUrl[t.params.serverUrl.length - 1] === '/' ? '' : '/'}${id}/${query}?encoding=bcif`;
+        let url = `${t.params.serverUrl}${t.params.serverUrl[t.params.serverUrl.length - 1] === '/' ? '' : '/'}${id}/${query}?encoding=bcif&lowPrecisionCoords=${t.params.lowPrecisionCoords ? '1' : '2'}`;
 
         return Bootstrap.Tree.Transform.build()
             .add(a, <Bootstrap.Tree.Transformer.To<Entity.Data.String | Entity.Data.Binary>>Entity.Transformer.Data.Download, { url, type: 'Binary', id })

@@ -8145,7 +8145,7 @@ var LiteMol;
 (function (LiteMol) {
     var Core;
     (function (Core) {
-        Core.VERSION = { number: "2.4.0", date: "Sep 12 2016" };
+        Core.VERSION = { number: "2.4.0", date: "Sep 16 2016" };
     })(Core = LiteMol.Core || (LiteMol.Core = {}));
 })(LiteMol || (LiteMol = {}));
 /*
@@ -63685,7 +63685,7 @@ var LiteMol;
                 ctx.update(action);
                 data.onerror = function (e) {
                     var error = e.target.error;
-                    return ctx.reject(error ? error : 'Failed.');
+                    ctx.reject(error ? error : 'Failed.');
                 };
                 data.onabort = function () { return ctx.abort(); };
                 var abort = function () { return data.abort(); };

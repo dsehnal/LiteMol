@@ -8083,7 +8083,7 @@ var LiteMol;
 (function (LiteMol) {
     var Core;
     (function (Core) {
-        Core.VERSION = { number: "2.4.0", date: "Sep 12 2016" };
+        Core.VERSION = { number: "2.4.0", date: "Sep 16 2016" };
     })(Core = LiteMol.Core || (LiteMol.Core = {}));
 })(LiteMol || (LiteMol = {}));
 /*

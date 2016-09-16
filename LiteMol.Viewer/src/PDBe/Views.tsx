@@ -28,9 +28,10 @@ namespace LiteMol.Viewer.PDBe.Views {
         protected renderControls() {            
             let params = this.params;                                                           
             return <div>
-                <Controls.OptionsGroup options={['Cartoon', 'Full']} caption={s => s} current={params.type} onChange={(o) => this.updateParams({ type: o }) } label='Type' />
                 <Controls.TextBoxGroup value={params.id} onChange={(v) => this.updateParams({ id: v })} label='Id' onEnter={e => this.applyEnter(e) } placeholder='Enter pdb id...' />
-                <Controls.TextBoxGroup value={params.serverUrl} onChange={(v) => this.updateParams({ serverUrl: v })} label='Coord. Server' onEnter={e => this.applyEnter(e) } placeholder='Enter server URL...' />
+                <Controls.OptionsGroup options={['Cartoon', 'Full']} caption={s => s} current={params.type} onChange={(o) => this.updateParams({ type: o }) } label='Type' title='Determines whether to send all atoms or just atoms that are needed for the Cartoon representation.' />
+                <Controls.Toggle onChange={(v:boolean) => this.updateParams({ lowPrecisionCoords: v })} value={params.lowPrecisionCoords} label='Low Precicion' title='If on, sends coordinates with 1 digit precision instead of 3. This saves up to 50% of data that need to be sent.' />
+                <Controls.TextBoxGroup value={params.serverUrl} onChange={(v) => this.updateParams({ serverUrl: v })} label='Server' title='The base URL of the CoordinateServer.' onEnter={e => this.applyEnter(e) } placeholder='Enter server URL...' />
             </div>
         }        
     }
