@@ -1,4 +1,7 @@
-﻿== 1.1.2 ==
+﻿== 1.1.3 ==
+* Updated to React 15.3.1.
+
+== 1.1.2 ==
 * Views.Transform.Molecule.CreateFromString => Views.Transform.Molecule.CreateFromData
 * Views.Transform.Density.ParseBinary => Views.Transform.Density.ParseData
 
