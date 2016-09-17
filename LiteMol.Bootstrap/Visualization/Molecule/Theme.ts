@@ -164,9 +164,9 @@ namespace LiteMol.Bootstrap.Visualization.Molecule {
             }
         ]; 
         
-        export const CartoonThemeTemplate = Themes[0];
-        export const ElementSymbolThemeTemplate = Themes[4];
-        export const SurfaceThemeTemplate = Themes[5];
-        export const UniformThemeTemplate = Themes[5];
+        export const CartoonThemeTemplate = Themes.filter(t => t.name === 'Chain ID')[0];
+        export const ElementSymbolThemeTemplate = Themes.filter(t => t.name === 'Element Symbol')[0];
+        export const SurfaceThemeTemplate = Themes.filter(t => t.name === 'Uniform Color')[0];
+        export const UniformThemeTemplate = Themes.filter(t => t.name === 'Uniform Color')[0];
     }
 }

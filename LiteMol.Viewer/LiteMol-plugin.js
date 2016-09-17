@@ -66273,10 +66273,10 @@ var LiteMol;
                             provider: uniformThemeProvider
                         }
                     ];
-                    Default.CartoonThemeTemplate = Default.Themes[0];
-                    Default.ElementSymbolThemeTemplate = Default.Themes[4];
-                    Default.SurfaceThemeTemplate = Default.Themes[5];
-                    Default.UniformThemeTemplate = Default.Themes[5];
+                    Default.CartoonThemeTemplate = Default.Themes.filter(function (t) { return t.name === 'Chain ID'; })[0];
+                    Default.ElementSymbolThemeTemplate = Default.Themes.filter(function (t) { return t.name === 'Element Symbol'; })[0];
+                    Default.SurfaceThemeTemplate = Default.Themes.filter(function (t) { return t.name === 'Uniform Color'; })[0];
+                    Default.UniformThemeTemplate = Default.Themes.filter(function (t) { return t.name === 'Uniform Color'; })[0];
                 })(Default = Molecule.Default || (Molecule.Default = {}));
             })(Molecule = Visualization.Molecule || (Visualization.Molecule = {}));
         })(Visualization = Bootstrap.Visualization || (Bootstrap.Visualization = {}));
