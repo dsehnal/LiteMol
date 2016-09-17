@@ -35370,6 +35370,12 @@ var LiteMol;
                 return { r: ((v >> 16) & 0xFF) / 255.0, g: ((v >> 8) & 0xFF) / 255.0, b: (v & 0xFF) / 255.0 };
             }
             Color.fromHex = fromHex;
+            function interpolate(a, b, t, target) {
+                target.r = a.r + (b.r - a.r) * t;
+                target.g = a.g + (b.g - a.g) * t;
+                target.b = a.b + (b.b - a.b) * t;
+            }
+            Color.interpolate = interpolate;
         })(Color = Visualization.Color || (Visualization.Color = {}));
         var Theme;
         (function (Theme) {
@@ -35415,14 +35421,14 @@ var LiteMol;
             function createMapping(mapping, props) {
                 if (props === void 0) { props = {}; }
                 var _a = props.colors, colors = _a === void 0 ? new Map() : _a, _b = props.transparency, transparency = _b === void 0 ? Default.Transparency : _b, _c = props.interactive, interactive = _c === void 0 ? true : _c;
-                var prop = mapping.getProperty;
-                var set = mapping.setColor;
+                //let prop = mapping.getProperty;
+                // let set = mapping.setColor;
                 return {
                     colors: colors,
                     transparency: transparency ? transparency : Default.Transparency,
                     interactive: interactive,
                     setElementColor: function (index, target) {
-                        set(prop(index), target);
+                        mapping.setColor(mapping.getProperty(index), target);
                     }
                 };
             }

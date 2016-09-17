@@ -815,7 +815,7 @@ var LiteMol;
 (function (LiteMol) {
     var Viewer;
     (function (Viewer) {
-        var version = '1.1.2';
+        var version = '1.1.3';
         var plugin = new LiteMol.Plugin.Instance(Viewer.PluginSpec, document.getElementById('app'));
         plugin.context.logger.message("LiteMol Viewer " + version);
         LiteMol.Bootstrap.Command.Layout.SetState.dispatch(plugin.context, { isExpanded: true });

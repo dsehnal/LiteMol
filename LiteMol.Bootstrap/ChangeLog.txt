@@ -1,4 +1,7 @@
-﻿== 1.1.3 ==
+﻿== 1.1.4 ==
+* Added rainbow coloring.
+
+== 1.1.3 ==
 * Updated to match Core version 2.4.
 * Entity.Transformer.Molecule.CreateFromString => Entity.Transformer.Molecule.CreateFromData
 * Entity.Transformer.Density.ParseBinary => Entity.Transformer.Density.ParseString

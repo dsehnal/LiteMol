@@ -5885,6 +5885,7 @@ declare namespace LiteMol.Visualization {
         function fromHsv(h: number, s: number, v: number): Color;
         function random(): Color;
         function fromHex(v: number): Color;
+        function interpolate(a: Color, b: Color, t: number, target: Color): void;
     }
     interface Theme {
         colors: Map<string, Color>;

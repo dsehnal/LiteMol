@@ -11731,6 +11731,7 @@ declare namespace LiteMol.Visualization {
         function fromHsv(h: number, s: number, v: number): Color;
         function random(): Color;
         function fromHex(v: number): Color;
+        function interpolate(a: Color, b: Color, t: number, target: Color): void;
     }
     interface Theme {
         colors: Map<string, Color>;
@@ -15690,12 +15691,12 @@ declare namespace LiteMol.Bootstrap.Visualization.Molecule {
     function createPaletteThemeProvider(provider: (m: Core.Structure.MoleculeModel) => {
         index: number[];
         property: any[];
-    }, pallete: LiteMol.Visualization.Color[]): (e: Entity.Molecule.Model, props?: Vis.Theme.Props) => Vis.Theme;
-    function uniformThemeProvider(e: Entity.Molecule.Model, props?: LiteMol.Visualization.Theme.Props): Vis.Theme;
+    }, pallete: LiteMol.Visualization.Color[]): (e: Entity.Any, props?: Vis.Theme.Props) => Vis.Theme;
+    function uniformThemeProvider(e: Entity.Any, props?: LiteMol.Visualization.Theme.Props): Vis.Theme;
     function createColorMapThemeProvider(provider: (m: Core.Structure.MoleculeModel) => {
         index: number[];
         property: any[];
-    }, colorMap: Map<string, LiteMol.Visualization.Color>, fallbackColor: LiteMol.Visualization.Color): (e: Entity.Molecule.Model, props?: Vis.Theme.Props) => Vis.Theme;
+    }, colorMap: Map<string, LiteMol.Visualization.Color>, fallbackColor: LiteMol.Visualization.Color): (e: Entity.Any, props?: Vis.Theme.Props) => Vis.Theme;
     namespace Default {
         const Themes: Theme.Template[];
         const CartoonThemeTemplate: Theme.Template;

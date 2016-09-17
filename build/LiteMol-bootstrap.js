@@ -5195,7 +5195,7 @@ var LiteMol;
 (function (LiteMol) {
     var Bootstrap;
     (function (Bootstrap) {
-        Bootstrap.VERSION = { number: "1.1.3", date: "Sep 12 2016" };
+        Bootstrap.VERSION = { number: "1.1.4", date: "Sep 17 2016" };
     })(Bootstrap = LiteMol.Bootstrap || (LiteMol.Bootstrap = {}));
 })(LiteMol || (LiteMol = {}));
 /*
@@ -7773,6 +7773,66 @@ var LiteMol;
                     };
                 }
                 Molecule.createColorMapThemeProvider = createColorMapThemeProvider;
+                var RainbowMapping = (function () {
+                    function RainbowMapping(model, _a) {
+                        var r = _a.r, g = _a.g, b = _a.b;
+                        this.residueIndex = model.atoms.residueIndex;
+                        this.r = r;
+                        this.g = g;
+                        this.b = b;
+                    }
+                    RainbowMapping.prototype.getProperty = function (index) { return this.residueIndex[index]; };
+                    RainbowMapping.prototype.setColor = function (i, color) {
+                        color.r = this.r[i];
+                        color.g = this.g[i];
+                        color.b = this.b[i];
+                    };
+                    return RainbowMapping;
+                }());
+                var rainbowPalette = [
+                    Vis.Color.fromHex(0xCC2200),
+                    Vis.Color.fromHex(0xCC7700),
+                    Vis.Color.fromHex(0xCCAA00),
+                    Vis.Color.fromHex(0x00CC00),
+                    Vis.Color.fromHex(0x00AACC),
+                    Vis.Color.fromHex(0x0000CC),
+                    Vis.Color.fromHex(0x892AD2),
+                    Vis.Color.fromHex(0xB77CE3)
+                ];
+                var RainbowBaseColors = Bootstrap.Immutable.Map({
+                    'Bond': Vis.Molecule.Colors.DefaultBondColor,
+                    'Highlight': Vis.Color.fromHex(0xFFFFFF),
+                    'Selection': Vis.Color.fromHex(0x968000),
+                });
+                function makeRainbow(model, groups) {
+                    var rC = model.residues.count;
+                    var _a = { r: new Float32Array(rC), g: new Float32Array(rC), b: new Float32Array(rC) }, r = _a.r, g = _a.g, b = _a.b;
+                    var _b = groups(model), count = _b.count, residueStartIndex = _b.residueStartIndex, residueEndIndex = _b.residueEndIndex;
+                    var cC = rainbowPalette.length - 1;
+                    var color = Vis.Color.fromHex(0);
+                    for (var cI = 0; cI < count; cI++) {
+                        var s = residueStartIndex[cI], e = residueEndIndex[cI], l = e - s, max = l - 1;
+                        if (max <= 1)
+                            max = 1;
+                        for (var i = 0; i < l; i++) {
+                            var t = cC * i / max;
+                            var low = Math.floor(t), high = Math.ceil(t);
+                            Vis.Color.interpolate(rainbowPalette[low], rainbowPalette[high], t - low, color);
+                            r[s + i] = color.r;
+                            g[s + i] = color.g;
+                            b[s + i] = color.b;
+                        }
+                    }
+                    return { r: r, g: g, b: b };
+                }
+                function createRainbowProvider(groups) {
+                    return function (e, props) {
+                        var model = Bootstrap.Utils.Molecule.findModel(e).props.model;
+                        var colors = makeRainbow(model, groups);
+                        var mapping = new RainbowMapping(model, colors);
+                        return Vis.Theme.createMapping(mapping, props);
+                    };
+                }
                 var Default;
                 (function (Default) {
                     Default.Themes = [
@@ -7801,6 +7861,16 @@ var LiteMol;
                             description: 'Color the surface by atom elemnt symbol.',
                             colors: Molecule.ModelVisualBaseColors,
                             provider: createColorMapThemeProvider(function (m) { return ({ index: m.atoms.indices, property: m.atoms.elementSymbol }); }, Vis.Molecule.Colors.DefaultElementColorMap, Vis.Molecule.Colors.DefaultElementColor)
+                        }, {
+                            name: 'Rainbow (Chain)',
+                            description: 'Color each chain using rainbow palette.',
+                            colors: RainbowBaseColors,
+                            provider: createRainbowProvider(function (m) { return m.chains; })
+                        }, {
+                            name: 'Rainbow (Entity)',
+                            description: 'Color each entity using rainbow palette.',
+                            colors: RainbowBaseColors,
+                            provider: createRainbowProvider(function (m) { return m.entities; })
                         }, {
                             name: 'Uniform Color',
                             description: 'Same color everywhere.',

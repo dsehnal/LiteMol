@@ -3195,12 +3195,12 @@ declare namespace LiteMol.Bootstrap.Visualization.Molecule {
     function createPaletteThemeProvider(provider: (m: Core.Structure.MoleculeModel) => {
         index: number[];
         property: any[];
-    }, pallete: LiteMol.Visualization.Color[]): (e: Entity.Molecule.Model, props?: Vis.Theme.Props) => Vis.Theme;
-    function uniformThemeProvider(e: Entity.Molecule.Model, props?: LiteMol.Visualization.Theme.Props): Vis.Theme;
+    }, pallete: LiteMol.Visualization.Color[]): (e: Entity.Any, props?: Vis.Theme.Props) => Vis.Theme;
+    function uniformThemeProvider(e: Entity.Any, props?: LiteMol.Visualization.Theme.Props): Vis.Theme;
     function createColorMapThemeProvider(provider: (m: Core.Structure.MoleculeModel) => {
         index: number[];
         property: any[];
-    }, colorMap: Map<string, LiteMol.Visualization.Color>, fallbackColor: LiteMol.Visualization.Color): (e: Entity.Molecule.Model, props?: Vis.Theme.Props) => Vis.Theme;
+    }, colorMap: Map<string, LiteMol.Visualization.Color>, fallbackColor: LiteMol.Visualization.Color): (e: Entity.Any, props?: Vis.Theme.Props) => Vis.Theme;
     namespace Default {
         const Themes: Theme.Template[];
         const CartoonThemeTemplate: Theme.Template;

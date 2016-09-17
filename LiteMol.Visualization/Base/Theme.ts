@@ -28,8 +28,7 @@ namespace LiteMol.Visualization {
         export function fromRgb(r: number, g: number, b: number): Color {
             return { r: r / 255, g: g / 255, b: b / 255 };
         }
-        
-        
+                
         function hue2rgb(p: number, q: number, t: number){
             if(t < 0) t += 1;
             if(t > 1) t -= 1;
@@ -95,7 +94,13 @@ namespace LiteMol.Visualization {
         // #rrggbb
         export function fromHex(v: number): Color {
             return { r: ((v >> 16) & 0xFF) / 255.0, g: ((v >> 8) & 0xFF) / 255.0, b: (v & 0xFF) / 255.0 }
-        }       
+        }      
+
+        export function interpolate(a: Color, b: Color, t: number, target: Color) {
+            target.r = a.r + (b.r - a.r) * t;
+            target.g = a.g + (b.g - a.g) * t;
+            target.b = a.b + (b.b - a.b) * t;
+        } 
         
     }
     
@@ -164,14 +169,14 @@ namespace LiteMol.Visualization {
         export function createMapping(mapping: ElementMapping, props: Props = {}): Theme {
             let { colors = new Map<string, Color>(), transparency = Default.Transparency, interactive = true } = props;
             
-            let prop = mapping.getProperty;
-            let set = mapping.setColor;
+            //let prop = mapping.getProperty;
+            // let set = mapping.setColor;
             return {
                 colors,
                 transparency: transparency ? transparency : Default.Transparency,
                 interactive,
                 setElementColor(index: number, target: Color) {
-                    set(prop(index), target);
+                    mapping.setColor(mapping.getProperty(index), target);
                 }
             }
         }
