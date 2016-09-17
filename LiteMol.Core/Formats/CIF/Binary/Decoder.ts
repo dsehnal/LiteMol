@@ -159,10 +159,11 @@ namespace LiteMol.Core.Formats.CIF.Binary {
             let offsets = decode({ encoding: encoding.offsetEncoding, data: encoding.offsets });
             let indices = decode({ encoding: encoding.dataEncoding, data });
             let cache = new Map<number, string>();
-            let result:string[] = [];
+            let result = new Array(indices.length);
+            let offset = 0;
             for (let i of indices) {
                 if (i < 0) {
-                    result[result.length] = null;    
+                    result[offset++] = null;    
                     continue;
                 }
                 let v = cache.get(i);
@@ -170,9 +171,8 @@ namespace LiteMol.Core.Formats.CIF.Binary {
                     v = str.substring(offsets[i], offsets[i + 1]);
                     cache.set(i, v);
                 }
-                result[result.length] = v;
+                result[offset++] = v;
             }
-
             return result;
         }
     }

@@ -8715,7 +8715,7 @@ var LiteMol;
                      * @return {Array} decoded array
                      */
                     function array(length) {
-                        var value = []; // new Array(length);
+                        var value = new Array(length);
                         for (var i = 0; i < length; i++) {
                             value[i] = parse();
                         }
@@ -10517,11 +10517,12 @@ var LiteMol;
                             var offsets = decode({ encoding: encoding.offsetEncoding, data: encoding.offsets });
                             var indices = decode({ encoding: encoding.dataEncoding, data: data });
                             var cache = new Map();
-                            var result = [];
+                            var result = new Array(indices.length);
+                            var offset = 0;
                             for (var _i = 0, indices_1 = indices; _i < indices_1.length; _i++) {
                                 var i = indices_1[_i];
                                 if (i < 0) {
-                                    result[result.length] = null;
+                                    result[offset++] = null;
                                     continue;
                                 }
                                 var v = cache.get(i);
@@ -10529,7 +10530,7 @@ var LiteMol;
                                     v = str.substring(offsets[i], offsets[i + 1]);
                                     cache.set(i, v);
                                 }
-                                result[result.length] = v;
+                                result[offset++] = v;
                             }
                             return result;
                         }

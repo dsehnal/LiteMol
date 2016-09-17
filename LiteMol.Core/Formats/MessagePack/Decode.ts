@@ -67,7 +67,7 @@ namespace LiteMol.Core.Formats.MessagePack {
          * @return {Array} decoded array
          */
         function array(length: number) {
-            let value:any[] = [];// new Array(length);
+            let value:any[] = new Array(length);
             for (let i = 0; i < length; i++) {
                 value[i] = parse();
             }
