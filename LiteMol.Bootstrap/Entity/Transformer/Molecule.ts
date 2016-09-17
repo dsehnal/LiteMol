@@ -17,7 +17,7 @@ namespace LiteMol.Bootstrap.Entity.Transformer.Molecule {
             from: [Root],
             to: [Action],
             defaultParams: ctx => ({ id: params.defaultId, format: LiteMol.Core.Formats.Molecule.SupportedFormats.mmCIF }),
-            validateParams: p => (!p.id || !p.id.trim().length) ? [`Enter ${params.isFullUrl ? 'Url' : 'Id'}`] : void 0
+            validateParams: p => (!p.id || !p.id.trim().length) ? [`Enter ${params.isFullUrl ? 'URL' : 'Id'}`] : void 0
         }, (context, a, t) => {
             let format = params.specificFormat ? params.specificFormat : t.params.format;
             return Tree.Transform.build()

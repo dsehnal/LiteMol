@@ -3626,7 +3626,7 @@ declare namespace LiteMol.Bootstrap.Entity.Transformer.Molecule.CoordinateStream
     }
     const CreateBehaviour: Tree.Transformer<Entity.Molecule.Model, Entity.Molecule.CoordinateStreaming.Behaviour, CreateStreamingBehaviourParams>;
     interface CreateModelParams {
-        data?: string;
+        data?: ArrayBuffer;
         transform?: number[];
     }
     const CreateModel: Tree.Transformer<Entity.Molecule.CoordinateStreaming.Behaviour, Entity.Molecule.Model, CreateModelParams>;
@@ -3716,18 +3716,18 @@ declare namespace LiteMol.Bootstrap.Behaviour.Molecule {
         function getBaseUrl(id: string, server: string): string;
         class CacheEntry implements Utils.LinkedElement<CacheEntry> {
             key: string;
-            data: string;
+            data: ArrayBuffer;
             previous: CacheEntry;
             next: CacheEntry;
             inList: boolean;
-            constructor(key: string, data: string);
+            constructor(key: string, data: ArrayBuffer);
         }
         class Cache {
             size: number;
             private count;
             entries: Utils.LinkedList<CacheEntry>;
-            get(key: string): string;
-            add(key: string, data: string): string;
+            get(key: string): ArrayBuffer;
+            add(key: string, data: ArrayBuffer): ArrayBuffer;
             constructor(size: number);
         }
     }

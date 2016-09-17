@@ -17,7 +17,7 @@ namespace LiteMol.Bootstrap.Behaviour.Molecule {
         private behaviour: Entity.Molecule.CoordinateStreaming.Behaviour = void 0;
         private currentRequest: Core.Computation<string> = void 0;
         private ref: string = Utils.generateUUID();
-        private download: Task.Running<string> = void 0;
+        private download: Task.Running<ArrayBuffer> = void 0;
         private cache = new CoordinateStreaming.Cache(100);
         
         server: string;
@@ -79,9 +79,11 @@ namespace LiteMol.Bootstrap.Behaviour.Molecule {
                 + `authSeqNumber=${encodeURIComponent(''+rs.authSeqNumber[i])}&`
                 + `insCode=${encodeURIComponent(rs.insCode[i] !== null ? rs.insCode[i] : '')}&`
                 + `radius=${encodeURIComponent(''+this.radius)}&`
-                + `atomSitesOnly=1`;
+                + `atomSitesOnly=1&`
+                + `encoding=bcif&`
+                + `lowPrecisionCoords=1`;
              
-            this.download = Utils.ajaxGetString(url).run(this.context);
+            this.download = Utils.ajaxGetArrayBuffer(url).run(this.context);
                        
             let cached = this.cache.get(url); 
             if (cached) {
@@ -98,7 +100,7 @@ namespace LiteMol.Bootstrap.Behaviour.Molecule {
             
         }  
         
-        private create(data: string, transform: number[]) {
+        private create(data: ArrayBuffer, transform: number[]) {
             let action = Tree.Transform.build().add(this.behaviour, Entity.Transformer.Molecule.CoordinateStreaming.CreateModel, { data, transform }, { ref: this.ref, isHidden: true })
                     .then(<Bootstrap.Tree.Transformer.To<Entity.Molecule.Visual>>Transforms.Molecule.CreateVisual, { style: this.style });
             Tree.Transform.apply(this.context, action).run(this.context);
@@ -130,7 +132,7 @@ namespace LiteMol.Bootstrap.Behaviour.Molecule {
         }
         
         export function getBaseUrl(id: string, server: string) {
-            return `${normalizeServerName(server)}/${id.trim().toLocaleLowerCase()}/cartoon`; 
+            return `${normalizeServerName(server)}/${id.trim().toLocaleLowerCase()}/cartoon?encoding=bcif&lowPrecisionCoords=1`; 
         }
         
         export class CacheEntry implements Utils.LinkedElement<CacheEntry> {
@@ -138,7 +140,7 @@ namespace LiteMol.Bootstrap.Behaviour.Molecule {
             next: CacheEntry = void 0; 
             inList: boolean; 
             
-            constructor(public key: string, public data: string) {
+            constructor(public key: string, public data: ArrayBuffer) {
                 
             }
         }
@@ -155,7 +157,7 @@ namespace LiteMol.Bootstrap.Behaviour.Molecule {
                 return void 0;
             }
             
-            add(key: string, data: string): string {
+            add(key: string, data: ArrayBuffer): ArrayBuffer {
                 if (this.count > this.size) {
                     this.entries.remove(this.entries.first);
                 }

@@ -1,6 +1,7 @@
 1.1.3
 -----
 * Added rainbow coloring for molecules.
+* Coordinate Streaming now uses BinaryCIF.
 
 1.1.2
 -----

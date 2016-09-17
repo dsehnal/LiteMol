@@ -11,8 +11,8 @@ namespace LiteMol.Plugin {
     export namespace DataSources {
         export const DownloadMolecule = Transformer.Molecule.downloadMoleculeSource({ 
             sourceId: 'url-molecule', 
-            name: 'Url', 
-            description: 'Download a molecule from the specified Url (if the host server supports cross domain requests).',  
+            name: 'URL', 
+            description: 'Download a molecule from the specified URL (if the host server supports cross domain requests).',  
             defaultId: 'http://webchemdev.ncbr.muni.cz/CoordinateServer/1tqn/cartoon',
             urlTemplate: id => id,
             isFullUrl: true

@@ -23,7 +23,7 @@ namespace LiteMol.Plugin.Views.Transform.Molecule {
             return <div>
                 <Controls.OptionsGroup options={LiteMol.Core.Formats.Molecule.SupportedFormats.All} caption={s => s.name} current={params.format}
                         onChange={(o) => this.updateParams({ format: o }) } label='Format' />
-                <Controls.TextBoxGroup value={params.id} onChange={(v) => this.updateParams({ id: v })} label='Url' onEnter={e => this.applyEnter(e) } placeholder='Enter url...' />
+                <Controls.TextBoxGroup value={params.id} onChange={(v) => this.updateParams({ id: v })} label='URL' onEnter={e => this.applyEnter(e) } placeholder='Enter url...' />
             </div>
         }        
     }

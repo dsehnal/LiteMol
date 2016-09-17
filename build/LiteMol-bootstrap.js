@@ -8607,7 +8607,7 @@ var LiteMol;
                             from: [Entity.Root],
                             to: [Entity.Action],
                             defaultParams: function (ctx) { return ({ id: params.defaultId, format: LiteMol.Core.Formats.Molecule.SupportedFormats.mmCIF }); },
-                            validateParams: function (p) { return (!p.id || !p.id.trim().length) ? [("Enter " + (params.isFullUrl ? 'Url' : 'Id'))] : void 0; }
+                            validateParams: function (p) { return (!p.id || !p.id.trim().length) ? [("Enter " + (params.isFullUrl ? 'URL' : 'Id'))] : void 0; }
                         }, function (context, a, t) {
                             var format = params.specificFormat ? params.specificFormat : t.params.format;
                             return Bootstrap.Tree.Transform.build()
@@ -8914,7 +8914,7 @@ var LiteMol;
                         description: 'Downloads a string or binary data from the given URL (if the host server supports cross domain requests).',
                         from: [Entity.Root],
                         to: [Entity.Data.String, Entity.Data.Binary],
-                        validateParams: function (p) { return !p.url || !p.url.trim().length ? ['Enter Url'] : !p.type ? ['Specify type'] : void 0; },
+                        validateParams: function (p) { return !p.url || !p.url.trim().length ? ['Enter URL'] : !p.type ? ['Specify type'] : void 0; },
                         defaultParams: function () { return ({ id: '', description: '', type: 'String', url: '' }); }
                     }, function (ctx, a, t) {
                         var params = t.params;
@@ -9143,7 +9143,7 @@ var LiteMol;
                             defaultParams: function () { return ({}); }
                         }, function (ctx, a, t) {
                             return Bootstrap.Task.create('Load', 'Silent', function (ctx) {
-                                var cif = LiteMol.Core.Formats.CIF.Text.parse(t.params.data).result;
+                                var cif = LiteMol.Core.Formats.CIF.Binary.parse(t.params.data).result;
                                 var model = LiteMol.Core.Formats.Molecule.mmCIF.ofDataBlock(cif.dataBlocks[0]).models[0];
                                 if (t.params.transform)
                                     LiteMol.Core.Structure.Operator.applyToModelUnsafe(t.params.transform, model);
@@ -9161,8 +9161,8 @@ var LiteMol;
                         }, function (context, a, t) {
                             return Bootstrap.Task.create('Macromolecule', 'Normal', function (ctx) {
                                 var action = Bootstrap.Tree.Transform.build()
-                                    .add(a, Transformer.Data.Download, { url: Bootstrap.Behaviour.Molecule.CoordinateStreaming.getBaseUrl(t.params.id, t.params.server), type: 'String', id: t.params.id })
-                                    .then(Transformer.Data.ParseCif, { id: t.params.id }, { isBinding: true })
+                                    .add(a, Transformer.Data.Download, { url: Bootstrap.Behaviour.Molecule.CoordinateStreaming.getBaseUrl(t.params.id, t.params.server), type: 'Binary', id: t.params.id })
+                                    .then(Transformer.Data.ParseBinaryCif, { id: t.params.id }, { isBinding: true })
                                     .then(Molecule.CreateFromMmCif, { blockIndex: 0 }, { isBinding: true })
                                     .then(Molecule.CreateModel, { modelIndex: 0 }, { isBinding: false })
                                     .then(CoordinateStreaming.CreateBehaviour, { server: t.params.server, radius: t.params.radius });
@@ -9596,8 +9596,10 @@ var LiteMol;
                             + ("authSeqNumber=" + encodeURIComponent('' + rs.authSeqNumber[i]) + "&")
                             + ("insCode=" + encodeURIComponent(rs.insCode[i] !== null ? rs.insCode[i] : '') + "&")
                             + ("radius=" + encodeURIComponent('' + this.radius) + "&")
-                            + "atomSitesOnly=1";
-                        this.download = Bootstrap.Utils.ajaxGetString(url).run(this.context);
+                            + "atomSitesOnly=1&"
+                            + "encoding=bcif&"
+                            + "lowPrecisionCoords=1";
+                        this.download = Bootstrap.Utils.ajaxGetArrayBuffer(url).run(this.context);
                         var cached = this.cache.get(url);
                         if (cached) {
                             this.create(cached, transform);
@@ -9645,7 +9647,7 @@ var LiteMol;
                     }
                     CoordinateStreaming.normalizeServerName = normalizeServerName;
                     function getBaseUrl(id, server) {
-                        return normalizeServerName(server) + "/" + id.trim().toLocaleLowerCase() + "/cartoon";
+                        return normalizeServerName(server) + "/" + id.trim().toLocaleLowerCase() + "/cartoon?encoding=bcif&lowPrecisionCoords=1";
                     }
                     CoordinateStreaming.getBaseUrl = getBaseUrl;
                     var CacheEntry = (function () {

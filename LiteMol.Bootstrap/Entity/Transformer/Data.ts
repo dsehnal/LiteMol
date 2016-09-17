@@ -19,7 +19,7 @@ namespace LiteMol.Bootstrap.Entity.Transformer.Data {
         description: 'Downloads a string or binary data from the given URL (if the host server supports cross domain requests).',
         from: [Entity.Root],
         to: [Entity.Data.String, Entity.Data.Binary],
-        validateParams: p => !p.url || !p.url.trim().length ? ['Enter Url'] : !p.type ? ['Specify type'] : void 0,  
+        validateParams: p => !p.url || !p.url.trim().length ? ['Enter URL'] : !p.type ? ['Specify type'] : void 0,  
         defaultParams: () => ({ id: '', description: '', type: 'String', url: '' })
     }, (ctx, a, t) => {        
         let params = t.params;

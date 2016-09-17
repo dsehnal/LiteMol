@@ -9,7 +9,7 @@ namespace LiteMol.Viewer.DataSources {
 
     export const DownloadMolecule = Entity.Transformer.Molecule.downloadMoleculeSource({ 
         sourceId: 'url-molecule', 
-        name: 'Url', 
+        name: 'URL', 
         description: 'Download a molecule from the specified Url (if the host server supports cross domain requests).',  
         defaultId: 'http://webchemdev.ncbr.muni.cz/CoordinateServer/1tqn/cartoon',
         urlTemplate: id => id,

@@ -1,5 +1,6 @@
 ﻿== 1.1.4 ==
 * Added rainbow coloring.
+* Coordinate Streaming now uses BinaryCIF.
 
 == 1.1.3 ==
 * Updated to match Core version 2.4.

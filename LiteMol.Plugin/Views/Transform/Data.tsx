@@ -12,7 +12,7 @@ namespace LiteMol.Plugin.Views.Transform.Data {
             let params = this.params;
             return <div>
                 <Controls.OptionsGroup options={Bootstrap.Entity.Data.Types} caption={s => s} current={params.type} onChange={(o) => this.updateParams({ type: o }) } label='Type' />
-                <Controls.TextBoxGroup value={params.url} onChange={(v) => this.updateParams({ url: v })} label='Url' onEnter={e => this.applyEnter(e) } placeholder='Enter url...' />
+                <Controls.TextBoxGroup value={params.url} onChange={(v) => this.updateParams({ url: v })} label='URL' onEnter={e => this.applyEnter(e) } placeholder='Enter URL...' />
             </div>
         }        
     }
@@ -34,7 +34,7 @@ namespace LiteMol.Plugin.Views.Transform.Data {
         protected renderControls() {            
             let params = this.params;
             return <div>
-                <Controls.TextBoxGroup value={params.id} onChange={(v) => this.updateParams({ id: v })} label='Id' onEnter={e => this.applyEnter(e) } placeholder='Enter pdb id...' />
+                <Controls.TextBoxGroup value={params.id} onChange={(v) => this.updateParams({ id: v })} label='Id' onEnter={e => this.applyEnter(e) } placeholder='Enter PDB id...' />
             </div>
         }        
     }
@@ -43,9 +43,8 @@ namespace LiteMol.Plugin.Views.Transform.Data {
         protected renderControls() {            
             let params = this.params;
             return <div>
-                <Controls.TextBoxGroup value={params.id} onChange={(v) => this.updateParams({ id: v })} label='Url' onEnter={e => this.applyEnter(e) } placeholder='Enter url...' />
+                <Controls.TextBoxGroup value={params.id} onChange={(v) => this.updateParams({ id: v })} label='URL' onEnter={e => this.applyEnter(e) } placeholder='Enter URL...' />
             </div>
         }        
-    }
- 
+    } 
 }
