@@ -35,7 +35,7 @@ namespace LiteMol.Viewer.PDBe.Data {
         description: 'Download full or cartoon representation of a PDB entry from the CoordinateServer.',
         from: [Entity.Root],
         to: [Entity.Action],
-        defaultParams: (ctx) => ({ id: '1jj2', type: 'Cartoon', lowPrecisionCoords: true, serverUrl: ctx.settings.get('molecule.downloadBinaryCIFFromCoordinateServer.server') ? ctx.settings.get('molecule.downloadBinaryCIFFromCoordinateServer.server') : 'http://webchemdev.ncbr.muni.cz/CoordinateServer' }),
+        defaultParams: (ctx) => ({ id: '5iv5', type: 'Cartoon', lowPrecisionCoords: true, serverUrl: ctx.settings.get('molecule.downloadBinaryCIFFromCoordinateServer.server') ? ctx.settings.get('molecule.downloadBinaryCIFFromCoordinateServer.server') : 'http://webchemdev.ncbr.muni.cz/CoordinateServer' }),
         validateParams: p => (!p.id || !p.id.trim().length) ? ['Enter Id'] : (!p.serverUrl || !p.serverUrl.trim().length) ? ['Enter CoordinateServer base URL'] : void 0,  
     }, (context, a, t) => {
         let query = t.params.type === 'Cartoon' ? 'cartoon' : 'full';

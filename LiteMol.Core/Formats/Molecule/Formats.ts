@@ -25,7 +25,7 @@ namespace LiteMol.Core.Formats.Molecule {
             });
         }};
 
-        export const mmBCIF: FormatInfo = { name: 'mmBCIF', extensions: ['.bcif'], isBinary: true, parse: (data, { id }) => {
+        export const mmBCIF: FormatInfo = { name: 'mmCIF (Binary)', extensions: ['.bcif'], isBinary: true, parse: (data, { id }) => {
             return Computation.create<ParserResult<Structure.Molecule>>(ctx => {
                 ctx.update('Parsing...');
                 ctx.schedule(() => {

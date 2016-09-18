@@ -31,7 +31,7 @@ namespace LiteMol.Core.Formats.Molecule.mmCIF {
             pY = atoms.addColumn('y', size => new Float32Array(size)), pYCol = category.getColumn('Cartn_y'),
             pZ = atoms.addColumn('z', size => new Float32Array(size)), pZCol = category.getColumn('Cartn_z'),
 
-            altLoc = atoms.addColumn('altLoc', size => []), altLocCol = category.getColumn('label_alt_id'),
+            altLoc = atoms.addColumn('altLoc', size => new Array(size)), altLocCol = category.getColumn('label_alt_id'),
 
             rowIndex = atoms.addColumn('rowIndex', size => new Int32Array(size)),
 
@@ -39,11 +39,11 @@ namespace LiteMol.Core.Formats.Molecule.mmCIF {
             chainIndex = atoms.addColumn('chainIndex', size => new Int32Array(size)),
             entityIndex = atoms.addColumn('entityIndex', size => new Int32Array(size)),
 
-            name: string[] = atoms.addColumn('name', size => []), nameCol = category.getColumn('label_atom_id'),
-            elementSymbol: string[] = atoms.addColumn('elementSymbol', size => []), elementSymbolCol = category.getColumn('type_symbol'),
+            name: string[] = atoms.addColumn('name', size => new Array(size)), nameCol = category.getColumn('label_atom_id'),
+            elementSymbol: string[] = atoms.addColumn('elementSymbol', size => new Array(size)), elementSymbolCol = category.getColumn('type_symbol'),
             occupancy = atoms.addColumn('occupancy', size => new Float32Array(size)), occupancyCol = category.getColumn('occupancy'),
             tempFactor = atoms.addColumn('tempFactor', size => new Float32Array(size)), tempFactorCol = category.getColumn('B_iso_or_equiv'),
-            authName: string[] = atoms.addColumn('authName', size => []), authNameCol = category.getColumn('auth_atom_id');
+            authName: string[] = atoms.addColumn('authName', size => new Array(size)), authNameCol = category.getColumn('auth_atom_id');
             
 
         let resSeqNumberCol = category.getColumn('label_seq_id'),
@@ -121,14 +121,14 @@ namespace LiteMol.Core.Formats.Molecule.mmCIF {
             chains = new Structure.DataTableBuilder(atoms.chainIndex[atoms.count - 1] + 1),
             entities = new Structure.DataTableBuilder(atoms.entityIndex[atoms.count - 1] + 1),
 
-            residueName = residues.addColumn('name', size => <string[]>[]),
+            residueName = residues.addColumn('name', size => <string[]>new Array(size)),
             residueSeqNumber = residues.addColumn('seqNumber', size => new Int32Array(size)),
-            residueAsymId = residues.addColumn('asymId', size => <string[]>[]),
-            residueAuthName = residues.addColumn('authName', size => <string[]>[]),
+            residueAsymId = residues.addColumn('asymId', size => <string[]>new Array(size)),
+            residueAuthName = residues.addColumn('authName', size => <string[]>new Array(size)),
             residueAuthSeqNumber = residues.addColumn('authSeqNumber', size => new Int32Array(size)),
-            residueAuthAsymId = residues.addColumn('authAsymId', size => <string[]>[]),
-            residueInsertionCode = residues.addColumn('insCode', size => <string[]>[]),
-            residueEntityId = residues.addColumn('entityId', size => <string[]>[]),
+            residueAuthAsymId = residues.addColumn('authAsymId', size => <string[]>new Array(size)),
+            residueInsertionCode = residues.addColumn('insCode', size => <string[]>new Array(size)),
+            residueEntityId = residues.addColumn('entityId', size => <string[]>new Array(size)),
             residueIsHet = residues.addColumn('isHet', size => new Int8Array(size)),
             residueAtomStartIndex = residues.addColumn('atomStartIndex', size => new Int32Array(size)),
             residueAtomEndIndex = residues.addColumn('atomEndIndex', size => new Int32Array(size)),

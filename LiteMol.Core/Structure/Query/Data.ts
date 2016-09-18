@@ -318,7 +318,7 @@ namespace LiteMol.Core.Structure {
                     cIndices = this.context.structure.residues.chainIndex,
                     eIndices = this.context.structure.chains.entityIndex;
 
-                for (let i of <number[]><any>this.atomIndices) { residueIndices.add(rIndices[i]); }
+                for (let i of this.atomIndices) { residueIndices.add(rIndices[i]); }
                 this._residueIndices = Utils.integerSetToSortedTypedArray(residueIndices);
                 
                 for (let i of this._residueIndices) { chainIndices.add(cIndices[i]); }
@@ -327,7 +327,6 @@ namespace LiteMol.Core.Structure {
                 for (let i of this._chainIndices) { entityIndices.add(eIndices[i]); }
                 this._entityIndices = Utils.integerSetToSortedTypedArray(entityIndices);            
             }
-
 
             /**
              * A sorted list of residue indices.

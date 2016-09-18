@@ -55,7 +55,7 @@ var LiteMol;
                     description: 'Download full or cartoon representation of a PDB entry from the CoordinateServer.',
                     from: [Entity.Root],
                     to: [Entity.Action],
-                    defaultParams: function (ctx) { return ({ id: '1jj2', type: 'Cartoon', lowPrecisionCoords: true, serverUrl: ctx.settings.get('molecule.downloadBinaryCIFFromCoordinateServer.server') ? ctx.settings.get('molecule.downloadBinaryCIFFromCoordinateServer.server') : 'http://webchemdev.ncbr.muni.cz/CoordinateServer' }); },
+                    defaultParams: function (ctx) { return ({ id: '5iv5', type: 'Cartoon', lowPrecisionCoords: true, serverUrl: ctx.settings.get('molecule.downloadBinaryCIFFromCoordinateServer.server') ? ctx.settings.get('molecule.downloadBinaryCIFFromCoordinateServer.server') : 'http://webchemdev.ncbr.muni.cz/CoordinateServer' }); },
                     validateParams: function (p) { return (!p.id || !p.id.trim().length) ? ['Enter Id'] : (!p.serverUrl || !p.serverUrl.trim().length) ? ['Enter CoordinateServer base URL'] : void 0; },
                 }, function (context, a, t) {
                     var query = t.params.type === 'Cartoon' ? 'cartoon' : 'full';
@@ -726,7 +726,7 @@ var LiteMol;
             settings: {
                 'molecule.model.defaultQuery': "residuesByName('GLY', 'ALA')",
                 'molecule.model.defaultAssemblyName': '1',
-                'molecule.coordinateStreaming.defaultId': '1jj2',
+                'molecule.coordinateStreaming.defaultId': '5iv5',
                 'molecule.coordinateStreaming.defaultServer': 'http://webchemdev.ncbr.muni.cz/CoordinateServer',
                 'molecule.downloadBinaryCIFFromCoordinateServer.server': 'http://webchemdev.ncbr.muni.cz/CoordinateServer',
                 'molecule.coordinateStreaming.defaultRadius': 10,
