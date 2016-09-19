@@ -987,8 +987,8 @@ declare namespace LiteMol.Core.Formats {
      * A helper class to store only unique strings.
      */
     class ShortStringPool {
-        static strings: Map<string, string>;
-        static getString(key: string): string;
+        strings: Map<string, string>;
+        getString(key: string): string;
     }
 }
 declare namespace LiteMol.Core.Formats.MessagePack {
@@ -1248,6 +1248,7 @@ declare namespace LiteMol.Core.Formats.CIF.Text {
         private tokens;
         private columnCount;
         private rowCount;
+        private stringPool;
         isDefined: boolean;
         /**
          * Returns the string value at given row.

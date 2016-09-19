@@ -99,9 +99,9 @@ namespace LiteMol.Core.Formats {
      * A helper class to store only unique strings.
      */
     export class ShortStringPool {
-        static strings: Map<string, string> = new Map<string, string>();
+        strings: Map<string, string> = new Map<string, string>();
 
-        static getString(key: string) {
+        getString(key: string) {
             if (key.length > 6) return key;
 
             var value = this.strings.get(key);

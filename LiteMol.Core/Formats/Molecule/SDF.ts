@@ -12,7 +12,8 @@ namespace LiteMol.Core.Formats.Molecule.SDF {
         bonds: Structure.DefaultBondTableSchema,
         lines: string[],
         currentLine: number,
-        error: string
+        error: string,
+        stringPool: ShortStringPool
     }
 
     function initState(data: string, customId?: string): State {
@@ -38,6 +39,7 @@ namespace LiteMol.Core.Formats.Molecule.SDF {
             lines,
             currentLine: 4,
             error: void 0,
+            stringPool: new ShortStringPool()
         };
     }
 
@@ -45,7 +47,7 @@ namespace LiteMol.Core.Formats.Molecule.SDF {
         let line = state.lines[state.currentLine];
         let atoms = state.atoms;
 
-        let es = ShortStringPool.getString(line.substr(31, 3).trim());
+        let es = state.stringPool.getString(line.substr(31, 3).trim());
         atoms.id[i] = i;
         atoms.elementSymbol[i] = es;
         atoms.name[i] = es;

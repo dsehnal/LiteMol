@@ -222,12 +222,13 @@ namespace LiteMol.Core.Formats.CIF.Text {
                 data = this.data, tokens = this.tokens;
             
             let colNames = this.columnNameList;
+            let strings = new ShortStringPool();
             
             for (let i = 0; i < this.rowCount; i++) {
                 let item:any = {};
                 for (let j = 0; j < this.columnCount; j++) {
                     let tk = (i * this.columnCount + j) * 2;                    
-                    item[<any>colNames[j]] = ShortStringPool.getString(data.substring(tokens[tk], tokens[tk + 1]));
+                    item[<any>colNames[j]] = strings.getString(data.substring(tokens[tk], tokens[tk + 1]));
                 }
                 rows[i] = item;
             }
@@ -245,6 +246,7 @@ namespace LiteMol.Core.Formats.CIF.Text {
         private tokens: number[];
         private columnCount: number;
         private rowCount: number;
+        private stringPool = new ShortStringPool();
 
         isDefined = true;
 
@@ -253,7 +255,7 @@ namespace LiteMol.Core.Formats.CIF.Text {
          */
         getString(row: number): string {
             let i = (row * this.columnCount + this.index) * 2;
-            let ret = ShortStringPool.getString(this.data.substring(this.tokens[i], this.tokens[i + 1]));
+            let ret = this.stringPool.getString(this.data.substring(this.tokens[i], this.tokens[i + 1]));
             if (ret === "." || ret === "?") return null;
             return ret;
         }

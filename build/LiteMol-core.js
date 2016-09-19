@@ -8330,8 +8330,9 @@ var LiteMol;
              */
             var ShortStringPool = (function () {
                 function ShortStringPool() {
+                    this.strings = new Map();
                 }
-                ShortStringPool.getString = function (key) {
+                ShortStringPool.prototype.getString = function (key) {
                     if (key.length > 6)
                         return key;
                     var value = this.strings.get(key);
@@ -8340,7 +8341,6 @@ var LiteMol;
                     this.strings.set(key, key);
                     return key;
                 };
-                ShortStringPool.strings = new Map();
                 return ShortStringPool;
             }());
             Formats.ShortStringPool = ShortStringPool;
@@ -9237,11 +9237,12 @@ var LiteMol;
                         Category.prototype.toJSON = function () {
                             var rows = [], data = this.data, tokens = this.tokens;
                             var colNames = this.columnNameList;
+                            var strings = new ShortStringPool();
                             for (var i = 0; i < this.rowCount; i++) {
                                 var item = {};
                                 for (var j = 0; j < this.columnCount; j++) {
                                     var tk = (i * this.columnCount + j) * 2;
-                                    item[colNames[j]] = ShortStringPool.getString(data.substring(tokens[tk], tokens[tk + 1]));
+                                    item[colNames[j]] = strings.getString(data.substring(tokens[tk], tokens[tk + 1]));
                                 }
                                 rows[i] = item;
                             }
@@ -9258,6 +9259,7 @@ var LiteMol;
                             this.data = data;
                             this.name = name;
                             this.index = index;
+                            this.stringPool = new ShortStringPool();
                             this.isDefined = true;
                             this.tokens = category.tokens;
                             this.columnCount = category.columnCount;
@@ -9267,7 +9269,7 @@ var LiteMol;
                          */
                         Column.prototype.getString = function (row) {
                             var i = (row * this.columnCount + this.index) * 2;
-                            var ret = ShortStringPool.getString(this.data.substring(this.tokens[i], this.tokens[i + 1]));
+                            var ret = this.stringPool.getString(this.data.substring(this.tokens[i], this.tokens[i + 1]));
                             if (ret === "." || ret === "?")
                                 return null;
                             return ret;
@@ -11820,12 +11822,13 @@ var LiteMol;
                             lines: lines,
                             currentLine: 4,
                             error: void 0,
+                            stringPool: new Formats.ShortStringPool()
                         };
                     }
                     function readAtom(i, state) {
                         var line = state.lines[state.currentLine];
                         var atoms = state.atoms;
-                        var es = Formats.ShortStringPool.getString(line.substr(31, 3).trim());
+                        var es = state.stringPool.getString(line.substr(31, 3).trim());
                         atoms.id[i] = i;
                         atoms.elementSymbol[i] = es;
                         atoms.name[i] = es;
