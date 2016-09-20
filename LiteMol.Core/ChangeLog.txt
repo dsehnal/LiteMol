@@ -1,4 +1,8 @@
-﻿== 2.4.1 ==
+﻿== 2.4.2 ==
+* SDF parser fix.
+* StringPool is now "local" to avoid memory leaks.
+
+== 2.4.1 ==
 * A bugfix in BinaryCIF decoder.
 * A bugfix in mmCIF assembly parsing.
 

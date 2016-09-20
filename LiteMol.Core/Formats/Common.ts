@@ -31,7 +31,6 @@ namespace LiteMol.Core.Formats {
     }
 
     export class ParserError {
-
         toString() {
             if (this.line >= 0) {
                 return `[Line ${this.line}] ${this.message}`;
@@ -49,7 +48,6 @@ namespace LiteMol.Core.Formats {
      * A generic parser result.
      */
     export class ParserResult<T> {
-
         static error(message: string, line = -1) {
             return new ParserResult(new ParserError(message, line), [], void 0);
         }
@@ -68,7 +66,6 @@ namespace LiteMol.Core.Formats {
      * A helper class for building a typed array of token indices.
      */
     export class TokenIndexBuilder {
-
         private tokensLenMinus2: number;
         private count = 0;
         tokens: Int32Array;

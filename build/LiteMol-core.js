@@ -8080,7 +8080,7 @@ var LiteMol;
 (function (LiteMol) {
     var Core;
     (function (Core) {
-        Core.VERSION = { number: "2.4.1", date: "Sep 17 2016" };
+        Core.VERSION = { number: "2.4.2", date: "Sep 20 2016" };
     })(Core = LiteMol.Core || (LiteMol.Core = {}));
 })(LiteMol || (LiteMol = {}));
 /*
@@ -11804,15 +11804,17 @@ var LiteMol;
                 var SDF;
                 (function (SDF) {
                     function initState(data, customId) {
-                        var lines = data.split(/[\r\n]+/g);
+                        var lines = data.split(/\r?\n/g);
                         var id = lines[0].trim();
                         if (!id.length)
                             id = 'SDF';
                         var molHeaderInfo = lines[1];
                         var molHeaderComment = lines[2];
                         var cTabInfo = lines[3];
+                        console.log(lines);
                         var atomCount = +cTabInfo.substr(0, 3);
                         var bondCount = +cTabInfo.substr(3, 3);
+                        console.log(molHeaderInfo, molHeaderComment, cTabInfo, atomCount, bondCount);
                         return {
                             id: customId ? customId : id,
                             atomCount: atomCount,
@@ -11923,6 +11925,7 @@ var LiteMol;
                             var state = initState(data, id);
                             readAtoms(state);
                             readBonds(state);
+                            console.log(state);
                             var model = buildModel(state);
                             console.log(model);
                             if (state.error) {

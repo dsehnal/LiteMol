@@ -18,7 +18,7 @@ namespace LiteMol.Core.Formats.Molecule.SDF {
 
     function initState(data: string, customId?: string): State {
 
-        let lines = data.split(/[\r\n]+/g);
+        let lines = data.split(/\r?\n/g);
 
         let id = lines[0].trim();
         if (!id.length) id = 'SDF';
@@ -26,9 +26,12 @@ namespace LiteMol.Core.Formats.Molecule.SDF {
         let molHeaderInfo = lines[1];
         let molHeaderComment = lines[2];
         let cTabInfo = lines[3];
+
+        console.log(lines);
         
         let atomCount = +cTabInfo.substr(0, 3);
         let bondCount = +cTabInfo.substr(3, 3);
+        console.log(molHeaderInfo, molHeaderComment, cTabInfo, atomCount, bondCount);
 
         return <State>{
             id: customId ? customId : id,
@@ -151,6 +154,9 @@ namespace LiteMol.Core.Formats.Molecule.SDF {
             let state = initState(data, id);
             readAtoms(state);
             readBonds(state);
+
+            console.log(state);
+
             let model = buildModel(state);
             console.log(model);
             if (state.error) {
