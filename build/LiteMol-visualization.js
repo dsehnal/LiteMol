@@ -37876,7 +37876,7 @@ var LiteMol;
                                 residueCount: residueCount
                             };
                         }
-                        var tree = new LiteMol.Core.Geometry.SubdivisionTree3D(indices, function (i, b) { b.add(cX[i], cY[i], cZ[i]); }), ctx = tree.createContextRadius(bondLength + 1, false), pA = new Visualization.THREE.Vector3(), pB = new Visualization.THREE.Vector3(), processed = new Set(), cont = true, buffer = ctx.buffer;
+                        var tree = LiteMol.Core.Geometry.SubdivisionTree3D.create(indices, function (i, add) { add(cX[i], cY[i], cZ[i]); }), ctx = LiteMol.Core.Geometry.SubdivisionTree3D.createContextRadius(tree, bondLength + 1, false), pA = new Visualization.THREE.Vector3(), pB = new Visualization.THREE.Vector3(), processed = new Set(), cont = true, buffer = ctx.buffer;
                         while (startAtomIndex < atomCount) {
                             var rIndex = atomResidueIndex[indices[startAtomIndex]];
                             endAtomIndex = startAtomIndex;

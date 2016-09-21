@@ -597,7 +597,7 @@ namespace LiteMol.Core.Structure.Query {
 
                 let src = _where(ctx),
                     tree = ctx.tree,
-                    radiusCtx = tree.createContextRadius(radius, false),
+                    radiusCtx = Geometry.SubdivisionTree3D.createContextRadius(tree, radius, false),
                     buffer = radiusCtx.buffer, 
                     ret = new HashFragmentSeqBuilder(ctx),
                     x = ctx.structure.atoms.x, y = ctx.structure.atoms.y, z = ctx.structure.atoms.z,
@@ -617,7 +617,7 @@ namespace LiteMol.Core.Structure.Query {
                             residues.add(residueIndex[treeData[buffer.indices[j]]]);
                         }
                     }
-
+                    
                     let atomCount = { count: 0, start: atomStart, end: atomEnd };
                     residues.forEach(function (r) { this.count += this.end[r] - this.start[r]; }, atomCount);
 

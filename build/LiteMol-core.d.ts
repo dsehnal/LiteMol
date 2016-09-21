@@ -1816,103 +1816,73 @@ declare namespace LiteMol.Core.Geometry {
     /**
      * A buffer that only remembers the values.
      */
-    class SubdivisionTree3DResultIndexBuffer implements SubdivisionTree3DResultBuffer {
-        private capacity;
-        count: number;
-        indices: number[];
-        hasPriorities: boolean;
-        priorities: number[];
-        private ensureCapacity();
-        add(distSq: number, index: number): void;
-        reset(): void;
-        constructor(initialCapacity: number);
+    namespace SubdivisionTree3DResultIndexBuffer {
+        function create(initialCapacity: number): SubdivisionTree3DResultBuffer;
     }
     /**
      * A buffer that remembers values and priorities.
      */
-    class SubdivisionTree3DResultPriorityBuffer implements SubdivisionTree3DResultBuffer {
-        private capacity;
-        count: number;
-        indices: number[];
-        hasPriorities: boolean;
-        priorities: number[];
-        private ensureCapacity();
-        add(distSq: number, index: number): void;
-        reset(): void;
-        constructor(initialCapacity: number);
+    namespace SubdivisionTree3DResultPriorityBuffer {
+        function create(initialCapacity: number): SubdivisionTree3DResultBuffer;
     }
     /**
      * Query context. Handles the actual querying.
      */
-    class SubdivisionTree3DQueryContext<T> {
-        private tree;
+    interface SubdivisionTree3DQueryContext<T> {
+        tree: SubdivisionTree3D<T>;
         pivot: number[];
         radius: number;
         radiusSq: number;
         indices: number[];
         positions: number[];
         buffer: SubdivisionTree3DResultBuffer;
-        /**
-         * Query the tree and store the result to this.buffer. Overwrites the old result.
-         */
         nearest(x: number, y: number, z: number, radius: number): void;
-        /**
-         * Query the tree and use the position of the i-th element as pivot.
-         * Store the result to this.buffer. Overwrites the old result.
-         */
-        nearestIndex(index: number, radius: number): void;
-        constructor(tree: SubdivisionTree3D<T>, buffer: SubdivisionTree3DResultBuffer);
+    }
+    namespace SubdivisionTree3DQueryContext {
+        function create<T>(tree: SubdivisionTree3D<T>, buffer: SubdivisionTree3DResultBuffer): SubdivisionTree3DQueryContext<T>;
     }
     /**
      * A kd-like tree to query 3D data.
      */
-    class SubdivisionTree3D<T> {
+    interface SubdivisionTree3D<T> {
         data: T[];
         indices: number[];
         positions: number[];
         root: SubdivisionTree3DNode;
+    }
+    namespace SubdivisionTree3D {
         /**
          * Create a context used for querying the data.
          */
-        createContextRadius(radiusEstimate: number, includePriorities?: boolean): SubdivisionTree3DQueryContext<T>;
+        function createContextRadius<T>(tree: SubdivisionTree3D<T>, radiusEstimate: number, includePriorities?: boolean): SubdivisionTree3DQueryContext<T>;
         /**
          * Takes data and a function that calls SubdivisionTree3DPositionBuilder.add(x, y, z) on each data element.
          */
-        constructor(data: T[], f: (e: T, b: SubdivisionTree3DPositionBuilder) => void, leafSize?: number);
-    }
-    /**
-     * A builder for position array.
-     */
-    class SubdivisionTree3DPositionBuilder {
-        private count;
-        private boundsMin;
-        private boundsMax;
-        bounds: Box3D;
-        data: number[];
-        add(x: number, y: number, z: number): void;
-        constructor(count: number);
+        function create<T>(data: T[], f: (e: T, add: (x: number, y: number, z: number) => void) => void, leafSize?: number): SubdivisionTree3D<T>;
     }
     /**
      * A tree node.
      */
-    class SubdivisionTree3DNode {
+    interface SubdivisionTree3DNode {
         splitValue: number;
         startIndex: number;
         endIndex: number;
         left: SubdivisionTree3DNode;
         right: SubdivisionTree3DNode;
-        private nearestLeaf<T>(ctx);
-        private nearestNode<T>(ctx, dim);
-        nearest<T>(ctx: SubdivisionTree3DQueryContext<T>, dim: number): void;
-        constructor(splitValue: number, startIndex: number, endIndex: number, left: SubdivisionTree3DNode, right: SubdivisionTree3DNode);
+    }
+    namespace SubdivisionTree3DNode {
+        function nearest<T>(node: SubdivisionTree3DNode, ctx: SubdivisionTree3DQueryContext<T>, dim: number): void;
+        function create(splitValue: number, startIndex: number, endIndex: number, left: SubdivisionTree3DNode, right: SubdivisionTree3DNode): SubdivisionTree3DNode;
     }
     /**
      * A helper to store boundary box.
      */
-    class Box3D {
+    interface Box3D {
         min: number[];
         max: number[];
-        constructor();
+    }
+    namespace Box3D {
+        function createInfinite(): Box3D;
     }
 }
 declare namespace LiteMol.Core.Geometry {

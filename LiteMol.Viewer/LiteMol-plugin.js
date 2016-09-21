@@ -13529,188 +13529,172 @@ var LiteMol;
             /**
              * A buffer that only remembers the values.
              */
-            var SubdivisionTree3DResultIndexBuffer = (function () {
-                function SubdivisionTree3DResultIndexBuffer(initialCapacity) {
-                    if (initialCapacity < 1)
-                        initialCapacity = 1;
-                    this.indices = new Int32Array(initialCapacity);
-                    this.count = 0;
-                    this.capacity = initialCapacity;
-                    this.hasPriorities = false;
-                    this.priorities = void 0;
-                }
-                SubdivisionTree3DResultIndexBuffer.prototype.ensureCapacity = function () {
-                    var newCapacity = this.capacity * 2 + 1, newIdx = new Int32Array(newCapacity), i;
-                    if (this.count < 32) {
-                        for (i = 0; i < this.count; i++) {
-                            newIdx[i] = this.indices[i];
+            var SubdivisionTree3DResultIndexBuffer;
+            (function (SubdivisionTree3DResultIndexBuffer) {
+                function ensureCapacity(buffer) {
+                    var newCapacity = buffer.capacity * 2 + 1, newIdx = new Int32Array(newCapacity), i;
+                    if (buffer.count < 32) {
+                        for (i = 0; i < buffer.count; i++) {
+                            newIdx[i] = buffer.indices[i];
                         }
                     }
                     else {
-                        newIdx.set(this.indices);
+                        newIdx.set(buffer.indices);
                     }
-                    this.indices = newIdx;
-                    this.capacity = newCapacity;
-                };
-                SubdivisionTree3DResultIndexBuffer.prototype.add = function (distSq, index) {
-                    if (this.count + 1 >= this.capacity)
-                        this.ensureCapacity();
-                    this.indices[this.count++] = index;
-                };
-                SubdivisionTree3DResultIndexBuffer.prototype.reset = function () {
-                    this.count = 0;
-                };
-                return SubdivisionTree3DResultIndexBuffer;
-            }());
-            Geometry.SubdivisionTree3DResultIndexBuffer = SubdivisionTree3DResultIndexBuffer;
+                    buffer.indices = newIdx;
+                    buffer.capacity = newCapacity;
+                }
+                function add(distSq, index) {
+                    var self = this;
+                    if (self.count + 1 >= self.capacity) {
+                        ensureCapacity(self);
+                    }
+                    self.indices[self.count++] = index;
+                }
+                function reset() {
+                    var self = this;
+                    self.count = 0;
+                }
+                function create(initialCapacity) {
+                    if (initialCapacity < 1)
+                        initialCapacity = 1;
+                    return {
+                        indices: new Int32Array(initialCapacity),
+                        count: 0,
+                        capacity: initialCapacity,
+                        hasPriorities: false,
+                        priorities: void 0,
+                        add: add,
+                        reset: reset
+                    };
+                }
+                SubdivisionTree3DResultIndexBuffer.create = create;
+            })(SubdivisionTree3DResultIndexBuffer = Geometry.SubdivisionTree3DResultIndexBuffer || (Geometry.SubdivisionTree3DResultIndexBuffer = {}));
             /**
              * A buffer that remembers values and priorities.
              */
-            var SubdivisionTree3DResultPriorityBuffer = (function () {
-                function SubdivisionTree3DResultPriorityBuffer(initialCapacity) {
-                    if (initialCapacity < 1)
-                        initialCapacity = 1;
-                    this.indices = new Int32Array(initialCapacity);
-                    this.count = 0;
-                    this.capacity = initialCapacity;
-                    this.hasPriorities = true;
-                    this.priorities = new Float32Array(initialCapacity);
-                }
-                SubdivisionTree3DResultPriorityBuffer.prototype.ensureCapacity = function () {
-                    var newCapacity = this.capacity * 2 + 1, newIdx = new Int32Array(newCapacity), newPrio = new Float32Array(newCapacity), i;
-                    if (this.count < 32) {
-                        for (i = 0; i < this.count; i++) {
-                            newIdx[i] = this.indices[i];
-                            newPrio[i] = this.priorities[i];
+            var SubdivisionTree3DResultPriorityBuffer;
+            (function (SubdivisionTree3DResultPriorityBuffer) {
+                function ensureCapacity(buffer) {
+                    var newCapacity = buffer.capacity * 2 + 1, newIdx = new Int32Array(newCapacity), newPrio = new Float32Array(newCapacity), i;
+                    if (buffer.count < 32) {
+                        for (i = 0; i < buffer.count; i++) {
+                            newIdx[i] = buffer.indices[i];
+                            newPrio[i] = buffer.priorities[i];
                         }
                     }
                     else {
-                        newIdx.set(this.indices);
-                        newPrio.set(this.priorities);
+                        newIdx.set(buffer.indices);
+                        newPrio.set(buffer.priorities);
                     }
-                    this.indices = newIdx;
-                    this.priorities = newPrio;
-                    this.capacity = newCapacity;
-                };
-                SubdivisionTree3DResultPriorityBuffer.prototype.add = function (distSq, index) {
-                    if (this.count + 1 >= this.capacity)
-                        this.ensureCapacity();
-                    this.priorities[this.count] = distSq;
-                    this.indices[this.count++] = index;
-                };
-                SubdivisionTree3DResultPriorityBuffer.prototype.reset = function () {
-                    this.count = 0;
-                };
-                return SubdivisionTree3DResultPriorityBuffer;
-            }());
-            Geometry.SubdivisionTree3DResultPriorityBuffer = SubdivisionTree3DResultPriorityBuffer;
-            /**
-             * Query context. Handles the actual querying.
-             */
-            var SubdivisionTree3DQueryContext = (function () {
-                function SubdivisionTree3DQueryContext(tree, buffer) {
-                    this.tree = tree;
-                    this.indices = tree.indices;
-                    this.positions = tree.positions;
-                    this.buffer = buffer;
-                    this.pivot = [0.1, 0.1, 0.1];
-                    this.radius = 1.1;
-                    this.radiusSq = 1.1 * 1.1;
+                    buffer.indices = newIdx;
+                    buffer.priorities = newPrio;
+                    buffer.capacity = newCapacity;
                 }
+                function add(distSq, index) {
+                    var self = this;
+                    if (self.count + 1 >= self.capacity)
+                        ensureCapacity(self);
+                    self.priorities[self.count] = distSq;
+                    self.indices[self.count++] = index;
+                }
+                function reset() {
+                    var self = this;
+                    self.count = 0;
+                }
+                function create(initialCapacity) {
+                    if (initialCapacity < 1)
+                        initialCapacity = 1;
+                    return {
+                        indices: new Int32Array(initialCapacity),
+                        count: 0,
+                        capacity: initialCapacity,
+                        hasPriorities: true,
+                        priorities: new Float32Array(initialCapacity),
+                        add: add,
+                        reset: reset
+                    };
+                }
+                SubdivisionTree3DResultPriorityBuffer.create = create;
+            })(SubdivisionTree3DResultPriorityBuffer = Geometry.SubdivisionTree3DResultPriorityBuffer || (Geometry.SubdivisionTree3DResultPriorityBuffer = {}));
+            var SubdivisionTree3DQueryContext;
+            (function (SubdivisionTree3DQueryContext) {
                 /**
                  * Query the tree and store the result to this.buffer. Overwrites the old result.
                  */
-                SubdivisionTree3DQueryContext.prototype.nearest = function (x, y, z, radius) {
+                function nearest(x, y, z, radius) {
                     this.pivot[0] = x;
                     this.pivot[1] = y;
                     this.pivot[2] = z;
                     this.radius = radius;
                     this.radiusSq = radius * radius;
                     this.buffer.reset();
-                    this.tree.root.nearest(this, 0);
-                };
-                /**
-                 * Query the tree and use the position of the i-th element as pivot.
-                 * Store the result to this.buffer. Overwrites the old result.
-                 */
-                SubdivisionTree3DQueryContext.prototype.nearestIndex = function (index, radius) {
-                    this.pivot[0] = this.positions[3 * index];
-                    this.pivot[1] = this.positions[3 * index + 1];
-                    this.pivot[2] = this.positions[3 * index + 2];
-                    this.radius = radius;
-                    this.radiusSq = radius * radius;
-                    this.buffer.reset();
-                    this.tree.root.nearest(this, 0);
-                };
-                return SubdivisionTree3DQueryContext;
-            }());
-            Geometry.SubdivisionTree3DQueryContext = SubdivisionTree3DQueryContext;
-            /**
-             * A kd-like tree to query 3D data.
-             */
-            var SubdivisionTree3D = (function () {
-                /**
-                 * Takes data and a function that calls SubdivisionTree3DPositionBuilder.add(x, y, z) on each data element.
-                 */
-                function SubdivisionTree3D(data, f, leafSize) {
-                    if (leafSize === void 0) { leafSize = 32; }
-                    var builder = new SubdivisionTree3DBuilder(data, f, leafSize);
-                    this.data = data;
-                    this.root = builder.build();
-                    this.indices = builder.indices;
-                    this.positions = builder.positions;
+                    SubdivisionTree3DNode.nearest(this.tree.root, this, 0);
                 }
+                function create(tree, buffer) {
+                    return {
+                        tree: tree,
+                        indices: tree.indices,
+                        positions: tree.positions,
+                        buffer: buffer,
+                        pivot: [0.1, 0.1, 0.1],
+                        radius: 1.1,
+                        radiusSq: 1.1 * 1.1,
+                        nearest: nearest
+                    };
+                }
+                SubdivisionTree3DQueryContext.create = create;
+            })(SubdivisionTree3DQueryContext = Geometry.SubdivisionTree3DQueryContext || (Geometry.SubdivisionTree3DQueryContext = {}));
+            var SubdivisionTree3D;
+            (function (SubdivisionTree3D) {
                 /**
                  * Create a context used for querying the data.
                  */
-                SubdivisionTree3D.prototype.createContextRadius = function (radiusEstimate, includePriorities) {
+                function createContextRadius(tree, radiusEstimate, includePriorities) {
                     if (includePriorities === void 0) { includePriorities = false; }
-                    return new SubdivisionTree3DQueryContext(this, includePriorities
-                        ? new SubdivisionTree3DResultPriorityBuffer(Math.max((radiusEstimate * radiusEstimate) | 0, 8))
-                        : new SubdivisionTree3DResultIndexBuffer(Math.max((radiusEstimate * radiusEstimate) | 0, 8)));
-                };
-                return SubdivisionTree3D;
-            }());
-            Geometry.SubdivisionTree3D = SubdivisionTree3D;
-            /**
-             * A builder for position array.
-             */
-            var SubdivisionTree3DPositionBuilder = (function () {
-                function SubdivisionTree3DPositionBuilder(count) {
-                    this.count = 0;
-                    this.data = new Float32Array((count * 3) | 0);
-                    this.bounds = new Box3D();
-                    this.boundsMin = this.bounds.min;
-                    this.boundsMax = this.bounds.max;
+                    return SubdivisionTree3DQueryContext.create(tree, includePriorities
+                        ? SubdivisionTree3DResultPriorityBuffer.create(Math.max((radiusEstimate * radiusEstimate) | 0, 8))
+                        : SubdivisionTree3DResultIndexBuffer.create(Math.max((radiusEstimate * radiusEstimate) | 0, 8)));
                 }
-                SubdivisionTree3DPositionBuilder.prototype.add = function (x, y, z) {
-                    this.data[this.count++] = x;
-                    this.data[this.count++] = y;
-                    this.data[this.count++] = z;
-                    this.boundsMin[0] = Math.min(x, this.boundsMin[0]);
-                    this.boundsMin[1] = Math.min(y, this.boundsMin[1]);
-                    this.boundsMin[2] = Math.min(z, this.boundsMin[2]);
-                    this.boundsMax[0] = Math.max(x, this.boundsMax[0]);
-                    this.boundsMax[1] = Math.max(y, this.boundsMax[1]);
-                    this.boundsMax[2] = Math.max(z, this.boundsMax[2]);
-                };
-                return SubdivisionTree3DPositionBuilder;
-            }());
-            Geometry.SubdivisionTree3DPositionBuilder = SubdivisionTree3DPositionBuilder;
-            /**
-             * A tree node.
-             */
-            var SubdivisionTree3DNode = (function () {
-                function SubdivisionTree3DNode(splitValue, startIndex, endIndex, left, right) {
-                    this.splitValue = splitValue;
-                    this.startIndex = startIndex;
-                    this.endIndex = endIndex;
-                    this.left = left;
-                    this.right = right;
+                SubdivisionTree3D.createContextRadius = createContextRadius;
+                /**
+                 * Takes data and a function that calls SubdivisionTree3DPositionBuilder.add(x, y, z) on each data element.
+                 */
+                function create(data, f, leafSize) {
+                    if (leafSize === void 0) { leafSize = 32; }
+                    var _a = SubdivisionTree3DBuilder.build(data, f, leafSize), root = _a.root, indices = _a.indices, positions = _a.positions;
+                    return { data: data, root: root, indices: indices, positions: positions };
                 }
-                SubdivisionTree3DNode.prototype.nearestLeaf = function (ctx) {
+                SubdivisionTree3D.create = create;
+            })(SubdivisionTree3D = Geometry.SubdivisionTree3D || (Geometry.SubdivisionTree3D = {}));
+            var PositionBuilder;
+            (function (PositionBuilder) {
+                function add(builder, x, y, z) {
+                    builder.data[builder._count++] = x;
+                    builder.data[builder._count++] = y;
+                    builder.data[builder._count++] = z;
+                    builder.boundsMin[0] = Math.min(x, builder.boundsMin[0]);
+                    builder.boundsMin[1] = Math.min(y, builder.boundsMin[1]);
+                    builder.boundsMin[2] = Math.min(z, builder.boundsMin[2]);
+                    builder.boundsMax[0] = Math.max(x, builder.boundsMax[0]);
+                    builder.boundsMax[1] = Math.max(y, builder.boundsMax[1]);
+                    builder.boundsMax[2] = Math.max(z, builder.boundsMax[2]);
+                }
+                PositionBuilder.add = add;
+                function create(size) {
+                    var data = new Float32Array((size * 3) | 0);
+                    var bounds = Box3D.createInfinite();
+                    var boundsMin = bounds.min;
+                    var boundsMax = bounds.max;
+                    return { _count: 0, data: data, bounds: bounds, boundsMin: boundsMin, boundsMax: boundsMax };
+                }
+                PositionBuilder.create = create;
+            })(PositionBuilder || (PositionBuilder = {}));
+            var SubdivisionTree3DNode;
+            (function (SubdivisionTree3DNode) {
+                function nearestLeaf(node, ctx) {
                     var pivot = ctx.pivot, indices = ctx.indices, positions = ctx.positions, rSq = ctx.radiusSq, dx, dy, dz, o, m, i;
-                    for (i = this.startIndex; i < this.endIndex; i++) {
+                    for (i = node.startIndex; i < node.endIndex; i++) {
                         o = 3 * indices[i];
                         dx = pivot[0] - positions[o];
                         dy = pivot[1] - positions[o + 1];
@@ -13719,92 +13703,105 @@ var LiteMol;
                         if (m <= rSq)
                             ctx.buffer.add(m, indices[i]);
                     }
-                };
-                SubdivisionTree3DNode.prototype.nearestNode = function (ctx, dim) {
-                    var pivot = ctx.pivot[dim], left = pivot < this.splitValue;
-                    if (left ? pivot + ctx.radius > this.splitValue : pivot - ctx.radius < this.splitValue) {
-                        this.left.nearest(ctx, (dim + 1) % 3);
-                        this.right.nearest(ctx, (dim + 1) % 3);
+                }
+                function nearestNode(node, ctx, dim) {
+                    var pivot = ctx.pivot[dim], left = pivot < node.splitValue;
+                    if (left ? pivot + ctx.radius > node.splitValue : pivot - ctx.radius < node.splitValue) {
+                        nearest(node.left, ctx, (dim + 1) % 3);
+                        nearest(node.right, ctx, (dim + 1) % 3);
                     }
                     else if (left) {
-                        this.left.nearest(ctx, (dim + 1) % 3);
+                        nearest(node.left, ctx, (dim + 1) % 3);
                     }
                     else {
-                        this.right.nearest(ctx, (dim + 1) % 3);
+                        nearest(node.right, ctx, (dim + 1) % 3);
                     }
-                };
-                SubdivisionTree3DNode.prototype.nearest = function (ctx, dim) {
+                }
+                function nearest(node, ctx, dim) {
                     // check for empty.
-                    if (this.startIndex === this.endIndex)
+                    if (node.startIndex === node.endIndex)
                         return;
                     // is leaf?
-                    if (isNaN(this.splitValue))
-                        this.nearestLeaf(ctx);
+                    if (isNaN(node.splitValue))
+                        nearestLeaf(node, ctx);
                     else
-                        this.nearestNode(ctx, dim);
-                };
-                return SubdivisionTree3DNode;
-            }());
-            Geometry.SubdivisionTree3DNode = SubdivisionTree3DNode;
-            /**
-             * A helper to store boundary box.
-             */
-            var Box3D = (function () {
-                function Box3D() {
-                    this.min = [Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE];
-                    this.max = [-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE];
+                        nearestNode(node, ctx, dim);
                 }
-                return Box3D;
-            }());
-            Geometry.Box3D = Box3D;
-            /**
-             * A helper class to build the tree.
-             */
-            var SubdivisionTree3DBuilder = (function () {
-                function SubdivisionTree3DBuilder(data, f, leafSize) {
-                    var positions = new SubdivisionTree3DPositionBuilder(data.length), indices = new Int32Array(data.length), i;
-                    for (i = 0; i < data.length; i++) {
-                        indices[i] = i;
-                        f(data[i], positions);
-                    }
-                    this.leafSize = leafSize;
-                    this.positions = positions.data;
-                    this.indices = indices;
-                    this.emptyNode = new SubdivisionTree3DNode(NaN, -1, -1, null, null);
-                    this.bounds = positions.bounds;
+                SubdivisionTree3DNode.nearest = nearest;
+                function create(splitValue, startIndex, endIndex, left, right) {
+                    return { splitValue: splitValue, startIndex: startIndex, endIndex: endIndex, left: left, right: right };
                 }
-                SubdivisionTree3DBuilder.prototype.split = function (startIndex, endIndex, coord) {
+                SubdivisionTree3DNode.create = create;
+            })(SubdivisionTree3DNode = Geometry.SubdivisionTree3DNode || (Geometry.SubdivisionTree3DNode = {}));
+            var Box3D;
+            (function (Box3D) {
+                function createInfinite() {
+                    return {
+                        min: [Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE],
+                        max: [-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE]
+                    };
+                }
+                Box3D.createInfinite = createInfinite;
+            })(Box3D = Geometry.Box3D || (Geometry.Box3D = {}));
+            /**
+             * A helper to build the tree.
+             */
+            var SubdivisionTree3DBuilder;
+            (function (SubdivisionTree3DBuilder) {
+                function split(state, startIndex, endIndex, coord) {
                     var delta = endIndex - startIndex + 1;
                     if (delta <= 0) {
-                        return this.emptyNode;
+                        return state.emptyNode;
                     }
-                    else if (delta <= this.leafSize) {
-                        return new SubdivisionTree3DNode(NaN, startIndex, endIndex + 1, this.emptyNode, this.emptyNode);
+                    else if (delta <= state.leafSize) {
+                        return SubdivisionTree3DNode.create(NaN, startIndex, endIndex + 1, state.emptyNode, state.emptyNode);
                     }
-                    var min = this.bounds.min[coord], max = this.bounds.max[coord], median = 0.5 * (min + max), midIndex = 0, l = startIndex, r = endIndex, t, left, right;
+                    var min = state.bounds.min[coord], max = state.bounds.max[coord], median = 0.5 * (min + max), midIndex = 0, l = startIndex, r = endIndex, t, left, right;
                     while (l < r) {
-                        t = this.indices[r];
-                        this.indices[r] = this.indices[l];
-                        this.indices[l] = t;
-                        while (l <= endIndex && this.positions[3 * this.indices[l] + coord] <= median)
+                        t = state.indices[r];
+                        state.indices[r] = state.indices[l];
+                        state.indices[l] = t;
+                        while (l <= endIndex && state.positions[3 * state.indices[l] + coord] <= median)
                             l++;
-                        while (r >= startIndex && this.positions[3 * this.indices[r] + coord] > median)
+                        while (r >= startIndex && state.positions[3 * state.indices[r] + coord] > median)
                             r--;
                     }
                     midIndex = l - 1;
-                    this.bounds.max[coord] = median;
-                    left = this.split(startIndex, midIndex, (coord + 1) % 3);
-                    this.bounds.max[coord] = max;
-                    this.bounds.min[coord] = median;
-                    right = this.split(midIndex + 1, endIndex, (coord + 1) % 3);
-                    this.bounds.min[coord] = min;
-                    return new SubdivisionTree3DNode(median, startIndex, endIndex + 1, left, right);
-                };
-                SubdivisionTree3DBuilder.prototype.build = function () {
-                    return this.split(0, this.indices.length - 1, 0);
-                };
-                return SubdivisionTree3DBuilder;
-            }());
+                    state.bounds.max[coord] = median;
+                    left = split(state, startIndex, midIndex, (coord + 1) % 3);
+                    state.bounds.max[coord] = max;
+                    state.bounds.min[coord] = median;
+                    right = split(state, midIndex + 1, endIndex, (coord + 1) % 3);
+                    state.bounds.min[coord] = min;
+                    return SubdivisionTree3DNode.create(median, startIndex, endIndex + 1, left, right);
+                }
+                function createAdder(builder) {
+                    var add = PositionBuilder.add;
+                    return function (x, y, z) {
+                        add(builder, x, y, z);
+                    };
+                }
+                function build(data, f, leafSize) {
+                    var positions = PositionBuilder.create(data.length), indices = new Int32Array(data.length);
+                    var add = createAdder(positions);
+                    for (var i = 0; i < data.length; i++) {
+                        indices[i] = i;
+                        f(data[i], add);
+                    }
+                    add = null;
+                    var state = {
+                        bounds: positions.bounds,
+                        positions: positions.data,
+                        leafSize: leafSize,
+                        indices: indices,
+                        emptyNode: SubdivisionTree3DNode.create(NaN, -1, -1, null, null),
+                    };
+                    var root = split(state, 0, indices.length - 1, 0);
+                    state = null;
+                    return { root: root, indices: indices, positions: positions.data };
+                }
+                SubdivisionTree3DBuilder.build = build;
+            })(SubdivisionTree3DBuilder || (SubdivisionTree3DBuilder = {}));
         })(Geometry = Core.Geometry || (Core.Geometry = {}));
     })(Core = LiteMol.Core || (LiteMol.Core = {}));
 })(LiteMol || (LiteMol = {}));
@@ -17513,7 +17510,7 @@ var LiteMol;
                             if (this.mask.has(i))
                                 data[dataCount++] = i;
                         }
-                        this.lazyTree = new Core.Geometry.SubdivisionTree3D(data, function (i, b) { return b.add(x[i], y[i], z[i]); });
+                        this.lazyTree = Core.Geometry.SubdivisionTree3D.create(data, function (i, add) { return add(x[i], y[i], z[i]); });
                     };
                     return Context;
                 }());
@@ -18532,7 +18529,7 @@ var LiteMol;
                     function compileAmbientResidues(where, radius) {
                         var _where = Builder.toQuery(where);
                         return function (ctx) {
-                            var src = _where(ctx), tree = ctx.tree, radiusCtx = tree.createContextRadius(radius, false), buffer = radiusCtx.buffer, ret = new Query.HashFragmentSeqBuilder(ctx), x = ctx.structure.atoms.x, y = ctx.structure.atoms.y, z = ctx.structure.atoms.z, residueIndex = ctx.structure.atoms.residueIndex, atomStart = ctx.structure.residues.atomStartIndex, atomEnd = ctx.structure.residues.atomEndIndex, residues = new Set(), treeData = tree.data;
+                            var src = _where(ctx), tree = ctx.tree, radiusCtx = Core.Geometry.SubdivisionTree3D.createContextRadius(tree, radius, false), buffer = radiusCtx.buffer, ret = new Query.HashFragmentSeqBuilder(ctx), x = ctx.structure.atoms.x, y = ctx.structure.atoms.y, z = ctx.structure.atoms.z, residueIndex = ctx.structure.atoms.residueIndex, atomStart = ctx.structure.residues.atomStartIndex, atomEnd = ctx.structure.residues.atomEndIndex, residues = new Set(), treeData = tree.data;
                             for (var _i = 0, _a = src.fragments; _i < _a.length; _i++) {
                                 var f = _a[_i];
                                 residues.clear();
@@ -56554,7 +56551,7 @@ var LiteMol;
                                 residueCount: residueCount
                             };
                         }
-                        var tree = new LiteMol.Core.Geometry.SubdivisionTree3D(indices, function (i, b) { b.add(cX[i], cY[i], cZ[i]); }), ctx = tree.createContextRadius(bondLength + 1, false), pA = new Visualization.THREE.Vector3(), pB = new Visualization.THREE.Vector3(), processed = new Set(), cont = true, buffer = ctx.buffer;
+                        var tree = LiteMol.Core.Geometry.SubdivisionTree3D.create(indices, function (i, add) { add(cX[i], cY[i], cZ[i]); }), ctx = LiteMol.Core.Geometry.SubdivisionTree3D.createContextRadius(tree, bondLength + 1, false), pA = new Visualization.THREE.Vector3(), pB = new Visualization.THREE.Vector3(), processed = new Set(), cont = true, buffer = ctx.buffer;
                         while (startAtomIndex < atomCount) {
                             var rIndex = atomResidueIndex[indices[startAtomIndex]];
                             endAtomIndex = startAtomIndex;

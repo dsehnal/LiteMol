@@ -106,7 +106,7 @@ namespace LiteMol.Core.Structure {
                 for (let i = 0, _b = this.structure.atoms.count; i < _b; i++) {
                     if (this.mask.has(i)) data[dataCount++] = i;
                 }
-                this.lazyTree = new Geometry.SubdivisionTree3D<number>(<any>data, (i, b) => b.add(x[i], y[i], z[i]));
+                this.lazyTree = Geometry.SubdivisionTree3D.create<number>(<any>data, (i, add) => add(x[i], y[i], z[i]));
             }
         }
         

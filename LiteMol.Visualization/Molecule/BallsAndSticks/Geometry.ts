@@ -65,8 +65,8 @@ namespace LiteMol.Visualization.Molecule.BallsAndSticks {
                 };
             }
 
-            let tree = new Core.Geometry.SubdivisionTree3D<number>(<any>indices, (i, b) => { b.add(cX[i], cY[i], cZ[i]) }),
-                ctx = tree.createContextRadius(bondLength + 1, false),
+            let tree = Core.Geometry.SubdivisionTree3D.create<number>(<any>indices, (i, add) => { add(cX[i], cY[i], cZ[i]) }),
+                ctx = Core.Geometry.SubdivisionTree3D.createContextRadius(tree, bondLength + 1, false),
                 pA = new THREE.Vector3(), pB = new THREE.Vector3(),
                 processed = new Set<number>(),
                 cont = true,
