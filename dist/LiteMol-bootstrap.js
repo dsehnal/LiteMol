@@ -9052,9 +9052,9 @@ var LiteMol;
                             ctx.schedule(function () {
                                 var data = b.props.data;
                                 if (data.isNormalized)
-                                    data.denormalize();
+                                    LiteMol.Core.Formats.Density.Data.denormalize(data);
                                 else
-                                    data.normalize();
+                                    LiteMol.Core.Formats.Density.Data.normalize(data);
                                 ctx.resolve(Entity.Density.Data.create(t, { label: t.params.id ? t.params.id : 'Density Data', data: data, description: t.params.normalize ? 'Normalized' : '' }));
                             });
                         });

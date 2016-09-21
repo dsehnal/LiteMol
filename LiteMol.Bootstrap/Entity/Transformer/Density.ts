@@ -39,8 +39,8 @@ namespace LiteMol.Bootstrap.Entity.Transformer.Density {
                 ctx.update('Updating...');
                 ctx.schedule(() => {
                     let data = b.props.data;
-                    if (data.isNormalized) data.denormalize();
-                    else data.normalize();
+                    if (data.isNormalized) Core.Formats.Density.Data.denormalize(data);
+                    else Core.Formats.Density.Data.normalize(data);
                     ctx.resolve(Entity.Density.Data.create(t, { label: t.params.id ? t.params.id : 'Density Data', data, description: t.params.normalize ? 'Normalized' : '' }));
                 });
             });          

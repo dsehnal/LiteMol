@@ -67,82 +67,82 @@ namespace LiteMol.Core.Formats.Molecule.PDB {
             // 1 -  6        Record name     "ATOM  "                                            
 
             this.trim(start, start + 6);
-            tokens.addToken(this.trimmedToken.start, this.trimmedToken.end);
+            TokenIndexBuilder.addToken(tokens, this.trimmedToken.start, this.trimmedToken.end);
 
             // 7 - 11        Integer         Atom serial number.                   
 
             start = startPos + 6;
             this.trim(start, start + 5);
-            tokens.addToken(this.trimmedToken.start, this.trimmedToken.end);
+            TokenIndexBuilder.addToken(tokens, this.trimmedToken.start, this.trimmedToken.end);
 
             //13 - 16        Atom            Atom name.          
 
             start = startPos + 12;
             this.trim(start, start + 4);
-            tokens.addToken(this.trimmedToken.start, this.trimmedToken.end);
+            TokenIndexBuilder.addToken(tokens, this.trimmedToken.start, this.trimmedToken.end);
 
             //17             Character       Alternate location indicator. 
 
             if (this.data.charCodeAt(startPos + 16) === 32) { // ' '
-                tokens.addToken(0, 0);
+                TokenIndexBuilder.addToken(tokens, 0, 0);
             } else {
-                tokens.addToken(startPos + 16, startPos + 17);
+                TokenIndexBuilder.addToken(tokens, startPos + 16, startPos + 17);
             }
 
             //18 - 20        Residue name    Residue name.       
 
             start = startPos + 17;
             this.trim(start, start + 3);
-            tokens.addToken(this.trimmedToken.start, this.trimmedToken.end);
+            TokenIndexBuilder.addToken(tokens, this.trimmedToken.start, this.trimmedToken.end);
 
             //22             Character       Chain identifier.         
 
-            tokens.addToken(startPos + 21, startPos + 22);
+            TokenIndexBuilder.addToken(tokens, startPos + 21, startPos + 22);
 
             //23 - 26        Integer         Residue sequence number.              
 
             start = startPos + 22;
             this.trim(start, start + 4);
-            tokens.addToken(this.trimmedToken.start, this.trimmedToken.end);
+            TokenIndexBuilder.addToken(tokens, this.trimmedToken.start, this.trimmedToken.end);
 
             //27             AChar           Code for insertion of residues.      
 
             if (this.data.charCodeAt(startPos + 26) === 32) { // ' '
-                tokens.addToken(0, 0);
+                TokenIndexBuilder.addToken(tokens, 0, 0);
             } else {
-                tokens.addToken(startPos + 26, startPos + 27);
+                TokenIndexBuilder.addToken(tokens, startPos + 26, startPos + 27);
             }
 
             //31 - 38        Real(8.3)       Orthogonal coordinates for X in Angstroms.   
 
             start = startPos + 30;
             this.trim(start, start + 8);
-            tokens.addToken(this.trimmedToken.start, this.trimmedToken.end);
+            TokenIndexBuilder.addToken(tokens, this.trimmedToken.start, this.trimmedToken.end);
 
 
             //39 - 46        Real(8.3)       Orthogonal coordinates for Y in Angstroms.                            
 
             start = startPos + 38;
             this.trim(start, start + 8);
-            tokens.addToken(this.trimmedToken.start, this.trimmedToken.end);
+            TokenIndexBuilder.addToken(tokens, this.trimmedToken.start, this.trimmedToken.end);
 
             //47 - 54        Real(8.3)       Orthogonal coordinates for Z in Angstroms.        
 
             start = startPos + 46;
             this.trim(start, start + 8);
-            tokens.addToken(this.trimmedToken.start, this.trimmedToken.end);
+            TokenIndexBuilder.addToken(tokens, this.trimmedToken.start, this.trimmedToken.end);
 
             //55 - 60        Real(6.2)       Occupancy.       
 
             start = startPos + 54;
             this.trim(start, start + 6);
-            tokens.addToken(this.trimmedToken.start, this.trimmedToken.end);
+            TokenIndexBuilder.addToken(tokens, this.trimmedToken.start, this.trimmedToken.end);
 
             //61 - 66        Real(6.2)       Temperature factor (Default = 0.0).                   
 
             start = startPos + 60;
             this.trim(start, start + 6);
-            tokens.addToken(this.trimmedToken.start, this.trimmedToken.end);
+            TokenIndexBuilder.addToken(tokens, this.trimmedToken.start, this.trimmedToken.end);
 
             //73 - 76        LString(4)      Segment identifier, left-justified.   
 
@@ -155,9 +155,9 @@ namespace LiteMol.Core.Formats.Molecule.PDB {
                 this.trim(start, start + 2);
 
                 if (this.trimmedToken.start < this.trimmedToken.end) {
-                    tokens.addToken(this.trimmedToken.start, this.trimmedToken.end);
+                    TokenIndexBuilder.addToken(tokens, this.trimmedToken.start, this.trimmedToken.end);
                 } else {
-                    tokens.addToken(startPos + 12, startPos + 13);
+                    TokenIndexBuilder.addToken(tokens, startPos + 12, startPos + 13);
                 }
             }
 
@@ -189,7 +189,7 @@ namespace LiteMol.Core.Formats.Molecule.PDB {
             const tokenizer = new Tokenizer(data);
             const length = data.length;
 
-            let modelAtomTokens = new TokenIndexBuilder(4096); //2 * 14 * this.data.length / 78);
+            let modelAtomTokens = TokenIndexBuilder.create(4096); //2 * 14 * this.data.length / 78);
             let atomCount = 0;
             let models: PDB.ModelData[] = [];
             let cryst: PDB.CrystStructureInfo = void 0;
@@ -266,7 +266,7 @@ namespace LiteMol.Core.Formats.Molecule.PDB {
                             
                             modelIdToken = { start: tokenizer.trimmedToken.start, end: tokenizer.trimmedToken.end };
                             if (atomCount > 0 || !modelAtomTokens) {
-                                modelAtomTokens = new TokenIndexBuilder(4096);
+                                modelAtomTokens = TokenIndexBuilder.create(4096);
                             }
                             atomCount = 0;
 

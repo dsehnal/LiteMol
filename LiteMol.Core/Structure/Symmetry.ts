@@ -11,12 +11,9 @@ namespace LiteMol.Core.Structure {
 
         type Vector3 = { x: number; y: number; z: number };
 
-        class Sphere3 {
-            constructor(public center: Vector3, public radius: number) {
-            }
-        }
+        interface Sphere3 { center: Vector3, radius: number }
 
-        function getBoudingSphere(arrays: { x: number[], y: number[], z: number[] }, indices: number[]) {
+        function getBoudingSphere(arrays: { x: number[], y: number[], z: number[] }, indices: number[]): Sphere3 {
 
             let { x, y, z } = arrays;
             let center = { x: 0, y: 0, z: 0 };
@@ -35,7 +32,7 @@ namespace LiteMol.Core.Structure {
                 r = Math.max(indexedVectorDistSq(aI, center, arrays), r);
             }
 
-            return new Sphere3(center, Math.sqrt(r));
+            return { center, radius: Math.sqrt(r) };
         }
 
         function newVec(): Vector3 { return { x: 0, y: 0, z: 0 } };
@@ -87,97 +84,80 @@ namespace LiteMol.Core.Structure {
             return dx * dx + dy * dy + dz * dz;
         }
 
-        class BoundingInfo {
-
-            constructor(
-                public entities: BoundingDataTable,
-                public chains: BoundingDataTable,
-                public residues: BoundingDataTable,
-                public allAtoms: Sphere3,
-                public target: Sphere3
-            ) {
-            }
-
+        interface BoundingInfo {
+            entities: BoundingDataTable,
+            chains: BoundingDataTable,
+            residues: BoundingDataTable,
+            allAtoms: Sphere3,
+            target: Sphere3
         }
 
-        class SymmetryContext {
-            
-            transform: number[] = Mat4.empty();
-            transformed: Vector3 = { x: 0, y: 0, z: 0 };
+        interface SymmetryContext {
+            model: MoleculeModel,
+            boundingInfo: BoundingInfo,
+            spacegroup: Spacegroup,
+            radius: number,
 
-            //posBufferB: Vector3 = { x: 0, y: 0, z: 0 };
-
-            i: number = 0; j: number = 0; k: number = 0; op: number = 0;
-
-            map(p: Vector3) {
-                return Mat4.transformVector3(this.transformed, p, this.transform);
-            }
-
-            getTransform() {
-                return new SymmetryTransform(this.i, this.j, this.k, this.op, Mat4.clone(this.transform));
-            }
-
-            constructor(public model: MoleculeModel, public boundingInfo: BoundingInfo, public spacegroup: Spacegroup, public radius: number) {
-            }
+            transform: number[],
+            transformed: Vector3,
+            i: number,
+            j: number,
+            k: number,
+            op: number
         }
 
-        interface ISymmetryTransform {
-
-            isIdentity: boolean;
-            id: string;
-            transform: number[];
-            
+        function createSymmetryContext(model: MoleculeModel, boundingInfo: BoundingInfo, spacegroup: Spacegroup, radius: number): SymmetryContext {
+            return {
+                model,
+                boundingInfo,
+                spacegroup,
+                radius,
+                transform: Mat4.empty(),
+                transformed: { x: 0, y: 0, z: 0 },
+                i: 0, j: 0, k: 0, op: 0
+            };
         }
 
-        class SymmetryTransform implements ISymmetryTransform {
+        function symmetryContextMap(ctx: SymmetryContext, p: Vector3) {
+            return Mat4.transformVector3(ctx.transformed, p, ctx.transform);
+        }
 
-            isIdentity: boolean;
+        function symmetryContextGetTransform(ctx: SymmetryContext) {
+            return createSymmetryTransform(ctx.i, ctx.j, ctx.k, ctx.op, Mat4.clone(ctx.transform));
+        }
 
-            private _id: string = null;
-            get id() {
-                if (this._id) return this._id;
+        interface SymmetryTransform {
+            isIdentity: boolean,
+            id: string,
+            transform: number[]            
+        }
 
-                this._id = `${this.opIndex + 1}_${5 + this.i}${5 + this.j}${5 + this.k}`;
-                return this._id;
-            }
-
-            constructor(
-                public i: number, public j: number, public k: number, public opIndex: number,
-                public transform: number[]) {
-
-                this.isIdentity = !i && !j && !k && !opIndex;
-
+        function createSymmetryTransform(i: number, j: number, k: number, opIndex: number, transform: number[]): SymmetryTransform  {
+            return {
+                isIdentity: !i && !j && !k && !opIndex,
+                id: `${opIndex + 1}_${5 + i}${5 + j}${5 + k}`,
+                transform
             }
         }
 
-        class AssemblyTransform implements ISymmetryTransform {
-
-            isIdentity: boolean;
-
-            id: string;
-
-            private _isIdentity() {
-                
-                for (let i = 0; i < 4; i++) {
-                    for (let j = 0; j < 4; j++) {
-                        let v = this.transform[4 * j + i];
-                        if (i === j) {
-                            if (Math.abs(v - 1) > 0.0000001) return false;
-                        } else if (Math.abs(v) > 0.0000001) return false;
-                    }
+        function createAssemblyTransform(i: number, transform: number[]): SymmetryTransform  {
+            let isIdentity = true;
+            for (let i = 0; i < 4; i++) {
+                for (let j = 0; j < 4; j++) {
+                    let v = transform[4 * j + i];
+                    if (i === j) {
+                        if (Math.abs(v - 1) > 0.0000001) { isIdentity = false; break; }
+                    } else if (Math.abs(v) > 0.0000001) { isIdentity = false; break; }
                 }
-
-                return true;
-
+                if (!isIdentity) break;
             }
 
-            constructor(
-                public i: number, public transform: number[]) {
-                this.isIdentity = this._isIdentity();                
-                this.id = i.toString();
+            return {
+                isIdentity,
+                id: i.toString(),
+                transform
             }
         }
-
 
         function getBoundingInfo(model: MoleculeModel, pivotIndices: number[]): BoundingInfo {
 
@@ -306,13 +286,13 @@ namespace LiteMol.Core.Structure {
             }
             pivotRadius = Math.sqrt(pivotRadius);
 
-            return new BoundingInfo(
-                <BoundingDataTable>entityTable.seal(),
-                <BoundingDataTable>chainTable.seal(),
-                <BoundingDataTable>residueTable.seal(),
-                new Sphere3(allCenter, allRadius),
-                new Sphere3(pivotCenter, pivotRadius)
-            );
+            return <BoundingInfo>{
+                entities: <BoundingDataTable>entityTable.seal(),
+                chains: <BoundingDataTable>chainTable.seal(),
+                residues: <BoundingDataTable>residueTable.seal(),
+                allAtoms: { center: allCenter, radius: allRadius },
+                target: { center: pivotCenter, radius: pivotRadius }
+            };
         }
 
         function findSuitableTransforms(ctx: SymmetryContext) {
@@ -320,10 +300,10 @@ namespace LiteMol.Core.Structure {
             let bounds = ctx.boundingInfo,
                 sg = ctx.spacegroup;
 
-            let ret: ISymmetryTransform[] = [];
+            let ret: SymmetryTransform[] = [];
 
             ctx.transform = Mat4.identity();
-            ret[0] = ctx.getTransform();
+            ret[0] = symmetryContextGetTransform(ctx);
             
             for (let i = -3; i <= 3; i++) {
                 for (let j = -3; j <= 3; j++) {
@@ -337,11 +317,11 @@ namespace LiteMol.Core.Structure {
                             ctx.j = j;
                             ctx.op = l;
 
-                            let t = ctx.map(bounds.allAtoms.center),
+                            let t = symmetryContextMap(ctx, bounds.allAtoms.center),
                                 d = getSphereDist(t, bounds.allAtoms.radius, bounds.target);
 
                             if (d < ctx.radius) {
-                                ret[ret.length] = ctx.getTransform();
+                                ret[ret.length] = symmetryContextGetTransform(ctx);
                             }
                         }
                     }
@@ -352,7 +332,7 @@ namespace LiteMol.Core.Structure {
 
         }
 
-        function getSymmetryResidues(ctx: SymmetryContext, transforms: ISymmetryTransform[]) {
+        function getSymmetryResidues(ctx: SymmetryContext, transforms: SymmetryTransform[]) {
 
             let bounds = ctx.boundingInfo,                
                 radius = ctx.radius,
@@ -471,7 +451,7 @@ namespace LiteMol.Core.Structure {
         function assemble(
             model: MoleculeModel,
             assemblyParts: { residues: number[], operators: number[], atomCount: number; chainCount: number, entityCount: number },
-            transforms: ISymmetryTransform[]) {
+            transforms: SymmetryTransform[]) {
                 
             // let sorter = new PartsSorter(model, assemblyParts);
             // sorter.apply();
@@ -827,7 +807,7 @@ namespace LiteMol.Core.Structure {
 
             let bounds = getBoundingInfo(model, pivotIndices),
                 spacegroup = new Spacegroup(model.symmetryInfo),
-                ctx = new SymmetryContext(model, bounds, spacegroup, radius);
+                ctx = createSymmetryContext(model, bounds, spacegroup, radius);
 
             let transforms = findSuitableTransforms(ctx),
                 residues = getSymmetryResidues(ctx, transforms);
@@ -857,7 +837,7 @@ namespace LiteMol.Core.Structure {
 
                             let copy = Mat4.empty();
                             Mat4.copy(copy, t);
-                            transforms.push(new SymmetryTransform(i, j, k, op, copy));
+                            transforms.push(createSymmetryTransform(i, j, k, op, copy));
                         }
                     }
                 }
@@ -866,7 +846,7 @@ namespace LiteMol.Core.Structure {
             return transforms;
         }
 
-        function findMateParts(model: MoleculeModel, transforms: ISymmetryTransform[]) {
+        function findMateParts(model: MoleculeModel, transforms: SymmetryTransform[]) {
             
             let atoms = model.atoms,
                 residues = model.residues,
@@ -944,25 +924,20 @@ namespace LiteMol.Core.Structure {
 
             let info = model.assemblyInfo;
 
-            let trasnforms: ISymmetryTransform[] = [];
+            let transforms: SymmetryTransform[] = [];
             let t = Mat4.empty();
 
             let index = 0;
             for (let op of operators) {
-
-                var m = Mat4.identity();
-
-                //Mat4.copy(m, info.operators[op[0]].operator);
-                
+                var m = Mat4.identity();                
                 for (var i = 0; i < op.length; i++) {
                     Mat4.mul(m, m, info.operators[op[i]].operator);
                 }
-
                 index++;
-                trasnforms[trasnforms.length] = new AssemblyTransform(index, m);
+                transforms[transforms.length] = createAssemblyTransform(index, m);
             }
-
-            return trasnforms;
+            
+            return transforms;
         }
         
         interface AssemblyBuildState {
@@ -971,13 +946,13 @@ namespace LiteMol.Core.Structure {
             entityCount: number,
             
             transformsOffset: number,
-            transforms: ISymmetryTransform[],
+            transforms: SymmetryTransform[],
             mask: Int8Array,
             residueIndices: Utils.ChunkedArrayBuilder<number>,
             operatorIndices: Utils.ChunkedArrayBuilder<number>
         }
 
-        function getAssemblyParts(model: MoleculeModel, residueMask: Int8Array, currentTransforms: ISymmetryTransform[], state: AssemblyBuildState) {
+        function getAssemblyParts(model: MoleculeModel, residueMask: Int8Array, currentTransforms: SymmetryTransform[], state: AssemblyBuildState) {
             
             let atoms = model.atoms,
                 residues = model.residues,

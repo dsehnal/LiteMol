@@ -172,7 +172,7 @@ namespace LiteMol.Core.Formats.Density.DSN6 {
 
             let field = new Field3DZYX(<any>rawData.data, extent);
 
-            let data = new Data(
+            let data = Data.create(
                 header.cellDimensions, header.cellAngles, origin,
                 header.skewFlag !== 0, <any>skewMatrix, field, extent,
                 { x: xAxis, y: yAxis, z: zAxis },

@@ -222,13 +222,13 @@ namespace LiteMol.Core.Formats.CIF.Text {
                 data = this.data, tokens = this.tokens;
             
             let colNames = this.columnNameList;
-            let strings = new ShortStringPool();
+            let strings = ShortStringPool.create();
             
             for (let i = 0; i < this.rowCount; i++) {
                 let item:any = {};
                 for (let j = 0; j < this.columnCount; j++) {
                     let tk = (i * this.columnCount + j) * 2;                    
-                    item[<any>colNames[j]] = strings.getString(data.substring(tokens[tk], tokens[tk + 1]));
+                    item[<any>colNames[j]] = ShortStringPool.get(strings, data.substring(tokens[tk], tokens[tk + 1]));
                 }
                 rows[i] = item;
             }
@@ -237,6 +237,8 @@ namespace LiteMol.Core.Formats.CIF.Text {
         }
     }    
 
+    import fastParseInt = Utils.FastNumberParsers.parseInt
+    import fastParseFloat = Utils.FastNumberParsers.parseFloat 
     
     /**
      * Represents a single column of a CIF category.
@@ -246,7 +248,7 @@ namespace LiteMol.Core.Formats.CIF.Text {
         private tokens: number[];
         private columnCount: number;
         private rowCount: number;
-        private stringPool = new ShortStringPool();
+        private stringPool = ShortStringPool.create();
 
         isDefined = true;
 
@@ -255,7 +257,7 @@ namespace LiteMol.Core.Formats.CIF.Text {
          */
         getString(row: number): string {
             let i = (row * this.columnCount + this.index) * 2;
-            let ret = this.stringPool.getString(this.data.substring(this.tokens[i], this.tokens[i + 1]));
+            let ret = ShortStringPool.get(this.stringPool, this.data.substring(this.tokens[i], this.tokens[i + 1]));
             if (ret === "." || ret === "?") return null;
             return ret;
         }
@@ -265,7 +267,7 @@ namespace LiteMol.Core.Formats.CIF.Text {
          */
         getInteger(row: number): number {
             let i = (row * this.columnCount + this.index) * 2;
-            return Utils.FastNumberParsers.parseInt(this.data, this.tokens[i], this.tokens[i + 1]);
+            return fastParseInt(this.data, this.tokens[i], this.tokens[i + 1]);
         }
 
         /**
@@ -273,7 +275,7 @@ namespace LiteMol.Core.Formats.CIF.Text {
          */
         getFloat(row: number): number {
             let i = (row * this.columnCount + this.index) * 2;
-            return Utils.FastNumberParsers.parseFloat(this.data, this.tokens[i], this.tokens[i + 1]);
+            return fastParseFloat(this.data, this.tokens[i], this.tokens[i + 1]);
         }
 
         /**

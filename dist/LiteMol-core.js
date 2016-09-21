@@ -8083,7 +8083,7 @@ var LiteMol;
 (function (LiteMol) {
     var Core;
     (function (Core) {
-        Core.VERSION = { number: "2.4.2", date: "Sep 20 2016" };
+        Core.VERSION = { number: "2.4.3", date: "Sep 21 2016" };
     })(Core = LiteMol.Core || (LiteMol.Core = {}));
 })(LiteMol || (LiteMol = {}));
 /*
@@ -8245,6 +8245,515 @@ var LiteMol;
 (function (LiteMol) {
     var Core;
     (function (Core) {
+        var Utils;
+        (function (Utils) {
+            "use strict";
+            function extend(object, source, guard) {
+                var v;
+                var s = source;
+                var o = object;
+                var g = guard;
+                for (var _i = 0, _a = Object.keys(source); _i < _a.length; _i++) {
+                    var k = _a[_i];
+                    v = s[k];
+                    if (v !== void 0)
+                        o[k] = v;
+                    else if (guard)
+                        o[k] = g[k];
+                }
+                if (guard) {
+                    for (var _b = 0, _c = Object.keys(guard); _b < _c.length; _b++) {
+                        var k = _c[_b];
+                        v = o[k];
+                        if (v === void 0)
+                            o[k] = g[k];
+                    }
+                }
+                return object;
+            }
+            Utils.extend = extend;
+            ;
+            function debounce(func, wait) {
+                var args, maxTimeoutId, result, stamp, thisArg, timeoutId, trailingCall, lastCalled = 0, maxWait = 0, trailing = true, leading = false;
+                wait = Math.max(0, wait) || 0;
+                var delayed = function () {
+                    var remaining = wait - (performance.now() - stamp);
+                    if (remaining <= 0) {
+                        if (maxTimeoutId) {
+                            clearTimeout(maxTimeoutId);
+                        }
+                        var isCalled = trailingCall;
+                        maxTimeoutId = timeoutId = trailingCall = void 0;
+                        if (isCalled) {
+                            lastCalled = performance.now();
+                            result = func.apply(thisArg, args);
+                            if (!timeoutId && !maxTimeoutId) {
+                                args = thisArg = null;
+                            }
+                        }
+                    }
+                    else {
+                        timeoutId = setTimeout(delayed, remaining);
+                    }
+                };
+                var maxDelayed = function () {
+                    if (timeoutId) {
+                        clearTimeout(timeoutId);
+                    }
+                    maxTimeoutId = timeoutId = trailingCall = void 0;
+                    if (trailing || (maxWait !== wait)) {
+                        lastCalled = performance.now();
+                        result = func.apply(thisArg, args);
+                        if (!timeoutId && !maxTimeoutId) {
+                            args = thisArg = null;
+                        }
+                    }
+                };
+                return function () {
+                    args = arguments;
+                    stamp = performance.now();
+                    thisArg = this;
+                    trailingCall = trailing && (timeoutId || !leading);
+                    var isCalled = false;
+                    var leadingCall = false;
+                    if (maxWait === 0) {
+                        var leadingCall_1 = leading && !timeoutId;
+                    }
+                    else {
+                        if (!maxTimeoutId && !leading) {
+                            lastCalled = stamp;
+                        }
+                        var remaining = maxWait - (stamp - lastCalled), isCalled_1 = remaining <= 0;
+                        if (isCalled_1) {
+                            if (maxTimeoutId) {
+                                maxTimeoutId = clearTimeout(maxTimeoutId);
+                            }
+                            lastCalled = stamp;
+                            result = func.apply(thisArg, args);
+                        }
+                        else if (!maxTimeoutId) {
+                            maxTimeoutId = setTimeout(maxDelayed, remaining);
+                        }
+                    }
+                    if (isCalled && timeoutId) {
+                        timeoutId = clearTimeout(timeoutId);
+                    }
+                    else if (!timeoutId && wait !== maxWait) {
+                        timeoutId = setTimeout(delayed, wait);
+                    }
+                    if (leadingCall) {
+                        isCalled = true;
+                        result = func.apply(thisArg, args);
+                    }
+                    if (isCalled && !timeoutId && !maxTimeoutId) {
+                        args = thisArg = null;
+                    }
+                    return result;
+                };
+            }
+            Utils.debounce = debounce;
+        })(Utils = Core.Utils || (Core.Utils = {}));
+    })(Core = LiteMol.Core || (LiteMol.Core = {}));
+})(LiteMol || (LiteMol = {}));
+/*
+ * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ */
+var LiteMol;
+(function (LiteMol) {
+    var Core;
+    (function (Core) {
+        var Utils;
+        (function (Utils) {
+            function integerSetToSortedTypedArray(set) {
+                var array = new Int32Array(set.size);
+                set.forEach(function (v) { this.array[this.index++] = v; }, { array: array, index: 0 });
+                Array.prototype.sort.call(array, function (x, y) { return x - y; });
+                return array;
+            }
+            Utils.integerSetToSortedTypedArray = integerSetToSortedTypedArray;
+            /**
+             * A a JS native array with the given size.
+             */
+            function makeNativeIntArray(size) {
+                var arr = [];
+                for (var i = 0; i < size; i++)
+                    arr[i] = 0;
+                return arr;
+            }
+            Utils.makeNativeIntArray = makeNativeIntArray;
+            /**
+             * A a JS native array with the given size.
+             */
+            function makeNativeFloatArray(size) {
+                var arr = [];
+                if (!size)
+                    return arr;
+                arr[0] = 0.1;
+                for (var i = 0; i < size; i++)
+                    arr[i] = 0;
+                return arr;
+            }
+            Utils.makeNativeFloatArray = makeNativeFloatArray;
+            /**
+             * A generic chunked array builder.
+             */
+            var ChunkedArrayBuilder = (function () {
+                function ChunkedArrayBuilder(creator, chunkElementCount, elementSize) {
+                    chunkElementCount = chunkElementCount | 0;
+                    if (chunkElementCount <= 0)
+                        chunkElementCount = 1;
+                    this.elementSize = elementSize;
+                    this.chunkSize = chunkElementCount * elementSize;
+                    this.creator = creator;
+                    this.current = creator(this.chunkSize);
+                    this.parts = [this.current];
+                    this.currentIndex = 0;
+                    this.elementCount = 0;
+                }
+                ChunkedArrayBuilder.prototype.add4 = function (x, y, z, w) {
+                    if (this.currentIndex >= this.chunkSize) {
+                        this.currentIndex = 0;
+                        this.current = this.creator(this.chunkSize);
+                        this.parts[this.parts.length] = this.current;
+                    }
+                    this.current[this.currentIndex++] = x;
+                    this.current[this.currentIndex++] = y;
+                    this.current[this.currentIndex++] = z;
+                    this.current[this.currentIndex++] = w;
+                    return this.elementCount++;
+                };
+                ChunkedArrayBuilder.prototype.add3 = function (x, y, z) {
+                    if (this.currentIndex >= this.chunkSize) {
+                        this.currentIndex = 0;
+                        this.current = this.creator(this.chunkSize);
+                        this.parts[this.parts.length] = this.current;
+                    }
+                    this.current[this.currentIndex++] = x;
+                    this.current[this.currentIndex++] = y;
+                    this.current[this.currentIndex++] = z;
+                    return this.elementCount++;
+                };
+                ChunkedArrayBuilder.prototype.add2 = function (x, y) {
+                    if (this.currentIndex >= this.chunkSize) {
+                        this.currentIndex = 0;
+                        this.current = this.creator(this.chunkSize);
+                        this.parts[this.parts.length] = this.current;
+                    }
+                    this.current[this.currentIndex++] = x;
+                    this.current[this.currentIndex++] = y;
+                    return this.elementCount++;
+                };
+                ChunkedArrayBuilder.prototype.add = function (x) {
+                    if (this.currentIndex >= this.chunkSize) {
+                        this.currentIndex = 0;
+                        this.current = this.creator(this.chunkSize);
+                        this.parts[this.parts.length] = this.current;
+                    }
+                    this.current[this.currentIndex++] = x;
+                    return this.elementCount++;
+                };
+                ChunkedArrayBuilder.prototype.compact = function () {
+                    var ret = this.creator(this.elementSize * this.elementCount), i, j, offset = (this.parts.length - 1) * this.chunkSize, offsetInner = 0, part;
+                    if (this.parts.length > 1) {
+                        if (this.parts[0].buffer) {
+                            for (i = 0; i < this.parts.length - 1; i++) {
+                                ret.set(this.parts[i], this.chunkSize * i);
+                            }
+                        }
+                        else {
+                            for (i = 0; i < this.parts.length - 1; i++) {
+                                offsetInner = this.chunkSize * i;
+                                part = this.parts[i];
+                                for (j = 0; j < this.chunkSize; j++) {
+                                    ret[offsetInner + j] = part[j];
+                                }
+                            }
+                        }
+                    }
+                    if (this.current.buffer && this.currentIndex >= this.chunkSize) {
+                        ret.set(this.current, this.chunkSize * (this.parts.length - 1));
+                    }
+                    else {
+                        for (i = 0; i < this.currentIndex; i++) {
+                            ret[offset + i] = this.current[i];
+                        }
+                    }
+                    return ret;
+                };
+                ChunkedArrayBuilder.forVertex3D = function (chunkVertexCount) {
+                    if (chunkVertexCount === void 0) { chunkVertexCount = 262144; }
+                    return new ChunkedArrayBuilder(function (size) { return new Float32Array(size); }, chunkVertexCount, 3);
+                };
+                ChunkedArrayBuilder.forIndexBuffer = function (chunkIndexCount) {
+                    if (chunkIndexCount === void 0) { chunkIndexCount = 262144; }
+                    return new ChunkedArrayBuilder(function (size) { return new Uint32Array(size); }, chunkIndexCount, 3);
+                };
+                ChunkedArrayBuilder.forTokenIndices = function (chunkTokenCount) {
+                    if (chunkTokenCount === void 0) { chunkTokenCount = 131072; }
+                    return new ChunkedArrayBuilder(function (size) { return new Int32Array(size); }, chunkTokenCount, 2);
+                };
+                ChunkedArrayBuilder.forIndices = function (chunkTokenCount) {
+                    if (chunkTokenCount === void 0) { chunkTokenCount = 131072; }
+                    return new ChunkedArrayBuilder(function (size) { return new Int32Array(size); }, chunkTokenCount, 1);
+                };
+                ChunkedArrayBuilder.forInt32 = function (chunkSize) {
+                    if (chunkSize === void 0) { chunkSize = 131072; }
+                    return new ChunkedArrayBuilder(function (size) { return new Int32Array(size); }, chunkSize, 1);
+                };
+                ChunkedArrayBuilder.forFloat32 = function (chunkSize) {
+                    if (chunkSize === void 0) { chunkSize = 131072; }
+                    return new ChunkedArrayBuilder(function (size) { return new Float32Array(size); }, chunkSize, 1);
+                };
+                ChunkedArrayBuilder.forArray = function (chunkSize) {
+                    if (chunkSize === void 0) { chunkSize = 131072; }
+                    return new ChunkedArrayBuilder(function (size) { return []; }, chunkSize, 1);
+                };
+                return ChunkedArrayBuilder;
+            }());
+            Utils.ChunkedArrayBuilder = ChunkedArrayBuilder;
+            /**
+             * Static size array builder.
+             */
+            var ArrayBuilder = (function () {
+                function ArrayBuilder(creator, chunkElementCount, elementSize) {
+                    chunkElementCount = chunkElementCount | 0;
+                    this.array = creator(chunkElementCount * elementSize);
+                    this.currentIndex = 0;
+                    this.elementCount = 0;
+                }
+                ArrayBuilder.prototype.add3 = function (x, y, z) {
+                    this.array[this.currentIndex++] = x;
+                    this.array[this.currentIndex++] = y;
+                    this.array[this.currentIndex++] = z;
+                    this.elementCount++;
+                };
+                ArrayBuilder.prototype.add2 = function (x, y) {
+                    this.array[this.currentIndex++] = x;
+                    this.array[this.currentIndex++] = y;
+                    this.elementCount++;
+                };
+                ArrayBuilder.prototype.add = function (x) {
+                    this.array[this.currentIndex++] = x;
+                    this.elementCount++;
+                };
+                ArrayBuilder.forVertex3D = function (count) {
+                    return new ArrayBuilder(function (size) { return new Float32Array(size); }, count, 3);
+                };
+                ArrayBuilder.forIndexBuffer = function (count) {
+                    return new ArrayBuilder(function (size) { return new Int32Array(size); }, count, 3);
+                };
+                ArrayBuilder.forTokenIndices = function (count) {
+                    return new ArrayBuilder(function (size) { return new Int32Array(size); }, count, 2);
+                };
+                ArrayBuilder.forIndices = function (count) {
+                    return new ArrayBuilder(function (size) { return new Int32Array(size); }, count, 1);
+                };
+                ArrayBuilder.forInt32 = function (count) {
+                    return new ArrayBuilder(function (size) { return new Int32Array(size); }, count, 1);
+                };
+                ArrayBuilder.forFloat32 = function (count) {
+                    return new ArrayBuilder(function (size) { return new Float32Array(size); }, count, 1);
+                };
+                ArrayBuilder.forArray = function (count) {
+                    return new ArrayBuilder(function (size) { return []; }, count, 1);
+                };
+                return ArrayBuilder;
+            }());
+            Utils.ArrayBuilder = ArrayBuilder;
+        })(Utils = Core.Utils || (Core.Utils = {}));
+    })(Core = LiteMol.Core || (LiteMol.Core = {}));
+})(LiteMol || (LiteMol = {}));
+/*
+ * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ */
+/**
+ * Efficient integer and float parsers.
+ *
+ * For the purposes of parsing numbers from the mmCIF data representations,
+ * up to 4 times faster than JS parseInt/parseFloat.
+ */
+var LiteMol;
+(function (LiteMol) {
+    var Core;
+    (function (Core) {
+        var Utils;
+        (function (Utils) {
+            var FastNumberParsers;
+            (function (FastNumberParsers) {
+                "use strict";
+                function parseIntSkipTrailingWhitespace(str, start, end) {
+                    while (start < end && str.charCodeAt(start) === 32)
+                        start++;
+                    return parseInt(str, start, end);
+                }
+                FastNumberParsers.parseIntSkipTrailingWhitespace = parseIntSkipTrailingWhitespace;
+                function parseInt(str, start, end) {
+                    var ret = 0, neg = 1;
+                    if (str.charCodeAt(start) === 45 /* - */) {
+                        neg = -1;
+                        start++;
+                    }
+                    for (; start < end; start++) {
+                        var c = str.charCodeAt(start) - 48;
+                        if (c > 9 || c < 0)
+                            return (neg * ret) | 0;
+                        else
+                            ret = (10 * ret + c) | 0;
+                    }
+                    return neg * ret;
+                }
+                FastNumberParsers.parseInt = parseInt;
+                function parseScientific(main, str, start, end) {
+                    return main * Math.pow(10.0, parseInt(str, start, end));
+                }
+                FastNumberParsers.parseScientific = parseScientific;
+                function parseFloatSkipTrailingWhitespace(str, start, end) {
+                    while (start < end && str.charCodeAt(start) === 32)
+                        start++;
+                    return parseFloat(str, start, end);
+                }
+                FastNumberParsers.parseFloatSkipTrailingWhitespace = parseFloatSkipTrailingWhitespace;
+                function parseFloat(str, start, end) {
+                    var neg = 1.0, ret = 0.0, point = 0.0, div = 1.0;
+                    if (str.charCodeAt(start) === 45) {
+                        neg = -1.0;
+                        ++start;
+                    }
+                    while (start < end) {
+                        var c = str.charCodeAt(start) - 48;
+                        if (c >= 0 && c < 10) {
+                            ret = ret * 10 + c;
+                            ++start;
+                        }
+                        else if (c === -2) {
+                            ++start;
+                            while (start < end) {
+                                c = str.charCodeAt(start) - 48;
+                                if (c >= 0 && c < 10) {
+                                    point = 10.0 * point + c;
+                                    div = 10.0 * div;
+                                    ++start;
+                                }
+                                else if (c === 53 || c === 21) {
+                                    return parseScientific(neg * (ret + point / div), str, start + 1, end);
+                                }
+                                else {
+                                    return neg * (ret + point / div);
+                                }
+                            }
+                            return neg * (ret + point / div);
+                        }
+                        else if (c === 53 || c === 21) {
+                            return parseScientific(neg * ret, str, start + 1, end);
+                        }
+                        else
+                            break;
+                    }
+                    return neg * ret;
+                }
+                FastNumberParsers.parseFloat = parseFloat;
+            })(FastNumberParsers = Utils.FastNumberParsers || (Utils.FastNumberParsers = {}));
+        })(Utils = Core.Utils || (Core.Utils = {}));
+    })(Core = LiteMol.Core || (LiteMol.Core = {}));
+})(LiteMol || (LiteMol = {}));
+/*
+ * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ */
+var LiteMol;
+(function (LiteMol) {
+    var Core;
+    (function (Core) {
+        var Utils;
+        (function (Utils) {
+            "use strict";
+            var PerformanceHelper;
+            (function (PerformanceHelper) {
+                PerformanceHelper.perfGetTime = (function () {
+                    if (typeof window !== 'undefined' && window.performance) {
+                        return function () { return window.performance.now(); };
+                    }
+                    else if (typeof process !== 'undefined' && process.hrtime !== 'undefined') {
+                        return function () {
+                            var t = process.hrtime();
+                            return t[0] * 1000 + t[1] / 1000000;
+                        };
+                    }
+                    else {
+                        return function () { return +new Date(); };
+                    }
+                })();
+            })(PerformanceHelper || (PerformanceHelper = {}));
+            var PerformanceMonitor = (function () {
+                function PerformanceMonitor() {
+                    this.starts = new Map();
+                    this.ends = new Map();
+                }
+                PerformanceMonitor.currentTime = function () {
+                    return PerformanceHelper.perfGetTime();
+                };
+                PerformanceMonitor.prototype.start = function (name) {
+                    this.starts.set(name, PerformanceHelper.perfGetTime());
+                };
+                PerformanceMonitor.prototype.end = function (name) {
+                    this.ends.set(name, PerformanceHelper.perfGetTime());
+                };
+                PerformanceMonitor.format = function (t) {
+                    if (isNaN(t))
+                        return 'n/a';
+                    var h = Math.floor(t / (60 * 60 * 1000)), m = Math.floor(t / (60 * 1000) % 60), s = Math.floor(t / 1000 % 60), ms = Math.floor(t % 1000).toString();
+                    while (ms.length < 3)
+                        ms = "0" + ms;
+                    if (h > 0)
+                        return h + "h" + m + "m" + s + "." + ms + "s";
+                    if (m > 0)
+                        return m + "m" + s + "." + ms + "s";
+                    if (s > 0)
+                        return s + "." + ms + "s";
+                    return t.toFixed(0) + "ms";
+                };
+                PerformanceMonitor.prototype.formatTime = function (name) {
+                    return PerformanceMonitor.format(this.time(name));
+                };
+                PerformanceMonitor.prototype.formatTimeSum = function () {
+                    var names = [];
+                    for (var _i = 0; _i < arguments.length; _i++) {
+                        names[_i - 0] = arguments[_i];
+                    }
+                    return PerformanceMonitor.format(this.timeSum.apply(this, names));
+                };
+                // return the time in milliseconds and removes them from the cache.
+                PerformanceMonitor.prototype.time = function (name) {
+                    var start = this.starts.get(name), end = this.ends.get(name);
+                    this.starts.delete(name);
+                    this.ends.delete(name);
+                    return end - start;
+                };
+                PerformanceMonitor.prototype.timeSum = function () {
+                    var _this = this;
+                    var names = [];
+                    for (var _i = 0; _i < arguments.length; _i++) {
+                        names[_i - 0] = arguments[_i];
+                    }
+                    var t = 0;
+                    for (var _a = 0, _b = names.map(function (n) { return _this.ends.get(n) - _this.starts.get(n); }); _a < _b.length; _a++) {
+                        var m = _b[_a];
+                        t += m;
+                    }
+                    return t;
+                };
+                return PerformanceMonitor;
+            }());
+            Utils.PerformanceMonitor = PerformanceMonitor;
+        })(Utils = Core.Utils || (Core.Utils = {}));
+    })(Core = LiteMol.Core || (LiteMol.Core = {}));
+})(LiteMol || (LiteMol = {}));
+/*
+ * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ */
+var LiteMol;
+(function (LiteMol) {
+    var Core;
+    (function (Core) {
         var Formats;
         (function (Formats) {
             "use strict";
@@ -8302,51 +8811,47 @@ var LiteMol;
                 return ParserResult;
             }());
             Formats.ParserResult = ParserResult;
-            /**
-             * A helper class for building a typed array of token indices.
-             */
-            var TokenIndexBuilder = (function () {
-                function TokenIndexBuilder(size) {
-                    this.count = 0;
-                    this.tokens = new Int32Array(size);
-                    this.tokensLenMinus2 = (size - 2) | 0;
-                }
-                TokenIndexBuilder.prototype.resize = function () {
+            var TokenIndexBuilder;
+            (function (TokenIndexBuilder) {
+                function resize(builder) {
                     // scale the size using golden ratio, because why not.
-                    var newBuffer = new Int32Array((1.61 * this.tokens.length) | 0);
-                    newBuffer.set(this.tokens);
-                    this.tokens = newBuffer;
-                    this.tokensLenMinus2 = (newBuffer.length - 2) | 0;
-                };
-                TokenIndexBuilder.prototype.addToken = function (start, end) {
-                    if (this.count >= this.tokensLenMinus2) {
-                        this.resize();
-                    }
-                    this.tokens[this.count++] = start;
-                    this.tokens[this.count++] = end;
-                };
-                return TokenIndexBuilder;
-            }());
-            Formats.TokenIndexBuilder = TokenIndexBuilder;
-            /**
-             * A helper class to store only unique strings.
-             */
-            var ShortStringPool = (function () {
-                function ShortStringPool() {
-                    this.strings = new Map();
+                    var newBuffer = new Int32Array((1.61 * builder.tokens.length) | 0);
+                    newBuffer.set(builder.tokens);
+                    builder.tokens = newBuffer;
+                    builder.tokensLenMinus2 = (newBuffer.length - 2) | 0;
                 }
-                ShortStringPool.prototype.getString = function (key) {
-                    if (key.length > 6)
-                        return key;
-                    var value = this.strings.get(key);
+                function addToken(builder, start, end) {
+                    if (builder.count >= builder.tokensLenMinus2) {
+                        resize(builder);
+                    }
+                    builder.tokens[builder.count++] = start;
+                    builder.tokens[builder.count++] = end;
+                }
+                TokenIndexBuilder.addToken = addToken;
+                function create(size) {
+                    return {
+                        tokensLenMinus2: (size - 2) | 0,
+                        count: 0,
+                        tokens: new Int32Array(size)
+                    };
+                }
+                TokenIndexBuilder.create = create;
+            })(TokenIndexBuilder = Formats.TokenIndexBuilder || (Formats.TokenIndexBuilder = {}));
+            var ShortStringPool;
+            (function (ShortStringPool) {
+                function create() { return new Map(); }
+                ShortStringPool.create = create;
+                function get(pool, str) {
+                    if (str.length > 6)
+                        return str;
+                    var value = pool.get(str);
                     if (value !== void 0)
                         return value;
-                    this.strings.set(key, key);
-                    return key;
-                };
-                return ShortStringPool;
-            }());
-            Formats.ShortStringPool = ShortStringPool;
+                    pool.set(str, str);
+                    return str;
+                }
+                ShortStringPool.get = get;
+            })(ShortStringPool = Formats.ShortStringPool || (Formats.ShortStringPool = {}));
         })(Formats = Core.Formats || (Core.Formats = {}));
     })(Core = LiteMol.Core || (LiteMol.Core = {}));
 })(LiteMol || (LiteMol = {}));
@@ -8658,213 +9163,208 @@ var LiteMol;
         (function (Formats) {
             var MessagePack;
             (function (MessagePack) {
-                /*
-                 * Adapted from https://github.com/rcsb/mmtf-javascript
-                 * by Alexander Rose <alexander.rose@weirdbyte.de>, MIT License, Copyright (c) 2016
+                /**
+                 * decode all key-value pairs of a map into an object
+                 * @param  {Integer} length - number of key-value pairs
+                 * @return {Object} decoded map
                  */
-                function decode(buffer) {
-                    // Loosely based on
-                    // The MIT License (MIT)
-                    // Copyright (c) 2013 Tim Caswell <tim@creationix.com>
-                    // https://github.com/creationix/msgpack-js
-                    var offset = 0;
-                    var dataView = new DataView(buffer.buffer);
-                    /**
-                     * decode all key-value pairs of a map into an object
-                     * @param  {Integer} length - number of key-value pairs
-                     * @return {Object} decoded map
-                     */
-                    function map(length) {
-                        var value = {};
-                        for (var i = 0; i < length; i++) {
-                            var key = parse();
-                            value[key] = parse();
-                        }
-                        return value;
+                function map(state, length) {
+                    var value = {};
+                    for (var i = 0; i < length; i++) {
+                        var key = parse(state);
+                        value[key] = parse(state);
                     }
-                    /**
-                     * decode binary array
-                     * @param  {Integer} length - number of elements in the array
-                     * @return {Uint8Array} decoded array
-                     */
-                    function bin(length) {
-                        ////let value = buffer.subarray(offset, offset + length); //new Uint8Array(buffer.buffer, offset, length);
-                        // This approach wastes a bit of memory to trade for speed.
-                        // it turns out that using the view created by subarray probably uses DataView
-                        // in the background, which causes the element access to be several times slower
-                        // than creating the new byte array.
-                        var value = new Uint8Array(length);
-                        for (var i = 0; i < length; i++)
-                            value[i] = buffer[i + offset];
-                        offset += length;
-                        return value;
-                    }
-                    /**
-                     * decode string
-                     * @param  {Integer} length - number string characters
-                     * @return {String} decoded string
-                     */
-                    function str(length) {
-                        var value = MessagePack.utf8Read(buffer, offset, length);
-                        offset += length;
-                        return value;
-                    }
-                    /**
+                    return value;
+                }
+                /**
+                 * decode binary array
+                 * @param  {Integer} length - number of elements in the array
+                 * @return {Uint8Array} decoded array
+                 */
+                function bin(state, length) {
+                    // This approach to binary parsing wastes a bit of memory to trade for speed compared to:
+                    //
+                    //   let value = buffer.subarray(offset, offset + length); //new Uint8Array(buffer.buffer, offset, length);
+                    // 
+                    // It turns out that using the view created by subarray probably uses DataView
+                    // in the background, which causes the element access to be several times slower
+                    // than creating the new byte array.
+                    var value = new Uint8Array(length);
+                    for (var i = 0; i < length; i++)
+                        value[i] = state.buffer[i + state.offset];
+                    state.offset += length;
+                    return value;
+                }
+                /**
+                 * decode string
+                 * @param  {Integer} length - number string characters
+                 * @return {String} decoded string
+                 */
+                function str(state, length) {
+                    var value = MessagePack.utf8Read(state.buffer, state.offset, length);
+                    state.offset += length;
+                    return value;
+                }
+                /**
                      * decode array
                      * @param  {Integer} length - number of array elements
                      * @return {Array} decoded array
                      */
-                    function array(length) {
-                        var value = new Array(length);
-                        for (var i = 0; i < length; i++) {
-                            value[i] = parse();
-                        }
+                function array(state, length) {
+                    var value = new Array(length);
+                    for (var i = 0; i < length; i++) {
+                        value[i] = parse(state);
+                    }
+                    return value;
+                }
+                /**
+                 * recursively parse the MessagePack data
+                 * @return {Object|Array|String|Number|Boolean|null} decoded MessagePack data
+                 */
+                function parse(state) {
+                    var type = state.buffer[state.offset];
+                    var value, length;
+                    // Positive FixInt
+                    if ((type & 0x80) === 0x00) {
+                        state.offset++;
+                        return type;
+                    }
+                    // FixMap
+                    if ((type & 0xf0) === 0x80) {
+                        length = type & 0x0f;
+                        state.offset++;
+                        return map(state, length);
+                    }
+                    // FixArray
+                    if ((type & 0xf0) === 0x90) {
+                        length = type & 0x0f;
+                        state.offset++;
+                        return array(state, length);
+                    }
+                    // FixStr
+                    if ((type & 0xe0) === 0xa0) {
+                        length = type & 0x1f;
+                        state.offset++;
+                        return str(state, length);
+                    }
+                    // Negative FixInt
+                    if ((type & 0xe0) === 0xe0) {
+                        value = state.dataView.getInt8(state.offset);
+                        state.offset++;
                         return value;
                     }
-                    /**
-                     * recursively parse the MessagePack data
-                     * @return {Object|Array|String|Number|Boolean|null} decoded MessagePack data
-                     */
-                    function parse() {
-                        var type = buffer[offset];
-                        var value, length;
-                        // Positive FixInt
-                        if ((type & 0x80) === 0x00) {
-                            offset++;
-                            return type;
-                        }
-                        // FixMap
-                        if ((type & 0xf0) === 0x80) {
-                            length = type & 0x0f;
-                            offset++;
-                            return map(length);
-                        }
-                        // FixArray
-                        if ((type & 0xf0) === 0x90) {
-                            length = type & 0x0f;
-                            offset++;
-                            return array(length);
-                        }
-                        // FixStr
-                        if ((type & 0xe0) === 0xa0) {
-                            length = type & 0x1f;
-                            offset++;
-                            return str(length);
-                        }
-                        // Negative FixInt
-                        if ((type & 0xe0) === 0xe0) {
-                            value = dataView.getInt8(offset);
-                            offset++;
+                    switch (type) {
+                        // nil
+                        case 0xc0:
+                            state.offset++;
+                            return null;
+                        // false
+                        case 0xc2:
+                            state.offset++;
+                            return false;
+                        // true
+                        case 0xc3:
+                            state.offset++;
+                            return true;
+                        // bin 8
+                        case 0xc4:
+                            length = state.dataView.getUint8(state.offset + 1);
+                            state.offset += 2;
+                            return bin(state, length);
+                        // bin 16
+                        case 0xc5:
+                            length = state.dataView.getUint16(state.offset + 1);
+                            state.offset += 3;
+                            return bin(state, length);
+                        // bin 32
+                        case 0xc6:
+                            length = state.dataView.getUint32(state.offset + 1);
+                            state.offset += 5;
+                            return bin(state, length);
+                        // float 32
+                        case 0xca:
+                            value = state.dataView.getFloat32(state.offset + 1);
+                            state.offset += 5;
                             return value;
-                        }
-                        switch (type) {
-                            // nil
-                            case 0xc0:
-                                offset++;
-                                return null;
-                            // false
-                            case 0xc2:
-                                offset++;
-                                return false;
-                            // true
-                            case 0xc3:
-                                offset++;
-                                return true;
-                            // bin 8
-                            case 0xc4:
-                                length = dataView.getUint8(offset + 1);
-                                offset += 2;
-                                return bin(length);
-                            // bin 16
-                            case 0xc5:
-                                length = dataView.getUint16(offset + 1);
-                                offset += 3;
-                                return bin(length);
-                            // bin 32
-                            case 0xc6:
-                                length = dataView.getUint32(offset + 1);
-                                offset += 5;
-                                return bin(length);
-                            // float 32
-                            case 0xca:
-                                value = dataView.getFloat32(offset + 1);
-                                offset += 5;
-                                return value;
-                            // float 64
-                            case 0xcb:
-                                value = dataView.getFloat64(offset + 1);
-                                offset += 9;
-                                return value;
-                            // uint8
-                            case 0xcc:
-                                value = buffer[offset + 1];
-                                offset += 2;
-                                return value;
-                            // uint 16
-                            case 0xcd:
-                                value = dataView.getUint16(offset + 1);
-                                offset += 3;
-                                return value;
-                            // uint 32
-                            case 0xce:
-                                value = dataView.getUint32(offset + 1);
-                                offset += 5;
-                                return value;
-                            // int 8
-                            case 0xd0:
-                                value = dataView.getInt8(offset + 1);
-                                offset += 2;
-                                return value;
-                            // int 16
-                            case 0xd1:
-                                value = dataView.getInt16(offset + 1);
-                                offset += 3;
-                                return value;
-                            // int 32
-                            case 0xd2:
-                                value = dataView.getInt32(offset + 1);
-                                offset += 5;
-                                return value;
-                            // str 8
-                            case 0xd9:
-                                length = dataView.getUint8(offset + 1);
-                                offset += 2;
-                                return str(length);
-                            // str 16
-                            case 0xda:
-                                length = dataView.getUint16(offset + 1);
-                                offset += 3;
-                                return str(length);
-                            // str 32
-                            case 0xdb:
-                                length = dataView.getUint32(offset + 1);
-                                offset += 5;
-                                return str(length);
-                            // array 16
-                            case 0xdc:
-                                length = dataView.getUint16(offset + 1);
-                                offset += 3;
-                                return array(length);
-                            // array 32
-                            case 0xdd:
-                                length = dataView.getUint32(offset + 1);
-                                offset += 5;
-                                return array(length);
-                            // map 16:
-                            case 0xde:
-                                length = dataView.getUint16(offset + 1);
-                                offset += 3;
-                                return map(length);
-                            // map 32
-                            case 0xdf:
-                                length = dataView.getUint32(offset + 1);
-                                offset += 5;
-                                return map(length);
-                        }
-                        throw new Error("Unknown type 0x" + type.toString(16));
+                        // float 64
+                        case 0xcb:
+                            value = state.dataView.getFloat64(state.offset + 1);
+                            state.offset += 9;
+                            return value;
+                        // uint8
+                        case 0xcc:
+                            value = state.buffer[state.offset + 1];
+                            state.offset += 2;
+                            return value;
+                        // uint 16
+                        case 0xcd:
+                            value = state.dataView.getUint16(state.offset + 1);
+                            state.offset += 3;
+                            return value;
+                        // uint 32
+                        case 0xce:
+                            value = state.dataView.getUint32(state.offset + 1);
+                            state.offset += 5;
+                            return value;
+                        // int 8
+                        case 0xd0:
+                            value = state.dataView.getInt8(state.offset + 1);
+                            state.offset += 2;
+                            return value;
+                        // int 16
+                        case 0xd1:
+                            value = state.dataView.getInt16(state.offset + 1);
+                            state.offset += 3;
+                            return value;
+                        // int 32
+                        case 0xd2:
+                            value = state.dataView.getInt32(state.offset + 1);
+                            state.offset += 5;
+                            return value;
+                        // str 8
+                        case 0xd9:
+                            length = state.dataView.getUint8(state.offset + 1);
+                            state.offset += 2;
+                            return str(state, length);
+                        // str 16
+                        case 0xda:
+                            length = state.dataView.getUint16(state.offset + 1);
+                            state.offset += 3;
+                            return str(state, length);
+                        // str 32
+                        case 0xdb:
+                            length = state.dataView.getUint32(state.offset + 1);
+                            state.offset += 5;
+                            return str(state, length);
+                        // array 16
+                        case 0xdc:
+                            length = state.dataView.getUint16(state.offset + 1);
+                            state.offset += 3;
+                            return array(state, length);
+                        // array 32
+                        case 0xdd:
+                            length = state.dataView.getUint32(state.offset + 1);
+                            state.offset += 5;
+                            return array(state, length);
+                        // map 16:
+                        case 0xde:
+                            length = state.dataView.getUint16(state.offset + 1);
+                            state.offset += 3;
+                            return map(state, length);
+                        // map 32
+                        case 0xdf:
+                            length = state.dataView.getUint32(state.offset + 1);
+                            state.offset += 5;
+                            return map(state, length);
                     }
-                    // start the recursive parsing
-                    return parse();
+                    throw new Error("Unknown type 0x" + type.toString(16));
+                }
+                function decode(buffer) {
+                    return parse({
+                        buffer: buffer,
+                        offset: 0,
+                        dataView: new DataView(buffer.buffer)
+                    });
                 }
                 MessagePack.decode = decode;
             })(MessagePack = Formats.MessagePack || (Formats.MessagePack = {}));
@@ -9240,12 +9740,12 @@ var LiteMol;
                         Category.prototype.toJSON = function () {
                             var rows = [], data = this.data, tokens = this.tokens;
                             var colNames = this.columnNameList;
-                            var strings = new ShortStringPool();
+                            var strings = ShortStringPool.create();
                             for (var i = 0; i < this.rowCount; i++) {
                                 var item = {};
                                 for (var j = 0; j < this.columnCount; j++) {
                                     var tk = (i * this.columnCount + j) * 2;
-                                    item[colNames[j]] = strings.getString(data.substring(tokens[tk], tokens[tk + 1]));
+                                    item[colNames[j]] = ShortStringPool.get(strings, data.substring(tokens[tk], tokens[tk + 1]));
                                 }
                                 rows[i] = item;
                             }
@@ -9254,6 +9754,8 @@ var LiteMol;
                         return Category;
                     }());
                     Text.Category = Category;
+                    var fastParseInt = Core.Utils.FastNumberParsers.parseInt;
+                    var fastParseFloat = Core.Utils.FastNumberParsers.parseFloat;
                     /**
                      * Represents a single column of a CIF category.
                      */
@@ -9262,7 +9764,7 @@ var LiteMol;
                             this.data = data;
                             this.name = name;
                             this.index = index;
-                            this.stringPool = new ShortStringPool();
+                            this.stringPool = ShortStringPool.create();
                             this.isDefined = true;
                             this.tokens = category.tokens;
                             this.columnCount = category.columnCount;
@@ -9272,7 +9774,7 @@ var LiteMol;
                          */
                         Column.prototype.getString = function (row) {
                             var i = (row * this.columnCount + this.index) * 2;
-                            var ret = this.stringPool.getString(this.data.substring(this.tokens[i], this.tokens[i + 1]));
+                            var ret = ShortStringPool.get(this.stringPool, this.data.substring(this.tokens[i], this.tokens[i + 1]));
                             if (ret === "." || ret === "?")
                                 return null;
                             return ret;
@@ -9282,14 +9784,14 @@ var LiteMol;
                          */
                         Column.prototype.getInteger = function (row) {
                             var i = (row * this.columnCount + this.index) * 2;
-                            return Core.Utils.FastNumberParsers.parseInt(this.data, this.tokens[i], this.tokens[i + 1]);
+                            return fastParseInt(this.data, this.tokens[i], this.tokens[i + 1]);
                         };
                         /**
                          * Returns the float value at given row.
                          */
                         Column.prototype.getFloat = function (row) {
                             var i = (row * this.columnCount + this.index) * 2;
-                            return Core.Utils.FastNumberParsers.parseFloat(this.data, this.tokens[i], this.tokens[i + 1]);
+                            return fastParseFloat(this.data, this.tokens[i], this.tokens[i + 1]);
                         };
                         /**
                          * Returns true if the token has the specified string value.
@@ -9357,502 +9859,476 @@ var LiteMol;
                 (function (Text) {
                     "use strict";
                     /**
-                     * Cif tokenizer .. d'oh.
+                     * Eat everything until a whitespace/newline occurs.
                      */
-                    var CifTokenizer = (function () {
-                        function CifTokenizer(data) {
-                            this.data = data;
-                            this.length = data.length;
-                            this.position = 0;
-                            this.currentTokenStart = 0;
-                            this.currentTokenEnd = 0;
-                            this.currentTokenType = 6 /* End */;
-                            this.currentLineNumber = 1;
-                            this.isEscaped = false;
+                    function eatValue(state) {
+                        while (state.position < state.length) {
+                            switch (state.data.charCodeAt(state.position)) {
+                                case 9: // \t
+                                case 10: // \n
+                                case 13: // \r
+                                case 32:
+                                    state.currentTokenEnd = state.position;
+                                    return;
+                                default:
+                                    ++state.position;
+                                    break;
+                            }
                         }
-                        /**
-                         * Eat everything until a whitespace/newline occurs.
-                         */
-                        CifTokenizer.prototype.eatValue = function () {
-                            while (this.position < this.length) {
-                                switch (this.data.charCodeAt(this.position)) {
+                        state.currentTokenEnd = state.position;
+                    }
+                    /**
+                     * Eats an escaped values. Handles the "degenerate" cases as well.
+                     *
+                     * "Degenerate" cases:
+                     * - 'xx'x' => xx'x
+                     * - 'xxxNEWLINE => 'xxx
+                     *
+                     */
+                    function eatEscaped(state, esc) {
+                        var next, c;
+                        ++state.position;
+                        while (state.position < state.length) {
+                            c = state.data.charCodeAt(state.position);
+                            if (c === esc) {
+                                next = state.data.charCodeAt(state.position + 1);
+                                switch (next) {
                                     case 9: // \t
                                     case 10: // \n
                                     case 13: // \r
                                     case 32:
-                                        this.currentTokenEnd = this.position;
+                                        // get rid of the quotes.
+                                        state.currentTokenStart++;
+                                        state.currentTokenEnd = state.position;
+                                        state.isEscaped = true;
+                                        ++state.position;
                                         return;
                                     default:
-                                        ++this.position;
-                                        break;
-                                }
-                            }
-                            this.currentTokenEnd = this.position;
-                        };
-                        /**
-                         * Eats an escaped values. Handles the "degenerate" cases as well.
-                         *
-                         * "Degenerate" cases:
-                         * - 'xx'x' => xx'x
-                         * - 'xxxNEWLINE => 'xxx
-                         *
-                         */
-                        CifTokenizer.prototype.eatEscaped = function (esc) {
-                            var next, c;
-                            ++this.position;
-                            while (this.position < this.length) {
-                                c = this.data.charCodeAt(this.position);
-                                if (c === esc) {
-                                    next = this.data.charCodeAt(this.position + 1);
-                                    switch (next) {
-                                        case 9: // \t
-                                        case 10: // \n
-                                        case 13: // \r
-                                        case 32:
+                                        if (next === void 0) {
                                             // get rid of the quotes.
-                                            this.currentTokenStart++;
-                                            this.currentTokenEnd = this.position;
-                                            this.isEscaped = true;
-                                            ++this.position;
+                                            state.currentTokenStart++;
+                                            state.currentTokenEnd = state.position;
+                                            state.isEscaped = true;
+                                            ++state.position;
                                             return;
-                                        default:
-                                            if (next === void 0) {
-                                                // get rid of the quotes.
-                                                this.currentTokenStart++;
-                                                this.currentTokenEnd = this.position;
-                                                this.isEscaped = true;
-                                                ++this.position;
-                                                return;
-                                            }
-                                            ++this.position;
-                                            break;
-                                    }
-                                }
-                                else {
-                                    // handle 'xxxNEWLINE => 'xxx
-                                    if (c === 10 || c === 13) {
-                                        this.currentTokenEnd = this.position;
-                                        return;
-                                    }
-                                    ++this.position;
-                                }
-                            }
-                            this.currentTokenEnd = this.position;
-                        };
-                        /**
-                         * Eats a multiline token of the form NL;....NL;
-                         */
-                        CifTokenizer.prototype.eatMultiline = function () {
-                            var prev = 59, pos = this.position + 1, c;
-                            while (pos < this.length) {
-                                c = this.data.charCodeAt(pos);
-                                if (c === 59 && (prev === 10 || prev === 13)) {
-                                    this.position = pos + 1;
-                                    // get rid of the ;
-                                    this.currentTokenStart++;
-                                    // remove trailing newlines
-                                    pos--;
-                                    c = this.data.charCodeAt(pos);
-                                    while (c === 10 || c === 13) {
-                                        pos--;
-                                        c = this.data.charCodeAt(pos);
-                                    }
-                                    this.currentTokenEnd = pos + 1;
-                                    this.isEscaped = true;
-                                    return;
-                                }
-                                else {
-                                    // handle line numbers
-                                    if (c === 13) {
-                                        this.currentLineNumber++;
-                                    }
-                                    else if (c === 10 && prev !== 13) {
-                                        this.currentLineNumber++;
-                                    }
-                                    prev = c;
-                                    ++pos;
-                                }
-                            }
-                            this.position = pos;
-                            return prev;
-                        };
-                        /**
-                         * Skips until \n or \r occurs -- therefore the newlines get handled by the "skipWhitespace" function.
-                         */
-                        CifTokenizer.prototype.skipCommentLine = function () {
-                            while (this.position < this.length) {
-                                var c = this.data.charCodeAt(this.position);
-                                if (c === 10 || c === 13) {
-                                    return;
-                                }
-                                ++this.position;
-                            }
-                        };
-                        /**
-                         * Skips all the whitespace - space, tab, newline, CR
-                         * Handles incrementing line count.
-                         */
-                        CifTokenizer.prototype.skipWhitespace = function () {
-                            var prev = 10;
-                            while (this.position < this.length) {
-                                var c = this.data.charCodeAt(this.position);
-                                switch (c) {
-                                    case 9: // '\t'
-                                    case 32:
-                                        prev = c;
-                                        ++this.position;
-                                        break;
-                                    case 10:
-                                        // handle \r\n
-                                        if (prev !== 13) {
-                                            ++this.currentLineNumber;
                                         }
-                                        prev = c;
-                                        ++this.position;
+                                        ++state.position;
                                         break;
-                                    case 13:
-                                        prev = c;
-                                        ++this.position;
-                                        ++this.currentLineNumber;
-                                        break;
-                                    default:
-                                        return prev;
                                 }
                             }
-                            return prev;
-                        };
-                        CifTokenizer.prototype.isData = function () {
-                            // here we already assume the 5th char is _ and that the length >= 5
-                            // d/D
-                            var c = this.data.charCodeAt(this.currentTokenStart);
-                            if (c !== 68 && c !== 100)
-                                return false;
-                            // a/A
-                            c = this.data.charCodeAt(this.currentTokenStart + 1);
-                            if (c !== 65 && c !== 97)
-                                return false;
-                            // t/t
-                            c = this.data.charCodeAt(this.currentTokenStart + 2);
-                            if (c !== 84 && c !== 116)
-                                return false;
-                            // a/A
-                            c = this.data.charCodeAt(this.currentTokenStart + 3);
-                            if (c !== 65 && c !== 97)
-                                return false;
-                            return true;
-                        };
-                        CifTokenizer.prototype.isSave = function () {
-                            // here we already assume the 5th char is _ and that the length >= 5
-                            // s/S
-                            var c = this.data.charCodeAt(this.currentTokenStart);
-                            if (c !== 83 && c !== 115)
-                                return false;
-                            // a/A
-                            c = this.data.charCodeAt(this.currentTokenStart + 1);
-                            if (c !== 65 && c !== 97)
-                                return false;
-                            // v/V
-                            c = this.data.charCodeAt(this.currentTokenStart + 2);
-                            if (c !== 86 && c !== 118)
-                                return false;
-                            // e/E
-                            c = this.data.charCodeAt(this.currentTokenStart + 3);
-                            if (c !== 69 && c !== 101)
-                                return false;
-                            return true;
-                        };
-                        CifTokenizer.prototype.isLoop = function () {
-                            // here we already assume the 5th char is _ and that the length >= 5
-                            if (this.currentTokenEnd - this.currentTokenStart !== 5)
-                                return false;
-                            // l/L
-                            var c = this.data.charCodeAt(this.currentTokenStart);
-                            if (c !== 76 && c !== 108)
-                                return false;
-                            // o/O
-                            c = this.data.charCodeAt(this.currentTokenStart + 1);
-                            if (c !== 79 && c !== 111)
-                                return false;
-                            // o/O
-                            c = this.data.charCodeAt(this.currentTokenStart + 2);
-                            if (c !== 79 && c !== 111)
-                                return false;
-                            // p/P
-                            c = this.data.charCodeAt(this.currentTokenStart + 3);
-                            if (c !== 80 && c !== 112)
-                                return false;
-                            return true;
-                        };
-                        /**
-                         * Checks if the current token shares the namespace with string at <start,end).
-                         */
-                        CifTokenizer.prototype.isNamespace = function (start, end) {
-                            var i, nsLen = end - start, offset = this.currentTokenStart - start, tokenLen = this.currentTokenEnd - this.currentTokenStart;
-                            if (tokenLen < nsLen)
-                                return false;
-                            for (i = start; i < end; ++i) {
-                                if (this.data.charCodeAt(i) !== this.data.charCodeAt(i + offset))
-                                    return false;
+                            else {
+                                // handle 'xxxNEWLINE => 'xxx
+                                if (c === 10 || c === 13) {
+                                    state.currentTokenEnd = state.position;
+                                    return;
+                                }
+                                ++state.position;
                             }
-                            if (nsLen === tokenLen)
-                                return true;
-                            if (this.data.charCodeAt(i + offset) === 46) {
-                                return true;
-                            }
-                            return false;
-                        };
-                        /**
-                         * Returns the index of '.' in the current token. If no '.' is present, returns currentTokenEnd.
-                         */
-                        CifTokenizer.prototype.getNamespaceEnd = function () {
-                            var i;
-                            for (i = this.currentTokenStart; i < this.currentTokenEnd; ++i) {
-                                if (this.data.charCodeAt(i) === 46)
-                                    return i;
-                            }
-                            return i;
-                        };
-                        /**
-                         * Get the namespace string. endIndex is obtained by the getNamespaceEnd() function.
-                         */
-                        CifTokenizer.prototype.getNamespace = function (endIndex) {
-                            return this.data.substring(this.currentTokenStart, endIndex);
-                        };
-                        /**
-                         * String representation of the current token.
-                         */
-                        CifTokenizer.prototype.getTokenString = function () {
-                            return this.data.substring(this.currentTokenStart, this.currentTokenEnd);
-                        };
-                        /**
-                         * Move to the next token.
-                         */
-                        CifTokenizer.prototype.moveNextInternal = function () {
-                            var prev = this.skipWhitespace(), c;
-                            if (this.position >= this.length) {
-                                this.currentTokenType = 6 /* End */;
+                        }
+                        state.currentTokenEnd = state.position;
+                    }
+                    /**
+                     * Eats a multiline token of the form NL;....NL;
+                     */
+                    function eatMultiline(state) {
+                        var prev = 59, pos = state.position + 1, c;
+                        while (pos < state.length) {
+                            c = state.data.charCodeAt(pos);
+                            if (c === 59 && (prev === 10 || prev === 13)) {
+                                state.position = pos + 1;
+                                // get rid of the ;
+                                state.currentTokenStart++;
+                                // remove trailing newlines
+                                pos--;
+                                c = state.data.charCodeAt(pos);
+                                while (c === 10 || c === 13) {
+                                    pos--;
+                                    c = state.data.charCodeAt(pos);
+                                }
+                                state.currentTokenEnd = pos + 1;
+                                state.isEscaped = true;
                                 return;
                             }
-                            this.currentTokenStart = this.position;
-                            this.currentTokenEnd = this.position;
-                            this.isEscaped = false;
-                            c = this.data.charCodeAt(this.position);
+                            else {
+                                // handle line numbers
+                                if (c === 13) {
+                                    state.currentLineNumber++;
+                                }
+                                else if (c === 10 && prev !== 13) {
+                                    state.currentLineNumber++;
+                                }
+                                prev = c;
+                                ++pos;
+                            }
+                        }
+                        state.position = pos;
+                        return prev;
+                    }
+                    /**
+                     * Skips until \n or \r occurs -- therefore the newlines get handled by the "skipWhitespace" function.
+                     */
+                    function skipCommentLine(state) {
+                        while (state.position < state.length) {
+                            var c = state.data.charCodeAt(state.position);
+                            if (c === 10 || c === 13) {
+                                return;
+                            }
+                            ++state.position;
+                        }
+                    }
+                    /**
+                     * Skips all the whitespace - space, tab, newline, CR
+                     * Handles incrementing line count.
+                     */
+                    function skipWhitespace(state) {
+                        var prev = 10;
+                        while (state.position < state.length) {
+                            var c = state.data.charCodeAt(state.position);
                             switch (c) {
-                                case 35:
-                                    this.skipCommentLine();
-                                    this.currentTokenType = 5 /* Comment */;
+                                case 9: // '\t'
+                                case 32:
+                                    prev = c;
+                                    ++state.position;
                                     break;
-                                case 34: // ", escaped value
-                                case 39:
-                                    this.eatEscaped(c);
-                                    this.currentTokenType = 3 /* Value */;
+                                case 10:
+                                    // handle \r\n
+                                    if (prev !== 13) {
+                                        ++state.currentLineNumber;
+                                    }
+                                    prev = c;
+                                    ++state.position;
                                     break;
-                                case 59:
-                                    // multiline value must start at the beginning of the line.
-                                    if (prev === 10 || prev === 13) {
-                                        this.eatMultiline();
-                                    }
-                                    else {
-                                        this.eatValue();
-                                    }
-                                    this.currentTokenType = 3 /* Value */;
+                                case 13:
+                                    prev = c;
+                                    ++state.position;
+                                    ++state.currentLineNumber;
                                     break;
                                 default:
-                                    this.eatValue();
-                                    // escaped is always Value
-                                    if (this.isEscaped) {
-                                        this.currentTokenType = 3 /* Value */;
-                                    }
-                                    else if (this.data.charCodeAt(this.currentTokenStart) === 95) {
-                                        this.currentTokenType = 4 /* ColumnName */;
-                                    }
-                                    else if (this.currentTokenEnd - this.currentTokenStart >= 5 && this.data.charCodeAt(this.currentTokenStart + 4) === 95) {
-                                        if (this.isData())
-                                            this.currentTokenType = 0 /* Data */;
-                                        else if (this.isSave())
-                                            this.currentTokenType = 1 /* Save */;
-                                        else if (this.isLoop())
-                                            this.currentTokenType = 2 /* Loop */;
-                                        else
-                                            this.currentTokenType = 3 /* Value */;
-                                    }
-                                    else {
-                                        this.currentTokenType = 3 /* Value */;
-                                    }
-                                    break;
+                                    return prev;
                             }
-                        };
-                        /**
-                         * Moves to the next non-comment token.
-                         */
-                        CifTokenizer.prototype.moveNext = function () {
-                            this.moveNextInternal();
-                            while (this.currentTokenType === 5 /* Comment */)
-                                this.moveNextInternal();
-                        };
-                        return CifTokenizer;
-                    }());
-                    /**
-                     * mmCIF parser.
-                     *
-                     * Trying to be as close to the specification http://www.iucr.org/resources/cif/spec/version1.1/cifsyntax
-                     *
-                     * Differences I'm aware of:
-                     * - Except keywords (data_, loop_, save_) everything is case sensitive.
-                     * - The tokens . and ? are treated the same as the values '.' and '?'.
-                     * - Ignores \ in the multiline values:
-                     *     ;abc\
-                     *     efg
-                     *     ;
-                     *   should have the value 'abcefg' but will have the value 'abc\\nefg' instead.
-                     *   Post processing of this is left to the consumer of the data.
-                     * - Similarly, things like punctuation (\', ..) are left to be processed by the user if needed.
-                     *
-                     */
-                    var Parser = (function () {
-                        function Parser() {
                         }
-                        /**
-                         * Reads a category containing a single row.
-                         */
-                        Parser.handleSingle = function (tokenizer, block) {
-                            var nsStart = tokenizer.currentTokenStart, nsEnd = tokenizer.getNamespaceEnd(), name = tokenizer.getNamespace(nsEnd), column, columns = [], tokens = new Formats.TokenIndexBuilder(512), tokenCount = 0;
-                            while (tokenizer.currentTokenType === 4 /* ColumnName */ && tokenizer.isNamespace(nsStart, nsEnd)) {
-                                column = tokenizer.getTokenString();
-                                tokenizer.moveNext();
-                                if (tokenizer.currentTokenType !== 3 /* Value */) {
-                                    return {
-                                        hasError: true,
-                                        errorLine: tokenizer.currentLineNumber,
-                                        errorMessage: "Expected value."
-                                    };
+                        return prev;
+                    }
+                    function isData(state) {
+                        // here we already assume the 5th char is _ and that the length >= 5
+                        // d/D
+                        var c = state.data.charCodeAt(state.currentTokenStart);
+                        if (c !== 68 && c !== 100)
+                            return false;
+                        // a/A
+                        c = state.data.charCodeAt(state.currentTokenStart + 1);
+                        if (c !== 65 && c !== 97)
+                            return false;
+                        // t/t
+                        c = state.data.charCodeAt(state.currentTokenStart + 2);
+                        if (c !== 84 && c !== 116)
+                            return false;
+                        // a/A
+                        c = state.data.charCodeAt(state.currentTokenStart + 3);
+                        if (c !== 65 && c !== 97)
+                            return false;
+                        return true;
+                    }
+                    function isSave(state) {
+                        // here we already assume the 5th char is _ and that the length >= 5
+                        // s/S
+                        var c = state.data.charCodeAt(state.currentTokenStart);
+                        if (c !== 83 && c !== 115)
+                            return false;
+                        // a/A
+                        c = state.data.charCodeAt(state.currentTokenStart + 1);
+                        if (c !== 65 && c !== 97)
+                            return false;
+                        // v/V
+                        c = state.data.charCodeAt(state.currentTokenStart + 2);
+                        if (c !== 86 && c !== 118)
+                            return false;
+                        // e/E
+                        c = state.data.charCodeAt(state.currentTokenStart + 3);
+                        if (c !== 69 && c !== 101)
+                            return false;
+                        return true;
+                    }
+                    function isLoop(state) {
+                        // here we already assume the 5th char is _ and that the length >= 5
+                        if (state.currentTokenEnd - state.currentTokenStart !== 5)
+                            return false;
+                        // l/L
+                        var c = state.data.charCodeAt(state.currentTokenStart);
+                        if (c !== 76 && c !== 108)
+                            return false;
+                        // o/O
+                        c = state.data.charCodeAt(state.currentTokenStart + 1);
+                        if (c !== 79 && c !== 111)
+                            return false;
+                        // o/O
+                        c = state.data.charCodeAt(state.currentTokenStart + 2);
+                        if (c !== 79 && c !== 111)
+                            return false;
+                        // p/P
+                        c = state.data.charCodeAt(state.currentTokenStart + 3);
+                        if (c !== 80 && c !== 112)
+                            return false;
+                        return true;
+                    }
+                    /**
+                     * Checks if the current token shares the namespace with string at <start,end).
+                     */
+                    function isNamespace(state, start, end) {
+                        var i, nsLen = end - start, offset = state.currentTokenStart - start, tokenLen = state.currentTokenEnd - state.currentTokenStart;
+                        if (tokenLen < nsLen)
+                            return false;
+                        for (i = start; i < end; ++i) {
+                            if (state.data.charCodeAt(i) !== state.data.charCodeAt(i + offset))
+                                return false;
+                        }
+                        if (nsLen === tokenLen)
+                            return true;
+                        if (state.data.charCodeAt(i + offset) === 46) {
+                            return true;
+                        }
+                        return false;
+                    }
+                    /**
+                     * Returns the index of '.' in the current token. If no '.' is present, returns currentTokenEnd.
+                     */
+                    function getNamespaceEnd(state) {
+                        var i;
+                        for (i = state.currentTokenStart; i < state.currentTokenEnd; ++i) {
+                            if (state.data.charCodeAt(i) === 46)
+                                return i;
+                        }
+                        return i;
+                    }
+                    /**
+                     * Get the namespace string. endIndex is obtained by the getNamespaceEnd() function.
+                     */
+                    function getNamespace(state, endIndex) {
+                        return state.data.substring(state.currentTokenStart, endIndex);
+                    }
+                    /**
+                     * String representation of the current token.
+                     */
+                    function getTokenString(state) {
+                        return state.data.substring(state.currentTokenStart, state.currentTokenEnd);
+                    }
+                    /**
+                     * Move to the next token.
+                     */
+                    function moveNextInternal(state) {
+                        var prev = skipWhitespace(state);
+                        if (state.position >= state.length) {
+                            state.currentTokenType = 6 /* End */;
+                            return;
+                        }
+                        state.currentTokenStart = state.position;
+                        state.currentTokenEnd = state.position;
+                        state.isEscaped = false;
+                        var c = state.data.charCodeAt(state.position);
+                        switch (c) {
+                            case 35:
+                                skipCommentLine(state);
+                                state.currentTokenType = 5 /* Comment */;
+                                break;
+                            case 34: // ", escaped value
+                            case 39:
+                                eatEscaped(state, c);
+                                state.currentTokenType = 3 /* Value */;
+                                break;
+                            case 59:
+                                // multiline value must start at the beginning of the line.
+                                if (prev === 10 || prev === 13) {
+                                    eatMultiline(state);
                                 }
-                                columns[columns.length] = column;
-                                tokens.addToken(tokenizer.currentTokenStart, tokenizer.currentTokenEnd);
-                                tokenCount++;
-                                tokenizer.moveNext();
-                            }
-                            block.addCategory(new Text.Category(block.data, name, nsStart, tokenizer.currentTokenStart, columns, tokens.tokens, tokenCount));
-                            return {
-                                hasError: false,
-                                errorLine: 0,
-                                errorMessage: ""
-                            };
+                                else {
+                                    eatValue(state);
+                                }
+                                state.currentTokenType = 3 /* Value */;
+                                break;
+                            default:
+                                eatValue(state);
+                                // escaped is always Value
+                                if (state.isEscaped) {
+                                    state.currentTokenType = 3 /* Value */;
+                                }
+                                else if (state.data.charCodeAt(state.currentTokenStart) === 95) {
+                                    state.currentTokenType = 4 /* ColumnName */;
+                                }
+                                else if (state.currentTokenEnd - state.currentTokenStart >= 5 && state.data.charCodeAt(state.currentTokenStart + 4) === 95) {
+                                    if (isData(state))
+                                        state.currentTokenType = 0 /* Data */;
+                                    else if (isSave(state))
+                                        state.currentTokenType = 1 /* Save */;
+                                    else if (isLoop(state))
+                                        state.currentTokenType = 2 /* Loop */;
+                                    else
+                                        state.currentTokenType = 3 /* Value */;
+                                }
+                                else {
+                                    state.currentTokenType = 3 /* Value */;
+                                }
+                                break;
+                        }
+                    }
+                    /**
+                     * Moves to the next non-comment token.
+                     */
+                    function moveNext(state) {
+                        moveNextInternal(state);
+                        while (state.currentTokenType === 5 /* Comment */)
+                            moveNextInternal(state);
+                    }
+                    function createTokenizer(data) {
+                        return {
+                            data: data,
+                            length: data.length,
+                            position: 0,
+                            currentTokenStart: 0,
+                            currentTokenEnd: 0,
+                            currentTokenType: 6 /* End */,
+                            currentLineNumber: 1,
+                            isEscaped: false
                         };
-                        /**
-                         * Reads a loop.
-                         */
-                        Parser.handleLoop = function (tokenizer, block) {
-                            var start = tokenizer.currentTokenStart, loopLine = tokenizer.currentLineNumber;
-                            tokenizer.moveNext();
-                            var name = tokenizer.getNamespace(tokenizer.getNamespaceEnd()), columns = [], tokens = new Formats.TokenIndexBuilder(name === "_atom_site" ? (block.data.length / 1.85) | 0 : 1024), tokenCount = 0;
-                            while (tokenizer.currentTokenType === 4 /* ColumnName */) {
-                                columns[columns.length] = tokenizer.getTokenString();
-                                tokenizer.moveNext();
-                            }
-                            while (tokenizer.currentTokenType === 3 /* Value */) {
-                                tokens.addToken(tokenizer.currentTokenStart, tokenizer.currentTokenEnd);
-                                tokenCount++;
-                                tokenizer.moveNext();
-                            }
-                            if (tokenCount % columns.length !== 0) {
+                    }
+                    /**
+                     * Reads a category containing a single row.
+                     */
+                    function handleSingle(tokenizer, block) {
+                        var nsStart = tokenizer.currentTokenStart, nsEnd = getNamespaceEnd(tokenizer), name = getNamespace(tokenizer, nsEnd), column, columns = [], tokens = Formats.TokenIndexBuilder.create(512), tokenCount = 0;
+                        while (tokenizer.currentTokenType === 4 /* ColumnName */ && isNamespace(tokenizer, nsStart, nsEnd)) {
+                            column = getTokenString(tokenizer);
+                            moveNext(tokenizer);
+                            if (tokenizer.currentTokenType !== 3 /* Value */) {
                                 return {
                                     hasError: true,
                                     errorLine: tokenizer.currentLineNumber,
-                                    errorMessage: "The number of values for loop starting at line " + loopLine + " is not a multiple of the number of columns."
+                                    errorMessage: "Expected value."
                                 };
                             }
-                            block.addCategory(new Text.Category(block.data, name, start, tokenizer.currentTokenStart, columns, tokens.tokens, tokenCount));
+                            columns[columns.length] = column;
+                            Formats.TokenIndexBuilder.addToken(tokens, tokenizer.currentTokenStart, tokenizer.currentTokenEnd);
+                            tokenCount++;
+                            moveNext(tokenizer);
+                        }
+                        block.addCategory(new Text.Category(block.data, name, nsStart, tokenizer.currentTokenStart, columns, tokens.tokens, tokenCount));
+                        return {
+                            hasError: false,
+                            errorLine: 0,
+                            errorMessage: ""
+                        };
+                    }
+                    /**
+                     * Reads a loop.
+                     */
+                    function handleLoop(tokenizer, block) {
+                        var start = tokenizer.currentTokenStart, loopLine = tokenizer.currentLineNumber;
+                        moveNext(tokenizer);
+                        var name = getNamespace(tokenizer, getNamespaceEnd(tokenizer)), columns = [], tokens = Formats.TokenIndexBuilder.create(name === "_atom_site" ? (block.data.length / 1.85) | 0 : 1024), tokenCount = 0;
+                        while (tokenizer.currentTokenType === 4 /* ColumnName */) {
+                            columns[columns.length] = getTokenString(tokenizer);
+                            moveNext(tokenizer);
+                        }
+                        while (tokenizer.currentTokenType === 3 /* Value */) {
+                            Formats.TokenIndexBuilder.addToken(tokens, tokenizer.currentTokenStart, tokenizer.currentTokenEnd);
+                            tokenCount++;
+                            moveNext(tokenizer);
+                        }
+                        if (tokenCount % columns.length !== 0) {
                             return {
-                                hasError: false,
-                                errorLine: 0,
-                                errorMessage: ""
+                                hasError: true,
+                                errorLine: tokenizer.currentLineNumber,
+                                errorMessage: "The number of values for loop starting at line " + loopLine + " is not a multiple of the number of columns."
                             };
+                        }
+                        block.addCategory(new Text.Category(block.data, name, start, tokenizer.currentTokenStart, columns, tokens.tokens, tokenCount));
+                        return {
+                            hasError: false,
+                            errorLine: 0,
+                            errorMessage: ""
                         };
-                        /**
-                         * Creates an error result.
-                         */
-                        Parser.error = function (line, message) {
-                            return Formats.ParserResult.error(message, line);
-                        };
-                        /**
-                         * Creates a data result.
-                         */
-                        Parser.result = function (data) {
-                            return Formats.ParserResult.success(data);
-                        };
-                        /**
-                         * Parses an mmCIF file.
-                         *
-                         * @returns CifParserResult wrapper of the result.
-                         */
-                        Parser.parse = function (data) {
-                            var tokenizer = new CifTokenizer(data), cat, id, file = new Text.File(data), block = new Text.DataBlock(data, "default"), saveFrame = new Text.DataBlock(data, "empty"), inSaveFrame = false, blockSaveFrames;
-                            tokenizer.moveNext();
-                            while (tokenizer.currentTokenType !== 6 /* End */) {
-                                var token = tokenizer.currentTokenType;
-                                // Data block
-                                if (token === 0 /* Data */) {
-                                    if (inSaveFrame) {
-                                        return Parser.error(tokenizer.currentLineNumber, "Unexpected data block inside a save frame.");
-                                    }
-                                    if (block.categories.length > 0) {
-                                        file.dataBlocks.push(block);
-                                    }
-                                    block = new Text.DataBlock(data, data.substring(tokenizer.currentTokenStart + 5, tokenizer.currentTokenEnd));
-                                    tokenizer.moveNext();
+                    }
+                    /**
+                     * Creates an error result.
+                     */
+                    function error(line, message) {
+                        return Formats.ParserResult.error(message, line);
+                    }
+                    /**
+                     * Creates a data result.
+                     */
+                    function result(data) {
+                        return Formats.ParserResult.success(data);
+                    }
+                    /**
+                     * Parses an mmCIF file.
+                     *
+                     * @returns CifParserResult wrapper of the result.
+                     */
+                    function parseInternal(data) {
+                        var tokenizer = createTokenizer(data), cat, id, file = new Text.File(data), block = new Text.DataBlock(data, "default"), saveFrame = new Text.DataBlock(data, "empty"), inSaveFrame = false, blockSaveFrames;
+                        moveNext(tokenizer);
+                        while (tokenizer.currentTokenType !== 6 /* End */) {
+                            var token = tokenizer.currentTokenType;
+                            // Data block
+                            if (token === 0 /* Data */) {
+                                if (inSaveFrame) {
+                                    return error(tokenizer.currentLineNumber, "Unexpected data block inside a save frame.");
                                 }
-                                else if (token === 1 /* Save */) {
-                                    id = data.substring(tokenizer.currentTokenStart + 5, tokenizer.currentTokenEnd);
-                                    if (id.length === 0) {
-                                        if (saveFrame.categories.length > 0) {
-                                            blockSaveFrames = block.additionalData["saveFrames"];
-                                            if (!blockSaveFrames) {
-                                                blockSaveFrames = [];
-                                                block.additionalData["saveFrames"] = blockSaveFrames;
-                                            }
-                                            blockSaveFrames[blockSaveFrames.length] = saveFrame;
+                                if (block.categories.length > 0) {
+                                    file.dataBlocks.push(block);
+                                }
+                                block = new Text.DataBlock(data, data.substring(tokenizer.currentTokenStart + 5, tokenizer.currentTokenEnd));
+                                moveNext(tokenizer);
+                            }
+                            else if (token === 1 /* Save */) {
+                                id = data.substring(tokenizer.currentTokenStart + 5, tokenizer.currentTokenEnd);
+                                if (id.length === 0) {
+                                    if (saveFrame.categories.length > 0) {
+                                        blockSaveFrames = block.additionalData["saveFrames"];
+                                        if (!blockSaveFrames) {
+                                            blockSaveFrames = [];
+                                            block.additionalData["saveFrames"] = blockSaveFrames;
                                         }
-                                        inSaveFrame = false;
+                                        blockSaveFrames[blockSaveFrames.length] = saveFrame;
                                     }
-                                    else {
-                                        if (inSaveFrame) {
-                                            return Parser.error(tokenizer.currentLineNumber, "Save frames cannot be nested.");
-                                        }
-                                        inSaveFrame = true;
-                                        saveFrame = new Text.DataBlock(data, id);
-                                    }
-                                    tokenizer.moveNext();
-                                }
-                                else if (token === 2 /* Loop */) {
-                                    cat = Parser.handleLoop(tokenizer, inSaveFrame ? saveFrame : block);
-                                    if (cat.hasError) {
-                                        return Parser.error(cat.errorLine, cat.errorMessage);
-                                    }
-                                }
-                                else if (token === 4 /* ColumnName */) {
-                                    cat = Parser.handleSingle(tokenizer, inSaveFrame ? saveFrame : block);
-                                    if (cat.hasError) {
-                                        return Parser.error(cat.errorLine, cat.errorMessage);
-                                    }
+                                    inSaveFrame = false;
                                 }
                                 else {
-                                    return Parser.error(tokenizer.currentLineNumber, "Unexpected token. Expected data_, loop_, or data name.");
+                                    if (inSaveFrame) {
+                                        return error(tokenizer.currentLineNumber, "Save frames cannot be nested.");
+                                    }
+                                    inSaveFrame = true;
+                                    saveFrame = new Text.DataBlock(data, id);
+                                }
+                                moveNext(tokenizer);
+                            }
+                            else if (token === 2 /* Loop */) {
+                                cat = handleLoop(tokenizer, inSaveFrame ? saveFrame : block);
+                                if (cat.hasError) {
+                                    return error(cat.errorLine, cat.errorMessage);
                                 }
                             }
-                            // Check if the latest save frame was closed.
-                            if (inSaveFrame) {
-                                return Parser.error(tokenizer.currentLineNumber, "Unfinished save frame (`" + saveFrame.header + "`).");
+                            else if (token === 4 /* ColumnName */) {
+                                cat = handleSingle(tokenizer, inSaveFrame ? saveFrame : block);
+                                if (cat.hasError) {
+                                    return error(cat.errorLine, cat.errorMessage);
+                                }
                             }
-                            if (block.categories.length > 0) {
-                                file.dataBlocks.push(block);
+                            else {
+                                return error(tokenizer.currentLineNumber, "Unexpected token. Expected data_, loop_, or data name.");
                             }
-                            return Parser.result(file);
-                        };
-                        return Parser;
-                    }());
+                        }
+                        // Check if the latest save frame was closed.
+                        if (inSaveFrame) {
+                            return error(tokenizer.currentLineNumber, "Unfinished save frame (`" + saveFrame.header + "`).");
+                        }
+                        if (block.categories.length > 0) {
+                            file.dataBlocks.push(block);
+                        }
+                        return result(file);
+                    }
                     function parse(data) {
-                        return Parser.parse(data);
+                        return parseInternal(data);
                     }
                     Text.parse = parse;
                 })(Text = CIF.Text || (CIF.Text = {}));
@@ -10005,14 +10481,16 @@ var LiteMol;
                         MaskedNumericColumn.prototype.getValuePresence = function (row) { return this.mask[row]; };
                         return MaskedNumericColumn;
                     }());
+                    var fastParseInt = Core.Utils.FastNumberParsers.parseInt;
+                    var fastParseFloat = Core.Utils.FastNumberParsers.parseFloat;
                     var StringColumn = (function () {
                         function StringColumn(data) {
                             this.data = data;
                             this.isDefined = true;
                         }
                         StringColumn.prototype.getString = function (row) { return this.data[row]; };
-                        StringColumn.prototype.getInteger = function (row) { var v = this.data[row]; return Core.Utils.FastNumberParsers.parseInt(v, 0, v.length); };
-                        StringColumn.prototype.getFloat = function (row) { var v = this.data[row]; return Core.Utils.FastNumberParsers.parseFloat(v, 0, v.length); };
+                        StringColumn.prototype.getInteger = function (row) { var v = this.data[row]; return fastParseInt(v, 0, v.length); };
+                        StringColumn.prototype.getFloat = function (row) { var v = this.data[row]; return fastParseFloat(v, 0, v.length); };
                         StringColumn.prototype.stringEquals = function (row, value) { return this.data[row] === value; };
                         StringColumn.prototype.areValuesEqual = function (rowA, rowB) { return this.data[rowA] === this.data[rowB]; };
                         StringColumn.prototype.getValuePresence = function (row) { return 0 /* Present */; };
@@ -10026,9 +10504,9 @@ var LiteMol;
                         }
                         MaskedStringColumn.prototype.getString = function (row) { return this.mask[row] === 0 /* Present */ ? this.data[row] : null; };
                         MaskedStringColumn.prototype.getInteger = function (row) { if (this.mask[row] !== 0 /* Present */)
-                            return 0; var v = this.data[row]; return Core.Utils.FastNumberParsers.parseInt(v, 0, v.length); };
+                            return 0; var v = this.data[row]; return fastParseInt(v || '', 0, (v || '').length); };
                         MaskedStringColumn.prototype.getFloat = function (row) { if (this.mask[row] !== 0 /* Present */)
-                            return 0; var v = this.data[row]; return Core.Utils.FastNumberParsers.parseFloat(v, 0, v.length); };
+                            return 0; var v = this.data[row]; return fastParseFloat(v || '', 0, (v || '').length); };
                         MaskedStringColumn.prototype.stringEquals = function (row, value) { return this.data[row] === value; };
                         MaskedStringColumn.prototype.areValuesEqual = function (rowA, rowB) { return this.data[rowA] === this.data[rowB]; };
                         MaskedStringColumn.prototype.getValuePresence = function (row) { return this.mask[row]; };
@@ -11592,59 +12070,59 @@ var LiteMol;
                             //--------------------------------------------------------------------------------
                             // 1 -  6        Record name     "ATOM  "                                            
                             this.trim(start, start + 6);
-                            tokens.addToken(this.trimmedToken.start, this.trimmedToken.end);
+                            Formats.TokenIndexBuilder.addToken(tokens, this.trimmedToken.start, this.trimmedToken.end);
                             // 7 - 11        Integer         Atom serial number.                   
                             start = startPos + 6;
                             this.trim(start, start + 5);
-                            tokens.addToken(this.trimmedToken.start, this.trimmedToken.end);
+                            Formats.TokenIndexBuilder.addToken(tokens, this.trimmedToken.start, this.trimmedToken.end);
                             //13 - 16        Atom            Atom name.          
                             start = startPos + 12;
                             this.trim(start, start + 4);
-                            tokens.addToken(this.trimmedToken.start, this.trimmedToken.end);
+                            Formats.TokenIndexBuilder.addToken(tokens, this.trimmedToken.start, this.trimmedToken.end);
                             //17             Character       Alternate location indicator. 
                             if (this.data.charCodeAt(startPos + 16) === 32) {
-                                tokens.addToken(0, 0);
+                                Formats.TokenIndexBuilder.addToken(tokens, 0, 0);
                             }
                             else {
-                                tokens.addToken(startPos + 16, startPos + 17);
+                                Formats.TokenIndexBuilder.addToken(tokens, startPos + 16, startPos + 17);
                             }
                             //18 - 20        Residue name    Residue name.       
                             start = startPos + 17;
                             this.trim(start, start + 3);
-                            tokens.addToken(this.trimmedToken.start, this.trimmedToken.end);
+                            Formats.TokenIndexBuilder.addToken(tokens, this.trimmedToken.start, this.trimmedToken.end);
                             //22             Character       Chain identifier.         
-                            tokens.addToken(startPos + 21, startPos + 22);
+                            Formats.TokenIndexBuilder.addToken(tokens, startPos + 21, startPos + 22);
                             //23 - 26        Integer         Residue sequence number.              
                             start = startPos + 22;
                             this.trim(start, start + 4);
-                            tokens.addToken(this.trimmedToken.start, this.trimmedToken.end);
+                            Formats.TokenIndexBuilder.addToken(tokens, this.trimmedToken.start, this.trimmedToken.end);
                             //27             AChar           Code for insertion of residues.      
                             if (this.data.charCodeAt(startPos + 26) === 32) {
-                                tokens.addToken(0, 0);
+                                Formats.TokenIndexBuilder.addToken(tokens, 0, 0);
                             }
                             else {
-                                tokens.addToken(startPos + 26, startPos + 27);
+                                Formats.TokenIndexBuilder.addToken(tokens, startPos + 26, startPos + 27);
                             }
                             //31 - 38        Real(8.3)       Orthogonal coordinates for X in Angstroms.   
                             start = startPos + 30;
                             this.trim(start, start + 8);
-                            tokens.addToken(this.trimmedToken.start, this.trimmedToken.end);
+                            Formats.TokenIndexBuilder.addToken(tokens, this.trimmedToken.start, this.trimmedToken.end);
                             //39 - 46        Real(8.3)       Orthogonal coordinates for Y in Angstroms.                            
                             start = startPos + 38;
                             this.trim(start, start + 8);
-                            tokens.addToken(this.trimmedToken.start, this.trimmedToken.end);
+                            Formats.TokenIndexBuilder.addToken(tokens, this.trimmedToken.start, this.trimmedToken.end);
                             //47 - 54        Real(8.3)       Orthogonal coordinates for Z in Angstroms.        
                             start = startPos + 46;
                             this.trim(start, start + 8);
-                            tokens.addToken(this.trimmedToken.start, this.trimmedToken.end);
+                            Formats.TokenIndexBuilder.addToken(tokens, this.trimmedToken.start, this.trimmedToken.end);
                             //55 - 60        Real(6.2)       Occupancy.       
                             start = startPos + 54;
                             this.trim(start, start + 6);
-                            tokens.addToken(this.trimmedToken.start, this.trimmedToken.end);
+                            Formats.TokenIndexBuilder.addToken(tokens, this.trimmedToken.start, this.trimmedToken.end);
                             //61 - 66        Real(6.2)       Temperature factor (Default = 0.0).                   
                             start = startPos + 60;
                             this.trim(start, start + 6);
-                            tokens.addToken(this.trimmedToken.start, this.trimmedToken.end);
+                            Formats.TokenIndexBuilder.addToken(tokens, this.trimmedToken.start, this.trimmedToken.end);
                             //73 - 76        LString(4)      Segment identifier, left-justified.   
                             // ignored
                             //77 - 78        LString(2)      Element symbol, right-justified.   
@@ -11652,10 +12130,10 @@ var LiteMol;
                                 start = startPos + 76;
                                 this.trim(start, start + 2);
                                 if (this.trimmedToken.start < this.trimmedToken.end) {
-                                    tokens.addToken(this.trimmedToken.start, this.trimmedToken.end);
+                                    Formats.TokenIndexBuilder.addToken(tokens, this.trimmedToken.start, this.trimmedToken.end);
                                 }
                                 else {
-                                    tokens.addToken(startPos + 12, startPos + 13);
+                                    Formats.TokenIndexBuilder.addToken(tokens, startPos + 12, startPos + 13);
                                 }
                             }
                             //79 - 80        LString(2)      Charge on the atom.      
@@ -11678,7 +12156,7 @@ var LiteMol;
                         Parser.tokenize = function (id, data) {
                             var tokenizer = new Tokenizer(data);
                             var length = data.length;
-                            var modelAtomTokens = new Formats.TokenIndexBuilder(4096); //2 * 14 * this.data.length / 78);
+                            var modelAtomTokens = Formats.TokenIndexBuilder.create(4096); //2 * 14 * this.data.length / 78);
                             var atomCount = 0;
                             var models = [];
                             var cryst = void 0;
@@ -11740,7 +12218,7 @@ var LiteMol;
                                             tokenizer.trim(start, end);
                                             modelIdToken = { start: tokenizer.trimmedToken.start, end: tokenizer.trimmedToken.end };
                                             if (atomCount > 0 || !modelAtomTokens) {
-                                                modelAtomTokens = new Formats.TokenIndexBuilder(4096);
+                                                modelAtomTokens = Formats.TokenIndexBuilder.create(4096);
                                             }
                                             atomCount = 0;
                                         }
@@ -11827,13 +12305,13 @@ var LiteMol;
                             lines: lines,
                             currentLine: 4,
                             error: void 0,
-                            stringPool: new Formats.ShortStringPool()
+                            stringPool: Formats.ShortStringPool.create()
                         };
                     }
                     function readAtom(i, state) {
                         var line = state.lines[state.currentLine];
                         var atoms = state.atoms;
-                        var es = state.stringPool.getString(line.substr(31, 3).trim());
+                        var es = Formats.ShortStringPool.get(state.stringPool, line.substr(31, 3).trim());
                         atoms.id[i] = i;
                         atoms.elementSymbol[i] = es;
                         atoms.name[i] = es;
@@ -12108,34 +12586,29 @@ var LiteMol;
                     return Field3DZYX;
                 }());
                 Density.Field3DZYX = Field3DZYX;
-                /**
-                 * Represents electron density data.
-                 */
-                var Data = (function () {
-                    function Data(cellSize, cellAngles, origin, hasSkewMatrix, skewMatrix, data, dataDimensions, basis, startOffset, valuesInfo, attributes) {
-                        /**
-                         * Are the data normalized?
-                         */
-                        this.isNormalized = false;
-                        this.cellSize = cellSize;
-                        this.cellAngles = cellAngles;
-                        this.origin = origin;
-                        this.hasSkewMatrix = hasSkewMatrix;
-                        this.skewMatrix = skewMatrix;
-                        this.data = data;
-                        this.basis = basis;
-                        this.startOffset = startOffset;
-                        this.dataDimensions = dataDimensions;
-                        this.valuesInfo = valuesInfo;
-                        this.attributes = attributes ? attributes : {};
+                var Data;
+                (function (Data) {
+                    function create(cellSize, cellAngles, origin, hasSkewMatrix, skewMatrix, data, dataDimensions, basis, startOffset, valuesInfo, attributes) {
+                        return {
+                            cellSize: cellSize,
+                            cellAngles: cellAngles,
+                            origin: origin,
+                            hasSkewMatrix: hasSkewMatrix,
+                            skewMatrix: skewMatrix,
+                            data: data,
+                            basis: basis,
+                            startOffset: startOffset,
+                            dataDimensions: dataDimensions,
+                            valuesInfo: valuesInfo,
+                            attributes: attributes ? attributes : {},
+                            isNormalized: false
+                        };
                     }
-                    /**
-                     * If not already normalized, normalize the data.
-                     */
-                    Data.prototype.normalize = function () {
-                        if (this.isNormalized)
+                    Data.create = create;
+                    function normalize(densityData) {
+                        if (densityData.isNormalized)
                             return;
-                        var data = this.data, _a = this.valuesInfo, mean = _a.mean, sigma = _a.sigma;
+                        var data = densityData.data, _a = densityData.valuesInfo, mean = _a.mean, sigma = _a.sigma;
                         var min = Number.POSITIVE_INFINITY, max = Number.NEGATIVE_INFINITY;
                         for (var i = 0, _l = data.length; i < _l; i++) {
                             var v = (data.getAt(i) - mean) / sigma;
@@ -12145,17 +12618,15 @@ var LiteMol;
                             if (v > max)
                                 max = v;
                         }
-                        this.valuesInfo.min = min;
-                        this.valuesInfo.max = max;
-                        this.isNormalized = true;
-                    };
-                    /**
-                     * If normalized, de-normalize the data.
-                     */
-                    Data.prototype.denormalize = function () {
-                        if (!this.isNormalized)
+                        densityData.valuesInfo.min = min;
+                        densityData.valuesInfo.max = max;
+                        densityData.isNormalized = true;
+                    }
+                    Data.normalize = normalize;
+                    function denormalize(densityData) {
+                        if (!densityData.isNormalized)
                             return;
-                        var data = this.data, _a = this.valuesInfo, mean = _a.mean, sigma = _a.sigma;
+                        var data = densityData.data, _a = densityData.valuesInfo, mean = _a.mean, sigma = _a.sigma;
                         var min = Number.POSITIVE_INFINITY, max = Number.NEGATIVE_INFINITY;
                         for (var i = 0, _l = data.length; i < _l; i++) {
                             var v = sigma * data.getAt(i) + mean;
@@ -12165,13 +12636,12 @@ var LiteMol;
                             if (v > max)
                                 max = v;
                         }
-                        this.valuesInfo.min = min;
-                        this.valuesInfo.max = max;
-                        this.isNormalized = false;
-                    };
-                    return Data;
-                }());
-                Density.Data = Data;
+                        densityData.valuesInfo.min = min;
+                        densityData.valuesInfo.max = max;
+                        densityData.isNormalized = false;
+                    }
+                    Data.denormalize = denormalize;
+                })(Data = Density.Data || (Density.Data = {}));
             })(Density = Formats.Density || (Formats.Density = {}));
         })(Formats = Core.Formats || (Core.Formats = {}));
     })(Core = LiteMol.Core || (LiteMol.Core = {}));
@@ -12321,7 +12791,7 @@ var LiteMol;
                                 ? readRawData1(new Float32Array(buffer, headerSize + header.symBytes, extent[0] * extent[1] * extent[2]), endian, extent, header.extent, indices, header.mean)
                                 : readRawData(new DataView(buffer, headerSize + header.symBytes), endian, extent, header.extent, indices, header.mean);
                             var field = new Density.Field3DZYX(rawData.data, extent);
-                            var data = new Density.Data(header.cellDimensions, header.cellAngles, origin, header.skewFlag !== 0, skewMatrix, field, extent, { x: xAxis, y: yAxis, z: zAxis }, [header.nxyzStart[indices[0]], header.nxyzStart[indices[1]], header.nxyzStart[indices[2]]], { min: header.min, max: header.max, mean: header.mean, sigma: rawData.sigma }, { spacegroupIndex: header.spacegroupNumber - 1 });
+                            var data = Density.Data.create(header.cellDimensions, header.cellAngles, origin, header.skewFlag !== 0, skewMatrix, field, extent, { x: xAxis, y: yAxis, z: zAxis }, [header.nxyzStart[indices[0]], header.nxyzStart[indices[1]], header.nxyzStart[indices[2]]], { min: header.min, max: header.max, mean: header.mean, sigma: rawData.sigma }, { spacegroupIndex: header.spacegroupNumber - 1 });
                             return Formats.ParserResult.success(data, warnings);
                         }
                         Parser.parse = parse;
@@ -12536,7 +13006,7 @@ var LiteMol;
                             endian = nativeEndian;
                             var rawData = readRawData(new Uint8Array(buffer, headerSize + header.symBytes), endian, extent, header.extent, indices, header.mean, header.prod, header.plus);
                             var field = new Density.Field3DZYX(rawData.data, extent);
-                            var data = new Density.Data(header.cellDimensions, header.cellAngles, origin, header.skewFlag !== 0, skewMatrix, field, extent, { x: xAxis, y: yAxis, z: zAxis }, [header.nxyzStart[indices[0]], header.nxyzStart[indices[1]], header.nxyzStart[indices[2]]], { min: rawData.minj, max: rawData.maxj, mean: rawData.meanj, sigma: rawData.sigma }, { prod: header.prod, plus: header.plus }); //! added attributes property to store additional information
+                            var data = Density.Data.create(header.cellDimensions, header.cellAngles, origin, header.skewFlag !== 0, skewMatrix, field, extent, { x: xAxis, y: yAxis, z: zAxis }, [header.nxyzStart[indices[0]], header.nxyzStart[indices[1]], header.nxyzStart[indices[2]]], { min: rawData.minj, max: rawData.maxj, mean: rawData.meanj, sigma: rawData.sigma }, { prod: header.prod, plus: header.plus }); //! added attributes property to store additional information
                             return Formats.ParserResult.success(data, warnings);
                         }
                         Parser.parse = parse;
@@ -12683,13 +13153,13 @@ var LiteMol;
                 /**
                  * Stores a 4x4 matrix in a column major (j * 4 + i indexing) format.
                  */
-                var Matrix4 = (function () {
-                    function Matrix4() {
-                    }
-                    Matrix4.empty = function () {
+                var Matrix4;
+                (function (Matrix4) {
+                    function empty() {
                         return makeArray(16);
-                    };
-                    Matrix4.identity = function () {
+                    }
+                    Matrix4.empty = empty;
+                    function identity() {
                         var out = makeArray(16);
                         out[0] = 1;
                         out[1] = 0;
@@ -12708,8 +13178,9 @@ var LiteMol;
                         out[14] = 0;
                         out[15] = 1;
                         return out;
-                    };
-                    Matrix4.ofRows = function (rows) {
+                    }
+                    Matrix4.identity = identity;
+                    function ofRows(rows) {
                         var out = makeArray(16), i, j, r;
                         for (i = 0; i < 4; i++) {
                             r = rows[i];
@@ -12718,19 +13189,22 @@ var LiteMol;
                             }
                         }
                         return out;
-                    };
-                    Matrix4.areEqual = function (a, b, eps) {
+                    }
+                    Matrix4.ofRows = ofRows;
+                    function areEqual(a, b, eps) {
                         for (var i = 0; i < 16; i++) {
                             if (Math.abs(a[i] - b[i]) > eps) {
                                 return false;
                             }
                         }
                         return true;
-                    };
-                    Matrix4.setValue = function (a, i, j, value) {
+                    }
+                    Matrix4.areEqual = areEqual;
+                    function setValue(a, i, j, value) {
                         a[4 * j + i] = value;
-                    };
-                    Matrix4.copy = function (out, a) {
+                    }
+                    Matrix4.setValue = setValue;
+                    function copy(out, a) {
                         out[0] = a[0];
                         out[1] = a[1];
                         out[2] = a[2];
@@ -12748,11 +13222,13 @@ var LiteMol;
                         out[14] = a[14];
                         out[15] = a[15];
                         return out;
-                    };
-                    Matrix4.clone = function (a) {
+                    }
+                    Matrix4.copy = copy;
+                    function clone(a) {
                         return Matrix4.copy(Matrix4.empty(), a);
-                    };
-                    Matrix4.invert = function (out, a) {
+                    }
+                    Matrix4.clone = clone;
+                    function invert(out, a) {
                         var a00 = a[0], a01 = a[1], a02 = a[2], a03 = a[3], a10 = a[4], a11 = a[5], a12 = a[6], a13 = a[7], a20 = a[8], a21 = a[9], a22 = a[10], a23 = a[11], a30 = a[12], a31 = a[13], a32 = a[14], a33 = a[15], b00 = a00 * a11 - a01 * a10, b01 = a00 * a12 - a02 * a10, b02 = a00 * a13 - a03 * a10, b03 = a01 * a12 - a02 * a11, b04 = a01 * a13 - a03 * a11, b05 = a02 * a13 - a03 * a12, b06 = a20 * a31 - a21 * a30, b07 = a20 * a32 - a22 * a30, b08 = a20 * a33 - a23 * a30, b09 = a21 * a32 - a22 * a31, b10 = a21 * a33 - a23 * a31, b11 = a22 * a33 - a23 * a32, 
                         // Calculate the determinant
                         det = b00 * b11 - b01 * b10 + b02 * b09 + b03 * b08 - b04 * b07 + b05 * b06;
@@ -12777,8 +13253,9 @@ var LiteMol;
                         out[14] = (a31 * b01 - a30 * b03 - a32 * b00) * det;
                         out[15] = (a20 * b03 - a21 * b01 + a22 * b00) * det;
                         return out;
-                    };
-                    Matrix4.mul = function (out, a, b) {
+                    }
+                    Matrix4.invert = invert;
+                    function mul(out, a, b) {
                         var a00 = a[0], a01 = a[1], a02 = a[2], a03 = a[3], a10 = a[4], a11 = a[5], a12 = a[6], a13 = a[7], a20 = a[8], a21 = a[9], a22 = a[10], a23 = a[11], a30 = a[12], a31 = a[13], a32 = a[14], a33 = a[15];
                         // Cache only the current line of the second matrix
                         var b0 = b[0], b1 = b[1], b2 = b[2], b3 = b[3];
@@ -12811,8 +13288,9 @@ var LiteMol;
                         out[14] = b0 * a02 + b1 * a12 + b2 * a22 + b3 * a32;
                         out[15] = b0 * a03 + b1 * a13 + b2 * a23 + b3 * a33;
                         return out;
-                    };
-                    Matrix4.translate = function (out, a, v) {
+                    }
+                    Matrix4.mul = mul;
+                    function translate(out, a, v) {
                         var x = v[0], y = v[1], z = v[2], a00, a01, a02, a03, a10, a11, a12, a13, a20, a21, a22, a23;
                         if (a === out) {
                             out[12] = a[0] * x + a[4] * y + a[8] * z + a[12];
@@ -12851,8 +13329,9 @@ var LiteMol;
                             out[15] = a03 * x + a13 * y + a23 * z + a[15];
                         }
                         return out;
-                    };
-                    Matrix4.fromTranslation = function (out, v) {
+                    }
+                    Matrix4.translate = translate;
+                    function fromTranslation(out, v) {
                         out[0] = 1;
                         out[1] = 0;
                         out[2] = 0;
@@ -12870,16 +13349,18 @@ var LiteMol;
                         out[14] = v[2];
                         out[15] = 1;
                         return out;
-                    };
-                    Matrix4.transformVector3 = function (out, a, m) {
+                    }
+                    Matrix4.fromTranslation = fromTranslation;
+                    function transformVector3(out, a, m) {
                         var x = a.x, y = a.y, z = a.z;
                         out.x = m[0] * x + m[4] * y + m[8] * z + m[12];
                         out.y = m[1] * x + m[5] * y + m[9] * z + m[13];
                         out.z = m[2] * x + m[6] * y + m[10] * z + m[14];
                         //out[3] = m[3] * x + m[7] * y + m[11] * z + m[15] * w;
                         return out;
-                    };
-                    Matrix4.makeTable = function (m) {
+                    }
+                    Matrix4.transformVector3 = transformVector3;
+                    function makeTable(m) {
                         var ret = '';
                         for (var i = 0; i < 4; i++) {
                             for (var j = 0; j < 4; j++) {
@@ -12891,76 +13372,82 @@ var LiteMol;
                                 ret += '\n';
                         }
                         return ret;
-                    };
-                    Matrix4.determinant = function (a) {
+                    }
+                    Matrix4.makeTable = makeTable;
+                    function determinant(a) {
                         var a00 = a[0], a01 = a[1], a02 = a[2], a03 = a[3], a10 = a[4], a11 = a[5], a12 = a[6], a13 = a[7], a20 = a[8], a21 = a[9], a22 = a[10], a23 = a[11], a30 = a[12], a31 = a[13], a32 = a[14], a33 = a[15], b00 = a00 * a11 - a01 * a10, b01 = a00 * a12 - a02 * a10, b02 = a00 * a13 - a03 * a10, b03 = a01 * a12 - a02 * a11, b04 = a01 * a13 - a03 * a11, b05 = a02 * a13 - a03 * a12, b06 = a20 * a31 - a21 * a30, b07 = a20 * a32 - a22 * a30, b08 = a20 * a33 - a23 * a30, b09 = a21 * a32 - a22 * a31, b10 = a21 * a33 - a23 * a31, b11 = a22 * a33 - a23 * a32;
                         // Calculate the determinant
                         return b00 * b11 - b01 * b10 + b02 * b09 + b03 * b08 - b04 * b07 + b05 * b06;
-                    };
-                    return Matrix4;
-                }());
-                LinearAlgebra.Matrix4 = Matrix4;
-                var Vector4 = (function () {
-                    function Vector4() {
                     }
-                    Vector4.create = function () {
+                    Matrix4.determinant = determinant;
+                })(Matrix4 = LinearAlgebra.Matrix4 || (LinearAlgebra.Matrix4 = {}));
+                var Vector4;
+                (function (Vector4) {
+                    function create() {
                         var out = makeArray(4);
                         out[0] = 0;
                         out[1] = 0;
                         out[2] = 0;
                         out[3] = 0;
                         return out;
-                    };
-                    Vector4.clone = function (a) {
+                    }
+                    Vector4.create = create;
+                    function clone(a) {
                         var out = makeArray(4);
                         out[0] = a[0];
                         out[1] = a[1];
                         out[2] = a[2];
                         out[3] = a[3];
                         return out;
-                    };
-                    Vector4.fromValues = function (x, y, z, w) {
+                    }
+                    Vector4.clone = clone;
+                    function fromValues(x, y, z, w) {
                         var out = makeArray(4);
                         out[0] = x;
                         out[1] = y;
                         out[2] = z;
                         out[3] = w;
                         return out;
-                    };
-                    Vector4.set = function (out, x, y, z, w) {
+                    }
+                    Vector4.fromValues = fromValues;
+                    function set(out, x, y, z, w) {
                         out[0] = x;
                         out[1] = y;
                         out[2] = z;
                         out[3] = w;
                         return out;
-                    };
-                    Vector4.distance = function (a, b) {
+                    }
+                    Vector4.set = set;
+                    function distance(a, b) {
                         var x = b[0] - a[0], y = b[1] - a[1], z = b[2] - a[2], w = b[3] - a[3];
                         return Math.sqrt(x * x + y * y + z * z + w * w);
-                    };
-                    Vector4.squaredDistance = function (a, b) {
+                    }
+                    Vector4.distance = distance;
+                    function squaredDistance(a, b) {
                         var x = b[0] - a[0], y = b[1] - a[1], z = b[2] - a[2], w = b[3] - a[3];
                         return x * x + y * y + z * z + w * w;
-                    };
-                    Vector4.norm = function (a) {
+                    }
+                    Vector4.squaredDistance = squaredDistance;
+                    function norm(a) {
                         var x = a[0], y = a[1], z = a[2], w = a[3];
                         return Math.sqrt(x * x + y * y + z * z + w * w);
-                    };
-                    Vector4.squaredNorm = function (a) {
+                    }
+                    Vector4.norm = norm;
+                    function squaredNorm(a) {
                         var x = a[0], y = a[1], z = a[2], w = a[3];
                         return x * x + y * y + z * z + w * w;
-                    };
-                    Vector4.transform = function (out, a, m) {
+                    }
+                    Vector4.squaredNorm = squaredNorm;
+                    function transform(out, a, m) {
                         var x = a[0], y = a[1], z = a[2], w = a[3];
                         out[0] = m[0] * x + m[4] * y + m[8] * z + m[12] * w;
                         out[1] = m[1] * x + m[5] * y + m[9] * z + m[13] * w;
                         out[2] = m[2] * x + m[6] * y + m[10] * z + m[14] * w;
                         out[3] = m[3] * x + m[7] * y + m[11] * z + m[15] * w;
                         return out;
-                    };
-                    return Vector4;
-                }());
-                LinearAlgebra.Vector4 = Vector4;
+                    }
+                    Vector4.transform = transform;
+                })(Vector4 = LinearAlgebra.Vector4 || (LinearAlgebra.Vector4 = {}));
             })(LinearAlgebra = Geometry.LinearAlgebra || (Geometry.LinearAlgebra = {}));
         })(Geometry = Core.Geometry || (Core.Geometry = {}));
     })(Core = LiteMol.Core || (LiteMol.Core = {}));
@@ -16165,13 +16652,6 @@ var LiteMol;
             var SymmetryHelpers;
             (function (SymmetryHelpers) {
                 var Mat4 = Core.Geometry.LinearAlgebra.Matrix4;
-                var Sphere3 = (function () {
-                    function Sphere3(center, radius) {
-                        this.center = center;
-                        this.radius = radius;
-                    }
-                    return Sphere3;
-                }());
                 function getBoudingSphere(arrays, indices) {
                     var x = arrays.x, y = arrays.y, z = arrays.z;
                     var center = { x: 0, y: 0, z: 0 };
@@ -16190,7 +16670,7 @@ var LiteMol;
                         var aI = indices_3[_a];
                         r = Math.max(indexedVectorDistSq(aI, center, arrays), r);
                     }
-                    return new Sphere3(center, Math.sqrt(r));
+                    return { center: center, radius: Math.sqrt(r) };
                 }
                 function newVec() { return { x: 0, y: 0, z: 0 }; }
                 ;
@@ -16213,83 +16693,55 @@ var LiteMol;
                     var dx = arrays.x[aI] - v.x, dy = arrays.y[aI] - v.y, dz = arrays.z[aI] - v.z;
                     return dx * dx + dy * dy + dz * dz;
                 }
-                var BoundingInfo = (function () {
-                    function BoundingInfo(entities, chains, residues, allAtoms, target) {
-                        this.entities = entities;
-                        this.chains = chains;
-                        this.residues = residues;
-                        this.allAtoms = allAtoms;
-                        this.target = target;
-                    }
-                    return BoundingInfo;
-                }());
-                var SymmetryContext = (function () {
-                    function SymmetryContext(model, boundingInfo, spacegroup, radius) {
-                        this.model = model;
-                        this.boundingInfo = boundingInfo;
-                        this.spacegroup = spacegroup;
-                        this.radius = radius;
-                        this.transform = Mat4.empty();
-                        this.transformed = { x: 0, y: 0, z: 0 };
-                        //posBufferB: Vector3 = { x: 0, y: 0, z: 0 };
-                        this.i = 0;
-                        this.j = 0;
-                        this.k = 0;
-                        this.op = 0;
-                    }
-                    SymmetryContext.prototype.map = function (p) {
-                        return Mat4.transformVector3(this.transformed, p, this.transform);
+                function createSymmetryContext(model, boundingInfo, spacegroup, radius) {
+                    return {
+                        model: model,
+                        boundingInfo: boundingInfo,
+                        spacegroup: spacegroup,
+                        radius: radius,
+                        transform: Mat4.empty(),
+                        transformed: { x: 0, y: 0, z: 0 },
+                        i: 0, j: 0, k: 0, op: 0
                     };
-                    SymmetryContext.prototype.getTransform = function () {
-                        return new SymmetryTransform(this.i, this.j, this.k, this.op, Mat4.clone(this.transform));
+                }
+                function symmetryContextMap(ctx, p) {
+                    return Mat4.transformVector3(ctx.transformed, p, ctx.transform);
+                }
+                function symmetryContextGetTransform(ctx) {
+                    return createSymmetryTransform(ctx.i, ctx.j, ctx.k, ctx.op, Mat4.clone(ctx.transform));
+                }
+                function createSymmetryTransform(i, j, k, opIndex, transform) {
+                    return {
+                        isIdentity: !i && !j && !k && !opIndex,
+                        id: (opIndex + 1) + "_" + (5 + i) + (5 + j) + (5 + k),
+                        transform: transform
                     };
-                    return SymmetryContext;
-                }());
-                var SymmetryTransform = (function () {
-                    function SymmetryTransform(i, j, k, opIndex, transform) {
-                        this.i = i;
-                        this.j = j;
-                        this.k = k;
-                        this.opIndex = opIndex;
-                        this.transform = transform;
-                        this._id = null;
-                        this.isIdentity = !i && !j && !k && !opIndex;
-                    }
-                    Object.defineProperty(SymmetryTransform.prototype, "id", {
-                        get: function () {
-                            if (this._id)
-                                return this._id;
-                            this._id = (this.opIndex + 1) + "_" + (5 + this.i) + (5 + this.j) + (5 + this.k);
-                            return this._id;
-                        },
-                        enumerable: true,
-                        configurable: true
-                    });
-                    return SymmetryTransform;
-                }());
-                var AssemblyTransform = (function () {
-                    function AssemblyTransform(i, transform) {
-                        this.i = i;
-                        this.transform = transform;
-                        this.isIdentity = this._isIdentity();
-                        this.id = i.toString();
-                    }
-                    AssemblyTransform.prototype._isIdentity = function () {
-                        for (var i = 0; i < 4; i++) {
-                            for (var j = 0; j < 4; j++) {
-                                var v = this.transform[4 * j + i];
-                                if (i === j) {
-                                    if (Math.abs(v - 1) > 0.0000001)
-                                        return false;
+                }
+                function createAssemblyTransform(i, transform) {
+                    var isIdentity = true;
+                    for (var i_1 = 0; i_1 < 4; i_1++) {
+                        for (var j = 0; j < 4; j++) {
+                            var v = transform[4 * j + i_1];
+                            if (i_1 === j) {
+                                if (Math.abs(v - 1) > 0.0000001) {
+                                    isIdentity = false;
+                                    break;
                                 }
-                                else if (Math.abs(v) > 0.0000001)
-                                    return false;
+                            }
+                            else if (Math.abs(v) > 0.0000001) {
+                                isIdentity = false;
+                                break;
                             }
                         }
-                        return true;
+                        if (!isIdentity)
+                            break;
+                    }
+                    return {
+                        isIdentity: isIdentity,
+                        id: i.toString(),
+                        transform: transform
                     };
-                    return AssemblyTransform;
-                }());
+                }
                 function getBoundingInfo(model, pivotIndices) {
                     var atoms = model.atoms, residues = model.residues, chains = model.chains, entities = model.entities, x = atoms.x, y = atoms.y, z = atoms.z;
                     var entityTable = new Structure.DataTableBuilder(entities.count), eX = entityTable.addColumn("x", function (s) { return new Float64Array(s); }), eY = entityTable.addColumn("y", function (s) { return new Float64Array(s); }), eZ = entityTable.addColumn("z", function (s) { return new Float64Array(s); }), eR = entityTable.addColumn("r", function (s) { return new Float64Array(s); }), chainTable = new Structure.DataTableBuilder(chains.count), cX = chainTable.addColumn("x", function (s) { return new Float64Array(s); }), cY = chainTable.addColumn("y", function (s) { return new Float64Array(s); }), cZ = chainTable.addColumn("z", function (s) { return new Float64Array(s); }), cR = chainTable.addColumn("r", function (s) { return new Float64Array(s); }), residueTable = new Structure.DataTableBuilder(residues.count), rX = residueTable.addColumn("x", function (s) { return new Float64Array(s); }), rY = residueTable.addColumn("y", function (s) { return new Float64Array(s); }), rZ = residueTable.addColumn("z", function (s) { return new Float64Array(s); }), rR = residueTable.addColumn("r", function (s) { return new Float64Array(s); });
@@ -16376,13 +16828,19 @@ var LiteMol;
                         pivotRadius = Math.max(pivotRadius, indexedVectorDistSq(aI, pivotCenter, rDA));
                     }
                     pivotRadius = Math.sqrt(pivotRadius);
-                    return new BoundingInfo(entityTable.seal(), chainTable.seal(), residueTable.seal(), new Sphere3(allCenter, allRadius), new Sphere3(pivotCenter, pivotRadius));
+                    return {
+                        entities: entityTable.seal(),
+                        chains: chainTable.seal(),
+                        residues: residueTable.seal(),
+                        allAtoms: { center: allCenter, radius: allRadius },
+                        target: { center: pivotCenter, radius: pivotRadius }
+                    };
                 }
                 function findSuitableTransforms(ctx) {
                     var bounds = ctx.boundingInfo, sg = ctx.spacegroup;
                     var ret = [];
                     ctx.transform = Mat4.identity();
-                    ret[0] = ctx.getTransform();
+                    ret[0] = symmetryContextGetTransform(ctx);
                     for (var i = -3; i <= 3; i++) {
                         for (var j = -3; j <= 3; j++) {
                             for (var k = -3; k <= 3; k++) {
@@ -16393,9 +16851,9 @@ var LiteMol;
                                     ctx.k = k;
                                     ctx.j = j;
                                     ctx.op = l;
-                                    var t = ctx.map(bounds.allAtoms.center), d = getSphereDist(t, bounds.allAtoms.radius, bounds.target);
+                                    var t = symmetryContextMap(ctx, bounds.allAtoms.center), d = getSphereDist(t, bounds.allAtoms.radius, bounds.target);
                                     if (d < ctx.radius) {
-                                        ret[ret.length] = ctx.getTransform();
+                                        ret[ret.length] = symmetryContextGetTransform(ctx);
                                     }
                                 }
                             }
@@ -16694,7 +17152,7 @@ var LiteMol;
                         pivotIndices = model.atoms.indices;
                     else
                         pivotIndices = model.query(pivotsQuery).unionAtomIndices();
-                    var bounds = getBoundingInfo(model, pivotIndices), spacegroup = new Structure.Spacegroup(model.symmetryInfo), ctx = new SymmetryContext(model, bounds, spacegroup, radius);
+                    var bounds = getBoundingInfo(model, pivotIndices), spacegroup = new Structure.Spacegroup(model.symmetryInfo), ctx = createSymmetryContext(model, bounds, spacegroup, radius);
                     var transforms = findSuitableTransforms(ctx), residues = getSymmetryResidues(ctx, transforms);
                     return assemble(model, residues, transforms);
                 }
@@ -16715,7 +17173,7 @@ var LiteMol;
                                         continue;
                                     var copy = Mat4.empty();
                                     Mat4.copy(copy, t);
-                                    transforms.push(new SymmetryTransform(i, j, k, op, copy));
+                                    transforms.push(createSymmetryTransform(i, j, k, op, copy));
                                 }
                             }
                         }
@@ -16775,20 +17233,19 @@ var LiteMol;
                 }
                 function getAssemblyTransforms(model, operators) {
                     var info = model.assemblyInfo;
-                    var trasnforms = [];
+                    var transforms = [];
                     var t = Mat4.empty();
                     var index = 0;
                     for (var _i = 0, operators_1 = operators; _i < operators_1.length; _i++) {
                         var op = operators_1[_i];
                         var m = Mat4.identity();
-                        //Mat4.copy(m, info.operators[op[0]].operator);
                         for (var i = 0; i < op.length; i++) {
                             Mat4.mul(m, m, info.operators[op[i]].operator);
                         }
                         index++;
-                        trasnforms[trasnforms.length] = new AssemblyTransform(index, m);
+                        transforms[transforms.length] = createAssemblyTransform(index, m);
                     }
-                    return trasnforms;
+                    return transforms;
                 }
                 function getAssemblyParts(model, residueMask, currentTransforms, state) {
                     var atoms = model.atoms, residues = model.residues, chains = model.chains, entities = model.entities;
@@ -16835,8 +17292,8 @@ var LiteMol;
                 }
                 function buildAssemblyEntry(model, entry, state) {
                     var ops = [], currentOp = [];
-                    for (var i_1 = 0; i_1 < entry.operators.length; i_1++)
-                        currentOp[i_1] = "";
+                    for (var i_2 = 0; i_2 < entry.operators.length; i_2++)
+                        currentOp[i_2] = "";
                     createOperators(entry.operators, ops, entry.operators.length - 1, currentOp);
                     var transforms = getAssemblyTransforms(model, ops);
                     state.transformsOffset += state.transforms.length;
@@ -18151,515 +18608,6 @@ var LiteMol;
                 })(Algebraic = Query.Algebraic || (Query.Algebraic = {}));
             })(Query = Structure.Query || (Structure.Query = {}));
         })(Structure = Core.Structure || (Core.Structure = {}));
-    })(Core = LiteMol.Core || (LiteMol.Core = {}));
-})(LiteMol || (LiteMol = {}));
-/*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
- */
-var LiteMol;
-(function (LiteMol) {
-    var Core;
-    (function (Core) {
-        var Utils;
-        (function (Utils) {
-            "use strict";
-            function extend(object, source, guard) {
-                var v;
-                var s = source;
-                var o = object;
-                var g = guard;
-                for (var _i = 0, _a = Object.keys(source); _i < _a.length; _i++) {
-                    var k = _a[_i];
-                    v = s[k];
-                    if (v !== void 0)
-                        o[k] = v;
-                    else if (guard)
-                        o[k] = g[k];
-                }
-                if (guard) {
-                    for (var _b = 0, _c = Object.keys(guard); _b < _c.length; _b++) {
-                        var k = _c[_b];
-                        v = o[k];
-                        if (v === void 0)
-                            o[k] = g[k];
-                    }
-                }
-                return object;
-            }
-            Utils.extend = extend;
-            ;
-            function debounce(func, wait) {
-                var args, maxTimeoutId, result, stamp, thisArg, timeoutId, trailingCall, lastCalled = 0, maxWait = 0, trailing = true, leading = false;
-                wait = Math.max(0, wait) || 0;
-                var delayed = function () {
-                    var remaining = wait - (performance.now() - stamp);
-                    if (remaining <= 0) {
-                        if (maxTimeoutId) {
-                            clearTimeout(maxTimeoutId);
-                        }
-                        var isCalled = trailingCall;
-                        maxTimeoutId = timeoutId = trailingCall = void 0;
-                        if (isCalled) {
-                            lastCalled = performance.now();
-                            result = func.apply(thisArg, args);
-                            if (!timeoutId && !maxTimeoutId) {
-                                args = thisArg = null;
-                            }
-                        }
-                    }
-                    else {
-                        timeoutId = setTimeout(delayed, remaining);
-                    }
-                };
-                var maxDelayed = function () {
-                    if (timeoutId) {
-                        clearTimeout(timeoutId);
-                    }
-                    maxTimeoutId = timeoutId = trailingCall = void 0;
-                    if (trailing || (maxWait !== wait)) {
-                        lastCalled = performance.now();
-                        result = func.apply(thisArg, args);
-                        if (!timeoutId && !maxTimeoutId) {
-                            args = thisArg = null;
-                        }
-                    }
-                };
-                return function () {
-                    args = arguments;
-                    stamp = performance.now();
-                    thisArg = this;
-                    trailingCall = trailing && (timeoutId || !leading);
-                    var isCalled = false;
-                    var leadingCall = false;
-                    if (maxWait === 0) {
-                        var leadingCall_1 = leading && !timeoutId;
-                    }
-                    else {
-                        if (!maxTimeoutId && !leading) {
-                            lastCalled = stamp;
-                        }
-                        var remaining = maxWait - (stamp - lastCalled), isCalled_1 = remaining <= 0;
-                        if (isCalled_1) {
-                            if (maxTimeoutId) {
-                                maxTimeoutId = clearTimeout(maxTimeoutId);
-                            }
-                            lastCalled = stamp;
-                            result = func.apply(thisArg, args);
-                        }
-                        else if (!maxTimeoutId) {
-                            maxTimeoutId = setTimeout(maxDelayed, remaining);
-                        }
-                    }
-                    if (isCalled && timeoutId) {
-                        timeoutId = clearTimeout(timeoutId);
-                    }
-                    else if (!timeoutId && wait !== maxWait) {
-                        timeoutId = setTimeout(delayed, wait);
-                    }
-                    if (leadingCall) {
-                        isCalled = true;
-                        result = func.apply(thisArg, args);
-                    }
-                    if (isCalled && !timeoutId && !maxTimeoutId) {
-                        args = thisArg = null;
-                    }
-                    return result;
-                };
-            }
-            Utils.debounce = debounce;
-        })(Utils = Core.Utils || (Core.Utils = {}));
-    })(Core = LiteMol.Core || (LiteMol.Core = {}));
-})(LiteMol || (LiteMol = {}));
-/*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
- */
-var LiteMol;
-(function (LiteMol) {
-    var Core;
-    (function (Core) {
-        var Utils;
-        (function (Utils) {
-            function integerSetToSortedTypedArray(set) {
-                var array = new Int32Array(set.size);
-                set.forEach(function (v) { this.array[this.index++] = v; }, { array: array, index: 0 });
-                Array.prototype.sort.call(array, function (x, y) { return x - y; });
-                return array;
-            }
-            Utils.integerSetToSortedTypedArray = integerSetToSortedTypedArray;
-            /**
-             * A a JS native array with the given size.
-             */
-            function makeNativeIntArray(size) {
-                var arr = [];
-                for (var i = 0; i < size; i++)
-                    arr[i] = 0;
-                return arr;
-            }
-            Utils.makeNativeIntArray = makeNativeIntArray;
-            /**
-             * A a JS native array with the given size.
-             */
-            function makeNativeFloatArray(size) {
-                var arr = [];
-                if (!size)
-                    return arr;
-                arr[0] = 0.1;
-                for (var i = 0; i < size; i++)
-                    arr[i] = 0;
-                return arr;
-            }
-            Utils.makeNativeFloatArray = makeNativeFloatArray;
-            /**
-             * A generic chunked array builder.
-             */
-            var ChunkedArrayBuilder = (function () {
-                function ChunkedArrayBuilder(creator, chunkElementCount, elementSize) {
-                    chunkElementCount = chunkElementCount | 0;
-                    if (chunkElementCount <= 0)
-                        chunkElementCount = 1;
-                    this.elementSize = elementSize;
-                    this.chunkSize = chunkElementCount * elementSize;
-                    this.creator = creator;
-                    this.current = creator(this.chunkSize);
-                    this.parts = [this.current];
-                    this.currentIndex = 0;
-                    this.elementCount = 0;
-                }
-                ChunkedArrayBuilder.prototype.add4 = function (x, y, z, w) {
-                    if (this.currentIndex >= this.chunkSize) {
-                        this.currentIndex = 0;
-                        this.current = this.creator(this.chunkSize);
-                        this.parts[this.parts.length] = this.current;
-                    }
-                    this.current[this.currentIndex++] = x;
-                    this.current[this.currentIndex++] = y;
-                    this.current[this.currentIndex++] = z;
-                    this.current[this.currentIndex++] = w;
-                    return this.elementCount++;
-                };
-                ChunkedArrayBuilder.prototype.add3 = function (x, y, z) {
-                    if (this.currentIndex >= this.chunkSize) {
-                        this.currentIndex = 0;
-                        this.current = this.creator(this.chunkSize);
-                        this.parts[this.parts.length] = this.current;
-                    }
-                    this.current[this.currentIndex++] = x;
-                    this.current[this.currentIndex++] = y;
-                    this.current[this.currentIndex++] = z;
-                    return this.elementCount++;
-                };
-                ChunkedArrayBuilder.prototype.add2 = function (x, y) {
-                    if (this.currentIndex >= this.chunkSize) {
-                        this.currentIndex = 0;
-                        this.current = this.creator(this.chunkSize);
-                        this.parts[this.parts.length] = this.current;
-                    }
-                    this.current[this.currentIndex++] = x;
-                    this.current[this.currentIndex++] = y;
-                    return this.elementCount++;
-                };
-                ChunkedArrayBuilder.prototype.add = function (x) {
-                    if (this.currentIndex >= this.chunkSize) {
-                        this.currentIndex = 0;
-                        this.current = this.creator(this.chunkSize);
-                        this.parts[this.parts.length] = this.current;
-                    }
-                    this.current[this.currentIndex++] = x;
-                    return this.elementCount++;
-                };
-                ChunkedArrayBuilder.prototype.compact = function () {
-                    var ret = this.creator(this.elementSize * this.elementCount), i, j, offset = (this.parts.length - 1) * this.chunkSize, offsetInner = 0, part;
-                    if (this.parts.length > 1) {
-                        if (this.parts[0].buffer) {
-                            for (i = 0; i < this.parts.length - 1; i++) {
-                                ret.set(this.parts[i], this.chunkSize * i);
-                            }
-                        }
-                        else {
-                            for (i = 0; i < this.parts.length - 1; i++) {
-                                offsetInner = this.chunkSize * i;
-                                part = this.parts[i];
-                                for (j = 0; j < this.chunkSize; j++) {
-                                    ret[offsetInner + j] = part[j];
-                                }
-                            }
-                        }
-                    }
-                    if (this.current.buffer && this.currentIndex >= this.chunkSize) {
-                        ret.set(this.current, this.chunkSize * (this.parts.length - 1));
-                    }
-                    else {
-                        for (i = 0; i < this.currentIndex; i++) {
-                            ret[offset + i] = this.current[i];
-                        }
-                    }
-                    return ret;
-                };
-                ChunkedArrayBuilder.forVertex3D = function (chunkVertexCount) {
-                    if (chunkVertexCount === void 0) { chunkVertexCount = 262144; }
-                    return new ChunkedArrayBuilder(function (size) { return new Float32Array(size); }, chunkVertexCount, 3);
-                };
-                ChunkedArrayBuilder.forIndexBuffer = function (chunkIndexCount) {
-                    if (chunkIndexCount === void 0) { chunkIndexCount = 262144; }
-                    return new ChunkedArrayBuilder(function (size) { return new Uint32Array(size); }, chunkIndexCount, 3);
-                };
-                ChunkedArrayBuilder.forTokenIndices = function (chunkTokenCount) {
-                    if (chunkTokenCount === void 0) { chunkTokenCount = 131072; }
-                    return new ChunkedArrayBuilder(function (size) { return new Int32Array(size); }, chunkTokenCount, 2);
-                };
-                ChunkedArrayBuilder.forIndices = function (chunkTokenCount) {
-                    if (chunkTokenCount === void 0) { chunkTokenCount = 131072; }
-                    return new ChunkedArrayBuilder(function (size) { return new Int32Array(size); }, chunkTokenCount, 1);
-                };
-                ChunkedArrayBuilder.forInt32 = function (chunkSize) {
-                    if (chunkSize === void 0) { chunkSize = 131072; }
-                    return new ChunkedArrayBuilder(function (size) { return new Int32Array(size); }, chunkSize, 1);
-                };
-                ChunkedArrayBuilder.forFloat32 = function (chunkSize) {
-                    if (chunkSize === void 0) { chunkSize = 131072; }
-                    return new ChunkedArrayBuilder(function (size) { return new Float32Array(size); }, chunkSize, 1);
-                };
-                ChunkedArrayBuilder.forArray = function (chunkSize) {
-                    if (chunkSize === void 0) { chunkSize = 131072; }
-                    return new ChunkedArrayBuilder(function (size) { return []; }, chunkSize, 1);
-                };
-                return ChunkedArrayBuilder;
-            }());
-            Utils.ChunkedArrayBuilder = ChunkedArrayBuilder;
-            /**
-             * Static size array builder.
-             */
-            var ArrayBuilder = (function () {
-                function ArrayBuilder(creator, chunkElementCount, elementSize) {
-                    chunkElementCount = chunkElementCount | 0;
-                    this.array = creator(chunkElementCount * elementSize);
-                    this.currentIndex = 0;
-                    this.elementCount = 0;
-                }
-                ArrayBuilder.prototype.add3 = function (x, y, z) {
-                    this.array[this.currentIndex++] = x;
-                    this.array[this.currentIndex++] = y;
-                    this.array[this.currentIndex++] = z;
-                    this.elementCount++;
-                };
-                ArrayBuilder.prototype.add2 = function (x, y) {
-                    this.array[this.currentIndex++] = x;
-                    this.array[this.currentIndex++] = y;
-                    this.elementCount++;
-                };
-                ArrayBuilder.prototype.add = function (x) {
-                    this.array[this.currentIndex++] = x;
-                    this.elementCount++;
-                };
-                ArrayBuilder.forVertex3D = function (count) {
-                    return new ArrayBuilder(function (size) { return new Float32Array(size); }, count, 3);
-                };
-                ArrayBuilder.forIndexBuffer = function (count) {
-                    return new ArrayBuilder(function (size) { return new Int32Array(size); }, count, 3);
-                };
-                ArrayBuilder.forTokenIndices = function (count) {
-                    return new ArrayBuilder(function (size) { return new Int32Array(size); }, count, 2);
-                };
-                ArrayBuilder.forIndices = function (count) {
-                    return new ArrayBuilder(function (size) { return new Int32Array(size); }, count, 1);
-                };
-                ArrayBuilder.forInt32 = function (count) {
-                    return new ArrayBuilder(function (size) { return new Int32Array(size); }, count, 1);
-                };
-                ArrayBuilder.forFloat32 = function (count) {
-                    return new ArrayBuilder(function (size) { return new Float32Array(size); }, count, 1);
-                };
-                ArrayBuilder.forArray = function (count) {
-                    return new ArrayBuilder(function (size) { return []; }, count, 1);
-                };
-                return ArrayBuilder;
-            }());
-            Utils.ArrayBuilder = ArrayBuilder;
-        })(Utils = Core.Utils || (Core.Utils = {}));
-    })(Core = LiteMol.Core || (LiteMol.Core = {}));
-})(LiteMol || (LiteMol = {}));
-/*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
- */
-/**
- * Efficient integer and float parsers.
- *
- * For the purposes of parsing numbers from the mmCIF data representations,
- * up to 4 times faster than JS parseInt/parseFloat.
- */
-var LiteMol;
-(function (LiteMol) {
-    var Core;
-    (function (Core) {
-        var Utils;
-        (function (Utils) {
-            var FastNumberParsers;
-            (function (FastNumberParsers) {
-                "use strict";
-                function parseIntSkipTrailingWhitespace(str, start, end) {
-                    while (start < end && str.charCodeAt(start) === 32)
-                        start++;
-                    return parseInt(str, start, end);
-                }
-                FastNumberParsers.parseIntSkipTrailingWhitespace = parseIntSkipTrailingWhitespace;
-                function parseInt(str, start, end) {
-                    var ret = 0, neg = 1;
-                    if (str.charCodeAt(start) === 45 /* - */) {
-                        neg = -1;
-                        start++;
-                    }
-                    for (; start < end; start++) {
-                        var c = str.charCodeAt(start) - 48;
-                        if (c > 9 || c < 0)
-                            return (neg * ret) | 0;
-                        else
-                            ret = (10 * ret + c) | 0;
-                    }
-                    return neg * ret;
-                }
-                FastNumberParsers.parseInt = parseInt;
-                function parseScientific(main, str, start, end) {
-                    return main * Math.pow(10.0, parseInt(str, start, end));
-                }
-                FastNumberParsers.parseScientific = parseScientific;
-                function parseFloatSkipTrailingWhitespace(str, start, end) {
-                    while (start < end && str.charCodeAt(start) === 32)
-                        start++;
-                    return parseFloat(str, start, end);
-                }
-                FastNumberParsers.parseFloatSkipTrailingWhitespace = parseFloatSkipTrailingWhitespace;
-                function parseFloat(str, start, end) {
-                    var neg = 1.0, ret = 0.0, point = 0.0, div = 1.0;
-                    if (str.charCodeAt(start) === 45) {
-                        neg = -1.0;
-                        ++start;
-                    }
-                    while (start < end) {
-                        var c = str.charCodeAt(start) - 48;
-                        if (c >= 0 && c < 10) {
-                            ret = ret * 10 + c;
-                            ++start;
-                        }
-                        else if (c === -2) {
-                            ++start;
-                            while (start < end) {
-                                c = str.charCodeAt(start) - 48;
-                                if (c >= 0 && c < 10) {
-                                    point = 10.0 * point + c;
-                                    div = 10.0 * div;
-                                    ++start;
-                                }
-                                else if (c === 53 || c === 21) {
-                                    return parseScientific(neg * (ret + point / div), str, start + 1, end);
-                                }
-                                else {
-                                    return neg * (ret + point / div);
-                                }
-                            }
-                            return neg * (ret + point / div);
-                        }
-                        else if (c === 53 || c === 21) {
-                            return parseScientific(neg * ret, str, start + 1, end);
-                        }
-                        else
-                            break;
-                    }
-                    return neg * ret;
-                }
-                FastNumberParsers.parseFloat = parseFloat;
-            })(FastNumberParsers = Utils.FastNumberParsers || (Utils.FastNumberParsers = {}));
-        })(Utils = Core.Utils || (Core.Utils = {}));
-    })(Core = LiteMol.Core || (LiteMol.Core = {}));
-})(LiteMol || (LiteMol = {}));
-/*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
- */
-var LiteMol;
-(function (LiteMol) {
-    var Core;
-    (function (Core) {
-        var Utils;
-        (function (Utils) {
-            "use strict";
-            var PerformanceHelper;
-            (function (PerformanceHelper) {
-                PerformanceHelper.perfGetTime = (function () {
-                    if (typeof window !== 'undefined' && window.performance) {
-                        return function () { return window.performance.now(); };
-                    }
-                    else if (typeof process !== 'undefined' && process.hrtime !== 'undefined') {
-                        return function () {
-                            var t = process.hrtime();
-                            return t[0] * 1000 + t[1] / 1000000;
-                        };
-                    }
-                    else {
-                        return function () { return +new Date(); };
-                    }
-                })();
-            })(PerformanceHelper || (PerformanceHelper = {}));
-            var PerformanceMonitor = (function () {
-                function PerformanceMonitor() {
-                    this.starts = new Map();
-                    this.ends = new Map();
-                }
-                PerformanceMonitor.currentTime = function () {
-                    return PerformanceHelper.perfGetTime();
-                };
-                PerformanceMonitor.prototype.start = function (name) {
-                    this.starts.set(name, PerformanceHelper.perfGetTime());
-                };
-                PerformanceMonitor.prototype.end = function (name) {
-                    this.ends.set(name, PerformanceHelper.perfGetTime());
-                };
-                PerformanceMonitor.format = function (t) {
-                    if (isNaN(t))
-                        return 'n/a';
-                    var h = Math.floor(t / (60 * 60 * 1000)), m = Math.floor(t / (60 * 1000) % 60), s = Math.floor(t / 1000 % 60), ms = Math.floor(t % 1000).toString();
-                    while (ms.length < 3)
-                        ms = "0" + ms;
-                    if (h > 0)
-                        return h + "h" + m + "m" + s + "." + ms + "s";
-                    if (m > 0)
-                        return m + "m" + s + "." + ms + "s";
-                    if (s > 0)
-                        return s + "." + ms + "s";
-                    return t.toFixed(0) + "ms";
-                };
-                PerformanceMonitor.prototype.formatTime = function (name) {
-                    return PerformanceMonitor.format(this.time(name));
-                };
-                PerformanceMonitor.prototype.formatTimeSum = function () {
-                    var names = [];
-                    for (var _i = 0; _i < arguments.length; _i++) {
-                        names[_i - 0] = arguments[_i];
-                    }
-                    return PerformanceMonitor.format(this.timeSum.apply(this, names));
-                };
-                // return the time in milliseconds and removes them from the cache.
-                PerformanceMonitor.prototype.time = function (name) {
-                    var start = this.starts.get(name), end = this.ends.get(name);
-                    this.starts.delete(name);
-                    this.ends.delete(name);
-                    return end - start;
-                };
-                PerformanceMonitor.prototype.timeSum = function () {
-                    var _this = this;
-                    var names = [];
-                    for (var _i = 0; _i < arguments.length; _i++) {
-                        names[_i - 0] = arguments[_i];
-                    }
-                    var t = 0;
-                    for (var _a = 0, _b = names.map(function (n) { return _this.ends.get(n) - _this.starts.get(n); }); _a < _b.length; _a++) {
-                        var m = _b[_a];
-                        t += m;
-                    }
-                    return t;
-                };
-                return PerformanceMonitor;
-            }());
-            Utils.PerformanceMonitor = PerformanceMonitor;
-        })(Utils = Core.Utils || (Core.Utils = {}));
     })(Core = LiteMol.Core || (LiteMol.Core = {}));
 })(LiteMol || (LiteMol = {}));
   return LiteMol.Core;

@@ -42,7 +42,7 @@ namespace LiteMol.Core.Formats.Molecule.SDF {
             lines,
             currentLine: 4,
             error: void 0,
-            stringPool: new ShortStringPool()
+            stringPool: ShortStringPool.create()
         };
     }
 
@@ -50,7 +50,7 @@ namespace LiteMol.Core.Formats.Molecule.SDF {
         let line = state.lines[state.currentLine];
         let atoms = state.atoms;
 
-        let es = state.stringPool.getString(line.substr(31, 3).trim());
+        let es = ShortStringPool.get(state.stringPool, line.substr(31, 3).trim());
         atoms.id[i] = i;
         atoms.elementSymbol[i] = es;
         atoms.name[i] = es;

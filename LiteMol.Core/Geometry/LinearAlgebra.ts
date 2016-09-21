@@ -28,13 +28,13 @@ namespace LiteMol.Core.Geometry.LinearAlgebra {
     /**
      * Stores a 4x4 matrix in a column major (j * 4 + i indexing) format.
      */
-    export class Matrix4 {
+    export namespace Matrix4 {
         
-        static empty(): number[] {
+        export function empty(): number[] {
             return makeArray(16);
         }
 
-        static identity() : number[] {
+        export function identity() : number[] {
             var out = makeArray(16);
             out[0] = 1;
             out[1] = 0;
@@ -55,7 +55,7 @@ namespace LiteMol.Core.Geometry.LinearAlgebra {
             return out;
         }
 
-        static ofRows(rows: number[][]): number[]{
+        export function ofRows(rows: number[][]): number[]{
             var out = makeArray(16), i: number, j: number, r: number[];
             for (i = 0; i < 4; i++) {
                 r = rows[i];
@@ -66,7 +66,7 @@ namespace LiteMol.Core.Geometry.LinearAlgebra {
             return out;
         }
 
-        static areEqual(a: number[], b: number[], eps: number) {
+        export function areEqual(a: number[], b: number[], eps: number) {
             for (var i = 0; i < 16; i++) {
                 if (Math.abs(a[i] - b[i]) > eps) {
                     return false;
@@ -75,11 +75,11 @@ namespace LiteMol.Core.Geometry.LinearAlgebra {
             return true;
         }
 
-        static setValue(a: number[], i: number, j: number, value: number) {
+        export function setValue(a: number[], i: number, j: number, value: number) {
             a[4 * j + i] = value;
         }
 
-        static copy(out: number[], a: any) {
+        export function copy(out: number[], a: any) {
             out[0] = a[0];
             out[1] = a[1];
             out[2] = a[2];
@@ -99,11 +99,11 @@ namespace LiteMol.Core.Geometry.LinearAlgebra {
             return out;
         }
 
-        static clone(a: number[]) {
+        export function clone(a: number[]) {
             return Matrix4.copy(Matrix4.empty(), a);
         }
 
-        static invert(out: number[], a: number[]) {
+        export function invert(out: number[], a: number[]) {
             var a00 = a[0], a01 = a[1], a02 = a[2], a03 = a[3],
                 a10 = a[4], a11 = a[5], a12 = a[6], a13 = a[7],
                 a20 = a[8], a21 = a[9], a22 = a[10], a23 = a[11],
@@ -150,7 +150,7 @@ namespace LiteMol.Core.Geometry.LinearAlgebra {
             return out;
         }
 
-        static mul(out: number[], a: number[], b: number[]) {
+        export function mul(out: number[], a: number[], b: number[]) {
             var a00 = a[0], a01 = a[1], a02 = a[2], a03 = a[3],
                 a10 = a[4], a11 = a[5], a12 = a[6], a13 = a[7],
                 a20 = a[8], a21 = a[9], a22 = a[10], a23 = a[11],
@@ -183,7 +183,7 @@ namespace LiteMol.Core.Geometry.LinearAlgebra {
             return out;
         }
 
-        static translate(out: number[], a: number[], v: number[]) {
+        export function translate(out: number[], a: number[], v: number[]) {
             var x = v[0], y = v[1], z = v[2],
                 a00: number, a01: number, a02: number, a03: number,
                 a10: number, a11: number, a12: number, a13: number,
@@ -212,7 +212,7 @@ namespace LiteMol.Core.Geometry.LinearAlgebra {
             return out;
         }
 
-        static fromTranslation(out: number[], v: number[]) {
+        export function fromTranslation(out: number[], v: number[]) {
             out[0] = 1;
             out[1] = 0;
             out[2] = 0;
@@ -232,7 +232,7 @@ namespace LiteMol.Core.Geometry.LinearAlgebra {
             return out;
         }
 
-        static transformVector3(out: { x: number, y: number, z: number }, a: { x: number, y: number, z: number }, m: number[]) {
+        export function transformVector3(out: { x: number, y: number, z: number }, a: { x: number, y: number, z: number }, m: number[]) {
             var x = a.x, y = a.y, z = a.z;
             out.x = m[0] * x + m[4] * y + m[8] * z + m[12];
             out.y = m[1] * x + m[5] * y + m[9] * z + m[13];
@@ -241,7 +241,7 @@ namespace LiteMol.Core.Geometry.LinearAlgebra {
             return out;
         }
 
-        static makeTable(m: number[]) {
+        export function makeTable(m: number[]) {
             let ret = '';
             for (let i = 0; i < 4; i++) {
                 for (let j = 0; j < 4; j++) {
@@ -253,7 +253,7 @@ namespace LiteMol.Core.Geometry.LinearAlgebra {
             return ret;
         }
 
-        static determinant(a: number[]) {
+        export function determinant(a: number[]) {
             var a00 = a[0], a01 = a[1], a02 = a[2], a03 = a[3],
                 a10 = a[4], a11 = a[5], a12 = a[6], a13 = a[7],
                 a20 = a[8], a21 = a[9], a22 = a[10], a23 = a[11],
@@ -277,8 +277,8 @@ namespace LiteMol.Core.Geometry.LinearAlgebra {
         }
     }
 
-    export class Vector4 {
-        static create() {
+    export namespace Vector4 {
+        export function create() {
             var out = makeArray(4);
             out[0] = 0;
             out[1] = 0;
@@ -287,7 +287,7 @@ namespace LiteMol.Core.Geometry.LinearAlgebra {
             return out;
         }
 
-        static clone(a: number[]) {
+        export function clone(a: number[]) {
             var out = makeArray(4);
             out[0] = a[0];
             out[1] = a[1];
@@ -296,7 +296,7 @@ namespace LiteMol.Core.Geometry.LinearAlgebra {
             return out;
         }
 
-        static fromValues(x: number, y: number, z: number, w: number) {
+        export function fromValues(x: number, y: number, z: number, w: number) {
             var out = makeArray(4);
             out[0] = x;
             out[1] = y;
@@ -305,7 +305,7 @@ namespace LiteMol.Core.Geometry.LinearAlgebra {
             return out;
         }
 
-        static set(out: number[], x: number, y: number, z: number, w: number) {
+        export function set(out: number[], x: number, y: number, z: number, w: number) {
             out[0] = x;
             out[1] = y;
             out[2] = z;
@@ -313,7 +313,7 @@ namespace LiteMol.Core.Geometry.LinearAlgebra {
             return out;
         }
 
-        static distance(a: number[], b: number[]) {
+        export function distance(a: number[], b: number[]) {
             var x = b[0] - a[0],
                 y = b[1] - a[1],
                 z = b[2] - a[2],
@@ -321,7 +321,7 @@ namespace LiteMol.Core.Geometry.LinearAlgebra {
             return Math.sqrt(x * x + y * y + z * z + w * w);
         }
 
-        static squaredDistance(a: number[], b: number[]) {
+        export function squaredDistance(a: number[], b: number[]) {
             var x = b[0] - a[0],
                 y = b[1] - a[1],
                 z = b[2] - a[2],
@@ -329,7 +329,7 @@ namespace LiteMol.Core.Geometry.LinearAlgebra {
             return x * x + y * y + z * z + w * w;
         }
 
-        static norm(a: number[]) {
+        export function norm(a: number[]) {
             var x = a[0],
                 y = a[1],
                 z = a[2],
@@ -337,7 +337,7 @@ namespace LiteMol.Core.Geometry.LinearAlgebra {
             return Math.sqrt(x * x + y * y + z * z + w * w);
         }
 
-        static squaredNorm(a: number[]) {
+        export function squaredNorm(a: number[]) {
             var x = a[0],
                 y = a[1],
                 z = a[2],
@@ -345,7 +345,7 @@ namespace LiteMol.Core.Geometry.LinearAlgebra {
             return x * x + y * y + z * z + w * w;
         }
 
-        static transform(out: number[], a: number[], m: number[]) {
+        export function transform(out: number[], a: number[], m: number[]) {
             var x = a[0], y = a[1], z = a[2], w = a[3];
             out[0] = m[0] * x + m[4] * y + m[8] * z + m[12] * w;
             out[1] = m[1] * x + m[5] * y + m[9] * z + m[13] * w;

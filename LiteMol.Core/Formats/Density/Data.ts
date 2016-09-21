@@ -58,7 +58,7 @@ namespace LiteMol.Core.Formats.Density {
     /**
      * Represents electron density data.
      */
-    export class Data {
+    export interface Data {
         /**
          * Crystal cell size.
          */
@@ -117,15 +117,37 @@ namespace LiteMol.Core.Formats.Density {
         /**
          * Are the data normalized?
          */
-        isNormalized = false;
+        isNormalized: boolean;            
+    }
 
-        /**
-         * If not already normalized, normalize the data.
-         */
-        normalize() {
-            if (this.isNormalized) return;
+    export namespace Data {
+        
+        export function create(
+            cellSize: number[], cellAngles: number[], origin: number[], hasSkewMatrix: boolean, skewMatrix: number[],
+            data: Field3D, dataDimensions: number[], basis: { x: number[]; y: number[]; z: number[] }, startOffset: number[],
+            valuesInfo: { min: number; max: number; mean: number; sigma: number }, attributes?: { [key: string]: any }): Data {
+
+            return {
+                cellSize: cellSize,
+                cellAngles: cellAngles,
+                origin: origin,
+                hasSkewMatrix: hasSkewMatrix,
+                skewMatrix: skewMatrix,
+                data: data,
+                basis: basis,
+                startOffset: startOffset,
+                dataDimensions: dataDimensions,
+                valuesInfo: valuesInfo,
+                attributes: attributes ? attributes : { },
+                isNormalized: false
+            };
+        }
+
+
+        export function normalize(densityData: Data) {
+            if (densityData.isNormalized) return;
             
-            let data = this.data, { mean, sigma } = this.valuesInfo;
+            let data = densityData.data, { mean, sigma } = densityData.valuesInfo;
             let min = Number.POSITIVE_INFINITY, max = Number.NEGATIVE_INFINITY;
             for (let i = 0, _l = data.length; i < _l; i++) {
                 let v = (data.getAt(i) - mean) / sigma;
@@ -134,18 +156,15 @@ namespace LiteMol.Core.Formats.Density {
                 if (v > max) max = v;
             }
 
-            this.valuesInfo.min = min;
-            this.valuesInfo.max = max;
-            this.isNormalized = true;
+            densityData.valuesInfo.min = min;
+            densityData.valuesInfo.max = max;
+            densityData.isNormalized = true;
         }
-        
-        /**
-         * If normalized, de-normalize the data.
-         */
-        denormalize() {
-            if (!this.isNormalized) return;
+
+        export function denormalize(densityData: Data) {
+            if (!densityData.isNormalized) return;
             
-            let data = this.data, { mean, sigma } = this.valuesInfo;
+            let data = densityData.data, { mean, sigma } = densityData.valuesInfo;
             let min = Number.POSITIVE_INFINITY, max = Number.NEGATIVE_INFINITY;
             for (let i = 0, _l = data.length; i < _l; i++) {
                 let v = sigma * data.getAt(i) + mean;
@@ -154,28 +173,9 @@ namespace LiteMol.Core.Formats.Density {
                 if (v > max) max = v;
             }
 
-            this.valuesInfo.min = min;
-            this.valuesInfo.max = max;
-            this.isNormalized = false;
-        }
-        
-        
-        constructor(
-            cellSize: number[], cellAngles: number[], origin: number[], hasSkewMatrix: boolean, skewMatrix: number[],
-            data: Field3D, dataDimensions: number[], basis: { x: number[]; y: number[]; z: number[] }, startOffset: number[],
-            valuesInfo: { min: number; max: number; mean: number; sigma: number }, attributes?: { [key: string]: any }) {
-
-            this.cellSize = cellSize;
-            this.cellAngles = cellAngles;
-            this.origin = origin;
-            this.hasSkewMatrix = hasSkewMatrix;
-            this.skewMatrix = skewMatrix;
-            this.data = data;
-            this.basis = basis;
-            this.startOffset = startOffset;
-            this.dataDimensions = dataDimensions;
-            this.valuesInfo = valuesInfo;
-            this.attributes = attributes ? attributes : { };
+            densityData.valuesInfo.min = min;
+            densityData.valuesInfo.max = max;
+            densityData.isNormalized = false;
         }
     }
     

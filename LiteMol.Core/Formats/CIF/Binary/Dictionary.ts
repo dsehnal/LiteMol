@@ -134,11 +134,14 @@ namespace LiteMol.Core.Formats.CIF.Binary {
         constructor(private data: any, private mask: Uint8Array) { }
     }
 
+    import fastParseInt = Utils.FastNumberParsers.parseInt
+    import fastParseFloat = Utils.FastNumberParsers.parseFloat 
+
     class StringColumn implements Column {
         isDefined = true;
         getString(row: number): string { return this.data[row]; }
-        getInteger(row: number): number { let v = this.data[row]; return Utils.FastNumberParsers.parseInt(v, 0, v.length); }
-        getFloat(row: number): number { let v = this.data[row]; return Utils.FastNumberParsers.parseFloat(v, 0, v.length); }
+        getInteger(row: number): number { let v = this.data[row]; return fastParseInt(v, 0, v.length); }
+        getFloat(row: number): number { let v = this.data[row]; return fastParseFloat(v, 0, v.length); }
         stringEquals(row: number, value: string) { return this.data[row] === value; }
         areValuesEqual(rowA: number, rowB: number) { return this.data[rowA] === this.data[rowB]; }
         getValuePresence(row: number) { return ValuePresence.Present; }
@@ -148,8 +151,8 @@ namespace LiteMol.Core.Formats.CIF.Binary {
     class MaskedStringColumn implements Column {
         isDefined = true;
         getString(row: number): string { return this.mask[row] === ValuePresence.Present ? this.data[row] : null; }
-        getInteger(row: number): number { if (this.mask[row] !== ValuePresence.Present) return 0; let v = this.data[row]; return Utils.FastNumberParsers.parseInt(v, 0, v.length); }
-        getFloat(row: number): number { if (this.mask[row] !== ValuePresence.Present) return 0; let v = this.data[row]; return Utils.FastNumberParsers.parseFloat(v, 0, v.length); }
+        getInteger(row: number): number { if (this.mask[row] !== ValuePresence.Present) return 0; let v = this.data[row]; return fastParseInt(v || '', 0, (v || '').length); }
+        getFloat(row: number): number { if (this.mask[row] !== ValuePresence.Present) return 0; let v = this.data[row]; return fastParseFloat(v || '', 0, (v || '').length); }
         stringEquals(row: number, value: string) { return this.data[row] === value; }
         areValuesEqual(rowA: number, rowB: number) { return this.data[rowA] === this.data[rowB]; }
         getValuePresence(row: number): ValuePresence { return this.mask[row]; }

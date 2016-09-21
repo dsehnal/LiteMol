@@ -20,6 +20,12 @@
 
     "Base/Computation.ts",
     
+    // UTILS
+    "Utils/MiscUtils.ts",
+    "Utils/ArrayBuilder.ts",
+    "Utils/NumberParsers.ts",
+    "Utils/PerformanceMonitor.ts",
+
     // FORMATS
     "Formats/Common.ts",
 
@@ -62,12 +68,6 @@
     "Structure/Query/Data.ts",
     "Structure/Query/Queries.ts",
     "Structure/Query/Algebraic.ts",
-
-    // UTILS
-    "Utils/MiscUtils.ts",
-    "Utils/ArrayBuilder.ts",
-    "Utils/NumberParsers.ts",
-    "Utils/PerformanceMonitor.ts",
 
     "Module.ts"
   ]

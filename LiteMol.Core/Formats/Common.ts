@@ -63,48 +63,52 @@ namespace LiteMol.Core.Formats {
     }
 
     /**
-     * A helper class for building a typed array of token indices.
+     * A helper for building a typed array of token indices.
      */
-    export class TokenIndexBuilder {
-        private tokensLenMinus2: number;
-        private count = 0;
-        tokens: Int32Array;
+    export interface TokenIndexBuilder {
+        tokensLenMinus2: number,
+        count: number,
+        tokens: Int32Array
+    }
 
-        private resize() {
+    export namespace TokenIndexBuilder {
+        function resize(builder: TokenIndexBuilder) {
             // scale the size using golden ratio, because why not.
-            var newBuffer = new Int32Array((1.61 * this.tokens.length) | 0);
-            newBuffer.set(this.tokens);
-            this.tokens = newBuffer;
-            this.tokensLenMinus2 = (newBuffer.length - 2) | 0;
+            var newBuffer = new Int32Array((1.61 * builder.tokens.length) | 0);
+            newBuffer.set(builder.tokens);
+            builder.tokens = newBuffer;
+            builder.tokensLenMinus2 = (newBuffer.length - 2) | 0;
         }
 
-        addToken(start: number, end: number) {
-            if (this.count >= this.tokensLenMinus2) {
-                this.resize();
+        export function addToken(builder: TokenIndexBuilder, start: number, end: number) {
+            if (builder.count >= builder.tokensLenMinus2) {
+                resize(builder);
             }
-            this.tokens[this.count++] = start;
-            this.tokens[this.count++] = end;
+            builder.tokens[builder.count++] = start;
+            builder.tokens[builder.count++] = end;
         }
 
-        constructor(size: number) {
-            this.tokens = new Int32Array(size);
-            this.tokensLenMinus2 = (size - 2) | 0;
+        export function create(size: number): TokenIndexBuilder {
+            return {
+                tokensLenMinus2: (size - 2) | 0,
+                count: 0,
+                tokens: new Int32Array(size)
+            }
         }
     }
 
     /**
-     * A helper class to store only unique strings.
+     * This ensures there is only 1 instance of a short string.
      */
-    export class ShortStringPool {
-        strings: Map<string, string> = new Map<string, string>();
-
-        getString(key: string) {
-            if (key.length > 6) return key;
-
-            var value = this.strings.get(key);
+    export type ShortStringPool = Map<string, string>
+    export namespace ShortStringPool {
+        export function create(): ShortStringPool { return new Map<string, string>();  }    
+        export function get(pool: ShortStringPool, str: string) {
+            if (str.length > 6) return str;
+            var value = pool.get(str);
             if (value !== void 0) return value;
-            this.strings.set(key, key);
-            return key;
-        }
-    }    
+            pool.set(str, str);
+            return str;
+        } 
+    }
 }
