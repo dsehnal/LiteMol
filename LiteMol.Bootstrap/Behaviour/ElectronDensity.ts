@@ -18,7 +18,6 @@ namespace LiteMol.Bootstrap.Behaviour.Density {
         private behaviour: Entity.Density.InteractiveSurface;
         private ref = Utils.generateUUID();
         private isBusy = false;
-        private latestInfo: Interactivity.Info = void 0; 
         
         private remove() {
             let v = this.getVisual();
@@ -37,19 +36,19 @@ namespace LiteMol.Bootstrap.Behaviour.Density {
                 return;
             }
             
-            let model = Utils.Molecule.findModel(info.entity);
+            let model = Utils.Molecule.findModel(info.entity!);
             let center = {x:0, y:0, z:0};
             let elems = info.elements;
             let m = model.props.model;
-            if (info.elements.length === 1) {
-                elems = Utils.Molecule.getResidueIndices(m, info.elements[0]);
+            if (info.elements!.length === 1) {
+                elems = Utils.Molecule.getResidueIndices(m, info.elements![0]);
             }                         
-            let box = Utils.Molecule.getBox(m, elems, this.params.radius);   
+            let box = Utils.Molecule.getBox(m, elems!, this.params.radius);   
             
             let style = Utils.shallowClone(this.params.style);
             style.params = Utils.shallowClone(style.params);
-            style.params.bottomLeft = box.bottomLeft;
-            style.params.topRight = box.topRight;
+            style.params!.bottomLeft = box.bottomLeft;
+            style.params!.topRight = box.topRight;
             style.computeOnBackground = true;
             
             let task: Task<any>;

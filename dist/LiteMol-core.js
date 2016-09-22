@@ -9138,8 +9138,8 @@ var LiteMol;
                             }
                         }
                         else {
-                            for (var _i = 0, keys_1 = keys; _i < keys_1.length; _i++) {
-                                var key = keys_1[_i];
+                            for (var _i = 0, _a = keys; _i < _a.length; _i++) {
+                                var key = _a[_i];
                                 size += encodeInternal(key, view, bytes, offset + size);
                                 size += encodeInternal(value[key], view, bytes, offset + size);
                             }
@@ -10194,8 +10194,12 @@ var LiteMol;
                      * Reads a category containing a single row.
                      */
                     function handleSingle(tokenizer, block) {
-                        var nsStart = tokenizer.currentTokenStart, nsEnd = getNamespaceEnd(tokenizer), name = getNamespace(tokenizer, nsEnd), column, columns = [], tokens = Formats.TokenIndexBuilder.create(512), tokenCount = 0;
-                        while (tokenizer.currentTokenType === 4 /* ColumnName */ && isNamespace(tokenizer, nsStart, nsEnd)) {
+                        var nsStart = tokenizer.currentTokenStart, nsEnd = getNamespaceEnd(tokenizer), name = getNamespace(tokenizer, nsEnd), column, columns = [], tokens = Formats.TokenIndexBuilder.create(512), tokenCount = 0, readingNames = true;
+                        while (readingNames) {
+                            if (tokenizer.currentTokenType !== 4 /* ColumnName */ || !isNamespace(tokenizer, nsStart, nsEnd)) {
+                                readingNames = false;
+                                break;
+                            }
                             column = getTokenString(tokenizer);
                             moveNext(tokenizer);
                             if (tokenizer.currentTokenType !== 3 /* Value */) {
@@ -10446,7 +10450,7 @@ var LiteMol;
                         if (!column.data.data)
                             return CIF.UndefinedColumn;
                         var data = Binary.decode(column.data);
-                        var mask;
+                        var mask = void 0;
                         if (column.mask)
                             mask = Binary.decode(column.mask);
                         if (data.buffer && data.byteLength && data.BYTES_PER_ELEMENT) {
@@ -11065,6 +11069,14 @@ var LiteMol;
                 var mmCIF;
                 (function (mmCIF) {
                     "use strict";
+                    var Defaults;
+                    (function (Defaults) {
+                        Defaults.ElementSymbol = 'X';
+                        Defaults.ResidueName = 'UNK';
+                        Defaults.AsymId = '';
+                        Defaults.EntityId = '1';
+                        Defaults.ModelId = '1';
+                    })(Defaults || (Defaults = {}));
                     function getModelEndRow(startRow, _atom_site) {
                         var size = _atom_site.rowCount, modelNum = _atom_site.getColumn('pdbx_PDB_model_num'), i = 0;
                         if (!modelNum.isDefined)
@@ -11086,9 +11098,9 @@ var LiteMol;
                             pX[index] = pXCol.getFloat(row);
                             pY[index] = pYCol.getFloat(row);
                             pZ[index] = pZCol.getFloat(row);
-                            name[index] = nameCol.getString(row);
-                            authName[index] = authNameCol.getString(row);
-                            elementSymbol[index] = elementSymbolCol.getString(row);
+                            elementSymbol[index] = elementSymbolCol.getString(row) || Defaults.ElementSymbol;
+                            name[index] = nameCol.getString(row) || elementSymbol[index];
+                            authName[index] = authNameCol.getString(row) || name[index];
                             altLoc[index] = altLocCol.getString(row);
                             occupancy[index] = occupancyCol.getFloat(row);
                             tempFactor[index] = tempFactorCol.getFloat(row);
@@ -11113,7 +11125,7 @@ var LiteMol;
                             entityIndex[index] = numEntities;
                             prev = row;
                         }
-                        var modelId = !modelNumCol.isDefined ? '1' : modelNumCol.getString(startRow);
+                        var modelId = !modelNumCol.isDefined ? Defaults.ModelId : modelNumCol.getString(startRow) || Defaults.ModelId;
                         return {
                             atoms: atoms.seal(),
                             modelId: modelId,
@@ -11125,14 +11137,14 @@ var LiteMol;
                         var i = 0;
                         for (i = 0; i < count; i++) {
                             if (residueIndexCol[i] !== residueIndexCol[residueStart]) {
-                                residueName[currentResidue] = resNameCol.getString(residueStart);
+                                residueName[currentResidue] = resNameCol.getString(residueStart) || Defaults.ResidueName;
                                 residueSeqNumber[currentResidue] = resSeqNumberCol.getInteger(residueStart);
-                                residueAsymId[currentResidue] = asymIdCol.getString(residueStart);
-                                residueAuthName[currentResidue] = authResNameCol.getString(residueStart);
+                                residueAsymId[currentResidue] = asymIdCol.getString(residueStart) || Defaults.AsymId;
+                                residueAuthName[currentResidue] = authResNameCol.getString(residueStart) || residueName[currentResidue];
                                 residueAuthSeqNumber[currentResidue] = authResSeqNumberCol.getInteger(residueStart);
-                                residueAuthAsymId[currentResidue] = authAsymIdCol.getString(residueStart);
+                                residueAuthAsymId[currentResidue] = authAsymIdCol.getString(residueStart) || residueAsymId[currentResidue];
                                 residueInsertionCode[currentResidue] = insCodeCol.getString(residueStart);
-                                residueEntityId[currentResidue] = entityCol.getString(residueStart);
+                                residueEntityId[currentResidue] = entityCol.getString(residueStart) || Defaults.EntityId;
                                 residueIsHet[currentResidue] = isHetCol.stringEquals(residueStart, 'HETATM') ? 1 : 0;
                                 residueAtomStartIndex[currentResidue] = residueStart;
                                 residueAtomEndIndex[currentResidue] = i;
@@ -11142,9 +11154,9 @@ var LiteMol;
                                 residueStart = i;
                             }
                             if (chainIndexCol[i] !== chainIndexCol[chainStart]) {
-                                chainAsymId[currentChain] = asymIdCol.getString(chainStart);
-                                chainAuthAsymId[currentChain] = authAsymIdCol.getString(chainStart);
-                                chainEntityId[currentChain] = entityCol.getString(chainStart);
+                                chainAsymId[currentChain] = asymIdCol.getString(chainStart) || Defaults.AsymId;
+                                chainAuthAsymId[currentChain] = authAsymIdCol.getString(chainStart) || chainAsymId[currentChain];
+                                chainEntityId[currentChain] = entityCol.getString(chainStart) || Defaults.EntityId;
                                 chainResidueStartIndex[currentChain] = chainResidueStart;
                                 chainResidueEndIndex[currentChain] = currentResidue;
                                 chainAtomStartIndex[currentChain] = chainStart;
@@ -11155,7 +11167,7 @@ var LiteMol;
                                 chainResidueStart = currentResidue;
                             }
                             if (entityIndexCol[i] !== entityIndexCol[entityStart]) {
-                                entityId[currentEntity] = entityCol.getString(entityStart);
+                                entityId[currentEntity] = entityCol.getString(entityStart) || Defaults.EntityId;
                                 entityTypeEnum[currentEntity] = Core.Structure.EntityType.Unknown;
                                 entityType[currentEntity] = 'unknown';
                                 entityAtomStartIndex[currentEntity] = entityStart;
@@ -11171,7 +11183,7 @@ var LiteMol;
                             }
                         }
                         // entity
-                        entityId[currentEntity] = entityCol.getString(entityStart);
+                        entityId[currentEntity] = entityCol.getString(entityStart) || Defaults.EntityId;
                         entityTypeEnum[currentEntity] = Core.Structure.EntityType.Unknown;
                         entityType[currentEntity] = 'unknown';
                         entityAtomStartIndex[currentEntity] = entityStart;
@@ -11181,21 +11193,21 @@ var LiteMol;
                         entityChainStartIndex[currentEntity] = entityChainStart;
                         entityChainEndIndex[currentEntity] = currentChain + 1;
                         // chain
-                        chainAsymId[currentChain] = asymIdCol.getString(chainStart);
-                        chainAuthAsymId[currentChain] = authAsymIdCol.getString(chainStart);
-                        chainEntityId[currentChain] = entityCol.getString(chainStart);
+                        chainAsymId[currentChain] = asymIdCol.getString(chainStart) || Defaults.AsymId;
+                        chainAuthAsymId[currentChain] = authAsymIdCol.getString(chainStart) || chainAsymId[currentChain];
+                        chainEntityId[currentChain] = entityCol.getString(chainStart) || Defaults.EntityId;
                         chainResidueStartIndex[currentChain] = chainResidueStart;
                         chainResidueEndIndex[currentChain] = currentResidue + 1;
                         chainAtomStartIndex[currentChain] = chainStart;
                         chainAtomEndIndex[currentChain] = i;
                         chainEntityIndex[currentChain] = currentEntity;
                         // residue
-                        residueName[currentResidue] = resNameCol.getString(residueStart);
+                        residueName[currentResidue] = resNameCol.getString(residueStart) || Defaults.ResidueName;
                         residueSeqNumber[currentResidue] = resSeqNumberCol.getInteger(residueStart);
-                        residueAsymId[currentResidue] = asymIdCol.getString(residueStart);
-                        residueAuthName[currentResidue] = authResNameCol.getString(residueStart);
+                        residueAsymId[currentResidue] = asymIdCol.getString(residueStart) || Defaults.AsymId;
+                        residueAuthName[currentResidue] = authResNameCol.getString(residueStart) || residueName[currentResidue];
                         residueAuthSeqNumber[currentResidue] = authResSeqNumberCol.getInteger(residueStart);
-                        residueAuthAsymId[currentResidue] = authAsymIdCol.getString(residueStart);
+                        residueAuthAsymId[currentResidue] = authAsymIdCol.getString(residueStart) || residueAsymId[currentResidue];
                         residueInsertionCode[currentResidue] = insCodeCol.getString(residueStart);
                         residueAtomStartIndex[currentResidue] = residueStart;
                         residueAtomEndIndex[currentResidue] = i;
@@ -11233,7 +11245,7 @@ var LiteMol;
                                     et = Core.Structure.EntityType.Unknown;
                                     break;
                             }
-                            var eId = idCol.getString(i);
+                            var eId = idCol.getString(i) || Defaults.EntityId;
                             dataEnum[eId] = et;
                             data[eId] = t !== '' ? t : 'unknown';
                         }
@@ -11246,7 +11258,7 @@ var LiteMol;
                         }
                     }
                     function residueIdfromColumns(row, asymId, seqNum, insCode) {
-                        return new Core.Structure.PolyResidueIdentifier(asymId.getString(row), seqNum.getInteger(row), insCode.getString(row));
+                        return new Core.Structure.PolyResidueIdentifier(asymId.getString(row) || Defaults.AsymId, seqNum.getInteger(row), insCode.getString(row));
                     }
                     var aminoAcidNames = { 'ALA': true, 'ARG': true, 'ASP': true, 'CYS': true, 'GLN': true, 'GLU': true, 'GLY': true, 'HIS': true, 'ILE': true, 'LEU': true, 'LYS': true, 'MET': true, 'PHE': true, 'PRO': true, 'SER': true, 'THR': true, 'TRP': true, 'TYR': true, 'VAL': true, 'ASN': true, 'PYL': true, 'SEC': true };
                     function isResidueAminoSeq(atoms, residues, entities, index) {
@@ -11362,7 +11374,7 @@ var LiteMol;
                         return ret;
                     }
                     function updateSSIndicesAndFilterEmpty(elements, structure) {
-                        var residues = structure.residues, count = residues.count, asymId = residues.asymId, seqNumber = residues.seqNumber, insCode = residues.insCode, inSS = false, currentElement, endPivot, key = '', starts = new Map(), ends = new Map();
+                        var residues = structure.residues, count = residues.count, asymId = residues.asymId, seqNumber = residues.seqNumber, insCode = residues.insCode, inSS = false, currentElement = void 0, endPivot, key = '', starts = new Map(), ends = new Map();
                         for (var _i = 0, elements_2 = elements; _i < elements_2.length; _i++) {
                             var e = elements_2[_i];
                             key = e.startResidueId.asymId + ' ' + e.startResidueId.seqNumber;
@@ -11445,7 +11457,7 @@ var LiteMol;
                                 var pdbx_PDB_helix_class = _struct_conf.getColumn('pdbx_PDB_helix_class');
                                 for (i = 0; i < _struct_conf.rowCount; i++) {
                                     var type = void 0;
-                                    switch (type_id_col.getString(i).toUpperCase()) {
+                                    switch ((type_id_col.getString(i) || '').toUpperCase()) {
                                         case 'HELX_P':
                                             type = 1 /* Helix */;
                                             break;
@@ -11539,7 +11551,7 @@ var LiteMol;
                     function getAssemblyInfo(data) {
                         var _info = data.getCategory('_pdbx_struct_assembly'), _gen = data.getCategory('_pdbx_struct_assembly_gen'), _opers = data.getCategory('_pdbx_struct_oper_list');
                         if (!_info || !_gen || !_opers) {
-                            return null;
+                            return void 0;
                         }
                         var i, opers = {}, gens = [], genMap = new Map();
                         var assembly_id = _gen.getColumn('assembly_id');
@@ -11547,6 +11559,9 @@ var LiteMol;
                         var asym_id_list = _gen.getColumn('asym_id_list');
                         for (i = 0; i < _gen.rowCount; i++) {
                             var id = assembly_id.getString(i);
+                            if (!id) {
+                                return void 0;
+                            }
                             var entry = genMap.get(id);
                             if (!entry) {
                                 entry = new Core.Structure.AssemblyGen(id);
@@ -11560,7 +11575,7 @@ var LiteMol;
                         for (i = 0; i < _opers.rowCount; i++) {
                             var oper = Formats.CIF.Category.getTransform(_opers, 'matrix', 'vector', i);
                             if (!oper) {
-                                return null;
+                                return void 0;
                             }
                             var op = new Core.Structure.AssemblyOperator(_pdbx_struct_oper_list_id.getString(i), _pdbx_struct_oper_list_name.getString(i), oper);
                             opers[op.id] = op;
@@ -11571,13 +11586,13 @@ var LiteMol;
                         var _cell = data.getCategory('_cell'), _symmetry = data.getCategory('_symmetry'), _atom_sites = data.getCategory('_atom_sites');
                         var spacegroupName = '', cellSize = [1.0, 1.0, 1.0], cellAngles = [90.0, 90.0, 90.0], toFracTransform = Core.Geometry.LinearAlgebra.Matrix4.identity(), isNonStandardCrytalFrame = false;
                         if (!_cell || !_symmetry) {
-                            return null;
+                            return void 0;
                         }
                         spacegroupName = _symmetry.getColumn('space_group_name_H-M').getString(0);
                         cellSize = [_cell.getColumn('length_a').getFloat(0), _cell.getColumn('length_b').getFloat(0), _cell.getColumn('length_c').getFloat(0)];
                         cellAngles = [_cell.getColumn('angle_alpha').getFloat(0), _cell.getColumn('angle_beta').getFloat(0), _cell.getColumn('angle_gamma').getFloat(0)];
                         if (!spacegroupName || cellSize.every(function (s) { return isNaN(s) || s === 0.0; }) || cellSize.every(function (s) { return isNaN(s) || s === 0.0; })) {
-                            return null;
+                            return void 0;
                         }
                         var sq = function (x) { return x * x; };
                         var toRadians = function (degs) { return degs * Math.PI / 180.0; };
@@ -11605,7 +11620,7 @@ var LiteMol;
                     }
                     function getComponentBonds(category) {
                         if (!category || !category.rowCount)
-                            return undefined;
+                            return void 0;
                         var info = new Core.Structure.ComponentBondInfo();
                         var idCol = category.getColumn('comp_id'), nameACol = category.getColumn('atom_id_1'), nameBCol = category.getColumn('atom_id_2'), orderCol = category.getColumn('value_order'), count = category.rowCount;
                         var entry = info.newEntry(idCol.getString(0));
@@ -11725,7 +11740,11 @@ var LiteMol;
                                 "2 non-polymer syn non-polymer 0.0 0 ? ? ? ?",
                                 "3 water nat water 0.0 0 ? ? ? ?"
                             ].join('\n');
-                            return Formats.CIF.Text.parse(data).result.dataBlocks[0].getCategory('_entity');
+                            var file = Formats.CIF.Text.parse(data);
+                            if (file.error) {
+                                throw file.error.toString();
+                            }
+                            return file.result.dataBlocks[0].getCategory('_entity');
                         };
                         MoleculeData.prototype.toCifFile = function () {
                             var helpers = {
@@ -11804,7 +11823,7 @@ var LiteMol;
                             this.sheetTokens = sheetTokens;
                         }
                         SecondaryStructure.prototype.toCifCategory = function (data) {
-                            return null;
+                            return void 0;
                         };
                         return SecondaryStructure;
                     }());
@@ -12166,6 +12185,9 @@ var LiteMol;
                                 switch (data.charCodeAt(tokenizer.position)) {
                                     case 65:
                                         if (tokenizer.startsWith(tokenizer.position, "ATOM")) {
+                                            if (!modelAtomTokens) {
+                                                modelAtomTokens = Formats.TokenIndexBuilder.create(4096);
+                                            }
                                             var err = Parser.tokenizeAtom(modelAtomTokens, tokenizer);
                                             atomCount++;
                                             if (err)
@@ -12184,7 +12206,9 @@ var LiteMol;
                                             if (models.length === 0) {
                                                 modelIdToken = { start: data.length + 3, end: data.length + 4 };
                                             }
-                                            models.push(new PDB.ModelData(modelIdToken, modelAtomTokens.tokens, atomCount));
+                                            if (modelAtomTokens) {
+                                                models.push(new PDB.ModelData(modelIdToken, modelAtomTokens.tokens, atomCount));
+                                            }
                                             atomCount = 0;
                                             modelAtomTokens = null;
                                         }
@@ -12199,6 +12223,9 @@ var LiteMol;
                                         break;
                                     case 72:
                                         if (tokenizer.startsWith(tokenizer.position, "HETATM")) {
+                                            if (!modelAtomTokens) {
+                                                modelAtomTokens = Formats.TokenIndexBuilder.create(4096);
+                                            }
                                             var err = Parser.tokenizeAtom(modelAtomTokens, tokenizer);
                                             atomCount++;
                                             if (err)
@@ -12211,7 +12238,9 @@ var LiteMol;
                                                 if (models.length === 0) {
                                                     modelIdToken = { start: data.length + 3, end: data.length + 4 };
                                                 }
-                                                models.push(new PDB.ModelData(modelIdToken, modelAtomTokens.tokens, atomCount));
+                                                if (modelAtomTokens) {
+                                                    models.push(new PDB.ModelData(modelIdToken, modelAtomTokens.tokens, atomCount));
+                                                }
                                             }
                                             var start = tokenizer.position + 6;
                                             var end = tokenizer.moveToEndOfLine();
@@ -12233,7 +12262,9 @@ var LiteMol;
                                 if (models.length === 0) {
                                     modelIdToken = { start: data.length + 3, end: data.length + 4 };
                                 }
-                                models.push(new PDB.ModelData(modelIdToken, modelAtomTokens.tokens, atomCount));
+                                if (modelAtomTokens) {
+                                    models.push(new PDB.ModelData(modelIdToken, modelAtomTokens.tokens, atomCount));
+                                }
                             }
                             return new PDB.MoleculeData(new PDB.Header(id), cryst, new PDB.ModelsData(models), fakeCifData);
                         };
@@ -12362,7 +12393,8 @@ var LiteMol;
                         residues.columns.isHet[0] = 1;
                         residues.columns.insCode[0] = null;
                         residues.columns.name[0]
-                            = residues.columns.authName[0] = 'UNK';
+                            = residues.columns.authName[0]
+                                = 'UNK';
                         residues.columns.atomEndIndex[0]
                             = chains.columns.atomEndIndex[0]
                                 = entities.columns.atomEndIndex[0]
@@ -12438,8 +12470,7 @@ var LiteMol;
             (function (Molecule) {
                 var SupportedFormats;
                 (function (SupportedFormats) {
-                    SupportedFormats.mmCIF = { name: 'mmCIF', extensions: ['.cif'], parse: function (data, _a) {
-                            var id = _a.id;
+                    SupportedFormats.mmCIF = { name: 'mmCIF', extensions: ['.cif'], parse: function (data) {
                             return Core.Computation.create(function (ctx) {
                                 ctx.update('Parsing...');
                                 ctx.schedule(function () {
@@ -12465,8 +12496,7 @@ var LiteMol;
                                 });
                             });
                         } };
-                    SupportedFormats.mmBCIF = { name: 'mmCIF (Binary)', extensions: ['.bcif'], isBinary: true, parse: function (data, _a) {
-                            var id = _a.id;
+                    SupportedFormats.mmBCIF = { name: 'mmCIF (Binary)', extensions: ['.bcif'], isBinary: true, parse: function (data) {
                             return Core.Computation.create(function (ctx) {
                                 ctx.update('Parsing...');
                                 ctx.schedule(function () {
@@ -12492,12 +12522,11 @@ var LiteMol;
                                 });
                             });
                         } };
-                    SupportedFormats.PDB = { name: 'PDB', extensions: ['.pdb', '.ent'], parse: function (data, _a) {
-                            var id = _a.id;
+                    SupportedFormats.PDB = { name: 'PDB', extensions: ['.pdb', '.ent'], parse: function (data, options) {
                             return Core.Computation.create(function (ctx) {
                                 ctx.update('Parsing...');
                                 ctx.schedule(function () {
-                                    var file = Molecule.PDB.toCifFile(id !== void 0 ? id : 'PDB', data);
+                                    var file = Molecule.PDB.toCifFile((options && options.id) || 'PDB', data);
                                     if (file.error) {
                                         ctx.reject(file.error.toString());
                                         return;
@@ -12519,12 +12548,11 @@ var LiteMol;
                                 });
                             });
                         } };
-                    SupportedFormats.SDF = { name: 'SDF', extensions: ['.sdf', '.mol'], parse: function (data, _a) {
-                            var id = _a.id;
+                    SupportedFormats.SDF = { name: 'SDF', extensions: ['.sdf', '.mol'], parse: function (data, options) {
                             return Core.Computation.create(function (ctx) {
                                 ctx.update('Parsing...');
                                 ctx.schedule(function () {
-                                    var mol = Molecule.SDF.parse(data, id);
+                                    var mol = Molecule.SDF.parse(data, (options && options.id) || undefined);
                                     if (mol.error) {
                                         ctx.reject(mol.error.toString());
                                         return;
@@ -12553,7 +12581,7 @@ var LiteMol;
                 "use strict";
                 function fill(data, value) {
                     var len = data.length;
-                    for (var i = 0; i < this.len; i++) {
+                    for (var i = 0; i < len; i++) {
                         data[i] = value;
                     }
                 }
@@ -13484,15 +13512,13 @@ var LiteMol;
                     buffer.capacity = newCapacity;
                 }
                 function add(distSq, index) {
-                    var self = this;
-                    if (self.count + 1 >= self.capacity) {
-                        ensureCapacity(self);
+                    if (this.count + 1 >= this.capacity) {
+                        ensureCapacity(this);
                     }
-                    self.indices[self.count++] = index;
+                    this.indices[this.count++] = index;
                 }
                 function reset() {
-                    var self = this;
-                    self.count = 0;
+                    this.count = 0;
                 }
                 function create(initialCapacity) {
                     if (initialCapacity < 1)
@@ -13531,15 +13557,13 @@ var LiteMol;
                     buffer.capacity = newCapacity;
                 }
                 function add(distSq, index) {
-                    var self = this;
-                    if (self.count + 1 >= self.capacity)
-                        ensureCapacity(self);
-                    self.priorities[self.count] = distSq;
-                    self.indices[self.count++] = index;
+                    if (this.count + 1 >= this.capacity)
+                        ensureCapacity(this);
+                    this.priorities[this.count] = distSq;
+                    this.indices[this.count++] = index;
                 }
                 function reset() {
-                    var self = this;
-                    self.count = 0;
+                    this.count = 0;
                 }
                 function create(initialCapacity) {
                     if (initialCapacity < 1)
@@ -13727,16 +13751,17 @@ var LiteMol;
                         indices[i] = i;
                         f(data[i], add);
                     }
-                    add = null;
+                    // help gc
+                    add = void 0;
                     var state = {
                         bounds: positions.bounds,
                         positions: positions.data,
                         leafSize: leafSize,
                         indices: indices,
-                        emptyNode: SubdivisionTree3DNode.create(NaN, -1, -1, null, null),
+                        emptyNode: SubdivisionTree3DNode.create(NaN, -1, -1, void 0, void 0),
                     };
                     var root = split(state, 0, indices.length - 1, 0);
-                    state = null;
+                    state = void 0;
                     return { root: root, indices: indices, positions: positions.data };
                 }
                 SubdivisionTree3DBuilder.build = build;
@@ -14020,8 +14045,8 @@ var LiteMol;
                     MarchingCubesComputation.prototype.finish = function () {
                         var vertices = this.state.vertexBuffer.compact();
                         var triangles = this.state.triangleBuffer.compact();
-                        this.state.vertexBuffer = null;
-                        this.state.verticesOnEdges = null;
+                        this.state.vertexBuffer = void 0;
+                        this.state.verticesOnEdges = void 0;
                         var ret = {
                             vertexCount: (vertices.length / 3) | 0,
                             triangleCount: (triangles.length / 3) | 0,
@@ -14750,6 +14775,7 @@ var LiteMol;
                         this.finish();
                     };
                     MolecularIsoFieldComputation.prototype.finish = function () {
+                        // help the gc
                         this.maxField = null;
                         var t = Geometry.LinearAlgebra.Matrix4.empty();
                         Geometry.LinearAlgebra.Matrix4.fromTranslation(t, [this.minX, this.minY, this.minZ]);
@@ -14810,7 +14836,7 @@ var LiteMol;
                         .bind(function (f) {
                         return Geometry.MarchingCubes.compute(f.data)
                             .bind(function (s) { return Geometry.Surface.transform(s, f.transform); })
-                            .bind(function (s) { return Geometry.Surface.laplacianSmooth(s, f.inputParameters.parameters.smoothingIterations)
+                            .bind(function (s) { return Geometry.Surface.laplacianSmooth(s, (f.inputParameters.parameters && f.inputParameters.parameters.smoothingIterations) || 1)
                             .bind(function (s) { return createResultResultData(f, s); }); });
                     });
                 }
@@ -17153,7 +17179,7 @@ var LiteMol;
                         pivotIndices = model.atoms.indices;
                     else
                         pivotIndices = model.query(pivotsQuery).unionAtomIndices();
-                    var bounds = getBoundingInfo(model, pivotIndices), spacegroup = new Structure.Spacegroup(model.symmetryInfo), ctx = createSymmetryContext(model, bounds, spacegroup, radius);
+                    var bounds = getBoundingInfo(model, pivotIndices), spacegroup = new Structure.Spacegroup(info), ctx = createSymmetryContext(model, bounds, spacegroup, radius);
                     var transforms = findSuitableTransforms(ctx), residues = getSymmetryResidues(ctx, transforms);
                     return assemble(model, residues, transforms);
                 }
@@ -18469,11 +18495,10 @@ var LiteMol;
                         var _where = Builder.toQuery(where);
                         return function (ctx) {
                             var src = _where(ctx), tree = ctx.tree, radiusCtx = Core.Geometry.SubdivisionTree3D.createContextRadius(tree, radius, false), buffer = radiusCtx.buffer, ret = new Query.HashFragmentSeqBuilder(ctx), x = ctx.structure.atoms.x, y = ctx.structure.atoms.y, z = ctx.structure.atoms.z, residueIndex = ctx.structure.atoms.residueIndex, atomStart = ctx.structure.residues.atomStartIndex, atomEnd = ctx.structure.residues.atomEndIndex, residues = new Set(), treeData = tree.data;
-                            for (var _i = 0, _a = src.fragments; _i < _a.length; _i++) {
-                                var f = _a[_i];
+                            var _loop_1 = function(f) {
                                 residues.clear();
-                                for (var _c = 0, _d = f.atomIndices; _c < _d.length; _c++) {
-                                    var i = _d[_c];
+                                for (var _i = 0, _a = f.atomIndices; _i < _a.length; _i++) {
+                                    var i = _a[_i];
                                     residues.add(residueIndex[i]);
                                     radiusCtx.nearest(x[i], y[i], z[i], radius);
                                     for (var j = 0, _l = buffer.count; j < _l; j++) {
@@ -18490,6 +18515,10 @@ var LiteMol;
                                 }, atomIndices);
                                 Array.prototype.sort.call(indices, function (a, b) { return a - b; });
                                 ret.add(Query.Fragment.ofArray(ctx, indices[0], indices));
+                            };
+                            for (var _c = 0, _d = src.fragments; _c < _d.length; _c++) {
+                                var f = _d[_c];
+                                _loop_1(f);
                             }
                             return ret.getSeq();
                         };
@@ -18499,11 +18528,10 @@ var LiteMol;
                         var _where = Builder.toQuery(where);
                         return function (ctx) {
                             var src = _where(ctx), ret = new Query.HashFragmentSeqBuilder(ctx), residueIndex = ctx.structure.atoms.residueIndex, atomStart = ctx.structure.residues.atomStartIndex, atomEnd = ctx.structure.residues.atomEndIndex, residues = new Set();
-                            for (var _i = 0, _a = src.fragments; _i < _a.length; _i++) {
-                                var f = _a[_i];
+                            var _loop_2 = function(f) {
                                 residues.clear();
-                                for (var _c = 0, _d = f.atomIndices; _c < _d.length; _c++) {
-                                    var i = _d[_c];
+                                for (var _i = 0, _a = f.atomIndices; _i < _a.length; _i++) {
+                                    var i = _a[_i];
                                     residues.add(residueIndex[i]);
                                 }
                                 var atomCount = { count: 0, start: atomStart, end: atomEnd };
@@ -18516,6 +18544,10 @@ var LiteMol;
                                 }, atomIndices);
                                 Array.prototype.sort.call(indices, function (a, b) { return a - b; });
                                 ret.add(Query.Fragment.ofArray(ctx, indices[0], indices));
+                            };
+                            for (var _c = 0, _d = src.fragments; _c < _d.length; _c++) {
+                                var f = _d[_c];
+                                _loop_2(f);
                             }
                             return ret.getSeq();
                         };

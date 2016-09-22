@@ -9,7 +9,7 @@ namespace LiteMol.Bootstrap.Tree {
     export interface Transform<A extends Node, B extends Node, P> {
         props: Transform.Props,                 
         transformer: Transformer<A, B, P>,
-        params?: P,
+        params: P,
         isUpdate?: boolean,
         apply(context: Context, a: A): Task<B>
         update(context: Context, b: B): Task<B>
@@ -40,7 +40,7 @@ namespace LiteMol.Bootstrap.Tree {
                     ctx.resolve(b);
                     return;
                 }            
-                b.ref = this.props.ref;
+                b.ref = this.props.ref!;
                 if (this.props.isHidden) b.isHidden = true;
                 if (!b.tree) {
                     b.parent = a;
@@ -56,7 +56,7 @@ namespace LiteMol.Bootstrap.Tree {
                 }
                 
                 let a = b.parent;
-                newB.ref= this.props.ref; 
+                newB.ref= this.props.ref!; 
                 newB.parent = a; 
                 newB.tag = b.tag;
                 newB.state = b.state;

@@ -5565,7 +5565,7 @@ var LiteMol;
         var Utils;
         (function (Utils) {
             "use strict";
-            var VDWRadii = undefined;
+            var VDWRadii = void 0;
             function vdwRadiusFromElementSymbol(model) {
                 if (!VDWRadii)
                     VDWRadii = createVdwRadii();
@@ -5880,6 +5880,7 @@ var LiteMol;
                     var model = findModel(m);
                     if (!model) {
                         console.warn('Could not find a model for query selection.');
+                        return void 0;
                     }
                     var queryContext = findQueryContext(m);
                     try {
@@ -5888,7 +5889,7 @@ var LiteMol;
                     }
                     catch (e) {
                         console.error('Query Execution', e);
-                        return {};
+                        return void 0;
                     }
                 }
                 Molecule.getModelAndIndicesFromQuery = getModelAndIndicesFromQuery;
@@ -6126,11 +6127,11 @@ var LiteMol;
             };
             Task.prototype.run = function (context) {
                 var _this = this;
-                var ctx;
-                var ret = new LiteMol.Core.Promise(function (resolve, reject) {
+                return new Task.Running(function (resolve, reject, setCtx) {
                     Bootstrap.Event.Task.Started.dispatch(context, _this);
                     context.performance.start('task' + _this.id);
-                    ctx = new Task.Context(context, _this, resolve, reject);
+                    var ctx = new Task.Context(context, _this, resolve, reject);
+                    setCtx(ctx);
                     try {
                         _this.task(new Task.Context(context, _this, resolve, reject));
                     }
@@ -6138,7 +6139,6 @@ var LiteMol;
                         ctx.reject(e);
                     }
                 });
-                return new Task.Running(ret, ctx);
             };
             Task.prototype.setReportTime = function (report) {
                 this.reportTime = report;
@@ -6150,9 +6150,9 @@ var LiteMol;
         var Task;
         (function (Task) {
             var Running = (function () {
-                function Running(promise, ctx) {
-                    this.promise = promise;
-                    this.ctx = ctx;
+                function Running(p) {
+                    var _this = this;
+                    this.promise = new Bootstrap.Promise(function (res, rej) { return p(res, rej, function (ctx) { return _this.ctx = ctx; }); });
                 }
                 Running.prototype.then = function (action) {
                     return this.promise.then(action);
@@ -6583,7 +6583,7 @@ var LiteMol;
             function updatePath(node) {
                 if (!node)
                     return;
-                var top;
+                var top = void 0;
                 while (node !== node.parent) {
                     top = node;
                     Tree.Node.update(node);
@@ -7564,7 +7564,7 @@ var LiteMol;
                     if (!targets.length)
                         return;
                     var q = Bootstrap.Utils.Molecule.getModelAndIndicesFromQuery(model, what.query);
-                    if (!q.model || !q.indices.length)
+                    if (!q || !q.indices.length)
                         return;
                     var action = what.isOn ? 3 /* Highlight */ : 4 /* RemoveHighlight */;
                     for (var _i = 0, targets_1 = targets; _i < targets_1.length; _i++) {
@@ -7665,7 +7665,7 @@ var LiteMol;
                 };
                 SceneWrapper.prototype.focusMoleculeModelOnQuery = function (what) {
                     var q = Bootstrap.Utils.Molecule.getModelAndIndicesFromQuery(what.model, what.query);
-                    if (!q.model || !q.indices.length)
+                    if (!q || !q.indices.length)
                         return;
                     var center = { x: 0.1, y: 0.1, z: 0.1 };
                     var r = Bootstrap.Utils.Molecule.getCentroidAndRadius(q.model.props.model, q.indices, center);
@@ -7758,7 +7758,7 @@ var LiteMol;
                 }
                 Molecule.createPaletteThemeProvider = createPaletteThemeProvider;
                 function uniformThemeProvider(e, props) {
-                    if (props.colors) {
+                    if (props && props.colors) {
                         props.colors.set('Bond', props.colors.get('Uniform'));
                     }
                     return Vis.Theme.createUniform(props);
@@ -7882,6 +7882,64 @@ var LiteMol;
                     Default.ElementSymbolThemeTemplate = Default.Themes.filter(function (t) { return t.name === 'Element Symbol'; })[0];
                     Default.SurfaceThemeTemplate = Default.Themes.filter(function (t) { return t.name === 'Uniform Color'; })[0];
                     Default.UniformThemeTemplate = Default.Themes.filter(function (t) { return t.name === 'Uniform Color'; })[0];
+                })(Default = Molecule.Default || (Molecule.Default = {}));
+            })(Molecule = Visualization.Molecule || (Visualization.Molecule = {}));
+        })(Visualization = Bootstrap.Visualization || (Bootstrap.Visualization = {}));
+    })(Bootstrap = LiteMol.Bootstrap || (LiteMol.Bootstrap = {}));
+})(LiteMol || (LiteMol = {}));
+/*
+ * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ */
+var LiteMol;
+(function (LiteMol) {
+    var Bootstrap;
+    (function (Bootstrap) {
+        var Visualization;
+        (function (Visualization) {
+            var Molecule;
+            (function (Molecule) {
+                "use strict";
+                Molecule.TypeDescriptions = {
+                    'Cartoons': { label: 'Cartoon', shortLabel: 'Cartoon' },
+                    'Calpha': { label: 'C-\u03B1 Trace', shortLabel: 'C-\u03B1' },
+                    'BallsAndSticks': { label: 'Balls and Sticks', shortLabel: "B'n'S" },
+                    'VDWBalls': { label: 'VDW Balls', shortLabel: 'VDW' },
+                    'Surface': { label: 'Surface', shortLabel: 'Surface' }
+                };
+                Molecule.Types = ['Cartoons', 'Calpha', 'BallsAndSticks', 'VDWBalls', 'Surface'];
+                Molecule.DetailTypes = ['Automatic', 'Very Low', 'Low', 'Medium', 'High', 'Very High'];
+                var Default;
+                (function (Default) {
+                    Default.DetailParams = { detail: 'Automatic' };
+                    Default.BallsAndSticksParams = {
+                        useVDW: true,
+                        vdwScaling: 0.22,
+                        atomRadius: 0.35,
+                        bondRadius: 0.09,
+                        detail: 'Automatic'
+                    };
+                    Default.SurfaceParams = {
+                        probeRadius: 1.4,
+                        density: 1.1,
+                        smoothing: 6,
+                        isWireframe: false
+                    };
+                    Default.Transparency = { alpha: 1.0, writeDepth: false };
+                    Default.ForType = (function () {
+                        var types = {
+                            'Cartoons': { type: 'Cartoons', params: { detail: 'Automatic' }, theme: { template: Default.CartoonThemeTemplate, colors: Default.CartoonThemeTemplate.colors, transparency: Default.Transparency, interactive: true } },
+                            'Calpha': { type: 'Calpha', params: { detail: 'Automatic' }, theme: { template: Default.CartoonThemeTemplate, colors: Default.CartoonThemeTemplate.colors, transparency: Default.Transparency, interactive: true } },
+                            'BallsAndSticks': { type: 'BallsAndSticks', params: Default.BallsAndSticksParams, theme: { template: Default.ElementSymbolThemeTemplate, colors: Default.ElementSymbolThemeTemplate.colors, transparency: Default.Transparency, interactive: true } },
+                            'VDWBalls': { type: 'VDWBalls', params: { detail: 'Automatic' }, theme: { template: Default.ElementSymbolThemeTemplate, colors: Default.ElementSymbolThemeTemplate.colors, transparency: Default.Transparency, interactive: true } },
+                            'Surface': { type: 'Surface', params: Default.SurfaceParams, theme: { template: Default.SurfaceThemeTemplate, colors: Default.SurfaceThemeTemplate.colors, transparency: { alpha: 0.33, writeDepth: false }, interactive: true } }
+                        };
+                        var map = new Map();
+                        for (var _i = 0, _a = Object.keys(types); _i < _a.length; _i++) {
+                            var k = _a[_i];
+                            map.set(k, types[k]);
+                        }
+                        return map;
+                    })();
                 })(Default = Molecule.Default || (Molecule.Default = {}));
             })(Molecule = Visualization.Molecule || (Visualization.Molecule = {}));
         })(Visualization = Bootstrap.Visualization || (Bootstrap.Visualization = {}));
@@ -8042,64 +8100,6 @@ var LiteMol;
     (function (Bootstrap) {
         var Visualization;
         (function (Visualization) {
-            var Molecule;
-            (function (Molecule) {
-                "use strict";
-                Molecule.TypeDescriptions = {
-                    'Cartoons': { label: 'Cartoon', shortLabel: 'Cartoon' },
-                    'Calpha': { label: 'C-\u03B1 Trace', shortLabel: 'C-\u03B1' },
-                    'BallsAndSticks': { label: 'Balls and Sticks', shortLabel: "B'n'S" },
-                    'VDWBalls': { label: 'VDW Balls', shortLabel: 'VDW' },
-                    'Surface': { label: 'Surface', shortLabel: 'Surface' }
-                };
-                Molecule.Types = ['Cartoons', 'Calpha', 'BallsAndSticks', 'VDWBalls', 'Surface'];
-                Molecule.DetailTypes = ['Automatic', 'Very Low', 'Low', 'Medium', 'High', 'Very High'];
-                var Default;
-                (function (Default) {
-                    Default.DetailParams = { detail: 'Automatic' };
-                    Default.BallsAndSticksParams = {
-                        useVDW: true,
-                        vdwScaling: 0.22,
-                        atomRadius: 0.35,
-                        bondRadius: 0.09,
-                        detail: 'Automatic'
-                    };
-                    Default.SurfaceParams = {
-                        probeRadius: 1.4,
-                        density: 1.1,
-                        smoothing: 6,
-                        isWireframe: false
-                    };
-                    Default.Transparency = { alpha: 1.0, writeDepth: false };
-                    Default.ForType = (function () {
-                        var types = {
-                            'Cartoons': { type: 'Cartoons', params: { detail: 'Automatic' }, theme: { template: Default.CartoonThemeTemplate, colors: Default.CartoonThemeTemplate.colors, transparency: Default.Transparency, interactive: true } },
-                            'Calpha': { type: 'Calpha', params: { detail: 'Automatic' }, theme: { template: Default.CartoonThemeTemplate, colors: Default.CartoonThemeTemplate.colors, transparency: Default.Transparency, interactive: true } },
-                            'BallsAndSticks': { type: 'BallsAndSticks', params: Default.BallsAndSticksParams, theme: { template: Default.ElementSymbolThemeTemplate, colors: Default.ElementSymbolThemeTemplate.colors, transparency: Default.Transparency, interactive: true } },
-                            'VDWBalls': { type: 'VDWBalls', params: { detail: 'Automatic' }, theme: { template: Default.ElementSymbolThemeTemplate, colors: Default.ElementSymbolThemeTemplate.colors, transparency: Default.Transparency, interactive: true } },
-                            'Surface': { type: 'Surface', params: Default.SurfaceParams, theme: { template: Default.SurfaceThemeTemplate, colors: Default.SurfaceThemeTemplate.colors, transparency: { alpha: 0.33, writeDepth: false }, interactive: true } }
-                        };
-                        var map = new Map();
-                        for (var _i = 0, _a = Object.keys(types); _i < _a.length; _i++) {
-                            var k = _a[_i];
-                            map.set(k, types[k]);
-                        }
-                        return map;
-                    })();
-                })(Default = Molecule.Default || (Molecule.Default = {}));
-            })(Molecule = Visualization.Molecule || (Visualization.Molecule = {}));
-        })(Visualization = Bootstrap.Visualization || (Bootstrap.Visualization = {}));
-    })(Bootstrap = LiteMol.Bootstrap || (LiteMol.Bootstrap = {}));
-})(LiteMol || (LiteMol = {}));
-/*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
- */
-var LiteMol;
-(function (LiteMol) {
-    var Bootstrap;
-    (function (Bootstrap) {
-        var Visualization;
-        (function (Visualization) {
             var Density;
             (function (Density) {
                 "use strict";
@@ -8157,7 +8157,7 @@ var LiteMol;
                             ctx.reject({ warn: true, message: 'Empty box.' });
                             return;
                         }
-                        var isoValue = data.valuesInfo.mean + data.valuesInfo.sigma * style.params.isoSigma;
+                        var isoValue = data.valuesInfo.mean + data.valuesInfo.sigma * params.isoSigma;
                         var surface = Geom.MarchingCubes.compute({
                             isoLevel: isoValue,
                             scalarField: data.data,
@@ -9250,7 +9250,8 @@ var LiteMol;
                     if (!Bootstrap.Tree.Node.is(e.data, Bootstrap.Entity.Molecule.Model) || e.data.isHidden) {
                         return;
                     }
-                    Bootstrap.Command.Tree.ApplyTransform.dispatch(context, { node: e.data, transform: Bootstrap.Entity.Transformer.Molecule.CreateMacromoleculeVisual.create(Bootstrap.Entity.Transformer.Molecule.CreateMacromoleculeVisual.info.defaultParams(context)) });
+                    var prms = Bootstrap.Entity.Transformer.Molecule.CreateMacromoleculeVisual.info.defaultParams(context, e.data);
+                    Bootstrap.Command.Tree.ApplyTransform.dispatch(context, { node: e.data, transform: Bootstrap.Entity.Transformer.Molecule.CreateMacromoleculeVisual.create(prms) });
                 });
             }
             Behaviour.CreateVisualWhenModelIsAdded = CreateVisualWhenModelIsAdded;
@@ -9274,13 +9275,13 @@ var LiteMol;
             }
             Behaviour.ApplySelectionToVisual = ApplySelectionToVisual;
             function ApplyInteractivitySelection(context) {
-                var latestIndices = undefined;
-                var latestModel = undefined;
+                var latestIndices = void 0;
+                var latestModel = void 0;
                 context.behaviours.click.subscribe(function (info) {
                     if (latestModel) {
                         latestModel.applySelection(latestIndices, 2 /* RemoveSelect */);
-                        latestModel = undefined;
-                        latestIndices = undefined;
+                        latestModel = void 0;
+                        latestIndices = void 0;
                     }
                     if (!info.entity || !info.visual)
                         return;
@@ -9394,9 +9395,9 @@ var LiteMol;
                 }
                 Molecule.HighlightElementInfo = HighlightElementInfo;
                 function DistanceToLastClickedElement(context) {
-                    var lastInfo = undefined;
-                    var lastSel = undefined;
-                    var lastModel = undefined;
+                    var lastInfo = void 0;
+                    var lastSel = void 0;
+                    var lastModel = void 0;
                     context.behaviours.click.subscribe(function (info) {
                         if (!info.entity || !(Bootstrap.Tree.Node.is(info.entity, Bootstrap.Entity.Molecule.Model) || Bootstrap.Tree.Node.is(info.entity, Bootstrap.Entity.Molecule.Selection)) || !info.elements || !info.elements.length) {
                             lastInfo = undefined;
@@ -9455,7 +9456,6 @@ var LiteMol;
                         this.obs = [];
                         this.ref = Bootstrap.Utils.generateUUID();
                         this.isBusy = false;
-                        this.latestInfo = void 0;
                     }
                     ShowElectronDensityAroundSelection.prototype.remove = function () {
                         var v = this.getVisual();
@@ -9654,8 +9654,8 @@ var LiteMol;
                         function CacheEntry(key, data) {
                             this.key = key;
                             this.data = data;
-                            this.previous = void 0;
-                            this.next = void 0;
+                            this.previous = null;
+                            this.next = null;
                         }
                         return CacheEntry;
                     }());
@@ -10165,7 +10165,8 @@ var LiteMol;
                                 continue;
                             }
                             var c = manager.getController(t, e);
-                            transforms.push(c);
+                            if (c)
+                                transforms.push(c);
                         }
                         this.setState({ update: update, transforms: transforms });
                     };
@@ -10659,7 +10660,7 @@ var LiteMol;
                 return;
             }
             var q = Bootstrap.Utils.Molecule.getModelAndIndicesFromQuery(what.visual, what.query);
-            if (!q.model || !q.indices.length)
+            if (!q || q.indices.length)
                 return;
             var entity = Bootstrap.Tree.Node.findClosestNodeOfType(what.visual, [Bootstrap.Entity.Molecule.Model, Bootstrap.Entity.Molecule.Selection]);
             Bootstrap.Event.Visual.VisualSelectElement.dispatch(context, { entity: entity, visual: what.visual, elements: q.indices });

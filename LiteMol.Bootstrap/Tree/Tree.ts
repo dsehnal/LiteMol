@@ -29,9 +29,9 @@ namespace LiteMol.Bootstrap {
         }
         
         function _addRef<T extends Node.Any>(entity: T) {
-            let refs = entity.tree.refs.get(entity.ref);
+            let refs = entity.tree!.refs.get(entity.ref);
             if (!refs) {
-                entity.tree.refs.set(entity.ref, [entity]);
+                entity.tree!.refs.set(entity.ref, [entity]);
             } else {
                 refs.push(entity);
             }
@@ -67,7 +67,7 @@ namespace LiteMol.Bootstrap {
         }
                 
         function notifyAdded<T extends Node.Any>(node: T) {
-            let ctx = node.tree.context;     
+            let ctx = node.tree!.context;     
             Node.forEachPreorder(node, n => {
                 Event.Tree.NodeAdded.dispatch(ctx, n);
             });
@@ -91,13 +91,13 @@ namespace LiteMol.Bootstrap {
         
         export function updatePath<T extends Node.Any>(node: T) {
             if (!node) return;            
-            let top: T;
+            let top: T | undefined = void 0;
             while (node !== node.parent) {
                 top = node;
                 Node.update(node);
                 node = node.parent;
             }          
-            if (top) Event.Tree.NodeUpdated.dispatch(node.tree.context, top);            
+            if (top) Event.Tree.NodeUpdated.dispatch(node.tree!.context, top);            
         }
         
         function clearRoot<T extends Node.Any>(tree: Tree<T>) {            

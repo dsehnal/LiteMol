@@ -36,7 +36,7 @@ namespace LiteMol.Bootstrap.Components.Transform {
             let e = this.context.currentEntity;
             let manager = this.context.transforms;
             
-            let update: Controller<any> = void 0;
+            let update: Controller<any> | undefined = void 0;
             if (e.transform.transformer && e.transform.transformer.info.isUpdatable /*&& !e.transform.props.isBinding*/) {
                 update = manager.getController(e.transform.transformer, e);
             }
@@ -47,7 +47,7 @@ namespace LiteMol.Bootstrap.Components.Transform {
                     continue;
                 }
                 let c = manager.getController(t, e);
-                transforms.push(c);
+                if (c) transforms.push(c);
                 //this.setParams(c);                
             }            
             this.setState({ update, transforms });            

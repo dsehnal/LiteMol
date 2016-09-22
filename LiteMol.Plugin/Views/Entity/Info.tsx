@@ -6,7 +6,7 @@ namespace LiteMol.Plugin.Views.Entity {
     "use strict";
     
     export const Remove = (props: {entity: Bootstrap.Entity.Any, onRemove: () => void }) => <Controls.Button
-            onClick={() => { Bootstrap.Command.Tree.RemoveNode.dispatch(props.entity.tree.context, props.entity); props.onRemove.call(null) } } 
+            onClick={() => { Bootstrap.Command.Tree.RemoveNode.dispatch(props.entity.tree!.context, props.entity); props.onRemove.call(null) } } 
             style='link' icon='remove' customClass='lm-remove-entity btn-icon' />
     
     export class Badge extends React.Component<{ type: Bootstrap.Entity.TypeInfo }, {}> { 
@@ -59,7 +59,6 @@ namespace LiteMol.Plugin.Views.Entity {
         
         state: { current?: Bootstrap.Entity.Any } = { current: void 0 }
         
-        private currentStateSub: Bootstrap.Rx.IDisposable = void 0;
         componentWillMount() {
             super.componentWillMount();
             this.state.current = this.controller.context.currentEntity;

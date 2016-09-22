@@ -172,7 +172,7 @@ namespace LiteMol.Visualization {
 
         mouseInfo: MouseInfo;
         private pickInfo: Selection.Pick = new Selection.Pick();
-        private selectInfo: Selection.Info = null;
+        private selectInfo: Selection.Info | null = null;
         
         private unbindEvents: Array<() => void> = [];
 
@@ -194,9 +194,9 @@ namespace LiteMol.Visualization {
             let updateCamera = options.cameraType !== this.options.cameraType;
             
             let cc = options.clearColor; 
-            this.renderer.setClearColor(new THREE.Color(cc.r, cc.g, cc.b));
+            this.renderer.setClearColor(new THREE.Color(cc!.r, cc!.g, cc!.b));
             this.renderer.setClearAlpha(options.alpha ? 0.0 : 1.0);            
-            this.camera.fog.color.setRGB(cc.r, cc.g, cc.b);
+            this.camera.fog.color.setRGB(cc!.r, cc!.g, cc!.b);
             
             this.options = options;
             if (updateCamera) this.camera.createCamera();
@@ -220,7 +220,7 @@ namespace LiteMol.Visualization {
             
 
             this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: options.alpha, preserveDrawingBuffer: true });
-            this.renderer.setClearColor(new THREE.Color(options.clearColor.r, options.clearColor.g, options.clearColor.b));
+            this.renderer.setClearColor(new THREE.Color(options.clearColor!.r, options.clearColor!.g, options.clearColor!.b));
             this.renderer.autoClear = true;
             this.renderer.sortObjects = false;
             
@@ -436,7 +436,7 @@ namespace LiteMol.Visualization {
             this.events.dispatchEvent(<any>{ type: Scene.hoverEvent, target: null, data: this.pickInfo.getPickInfo() });
         }
 
-        private dispatchSelectEvent(info: Selection.Info) {
+        private dispatchSelectEvent(info: Selection.Info | undefined) {
             if (info) {
                 this.events.dispatchEvent(<any>{ type: Scene.selectEvent, target: null, data: info });
             }
@@ -454,10 +454,10 @@ namespace LiteMol.Visualization {
             return changed;
         }
         
-        private handlePick(isSelect: boolean): Selection.Info {
+        private handlePick(isSelect: boolean): Selection.Info | undefined {
 
             if (!isSelect && (!this.mouseInfo.update() || this.mouseInfo.isButtonDown) || this.renderState.resizing) { return; }
-            if (!this.mouseInfo.isInside) { return; }
+            if (!this.mouseInfo.isInside) { return void 0; }
             
             this.mouseInfo.setExactPosition();
             let position = this.mouseInfo.exactPosition;
@@ -465,7 +465,7 @@ namespace LiteMol.Visualization {
             let cY = this.pickTarget.height - position.y;
             if (this.pickTarget.width < position.x - 1 || position.x < 0.01 ||
                 this.pickTarget.height < cY - 1 || cY < 0.01) {
-                return;
+                return void 0;
             }
             this.renderer.readRenderTargetPixels(this.pickTarget, position.x | 0, cY | 0, 1, 1, this.pickBuffer);
 
@@ -479,14 +479,14 @@ namespace LiteMol.Visualization {
                 if (!model) return void 0;
                 return { model, elements: model.getPickElements(pickId) };
             } else { 
-                if (id === info.currentPickId && pickId === info.currentPickElementId) return;
+                if (id === info.currentPickId && pickId === info.currentPickElementId) return void 0;
 
                 let changed = this.clearHighlights(false),
                     model = this.models.getBySceneId(id);
 
                 if (id === 255 || !model) {
                     if (changed) this.needsRender();
-                    return;
+                    return void 0;
                 }
                                             
                 info.currentPickId = id;
@@ -529,14 +529,14 @@ namespace LiteMol.Visualization {
             
             this.unbindEvents = [];
             cancelAnimationFrame(this.renderState.animationFrame);
-            this.scene = null;
-            this.pickScene = null;
+            this.scene = <any>null;
+            this.pickScene = <any>null;
             this.camera.dispose();
-            this.camera = null;
+            this.camera = <any>null;
             if (this.renderer && (<any>this.renderer).dispose) (<any>this.renderer).dispose();
-            this.renderer = null;
+            this.renderer = <any>null;
             this.pickTarget.dispose();
-            this.pickTarget = null;
+            this.pickTarget = <any>null;
             while (this.parentElement.lastChild) this.parentElement.removeChild(this.parentElement.lastChild);
         }
     }

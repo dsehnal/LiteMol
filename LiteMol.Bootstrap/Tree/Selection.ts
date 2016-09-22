@@ -23,7 +23,7 @@ namespace LiteMol.Bootstrap.Tree {
             if (isBuilder(selector)) query = (selector as any).compile();
             else if (isEntity(selector)) query = (Selection.byValue(selector) as any).compile();
             else if (isQuery(selector)) query = selector;
-            else query = (Selection.byRef(selector) as any).compile();
+            else query = (Selection.byRef(selector as string) as any).compile();
             return query;
         }
 
@@ -42,7 +42,7 @@ namespace LiteMol.Bootstrap.Tree {
         export namespace Helpers {
             export const BuilderPrototype: any = {};
             export function registerModifier(name: string, f: Function) {
-                BuilderPrototype[name] = function (...args: any[]) { return f.call(void 0, this, ...args) };
+                BuilderPrototype[name] = function (this: any, ...args: any[]) { return f.call(void 0, this, ...args) };
             }
 
             export interface Builder<T extends Node.Any> {
@@ -64,7 +64,7 @@ namespace LiteMol.Bootstrap.Tree {
             return Object.create(Helpers.BuilderPrototype, { compile: { writable: false, configurable: false, value: compile } });
         }
 
-        function emptyIfUndefined<T extends Node.Any>(e: NodeSeq<T>) { return e ? e : [] }
+        function emptyIfUndefined<T extends Node.Any>(e: NodeSeq<T> | undefined) { return e ? e : [] }
 
         export function root<T extends Node.Any>() { return build(() => (tree: Tree<T>) => [tree.root]) }
         export function byRef<T extends Node.Any>(ref: string) { return build(() => (tree: Tree<T>) => emptyIfUndefined(tree.refs.get(ref))); }

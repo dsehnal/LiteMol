@@ -372,7 +372,7 @@ namespace LiteMol.Core.Structure {
                 let array = new Int32Array(atomIndices.size),
                     index = 0;
 
-                atomIndices.forEach(function (i) { this.array[this.index++] = i }, { array: array, index: 0 });
+                atomIndices.forEach(function (this: any, i: number) { this.array[this.index++] = i }, { array, index: 0 });
                 Array.prototype.sort.call(array, function (a: number, b: number) { return a - b; });
 
                 return new Fragment(context, array[0], <any>array);
@@ -518,7 +518,7 @@ namespace LiteMol.Core.Structure {
                 let hash = f.hashCode;
 
                 if (this.byHash.has(hash)) {
-                    let fs = this.byHash.get(hash);
+                    let fs = this.byHash.get(hash)!;
 
                     for (let q of fs) {
                         if (Fragment.areEqual(f, q)) return this;

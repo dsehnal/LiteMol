@@ -75,7 +75,7 @@ namespace LiteMol.Core.Utils {
             }
         };
 
-        return function () {
+        return function (this: any) {
             args = arguments;
             stamp = performance.now();
             thisArg = this;

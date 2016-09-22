@@ -47,7 +47,7 @@ namespace LiteMol.Core.Formats.CIF.Binary {
 
     export class Category implements CIF.Category {
         private encodedColumns: { [name: string]: EncodedColumn };
-        private columnWrappers: { [name: string]: Column };
+        private columnWrappers: { [name: string]: Column | null };
         private columnNameList: string[];
 
         name: string;
@@ -104,7 +104,7 @@ namespace LiteMol.Core.Formats.CIF.Binary {
     function wrapColumn(column: EncodedColumn): Column {
         if (!column.data.data) return UndefinedColumn;
         let data = decode(column.data);
-        let mask:Uint8Array;
+        let mask:Uint8Array|undefined = void 0;
         if (column.mask) mask = decode(column.mask);
         if (data.buffer && data.byteLength && data.BYTES_PER_ELEMENT) {
             return mask ? new MaskedNumericColumn(data, mask) : new NumericColumn(data);
@@ -125,7 +125,7 @@ namespace LiteMol.Core.Formats.CIF.Binary {
 
     class MaskedNumericColumn implements Column {
         isDefined = true;
-        getString(row: number): string { return this.mask[row] === ValuePresence.Present ? `${this.data[row]}` : null; }
+        getString(row: number): string | null { return this.mask[row] === ValuePresence.Present ? `${this.data[row]}` : null; }
         getInteger(row: number): number { return this.mask[row] === ValuePresence.Present ? this.data[row] : 0; }
         getFloat(row: number): number { return this.mask[row] === ValuePresence.Present ? this.data[row] : 0; }
         stringEquals(row: number, value: string) { return this.mask[row] === ValuePresence.Present ? this.data[row] === Utils.FastNumberParsers.parseFloat(value, 0, value.length) : value === null || value === void 0; }
@@ -139,7 +139,7 @@ namespace LiteMol.Core.Formats.CIF.Binary {
 
     class StringColumn implements Column {
         isDefined = true;
-        getString(row: number): string { return this.data[row]; }
+        getString(row: number): string | null { return this.data[row]; }
         getInteger(row: number): number { let v = this.data[row]; return fastParseInt(v, 0, v.length); }
         getFloat(row: number): number { let v = this.data[row]; return fastParseFloat(v, 0, v.length); }
         stringEquals(row: number, value: string) { return this.data[row] === value; }
@@ -150,7 +150,7 @@ namespace LiteMol.Core.Formats.CIF.Binary {
 
     class MaskedStringColumn implements Column {
         isDefined = true;
-        getString(row: number): string { return this.mask[row] === ValuePresence.Present ? this.data[row] : null; }
+        getString(row: number): string | null { return this.mask[row] === ValuePresence.Present ? this.data[row] : null; }
         getInteger(row: number): number { if (this.mask[row] !== ValuePresence.Present) return 0; let v = this.data[row]; return fastParseInt(v || '', 0, (v || '').length); }
         getFloat(row: number): number { if (this.mask[row] !== ValuePresence.Present) return 0; let v = this.data[row]; return fastParseFloat(v || '', 0, (v || '').length); }
         stringEquals(row: number, value: string) { return this.data[row] === value; }

@@ -69,7 +69,7 @@ function createInfo(spec: ModuleSpec) {
 
 function base(root: string, gulp: any, plugins: any) {
      return function () {
-        let project = plugins.ts.createProject(root + '/tsconfig.json');
+        let project = plugins.ts.createProject(root + '/tsconfig.json', { typescript: plugins.tsc });
         let b = project.src().pipe(plugins.ts(project));
         
         return plugins.merge([

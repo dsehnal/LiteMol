@@ -477,8 +477,8 @@ namespace LiteMol.Visualization {
             this.domElement.removeEventListener('touchend', this.eventHandlers.touchend, false);
             this.domElement.removeEventListener('touchmove', this.eventHandlers.touchmove, false);
 
-            this.camera = void 0;
-            this.domElement = void 0;
+            this.camera = <any>void 0;
+            this.domElement = <any>void 0;
         };
     }
 }

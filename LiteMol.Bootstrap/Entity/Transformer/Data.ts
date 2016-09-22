@@ -23,10 +23,10 @@ namespace LiteMol.Bootstrap.Entity.Transformer.Data {
         defaultParams: () => ({ id: '', description: '', type: 'String', url: '' })
     }, (ctx, a, t) => {        
         let params = t.params;
-        return Utils.ajaxGet(params.url, params.type).setReportTime(true)
+        return Utils.ajaxGet(params.url!, params.type!).setReportTime(true)
             .map<Entity.Data.String | Entity.Data.Binary>('ToEntity', 'Child', data => {                 
-                if (params.type === 'String') return Entity.Data.String.create(<any>t, { label: params.id ? params.id : params.url, description: params.description, data: data as string });
-                else return Entity.Data.Binary.create(<any>t, { label: params.id ? params.id : params.url, description: params.description, data: data as ArrayBuffer });                
+                if (params.type === 'String') return Entity.Data.String.create(<any>t, { label: params.id ? params.id : params.url!, description: params.description, data: data as string });
+                else return Entity.Data.Binary.create(<any>t, { label: params.id ? params.id : params.url!, description: params.description, data: data as ArrayBuffer });                
             });
     }); 
     
@@ -48,10 +48,10 @@ namespace LiteMol.Bootstrap.Entity.Transformer.Data {
         defaultParams: () => ({ type: 'String', file: void 0 })
     }, (ctx, a, t) => {        
         let params = t.params;
-        return Utils.readFromFile(params.file, params.type).setReportTime(true)
+        return Utils.readFromFile(params.file!, params.type!).setReportTime(true)
             .map<Entity.Data.String | Entity.Data.Binary>('ToEntity', 'Child', data => {                 
-                if (params.type === 'String') return Entity.Data.String.create(<any>t, { label: params.id ? params.id : params.file.name, description: params.description, data: data as string });
-                else return Entity.Data.Binary.create(<any>t, { label: params.id ? params.id : params.file.name, description: params.description, data: data as ArrayBuffer });                
+                if (params.type === 'String') return Entity.Data.String.create(<any>t, { label: params.id ? params.id : params.file!.name, description: params.description, data: data as string });
+                else return Entity.Data.Binary.create(<any>t, { label: params.id ? params.id : params.file!.name, description: params.description, data: data as ArrayBuffer });                
             });
     }); 
     
@@ -73,7 +73,7 @@ namespace LiteMol.Bootstrap.Entity.Transformer.Data {
                         ctx.reject(d.error.toString());
                         return;
                     }
-                    ctx.resolve(Entity.Data.CifDictionary.create(t, { label: t.params.id ? t.params.id : 'CIF Dictionary', description: t.params.description, dictionary: d.result }));
+                    ctx.resolve(Entity.Data.CifDictionary.create(t, { label: t.params.id ? t.params.id : 'CIF Dictionary', description: t.params.description, dictionary: d.result! }));
                 });
             }).setReportTime(true);
         }       
@@ -96,7 +96,7 @@ namespace LiteMol.Bootstrap.Entity.Transformer.Data {
                         ctx.reject(d.error.toString());
                         return;
                     }
-                    ctx.resolve(Entity.Data.CifDictionary.create(t, { label: t.params.id ? t.params.id : 'CIF Dictionary', description: t.params.description, dictionary: d.result }));
+                    ctx.resolve(Entity.Data.CifDictionary.create(t, { label: t.params.id ? t.params.id : 'CIF Dictionary', description: t.params.description, dictionary: d.result! }));
                 });
             }).setReportTime(true);
         }       

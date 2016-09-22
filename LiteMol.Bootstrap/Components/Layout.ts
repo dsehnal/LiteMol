@@ -37,27 +37,27 @@ namespace LiteMol.Bootstrap.Components {
     }
 
     interface RootState { 
-        top: string, 
-        bottom: string, 
-        left: string, 
-        right: string, 
+        top: string | null, 
+        bottom: string | null, 
+        left: string | null, 
+        right: string | null, 
 
-        width: string;
-        height: string;
-        maxWidth: string;
-        maxHeight: string;
-        margin: string;
-        marginLeft: string;
-        marginRight: string;
-        marginTop: string;
-        marginBottom: string;
+        width: string | null;
+        height: string | null;
+        maxWidth: string | null;
+        maxHeight: string | null;
+        margin: string | null;
+        marginLeft: string | null;
+        marginRight: string | null;
+        marginTop: string | null;
+        marginBottom: string | null;
 
         scrollTop: number,
         scrollLeft: number, 
-        position: string, 
-        overflow: string, 
+        position: string | null, 
+        overflow: string | null, 
         viewports: HTMLElement[], 
-        zindex: string 
+        zindex: string | null 
     } 
 
     export class Layout extends Component<LayoutState> {
@@ -70,7 +70,7 @@ namespace LiteMol.Bootstrap.Components {
             this.dispatcher.schedule(() => Bootstrap.Event.Common.LayoutChanged.dispatch(this.context, {}));            
         }
         
-        private rootState: RootState = void 0;
+        private rootState: RootState | undefined = void 0;
         private expandedViewport: HTMLMetaElement;
 
         private getScrollElement() {

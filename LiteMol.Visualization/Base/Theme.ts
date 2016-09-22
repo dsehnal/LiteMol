@@ -161,7 +161,7 @@ namespace LiteMol.Visualization {
                 transparency,
                 interactive,
                 setElementColor(index: number, target: Color) {
-                    Color.copy(uniform, target);
+                    Color.copy(uniform!, target);
                 }
             }
         }

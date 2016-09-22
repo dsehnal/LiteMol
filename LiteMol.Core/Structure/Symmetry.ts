@@ -468,9 +468,9 @@ namespace LiteMol.Core.Structure {
                 x = atoms.x, y = atoms.y, z = atoms.z;
 
             let atomTable = new DataTableBuilder(assemblyParts.atomCount),
-                atomX: number[], atomY: number[], atomZ: number[],
-                atomId: number[],
-                atomResidue: number[], atomChain: number[], atomEntity: number[],
+                atomX: number[] | undefined, atomY: number[] | undefined, atomZ: number[] | undefined,
+                atomId: number[] | undefined,
+                atomResidue: number[] | undefined, atomChain: number[] | undefined, atomEntity: number[] | undefined,
                 cols: { src: any[]; target: any[] }[] = [];
 
             let entityTableBuilder = model.entities.getBuilder(assemblyParts.entityCount),
@@ -688,15 +688,15 @@ namespace LiteMol.Core.Structure {
                     temp.x = x[aI]; temp.y = y[aI]; temp.z = z[aI];
                     Mat4.transformVector3(temp, temp, transform.transform);
 
-                    atomX[atomOffset] = temp.x;
-                    atomY[atomOffset] = temp.y;
-                    atomZ[atomOffset] = temp.z;
+                    atomX![atomOffset] = temp.x;
+                    atomY![atomOffset] = temp.y;
+                    atomZ![atomOffset] = temp.z;
 
-                    atomId[atomOffset] = atomOffset + 1;
+                    atomId![atomOffset] = atomOffset + 1;
 
-                    atomResidue[atomOffset] = residueOffset;
-                    atomChain[atomOffset] = chainOffset;
-                    atomEntity[atomOffset] = entityOffset;
+                    atomResidue![atomOffset] = residueOffset;
+                    atomChain![atomOffset] = chainOffset;
+                    atomEntity![atomOffset] = entityOffset;
 
                     for (let c of cols) {
                         c.target[atomOffset] = c.src[aI];
@@ -789,7 +789,7 @@ namespace LiteMol.Core.Structure {
         export function buildPivotGroupSymmetry(
             model: MoleculeModel,
             radius: number,
-            pivotsQuery: Query.Source) {
+            pivotsQuery: Query.Source | undefined) {
 
             let info = model.symmetryInfo;
 
@@ -806,7 +806,7 @@ namespace LiteMol.Core.Structure {
             else pivotIndices = model.query(pivotsQuery).unionAtomIndices();
 
             let bounds = getBoundingInfo(model, pivotIndices),
-                spacegroup = new Spacegroup(model.symmetryInfo),
+                spacegroup = new Spacegroup(info),
                 ctx = createSymmetryContext(model, bounds, spacegroup, radius);
 
             let transforms = findSuitableTransforms(ctx),
@@ -818,7 +818,7 @@ namespace LiteMol.Core.Structure {
         function findMates(model: MoleculeModel, radius: number) {
             let bounds = getBoudingSphere(model.atoms, model.atoms.indices);
 
-            let spacegroup = new Spacegroup(model.symmetryInfo);
+            let spacegroup = new Spacegroup(model.symmetryInfo!);
             let t = Mat4.empty();
             let v = { x: 0, y: 0, z: 0 };
 
@@ -931,7 +931,7 @@ namespace LiteMol.Core.Structure {
             for (let op of operators) {
                 var m = Mat4.identity();                
                 for (var i = 0; i < op.length; i++) {
-                    Mat4.mul(m, m, info.operators[op[i]].operator);
+                    Mat4.mul(m, m, info!.operators[op[i]].operator);
                 }
                 index++;
                 transforms[transforms.length] = createAssemblyTransform(index, m);

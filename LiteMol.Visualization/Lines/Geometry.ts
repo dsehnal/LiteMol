@@ -7,10 +7,9 @@ namespace LiteMol.Visualization.Lines {
 
 
     export class Geometry extends GeometryBase {
-
-        geometry: THREE.BufferGeometry = void 0;
-        center: THREE.Vector3 = void 0; 
-        radius: number = void 0; 
+        geometry: THREE.BufferGeometry = <any>void 0;
+        center: THREE.Vector3 = new THREE.Vector3(0,0,0); 
+        radius: number = 0; 
         
         dispose() {
             this.geometry.dispose();

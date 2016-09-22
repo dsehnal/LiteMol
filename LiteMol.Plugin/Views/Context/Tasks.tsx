@@ -11,7 +11,7 @@ namespace LiteMol.Plugin.Views.Context {
             let info = this.props.info;
             return <div className='lm-task-state'>
                 <div>
-                    { info.abort ? <Controls.Button onClick={() => info.abort.call(null) } style='remove' 
+                    { info.abort ? <Controls.Button onClick={() => info.abort!.call(null) } style='remove' 
                         icon='abort' title='Abort' customClass='btn-icon'
                     /> : void 0 }
                     <div>
@@ -28,10 +28,10 @@ namespace LiteMol.Plugin.Views.Context {
        render() {
             let state = this.controller.latestState;
             
-            if (!state.tasks.count()) return <div className='lm-empty-control' />
+            if (!state.tasks!.count()) return <div className='lm-empty-control' />
                         
              let tasks: any[] = [];
-             state.tasks.forEach((t, k) => tasks.push(<TaskState key={k} info={t} />));
+             state.tasks!.forEach((t, k) => tasks.push(<TaskState key={k} info={t!} />));
             
              
            //tasks.push(<span><TaskState key={-1} info={{ message: 'Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Ut te', name: 'occaecat ', abort: () => {} }} /><br/></span>)
@@ -58,10 +58,10 @@ namespace LiteMol.Plugin.Views.Context {
        render() {
             let state = this.controller.latestState;
             
-            if (!state.tasks.count()) return <div className='lm-empty-control' />
+            if (!state.tasks!.count()) return <div className='lm-empty-control' />
                         
             let tasks: any[] = [];
-            state.tasks.forEach((t, k) => tasks.push(<TaskState key={k} info={t} isSmall={true} />));
+            state.tasks!.forEach((t, k) => tasks.push(<TaskState key={k} info={t!} isSmall={true} />));
            
          //   tasks.push(<TaskState key={-1} isSmall={true} info={{ message: 's diam. Vivamus luctus egestas l', name: 'bibendum ', abort: () => {} }} />)
          //   tasks.push(<TaskState key={-3} isSmall={true} info={{ message: 'ccaecat cupidatat non proid', name: 'dsadsad', abort: () => {} }} />)

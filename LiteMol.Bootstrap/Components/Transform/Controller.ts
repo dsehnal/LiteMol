@@ -71,7 +71,7 @@ namespace LiteMol.Bootstrap.Components.Transform {
             
             let transform = this.transformer.create(this.latestState.params);
             
-            this.anchorParams = this.latestState.params;
+            this.anchorParams = this.latestState.params!;
             this.setState({ isDirty: false, isBusy: true });
             
             try {
@@ -94,7 +94,7 @@ namespace LiteMol.Bootstrap.Components.Transform {
                 
         constructor(context: Context, public transformer: Tree.Transformer.Any, public entity: Entity.Any) {
             super(context, { params: transformer.info.defaultParams(context, entity), isDirty: false, isExpanded: true });            
-            this.anchorParams = this.latestState.params;    
+            this.anchorParams = this.latestState.params!;    
             this.updateParams(this.anchorParams);
             
             this.updateTimeout.flatMapLatest(t => t).forEach(() => this.apply()); 

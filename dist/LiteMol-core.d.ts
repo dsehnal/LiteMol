@@ -913,15 +913,15 @@ declare namespace LiteMol.Core {
             isIndeterminate: boolean;
             current: number;
             max: number;
-            requestAbort: () => void;
+            requestAbort?: () => void;
         }
         class Context<A> {
             schedule(action: () => void, afterMs?: number): void;
             private _abortRequested;
-            abortRequested: boolean;
+            readonly abortRequested: boolean;
             setRequestAbort(abort?: () => void): void;
             private _abortRequest;
-            abortRequest: () => boolean;
+            readonly abortRequest: () => true;
             private progressTick;
             private progress;
             progressStream: Rx.BehaviorSubject<ProgressInfo>;
@@ -1039,7 +1039,7 @@ declare namespace LiteMol.Core.Formats {
     namespace FormatInfo {
         function formatRegExp(info: FormatInfo): RegExp;
         function formatFileFilters(all: FormatInfo[]): string;
-        function getFormat(filename: string, all: FormatInfo[]): FormatInfo;
+        function getFormat(filename: string, all: FormatInfo[]): FormatInfo | undefined;
     }
     class ParserError {
         message: string;
@@ -1051,12 +1051,12 @@ declare namespace LiteMol.Core.Formats {
      * A generic parser result.
      */
     class ParserResult<T> {
-        error: ParserError;
+        error: ParserError | undefined;
         warnings: string[];
-        result: T;
-        static error(message: string, line?: number): ParserResult<any>;
+        result: T | undefined;
+        static error<T>(message: string, line?: number): ParserResult<T>;
         static success<T>(result: T, warnings?: string[]): ParserResult<T>;
-        constructor(error: ParserError, warnings: string[], result: T);
+        constructor(error: ParserError | undefined, warnings: string[], result: T | undefined);
     }
     /**
      * A helper for building a typed array of token indices.
@@ -1151,7 +1151,7 @@ declare namespace LiteMol.Core.Formats.CIF {
      */
     interface Column {
         isDefined: boolean;
-        getString(row: number): string;
+        getString(row: number): string | null;
         getInteger(row: number): number;
         getFloat(row: number): number;
         getValuePresence(row: number): ValuePresence;
@@ -1250,7 +1250,7 @@ declare namespace LiteMol.Core.Formats.CIF.Text {
          * Categories of the block.
          * block.categories._atom_site / ['_atom_site']
          */
-        categories: Category[];
+        readonly categories: Category[];
         /**
          * Additional data such as save frames for mmCIF file.
          */
@@ -1292,7 +1292,7 @@ declare namespace LiteMol.Core.Formats.CIF.Text {
         /**
          * The array of columns.
          */
-        columnNames: string[];
+        readonly columnNames: string[];
         /**
          * Number of columns in the category.
          */
@@ -1341,7 +1341,7 @@ declare namespace LiteMol.Core.Formats.CIF.Text {
         /**
          * Returns the string value at given row.
          */
-        getString(row: number): string;
+        getString(row: number): string | null;
         /**
          * Returns the integer value at given row.
          */
@@ -1391,7 +1391,7 @@ declare namespace LiteMol.Core.Formats.CIF.Binary {
         additionalData: {
             [name: string]: any;
         };
-        categories: Category[];
+        readonly categories: Category[];
         getCategory(name: string): Category;
         toJSON(): {
             id: string;
@@ -1413,7 +1413,7 @@ declare namespace LiteMol.Core.Formats.CIF.Binary {
         name: string;
         columnCount: number;
         rowCount: number;
-        columnNames: string[];
+        readonly columnNames: string[];
         getColumn(name: string): CIF.Column;
         toJSON(): {
             name: string;
@@ -1561,12 +1561,12 @@ declare namespace LiteMol.Core.Formats.Molecule.PDB {
     };
     class MoleculeData {
         header: Header;
-        crystInfo: CrystStructureInfo;
+        crystInfo: CrystStructureInfo | undefined;
         models: ModelsData;
         data: string;
         private makeEntities();
         toCifFile(): CIF.File;
-        constructor(header: Header, crystInfo: CrystStructureInfo, models: ModelsData, data: string);
+        constructor(header: Header, crystInfo: CrystStructureInfo | undefined, models: ModelsData, data: string);
     }
     class Header {
         id: string;
@@ -1586,7 +1586,7 @@ declare namespace LiteMol.Core.Formats.Molecule.PDB {
         toCifCategory(data: string): {
             helices: CIF.Category;
             sheets: CIF.Category;
-        };
+        } | undefined;
         constructor(helixTokens: number[], sheetTokens: number[]);
     }
     class ModelData {
@@ -1650,7 +1650,7 @@ declare namespace LiteMol.Core.Formats.Density {
         private nX;
         private nY;
         private len;
-        length: number;
+        readonly length: number;
         getAt(idx: number): number;
         setAt(idx: number, v: number): void;
         get(i: number, j: number, k: number): number;
@@ -1769,7 +1769,7 @@ declare namespace LiteMol.Core.Geometry.LinearAlgebra {
         function setValue(a: number[], i: number, j: number, value: number): void;
         function copy(out: number[], a: any): number[];
         function clone(a: number[]): number[];
-        function invert(out: number[], a: number[]): number[];
+        function invert(out: number[], a: number[]): number[] | null;
         function mul(out: number[], a: number[], b: number[]): number[];
         function translate(out: number[], a: number[], v: number[]): number[];
         function fromTranslation(out: number[], v: number[]): number[];
@@ -1809,7 +1809,7 @@ declare namespace LiteMol.Core.Geometry {
         count: number;
         indices: number[];
         hasPriorities: boolean;
-        priorities: number[];
+        priorities: number[] | undefined;
         add(distSq: number, index: number): void;
         reset(): void;
     }
@@ -2061,8 +2061,8 @@ declare namespace LiteMol.Core.Structure {
     class PolyResidueIdentifier {
         asymId: string;
         seqNumber: number;
-        insCode: string;
-        constructor(asymId: string, seqNumber: number, insCode: string);
+        insCode: string | null;
+        constructor(asymId: string, seqNumber: number, insCode: string | null);
         static areEqual(a: PolyResidueIdentifier, index: number, bAsymId: string[], bSeqNumber: number[], bInsCode: string[]): boolean;
         static compare(a: PolyResidueIdentifier, b: PolyResidueIdentifier): number;
         static compareResidue(a: PolyResidueIdentifier, index: number, bAsymId: string[], bSeqNumber: number[], bInsCode: string[]): number;
@@ -2082,7 +2082,7 @@ declare namespace LiteMol.Core.Structure {
         info: any;
         startResidueIndex: number;
         endResidueIndex: number;
-        length: number;
+        readonly length: number;
         constructor(type: SecondaryStructureType, startResidueId: PolyResidueIdentifier, endResidueId: PolyResidueIdentifier, info?: any);
     }
     class SymmetryInfo {
@@ -2143,7 +2143,7 @@ declare namespace LiteMol.Core.Structure {
         x: number[];
         y: number[];
         z: number[];
-        altLoc: string[];
+        altLoc: (string | null)[];
         occupancy: number[];
         tempFactor: number[];
         rowIndex: number[];
@@ -2158,7 +2158,7 @@ declare namespace LiteMol.Core.Structure {
         authName: string[];
         authSeqNumber: number[];
         authAsymId: string[];
-        insCode: string[];
+        insCode: (string | null)[];
         entityId: string[];
         isHet: number[];
         atomStartIndex: number[];
@@ -2206,7 +2206,7 @@ declare namespace LiteMol.Core.Structure {
                 x: Float32Array;
                 y: Float32Array;
                 z: Float32Array;
-                altLoc: any[];
+                altLoc: never[];
                 rowIndex: Int32Array;
                 residueIndex: Int32Array;
                 chainIndex: Int32Array;
@@ -2227,7 +2227,7 @@ declare namespace LiteMol.Core.Structure {
                 authName: string[];
                 authSeqNumber: Int32Array;
                 authAsymId: string[];
-                insCode: string[];
+                insCode: (string | null)[];
                 entityId: string[];
                 isHet: Int8Array;
                 atomStartIndex: Int32Array;
@@ -2310,16 +2310,16 @@ declare namespace LiteMol.Core.Structure {
         residues: DefaultResidueTableSchema;
         chains: DefaultChainTableSchema;
         entities: DefaultEntityTableSchema;
-        covalentBonds: DefaultBondTableSchema;
-        nonCovalentbonds: DefaultBondTableSchema;
-        componentBonds: ComponentBondInfo;
+        covalentBonds?: DefaultBondTableSchema;
+        nonCovalentbonds?: DefaultBondTableSchema;
+        componentBonds?: ComponentBondInfo;
         secondaryStructure: SecondaryStructureElement[];
-        symmetryInfo: SymmetryInfo;
-        assemblyInfo: AssemblyInfo;
-        parent: MoleculeModel;
+        symmetryInfo?: SymmetryInfo;
+        assemblyInfo?: AssemblyInfo;
+        parent?: MoleculeModel;
         source: MoleculeModelSource;
-        operators: Operator[];
-        queryContext: Query.Context;
+        operators?: Operator[];
+        readonly queryContext: Query.Context;
         query(q: Query.Source): Query.FragmentSeq;
         constructor(data: MoleculeModelData);
     }
@@ -2336,7 +2336,7 @@ declare namespace LiteMol.Core.Structure {
         private tempV;
         private space;
         private operators;
-        operatorCount: number;
+        readonly operatorCount: number;
         getOperatorMatrix(index: number, i: number, j: number, k: number, target: number[]): number[];
         private getSpace();
         private static getOperator(ids);
@@ -2379,11 +2379,11 @@ declare namespace LiteMol.Core.Structure {
             /**
              * Number of atoms in the current context.
              */
-            atomCount: number;
+            readonly atomCount: number;
             /**
              * Determine if the context contains all atoms of the input model.
              */
-            isComplete: boolean;
+            readonly isComplete: boolean;
             /**
              * The structure this context is based on.
              */
@@ -2391,7 +2391,7 @@ declare namespace LiteMol.Core.Structure {
             /**
              * Get a kd-tree for the atoms in the current context.
              */
-            tree: Geometry.SubdivisionTree3D<number>;
+            readonly tree: Geometry.SubdivisionTree3D<number>;
             /**
              * Checks if an atom is included in the current context.
              */
@@ -2451,29 +2451,29 @@ declare namespace LiteMol.Core.Structure {
             /**
              * The hash code of the fragment.
              */
-            hashCode: number;
+            readonly hashCode: number;
             /**
              * Id composed of <moleculeid>_<tag>.
              */
-            id: string;
+            readonly id: string;
             /**
              * Number of atoms.
              */
-            atomCount: number;
+            readonly atomCount: number;
             /**
              * Determines if a fragment is HET based on the tag.
              */
-            isHet: any;
+            readonly isHet: any;
             private _fingerprint;
             /**
              * A sorted list of residue identifiers.
              */
-            fingerprint: string;
+            readonly fingerprint: string;
             private _authFingerprint;
             /**
              * A sorted list of residue identifiers.
              */
-            authFingerprint: string;
+            readonly authFingerprint: string;
             /**
              * Executes a query on the current fragment.
              */
@@ -2485,15 +2485,15 @@ declare namespace LiteMol.Core.Structure {
             /**
              * A sorted list of residue indices.
              */
-            residueIndices: number[];
+            readonly residueIndices: number[];
             /**
              * A sorted list of chain indices.
              */
-            chainIndices: number[];
+            readonly chainIndices: number[];
             /**
              * A sorted list of entity indices.
              */
-            entityIndices: number[];
+            readonly entityIndices: number[];
             static areEqual(a: Fragment, b: Fragment): boolean;
             /**
              * Create a fragment from an integer set.
@@ -2528,7 +2528,7 @@ declare namespace LiteMol.Core.Structure {
             context: Context;
             fragments: Fragment[];
             static empty(ctx: Context): FragmentSeq;
-            length: number;
+            readonly length: number;
             /**
              * Merges atom indices from all fragments.
              */
@@ -2593,7 +2593,7 @@ declare namespace LiteMol.Core.Structure.Query {
         seqNumber?: number;
         authName?: string;
         authSeqNumber?: number;
-        insCode?: string;
+        insCode?: string | null;
     }
     function atomsByElement(...elements: string[]): Builder;
     function atomsByName(...names: string[]): Builder;
@@ -2678,27 +2678,27 @@ declare namespace LiteMol.Core.Structure.Query {
 declare namespace LiteMol.Core.Structure.Query.Algebraic {
     type Predicate = (ctx: Context, i: number) => boolean;
     type Selector = (ctx: Context, i: number) => any;
-    const not: (a: (ctx: Context, i: number) => boolean) => (ctx: Context, i: number) => boolean;
-    const and: (a: (ctx: Context, i: number) => boolean, b: (ctx: Context, i: number) => boolean) => (ctx: Context, i: number) => boolean;
-    const or: (a: (ctx: Context, i: number) => boolean, b: (ctx: Context, i: number) => boolean) => (ctx: Context, i: number) => boolean;
+    const not: (a: Predicate) => Predicate;
+    const and: (a: Predicate, b: Predicate) => Predicate;
+    const or: (a: Predicate, b: Predicate) => Predicate;
     const backbone: Predicate;
     const sidechain: Predicate;
-    const equal: (a: (ctx: Context, i: number) => any, b: (ctx: Context, i: number) => any) => (ctx: Context, i: number) => boolean;
-    const notEqual: (a: (ctx: Context, i: number) => any, b: (ctx: Context, i: number) => any) => (ctx: Context, i: number) => boolean;
-    const greater: (a: (ctx: Context, i: number) => any, b: (ctx: Context, i: number) => any) => (ctx: Context, i: number) => boolean;
-    const lesser: (a: (ctx: Context, i: number) => any, b: (ctx: Context, i: number) => any) => (ctx: Context, i: number) => boolean;
-    const greaterEqual: (a: (ctx: Context, i: number) => any, b: (ctx: Context, i: number) => any) => (ctx: Context, i: number) => boolean;
-    const lesserEqual: (a: (ctx: Context, i: number) => any, b: (ctx: Context, i: number) => any) => (ctx: Context, i: number) => boolean;
+    const equal: (a: Selector, b: Selector) => Predicate;
+    const notEqual: (a: Selector, b: Selector) => Predicate;
+    const greater: (a: Selector, b: Selector) => Predicate;
+    const lesser: (a: Selector, b: Selector) => Predicate;
+    const greaterEqual: (a: Selector, b: Selector) => Predicate;
+    const lesserEqual: (a: Selector, b: Selector) => Predicate;
     function inRange(s: Selector, a: number, b: number): Predicate;
     /**
      * Selectors
      */
     function value(v: any): Selector;
-    const residueSeqNumber: (ctx: Context, i: number) => any;
-    const residueName: (ctx: Context, i: number) => any;
-    const elementSymbol: (ctx: Context, i: number) => any;
-    const atomName: (ctx: Context, i: number) => any;
-    const entityType: (ctx: Context, i: number) => any;
+    const residueSeqNumber: Selector;
+    const residueName: Selector;
+    const elementSymbol: Selector;
+    const atomName: Selector;
+    const entityType: Selector;
     /**
      * Query
      */

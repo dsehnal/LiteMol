@@ -165,7 +165,7 @@ namespace LiteMol.Core.Structure {
      * Identifier for a reside that is a part of the polymer.
      */
     export class PolyResidueIdentifier {
-        constructor(public asymId: string, public seqNumber: number, public insCode: string) { }
+        constructor(public asymId: string, public seqNumber: number, public insCode: string | null) { }
 
 
         static areEqual(a: PolyResidueIdentifier, index: number, bAsymId: string[], bSeqNumber: number[], bInsCode: string[]) {
@@ -272,7 +272,7 @@ namespace LiteMol.Core.Structure {
         x: number[];
         y: number[];
         z: number[];
-        altLoc: string[];
+        altLoc: (string | null)[];
         occupancy: number[];
         tempFactor: number[];
 
@@ -290,7 +290,7 @@ namespace LiteMol.Core.Structure {
         authName: string[];
         authSeqNumber: number[];
         authAsymId: string[];
-        insCode: string[];
+        insCode: (string | null)[];
         entityId: string[];
 
         isHet: number[];
@@ -375,7 +375,7 @@ namespace LiteMol.Core.Structure {
                 authName: builder.addColumn("authName", size => <string[]>[]),
                 authSeqNumber: builder.addColumn("authSeqNumber", size => new Int32Array(size)),
                 authAsymId: builder.addColumn("authAsymId", size => <string[]>[]),
-                insCode: builder.addColumn("insCode", size => <string[]>[]),
+                insCode: builder.addColumn("insCode", size => <(string | null)[]>[]),
                 entityId: builder.addColumn("entityId", size => <string[]>[]),
                 isHet: builder.addColumn("isHet", size => new Int8Array(size)),
                 atomStartIndex: builder.addColumn("atomStartIndex", size => new Int32Array(size)),
@@ -484,15 +484,15 @@ namespace LiteMol.Core.Structure {
         residues: DefaultResidueTableSchema;
         chains: DefaultChainTableSchema;
         entities: DefaultEntityTableSchema;
-        covalentBonds: DefaultBondTableSchema;
-        nonCovalentbonds: DefaultBondTableSchema;
-        componentBonds: ComponentBondInfo;
+        covalentBonds?: DefaultBondTableSchema;
+        nonCovalentbonds?: DefaultBondTableSchema;
+        componentBonds?: ComponentBondInfo;
         secondaryStructure: SecondaryStructureElement[];
-        symmetryInfo: SymmetryInfo;
-        assemblyInfo: AssemblyInfo;
-        parent: MoleculeModel;
+        symmetryInfo?: SymmetryInfo;
+        assemblyInfo?: AssemblyInfo;
+        parent?: MoleculeModel;
         source: MoleculeModelSource;
-        operators: Operator[];
+        operators?: Operator[];
 
         get queryContext() {
             if (this._queryContext) return this._queryContext;

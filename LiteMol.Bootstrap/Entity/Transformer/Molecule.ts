@@ -19,9 +19,9 @@ namespace LiteMol.Bootstrap.Entity.Transformer.Molecule {
             defaultParams: ctx => ({ id: params.defaultId, format: LiteMol.Core.Formats.Molecule.SupportedFormats.mmCIF }),
             validateParams: p => (!p.id || !p.id.trim().length) ? [`Enter ${params.isFullUrl ? 'URL' : 'Id'}`] : void 0
         }, (context, a, t) => {
-            let format = params.specificFormat ? params.specificFormat : t.params.format;
+            let format = params.specificFormat ? params.specificFormat : t.params.format!;
             return Tree.Transform.build()
-                .add(a, <Tree.Transformer.To<Entity.Data.String | Entity.Data.Binary>>Data.Download, { url: params.urlTemplate(t.params.id.trim()), type: format.isBinary ? 'Binary' : 'String', id: t.params.id, description: params.name })
+                .add(a, <Tree.Transformer.To<Entity.Data.String | Entity.Data.Binary>>Data.Download, { url: params.urlTemplate(t.params.id!.trim()), type: format.isBinary ? 'Binary' : 'String', id: t.params.id, description: params.name })
                 .then(CreateFromData, { format: params.specificFormat ? params.specificFormat : t.params.format }, { isBinding: true })
                 .then(Molecule.CreateModel, { modelIndex: 0 }, { isBinding: false })
         })
@@ -36,10 +36,10 @@ namespace LiteMol.Bootstrap.Entity.Transformer.Molecule {
         to: [Action],
         defaultParams: ctx => ({ format: LiteMol.Core.Formats.Molecule.SupportedFormats.mmCIF }),
         validateParams: p => !p.file ? ['Select a file'] : !LiteMol.Core.Formats.FormatInfo.getFormat(p.file.name, LiteMol.Core.Formats.Molecule.SupportedFormats.All) 
-            ?  [`Select a supported file format (${[].concat(LiteMol.Core.Formats.Molecule.SupportedFormats.All.map(f => f.extensions)).join(', ')}).`] 
+            ?  [`Select a supported file format (${(<any[]>[]).concat(LiteMol.Core.Formats.Molecule.SupportedFormats.All.map(f => f.extensions)).join(', ')}).`] 
             : void 0
     }, (context, a, t) => {
-        let format = LiteMol.Core.Formats.FormatInfo.getFormat(t.params.file.name, LiteMol.Core.Formats.Molecule.SupportedFormats.All);
+        let format = LiteMol.Core.Formats.FormatInfo.getFormat(t.params.file!.name, LiteMol.Core.Formats.Molecule.SupportedFormats.All)!;
         return Tree.Transform.build()
             .add(a, <Tree.Transformer.To<Entity.Data.String | Entity.Data.Binary>>Data.OpenFile, { file: t.params.file, type: format.isBinary ? 'Binary' : 'String' })
             .then(CreateFromData, { format }, { isBinding: true })
@@ -60,7 +60,7 @@ namespace LiteMol.Bootstrap.Entity.Transformer.Molecule {
             defaultParams: (ctx) => ({ format: LiteMol.Core.Formats.Molecule.SupportedFormats.mmCIF })
         }, (ctx, a, t) => {
 
-            return Task.fromComputation(`Create Molecule (${a.props.label})`, 'Normal', t.params.format.parse(a.props.data, { id: t.params.customId }))
+            return Task.fromComputation(`Create Molecule (${a.props.label})`, 'Normal', t.params.format!.parse(a.props.data, { id: t.params.customId }))
                 .setReportTime(true) 
                 .bind(`Create Molecule (${a.props.label})`, 'Silent', r => {
                     if (r.error) return Task.reject(`Create Molecule (${a.props.label})`, 'Background', r.error.toString());
@@ -151,7 +151,7 @@ namespace LiteMol.Bootstrap.Entity.Transformer.Molecule {
             validateParams: p => {
                 if (!(p.queryString || '').trim().length) return ['Enter query']; 
                 try {
-                    let q = Core.Structure.Query.Builder.toQuery(p.queryString);
+                    let q = Core.Structure.Query.Builder.toQuery(p.queryString!);
                     return void 0;
                 } catch (e) {
                     return ['' + e ];
@@ -160,7 +160,7 @@ namespace LiteMol.Bootstrap.Entity.Transformer.Molecule {
         }, (ctx, a, t) => { 
             return Task.create<Entity.Molecule.Selection>(`Create Selection (${a.props.label})`, 'Background', ctx => { 
                 let params = t.params;
-                let query = Core.Structure.Query.Builder.toQuery(params.queryString);
+                let query = Core.Structure.Query.Builder.toQuery(params.queryString!);
                 let queryCtx = t.params.inFullContext ? Utils.Molecule.findModel(a).props.model.queryContext : Utils.Molecule.findQueryContext(a);
                 let indices = query(queryCtx).unionAtomIndices();
                 if (!indices.length) {
@@ -189,7 +189,7 @@ namespace LiteMol.Bootstrap.Entity.Transformer.Molecule {
         }, (ctx, a, t) => { 
             return Task.create<Entity.Molecule.Selection>(`Create Selection (${a.props.label})`, 'Background', ctx => {                
                 let params = t.params;
-                let query = Core.Structure.Query.Builder.toQuery(params.query);
+                let query = Core.Structure.Query.Builder.toQuery(params.query!);
                 let queryCtx = t.params.inFullContext ? Utils.Molecule.findModel(a).props.model.queryContext : Utils.Molecule.findQueryContext(a);
                 let indices = query(queryCtx).unionAtomIndices();
                 if (!indices.length) {
@@ -268,7 +268,7 @@ namespace LiteMol.Bootstrap.Entity.Transformer.Molecule {
                     ctx.reject('Spacegroup info info not available.');
                     return;
                 }        
-                let radius = Math.max(t.params.radius, 0);
+                let radius = Math.max(t.params.radius!, 0);
                 ctx.update('Creating...');                
                 ctx.schedule(() => {
                     let symm = t.params.type === 'Mates' ? Core.Structure.buildSymmetryMates(a.props.model, radius) : Core.Structure.buildPivotGroupSymmetry(a.props.model, radius);       
@@ -298,21 +298,21 @@ namespace LiteMol.Bootstrap.Entity.Transformer.Molecule {
             customController: (ctx, t, e) => new Components.Transform.MoleculeVisual(ctx, t, e)
         }, (ctx, a, t) => {      
             let params = t.params;
-            return Visualization.Molecule.create(a, t, params.style).setReportTime(!t.params.style.computeOnBackground);
+            return Visualization.Molecule.create(a, t, params.style!).setReportTime(!t.params.style!.computeOnBackground);
         }, (ctx, b, t) => {
             
             let oldParams = b.transform.params as CreateVisualParams;            
-            if (oldParams.style.type !== t.params.style.type || !Utils.deepEqual(oldParams.style.params, t.params.style.params)) return void 0;
+            if (oldParams.style!.type !== t.params.style!.type || !Utils.deepEqual(oldParams.style!.params, t.params.style!.params)) return void 0;
             
             let model = b.props.model;
             if (!model) return void 0;
             let a = Utils.Molecule.findModel(b.parent);
             if (!a) return void 0;
             
-            let ti = t.params.style.theme;
-            let theme = ti.template.provider(a, Visualization.Theme.getProps(ti));
+            let ti = t.params.style!.theme!;
+            let theme = ti.template!.provider(a, Visualization.Theme.getProps(ti!));
             model.applyTheme(theme);
-            b.props.style = t.params.style;
+            b.props.style = t.params.style!;
             //Entity.forceUpdate(b);
             Entity.nodeUpdated(b);
             return Task.resolve(t.transformer.info.name, 'Background', Tree.Node.Null); 

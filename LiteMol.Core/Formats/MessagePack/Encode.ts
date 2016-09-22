@@ -254,7 +254,7 @@ namespace LiteMol.Core.Formats.MessagePack {
         if (type === "object") {
             let length: number, size = 0;
             let isArray = Array.isArray(value);
-            let keys: string[];
+            let keys: string[] | undefined;
 
             if (isArray) {
                 length = value.length;
@@ -285,7 +285,7 @@ namespace LiteMol.Core.Formats.MessagePack {
                 }
             }
             else {
-                for (let key of keys) {
+                for (let key of keys!) {
                     size += encodeInternal(key, view, bytes, offset + size);
                     size += encodeInternal(value[key], view, bytes, offset + size);
                 }

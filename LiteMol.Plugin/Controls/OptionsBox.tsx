@@ -28,12 +28,12 @@ namespace LiteMol.Plugin.Controls {
             if (idx < 0) idx = 0;
 
             return <select title={this.props.title} value={idx.toString() } className='form-control'
-                onChange={(e: Event) => {
+                onChange={e => {
                     this.current = this.get(+(e.target as HTMLInputElement).value);
                     this.props.onChange(this.current);
                 }}>
                 {(this.props.options.map as any)((o: any, i: number) => {
-                    return <option key={i} value={i} selected={i === idx}>{cap(o) }</option>
+                    return <option key={i} value={`` + i} selected={i === idx}>{cap(o) }</option>
                 }) }
             </select>
         }

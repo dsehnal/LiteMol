@@ -48,8 +48,8 @@ namespace LiteMol.Core.Formats {
      * A generic parser result.
      */
     export class ParserResult<T> {
-        static error(message: string, line = -1) {
-            return new ParserResult(new ParserError(message, line), [], void 0);
+        static error<T>(message: string, line = -1) {
+            return new ParserResult<T>(new ParserError(message, line), [], void 0);
         }
 
         static success<T>(result: T, warnings: string[] = []) {
@@ -57,9 +57,9 @@ namespace LiteMol.Core.Formats {
         }
 
         constructor(
-            public error: ParserError,
+            public error: ParserError | undefined,
             public warnings: string[],
-            public result: T) { }
+            public result: T | undefined) { }
     }
 
     /**

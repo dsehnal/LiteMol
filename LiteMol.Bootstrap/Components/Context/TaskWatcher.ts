@@ -20,7 +20,7 @@ namespace LiteMol.Bootstrap.Components.Context {
         
         private updated(state: Task.State) {
             let isWatched = state.type === this.type;
-            let tasks = this.latestState.tasks;
+            let tasks = this.latestState.tasks!;
                         
             if (!isWatched) {
                 if (tasks.has(state.taskId)) {
@@ -40,15 +40,15 @@ namespace LiteMol.Bootstrap.Components.Context {
         
         private started(task: Task<any>) {
             this.setState({
-                tasks: this.latestState.tasks.set(task.id, { name: task.name, message: 'Running...' })
+                tasks: this.latestState.tasks!.set(task.id, { name: task.name, message: 'Running...' })
             });
         }
         
         private completed(taskId: number) {
-            if (!this.latestState.tasks.has(taskId)) return;
+            if (!this.latestState.tasks!.has(taskId)) return;
             
             this.setState({
-                tasks: this.latestState.tasks.delete(taskId)
+                tasks: this.latestState.tasks!.delete(taskId)
             });
         }
 

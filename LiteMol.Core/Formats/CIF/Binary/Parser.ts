@@ -12,7 +12,7 @@ namespace LiteMol.Core.Formats.CIF.Binary {
             let file = new File(unpacked);
             return ParserResult.success(file);        
         } catch (e) {
-            return ParserResult.error('' + e);
+            return ParserResult.error<CIF.File>('' + e);
         }
     }
 }

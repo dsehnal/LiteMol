@@ -27,12 +27,12 @@ namespace LiteMol.Visualization {
         radius: number = 0;
         
         // object
-        object: THREE.Object3D = void 0;
-        theme: Theme = void 0;
+        object: THREE.Object3D = <any>void 0;
+        theme: Theme = <any>void 0;
         disposeList: IDisposable[] = [];
         
         // picking
-        pickObject: THREE.Object3D = void 0;                
+        pickObject: THREE.Object3D | undefined = void 0;                
         pickBufferAttributes: THREE.BufferAttribute[] = [];
         
         // state
@@ -90,7 +90,6 @@ namespace LiteMol.Visualization {
                 if (d) d.dispose();
             }
             
-            this.disposeList = null;
             this.disposeList = [];
         }
         

@@ -13,12 +13,12 @@ namespace LiteMol.Plugin.Views.Transform.Density {
         protected renderControls() {            
             let params = this.params;
             let info: any[];
-            let normalize = params.normalize;
+            let normalize = params.normalize!;
             let round = Bootstrap.Utils.round;
             if (this.isUpdate) {
                 let data = (this.controller.entity as Bootstrap.Entity.Density.Data).props.data;
                 return <div>
-                    <Controls.RowText label='Format' value={params.format.name} />
+                    <Controls.RowText label='Format' value={params.format!.name} />
                     <Controls.RowText label='Sigma' value={round(data.valuesInfo.sigma, 3)} />
                     <Controls.RowText label='Mean' value={round(data.valuesInfo.mean, 3)} />
                     <Controls.RowText label='Value Range' value={`[${round(data.valuesInfo.min, 3)}, ${round(data.valuesInfo.max, 3)}]`} />
@@ -39,8 +39,8 @@ namespace LiteMol.Plugin.Views.Transform.Density {
         
         private surface() {           
             let data = Bootstrap.Tree.Node.findClosestNodeOfType(this.transformSourceEntity, [Bootstrap.Entity.Density.Data]) as Bootstrap.Entity.Density.Data;           
-            let params = this.params.style.params as Bootstrap.Visualization.Density.Params;
-            return <IsoValue onChange={v => this.controller.updateStyleParams({ isoSigma: v  })} min={-5} max={5} value={params.isoSigma} />
+            let params = this.params.style!.params as Bootstrap.Visualization.Density.Params;
+            return <IsoValue onChange={v => this.controller.updateStyleParams({ isoSigma: v  })} min={-5} max={5} value={params.isoSigma!} />
             
             // let options = [
             //     <Controls.Slider label='Smoothing' onChange={v => this.controller.updateStyleParams({ smoothing: v  })} 
@@ -56,21 +56,21 @@ namespace LiteMol.Plugin.Views.Transform.Density {
         }
         
         private colors() {                      
-            let params = this.params.style.params as Bootstrap.Visualization.Density.Params;             
-            let theme = this.params.style.theme;
+            let params = this.params.style!.params as Bootstrap.Visualization.Density.Params;             
+            let theme = this.params.style!.theme!;
             let colorControls: any[];
             
-            let uc = theme.colors.get('Uniform');
+            let uc = theme.colors!.get('Uniform');
             let uniform = <Controls.ToggleColorPicker key={'Uniform'} label='Color' color={uc} onChange={c => this.controller.updateThemeColor('Uniform', c) } />
             
-            let controls = theme.colors
+            let controls = theme.colors!
                     .filter((c, n) => n !== 'Uniform')
-                    .map((c, n) => <Controls.ToggleColorPicker  key={n} label={n} color={c} onChange={c => this.controller.updateThemeColor(n, c) } />).toArray();
+                    .map((c, n) => <Controls.ToggleColorPicker  key={n} label={n!} color={c!} onChange={c => this.controller.updateThemeColor(n!, c) } />).toArray();
                     
-            controls.push(<TransparencyControl definition={theme.transparency} onChange={d => this.controller.updateThemeTransparency(d) } />);
-            let visualParams = this.params.style.params as Bootstrap.Visualization.Density.Params;              
-            controls.push(<Controls.Slider label='Smoothing' onChange={v => this.controller.updateStyleParams({ smoothing: v  })}  min={0} max={10} step={1} value={visualParams.smoothing} title='Number of laplacian smoothing itrations.' />);
-            controls.push(<Controls.Toggle onChange={v => this.controller.updateStyleParams({ isWireframe: v }) } value={params.isWireframe} label='Wireframe' />)
+            controls.push(<TransparencyControl definition={theme.transparency!} onChange={d => this.controller.updateThemeTransparency(d) } />);
+            let visualParams = this.params.style!.params as Bootstrap.Visualization.Density.Params;              
+            controls.push(<Controls.Slider label='Smoothing' onChange={v => this.controller.updateStyleParams({ smoothing: v  })}  min={0} max={10} step={1} value={visualParams.smoothing!} title='Number of laplacian smoothing itrations.' />);
+            controls.push(<Controls.Toggle onChange={v => this.controller.updateStyleParams({ isWireframe: v }) } value={params.isWireframe!} label='Wireframe' />)
                     
             let showThemeOptions =  (this.controller.latestState as any).showThemeOptions;
             return <Controls.ExpandableGroup
@@ -95,9 +95,9 @@ namespace LiteMol.Plugin.Views.Transform.Density {
         
         private surface() {           
             let data = Bootstrap.Tree.Node.findClosestNodeOfType(this.transformSourceEntity, [Bootstrap.Entity.Density.Data]) as Bootstrap.Entity.Density.Data;           
-            let visualParams = this.params.style.params as Bootstrap.Visualization.Density.Params;
+            let visualParams = this.params.style!.params as Bootstrap.Visualization.Density.Params;
                       
-            return <IsoValue onChange={v => this.controller.updateStyleParams({ isoSigma: v  })} min={this.params.isoSigmaMin} max={this.params.isoSigmaMax} value={visualParams.isoSigma} />
+            return <IsoValue onChange={v => this.controller.updateStyleParams({ isoSigma: v  })} min={this.params.isoSigmaMin!} max={this.params.isoSigmaMax!} value={visualParams.isoSigma!} />
             
             // let options = [
             //     <Controls.Slider label='Smoothing' onChange={v => this.controller.updateStyleParams({ smoothing: v  })} 
@@ -113,21 +113,21 @@ namespace LiteMol.Plugin.Views.Transform.Density {
         }
         
         private colors() {          
-            let params = this.params.style.params as Bootstrap.Visualization.Density.Params;                         
-            let theme = this.params.style.theme;
+            let params = this.params.style!.params as Bootstrap.Visualization.Density.Params;                         
+            let theme = this.params.style!.theme!;
             let colorControls: any[];
             
-            let uc = theme.colors.get('Uniform');
+            let uc = theme.colors!.get('Uniform');
             let uniform = <Controls.ToggleColorPicker key={'Uniform'} label='Color' color={uc} onChange={c => this.controller.updateThemeColor('Uniform', c) } />
             
-            let controls = theme.colors
+            let controls = theme.colors!
                     .filter((c, n) => n !== 'Uniform')
-                    .map((c, n) => <Controls.ToggleColorPicker  key={n} label={n} color={c} onChange={c => this.controller.updateThemeColor(n, c) } />).toArray();
+                    .map((c, n) => <Controls.ToggleColorPicker  key={n} label={n!} color={c!} onChange={c => this.controller.updateThemeColor(n!, c) } />).toArray();
                     
-            controls.push(<TransparencyControl definition={theme.transparency} onChange={d => this.controller.updateThemeTransparency(d) } />);
-            let visualParams = this.params.style.params as Bootstrap.Visualization.Density.Params;              
-            controls.push(<Controls.Slider label='Smoothing' onChange={v => this.controller.updateStyleParams({ smoothing: v  })}  min={0} max={10} step={1} value={visualParams.smoothing} title='Number of laplacian smoothing itrations.' />);
-            controls.push(<Controls.Toggle onChange={v => this.controller.updateStyleParams({ isWireframe: v }) } value={params.isWireframe} label='Wireframe' />)
+            controls.push(<TransparencyControl definition={theme.transparency!} onChange={d => this.controller.updateThemeTransparency(d) } />);
+            let visualParams = this.params.style!.params as Bootstrap.Visualization.Density.Params;              
+            controls.push(<Controls.Slider label='Smoothing' onChange={v => this.controller.updateStyleParams({ smoothing: v  })}  min={0} max={10} step={1} value={visualParams.smoothing!} title='Number of laplacian smoothing itrations.' />);
+            controls.push(<Controls.Toggle onChange={v => this.controller.updateStyleParams({ isWireframe: v }) } value={params.isWireframe!} label='Wireframe' />)
             // controls.push(<Controls.Toggle 
             //         onChange={v => this.controller.updateStyleTheme({ wireframe: v }) } value={theme.wireframe} label='Wireframe' />);
                     
@@ -146,7 +146,7 @@ namespace LiteMol.Plugin.Views.Transform.Density {
                 {this.surface()}
                 {this.colors()}                
                  <Controls.Slider label='Radius' onChange={v => this.controller.updateRadius(v)} 
-                    min={0} max={10} step={0.005} value={params.radius} />
+                    min={0} max={10} step={0.005} value={params.radius!} />
             </div>
         }        
     }

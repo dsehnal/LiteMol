@@ -23,7 +23,7 @@ namespace LiteMol.Plugin.Views.Transform.Molecule {
             return <div>
                 <Controls.OptionsGroup options={LiteMol.Core.Formats.Molecule.SupportedFormats.All} caption={s => s.name} current={params.format}
                         onChange={(o) => this.updateParams({ format: o }) } label='Format' />
-                <Controls.TextBoxGroup value={params.id} onChange={(v) => this.updateParams({ id: v })} label='URL' onEnter={e => this.applyEnter(e) } placeholder='Enter url...' />
+                <Controls.TextBoxGroup value={params.id!} onChange={(v) => this.updateParams({ id: v })} label='URL' onEnter={e => this.applyEnter(e) } placeholder='Enter url...' />
             </div>
         }        
     }
@@ -35,7 +35,7 @@ namespace LiteMol.Plugin.Views.Transform.Molecule {
             let extensions = LiteMol.Core.Formats.FormatInfo.formatFileFilters(LiteMol.Core.Formats.Molecule.SupportedFormats.All);    
             return <div>
                 <div className='btn btn-block btn-action lm-loader-btn-file' style={{marginTop: '1px'}}>
-                     {params.file ? params.file.name : 'Select a file...'} <input disabled={state.isBusy} type='file' accept={extensions} onChange={ (evt: Event) => this.updateParams({ file: (evt.target as any).files[0] }) } multiple={false} />
+                     {params.file ? params.file.name : 'Select a file...'} <input disabled={state.isBusy} type='file' accept={extensions} onChange={ evt => this.updateParams({ file: (evt.target as any).files[0] }) } multiple={false} />
                 </div>
             </div>
         }        
@@ -45,8 +45,8 @@ namespace LiteMol.Plugin.Views.Transform.Molecule {
         protected renderControls() {            
             let params = this.params;
             return <div>
-                <Controls.TextBoxGroup value={params.id} onChange={(v) => this.updateParams({ id: v })} label='Id' onEnter={e => this.applyEnter(e) } placeholder='Enter pdb id...' />
-                <Controls.TextBoxGroup value={params.server} onChange={(v) => this.updateParams({ server: v })} label='Server' onEnter={e => this.applyEnter(e) } placeholder='Server url...' />
+                <Controls.TextBoxGroup value={params.id!} onChange={(v) => this.updateParams({ id: v })} label='Id' onEnter={e => this.applyEnter(e) } placeholder='Enter pdb id...' />
+                <Controls.TextBoxGroup value={params.server!} onChange={(v) => this.updateParams({ server: v })} label='Server' onEnter={e => this.applyEnter(e) } placeholder='Server url...' />
             </div>
         }        
     }
@@ -57,7 +57,7 @@ namespace LiteMol.Plugin.Views.Transform.Molecule {
             let cif = this.transformSourceEntity as Bootstrap.Entity.Data.CifDictionary;
             let options = cif.props.dictionary.dataBlocks.map((b, i) => ({ b: b.header, i }) );                                    
             return <div>
-                <Controls.OptionsGroup options={options} caption={s => s.b} current={options[this.params.blockIndex]}
+                <Controls.OptionsGroup options={options} caption={s => s.b} current={options[this.params.blockIndex!]}
                      onChange={(o) => this.updateParams({ blockIndex: o.i }) } label='Source' />
             </div>
         }        
@@ -96,7 +96,7 @@ namespace LiteMol.Plugin.Views.Transform.Molecule {
                 <Controls.OptionsGroup options={options} current={params.type}
                      onChange={(o) => this.updateParams({ type: o }) } label='Type' title='Mates: copies whole asymetric unit. Interaction: Includes only residues that are no more than `radius` from the asymetric unit.' />
                 <Controls.Slider label='Radius' onChange={v => this.updateParams({ radius: v })} 
-                     min={0} max={25} step={0.1} value={params.radius} title='Interaction radius.' />
+                     min={0} max={25} step={0.1} value={params.radius!} title='Interaction radius.' />
             </div>
         }        
     }
@@ -105,8 +105,8 @@ namespace LiteMol.Plugin.Views.Transform.Molecule {
         protected renderControls() {            
             let params = this.params;
             return <div>
-                <Controls.TextBoxGroup value={params.name} onChange={(v) => this.updateParams({ name: v })} label='Name' onEnter={e => this.applyEnter(e) } placeholder='Optional name...' />
-                <Controls.QueryEditor value={params.queryString} onChange={(v) => this.updateParams({ queryString: v })} onEnter={e => this.applyEnter(e) } />
+                <Controls.TextBoxGroup value={params.name!} onChange={(v) => this.updateParams({ name: v })} label='Name' onEnter={e => this.applyEnter(e) } placeholder='Optional name...' />
+                <Controls.QueryEditor value={params.queryString!} onChange={(v) => this.updateParams({ queryString: v })} onEnter={e => this.applyEnter(e) } />
             </div>
             //<Controls.TextBoxGroup value={params.queryString} onChange={(v) => this.updateParams({ queryString: v })} onEnter={e => this.applyEnter(e) } label='Query' placeholder='Enter a query...' />
         }        
@@ -116,9 +116,9 @@ namespace LiteMol.Plugin.Views.Transform.Molecule {
         protected renderControls() {            
             let params = this.params;
             return <div>
-                <Controls.Toggle onChange={v => this.updateParams({ polymer: v })} value={params.polymer} label='Polymer' />
-                <Controls.Toggle onChange={v => this.updateParams({ het: v })} value={params.het} label='HET' />
-                <Controls.Toggle onChange={v => this.updateParams({ water: v })} value={params.water} label='Water' />
+                <Controls.Toggle onChange={v => this.updateParams({ polymer: v })} value={params.polymer!} label='Polymer' />
+                <Controls.Toggle onChange={v => this.updateParams({ het: v })} value={params.het!} label='HET' />
+                <Controls.Toggle onChange={v => this.updateParams({ water: v })} value={params.water!} label='Water' />
             </div>;
         }        
     }
@@ -126,30 +126,30 @@ namespace LiteMol.Plugin.Views.Transform.Molecule {
     export class CreateVisual extends Transform.ControllerBase<Bootstrap.Components.Transform.MoleculeVisual, Transformer.Molecule.CreateVisualParams> {        
         
         private detail() {
-            let p = this.params.style.params as Bootstrap.Visualization.Molecule.DetailParams;
+            let p = this.params.style!.params as Bootstrap.Visualization.Molecule.DetailParams;
             return [<Controls.OptionsGroup options={Bootstrap.Visualization.Molecule.DetailTypes} caption={s => s} current={p.detail}
                     onChange={(o) => this.controller.updateStyleParams({ detail: o }) } label='Detail' />];
         }
         
         private ballsAndSticks() {
-            let p = this.params.style.params as Bootstrap.Visualization.Molecule.BallsAndSticksParams;
+            let p = this.params.style!.params as Bootstrap.Visualization.Molecule.BallsAndSticksParams;
             let controls: any[] = [];
             
                     
             controls.push(<Controls.Toggle 
                     title='Scale atoms using their VDW radius.' 
-                    onChange={v => this.controller.updateStyleParams({ useVDW: v }) } value={p.useVDW} label='VDW' />);
+                    onChange={v => this.controller.updateStyleParams({ useVDW: v }) } value={p.useVDW!} label='VDW' />);
                     
             if (p.useVDW) {
                 controls.push(<Controls.Slider label='Scale' onChange={v => this.controller.updateStyleParams({ vdwScaling: v }) }  
-                        min={0.1} max={1} step={0.01} value={p.vdwScaling} title='VDW scale factor.' />);
+                        min={0.1} max={1} step={0.01} value={p.vdwScaling!} title='VDW scale factor.' />);
             } else {
                 controls.push(<Controls.Slider label='Atom Rds' onChange={v => this.controller.updateStyleParams({ atomRadius: v }) }  
-                        min={0.05} max={2} step={0.01} value={p.atomRadius} title='Atom Radius' />);
+                        min={0.05} max={2} step={0.01} value={p.atomRadius!} title='Atom Radius' />);
             }
             
             controls.push(<Controls.Slider label='Bond Rds' onChange={v => this.controller.updateStyleParams({ bondRadius: v }) }  
-                    min={0.05} max={1} step={0.01} value={p.bondRadius} title='Bond Radius'  />);
+                    min={0.05} max={1} step={0.01} value={p.bondRadius!} title='Bond Radius'  />);
             
             controls.push(<Controls.OptionsGroup options={Bootstrap.Visualization.Molecule.DetailTypes} caption={s => s} current={p.detail}
                     onChange={(o) => this.controller.updateStyleParams({ detail: o }) } label='Detail' />);
@@ -158,29 +158,29 @@ namespace LiteMol.Plugin.Views.Transform.Molecule {
         }
         
         private surface() {                       
-            let params = this.params.style.params as Bootstrap.Visualization.Molecule.SurfaceParams;
+            let params = this.params.style!.params as Bootstrap.Visualization.Molecule.SurfaceParams;
             return [
                 <Controls.Slider label='Probe Radius' onChange={v => this.controller.updateStyleParams({ probeRadius: v  })} 
-                    min={0} max={6} step={0.1} value={params.probeRadius} />,
+                    min={0} max={6} step={0.1} value={params.probeRadius!} />,
                 <Controls.Slider label='Smoothing' onChange={v => this.controller.updateStyleParams({ smoothing: v  })} 
-                    min={0} max={10} step={1} value={params.smoothing} title='Number of laplacian smoothing itrations.' />,   
+                    min={0} max={10} step={1} value={params.smoothing!} title='Number of laplacian smoothing itrations.' />,   
                 <Controls.Slider label='Detail' onChange={v => this.controller.updateStyleParams({ density: v  })} 
-                    min={0.3} max={3} step={0.1} value={params.density} title='Determines the size of a grid cell.' />,
-                <Controls.Toggle onChange={v => this.controller.updateStyleParams({ isWireframe: v }) } value={params.isWireframe} label='Wireframe' />                
+                    min={0.3} max={3} step={0.1} value={params.density!} title='Determines the size of a grid cell.' />,
+                <Controls.Toggle onChange={v => this.controller.updateStyleParams({ isWireframe: v }) } value={params.isWireframe!} label='Wireframe' />                
             ];
         }
         
         private createColors() {                                   
-            let theme = this.params.style.theme;
+            let theme = this.params.style!.theme!;
             
-            let isBallsAndSticks = this.params.style.type === 'BallsAndSticks';
+            let isBallsAndSticks = this.params.style!.type === 'BallsAndSticks';
             let colorControls: any[];
             
-            let controls = theme.colors
+            let controls = theme.colors!
                     .filter((c, n) => !isBallsAndSticks ? n !== 'Bond' : true)
-                    .map((c, n) => <Controls.ToggleColorPicker  key={n} label={n} color={c} onChange={c => this.controller.updateThemeColor(n, c) } />).toArray();
+                    .map((c, n) => <Controls.ToggleColorPicker  key={n} label={n!} color={c!} onChange={c => this.controller.updateThemeColor(n!, c) } />).toArray();
                     
-            controls.push(<TransparencyControl definition={theme.transparency} onChange={d => this.controller.updateThemeTransparency(d) } />);
+            controls.push(<TransparencyControl definition={theme.transparency!} onChange={d => this.controller.updateThemeTransparency(d) } />);
             // controls.push(<Controls.Toggle 
             //         onChange={v => this.controller.updateStyleTheme({ wireframe: v }) } value={theme.wireframe} label='Wireframe' />);
             return controls;
@@ -189,7 +189,7 @@ namespace LiteMol.Plugin.Views.Transform.Molecule {
         protected renderControls() {            
             let params = this.params;
             let controls: any;
-            switch (params.style.type) {
+            switch (params.style!.type) {
                 case 'Surface': controls = this.surface(); break;
                 case 'BallsAndSticks': controls = this.ballsAndSticks(); break;
                 default: controls = this.detail(); break;
@@ -201,14 +201,14 @@ namespace LiteMol.Plugin.Views.Transform.Molecule {
                        
             return <div>
                 <Controls.ExpandableGroup
-                    select={<Controls.OptionsGroup options={Bootstrap.Visualization.Molecule.Types} caption={k => desc(k).label} current={params.style.type}
+                    select={<Controls.OptionsGroup options={Bootstrap.Visualization.Molecule.Types} caption={k => desc(k).label} current={params.style!.type}
                         onChange={(o) => this.controller.updateTemplate(o, Bootstrap.Visualization.Molecule.Default.ForType) } label='Type' />}
                     expander={<Controls.ControlGroupExpander isExpanded={showTypeOptions} onChange={e => this.controller.setState({ showTypeOptions: e } as any)}  />}
                     options={controls}
                     isExpanded={showTypeOptions} />
                 
                 <Controls.ExpandableGroup       
-                    select={<Controls.OptionsGroup options={Bootstrap.Visualization.Molecule.Default.Themes} caption={(k: Bootstrap.Visualization.Theme.Template) => k.name} current={params.style.theme.template}
+                    select={<Controls.OptionsGroup options={Bootstrap.Visualization.Molecule.Default.Themes} caption={(k: Bootstrap.Visualization.Theme.Template) => k.name} current={params.style!.theme!.template}
                         onChange={(o) => this.controller.updateThemeDefinition(o) } label='Coloring' />}
                     expander={<Controls.ControlGroupExpander isExpanded={showThemeOptions} onChange={e => this.controller.setState({ showThemeOptions: e } as any)}  />}
                     options={this.createColors()}

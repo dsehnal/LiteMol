@@ -5,7 +5,7 @@
 namespace LiteMol.Bootstrap.Behaviour {
     "use strict";
     
-    function trackTransform<A extends Tree.Node.Any, B extends Tree.Node.Any, P>(ctx: Context, name: string, transformer: Tree.Transformer<A, B, P>, a: A, transform: Tree.Transform.Any, selector: (p: P, a?: Entity.Any) => string, gaId: string) {
+    function trackTransform<A extends Tree.Node.Any, B extends Tree.Node.Any, P>(ctx: Context, name: string, transformer: Tree.Transformer<A, B, P>, a: A, transform: Tree.Transform.Any, selector: (p: P, a?: Entity.Any) => string | undefined, gaId: string) {
         if (transform.transformer !== transformer) return;
         
         try {
@@ -20,7 +20,7 @@ namespace LiteMol.Bootstrap.Behaviour {
         }
     }  
     
-    function selectedMoleculeCreateFromData(p: Entity.Transformer.Molecule.CreateFromDataParams, a: Entity.Any) { return p.format.name; }    
+    function selectedMoleculeCreateFromData(p: Entity.Transformer.Molecule.CreateFromDataParams, a: Entity.Any) { return p.format!.name; }    
     function selectDownload(p: Entity.Transformer.Data.DownloadParams) { return p.url; }
     function selectQuery(p: Entity.Transformer.Molecule.CreateSelectionParams) { return p.queryString; }
     function selectAssembly(p: Entity.Transformer.Molecule.CreateAssemblyParams, a: Entity.Any) {
@@ -45,7 +45,7 @@ namespace LiteMol.Bootstrap.Behaviour {
         
     function selectVisual(p: Entity.Transformer.Molecule.CreateVisualParams, a: Entity.Any) {
         if (Tree.Node.isHidden(a)) return void 0;
-        return p.style.type;         
+        return p.style!.type;         
     }
 
     function selectDensity(p: Entity.Transformer.Density.ParseDataParams) { return '$(format)$ ' + p.format; }

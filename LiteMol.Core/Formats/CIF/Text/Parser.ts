@@ -402,7 +402,7 @@ namespace LiteMol.Core.Formats.CIF.Text {
         errorLine: number;
         errorMessage: string;
     }
-    
+
     /**
      * Reads a category containing a single row.
      */
@@ -413,12 +413,18 @@ namespace LiteMol.Core.Formats.CIF.Text {
             column: string,
             columns:string[] = [],
             tokens = TokenIndexBuilder.create(512),
-            tokenCount = 0;
+            tokenCount = 0,
+            readingNames = true;
         
-        while (tokenizer.currentTokenType === CifTokenType.ColumnName && isNamespace(tokenizer, nsStart, nsEnd)) {
+        while (readingNames) {
+            if (tokenizer.currentTokenType !== CifTokenType.ColumnName || !isNamespace(tokenizer, nsStart, nsEnd)) {
+                readingNames = false;
+                break;
+            }
+
             column = getTokenString(tokenizer);
             moveNext(tokenizer);
-            if (tokenizer.currentTokenType !== CifTokenType.Value) {
+            if (tokenizer.currentTokenType as any !== CifTokenType.Value) {
                 return {
                     hasError: true,
                     errorLine: tokenizer.currentLineNumber,
@@ -486,7 +492,7 @@ namespace LiteMol.Core.Formats.CIF.Text {
      * Creates an error result.
      */
     function error(line: number, message: string) {
-        return ParserResult.error(message, line);
+        return ParserResult.error<CIF.File>(message, line);
     }
 
     /**

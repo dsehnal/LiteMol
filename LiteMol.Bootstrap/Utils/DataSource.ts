@@ -121,7 +121,7 @@ namespace LiteMol.Bootstrap.Utils {
         private static poolSize = 15;
 
         static get() {
-            if (this.pool.length) return this.pool.pop();
+            if (this.pool.length) return this.pool.pop()!;
             return new XMLHttpRequest();
         }
 

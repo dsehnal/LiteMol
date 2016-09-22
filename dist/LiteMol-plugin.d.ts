@@ -2579,7 +2579,8 @@ declare namespace LiteMol.Plugin {
     export import React = __LiteMolReact;
     const ReactDOM: typeof React.__DOM;
     namespace Controls {
-        const ChromePickerHelper: __LiteMolColorPicker.ChromePicker;
+        class ChromePickerHelper extends __LiteMolColorPicker.ChromePicker {
+        }
     }
 }
 declare namespace LiteMol.Plugin.Controls {
@@ -2607,11 +2608,11 @@ declare namespace LiteMol.Plugin.Controls {
     }
     const TextBox: (props: {
         onChange: (v: string) => void;
-        value?: string;
-        defaultValue?: string;
-        onKeyPress?: (e: React.KeyboardEvent) => void;
-        onBlur?: (e: React.FormEvent) => void;
-        placeholder?: string;
+        value?: string | undefined;
+        defaultValue?: string | undefined;
+        onKeyPress?: ((e: React.KeyboardEvent) => void) | undefined;
+        onBlur?: ((e: React.FormEvent) => void) | undefined;
+        placeholder?: string | undefined;
     }) => JSX.Element;
     function isEnter(e: React.KeyboardEvent): boolean;
     function TextBoxGroup(props: {
@@ -2626,14 +2627,14 @@ declare namespace LiteMol.Plugin.Controls {
         action: () => void;
         isOn: boolean;
         on: string;
-        off?: string;
-        title?: string;
+        off?: string | undefined;
+        title?: string | undefined;
     }) => JSX.Element;
     const Toggle: (props: {
         onChange: (v: boolean) => void;
         value: boolean;
         label: string;
-        title?: string;
+        title?: string | undefined;
     }) => JSX.Element;
     const ControlGroupExpander: (props: {
         onChange: (e: boolean) => void;
@@ -2642,7 +2643,7 @@ declare namespace LiteMol.Plugin.Controls {
     const RowText: (props: {
         value: any;
         label: string;
-        title?: string;
+        title?: string | undefined;
     }) => JSX.Element;
 }
 declare namespace LiteMol.Plugin.Controls {
@@ -2763,7 +2764,7 @@ declare namespace LiteMol.Plugin.Views {
     abstract class View<Controller extends Bootstrap.Components.Component<any>, State, CustomProps> extends ObserverView<{
         controller: Controller;
     } & CustomProps, State> {
-        protected controller: Controller;
+        protected readonly controller: Controller;
         componentWillMount(): void;
     }
 }
@@ -2781,12 +2782,12 @@ declare namespace LiteMol.Plugin.Views.Transform {
         showVisibilityIcon?: boolean;
     }> {
         protected abstract renderControls(): void;
-        params: P;
+        readonly params: P;
         updateParams(p: P): void;
         autoUpdateParams(p: P): void;
-        transformSourceEntity: Bootstrap.Entity.Any;
-        isUpdate: boolean;
-        canApply: boolean;
+        readonly transformSourceEntity: Bootstrap.Entity.Any;
+        readonly isUpdate: boolean;
+        readonly canApply: boolean;
         protected applyEnter(e: React.KeyboardEvent): void;
         render(): JSX.Element;
     }
@@ -2852,7 +2853,7 @@ declare namespace LiteMol.Plugin.Views.Transform.Molecule {
         protected renderControls(): JSX.Element;
     }
     class CreateAssembly extends Transform.ControllerBase<Bootstrap.Components.Transform.Controller<Transformer.Molecule.CreateAssemblyParams>, Transformer.Molecule.CreateAssemblyParams> {
-        protected renderControls(): JSX.Element;
+        protected renderControls(): JSX.Element | undefined;
     }
     class CreateSymmetryMates extends Transform.ControllerBase<Bootstrap.Components.Transform.Controller<Transformer.Molecule.CreateSymmetryMatesParams>, Transformer.Molecule.CreateSymmetryMatesParams> {
         protected renderControls(): JSX.Element;
@@ -2938,7 +2939,6 @@ declare namespace LiteMol.Plugin.Views.Entity {
         state: {
             current?: Bootstrap.Entity.Any;
         };
-        private currentStateSub;
         componentWillMount(): void;
         render(): JSX.Element;
     }
@@ -2976,12 +2976,12 @@ declare namespace LiteMol.Plugin.Views.Visualization {
     }
 }
 declare namespace LiteMol.Plugin.Components {
-    function create(key: string, controller: (ctx: Context) => Bootstrap.Components.Component<any>, view: ViewDefinition): (t: Bootstrap.Components.LayoutRegion, isStatic?: boolean) => (ctx: Context) => {
+    function create(key: string, controller: (ctx: Context) => Bootstrap.Components.Component<any>, view: ViewDefinition): (t: Bootstrap.Components.LayoutRegion, isStatic?: boolean | undefined) => (ctx: Context) => {
         key: string;
         controller: Bootstrap.Components.Component<any>;
         region: Bootstrap.Components.LayoutRegion;
         view: React.ComponentClass<any>;
-        isStatic: boolean;
+        isStatic: boolean | undefined;
     };
     class AppInfo extends Bootstrap.Components.Component<{}> {
         appName: string;
@@ -2989,60 +2989,60 @@ declare namespace LiteMol.Plugin.Components {
         constructor(ctx: Bootstrap.Context, appName: string, appVersion: string);
     }
     namespace Context {
-        const Log: (t: Bootstrap.Components.LayoutRegion, isStatic?: boolean) => (ctx: Context) => {
+        const Log: (t: Bootstrap.Components.LayoutRegion, isStatic?: boolean | undefined) => (ctx: Context) => {
             key: string;
             controller: Bootstrap.Components.Component<any>;
             region: Bootstrap.Components.LayoutRegion;
             view: React.ComponentClass<any>;
-            isStatic: boolean;
+            isStatic: boolean | undefined;
         };
-        const Overlay: (t: Bootstrap.Components.LayoutRegion, isStatic?: boolean) => (ctx: Context) => {
+        const Overlay: (t: Bootstrap.Components.LayoutRegion, isStatic?: boolean | undefined) => (ctx: Context) => {
             key: string;
             controller: Bootstrap.Components.Component<any>;
             region: Bootstrap.Components.LayoutRegion;
             view: React.ComponentClass<any>;
-            isStatic: boolean;
+            isStatic: boolean | undefined;
         };
-        const BackgroundTasks: (t: Bootstrap.Components.LayoutRegion, isStatic?: boolean) => (ctx: Context) => {
+        const BackgroundTasks: (t: Bootstrap.Components.LayoutRegion, isStatic?: boolean | undefined) => (ctx: Context) => {
             key: string;
             controller: Bootstrap.Components.Component<any>;
             region: Bootstrap.Components.LayoutRegion;
             view: React.ComponentClass<any>;
-            isStatic: boolean;
+            isStatic: boolean | undefined;
         };
     }
     namespace Transform {
-        const View: (t: Bootstrap.Components.LayoutRegion, isStatic?: boolean) => (ctx: Context) => {
+        const View: (t: Bootstrap.Components.LayoutRegion, isStatic?: boolean | undefined) => (ctx: Context) => {
             key: string;
             controller: Bootstrap.Components.Component<any>;
             region: Bootstrap.Components.LayoutRegion;
             view: React.ComponentClass<any>;
-            isStatic: boolean;
+            isStatic: boolean | undefined;
         };
     }
     namespace Entity {
-        const Current: (appName: string, appVersion: string) => (t: Bootstrap.Components.LayoutRegion, isStatic?: boolean) => (ctx: Context) => {
+        const Current: (appName: string, appVersion: string) => (t: Bootstrap.Components.LayoutRegion, isStatic?: boolean | undefined) => (ctx: Context) => {
             key: string;
             controller: Bootstrap.Components.Component<any>;
             region: Bootstrap.Components.LayoutRegion;
             view: React.ComponentClass<any>;
-            isStatic: boolean;
+            isStatic: boolean | undefined;
         };
     }
     namespace Visualization {
-        const Viewport: (t: Bootstrap.Components.LayoutRegion, isStatic?: boolean) => (ctx: Context) => {
+        const Viewport: (t: Bootstrap.Components.LayoutRegion, isStatic?: boolean | undefined) => (ctx: Context) => {
             key: string;
             controller: Bootstrap.Components.Component<any>;
             region: Bootstrap.Components.LayoutRegion;
             view: React.ComponentClass<any>;
-            isStatic: boolean;
+            isStatic: boolean | undefined;
         };
-        const HighlightInfo: (t: Bootstrap.Components.LayoutRegion, isStatic?: boolean) => (ctx: Context) => {
+        const HighlightInfo: (t: Bootstrap.Components.LayoutRegion, isStatic?: boolean | undefined) => (ctx: Context) => {
             key: string;
             controller: Bootstrap.Components.Component<any>;
             region: Bootstrap.Components.LayoutRegion;
             view: React.ComponentClass<any>;
-            isStatic: boolean;
+            isStatic: boolean | undefined;
         };
     }
 }
@@ -4017,15 +4017,15 @@ declare namespace LiteMol.Core {
             isIndeterminate: boolean;
             current: number;
             max: number;
-            requestAbort: () => void;
+            requestAbort?: () => void;
         }
         class Context<A> {
             schedule(action: () => void, afterMs?: number): void;
             private _abortRequested;
-            abortRequested: boolean;
+            readonly abortRequested: boolean;
             setRequestAbort(abort?: () => void): void;
             private _abortRequest;
-            abortRequest: () => boolean;
+            readonly abortRequest: () => true;
             private progressTick;
             private progress;
             progressStream: Rx.BehaviorSubject<ProgressInfo>;
@@ -4143,7 +4143,7 @@ declare namespace LiteMol.Core.Formats {
     namespace FormatInfo {
         function formatRegExp(info: FormatInfo): RegExp;
         function formatFileFilters(all: FormatInfo[]): string;
-        function getFormat(filename: string, all: FormatInfo[]): FormatInfo;
+        function getFormat(filename: string, all: FormatInfo[]): FormatInfo | undefined;
     }
     class ParserError {
         message: string;
@@ -4155,12 +4155,12 @@ declare namespace LiteMol.Core.Formats {
      * A generic parser result.
      */
     class ParserResult<T> {
-        error: ParserError;
+        error: ParserError | undefined;
         warnings: string[];
-        result: T;
-        static error(message: string, line?: number): ParserResult<any>;
+        result: T | undefined;
+        static error<T>(message: string, line?: number): ParserResult<T>;
         static success<T>(result: T, warnings?: string[]): ParserResult<T>;
-        constructor(error: ParserError, warnings: string[], result: T);
+        constructor(error: ParserError | undefined, warnings: string[], result: T | undefined);
     }
     /**
      * A helper for building a typed array of token indices.
@@ -4255,7 +4255,7 @@ declare namespace LiteMol.Core.Formats.CIF {
      */
     interface Column {
         isDefined: boolean;
-        getString(row: number): string;
+        getString(row: number): string | null;
         getInteger(row: number): number;
         getFloat(row: number): number;
         getValuePresence(row: number): ValuePresence;
@@ -4354,7 +4354,7 @@ declare namespace LiteMol.Core.Formats.CIF.Text {
          * Categories of the block.
          * block.categories._atom_site / ['_atom_site']
          */
-        categories: Category[];
+        readonly categories: Category[];
         /**
          * Additional data such as save frames for mmCIF file.
          */
@@ -4396,7 +4396,7 @@ declare namespace LiteMol.Core.Formats.CIF.Text {
         /**
          * The array of columns.
          */
-        columnNames: string[];
+        readonly columnNames: string[];
         /**
          * Number of columns in the category.
          */
@@ -4445,7 +4445,7 @@ declare namespace LiteMol.Core.Formats.CIF.Text {
         /**
          * Returns the string value at given row.
          */
-        getString(row: number): string;
+        getString(row: number): string | null;
         /**
          * Returns the integer value at given row.
          */
@@ -4495,7 +4495,7 @@ declare namespace LiteMol.Core.Formats.CIF.Binary {
         additionalData: {
             [name: string]: any;
         };
-        categories: Category[];
+        readonly categories: Category[];
         getCategory(name: string): Category;
         toJSON(): {
             id: string;
@@ -4517,7 +4517,7 @@ declare namespace LiteMol.Core.Formats.CIF.Binary {
         name: string;
         columnCount: number;
         rowCount: number;
-        columnNames: string[];
+        readonly columnNames: string[];
         getColumn(name: string): CIF.Column;
         toJSON(): {
             name: string;
@@ -4665,12 +4665,12 @@ declare namespace LiteMol.Core.Formats.Molecule.PDB {
     };
     class MoleculeData {
         header: Header;
-        crystInfo: CrystStructureInfo;
+        crystInfo: CrystStructureInfo | undefined;
         models: ModelsData;
         data: string;
         private makeEntities();
         toCifFile(): CIF.File;
-        constructor(header: Header, crystInfo: CrystStructureInfo, models: ModelsData, data: string);
+        constructor(header: Header, crystInfo: CrystStructureInfo | undefined, models: ModelsData, data: string);
     }
     class Header {
         id: string;
@@ -4690,7 +4690,7 @@ declare namespace LiteMol.Core.Formats.Molecule.PDB {
         toCifCategory(data: string): {
             helices: CIF.Category;
             sheets: CIF.Category;
-        };
+        } | undefined;
         constructor(helixTokens: number[], sheetTokens: number[]);
     }
     class ModelData {
@@ -4754,7 +4754,7 @@ declare namespace LiteMol.Core.Formats.Density {
         private nX;
         private nY;
         private len;
-        length: number;
+        readonly length: number;
         getAt(idx: number): number;
         setAt(idx: number, v: number): void;
         get(i: number, j: number, k: number): number;
@@ -4873,7 +4873,7 @@ declare namespace LiteMol.Core.Geometry.LinearAlgebra {
         function setValue(a: number[], i: number, j: number, value: number): void;
         function copy(out: number[], a: any): number[];
         function clone(a: number[]): number[];
-        function invert(out: number[], a: number[]): number[];
+        function invert(out: number[], a: number[]): number[] | null;
         function mul(out: number[], a: number[], b: number[]): number[];
         function translate(out: number[], a: number[], v: number[]): number[];
         function fromTranslation(out: number[], v: number[]): number[];
@@ -4913,7 +4913,7 @@ declare namespace LiteMol.Core.Geometry {
         count: number;
         indices: number[];
         hasPriorities: boolean;
-        priorities: number[];
+        priorities: number[] | undefined;
         add(distSq: number, index: number): void;
         reset(): void;
     }
@@ -5165,8 +5165,8 @@ declare namespace LiteMol.Core.Structure {
     class PolyResidueIdentifier {
         asymId: string;
         seqNumber: number;
-        insCode: string;
-        constructor(asymId: string, seqNumber: number, insCode: string);
+        insCode: string | null;
+        constructor(asymId: string, seqNumber: number, insCode: string | null);
         static areEqual(a: PolyResidueIdentifier, index: number, bAsymId: string[], bSeqNumber: number[], bInsCode: string[]): boolean;
         static compare(a: PolyResidueIdentifier, b: PolyResidueIdentifier): number;
         static compareResidue(a: PolyResidueIdentifier, index: number, bAsymId: string[], bSeqNumber: number[], bInsCode: string[]): number;
@@ -5186,7 +5186,7 @@ declare namespace LiteMol.Core.Structure {
         info: any;
         startResidueIndex: number;
         endResidueIndex: number;
-        length: number;
+        readonly length: number;
         constructor(type: SecondaryStructureType, startResidueId: PolyResidueIdentifier, endResidueId: PolyResidueIdentifier, info?: any);
     }
     class SymmetryInfo {
@@ -5247,7 +5247,7 @@ declare namespace LiteMol.Core.Structure {
         x: number[];
         y: number[];
         z: number[];
-        altLoc: string[];
+        altLoc: (string | null)[];
         occupancy: number[];
         tempFactor: number[];
         rowIndex: number[];
@@ -5262,7 +5262,7 @@ declare namespace LiteMol.Core.Structure {
         authName: string[];
         authSeqNumber: number[];
         authAsymId: string[];
-        insCode: string[];
+        insCode: (string | null)[];
         entityId: string[];
         isHet: number[];
         atomStartIndex: number[];
@@ -5310,7 +5310,7 @@ declare namespace LiteMol.Core.Structure {
                 x: Float32Array;
                 y: Float32Array;
                 z: Float32Array;
-                altLoc: any[];
+                altLoc: never[];
                 rowIndex: Int32Array;
                 residueIndex: Int32Array;
                 chainIndex: Int32Array;
@@ -5331,7 +5331,7 @@ declare namespace LiteMol.Core.Structure {
                 authName: string[];
                 authSeqNumber: Int32Array;
                 authAsymId: string[];
-                insCode: string[];
+                insCode: (string | null)[];
                 entityId: string[];
                 isHet: Int8Array;
                 atomStartIndex: Int32Array;
@@ -5414,16 +5414,16 @@ declare namespace LiteMol.Core.Structure {
         residues: DefaultResidueTableSchema;
         chains: DefaultChainTableSchema;
         entities: DefaultEntityTableSchema;
-        covalentBonds: DefaultBondTableSchema;
-        nonCovalentbonds: DefaultBondTableSchema;
-        componentBonds: ComponentBondInfo;
+        covalentBonds?: DefaultBondTableSchema;
+        nonCovalentbonds?: DefaultBondTableSchema;
+        componentBonds?: ComponentBondInfo;
         secondaryStructure: SecondaryStructureElement[];
-        symmetryInfo: SymmetryInfo;
-        assemblyInfo: AssemblyInfo;
-        parent: MoleculeModel;
+        symmetryInfo?: SymmetryInfo;
+        assemblyInfo?: AssemblyInfo;
+        parent?: MoleculeModel;
         source: MoleculeModelSource;
-        operators: Operator[];
-        queryContext: Query.Context;
+        operators?: Operator[];
+        readonly queryContext: Query.Context;
         query(q: Query.Source): Query.FragmentSeq;
         constructor(data: MoleculeModelData);
     }
@@ -5440,7 +5440,7 @@ declare namespace LiteMol.Core.Structure {
         private tempV;
         private space;
         private operators;
-        operatorCount: number;
+        readonly operatorCount: number;
         getOperatorMatrix(index: number, i: number, j: number, k: number, target: number[]): number[];
         private getSpace();
         private static getOperator(ids);
@@ -5483,11 +5483,11 @@ declare namespace LiteMol.Core.Structure {
             /**
              * Number of atoms in the current context.
              */
-            atomCount: number;
+            readonly atomCount: number;
             /**
              * Determine if the context contains all atoms of the input model.
              */
-            isComplete: boolean;
+            readonly isComplete: boolean;
             /**
              * The structure this context is based on.
              */
@@ -5495,7 +5495,7 @@ declare namespace LiteMol.Core.Structure {
             /**
              * Get a kd-tree for the atoms in the current context.
              */
-            tree: Geometry.SubdivisionTree3D<number>;
+            readonly tree: Geometry.SubdivisionTree3D<number>;
             /**
              * Checks if an atom is included in the current context.
              */
@@ -5555,29 +5555,29 @@ declare namespace LiteMol.Core.Structure {
             /**
              * The hash code of the fragment.
              */
-            hashCode: number;
+            readonly hashCode: number;
             /**
              * Id composed of <moleculeid>_<tag>.
              */
-            id: string;
+            readonly id: string;
             /**
              * Number of atoms.
              */
-            atomCount: number;
+            readonly atomCount: number;
             /**
              * Determines if a fragment is HET based on the tag.
              */
-            isHet: any;
+            readonly isHet: any;
             private _fingerprint;
             /**
              * A sorted list of residue identifiers.
              */
-            fingerprint: string;
+            readonly fingerprint: string;
             private _authFingerprint;
             /**
              * A sorted list of residue identifiers.
              */
-            authFingerprint: string;
+            readonly authFingerprint: string;
             /**
              * Executes a query on the current fragment.
              */
@@ -5589,15 +5589,15 @@ declare namespace LiteMol.Core.Structure {
             /**
              * A sorted list of residue indices.
              */
-            residueIndices: number[];
+            readonly residueIndices: number[];
             /**
              * A sorted list of chain indices.
              */
-            chainIndices: number[];
+            readonly chainIndices: number[];
             /**
              * A sorted list of entity indices.
              */
-            entityIndices: number[];
+            readonly entityIndices: number[];
             static areEqual(a: Fragment, b: Fragment): boolean;
             /**
              * Create a fragment from an integer set.
@@ -5632,7 +5632,7 @@ declare namespace LiteMol.Core.Structure {
             context: Context;
             fragments: Fragment[];
             static empty(ctx: Context): FragmentSeq;
-            length: number;
+            readonly length: number;
             /**
              * Merges atom indices from all fragments.
              */
@@ -5697,7 +5697,7 @@ declare namespace LiteMol.Core.Structure.Query {
         seqNumber?: number;
         authName?: string;
         authSeqNumber?: number;
-        insCode?: string;
+        insCode?: string | null;
     }
     function atomsByElement(...elements: string[]): Builder;
     function atomsByName(...names: string[]): Builder;
@@ -5782,27 +5782,27 @@ declare namespace LiteMol.Core.Structure.Query {
 declare namespace LiteMol.Core.Structure.Query.Algebraic {
     type Predicate = (ctx: Context, i: number) => boolean;
     type Selector = (ctx: Context, i: number) => any;
-    const not: (a: (ctx: Context, i: number) => boolean) => (ctx: Context, i: number) => boolean;
-    const and: (a: (ctx: Context, i: number) => boolean, b: (ctx: Context, i: number) => boolean) => (ctx: Context, i: number) => boolean;
-    const or: (a: (ctx: Context, i: number) => boolean, b: (ctx: Context, i: number) => boolean) => (ctx: Context, i: number) => boolean;
+    const not: (a: Predicate) => Predicate;
+    const and: (a: Predicate, b: Predicate) => Predicate;
+    const or: (a: Predicate, b: Predicate) => Predicate;
     const backbone: Predicate;
     const sidechain: Predicate;
-    const equal: (a: (ctx: Context, i: number) => any, b: (ctx: Context, i: number) => any) => (ctx: Context, i: number) => boolean;
-    const notEqual: (a: (ctx: Context, i: number) => any, b: (ctx: Context, i: number) => any) => (ctx: Context, i: number) => boolean;
-    const greater: (a: (ctx: Context, i: number) => any, b: (ctx: Context, i: number) => any) => (ctx: Context, i: number) => boolean;
-    const lesser: (a: (ctx: Context, i: number) => any, b: (ctx: Context, i: number) => any) => (ctx: Context, i: number) => boolean;
-    const greaterEqual: (a: (ctx: Context, i: number) => any, b: (ctx: Context, i: number) => any) => (ctx: Context, i: number) => boolean;
-    const lesserEqual: (a: (ctx: Context, i: number) => any, b: (ctx: Context, i: number) => any) => (ctx: Context, i: number) => boolean;
+    const equal: (a: Selector, b: Selector) => Predicate;
+    const notEqual: (a: Selector, b: Selector) => Predicate;
+    const greater: (a: Selector, b: Selector) => Predicate;
+    const lesser: (a: Selector, b: Selector) => Predicate;
+    const greaterEqual: (a: Selector, b: Selector) => Predicate;
+    const lesserEqual: (a: Selector, b: Selector) => Predicate;
     function inRange(s: Selector, a: number, b: number): Predicate;
     /**
      * Selectors
      */
     function value(v: any): Selector;
-    const residueSeqNumber: (ctx: Context, i: number) => any;
-    const residueName: (ctx: Context, i: number) => any;
-    const elementSymbol: (ctx: Context, i: number) => any;
-    const atomName: (ctx: Context, i: number) => any;
-    const entityType: (ctx: Context, i: number) => any;
+    const residueSeqNumber: Selector;
+    const residueName: Selector;
+    const elementSymbol: Selector;
+    const atomName: Selector;
+    const entityType: Selector;
     /**
      * Query
      */
@@ -11775,7 +11775,7 @@ declare namespace LiteMol.Visualization {
         object: THREE.Object3D;
         theme: Theme;
         disposeList: IDisposable[];
-        pickObject: THREE.Object3D;
+        pickObject: THREE.Object3D | undefined;
         pickBufferAttributes: THREE.BufferAttribute[];
         dirty: boolean;
         props: Model.Props;
@@ -11807,10 +11807,10 @@ declare namespace LiteMol.Visualization {
         private map;
         private maxId;
         private _idWidth;
-        idWidth: number;
-        all: Model[];
-        count: number;
-        getBySceneId(id: number): Model;
+        readonly idWidth: number;
+        readonly all: Model[];
+        readonly count: number;
+        getBySceneId(id: number): Model | undefined;
         add(model: Model, resetCamera?: boolean): void;
         private dispose(model);
         removeAndDispose(model: Model): void;
@@ -11863,8 +11863,8 @@ declare namespace LiteMol.Visualization {
             z: number;
         }): void;
         updateSize(w: number, h: number): void;
-        position: THREE.Vector3;
-        object: THREE.Camera;
+        readonly position: THREE.Vector3;
+        readonly object: THREE.Camera;
         private unbindCamera;
         dispose(): void;
         private handleMouseWheel(event);
@@ -12081,10 +12081,10 @@ declare namespace LiteMol.Visualization.Selection {
         elements?: number[];
     }
     class Pick {
-        current: Info;
+        current: Info | null;
         currentPickId: number;
         currentPickElementId: number;
-        getPickInfo(): Info;
+        getPickInfo(): Info | null;
         reset(): boolean;
         private selectPos;
         selectStart(x: number, y: number): void;
@@ -12204,18 +12204,6 @@ declare namespace LiteMol.Visualization.Lines {
     }
 }
 declare namespace LiteMol.Visualization.Molecule.BallsAndSticks {
-    function buildGeometry(model: Core.Structure.MoleculeModel, parameters: Parameters, atomIndices: number[], ctx: Core.Computation.Context<Model>, done: (geom: BallsAndSticksGeometry) => void): void;
-    class BallsAndSticksGeometry extends GeometryBase {
-        atomsGeometry: THREE.BufferGeometry;
-        bondsGeometry: THREE.BufferGeometry;
-        pickGeometry: THREE.BufferGeometry;
-        atomVertexMap: Selection.VertexMap;
-        bondVertexMap: Selection.VertexMap;
-        vertexStateBuffer: THREE.BufferAttribute;
-        dispose(): void;
-    }
-}
-declare namespace LiteMol.Visualization.Molecule.BallsAndSticks {
     interface Parameters {
         tessalation?: number;
         atomRadius?: (i: number) => number;
@@ -12242,6 +12230,18 @@ declare namespace LiteMol.Visualization.Molecule.BallsAndSticks {
             params: Parameters;
             props?: Model.Props;
         }): Core.Computation<Model>;
+    }
+}
+declare namespace LiteMol.Visualization.Molecule.BallsAndSticks {
+    function buildGeometry(model: Core.Structure.MoleculeModel, parameters: Parameters, atomIndices: number[], ctx: Core.Computation.Context<Model>, done: (geom: BallsAndSticksGeometry) => void): void;
+    class BallsAndSticksGeometry extends GeometryBase {
+        atomsGeometry: THREE.BufferGeometry;
+        bondsGeometry: THREE.BufferGeometry;
+        pickGeometry: THREE.BufferGeometry;
+        atomVertexMap: Selection.VertexMap;
+        bondVertexMap: Selection.VertexMap;
+        vertexStateBuffer: THREE.BufferAttribute;
+        dispose(): void;
     }
 }
 declare namespace LiteMol.Visualization.Molecule.Cartoons.Geometry {
@@ -15017,13 +15017,13 @@ declare namespace LiteMol.Bootstrap {
 declare namespace LiteMol.Bootstrap.Utils {
     function readStringFromFile(file: File): Task<string>;
     function readArrayBufferFromFile(file: File): Task<ArrayBuffer>;
-    function readFromFile(file: File, type: Entity.Data.Type): Task<ArrayBuffer | string>;
+    function readFromFile(file: File, type: Entity.Data.Type): Task<string | ArrayBuffer>;
     function ajaxGetString(url: string): Task<string>;
     function ajaxGetArrayBuffer(url: string): Task<ArrayBuffer>;
     function ajaxGet(url: string, type: Entity.Data.Type): Task<string | ArrayBuffer>;
 }
 declare namespace LiteMol.Bootstrap.Utils.Query {
-    function parseAuthResidueId(ids: string, separator?: string): (ctx: Core.Structure.Query.Context) => Core.Structure.Query.FragmentSeq;
+    function parseAuthResidueId(ids: string, separator?: string): Core.Structure.Query;
 }
 declare namespace LiteMol.Bootstrap.Utils.Query {
     class ValueOrError<A> {
@@ -15034,18 +15034,18 @@ declare namespace LiteMol.Bootstrap.Utils.Query {
         constructor(isError: boolean, value?: A, error?: any);
     }
     module ValueOrError {
-        function error(err: any): ValueOrError<any>;
+        function error(err: any): ValueOrError<undefined>;
         function value<A>(v: A): ValueOrError<A>;
     }
 }
 declare namespace LiteMol.Bootstrap.Utils {
     interface LinkedElement<T> {
-        previous: T;
-        next: T;
+        previous: T | null;
+        next: T | null;
         inList: boolean;
     }
     class LinkedList<T extends LinkedElement<T>> {
-        first: T;
+        first: T | null;
         private last;
         addFirst(item: T): void;
         addLast(item: T): void;
@@ -15078,10 +15078,10 @@ declare namespace LiteMol.Bootstrap.Utils.Molecule {
     function getDistance(mA: Structure.MoleculeModel, startAtomIndexA: number, endAtomIndexA: number, mB: Structure.MoleculeModel, startAtomIndexB: number, endAtomIndexB: number): number;
     function getDistanceSet(mA: Structure.MoleculeModel, setA: number[], mB: Structure.MoleculeModel, setB: number[]): number;
     function getModelAndIndicesFromQuery(m: Entity.Any, query: Core.Structure.Query.Source): {
-        model?: Entity.Molecule.Model;
-        indices?: number[];
-        queryContext?: Core.Structure.Query.Context;
-    };
+        model: Entity.Molecule.Model;
+        indices: number[];
+        queryContext: Core.Structure.Query.Context;
+    } | undefined;
     function getResidueIndices(m: Core.Structure.MoleculeModel, atom: number): number[];
     function getBox(molecule: Core.Structure.MoleculeModel, atomIndices: number[], delta: number): {
         bottomLeft: number[];
@@ -15158,7 +15158,7 @@ declare namespace LiteMol.Bootstrap {
         type: Task.Type;
         private task;
         private _id;
-        id: number;
+        readonly id: number;
         reportTime: boolean;
         bind<B>(name: string, type: Task.Type, next: (r: A) => Task<B>): Task<B>;
         map<B>(name: string, type: Task.Type, f: (r: A) => B): Task<B>;
@@ -15173,7 +15173,7 @@ declare namespace LiteMol.Bootstrap {
             then(action: (r: T) => void): __Promise.Promise<void>;
             catch(action: (e: any) => void): __Promise.Promise<void>;
             discard(): void;
-            constructor(promise: Promise<T>, ctx: Context<T>);
+            constructor(p: (resolve: (v: T) => void, reject: (err: any) => void, setCtx: (ctx: Context<T>) => void) => void);
         }
         type Type = 'Normal' | 'Background' | 'Silent' | 'Child';
         function create<A>(name: string, type: Type, task: (ctx: Context<A>) => void): Task<A>;
@@ -15271,8 +15271,8 @@ declare namespace LiteMol.Bootstrap.Event {
         const CameraChanged: Type<LiteMol.Visualization.Camera>;
     }
     namespace Molecule {
-        const ModelHighlight: Type<Bootstrap.Interactivity.Molecule.SelectionInfo>;
-        const ModelSelect: Type<Bootstrap.Interactivity.Molecule.SelectionInfo>;
+        const ModelHighlight: Type<Bootstrap.Interactivity.Molecule.SelectionInfo | undefined>;
+        const ModelSelect: Type<Bootstrap.Interactivity.Molecule.SelectionInfo | undefined>;
     }
 }
 declare namespace LiteMol.Bootstrap.Command {
@@ -15282,7 +15282,7 @@ declare namespace LiteMol.Bootstrap.Command {
         const ApplyTransform: Event.Type<{
             node: Node;
             transform: Bootstrap.Tree.Transform<Node, Node, any>;
-            isUpdate?: boolean;
+            isUpdate?: boolean | undefined;
         }>;
     }
     namespace Entity {
@@ -15305,22 +15305,22 @@ declare namespace LiteMol.Bootstrap.Command {
     namespace Molecule {
         const FocusQuery: Event.Type<{
             model: Bootstrap.Entity.Molecule.Model;
-            query: ((ctx: Core.Structure.Query.Context) => Core.Structure.Query.FragmentSeq) | string | Core.Structure.Query.Builder;
+            query: Core.Structure.Query.Source;
         }>;
         const Highlight: Event.Type<{
             model: Bootstrap.Entity.Molecule.Model;
-            query: ((ctx: Core.Structure.Query.Context) => Core.Structure.Query.FragmentSeq) | string | Core.Structure.Query.Builder;
+            query: Core.Structure.Query.Source;
             isOn: boolean;
         }>;
         const CreateSelectInteraction: Event.Type<{
             visual: Bootstrap.Entity.Molecule.Visual;
-            query: ((ctx: Core.Structure.Query.Context) => Core.Structure.Query.FragmentSeq) | string | Core.Structure.Query.Builder;
+            query: Core.Structure.Query.Source;
         }>;
     }
     namespace Visual {
         const ResetScene: Event.Type<void>;
         const ResetTheme: Event.Type<{
-            selection?: ((tree: Tree<Bootstrap.Entity.Any>) => Bootstrap.Entity.Any[]) | Bootstrap.Tree.Selection.Helpers.Builder<Bootstrap.Entity.Any> | string | Bootstrap.Entity.Any;
+            selection?: string | Bootstrap.Entity.Any | Bootstrap.Tree.Selection.Query<Bootstrap.Entity.Any> | Bootstrap.Tree.Selection.Helpers.Builder<Bootstrap.Entity.Any> | undefined;
         }>;
         const UpdateBasicTheme: Event.Type<{
             visual: Bootstrap.Entity.Visual.Any;
@@ -15352,7 +15352,7 @@ declare namespace LiteMol.Bootstrap.Tree {
         tag: any;
         type: Type;
         transform: Transform<any, T, any>;
-        tree: Tree<T>;
+        tree: Tree<T> | undefined;
         props: Props;
         state: State;
         isHidden: boolean;
@@ -15376,7 +15376,7 @@ declare namespace LiteMol.Bootstrap.Tree {
         function is(e: Any, t: AnyType): boolean;
         function hasAncestor(e: Any, a: Any): boolean;
         function findAncestor(e: Any, t: AnyType): any;
-        function findClosestNodeOfType(e: Any, t: AnyType[]): Any;
+        function findClosestNodeOfType(e: Any, t: AnyType[]): Any | undefined;
         function createId(): number;
         function update<T extends Node<T, Props, State, Type, TypeInfo>, Props, State, Type extends Node.Type<TypeInfo, Props, T>, TypeInfo>(e: T): T;
         function withProps<T extends Node<T, Props, State, Type, TypeInfo>, Props, State, Type extends Node.Type<TypeInfo, Props, T>, TypeInfo>(n: T, props: Props): T;
@@ -15446,13 +15446,13 @@ declare namespace LiteMol.Bootstrap.Tree {
             isUpdatable?: boolean;
             from: Tree.Node.TypeOf<A>[];
             to: Tree.Node.TypeOf<B>[];
-            validateParams?: (params: P) => string[];
-            defaultParams: (ctx?: Context, e?: A) => P;
+            validateParams?: (params: P) => string[] | undefined;
+            defaultParams: (ctx: Context, e: A) => P | undefined;
             customController?: (ctx: Context, transformer: Transformer<A, B, P>, entity: Entity.Any) => Components.Transform.Controller<P>;
             isApplicable?: (e: A) => boolean;
             isComposed?: boolean;
         }
-        function create<A extends Node, B extends Node, P>(info: Info<A, B, P>, transform: (ctx: Context, a: A, t: Transform<A, B, P>) => Task<B>, updater?: (ctx: Context, b: B, t: Transform<A, B, P>) => Task<B>): Transformer<A, B, P>;
+        function create<A extends Node, B extends Node, P>(info: Info<A, B, P>, transform: (ctx: Context, a: A, t: Transform<A, B, P>) => Task<B>, updater?: (ctx: Context, b: B, t: Transform<A, B, P>) => Task<B> | undefined): Transformer<A, B, P>;
         function internal<A extends Node, B extends Node, P>(id: string, from: Tree.Node.TypeOf<A>[], to: Tree.Node.TypeOf<B>[], transform: (ctx: Context, a: A, t: Transform<A, B, P>) => Task<B>): Transformer<Entity.Root, Entity.Root, {}>;
         function action<A extends Node, B extends Node, P>(info: Info<A, B, P>, builder: (ctx: Context, a: A, t: Transform<A, B, P>) => Transform.Source, doneMessage?: string): Transformer<A, B, P>;
     }
@@ -15462,7 +15462,7 @@ declare namespace LiteMol.Bootstrap.Tree {
     interface Transform<A extends Node, B extends Node, P> {
         props: Transform.Props;
         transformer: Transformer<A, B, P>;
-        params?: P;
+        params: P;
         isUpdate?: boolean;
         apply(context: Context, a: A): Task<B>;
         update(context: Context, b: B): Task<B>;
@@ -15496,12 +15496,12 @@ declare namespace LiteMol.Bootstrap.Tree.Transform {
     }
     namespace Builder {
         class Impl<A extends Node, B extends Node, P> implements Builder<A, B, P> {
-            last: Instance;
+            last: Instance | undefined;
             transforms: Instance[];
             add<A extends Node, B extends Node, P>(s: Selector<A>, t: Transformer<A, B, P>, params: P, props?: Transform.Props): Builder<A, B, P>;
             then<C extends Node, Q>(t: Transformer<B, C, Q>, params: Q, props?: Transform.Props): Builder<A, C, Q>;
             compile(): Instance[];
-            constructor(last: Instance, transforms: Instance[]);
+            constructor(last: Instance | undefined, transforms: Instance[]);
         }
         type Any = Builder<any, any, any>;
     }
@@ -15516,7 +15516,7 @@ declare namespace LiteMol.Bootstrap.Interactivity {
 }
 declare namespace LiteMol.Bootstrap.Interactivity {
     type HighlightEntry = string;
-    type HighlightProvider = (info: Info) => string;
+    type HighlightProvider = (info: Info) => string | undefined;
     class HighlightManager {
         context: Context;
         providers: HighlightProvider[];
@@ -15572,9 +15572,9 @@ declare namespace LiteMol.Bootstrap.Interactivity.Molecule {
         entities: EntityInfo[];
     }
     function transformMoleculeAtomIndices(model: Entity.Molecule.Model, context: Core.Structure.Query.Context, indices: number[]): SelectionInfo;
-    function transformInteraction(info: Interactivity.Info): SelectionInfo;
-    function formatInfo(info: SelectionInfo): string;
-    function formatInfoShort(info: SelectionInfo): string;
+    function transformInteraction(info: Interactivity.Info): SelectionInfo | undefined;
+    function formatInfo(info: SelectionInfo | undefined): string;
+    function formatInfoShort(info: SelectionInfo | undefined): string;
     function isMoleculeModelInteractivity(info: Info): boolean;
 }
 declare namespace LiteMol.Bootstrap.Visualization {
@@ -15586,7 +15586,7 @@ declare namespace LiteMol.Bootstrap.Visualization {
         private originalThemes;
         add(v: Visual): boolean;
         remove(v: Visual): boolean;
-        get(id: number): Visual;
+        get(id: number): Visual | undefined;
         resetThemesAndHighlight(sel?: Bootstrap.Tree.Selector<Bootstrap.Entity.Any>): void;
         private highlightMoleculeModel(what);
         constructor(context: Context, scene: SceneWrapper);
@@ -15599,7 +15599,7 @@ declare namespace LiteMol.Bootstrap.Visualization {
         scene: LiteMol.Visualization.Scene;
         models: DisplayList;
         private resetScene();
-        camera: LiteMol.Visualization.Camera;
+        readonly camera: LiteMol.Visualization.Camera;
         destroy(): void;
         private handleEvent(e, event);
         private focusMoleculeModelSelection(sel);
@@ -15660,12 +15660,12 @@ declare namespace LiteMol.Bootstrap.Visualization.Molecule {
     function createPaletteThemeProvider(provider: (m: Core.Structure.MoleculeModel) => {
         index: number[];
         property: any[];
-    }, pallete: LiteMol.Visualization.Color[]): (e: Entity.Any, props?: Vis.Theme.Props) => Vis.Theme;
+    }, pallete: LiteMol.Visualization.Color[]): (e: Entity.Any, props?: Vis.Theme.Props | undefined) => Vis.Theme;
     function uniformThemeProvider(e: Entity.Any, props?: LiteMol.Visualization.Theme.Props): Vis.Theme;
     function createColorMapThemeProvider(provider: (m: Core.Structure.MoleculeModel) => {
         index: number[];
         property: any[];
-    }, colorMap: Map<string, LiteMol.Visualization.Color>, fallbackColor: LiteMol.Visualization.Color): (e: Entity.Any, props?: Vis.Theme.Props) => Vis.Theme;
+    }, colorMap: Map<string, LiteMol.Visualization.Color>, fallbackColor: LiteMol.Visualization.Color): (e: Entity.Any, props?: Vis.Theme.Props | undefined) => Vis.Theme;
     namespace Default {
         const Themes: Theme.Template[];
         const CartoonThemeTemplate: Theme.Template;
@@ -15673,9 +15673,6 @@ declare namespace LiteMol.Bootstrap.Visualization.Molecule {
         const SurfaceThemeTemplate: Theme.Template;
         const UniformThemeTemplate: Theme.Template;
     }
-}
-declare namespace LiteMol.Bootstrap.Visualization.Molecule {
-    function create(source: Source, transform: Tree.Transform<Entity.Molecule.Model | Entity.Molecule.Selection, Entity.Molecule.Visual, any>, style: Style<any>): Task<Entity.Molecule.Visual>;
 }
 declare namespace LiteMol.Bootstrap.Visualization.Molecule {
     type Source = Entity.Molecule.Model | Entity.Molecule.Selection;
@@ -15710,6 +15707,9 @@ declare namespace LiteMol.Bootstrap.Visualization.Molecule {
         const Transparency: LiteMol.Visualization.Theme.Transparency;
         const ForType: Map<Type, Style<any>>;
     }
+}
+declare namespace LiteMol.Bootstrap.Visualization.Molecule {
+    function create(source: Source, transform: Tree.Transform<Entity.Molecule.Model | Entity.Molecule.Selection, Entity.Molecule.Visual, any>, style: Style<any>): Task<Entity.Molecule.Visual>;
 }
 declare namespace LiteMol.Bootstrap.Visualization.Density {
     function create(parent: Entity.Density.Data, transform: Tree.Transform<Entity.Density.Data, Entity.Density.Visual, any>, style: Style): Task<Entity.Density.Visual>;
@@ -15941,7 +15941,7 @@ declare namespace LiteMol.Bootstrap.Entity {
 declare namespace LiteMol.Bootstrap.Entity {
     class Cache {
         private data;
-        get<T>(e: Any, prop: string): T;
+        get<T>(e: Any, prop: string): T | undefined;
         set<T>(e: Any, prop: string, value: T): T;
         constructor(context: Context);
     }
@@ -16108,7 +16108,7 @@ declare namespace LiteMol.Bootstrap.Behaviour {
         private subjects;
         select: Rx.Observable<Interactivity.Info>;
         click: Rx.Observable<Interactivity.Info>;
-        currentEntity: Rx.Observable<Entity.Any>;
+        currentEntity: Rx.Observable<Entity.Any | undefined>;
         private init();
         constructor(context: Context);
     }
@@ -16146,7 +16146,6 @@ declare namespace LiteMol.Bootstrap.Behaviour.Density {
         private behaviour;
         private ref;
         private isBusy;
-        private latestInfo;
         private remove();
         private getVisual();
         private update(info);
@@ -16182,8 +16181,8 @@ declare namespace LiteMol.Bootstrap.Behaviour.Molecule {
         class CacheEntry implements Utils.LinkedElement<CacheEntry> {
             key: string;
             data: ArrayBuffer;
-            previous: CacheEntry;
-            next: CacheEntry;
+            previous: CacheEntry | null;
+            next: CacheEntry | null;
             inList: boolean;
             constructor(key: string, data: ArrayBuffer);
         }
@@ -16191,7 +16190,7 @@ declare namespace LiteMol.Bootstrap.Behaviour.Molecule {
             size: number;
             private count;
             entries: Utils.LinkedList<CacheEntry>;
-            get(key: string): ArrayBuffer;
+            get(key: string): ArrayBuffer | undefined;
             add(key: string, data: ArrayBuffer): ArrayBuffer;
             constructor(size: number);
         }
@@ -16205,10 +16204,10 @@ declare namespace LiteMol.Bootstrap.Components {
         context: Context;
         private _state;
         private _latestState;
-        dispatcher: Service.Dispatcher;
+        readonly dispatcher: Service.Dispatcher;
         setState(...states: State[]): void;
-        state: Rx.Observable<State>;
-        latestState: State;
+        readonly state: Rx.Observable<State>;
+        readonly latestState: State;
         constructor(context: Context, initialState: State);
     }
     interface ComponentInfo {
@@ -16272,7 +16271,7 @@ declare namespace LiteMol.Bootstrap.Components.Transform {
         private _updateParams(params);
         updateParams(params: P): void;
         autoUpdateParams(params: P): void;
-        isUpdate: boolean;
+        readonly isUpdate: boolean;
         apply(): void;
         setParams(params: P): void;
         setExpanded(isExpanded: boolean): void;
@@ -16370,7 +16369,7 @@ declare namespace LiteMol.Bootstrap.Components.Visualization {
     import Vis = LiteMol.Visualization;
     class Viewport extends Component<Vis.SceneOptions> {
         private _scene;
-        scene: Bootstrap.Visualization.SceneWrapper;
+        readonly scene: Bootstrap.Visualization.SceneWrapper;
         init(element: HTMLElement): boolean;
         destroy(): void;
         constructor(context: Context);
@@ -16390,7 +16389,7 @@ declare namespace LiteMol.Bootstrap {
         performance: Core.Utils.PerformanceMonitor;
         scene: Visualization.SceneWrapper;
         tree: Tree<Entity.Any>;
-        currentEntity: Entity.Any;
+        currentEntity: Entity.Any | undefined;
         transforms: TransformManager;
         entityCache: Entity.Cache;
         viewport: Components.Visualization.Viewport;
@@ -16425,7 +16424,7 @@ declare namespace LiteMol.Bootstrap {
         private bySourceType;
         private byTargetType;
         private addType(e, t, to);
-        getController(t: Transformer, e: Entity.Any): Components.Transform.Controller<any>;
+        getController(t: Transformer, e: Entity.Any): Components.Transform.Controller<any> | undefined;
         getBySourceType(t: Entity.AnyType): Tree.Transformer<Tree.Node.Any, Tree.Node.Any, any>[];
         getByTargetType(t: Entity.AnyType): Tree.Transformer<Tree.Node.Any, Tree.Node.Any, any>[];
         add(t: Transformer): void;

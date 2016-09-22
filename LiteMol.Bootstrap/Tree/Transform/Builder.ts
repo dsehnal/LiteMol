@@ -39,7 +39,7 @@ namespace LiteMol.Bootstrap.Tree.Transform {
                 return this.transforms;
             }
             
-            constructor(public last: Instance, public transforms: Instance[]) {                
+            constructor(public last: Instance | undefined, public transforms: Instance[]) {                
             }
         }  
         

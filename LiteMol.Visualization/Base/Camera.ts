@@ -154,7 +154,7 @@ namespace LiteMol.Visualization {
             }
             if (this.controls) {
                 this.controls.destroy();
-                this.controls = void 0;
+                this.controls = <any>void 0;
             }
         }
         
@@ -197,10 +197,10 @@ namespace LiteMol.Visualization {
         cameraUpdated() {            
 
             let options = this.scene.options;            
-            this.fogEnabled = options.enableFog;
+            this.fogEnabled = !!options.enableFog;
             let camera = this.camera;
             if (camera instanceof THREE.PerspectiveCamera) {
-                camera.fov = options.cameraFOV;
+                camera.fov = options.cameraFOV as number;
             }
 
             this.targetDistance = this.controls.target.distanceTo(this.camera.position);
@@ -254,7 +254,7 @@ namespace LiteMol.Visualization {
             this.createCamera();
             this.controls = new CameraControls(this.camera, this.domElement, this.scene);
             let cc = this.scene.options.clearColor; 
-            this.fog.color.setRGB(cc.r, cc.g, cc.b);
+            this.fog.color.setRGB(cc!.r, cc!.g, cc!.b);
             
             this.scene.scene.fog = this.fog;
              

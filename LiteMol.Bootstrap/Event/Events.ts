@@ -51,7 +51,7 @@ namespace LiteMol.Bootstrap.Event {
     }    
     
     export namespace Molecule {
-        export const ModelHighlight = create<Bootstrap.Interactivity.Molecule.SelectionInfo>('bs.Molecule.ModelHighlight', Lane.Fast);
-        export const ModelSelect = create<Bootstrap.Interactivity.Molecule.SelectionInfo>('bs.Molecule.ModelSelect', Lane.Fast);
+        export const ModelHighlight = create<Bootstrap.Interactivity.Molecule.SelectionInfo | undefined>('bs.Molecule.ModelHighlight', Lane.Fast);
+        export const ModelSelect = create<Bootstrap.Interactivity.Molecule.SelectionInfo | undefined>('bs.Molecule.ModelSelect', Lane.Fast);
     }    
 }

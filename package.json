@@ -2,7 +2,7 @@
   "name": "litemol",
   "version": "1.0.14",
   "description": "A library/plugin for handling 3D structural molecular data (not only) in the browser.",
-  "scripts": { },
+  "scripts": {},
   "main": "",
   "author": "David Sehnal <david.sehnal@gmail.com>",
   "repository": {
@@ -19,10 +19,11 @@
     "gulp-concat": "^2.6.0",
     "gulp-insert": "^0.5.0",
     "gulp-rename": "^1.2.2",
-    "gulp-sass": "^2.3.1",
-    "gulp-typescript": "^2.13.0",
-    "gulp-uglify": "^1.5.3",
+    "gulp-sass": "^2.3.2",
+    "gulp-typescript": "^2.14.1",
+    "gulp-uglify": "^2.0.0",
     "gulp-unique-files": "^0.1.2",
-    "merge2": "^1.0.2"
+    "merge2": "^1.0.2",
+    "typescript": "^2.0.3"
   }
 }

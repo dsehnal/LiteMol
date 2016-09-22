@@ -27,7 +27,8 @@ namespace LiteMol.Bootstrap.Behaviour {
             if (!Tree.Node.is(e.data, Entity.Molecule.Model) || (e.data as Entity.Any).isHidden) {
                 return;
             } 
-            Command.Tree.ApplyTransform.dispatch(context, { node: e.data, transform: Entity.Transformer.Molecule.CreateMacromoleculeVisual.create(Entity.Transformer.Molecule.CreateMacromoleculeVisual.info.defaultParams(context)) }) 
+            let prms = Entity.Transformer.Molecule.CreateMacromoleculeVisual.info.defaultParams(context, e.data)!;
+            Command.Tree.ApplyTransform.dispatch(context, { node: e.data, transform: Entity.Transformer.Molecule.CreateMacromoleculeVisual.create(prms) }) 
         });
     }    
     
@@ -51,24 +52,24 @@ namespace LiteMol.Bootstrap.Behaviour {
     }
     
     export function ApplyInteractivitySelection(context: Context) {        
-        let latestIndices: number[] = undefined;
-        let latestModel: LiteMol.Visualization.Model = undefined;
+        let latestIndices: number[] | undefined = void 0;
+        let latestModel: LiteMol.Visualization.Model | undefined = void 0;
         context.behaviours.click.subscribe(info => {             
              if (latestModel) {
-                 latestModel.applySelection(latestIndices,  LiteMol.Visualization.Selection.Action.RemoveSelect);
-                 latestModel = undefined;
-                 latestIndices = undefined;
+                 latestModel.applySelection(latestIndices!,  LiteMol.Visualization.Selection.Action.RemoveSelect);
+                 latestModel = void 0;
+                 latestIndices = void 0;
              }                    
              if (!info.entity || !info.visual) return;
              
              latestModel = info.visual.props.model;
              latestIndices = info.elements;
-             latestModel.applySelection(latestIndices,  LiteMol.Visualization.Selection.Action.Select);                          
+             latestModel.applySelection(latestIndices!,  LiteMol.Visualization.Selection.Action.Select);                          
         });           
     }
 
     export function UnselectElementOnRepeatedClick(context: Context) {
-        let latest: Interactivity.Info = null;
+        let latest: Interactivity.Info | null = null;
         Event.Visual.VisualSelectElement.getStream(context).subscribe(e => {            
             if (e.data.visual && !e.data.visual.props.isSelectable) return;
 
@@ -87,12 +88,12 @@ namespace LiteMol.Bootstrap.Behaviour {
         let model = (Tree.Node.findClosestNodeOfType(info.entity, [Entity.Molecule.Model]) as Entity.Molecule.Model).props.model;
         if (!model) return;
         let elems = info.elements;
-        if (info.elements.length === 1) {
-            elems = Utils.Molecule.getResidueIndices(model, info.elements[0]);
+        if (info.elements!.length === 1) {
+            elems = Utils.Molecule.getResidueIndices(model, info.elements![0]);
         }                                 
-        let radius = Utils.Molecule.getCentroidAndRadius(model, elems, center);      
-        if (info.elements.length === 1) {
-            let a = info.elements[0];
+        let radius = Utils.Molecule.getCentroidAndRadius(model, elems!, center);      
+        if (info.elements!.length === 1) {
+            let a = info.elements![0];
             center.x = model.atoms.x[a];
             center.y = model.atoms.y[a];
             center.z = model.atoms.z[a];

@@ -47,7 +47,7 @@ namespace LiteMol.Bootstrap.Visualization.Density {
         style: Style): Task<Entity.Density.Visual> {
 
         return Task.create<Entity.Density.Visual>(`Density Surface (${parent.props.label})`, style.computeOnBackground ? 'Silent' : 'Normal', ctx => {
-            let params = style.params;
+            let params = style.params!;
             
             let source = Tree.Node.findClosestNodeOfType(parent, [Entity.Density.Data]) as Entity.Density.Data;
             if (!source) {
@@ -80,7 +80,7 @@ namespace LiteMol.Bootstrap.Visualization.Density {
                 return;
             }
             
-            let isoValue = data.valuesInfo.mean + data.valuesInfo.sigma * style.params.isoSigma;
+            let isoValue = data.valuesInfo.mean + data.valuesInfo.sigma * params.isoSigma;
             
             let surface = Geom.MarchingCubes.compute({
                 isoLevel: isoValue,
@@ -94,14 +94,14 @@ namespace LiteMol.Bootstrap.Visualization.Density {
             surface.progress.subscribe(p => ctx.update(`Density Surface (${source.props.label}): ${Utils.formatProgress(p)}`, p.requestAbort));
             
             surface.result.then(s => {    
-                let theme = style.theme.template.provider(source, Theme.getProps(style.theme));
+                let theme = style.theme!.template!.provider(source, Theme.getProps(style.theme!));
                                 
                 ctx.update('Creating visual...');
                 ctx.schedule(() => {               
-                    let surface = LiteMol.Visualization.Surface.Model.create(source, { surface: s, theme, parameters: { isWireframe: style.params.isWireframe } }).run();                    
+                    let surface = LiteMol.Visualization.Surface.Model.create(source, { surface: s, theme, parameters: { isWireframe: style.params!.isWireframe } }).run();                    
                     surface.progress.subscribe(p => ctx.update(`Density Surface (${source.props.label}): ${Utils.formatProgress(p)}`, p.requestAbort));
                     surface.result.then(model => {                                                            
-                        let label = `Surface, ${Utils.round(params.isoSigma, 2)} \u03C3`;                    
+                        let label = `Surface, ${Utils.round(params.isoSigma!, 2)} \u03C3`;                    
                         let visual = Entity.Density.Visual.create(transform, { label, model, style, isSelectable: !style.isNotSelectable });
                         ctx.resolve(visual);
                     }).catch(ctx.reject);

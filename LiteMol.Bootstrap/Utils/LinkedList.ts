@@ -6,15 +6,15 @@ namespace LiteMol.Bootstrap.Utils {
     "use strict";
 
     export interface LinkedElement<T>  { 
-        previous: T; 
-        next: T; 
+        previous: T | null; 
+        next: T | null; 
         inList: boolean; 
     }
 
     export class LinkedList<T extends LinkedElement<T>> {
 
-        first: T = null;
-        private last: T = null;
+        first: T | null = null;
+        private last: T | null = null;
 
         addFirst(item: T) {
             item.inList = true;

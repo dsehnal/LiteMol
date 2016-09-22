@@ -31,9 +31,10 @@ namespace LiteMol.Plugin.Views.Context {
             return <div className='lm-log-wrap'>
                 <div className='lm-log' ref='log'>
                     <ul className='list-unstyled'>
-                        {entries.map((e, i, arr) => {
+                        {entries.map((entry, i, arr) => {
 
                             let msg: any;
+                            let e = entry!;
                             switch (e.type) {
                                 case EntryType.Message:
                                     msg = <div className='lm-log-entry'>{e.message}</div>;

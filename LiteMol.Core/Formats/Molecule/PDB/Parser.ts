@@ -176,7 +176,7 @@ namespace LiteMol.Core.Formats.Molecule.PDB {
 
     export class Parser {
 
-        private static tokenizeAtom(tokens: TokenIndexBuilder, tokenizer: Tokenizer): ParserError {
+        private static tokenizeAtom(tokens: TokenIndexBuilder, tokenizer: Tokenizer): ParserError | undefined {
             if (tokenizer.tokenizeAtomRecord(tokens)) {
                 return void 0;
             }
@@ -189,10 +189,10 @@ namespace LiteMol.Core.Formats.Molecule.PDB {
             const tokenizer = new Tokenizer(data);
             const length = data.length;
 
-            let modelAtomTokens = TokenIndexBuilder.create(4096); //2 * 14 * this.data.length / 78);
+            let modelAtomTokens: TokenIndexBuilder | null = TokenIndexBuilder.create(4096); //2 * 14 * this.data.length / 78);
             let atomCount = 0;
             let models: PDB.ModelData[] = [];
-            let cryst: PDB.CrystStructureInfo = void 0;
+            let cryst: PDB.CrystStructureInfo | undefined = void 0;
             let modelIdToken = { start: 0, end: 0 };
 
             while (tokenizer.position < length) {
@@ -203,6 +203,9 @@ namespace LiteMol.Core.Formats.Molecule.PDB {
 
                     case 65: // A 
                         if (tokenizer.startsWith(tokenizer.position, "ATOM")) {
+                            if (!modelAtomTokens) {
+                                modelAtomTokens = TokenIndexBuilder.create(4096);
+                            }
                             let err = Parser.tokenizeAtom(modelAtomTokens, tokenizer);
                             atomCount++;
                             if (err) return err;
@@ -224,7 +227,9 @@ namespace LiteMol.Core.Formats.Molecule.PDB {
                                 modelIdToken = { start: data.length + 3, end: data.length + 4 };
                             }
 
-                            models.push(new ModelData(modelIdToken, <any>modelAtomTokens.tokens, atomCount));
+                            if (modelAtomTokens) {
+                                models.push(new ModelData(modelIdToken, <any>modelAtomTokens.tokens, atomCount));
+                            }
 
                             atomCount = 0;
                             modelAtomTokens = null;
@@ -241,6 +246,9 @@ namespace LiteMol.Core.Formats.Molecule.PDB {
 
                     case 72: // H 
                         if (tokenizer.startsWith(tokenizer.position, "HETATM")) {
+                            if (!modelAtomTokens) {
+                                modelAtomTokens = TokenIndexBuilder.create(4096);
+                            }
                             let err = Parser.tokenizeAtom(modelAtomTokens, tokenizer);
                             atomCount++;
                             if (err) return err;
@@ -256,7 +264,9 @@ namespace LiteMol.Core.Formats.Molecule.PDB {
                                     modelIdToken = { start: data.length + 3, end: data.length + 4 };
                                 }   
 
-                                models.push(new ModelData(modelIdToken, <any>modelAtomTokens.tokens, atomCount));
+                                if (modelAtomTokens) {
+                                    models.push(new ModelData(modelIdToken, <any>modelAtomTokens.tokens, atomCount));
+                                }
                             }
 
                             let start = tokenizer.position + 6;
@@ -289,7 +299,9 @@ namespace LiteMol.Core.Formats.Molecule.PDB {
                     modelIdToken = { start: data.length + 3, end: data.length + 4 };
                 }
 
-                models.push(new ModelData(modelIdToken, <any>modelAtomTokens.tokens, atomCount));
+                if (modelAtomTokens) {
+                    models.push(new ModelData(modelIdToken, <any>modelAtomTokens.tokens, atomCount));
+                }
             }
             
             return new MoleculeData(
@@ -320,7 +332,7 @@ namespace LiteMol.Core.Formats.Molecule.PDB {
             let ret = Parser.tokenize(id, data);
 
             if (ret instanceof ParserError) {
-                return ParserResult.error(ret.message, ret.line);
+                return ParserResult.error<CIF.File>(ret.message, ret.line);
             } else {
                 return ParserResult.success(ret.toCifFile());
             }

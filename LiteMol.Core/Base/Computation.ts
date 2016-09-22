@@ -21,7 +21,7 @@ namespace LiteMol.Core {
         }
                 
         run(ctx?: Computation.Context<A>): Computation.RunningComputation<A>  {     
-            let context = ctx ? ctx : new Computation.Context();    
+            let context = ctx ? ctx : new Computation.Context<A>();    
             
             return {
                 progress: context.progressStream,
@@ -56,7 +56,7 @@ namespace LiteMol.Core {
             isIndeterminate: boolean;
             current: number;
             max: number;
-            requestAbort: () => void;
+            requestAbort?: () => void;
         }
                     
         export class Context<A> {        

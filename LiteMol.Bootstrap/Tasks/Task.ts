@@ -28,21 +28,18 @@ namespace LiteMol.Bootstrap {
             })
         }
                         
-        run(context: Context): Task.Running<A> {
-            
-            let ctx: Task.Context<A>;
-            let ret = new Core.Promise<A>((resolve, reject) => {                
+        run(context: Context): Task.Running<A> {                 
+            return new Task.Running((resolve, reject, setCtx) => {                
                 Event.Task.Started.dispatch(context, this);        
                 context.performance.start('task' + this.id); 
-                ctx = new Task.Context(context, this, resolve, reject);
+                let ctx = new Task.Context(context, this, resolve, reject);
+                setCtx(ctx);
                 try {    
                     this.task(new Task.Context(context, this, resolve, reject));
                 } catch (e) {
                     ctx.reject(e);
                 }
-            })
-                                    
-            return new Task.Running(ret, ctx);
+            });
         }
         
         setReportTime(report: boolean) {
@@ -58,6 +55,9 @@ namespace LiteMol.Bootstrap {
     export module Task {
         
         export class Running<T> {
+
+            private promise: Promise<T>;
+            private ctx: Context<T>;
             
             then(action: (r: T) => void) {
                 return this.promise.then(action);
@@ -71,8 +71,8 @@ namespace LiteMol.Bootstrap {
                 this.ctx.discard();
             }
             
-            constructor(private promise: Promise<T>, private ctx: Context<T>) {
-                
+            constructor(p: (resolve: (v: T) => void, reject: (err: any) => void, setCtx: (ctx: Context<T>) => void) => void) {
+                this.promise = new Promise<T>((res, rej) => p(res, rej, ctx => this.ctx = ctx));
             }
         }
                 
@@ -180,7 +180,7 @@ namespace LiteMol.Bootstrap {
             
             private schedulingTime = 0;
             private scheduleId = 0;
-            private abort: () => void = void 0;
+            private abort: (() => void) | undefined = void 0;
             private discarded = false;
             
             discard() {

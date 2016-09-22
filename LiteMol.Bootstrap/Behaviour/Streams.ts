@@ -11,12 +11,12 @@ namespace LiteMol.Bootstrap.Behaviour {
         private subjects = {
             select: new Rx.BehaviorSubject<Interactivity.Info>({}),
             click: new Rx.BehaviorSubject<Interactivity.Info>({}),
-            currentEntity: new Rx.BehaviorSubject<Entity.Any>(void 0)
+            currentEntity: new Rx.BehaviorSubject<Entity.Any | undefined>(void 0)
         }
         
         select = this.subjects.select.distinctUntilChanged(i => i, Interactivity.interactivityInfoEqual);
         click = this.subjects.click.distinctUntilChanged(i => i, Interactivity.interactivityInfoEqual);
-        currentEntity = this.subjects.currentEntity as Rx.Observable<Entity.Any>;
+        currentEntity = this.subjects.currentEntity as Rx.Observable<Entity.Any | undefined>;
         
         private init() {            
             let emptyClick = {};

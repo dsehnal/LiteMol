@@ -12,7 +12,7 @@ namespace LiteMol.Core.Formats.Molecule.SDF {
         bonds: Structure.DefaultBondTableSchema,
         lines: string[],
         currentLine: number,
-        error: string,
+        error: string | undefined,
         stringPool: ShortStringPool
     }
 
@@ -102,7 +102,8 @@ namespace LiteMol.Core.Formats.Molecule.SDF {
         residues.columns.isHet[0] = 1;
         residues.columns.insCode[0] = null;
         residues.columns.name[0] 
-            = residues.columns.authName[0] = 'UNK';
+            = residues.columns.authName[0] 
+            = 'UNK';
 
         residues.columns.atomEndIndex[0] 
             = chains.columns.atomEndIndex[0]
@@ -160,12 +161,12 @@ namespace LiteMol.Core.Formats.Molecule.SDF {
             let model = buildModel(state);
             console.log(model);
             if (state.error) {
-                return ParserResult.error(state.error, state.currentLine + 1);
+                return ParserResult.error<Structure.Molecule>(state.error, state.currentLine + 1);
             }
             let molecule = new Structure.Molecule(id ? id : state.id, [model]);
             return ParserResult.success(molecule);
         } catch (e) {
-            return ParserResult.error(`${e}`);
+            return ParserResult.error<Structure.Molecule>(`${e}`);
         }         
     }
 }

@@ -20,9 +20,9 @@ namespace LiteMol.Plugin.Views.Visualization {
             let layoutState = layoutController.latestState;
             if (this.state.showSceneOptions) {             
                 options = <div className='lm-viewport-controls-scene-options lm-control'>                    
-                    <Controls.Toggle onChange={v => this.controller.setState({ enableFog: v })} value={state.enableFog} label='Fog' />
-                    <Controls.Slider label='FOV' min={30} max={90} onChange={v => this.controller.setState({ cameraFOV: v }) } value={state.cameraFOV} />
-                    <Controls.ToggleColorPicker color={state.clearColor} label='Background' position='below' onChange={c => this.controller.setState({ clearColor: c }) } />
+                    <Controls.Toggle onChange={v => this.controller.setState({ enableFog: v })} value={state.enableFog!} label='Fog' />
+                    <Controls.Slider label='FOV' min={30} max={90} onChange={v => this.controller.setState({ cameraFOV: v }) } value={state.cameraFOV!} />
+                    <Controls.ToggleColorPicker color={state.clearColor!} label='Background' position='below' onChange={c => this.controller.setState({ clearColor: c }) } />
                 </div>;
             }
             
@@ -63,7 +63,7 @@ namespace LiteMol.Plugin.Views.Visualization {
                 
         render() {
             let state = this.controller.latestState;
-            let info = state.info;
+            let info = state.info!;
             if (!info.length) {
                 return <div className='lm-empty-control' />;
             }

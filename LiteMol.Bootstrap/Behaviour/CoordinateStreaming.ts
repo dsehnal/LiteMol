@@ -13,11 +13,11 @@ namespace LiteMol.Bootstrap.Behaviour.Molecule {
     export class CoordinateStreaming implements Dynamic {
         
         private obs: Rx.IDisposable[] = [];  
-        private target: Entity.Molecule.Model = void 0; 
-        private behaviour: Entity.Molecule.CoordinateStreaming.Behaviour = void 0;
-        private currentRequest: Core.Computation<string> = void 0;
+        private target: Entity.Molecule.Model | undefined = void 0; 
+        private behaviour: Entity.Molecule.CoordinateStreaming.Behaviour = <any>void 0;
+        private currentRequest: Core.Computation<string> | undefined = void 0;
         private ref: string = Utils.generateUUID();
-        private download: Task.Running<ArrayBuffer> = void 0;
+        private download: Task.Running<ArrayBuffer> | undefined = void 0;
         private cache = new CoordinateStreaming.Cache(100);
         
         server: string;
@@ -32,7 +32,7 @@ namespace LiteMol.Bootstrap.Behaviour.Molecule {
                 
         private isApplicable(info: Interactivity.Info) {
             if (!Interactivity.Molecule.isMoleculeModelInteractivity(info)) return;
-            let e = info.entity;
+            let e = info.entity!;
             while (e.parent !== e) {
                 if (e === this.target) return true;
                 e = e.parent;
@@ -54,20 +54,20 @@ namespace LiteMol.Bootstrap.Behaviour.Molecule {
                 return;
             }
             
-            let model = Utils.Molecule.findModel(info.entity).props.model;
+            let model = Utils.Molecule.findModel(info.entity!).props.model;
             
-            let i = model.atoms.residueIndex[info.elements[0]];
+            let i = model.atoms.residueIndex[info.elements![0]];
             let rs = model.residues;
             
             let authAsymId = rs.authAsymId[i];
-            let transform: number[] = void 0;
+            let transform: number[] | undefined = void 0;
             
             if (model.source === Core.Structure.MoleculeModelSource.Computed) {
-                let p = model.parent;
+                let p = model.parent!;
                 let cI = rs.chainIndex[i];
-                let chain = model.chains.sourceChainIndex[cI];
+                let chain = model.chains.sourceChainIndex![cI];
                 authAsymId = p.chains.authAsymId[chain];
-                transform = model.operators[model.chains.operatorIndex[cI]].matrix;
+                transform = model.operators![model.chains.operatorIndex![cI]].matrix;
             }            
             
             let url = 
@@ -77,7 +77,7 @@ namespace LiteMol.Bootstrap.Behaviour.Molecule {
                 + `entityId=${encodeURIComponent(rs.entityId[i])}&`
                 + `authAsymId=${encodeURIComponent(authAsymId)}&`
                 + `authSeqNumber=${encodeURIComponent(''+rs.authSeqNumber[i])}&`
-                + `insCode=${encodeURIComponent(rs.insCode[i] !== null ? rs.insCode[i] : '')}&`
+                + `insCode=${encodeURIComponent(rs.insCode[i] !== null ? rs.insCode[i]! : '')}&`
                 + `radius=${encodeURIComponent(''+this.radius)}&`
                 + `atomSitesOnly=1&`
                 + `encoding=bcif&`
@@ -100,7 +100,7 @@ namespace LiteMol.Bootstrap.Behaviour.Molecule {
             
         }  
         
-        private create(data: ArrayBuffer, transform: number[]) {
+        private create(data: ArrayBuffer, transform: number[] | undefined) {
             let action = Tree.Transform.build().add(this.behaviour, Entity.Transformer.Molecule.CoordinateStreaming.CreateModel, { data, transform }, { ref: this.ref, isHidden: true })
                     .then(<Bootstrap.Tree.Transformer.To<Entity.Molecule.Visual>>Transforms.Molecule.CreateVisual, { style: this.style });
             Tree.Transform.apply(this.context, action).run(this.context);
@@ -136,8 +136,8 @@ namespace LiteMol.Bootstrap.Behaviour.Molecule {
         }
         
         export class CacheEntry implements Utils.LinkedElement<CacheEntry> {
-            previous: CacheEntry = void 0; 
-            next: CacheEntry = void 0; 
+            previous: CacheEntry | null = null; 
+            next: CacheEntry | null = null; 
             inList: boolean; 
             
             constructor(public key: string, public data: ArrayBuffer) {
@@ -159,7 +159,7 @@ namespace LiteMol.Bootstrap.Behaviour.Molecule {
             
             add(key: string, data: ArrayBuffer): ArrayBuffer {
                 if (this.count > this.size) {
-                    this.entries.remove(this.entries.first);
+                    this.entries.remove(this.entries.first!);
                 }
                 let e = new CacheEntry(key, data);
                 this.entries.addLast(e);

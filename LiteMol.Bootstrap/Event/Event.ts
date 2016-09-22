@@ -27,8 +27,8 @@ namespace LiteMol.Bootstrap {
         }
         
         const EventPrototype = {
-            dispatch<T>(context: Context, data: T) { context.dispatcher.dispatch({ type: this, data }) },
-            getStream(context: Context) { return context.dispatcher.getStream(this); }
+            dispatch<T>(this: any, context: Context, data: T) { context.dispatcher.dispatch({ type: this, data }) },
+            getStream(this: any, context: Context) { return context.dispatcher.getStream(this); }
         }
                                           
         export function create<T>(name: string, lane: Service.Dispatcher.Lane): Type<T> {

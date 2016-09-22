@@ -27,7 +27,7 @@ namespace LiteMol.Visualization.Lines {
         }
         
         applyThemeInternal(theme: Theme) {            
-            let color =  theme.colors.get('Uniform');
+            let color =  theme.colors.get('Uniform')!;
             this.material.color = new THREE.Color(color.r, color.g, color.b);
             this.material.needsUpdate = true;          
         }
@@ -36,7 +36,7 @@ namespace LiteMol.Visualization.Lines {
             return false;
         }
 
-        private createObjects(): { main: THREE.Object3D; pick: THREE.Object3D } {            
+        private createObjects(): { main: THREE.Object3D; pick: THREE.Object3D | undefined } {            
             return {
                 main: new THREE.Mesh(this.geometry.geometry, this.material),
                 pick: void 0 

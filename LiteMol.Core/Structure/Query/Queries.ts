@@ -20,7 +20,7 @@ namespace LiteMol.Core.Structure.Query {
                 
         export const BuilderPrototype: any = { };   
         export function registerModifier(name: string, f: Function) {
-            BuilderPrototype[name] = function (...args: any[]) {return f.call(void 0, this, ...args) };
+            BuilderPrototype[name] = function (this: any, ...args: any[]) { return f.call(void 0, this, ...args) };
         }        
         
         export function build(compile: () => Query): Builder {
@@ -44,7 +44,7 @@ namespace LiteMol.Core.Structure.Query {
         export function toQuery(q: Source): Query {            
             let ret: Query;
             if (isBuilder(q)) ret = (q as any).compile();
-            else if (typeof q === 'string' || q instanceof String) ret = parse(q);
+            else if (typeof q === 'string' || q instanceof String) ret = parse(q as string);
             else ret = q;            
             return ret;
         }        
@@ -53,7 +53,7 @@ namespace LiteMol.Core.Structure.Query {
     
     export interface EntityIdSchema { entityId?: string; type?: string }
     export interface AsymIdSchema extends EntityIdSchema { asymId?: string; authAsymId?: string; }
-    export interface ResidueIdSchema extends AsymIdSchema { name?: string; seqNumber?: number; authName?: string; authSeqNumber?: number; insCode?: string; }
+    export interface ResidueIdSchema extends AsymIdSchema { name?: string; seqNumber?: number; authName?: string; authSeqNumber?: number; insCode?: string | null; }
     
     export function atomsByElement(...elements: string[]) { return Builder.build(() => Compiler.compileAtoms(elements, m => m.atoms.elementSymbol)); }
     export function atomsByName(...names: string[]) { return Builder.build(() => Compiler.compileAtoms(names, m => m.atoms.name)); }
@@ -270,7 +270,7 @@ namespace LiteMol.Core.Structure.Query {
                     isComputed = parent && sourceChainIndex;
                 
                 for (let cI = 0; cI < count; cI++) {                    
-                    let aId = isComputed ? parentAsymId[sourceChainIndex[cI]] : asymId[cI];
+                    let aId = isComputed ? parentAsymId![sourceChainIndex![cI]] : asymId[cI];
                     if (entityId[cI] !== seqEntityId || aId !== seqAsymId) continue;
                     
                     let i = residueStartIndex[cI], last = residueEndIndex[cI], startIndex = -1, endIndex = -1;                    
@@ -619,12 +619,12 @@ namespace LiteMol.Core.Structure.Query {
                     }
                     
                     let atomCount = { count: 0, start: atomStart, end: atomEnd };
-                    residues.forEach(function (r) { this.count += this.end[r] - this.start[r]; }, atomCount);
+                    residues.forEach(function (this: typeof atomCount, r: number) { this.count += this.end[r] - this.start[r]; }, atomCount);
 
                     let indices = new Int32Array(atomCount.count),
                         atomIndices = { indices, offset: 0, start: atomStart, end: atomEnd };
 
-                    residues.forEach(function (r) {
+                    residues.forEach(function (this: typeof atomIndices, r: number) {
                         for (let i = this.start[r], _l = this.end[r]; i < _l; i++) {
                             this.indices[this.offset++] = i;
                         }
@@ -657,12 +657,12 @@ namespace LiteMol.Core.Structure.Query {
                     }
 
                     let atomCount = { count: 0, start: atomStart, end: atomEnd };
-                    residues.forEach(function (r) { this.count += this.end[r] - this.start[r]; }, atomCount);
+                    residues.forEach(function (this: typeof atomCount, r: number) { this.count += this.end[r] - this.start[r]; }, atomCount);
                     
                     let indices = new Int32Array(atomCount.count),
                         atomIndices = { indices, offset: 0, start: atomStart, end: atomEnd };
 
-                    residues.forEach(function (r) {
+                    residues.forEach(function (this: typeof atomIndices, r: number) {
                         for (let i = this.start[r], _l = this.end[r]; i < _l; i++) {
                             this.indices[this.offset++] = i;
                         }

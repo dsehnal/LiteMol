@@ -9,7 +9,7 @@ namespace LiteMol.Bootstrap.Components {
     export class Component<State> {
 
         private _state = new Rx.Subject<State>();
-        private _latestState: State = void 0;
+        private _latestState: State = <any>void 0;
         
         get dispatcher() {
             return this.context.dispatcher;

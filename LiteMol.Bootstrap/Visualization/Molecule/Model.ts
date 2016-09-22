@@ -34,7 +34,7 @@ namespace LiteMol.Bootstrap.Visualization.Molecule {
         if (!parameters.useVDW) {
             return function (r: number) {
                 return function() { return r; }
-            } (parameters.atomRadius);
+            } (parameters.atomRadius!);
         }
         
         let vdw = Utils.vdwRadiusFromElementSymbol(model);
@@ -42,7 +42,7 @@ namespace LiteMol.Bootstrap.Visualization.Molecule {
             return function(i:number) {
                 return s * vdw(i);
             } 
-        } (parameters.vdwScaling, vdw);
+        } (parameters.vdwScaling!, vdw);
     }
     
     function createBallsAndSticksParams(tessalation: number, model: Structure.MoleculeModel, parameters: BallsAndSticksParams) {        
@@ -63,14 +63,14 @@ namespace LiteMol.Bootstrap.Visualization.Molecule {
         };
     }
             
-    function createModel(source: Entity.Molecule.Model | Entity.Molecule.Selection, style: Style<DetailParams>, theme: Vis.Theme): Core.Computation<Vis.Model> {
+    function createModel(source: Entity.Molecule.Model | Entity.Molecule.Selection, style: Style<DetailParams>, theme: Vis.Theme): Core.Computation<Vis.Model> | undefined {
     
         let model = Utils.Molecule.findModel(source).props.model;
         let atomIndices = Entity.isMoleculeModel(source) ? source.props.model.atoms.indices : source.props.indices;
                     
         if (!atomIndices.length) return void 0;
         
-        let tessalation = getTessalation(style.params.detail, atomIndices.length);
+        let tessalation = getTessalation(style.params!.detail!, atomIndices.length);
                 
         switch (style.type) {
             case 'Cartoons': 
@@ -78,7 +78,7 @@ namespace LiteMol.Bootstrap.Visualization.Molecule {
             case 'Calpha':
                 return MolVis.Cartoons.Model.create(source, { model, atomIndices, theme, queryContext: Utils.Molecule.findQueryContext(source), params: createCartoonParams(tessalation, true) });
             case 'BallsAndSticks': 
-                return Vis.Molecule.BallsAndSticks.Model.create(source, { model, atomIndices, theme, params: createBallsAndSticksParams(tessalation, model, style.params) });
+                return Vis.Molecule.BallsAndSticks.Model.create(source, { model, atomIndices, theme, params: createBallsAndSticksParams(tessalation, model, style.params!) });
             case 'VDWBalls':
                 return Vis.Molecule.BallsAndSticks.Model.create(source, { model, atomIndices, theme, params: createVDWBallsParams(tessalation, model) });
             default:
@@ -93,14 +93,14 @@ namespace LiteMol.Bootstrap.Visualization.Molecule {
             
         return Task.create<Entity.Molecule.Visual>(`Visual (${source.props.label})`, style.computeOnBackground ? 'Silent' : 'Normal', ctx => {         
             
-            let label = TypeDescriptions[style.type].label;
+            let label = TypeDescriptions[style.type!].label;
              
             ctx.update(`Creating ${label}...`);
             
             
             
             ctx.schedule(() => {  
-                let theme = style.theme.template.provider(Utils.Molecule.findModel(source), Theme.getProps(style.theme));
+                let theme = style.theme!.template!.provider(Utils.Molecule.findModel(source), Theme.getProps(style.theme!));
                 let mc = createModel(source, style, theme);    
                 
                 if (!mc) {
@@ -126,8 +126,8 @@ namespace LiteMol.Bootstrap.Visualization.Molecule {
         return Task.create<Entity.Molecule.Visual>(`Molecular Surface (${source.props.label})`, style.computeOnBackground ? 'Silent' : 'Normal', ctx => {
             let model = Utils.Molecule.findModel(source).props.model;
             let atomIndices = Entity.isMoleculeModel(source) ? source.props.model.atoms.indices : source.props.indices;
-            let params = style.params;
-            let label = TypeDescriptions[style.type].label;
+            let params = style.params!;
+            let label = TypeDescriptions[style.type!].label;
                    
             let data = LiteMol.Core.Geometry.MolecularSurface.computeMolecularSurfaceAsync({
                 positions: model.atoms,
@@ -144,13 +144,13 @@ namespace LiteMol.Bootstrap.Visualization.Molecule {
             data.progress.subscribe(p => ctx.update(label + ': ' + Utils.formatProgress(p), p.requestAbort));
             
             data.result.then(data => {    
-                let theme = style.theme.template.provider(Utils.Molecule.findModel(source), Theme.getProps(style.theme));                
+                let theme = style.theme!.template!.provider(Utils.Molecule.findModel(source), Theme.getProps(style.theme!));                
                 ctx.update('Creating visual...');
                 ctx.schedule(() => {               
-                    let surface = LiteMol.Visualization.Surface.Model.create(source, { surface: data.surface, theme, parameters: { isWireframe: style.params.isWireframe } }).run();                    
+                    let surface = LiteMol.Visualization.Surface.Model.create(source, { surface: data.surface, theme, parameters: { isWireframe: style.params!.isWireframe } }).run();                    
                     surface.progress.subscribe(p => ctx.update(label + ': ' + Utils.formatProgress(p), p.requestAbort));
                     surface.result.then(model => {                                                            
-                        let label = `Surface, ${Utils.round(params.probeRadius, 2)} \u212B probe`;                    
+                        let label = `Surface, ${Utils.round(params.probeRadius!, 2)} \u212B probe`;                    
                         let visual = Entity.Molecule.Visual.create(transform, { label, model, style, isSelectable: !style.isNotSelectable });
                         ctx.resolve(visual);
                     }).catch(ctx.reject);

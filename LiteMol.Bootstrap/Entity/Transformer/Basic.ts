@@ -49,7 +49,7 @@ namespace LiteMol.Bootstrap.Entity.Transformer.Basic {
             return Task.create(info.name, 'Background', ctx => {
                 let group = CreateGroup.create({ label: info.name }).apply(context, source);                
                 group.run(context).then(g => {
-                    let promises = transformers.map(t => () => Task.guardedPromise(context, (resolve, reject) => {
+                    let promises = transformers.map(t => () => Task.guardedPromise<{} | undefined>(context, (resolve, reject) => {
                         
                         let params = t.params(parent.params, source);
                         if (!params) {

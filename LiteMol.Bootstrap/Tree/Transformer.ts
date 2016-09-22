@@ -28,8 +28,8 @@ namespace LiteMol.Bootstrap.Tree {
             isUpdatable?: boolean,
             from: Tree.Node.TypeOf<A>[],
             to: Tree.Node.TypeOf<B>[],
-            validateParams?: (params: P) => string[], // return undefined if everything is fine, array of strings with issues otherwise
-            defaultParams: (ctx?: Context, e?: A) => P,
+            validateParams?: (params: P) => string[] | undefined, // return undefined if everything is fine, array of strings with issues otherwise
+            defaultParams: (ctx: Context, e: A) => P | undefined,
             customController?: (ctx: Context, transformer: Transformer<A, B, P>, entity: Entity.Any) => Components.Transform.Controller<P>,
             isApplicable?: (e: A) => boolean,
             isComposed?: boolean     
@@ -107,14 +107,14 @@ namespace LiteMol.Bootstrap.Tree {
             constructor(
                 public info: Transformer.Info<A, B, P>, 
                 private transform: (ctx: Context, a: A, t: Transform<A, B, P>) => Task<B>, 
-                private updater: (ctx: Context, b: B, t: Transform<A, B, P>) => Task<B>) {
+                private updater?: (ctx: Context, b: B, t: Transform<A, B, P>) => Task<B> | undefined) {
             }            
         }
         
         export function create<A extends Node, B extends Node, P>(
             info: Info<A, B, P>, 
             transform: (ctx: Context, a: A, t: Transform<A, B, P>) => Task<B>,
-            updater?: (ctx: Context, b: B, t: Transform<A, B, P>) => Task<B>): Transformer<A, B, P> { 
+            updater?: (ctx: Context, b: B, t: Transform<A, B, P>) => Task<B> | undefined): Transformer<A, B, P> { 
             return new TransformerImpl(info, transform, updater);
         }
 

@@ -17,7 +17,7 @@ namespace LiteMol.Core.Formats.Density {
     
     function fill(data: number[], value: number) {
         let len = data.length;
-        for (let i = 0; i < this.len; i++) {
+        for (let i = 0; i < len; i++) {
             data[i] = value;
         } 
     }

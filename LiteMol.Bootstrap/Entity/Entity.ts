@@ -72,13 +72,13 @@ namespace LiteMol.Bootstrap {
                     version: 0,
                     index: 0,
                     ref: 'undefined',
-                    tag: void 0,
-                    tree: void 0,
+                    tag: <any>void 0,
+                    tree: <any>void 0,
                     props,
                     state: { isCollapsed: false, visibility: Visibility.Full },
                     isHidden: false,
                     transform: transform,
-                    parent: void 0,
+                    parent: <any>void 0,
                     children: [],                
                     type: <any>this
                 }; 

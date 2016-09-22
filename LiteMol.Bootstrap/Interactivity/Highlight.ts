@@ -7,7 +7,7 @@ namespace LiteMol.Bootstrap.Interactivity {
     "use strict";
     
     export type HighlightEntry = string
-    export type HighlightProvider = (info: Info) => string
+    export type HighlightProvider = (info: Info) => string | undefined
         
     export class HighlightManager {
         

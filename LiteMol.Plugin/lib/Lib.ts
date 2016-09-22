@@ -12,6 +12,13 @@ namespace LiteMol.Plugin {
     export namespace Controls {
         //export const ColorPickerHelper: __LiteMolColorPicker.ColorPicker = <any>__LiteMolColorPicker.ColorPicker;
         //export const AlphaPickerHelper: __LiteMolColorPicker.AlphaPicker = <any>(__LiteMolColorPicker as any).AlphaPicker;
-        export const ChromePickerHelper: __LiteMolColorPicker.ChromePicker = <any>(__LiteMolColorPicker as any).ChromePicker;
+        
+        //export const ChromePickerHelper: __LiteMolColorPicker.ChromePicker = <any>(__LiteMolColorPicker as any).ChromePicker;
+
+        //const ChromePickerHelper: __LiteMolColorPicker.ChromePicker = <any>(__LiteMolColorPicker as any).ChromePicker;
+
+        export declare class ChromePickerHelper extends __LiteMolColorPicker.ChromePicker { }
     }
+    Controls.ChromePickerHelper = <any>(__LiteMolColorPicker as any).ChromePicker;
+
 }

@@ -33,7 +33,7 @@ namespace LiteMol.Visualization {
             let id: number = -1;
             
             if (this.availableIds.length) {
-                id = this.availableIds.pop();
+                id = this.availableIds.pop()!;
             } else {
                 id = this.maxId++;
             }

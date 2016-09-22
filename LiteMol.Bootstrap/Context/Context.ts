@@ -25,9 +25,9 @@ namespace LiteMol.Bootstrap {
         dispatcher = new Service.Dispatcher();
         logger = new Service.Logger(this);
         performance = new Core.Utils.PerformanceMonitor();
-        scene: Visualization.SceneWrapper = void 0; // injected by the Viewpoer component.        
+        scene: Visualization.SceneWrapper = <any>void 0; // injected by the Viewpoer component.        
         tree = Tree.create<Entity.Any>(this, Entity.Root.create(Entity.RootTransform, { label: 'Root Entity' }));        
-        currentEntity: Entity.Any = void 0;        
+        currentEntity: Entity.Any | undefined = void 0;        
         transforms = new TransformManager(this);
         entityCache = new Entity.Cache(this);
         viewport = new Components.Visualization.Viewport(this);

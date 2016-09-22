@@ -13,7 +13,7 @@ namespace LiteMol.Plugin.Views.Entity {
         let e = props.entity;
 
         let command = () => {
-            Bootstrap.Command.Entity.SetVisibility.dispatch(e.tree.context, { entity: e, visible: e.state.visibility === BEntity.Visibility.Full ? false : true} );
+            Bootstrap.Command.Entity.SetVisibility.dispatch(e.tree!.context, { entity: e, visible: e.state.visibility === BEntity.Visibility.Full ? false : true} );
         }
 
         let state = e.state.visibility;
@@ -55,7 +55,7 @@ namespace LiteMol.Plugin.Views.Entity {
         }
     
         componentWillMount() {                        
-            this.ctx = this.props.node.tree.context;
+            this.ctx = this.props.node.tree!.context;
             let node = this.node;
             //this.state.version = node.version;                            
             this.subscribe(Bootstrap.Event.Tree.NodeUpdated.getStream(this.ctx), e => {
@@ -96,7 +96,7 @@ namespace LiteMol.Plugin.Views.Entity {
                     </Controls.Button>
                 </div>
                 { !isRoot || childCount  
-                    ? <Controls.Button title='Remove' onClick={() => Bootstrap.Command.Tree.RemoveNode.dispatch(entity.tree.context, entity) } icon='remove' style='link' customClass='lm-entity-tree-entry-remove' />
+                    ? <Controls.Button title='Remove' onClick={() => Bootstrap.Command.Tree.RemoveNode.dispatch(entity.tree!.context, entity) } icon='remove' style='link' customClass='lm-entity-tree-entry-remove' />
                     : void 0 }
                 { isRoot && !childCount ? void 0 :  <VisibilityControl entity={entity} /> }
             </div>;
@@ -224,7 +224,7 @@ namespace LiteMol.Plugin.Views.Entity {
         
         componentWillMount() {                        
             let node = this.controller.context.tree.root;
-            let ctx = node.tree.context;
+            let ctx = node.tree!.context;
             //this.state.version = node.version;                            
             this.subscribe(Bootstrap.Event.Tree.NodeUpdated.getStream(ctx), e => {
                 if (e.data === node) {

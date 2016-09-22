@@ -21,7 +21,7 @@ namespace LiteMol.Bootstrap.Entity {
     }
         
     export function setCurrent(e: Entity.Any) {    
-        let old = e.tree.context.currentEntity;        
+        let old = e.tree!.context.currentEntity;        
         if (old === e || (e && e.isHidden)) {
             return;
         }
@@ -33,7 +33,7 @@ namespace LiteMol.Bootstrap.Entity {
             n = n.parent; 
         }
         
-        e.tree.context.currentEntity = e; 
+        e.tree!.context.currentEntity = e; 
         if (old) {
             Tree.Node.update(old);
             nodeUpdated(old);
@@ -42,7 +42,7 @@ namespace LiteMol.Bootstrap.Entity {
             Tree.Node.update(e);
             nodeUpdated(e);
         }
-        Event.Entity.CurrentChanged.dispatch(e.tree.context, e);
+        Event.Entity.CurrentChanged.dispatch(e.tree!.context, e);
         if (old) Tree.updatePath(old);
         Tree.updatePath(e.parent);
     }

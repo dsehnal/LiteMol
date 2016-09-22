@@ -6,7 +6,7 @@ namespace LiteMol.Bootstrap.Utils {
     "use strict";
 
 
-    let VDWRadii: Map<string, number> = undefined;
+    let VDWRadii: Map<string, number> = <any>void 0;
     export function vdwRadiusFromElementSymbol(model: Core.Structure.MoleculeModel) {
         if (!VDWRadii) VDWRadii = createVdwRadii();        
         return function (names: string[], radii: Map<string, number>) {

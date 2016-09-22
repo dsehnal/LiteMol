@@ -31,7 +31,11 @@ namespace LiteMol.Core.Formats.Molecule.PDB {
                 `3 water nat water 0.0 0 ? ? ? ?`
             ].join('\n');
             
-            return CIF.Text.parse(data).result.dataBlocks[0].getCategory('_entity') as CIF.Text.Category;
+            let file = CIF.Text.parse(data);
+            if (file.error) {
+                throw file.error.toString();
+            }
+            return file.result!.dataBlocks[0].getCategory('_entity') as CIF.Text.Category;
         }
         
         toCifFile(): CIF.File {
@@ -63,7 +67,7 @@ namespace LiteMol.Core.Formats.Molecule.PDB {
 
         constructor(
             public header: Header,
-            public crystInfo: CrystStructureInfo,
+            public crystInfo: CrystStructureInfo | undefined,
             public models: ModelsData,
             public data: string
         ) {
@@ -110,7 +114,7 @@ namespace LiteMol.Core.Formats.Molecule.PDB {
                 `_symmetry.space_group_name_Hall            ?`
             ].join('\n');
 
-            let cif = CIF.Text.parse(data).result.dataBlocks[0];
+            let cif = CIF.Text.parse(data).result!.dataBlocks[0];
 
             return {
                 cell: cif.getCategory('_cell'),
@@ -124,8 +128,8 @@ namespace LiteMol.Core.Formats.Molecule.PDB {
 
     export class SecondaryStructure {
 
-        toCifCategory(data: string): { helices: CIF.Category; sheets: CIF.Category } {
-            return null;
+        toCifCategory(data: string): { helices: CIF.Category; sheets: CIF.Category } | undefined {
+            return void 0;
         }
 
         constructor(public helixTokens: number[], public sheetTokens: number[]) {
@@ -274,7 +278,7 @@ namespace LiteMol.Core.Formats.Molecule.PDB {
                 this.writeToken(o + columnIndices.CHAIN_ID, cifTokens);
 
                 //_atom_site.label_entity_id
-                this.writeRange(helpers.numberTokens.get(this.getEntityType(i, helpers.data)), cifTokens);
+                this.writeRange(helpers.numberTokens.get(this.getEntityType(i, helpers.data))!, cifTokens);
 
                 //_atom_site.label_seq_id
                 this.writeToken(o + columnIndices.RES_SEQN, cifTokens);

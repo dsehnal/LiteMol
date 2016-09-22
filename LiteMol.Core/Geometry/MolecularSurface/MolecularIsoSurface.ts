@@ -234,7 +234,8 @@ namespace LiteMol.Core.Geometry.MolecularSurface {
         
         private finish() {
             
-            this.maxField = null;
+            // help the gc
+            this.maxField = <any>null;
 
             let t = Geometry.LinearAlgebra.Matrix4.empty();
             Geometry.LinearAlgebra.Matrix4.fromTranslation(t, [this.minX, this.minY, this.minZ]);
@@ -314,7 +315,7 @@ namespace LiteMol.Core.Geometry.MolecularSurface {
                 .bind(f => 
                     MarchingCubes.compute(f.data)
                         .bind(s => Surface.transform(s, f.transform))
-                            .bind(s => Surface.laplacianSmooth(s, f.inputParameters.parameters.smoothingIterations)
+                            .bind(s => Surface.laplacianSmooth(s, (f.inputParameters.parameters && f.inputParameters.parameters.smoothingIterations) || 1)
                                 .bind(s => createResultResultData(f, s))));
     }
 }

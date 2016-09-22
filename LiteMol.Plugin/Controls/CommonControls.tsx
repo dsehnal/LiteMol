@@ -38,7 +38,7 @@ namespace LiteMol.Plugin.Controls {
             let props = this.props;
 
             let className = 'btn';
-            if (props.size && props.size !== 'nomal') className += ' btn-' + props.size;
+            if (props.size && props.size !== 'normal') className += ' btn-' + props.size;
             if (props.asBlock) className += ' btn-block';
 
             if (props.disabled) className += ' btn-' + (props.disabledStyle || props.style || 'default');

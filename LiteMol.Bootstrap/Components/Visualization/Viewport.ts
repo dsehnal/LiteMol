@@ -29,7 +29,7 @@ namespace LiteMol.Bootstrap.Components.Visualization {
         destroy() {
             if (this._scene) {
                 this._scene.destroy();
-                this._scene = null;
+                this._scene = <any>null;
             }
         }
         

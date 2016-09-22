@@ -12,22 +12,21 @@ namespace LiteMol.Bootstrap.Utils.Query {
         return id;
     }
 
-    function getAuthResidueIdParams(id: string): Core.Structure.Query.ResidueIdSchema {
+    function getAuthResidueIdParams(id: string): Core.Structure.Query.ResidueIdSchema | undefined {
         let match = id.match(residueIdRegex);
         if (!match) return void 0;
 
         let authSeqNumber = +match[1] | 0;
-        let authAsymId = normalizeId(match[2]);
+        let authAsymId = normalizeId(match[2])!;
         let insCode = normalizeId(match[3]);
-        let entityId = normalizeId(match[4]);
+        let entityId = normalizeId(match[4])!;
 
         return { entityId, authSeqNumber, authAsymId, insCode }; 
 
     }
     
     export function parseAuthResidueId(ids: string, separator = ',') {
-        let parts =
-            ids.split(separator).map(p => getAuthResidueIdParams(p)).filter(p => !!p);
+        let parts = ids.split(separator).map(p => getAuthResidueIdParams(p)).filter(p => !!p) as Core.Structure.Query.ResidueIdSchema[];
 
         return Core.Structure.Query.Builder.toQuery(Core.Structure.Query.residues(...parts));        
     }

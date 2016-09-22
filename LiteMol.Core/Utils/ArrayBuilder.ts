@@ -6,7 +6,7 @@ namespace LiteMol.Core.Utils {
     
     export function integerSetToSortedTypedArray(set: Set<number>) {
         let array = new Int32Array(set.size);
-        set.forEach(function(v) { this.array[this.index++] = v; }, { array, index: 0 } );
+        set.forEach(function(this: any, v: number) { this.array[this.index++] = v; }, { array, index: 0 } );
         Array.prototype.sort.call(array, function (x: number, y: number) { return x - y; });
         return <number[]><any>array;
     } 

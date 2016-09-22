@@ -19,7 +19,7 @@ namespace LiteMol.Bootstrap.Tree {
         tag: any, 
         type: Type,        
         transform: Transform<any, T, any>,
-        tree: Tree<T>,
+        tree: Tree<T> | undefined,
         props: Props,
         state: State,
         isHidden: boolean,        

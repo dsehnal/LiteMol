@@ -33,7 +33,7 @@ namespace LiteMol.Bootstrap.Visualization.Molecule {
     }
     
     export function uniformThemeProvider(e: Entity.Any, props?: LiteMol.Visualization.Theme.Props) {
-        if (props.colors) {
+        if (props && props.colors) {
             props.colors.set('Bond', props.colors.get('Uniform'));
         }
         return Vis.Theme.createUniform(props);   

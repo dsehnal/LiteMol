@@ -33,7 +33,7 @@ namespace LiteMol.Bootstrap.Visualization {
             this.originalThemes.delete(v.id); 
             this.scene.scene.models.removeAndDispose(v.props.model);
             v.props.model.tag = void 0;
-            v.props.model = void 0;
+            v.props.model = <any>void 0;
             return true;
         }
         
@@ -44,7 +44,7 @@ namespace LiteMol.Bootstrap.Visualization {
         resetThemesAndHighlight(sel?: Bootstrap.Tree.Selector<Bootstrap.Entity.Any>) {            
             if (!sel) {            
                 this.originalThemes.forEach((t, id) => {
-                    this.entries.get(id).props.model.applyTheme(t);
+                    this.entries.get(id)!.props.model.applyTheme(t);
                 });
                 this.originalThemes.clear();
                 this.entries.forEach(v => v.props.model.highlight(false));
@@ -56,7 +56,7 @@ namespace LiteMol.Bootstrap.Visualization {
             for (let e of es) {
                 if (!Entity.isVisual(e) || !this.originalThemes.has(e.id)) continue;
                 let v = e as Visual;
-                let t = this.originalThemes.get(v.id);
+                let t = this.originalThemes.get(v.id)!;
                 v.props.model.applyTheme(t);
                 v.props.model.highlight(false);       
                 this.originalThemes.delete(v.id);         
@@ -79,7 +79,7 @@ namespace LiteMol.Bootstrap.Visualization {
             if (!targets.length) return;
             
             let q = Utils.Molecule.getModelAndIndicesFromQuery(model, what.query);
-            if (!q.model || !q.indices.length) return;
+            if (!q || !q.indices.length) return;
             
             let action = what.isOn ? LiteMol.Visualization.Selection.Action.Highlight : LiteMol.Visualization.Selection.Action.RemoveHighlight;
             for (let t of targets) {
@@ -147,7 +147,7 @@ namespace LiteMol.Bootstrap.Visualization {
 
             this.scene.camera.stopObserving(this.cameraObserver);
             this.scene.destroy();
-            this.scene = void 0;
+            this.scene = <any>void 0;
             this._destroyed = true;
         }
 
@@ -180,7 +180,7 @@ namespace LiteMol.Bootstrap.Visualization {
          private focusMoleculeModelOnQuery(what: { model: Bootstrap.Entity.Molecule.Model, query: Core.Structure.Query.Source }) {
             
             let q = Utils.Molecule.getModelAndIndicesFromQuery(what.model, what.query);
-            if (!q.model || !q.indices.length) return;
+            if (!q || !q.indices.length) return;
             let center = { x: 0.1, y: 0.1, z: 0.1 };
             let r = Utils.Molecule.getCentroidAndRadius(q.model.props.model, q.indices, center);
             this.scene.camera.focusOnPoint(center, r);           

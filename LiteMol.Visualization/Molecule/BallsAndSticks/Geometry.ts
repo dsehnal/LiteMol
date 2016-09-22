@@ -12,7 +12,7 @@ namespace LiteMol.Visualization.Molecule.BallsAndSticks {
             let stickCount = 0;
             let residueCount = 0;
 
-            let { atomAIndex, atomBIndex, type, count } = molecule.covalentBonds;
+            let { atomAIndex, atomBIndex, type, count } = molecule.covalentBonds!;
             for (let i = 0; i < count; i++) {
                 let a = atomAIndex[i], b = atomBIndex[i];
                 if (!mask.has(a) || !mask.has(b)) continue;
@@ -78,7 +78,7 @@ namespace LiteMol.Visualization.Molecule.BallsAndSticks {
                 endAtomIndex = startAtomIndex;
                 while (endAtomIndex < atomCount && atomResidueIndex[indices[endAtomIndex]] == rIndex) endAtomIndex++;
 
-                let bondInfo: Core.Structure.ComponentBondInfoEntry;
+                let bondInfo: Core.Structure.ComponentBondInfoEntry | undefined;
                 if (compBonds && (bondInfo = compBonds.entries.get(residueName[atomResidueIndex[indices[startAtomIndex]]]))) {
                     
                     for (let ii = startAtomIndex; ii < endAtomIndex - 1; ii++) {
@@ -236,8 +236,8 @@ namespace LiteMol.Visualization.Molecule.BallsAndSticks {
         bondRadius = this.params.bondRadius;
         hideBonds = this.params.hideBonds;
         
-        bondTemplate = BuildState.getBondTemplate(1.0, this.tessalation);
-        atomTemplate = BuildState.getAtomTemplate(1.0, this.tessalation);
+        bondTemplate = BuildState.getBondTemplate(1.0, this.tessalation!);
+        atomTemplate = BuildState.getAtomTemplate(1.0, this.tessalation!);
 
         bondTemplateVertexBuffer = (<any>this.bondTemplate.attributes).position.array;
         bondTemplateVertexBufferLength = this.bondTemplateVertexBuffer.length;
@@ -286,7 +286,7 @@ namespace LiteMol.Visualization.Molecule.BallsAndSticks {
         atomMapBuilder = new Selection.VertexMapBuilder(this.atomIndices.length);
         tempVector = new THREE.Vector3(0, 0, 0);
                 
-        bs: BondsBuildState = void 0;       
+        bs: BondsBuildState = <any>void 0;       
         
         constructor(public model: Core.Structure.MoleculeModel, public atomIndices: number[], public params: Parameters) {
             
@@ -345,7 +345,7 @@ namespace LiteMol.Visualization.Molecule.BallsAndSticks {
         private static addAtom(a: number, state: BuildState) {
             state.atomMapBuilder.startElement(a);
 
-            let r = state.atomRadius(a);
+            let r = state.atomRadius!(a);
 
             state.scaleMatrix.makeScale(r, r, r);
             state.tempVector.set(state.cX[a], state.cY[a], state.cZ[a]);
@@ -447,7 +447,7 @@ namespace LiteMol.Visualization.Molecule.BallsAndSticks {
                     BallsAndSticksGeometryBuilder.addBondPart(bondState);
                     break;
                 default:
-                    bondState.radius = r;
+                    bondState.radius = r!;
                     bondState.offset.x = 0.0;
                     bondState.offset.y = 0.0;
                     BallsAndSticksGeometryBuilder.addBondPart(bondState);
@@ -671,12 +671,12 @@ namespace LiteMol.Visualization.Molecule.BallsAndSticks {
     
     export class BallsAndSticksGeometry extends GeometryBase {
         
-        atomsGeometry: THREE.BufferGeometry = void 0;
-        bondsGeometry: THREE.BufferGeometry = void 0;                
-        pickGeometry: THREE.BufferGeometry = void 0;
-        atomVertexMap: Selection.VertexMap = void 0;
-        bondVertexMap: Selection.VertexMap = void 0;
-        vertexStateBuffer: THREE.BufferAttribute = void 0;
+        atomsGeometry: THREE.BufferGeometry = <any>void 0;
+        bondsGeometry: THREE.BufferGeometry = <any>void 0;                
+        pickGeometry: THREE.BufferGeometry = <any>void 0;
+        atomVertexMap: Selection.VertexMap = <any>void 0;
+        bondVertexMap: Selection.VertexMap = <any>void 0;
+        vertexStateBuffer: THREE.BufferAttribute = <any>void 0;
         
         dispose() {
             this.atomsGeometry.dispose();

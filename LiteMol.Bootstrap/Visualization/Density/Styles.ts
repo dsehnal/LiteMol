@@ -21,7 +21,7 @@ namespace LiteMol.Bootstrap.Visualization.Density {
             color: LiteMol.Visualization.Color, 
             isWireframe?: boolean, 
             transparency?: LiteMol.Visualization.Theme.Transparency}): Style  {
-            let colors = Default.Theme.colors.set('Uniform', params.color);
+            let colors = Default.Theme.colors!.set('Uniform', params.color);
             return { 
                 type: {}, 
                 params: { isoSigma: params.isoSigma, smoothing: 1, isWireframe: !!params.isWireframe }, 

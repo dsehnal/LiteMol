@@ -35813,7 +35813,6 @@ var LiteMol;
                     if (d)
                         d.dispose();
                 }
-                this.disposeList = null;
                 this.disposeList = [];
             };
             Model.prototype.highlight = function (isOn) {
@@ -36122,7 +36121,7 @@ var LiteMol;
             };
             Camera.prototype.cameraUpdated = function () {
                 var options = this.scene.options;
-                this.fogEnabled = options.enableFog;
+                this.fogEnabled = !!options.enableFog;
                 var camera = this.camera;
                 if (camera instanceof Visualization.THREE.PerspectiveCamera) {
                     camera.fov = options.cameraFOV;
@@ -36558,14 +36557,14 @@ var LiteMol;
                     return;
                 }
                 if (!this.mouseInfo.isInside) {
-                    return;
+                    return void 0;
                 }
                 this.mouseInfo.setExactPosition();
                 var position = this.mouseInfo.exactPosition;
                 var cY = this.pickTarget.height - position.y;
                 if (this.pickTarget.width < position.x - 1 || position.x < 0.01 ||
                     this.pickTarget.height < cY - 1 || cY < 0.01) {
-                    return;
+                    return void 0;
                 }
                 this.renderer.readRenderTargetPixels(this.pickTarget, position.x | 0, cY | 0, 1, 1, this.pickBuffer);
                 var id = Visualization.Selection.Picking.getSceneId(this.models.idWidth, this.pickBuffer), pickId = Visualization.Selection.Picking.getElementId(this.models.idWidth, this.pickBuffer), info = this.pickInfo;
@@ -36579,12 +36578,12 @@ var LiteMol;
                 }
                 else {
                     if (id === info.currentPickId && pickId === info.currentPickElementId)
-                        return;
+                        return void 0;
                     var changed = this.clearHighlights(false), model = this.models.getBySceneId(id);
                     if (id === 255 || !model) {
                         if (changed)
                             this.needsRender();
-                        return;
+                        return void 0;
                     }
                     info.currentPickId = id;
                     info.currentPickElementId = pickId;
@@ -37553,8 +37552,8 @@ var LiteMol;
                     this.pickGeometry = void 0;
                     this.pickPlatesGeometry = void 0;
                     this.vertexStateBuffer = void 0;
-                    this.center = void 0;
-                    this.radius = void 0;
+                    this.center = new Visualization.THREE.Vector3(0, 0, 0);
+                    this.radius = 0;
                 }
                 Geometry.prototype.dispose = function () {
                     this.geometry.dispose();
@@ -37657,7 +37656,7 @@ var LiteMol;
                 };
                 Model.prototype.createObjects = function () {
                     var mesh = new Visualization.THREE.Mesh(this.geometry.geometry, this.material);
-                    var pickObj = null;
+                    var pickObj = void 0;
                     if (this.geometry.pickGeometry) {
                         pickObj = new Visualization.THREE.Object3D();
                         var pick = new Visualization.THREE.Mesh(this.geometry.pickGeometry, this.pickMaterial);
@@ -37715,8 +37714,8 @@ var LiteMol;
                 function Geometry() {
                     _super.call(this);
                     this.geometry = void 0;
-                    this.center = void 0;
-                    this.radius = void 0;
+                    this.center = new Visualization.THREE.Vector3(0, 0, 0);
+                    this.radius = 0;
                 }
                 Geometry.prototype.dispose = function () {
                     this.geometry.dispose();
@@ -37819,6 +37818,110 @@ var LiteMol;
             }(Visualization.Model));
             Lines.Model = Model;
         })(Lines = Visualization.Lines || (Visualization.Lines = {}));
+    })(Visualization = LiteMol.Visualization || (LiteMol.Visualization = {}));
+})(LiteMol || (LiteMol = {}));
+/*
+ * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ */
+var LiteMol;
+(function (LiteMol) {
+    var Visualization;
+    (function (Visualization) {
+        var Molecule;
+        (function (Molecule) {
+            var BallsAndSticks;
+            (function (BallsAndSticks) {
+                "use strict";
+                BallsAndSticks.DefaultBallsAndSticksModelParameters = {
+                    tessalation: 3,
+                    atomRadius: function () { return 0.4; },
+                    hideBonds: false,
+                    bondRadius: 0.15
+                };
+                var Model = (function (_super) {
+                    __extends(Model, _super);
+                    function Model() {
+                        _super.apply(this, arguments);
+                    }
+                    Model.prototype.applySelectionInternal = function (indices, action) {
+                        var buffer = this.ballsAndSticks.vertexStateBuffer, array = buffer.array, map = this.ballsAndSticks.atomVertexMap, vertexRanges = map.vertexRanges, changed = false;
+                        for (var _i = 0, indices_2 = indices; _i < indices_2.length; _i++) {
+                            var index = indices_2[_i];
+                            if (!map.elementMap.has(index))
+                                continue;
+                            var indexOffset = map.elementMap.get(index), rangeStart = map.elementRanges[2 * indexOffset], rangeEnd = map.elementRanges[2 * indexOffset + 1];
+                            if (rangeStart === rangeEnd)
+                                continue;
+                            for (var i = rangeStart; i < rangeEnd; i += 2) {
+                                var vStart = vertexRanges[i], vEnd = vertexRanges[i + 1];
+                                changed = Visualization.Selection.applyActionToRange(array, vStart, vEnd, action) || changed;
+                            }
+                        }
+                        if (!changed)
+                            return false;
+                        buffer.needsUpdate = true;
+                        return true;
+                    };
+                    Model.prototype.getPickElements = function (pickId) {
+                        return [pickId];
+                    };
+                    Model.prototype.highlightElement = function (pickId, highlight) {
+                        return this.applySelection([pickId], highlight ? 3 /* Highlight */ : 4 /* RemoveHighlight */);
+                    };
+                    Model.prototype.highlightInternal = function (isOn) {
+                        return Visualization.Selection.applyActionToBuffer(this.ballsAndSticks.vertexStateBuffer, isOn ? 3 /* Highlight */ : 4 /* RemoveHighlight */);
+                    };
+                    Model.prototype.applyThemeInternal = function (theme) {
+                        var _this = this;
+                        var map = this.ballsAndSticks.atomVertexMap;
+                        Visualization.MaterialsHelper.applyColorToMap(map, map.elementIndices, this.ballsAndSticks.atomsGeometry.attributes.color, function (i, c) { return _this.theme.setElementColor(i, c); });
+                        map = this.ballsAndSticks.bondVertexMap;
+                        var bondColor = Visualization.Theme.getColor(theme, 'Bond', Molecule.Colors.DefaultBondColor);
+                        Visualization.MaterialsHelper.applyColorToMap(map, map.elementIndices, this.ballsAndSticks.bondsGeometry.attributes.color, function (i, c) { return Visualization.Color.copy(bondColor, c); });
+                        Visualization.MaterialsHelper.updateMaterial(this.material, theme, this.object);
+                        Visualization.MaterialsHelper.updateMaterial(this.bondsMaterial, theme, this.object);
+                    };
+                    Model.prototype.createObjects = function () {
+                        var main = new Visualization.THREE.Object3D();
+                        main.add(new Visualization.THREE.Mesh(this.ballsAndSticks.atomsGeometry, this.material));
+                        main.add(new Visualization.THREE.Mesh(this.ballsAndSticks.bondsGeometry, this.bondsMaterial));
+                        var pick = new Visualization.THREE.Mesh(this.ballsAndSticks.pickGeometry, this.pickMaterial);
+                        return {
+                            main: main,
+                            pick: pick
+                        };
+                    };
+                    Model.create = function (entity, _a) {
+                        var model = _a.model, atomIndices = _a.atomIndices, theme = _a.theme, params = _a.params, props = _a.props;
+                        return LiteMol.Core.Computation.create(function (ctx) {
+                            BallsAndSticks.buildGeometry(model, params, atomIndices, ctx, function (geom) {
+                                var ret = new Model();
+                                ret.molecule = model;
+                                ret.ballsAndSticks = geom;
+                                ret.material = Visualization.MaterialsHelper.getMeshMaterial();
+                                ret.bondsMaterial = new Visualization.THREE.MeshPhongMaterial({ specular: 0xAAAAAA, shininess: 1, shading: Visualization.THREE.SmoothShading, side: Visualization.THREE.FrontSide, vertexColors: Visualization.THREE.VertexColors });
+                                ret.pickMaterial = Visualization.MaterialsHelper.getPickMaterial();
+                                ret.entity = entity;
+                                ret.ballsAndSticks.atomsGeometry.computeBoundingSphere();
+                                ret.centroid = ret.ballsAndSticks.atomsGeometry.boundingSphere.center;
+                                ret.radius = ret.ballsAndSticks.atomsGeometry.boundingSphere.radius;
+                                if (props)
+                                    ret.props = props;
+                                var obj = ret.createObjects();
+                                ret.object = obj.main;
+                                ret.applyTheme(theme);
+                                ret.disposeList.push(ret.ballsAndSticks, ret.material, ret.bondsMaterial, ret.pickMaterial);
+                                ret.pickObject = obj.pick;
+                                ret.pickBufferAttributes = [ret.ballsAndSticks.pickGeometry.attributes.pColor];
+                                ctx.resolve(ret);
+                            });
+                        });
+                    };
+                    return Model;
+                }(Visualization.Model));
+                BallsAndSticks.Model = Model;
+            })(BallsAndSticks = Molecule.BallsAndSticks || (Molecule.BallsAndSticks = {}));
+        })(Molecule = Visualization.Molecule || (Visualization.Molecule = {}));
     })(Visualization = LiteMol.Visualization || (LiteMol.Visualization = {}));
 })(LiteMol || (LiteMol = {}));
 /*
@@ -38376,110 +38479,6 @@ var LiteMol;
                     return BallsAndSticksGeometry;
                 }(Visualization.GeometryBase));
                 BallsAndSticks.BallsAndSticksGeometry = BallsAndSticksGeometry;
-            })(BallsAndSticks = Molecule.BallsAndSticks || (Molecule.BallsAndSticks = {}));
-        })(Molecule = Visualization.Molecule || (Visualization.Molecule = {}));
-    })(Visualization = LiteMol.Visualization || (LiteMol.Visualization = {}));
-})(LiteMol || (LiteMol = {}));
-/*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
- */
-var LiteMol;
-(function (LiteMol) {
-    var Visualization;
-    (function (Visualization) {
-        var Molecule;
-        (function (Molecule) {
-            var BallsAndSticks;
-            (function (BallsAndSticks) {
-                "use strict";
-                BallsAndSticks.DefaultBallsAndSticksModelParameters = {
-                    tessalation: 3,
-                    atomRadius: function () { return 0.4; },
-                    hideBonds: false,
-                    bondRadius: 0.15
-                };
-                var Model = (function (_super) {
-                    __extends(Model, _super);
-                    function Model() {
-                        _super.apply(this, arguments);
-                    }
-                    Model.prototype.applySelectionInternal = function (indices, action) {
-                        var buffer = this.ballsAndSticks.vertexStateBuffer, array = buffer.array, map = this.ballsAndSticks.atomVertexMap, vertexRanges = map.vertexRanges, changed = false;
-                        for (var _i = 0, indices_2 = indices; _i < indices_2.length; _i++) {
-                            var index = indices_2[_i];
-                            if (!map.elementMap.has(index))
-                                continue;
-                            var indexOffset = map.elementMap.get(index), rangeStart = map.elementRanges[2 * indexOffset], rangeEnd = map.elementRanges[2 * indexOffset + 1];
-                            if (rangeStart === rangeEnd)
-                                continue;
-                            for (var i = rangeStart; i < rangeEnd; i += 2) {
-                                var vStart = vertexRanges[i], vEnd = vertexRanges[i + 1];
-                                changed = Visualization.Selection.applyActionToRange(array, vStart, vEnd, action) || changed;
-                            }
-                        }
-                        if (!changed)
-                            return false;
-                        buffer.needsUpdate = true;
-                        return true;
-                    };
-                    Model.prototype.getPickElements = function (pickId) {
-                        return [pickId];
-                    };
-                    Model.prototype.highlightElement = function (pickId, highlight) {
-                        return this.applySelection([pickId], highlight ? 3 /* Highlight */ : 4 /* RemoveHighlight */);
-                    };
-                    Model.prototype.highlightInternal = function (isOn) {
-                        return Visualization.Selection.applyActionToBuffer(this.ballsAndSticks.vertexStateBuffer, isOn ? 3 /* Highlight */ : 4 /* RemoveHighlight */);
-                    };
-                    Model.prototype.applyThemeInternal = function (theme) {
-                        var _this = this;
-                        var map = this.ballsAndSticks.atomVertexMap;
-                        Visualization.MaterialsHelper.applyColorToMap(map, map.elementIndices, this.ballsAndSticks.atomsGeometry.attributes.color, function (i, c) { return _this.theme.setElementColor(i, c); });
-                        map = this.ballsAndSticks.bondVertexMap;
-                        var bondColor = Visualization.Theme.getColor(theme, 'Bond', Molecule.Colors.DefaultBondColor);
-                        Visualization.MaterialsHelper.applyColorToMap(map, map.elementIndices, this.ballsAndSticks.bondsGeometry.attributes.color, function (i, c) { return Visualization.Color.copy(bondColor, c); });
-                        Visualization.MaterialsHelper.updateMaterial(this.material, theme, this.object);
-                        Visualization.MaterialsHelper.updateMaterial(this.bondsMaterial, theme, this.object);
-                    };
-                    Model.prototype.createObjects = function () {
-                        var main = new Visualization.THREE.Object3D();
-                        main.add(new Visualization.THREE.Mesh(this.ballsAndSticks.atomsGeometry, this.material));
-                        main.add(new Visualization.THREE.Mesh(this.ballsAndSticks.bondsGeometry, this.bondsMaterial));
-                        var pick = new Visualization.THREE.Mesh(this.ballsAndSticks.pickGeometry, this.pickMaterial);
-                        return {
-                            main: main,
-                            pick: pick
-                        };
-                    };
-                    Model.create = function (entity, _a) {
-                        var model = _a.model, atomIndices = _a.atomIndices, theme = _a.theme, params = _a.params, props = _a.props;
-                        return LiteMol.Core.Computation.create(function (ctx) {
-                            BallsAndSticks.buildGeometry(model, params, atomIndices, ctx, function (geom) {
-                                var ret = new Model();
-                                ret.molecule = model;
-                                ret.ballsAndSticks = geom;
-                                ret.material = Visualization.MaterialsHelper.getMeshMaterial();
-                                ret.bondsMaterial = new Visualization.THREE.MeshPhongMaterial({ specular: 0xAAAAAA, shininess: 1, shading: Visualization.THREE.SmoothShading, side: Visualization.THREE.FrontSide, vertexColors: Visualization.THREE.VertexColors });
-                                ret.pickMaterial = Visualization.MaterialsHelper.getPickMaterial();
-                                ret.entity = entity;
-                                ret.ballsAndSticks.atomsGeometry.computeBoundingSphere();
-                                ret.centroid = ret.ballsAndSticks.atomsGeometry.boundingSphere.center;
-                                ret.radius = ret.ballsAndSticks.atomsGeometry.boundingSphere.radius;
-                                if (props)
-                                    ret.props = props;
-                                var obj = ret.createObjects();
-                                ret.object = obj.main;
-                                ret.applyTheme(theme);
-                                ret.disposeList.push(ret.ballsAndSticks, ret.material, ret.bondsMaterial, ret.pickMaterial);
-                                ret.pickObject = obj.pick;
-                                ret.pickBufferAttributes = [ret.ballsAndSticks.pickGeometry.attributes.pColor];
-                                ctx.resolve(ret);
-                            });
-                        });
-                    };
-                    return Model;
-                }(Visualization.Model));
-                BallsAndSticks.Model = Model;
             })(BallsAndSticks = Molecule.BallsAndSticks || (Molecule.BallsAndSticks = {}));
         })(Molecule = Visualization.Molecule || (Visualization.Molecule = {}));
     })(Visualization = LiteMol.Visualization || (LiteMol.Visualization = {}));

@@ -11,13 +11,13 @@ namespace LiteMol.Bootstrap.Behaviour.Molecule {
     export function ShowInteractionOnSelect(radius: number) {
         
         return (context: Context) => {
-            let lastRef: string = void 0;
+            let lastRef: string | undefined = void 0;
             
             let ligandStyle: Visualization.Molecule.Style<Visualization.Molecule.BallsAndSticksParams> = {
                 type: 'BallsAndSticks',
                 computeOnBackground: true,
                 params: { useVDW: true, vdwScaling: 0.25, bondRadius: 0.13, detail: 'Automatic' },
-                theme: { template: Visualization.Molecule.Default.ElementSymbolThemeTemplate, colors: Visualization.Molecule.Default.ElementSymbolThemeTemplate.colors.set('Bond', { r:1, g: 0, b: 0 }), transparency: { alpha: 0.4 } },
+                theme: { template: Visualization.Molecule.Default.ElementSymbolThemeTemplate, colors: Visualization.Molecule.Default.ElementSymbolThemeTemplate.colors!.set('Bond', { r:1, g: 0, b: 0 }), transparency: { alpha: 0.4 } },
                 isNotSelectable: true
             } 
                 
@@ -25,7 +25,7 @@ namespace LiteMol.Bootstrap.Behaviour.Molecule {
                 type: 'BallsAndSticks',
                 computeOnBackground: true,
                 params: { useVDW: false, atomRadius: 0.15, bondRadius: 0.07, detail: 'Automatic' },
-                theme: { template: Visualization.Molecule.Default.UniformThemeTemplate, colors: Visualization.Molecule.Default.UniformThemeTemplate.colors.set('Uniform', { r: 0.4, g: 0.4, b: 0.4 }), transparency: { alpha: 0.75 } },
+                theme: { template: Visualization.Molecule.Default.UniformThemeTemplate, colors: Visualization.Molecule.Default.UniformThemeTemplate.colors!.set('Uniform', { r: 0.4, g: 0.4, b: 0.4 }), transparency: { alpha: 0.75 } },
                 isNotSelectable: true
             }             
             
@@ -37,8 +37,8 @@ namespace LiteMol.Bootstrap.Behaviour.Molecule {
                 
                 if (!info.entity || !info.visual) return;
                 
-                let ligandQ = Query.atomsFromIndices(info.elements).wholeResidues();
-                let ambQ = Query.atomsFromIndices(info.elements).wholeResidues().ambientResidues(radius);
+                let ligandQ = Query.atomsFromIndices(info.elements!).wholeResidues();
+                let ambQ = Query.atomsFromIndices(info.elements!).wholeResidues().ambientResidues(radius);
                 
                 let ref = Utils.generateUUID();
                 let action = Tree.Transform.build().add(info.visual, Transforms.Basic.CreateGroup, { label: 'Interaction' }, { ref, isHidden: true });
@@ -64,9 +64,9 @@ namespace LiteMol.Bootstrap.Behaviour.Molecule {
     }
     
     export function DistanceToLastClickedElement(context: Context) {
-        let lastInfo: Interactivity.Info = undefined;
-        let lastSel: string = undefined;      
-        let lastModel: Core.Structure.MoleculeModel = undefined;  
+        let lastInfo: Interactivity.Info | undefined = void 0;
+        let lastSel: string | undefined = void 0;      
+        let lastModel: Core.Structure.MoleculeModel | undefined = void 0;  
         context.behaviours.click.subscribe(info => {
               
             if (!info.entity || !(Tree.Node.is(info.entity, Entity.Molecule.Model) || Tree.Node.is(info.entity, Entity.Molecule.Selection)) || !info.elements || !info.elements.length) {
@@ -94,7 +94,7 @@ namespace LiteMol.Bootstrap.Behaviour.Molecule {
             let m = Utils.Molecule.findModel(info.entity);
             if (!m) return undefined;
             
-            let dist = Utils.Molecule.getDistanceSet(lastModel, lastInfo.elements, m.props.model, info.elements);
+            let dist = Utils.Molecule.getDistanceSet(lastModel!, lastInfo.elements!, m.props.model, info.elements);
             if (dist < 0.0001) return undefined;
             return `<span><b>${Utils.round(dist, 2)} \u212B</b> from <b>${lastSel}</b></span>`;
         });  

@@ -102,11 +102,11 @@ namespace LiteMol.Visualization.Surface {
             }
         }
 
-        private createObjects(): { main: THREE.Object3D; pick: THREE.Object3D } {
+        private createObjects(): { main: THREE.Object3D; pick: THREE.Object3D | undefined } {
 
             let mesh = new THREE.Mesh(this.geometry.geometry, this.material);
                         
-            let pickObj: THREE.Object3D = null;
+            let pickObj: THREE.Object3D | undefined = void 0;
             if (this.geometry.pickGeometry) {
 
                 pickObj = new THREE.Object3D();
@@ -147,8 +147,8 @@ namespace LiteMol.Visualization.Surface {
                     ret.pickMaterial = MaterialsHelper.getPickMaterial();
                                     
                     ret.entity = entity;
-                    ret.centroid = new THREE.Vector3().copy(<any>surface.boundingSphere.center);
-                    ret.radius = surface.boundingSphere.radius;
+                    ret.centroid = new THREE.Vector3().copy(<any>surface.boundingSphere!.center);
+                    ret.radius = surface.boundingSphere!.radius;
                     
                     if (props) ret.props = props;
                             

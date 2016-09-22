@@ -73,16 +73,16 @@ namespace LiteMol.Plugin {
         }
         
         getTransformerInfo(transformer: Bootstrap.Tree.Transformer.Any) {
-            return this.transformersInfo.get(transformer.info.id);
+            return this.transformersInfo.get(transformer.info.id)!;
         }
         
         destroy() {
             this.context.dispatcher.finished();
             ReactDOM.unmountComponentAtNode(this.target);
-            this.context = void 0;
-            this.componentMap = void 0;
-            this.spec = void 0;
-            this.target = void 0;
+            this.context = <any>void 0;
+            this.componentMap = <any>void 0;
+            this.spec = <any>void 0;
+            this.target = <any>void 0;
         }
         
         private init() {

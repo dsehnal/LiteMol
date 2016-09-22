@@ -12,7 +12,7 @@ namespace LiteMol.Core.Geometry {
         indices: number[];
 
         hasPriorities: boolean;
-        priorities: number[];
+        priorities: number[] | undefined;
 
         add(distSq: number, index: number): void;
         reset(): void;
@@ -43,17 +43,15 @@ namespace LiteMol.Core.Geometry {
             buffer.capacity = newCapacity;
         }
 
-        function add(distSq: number, index: number) {
-            let self: SubdivisionTree3DResultBufferImpl = this;
-            if (self.count + 1 >= self.capacity) {
-                ensureCapacity(self);
+        function add(this: SubdivisionTree3DResultBufferImpl, distSq: number, index: number) {
+            if (this.count + 1 >= this.capacity) {
+                ensureCapacity(this);
             } 
-            self.indices[self.count++] = index;
+            this.indices[this.count++] = index;
         }
 
-        function reset() {
-            let self: SubdivisionTree3DResultBufferImpl = this;
-            self.count = 0;
+        function reset(this: SubdivisionTree3DResultBufferImpl) {
+            this.count = 0;
         }
 
         export function create(initialCapacity: number): SubdivisionTree3DResultBuffer {
@@ -84,7 +82,7 @@ namespace LiteMol.Core.Geometry {
             if (buffer.count < 32) {
                 for (i = 0; i < buffer.count; i++) {
                     newIdx[i] = buffer.indices[i];
-                    newPrio[i] = buffer.priorities[i];
+                    newPrio[i] = buffer.priorities![i];
                 }
             } else {
                 newIdx.set(<any>buffer.indices);
@@ -96,16 +94,14 @@ namespace LiteMol.Core.Geometry {
             buffer.capacity = newCapacity;
         }
 
-        function add(distSq: number, index: number) {
-            let self: SubdivisionTree3DResultBufferImpl = this;
-            if (self.count + 1 >= self.capacity) ensureCapacity(self);
-            self.priorities[self.count] = distSq;
-            self.indices[self.count++] = index;
+        function add(this: SubdivisionTree3DResultBufferImpl, distSq: number, index: number) {
+            if (this.count + 1 >= this.capacity) ensureCapacity(this);
+            this.priorities![this.count] = distSq;
+            this.indices[this.count++] = index;
         }
 
-        function reset() {
-            let self: SubdivisionTree3DResultBufferImpl = this;
-            self.count = 0;
+        function reset(this: SubdivisionTree3DResultBufferImpl) {
+            this.count = 0;
         }
 
         export function create(initialCapacity: number): SubdivisionTree3DResultBuffer {
@@ -144,7 +140,7 @@ namespace LiteMol.Core.Geometry {
         /**
          * Query the tree and store the result to this.buffer. Overwrites the old result.
          */
-        function nearest(x: number, y: number, z: number, radius: number) {
+        function nearest(this: SubdivisionTree3DQueryContext<any>, x: number, y: number, z: number, radius: number) {
             this.pivot[0] = x;
             this.pivot[1] = y;
             this.pivot[2] = z;
@@ -359,18 +355,19 @@ namespace LiteMol.Core.Geometry {
                 indices[i] = i;
                 f(data[i], add);
             }
-            add = null;
+            // help gc
+            add = <any>void 0;
 
             let state: State = {
                 bounds: positions.bounds,
                 positions: positions.data,
                 leafSize,
                 indices,
-                emptyNode: SubdivisionTree3DNode.create(NaN, -1, -1, null, null),
+                emptyNode: SubdivisionTree3DNode.create(NaN, -1, -1, <any>void 0, <any>void 0),
             }
 
             let root = split(state, 0, indices.length - 1, 0);
-            state = null;
+            state = <any>void 0;
 
             return { root, indices, positions: positions.data }            
         }

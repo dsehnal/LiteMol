@@ -24,8 +24,8 @@ namespace LiteMol.Visualization.Surface {
     }
      
     function sortAnnotation(ctx: Context) {
-        let indices = new Int32Array(ctx.data.annotation.length);
-        let annotation = ctx.data.annotation;
+        let indices = new Int32Array(ctx.data.annotation!.length);
+        let annotation = ctx.data.annotation!;
         for (let i = 0, _b = indices.length; i < _b; i++) indices[i] = i;
         Array.prototype.sort.call(indices, function (a: number, b: number) {
             let ret = annotation[a] - annotation[b];
@@ -50,7 +50,7 @@ namespace LiteMol.Visualization.Surface {
     
     function createVertexMap(ctx: Context) {
         let indices = sortAnnotation(ctx);
-        let annotation = ctx.data.annotation;
+        let annotation = ctx.data.annotation!;
         let count = 0;
         for (let i = 0, _b = indices.length - 1; i < _b; i++) {
             if (annotation[indices[i]] !== annotation[indices[i + 1]]) count++;
@@ -107,19 +107,19 @@ namespace LiteMol.Visualization.Surface {
         let chunkSize = 100000;
         
         let tri = ctx.data.triangleIndices;
-        let ids = ctx.data.annotation;
+        let ids = ctx.data.annotation!;
         
         if (start >= ctx.triCount) {
             next();
             return;
         }
         
-        let pickPlatesVertices = ctx.pickPlatesVertices;
-        let pickPlatesTris = ctx.pickPlatesTris;
-        let pickPlatesColors = ctx.pickPlatesColors;
+        let pickPlatesVertices = ctx.pickPlatesVertices!;
+        let pickPlatesTris = ctx.pickPlatesTris!;
+        let pickPlatesColors = ctx.pickPlatesColors!;
         let vs = ctx.data.vertices;
         let color = { r: 0.45, g: 0.45, b: 0.45 };
-        let pickTris = ctx.pickTris;
+        let pickTris = ctx.pickTris!;
         
         ctx.computation.update('Creating selection geometry...', ctx.computation.abortRequest, start, ctx.triCount);
         if (ctx.computation.abortRequested) {
@@ -163,12 +163,12 @@ namespace LiteMol.Visualization.Surface {
     function assignPickColors(ctx: Context) {
         let color = { r: 0.45, g: 0.45, b: 0.45 },
             vs = ctx.data.vertices,
-            ids = ctx.data.annotation,
+            ids = ctx.data.annotation!,
             tri = ctx.data.triangleIndices;
         
         
         ctx.pickTris = Core.Utils.ChunkedArrayBuilder.forIndexBuffer(ctx.triCount);            
-        let pickColorBuffer = ctx.pickColorBuffer;
+        let pickColorBuffer = ctx.pickColorBuffer!;
             
         for (let i = 0, _b = ctx.vertexCount; i < _b; i++) {
             let id = ids[i];
@@ -198,14 +198,14 @@ namespace LiteMol.Visualization.Surface {
      function createPickGeometry(ctx: Context) {
         let pickGeometry = new THREE.BufferGeometry();
         pickGeometry.addAttribute('position', new THREE.BufferAttribute(ctx.data.vertices, 3));
-        pickGeometry.addAttribute('index', new THREE.BufferAttribute(ctx.pickTris.compact(), 1));
+        pickGeometry.addAttribute('index', new THREE.BufferAttribute(ctx.pickTris!.compact(), 1));
         pickGeometry.addAttribute('pColor', new THREE.BufferAttribute(ctx.pickColorBuffer, 4));
         ctx.geom.pickGeometry = pickGeometry;
 
         pickGeometry = new THREE.BufferGeometry();
-        pickGeometry.addAttribute('position', new THREE.BufferAttribute(ctx.pickPlatesVertices.compact(), 3));
-        pickGeometry.addAttribute('index', new THREE.BufferAttribute(ctx.pickPlatesTris.compact(), 1));
-        pickGeometry.addAttribute('pColor', new THREE.BufferAttribute(ctx.pickPlatesColors.compact(), 4));
+        pickGeometry.addAttribute('position', new THREE.BufferAttribute(ctx.pickPlatesVertices!.compact(), 3));
+        pickGeometry.addAttribute('index', new THREE.BufferAttribute(ctx.pickPlatesTris!.compact(), 1));
+        pickGeometry.addAttribute('pColor', new THREE.BufferAttribute(ctx.pickPlatesColors!.compact(), 4));
         ctx.geom.pickPlatesGeometry = pickGeometry;
     }
     
@@ -301,7 +301,7 @@ namespace LiteMol.Visualization.Surface {
                 computation.schedule(() => {computeVertexMap(ctx, () => {
                         computePickGeometry(ctx, () => {
                             createGeometry(isWireframe, ctx);
-                            ctx.geom.vertexToElementMap = ctx.data.annotation;
+                            ctx.geom.vertexToElementMap = ctx.data.annotation!;
                             done(ctx.geom);
                         })
                     })
@@ -312,17 +312,17 @@ namespace LiteMol.Visualization.Surface {
         
     export class Geometry extends GeometryBase {
 
-        geometry: THREE.BufferGeometry = void 0; 
-        vertexToElementMap: number[] = void 0; 
-        elementToVertexMap: Selection.VertexMap = void 0; 
+        geometry: THREE.BufferGeometry = <any>void 0; 
+        vertexToElementMap: number[] = <any>void 0; 
+        elementToVertexMap: Selection.VertexMap = <any>void 0; 
                 
-        pickGeometry: THREE.BufferGeometry = void 0; 
-        pickPlatesGeometry: THREE.BufferGeometry = void 0; 
+        pickGeometry: THREE.BufferGeometry = <any>void 0; 
+        pickPlatesGeometry: THREE.BufferGeometry = <any>void 0; 
 
-        vertexStateBuffer: THREE.BufferAttribute = void 0; 
+        vertexStateBuffer: THREE.BufferAttribute = <any>void 0; 
 
-        center: THREE.Vector3 = void 0; 
-        radius: number = void 0; 
+        center: THREE.Vector3 = new THREE.Vector3(0,0,0); 
+        radius: number = 0; 
         
         dispose() {
             this.geometry.dispose();

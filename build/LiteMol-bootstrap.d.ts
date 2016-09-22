@@ -2552,13 +2552,13 @@ declare namespace LiteMol.Bootstrap {
 declare namespace LiteMol.Bootstrap.Utils {
     function readStringFromFile(file: File): Task<string>;
     function readArrayBufferFromFile(file: File): Task<ArrayBuffer>;
-    function readFromFile(file: File, type: Entity.Data.Type): Task<ArrayBuffer | string>;
+    function readFromFile(file: File, type: Entity.Data.Type): Task<string | ArrayBuffer>;
     function ajaxGetString(url: string): Task<string>;
     function ajaxGetArrayBuffer(url: string): Task<ArrayBuffer>;
     function ajaxGet(url: string, type: Entity.Data.Type): Task<string | ArrayBuffer>;
 }
 declare namespace LiteMol.Bootstrap.Utils.Query {
-    function parseAuthResidueId(ids: string, separator?: string): (ctx: Core.Structure.Query.Context) => Core.Structure.Query.FragmentSeq;
+    function parseAuthResidueId(ids: string, separator?: string): Core.Structure.Query;
 }
 declare namespace LiteMol.Bootstrap.Utils.Query {
     class ValueOrError<A> {
@@ -2569,18 +2569,18 @@ declare namespace LiteMol.Bootstrap.Utils.Query {
         constructor(isError: boolean, value?: A, error?: any);
     }
     module ValueOrError {
-        function error(err: any): ValueOrError<any>;
+        function error(err: any): ValueOrError<undefined>;
         function value<A>(v: A): ValueOrError<A>;
     }
 }
 declare namespace LiteMol.Bootstrap.Utils {
     interface LinkedElement<T> {
-        previous: T;
-        next: T;
+        previous: T | null;
+        next: T | null;
         inList: boolean;
     }
     class LinkedList<T extends LinkedElement<T>> {
-        first: T;
+        first: T | null;
         private last;
         addFirst(item: T): void;
         addLast(item: T): void;
@@ -2613,10 +2613,10 @@ declare namespace LiteMol.Bootstrap.Utils.Molecule {
     function getDistance(mA: Structure.MoleculeModel, startAtomIndexA: number, endAtomIndexA: number, mB: Structure.MoleculeModel, startAtomIndexB: number, endAtomIndexB: number): number;
     function getDistanceSet(mA: Structure.MoleculeModel, setA: number[], mB: Structure.MoleculeModel, setB: number[]): number;
     function getModelAndIndicesFromQuery(m: Entity.Any, query: Core.Structure.Query.Source): {
-        model?: Entity.Molecule.Model;
-        indices?: number[];
-        queryContext?: Core.Structure.Query.Context;
-    };
+        model: Entity.Molecule.Model;
+        indices: number[];
+        queryContext: Core.Structure.Query.Context;
+    } | undefined;
     function getResidueIndices(m: Core.Structure.MoleculeModel, atom: number): number[];
     function getBox(molecule: Core.Structure.MoleculeModel, atomIndices: number[], delta: number): {
         bottomLeft: number[];
@@ -2693,7 +2693,7 @@ declare namespace LiteMol.Bootstrap {
         type: Task.Type;
         private task;
         private _id;
-        id: number;
+        readonly id: number;
         reportTime: boolean;
         bind<B>(name: string, type: Task.Type, next: (r: A) => Task<B>): Task<B>;
         map<B>(name: string, type: Task.Type, f: (r: A) => B): Task<B>;
@@ -2708,7 +2708,7 @@ declare namespace LiteMol.Bootstrap {
             then(action: (r: T) => void): __Promise.Promise<void>;
             catch(action: (e: any) => void): __Promise.Promise<void>;
             discard(): void;
-            constructor(promise: Promise<T>, ctx: Context<T>);
+            constructor(p: (resolve: (v: T) => void, reject: (err: any) => void, setCtx: (ctx: Context<T>) => void) => void);
         }
         type Type = 'Normal' | 'Background' | 'Silent' | 'Child';
         function create<A>(name: string, type: Type, task: (ctx: Context<A>) => void): Task<A>;
@@ -2806,8 +2806,8 @@ declare namespace LiteMol.Bootstrap.Event {
         const CameraChanged: Type<LiteMol.Visualization.Camera>;
     }
     namespace Molecule {
-        const ModelHighlight: Type<Bootstrap.Interactivity.Molecule.SelectionInfo>;
-        const ModelSelect: Type<Bootstrap.Interactivity.Molecule.SelectionInfo>;
+        const ModelHighlight: Type<Bootstrap.Interactivity.Molecule.SelectionInfo | undefined>;
+        const ModelSelect: Type<Bootstrap.Interactivity.Molecule.SelectionInfo | undefined>;
     }
 }
 declare namespace LiteMol.Bootstrap.Command {
@@ -2817,7 +2817,7 @@ declare namespace LiteMol.Bootstrap.Command {
         const ApplyTransform: Event.Type<{
             node: Node;
             transform: Bootstrap.Tree.Transform<Node, Node, any>;
-            isUpdate?: boolean;
+            isUpdate?: boolean | undefined;
         }>;
     }
     namespace Entity {
@@ -2840,22 +2840,22 @@ declare namespace LiteMol.Bootstrap.Command {
     namespace Molecule {
         const FocusQuery: Event.Type<{
             model: Bootstrap.Entity.Molecule.Model;
-            query: ((ctx: Core.Structure.Query.Context) => Core.Structure.Query.FragmentSeq) | string | Core.Structure.Query.Builder;
+            query: Core.Structure.Query.Source;
         }>;
         const Highlight: Event.Type<{
             model: Bootstrap.Entity.Molecule.Model;
-            query: ((ctx: Core.Structure.Query.Context) => Core.Structure.Query.FragmentSeq) | string | Core.Structure.Query.Builder;
+            query: Core.Structure.Query.Source;
             isOn: boolean;
         }>;
         const CreateSelectInteraction: Event.Type<{
             visual: Bootstrap.Entity.Molecule.Visual;
-            query: ((ctx: Core.Structure.Query.Context) => Core.Structure.Query.FragmentSeq) | string | Core.Structure.Query.Builder;
+            query: Core.Structure.Query.Source;
         }>;
     }
     namespace Visual {
         const ResetScene: Event.Type<void>;
         const ResetTheme: Event.Type<{
-            selection?: ((tree: Tree<Bootstrap.Entity.Any>) => Bootstrap.Entity.Any[]) | Bootstrap.Tree.Selection.Helpers.Builder<Bootstrap.Entity.Any> | string | Bootstrap.Entity.Any;
+            selection?: string | Bootstrap.Entity.Any | Bootstrap.Tree.Selection.Query<Bootstrap.Entity.Any> | Bootstrap.Tree.Selection.Helpers.Builder<Bootstrap.Entity.Any> | undefined;
         }>;
         const UpdateBasicTheme: Event.Type<{
             visual: Bootstrap.Entity.Visual.Any;
@@ -2887,7 +2887,7 @@ declare namespace LiteMol.Bootstrap.Tree {
         tag: any;
         type: Type;
         transform: Transform<any, T, any>;
-        tree: Tree<T>;
+        tree: Tree<T> | undefined;
         props: Props;
         state: State;
         isHidden: boolean;
@@ -2911,7 +2911,7 @@ declare namespace LiteMol.Bootstrap.Tree {
         function is(e: Any, t: AnyType): boolean;
         function hasAncestor(e: Any, a: Any): boolean;
         function findAncestor(e: Any, t: AnyType): any;
-        function findClosestNodeOfType(e: Any, t: AnyType[]): Any;
+        function findClosestNodeOfType(e: Any, t: AnyType[]): Any | undefined;
         function createId(): number;
         function update<T extends Node<T, Props, State, Type, TypeInfo>, Props, State, Type extends Node.Type<TypeInfo, Props, T>, TypeInfo>(e: T): T;
         function withProps<T extends Node<T, Props, State, Type, TypeInfo>, Props, State, Type extends Node.Type<TypeInfo, Props, T>, TypeInfo>(n: T, props: Props): T;
@@ -2981,13 +2981,13 @@ declare namespace LiteMol.Bootstrap.Tree {
             isUpdatable?: boolean;
             from: Tree.Node.TypeOf<A>[];
             to: Tree.Node.TypeOf<B>[];
-            validateParams?: (params: P) => string[];
-            defaultParams: (ctx?: Context, e?: A) => P;
+            validateParams?: (params: P) => string[] | undefined;
+            defaultParams: (ctx: Context, e: A) => P | undefined;
             customController?: (ctx: Context, transformer: Transformer<A, B, P>, entity: Entity.Any) => Components.Transform.Controller<P>;
             isApplicable?: (e: A) => boolean;
             isComposed?: boolean;
         }
-        function create<A extends Node, B extends Node, P>(info: Info<A, B, P>, transform: (ctx: Context, a: A, t: Transform<A, B, P>) => Task<B>, updater?: (ctx: Context, b: B, t: Transform<A, B, P>) => Task<B>): Transformer<A, B, P>;
+        function create<A extends Node, B extends Node, P>(info: Info<A, B, P>, transform: (ctx: Context, a: A, t: Transform<A, B, P>) => Task<B>, updater?: (ctx: Context, b: B, t: Transform<A, B, P>) => Task<B> | undefined): Transformer<A, B, P>;
         function internal<A extends Node, B extends Node, P>(id: string, from: Tree.Node.TypeOf<A>[], to: Tree.Node.TypeOf<B>[], transform: (ctx: Context, a: A, t: Transform<A, B, P>) => Task<B>): Transformer<Entity.Root, Entity.Root, {}>;
         function action<A extends Node, B extends Node, P>(info: Info<A, B, P>, builder: (ctx: Context, a: A, t: Transform<A, B, P>) => Transform.Source, doneMessage?: string): Transformer<A, B, P>;
     }
@@ -2997,7 +2997,7 @@ declare namespace LiteMol.Bootstrap.Tree {
     interface Transform<A extends Node, B extends Node, P> {
         props: Transform.Props;
         transformer: Transformer<A, B, P>;
-        params?: P;
+        params: P;
         isUpdate?: boolean;
         apply(context: Context, a: A): Task<B>;
         update(context: Context, b: B): Task<B>;
@@ -3031,12 +3031,12 @@ declare namespace LiteMol.Bootstrap.Tree.Transform {
     }
     namespace Builder {
         class Impl<A extends Node, B extends Node, P> implements Builder<A, B, P> {
-            last: Instance;
+            last: Instance | undefined;
             transforms: Instance[];
             add<A extends Node, B extends Node, P>(s: Selector<A>, t: Transformer<A, B, P>, params: P, props?: Transform.Props): Builder<A, B, P>;
             then<C extends Node, Q>(t: Transformer<B, C, Q>, params: Q, props?: Transform.Props): Builder<A, C, Q>;
             compile(): Instance[];
-            constructor(last: Instance, transforms: Instance[]);
+            constructor(last: Instance | undefined, transforms: Instance[]);
         }
         type Any = Builder<any, any, any>;
     }
@@ -3051,7 +3051,7 @@ declare namespace LiteMol.Bootstrap.Interactivity {
 }
 declare namespace LiteMol.Bootstrap.Interactivity {
     type HighlightEntry = string;
-    type HighlightProvider = (info: Info) => string;
+    type HighlightProvider = (info: Info) => string | undefined;
     class HighlightManager {
         context: Context;
         providers: HighlightProvider[];
@@ -3107,9 +3107,9 @@ declare namespace LiteMol.Bootstrap.Interactivity.Molecule {
         entities: EntityInfo[];
     }
     function transformMoleculeAtomIndices(model: Entity.Molecule.Model, context: Core.Structure.Query.Context, indices: number[]): SelectionInfo;
-    function transformInteraction(info: Interactivity.Info): SelectionInfo;
-    function formatInfo(info: SelectionInfo): string;
-    function formatInfoShort(info: SelectionInfo): string;
+    function transformInteraction(info: Interactivity.Info): SelectionInfo | undefined;
+    function formatInfo(info: SelectionInfo | undefined): string;
+    function formatInfoShort(info: SelectionInfo | undefined): string;
     function isMoleculeModelInteractivity(info: Info): boolean;
 }
 declare namespace LiteMol.Bootstrap.Visualization {
@@ -3121,7 +3121,7 @@ declare namespace LiteMol.Bootstrap.Visualization {
         private originalThemes;
         add(v: Visual): boolean;
         remove(v: Visual): boolean;
-        get(id: number): Visual;
+        get(id: number): Visual | undefined;
         resetThemesAndHighlight(sel?: Bootstrap.Tree.Selector<Bootstrap.Entity.Any>): void;
         private highlightMoleculeModel(what);
         constructor(context: Context, scene: SceneWrapper);
@@ -3134,7 +3134,7 @@ declare namespace LiteMol.Bootstrap.Visualization {
         scene: LiteMol.Visualization.Scene;
         models: DisplayList;
         private resetScene();
-        camera: LiteMol.Visualization.Camera;
+        readonly camera: LiteMol.Visualization.Camera;
         destroy(): void;
         private handleEvent(e, event);
         private focusMoleculeModelSelection(sel);
@@ -3195,12 +3195,12 @@ declare namespace LiteMol.Bootstrap.Visualization.Molecule {
     function createPaletteThemeProvider(provider: (m: Core.Structure.MoleculeModel) => {
         index: number[];
         property: any[];
-    }, pallete: LiteMol.Visualization.Color[]): (e: Entity.Any, props?: Vis.Theme.Props) => Vis.Theme;
+    }, pallete: LiteMol.Visualization.Color[]): (e: Entity.Any, props?: Vis.Theme.Props | undefined) => Vis.Theme;
     function uniformThemeProvider(e: Entity.Any, props?: LiteMol.Visualization.Theme.Props): Vis.Theme;
     function createColorMapThemeProvider(provider: (m: Core.Structure.MoleculeModel) => {
         index: number[];
         property: any[];
-    }, colorMap: Map<string, LiteMol.Visualization.Color>, fallbackColor: LiteMol.Visualization.Color): (e: Entity.Any, props?: Vis.Theme.Props) => Vis.Theme;
+    }, colorMap: Map<string, LiteMol.Visualization.Color>, fallbackColor: LiteMol.Visualization.Color): (e: Entity.Any, props?: Vis.Theme.Props | undefined) => Vis.Theme;
     namespace Default {
         const Themes: Theme.Template[];
         const CartoonThemeTemplate: Theme.Template;
@@ -3208,9 +3208,6 @@ declare namespace LiteMol.Bootstrap.Visualization.Molecule {
         const SurfaceThemeTemplate: Theme.Template;
         const UniformThemeTemplate: Theme.Template;
     }
-}
-declare namespace LiteMol.Bootstrap.Visualization.Molecule {
-    function create(source: Source, transform: Tree.Transform<Entity.Molecule.Model | Entity.Molecule.Selection, Entity.Molecule.Visual, any>, style: Style<any>): Task<Entity.Molecule.Visual>;
 }
 declare namespace LiteMol.Bootstrap.Visualization.Molecule {
     type Source = Entity.Molecule.Model | Entity.Molecule.Selection;
@@ -3245,6 +3242,9 @@ declare namespace LiteMol.Bootstrap.Visualization.Molecule {
         const Transparency: LiteMol.Visualization.Theme.Transparency;
         const ForType: Map<Type, Style<any>>;
     }
+}
+declare namespace LiteMol.Bootstrap.Visualization.Molecule {
+    function create(source: Source, transform: Tree.Transform<Entity.Molecule.Model | Entity.Molecule.Selection, Entity.Molecule.Visual, any>, style: Style<any>): Task<Entity.Molecule.Visual>;
 }
 declare namespace LiteMol.Bootstrap.Visualization.Density {
     function create(parent: Entity.Density.Data, transform: Tree.Transform<Entity.Density.Data, Entity.Density.Visual, any>, style: Style): Task<Entity.Density.Visual>;
@@ -3476,7 +3476,7 @@ declare namespace LiteMol.Bootstrap.Entity {
 declare namespace LiteMol.Bootstrap.Entity {
     class Cache {
         private data;
-        get<T>(e: Any, prop: string): T;
+        get<T>(e: Any, prop: string): T | undefined;
         set<T>(e: Any, prop: string, value: T): T;
         constructor(context: Context);
     }
@@ -3643,7 +3643,7 @@ declare namespace LiteMol.Bootstrap.Behaviour {
         private subjects;
         select: Rx.Observable<Interactivity.Info>;
         click: Rx.Observable<Interactivity.Info>;
-        currentEntity: Rx.Observable<Entity.Any>;
+        currentEntity: Rx.Observable<Entity.Any | undefined>;
         private init();
         constructor(context: Context);
     }
@@ -3681,7 +3681,6 @@ declare namespace LiteMol.Bootstrap.Behaviour.Density {
         private behaviour;
         private ref;
         private isBusy;
-        private latestInfo;
         private remove();
         private getVisual();
         private update(info);
@@ -3717,8 +3716,8 @@ declare namespace LiteMol.Bootstrap.Behaviour.Molecule {
         class CacheEntry implements Utils.LinkedElement<CacheEntry> {
             key: string;
             data: ArrayBuffer;
-            previous: CacheEntry;
-            next: CacheEntry;
+            previous: CacheEntry | null;
+            next: CacheEntry | null;
             inList: boolean;
             constructor(key: string, data: ArrayBuffer);
         }
@@ -3726,7 +3725,7 @@ declare namespace LiteMol.Bootstrap.Behaviour.Molecule {
             size: number;
             private count;
             entries: Utils.LinkedList<CacheEntry>;
-            get(key: string): ArrayBuffer;
+            get(key: string): ArrayBuffer | undefined;
             add(key: string, data: ArrayBuffer): ArrayBuffer;
             constructor(size: number);
         }
@@ -3740,10 +3739,10 @@ declare namespace LiteMol.Bootstrap.Components {
         context: Context;
         private _state;
         private _latestState;
-        dispatcher: Service.Dispatcher;
+        readonly dispatcher: Service.Dispatcher;
         setState(...states: State[]): void;
-        state: Rx.Observable<State>;
-        latestState: State;
+        readonly state: Rx.Observable<State>;
+        readonly latestState: State;
         constructor(context: Context, initialState: State);
     }
     interface ComponentInfo {
@@ -3807,7 +3806,7 @@ declare namespace LiteMol.Bootstrap.Components.Transform {
         private _updateParams(params);
         updateParams(params: P): void;
         autoUpdateParams(params: P): void;
-        isUpdate: boolean;
+        readonly isUpdate: boolean;
         apply(): void;
         setParams(params: P): void;
         setExpanded(isExpanded: boolean): void;
@@ -3905,7 +3904,7 @@ declare namespace LiteMol.Bootstrap.Components.Visualization {
     import Vis = LiteMol.Visualization;
     class Viewport extends Component<Vis.SceneOptions> {
         private _scene;
-        scene: Bootstrap.Visualization.SceneWrapper;
+        readonly scene: Bootstrap.Visualization.SceneWrapper;
         init(element: HTMLElement): boolean;
         destroy(): void;
         constructor(context: Context);
@@ -3925,7 +3924,7 @@ declare namespace LiteMol.Bootstrap {
         performance: Core.Utils.PerformanceMonitor;
         scene: Visualization.SceneWrapper;
         tree: Tree<Entity.Any>;
-        currentEntity: Entity.Any;
+        currentEntity: Entity.Any | undefined;
         transforms: TransformManager;
         entityCache: Entity.Cache;
         viewport: Components.Visualization.Viewport;
@@ -3960,7 +3959,7 @@ declare namespace LiteMol.Bootstrap {
         private bySourceType;
         private byTargetType;
         private addType(e, t, to);
-        getController(t: Transformer, e: Entity.Any): Components.Transform.Controller<any>;
+        getController(t: Transformer, e: Entity.Any): Components.Transform.Controller<any> | undefined;
         getBySourceType(t: Entity.AnyType): Tree.Transformer<Tree.Node.Any, Tree.Node.Any, any>[];
         getByTargetType(t: Entity.AnyType): Tree.Transformer<Tree.Node.Any, Tree.Node.Any, any>[];
         add(t: Transformer): void;

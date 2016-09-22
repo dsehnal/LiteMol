@@ -22,7 +22,7 @@ namespace LiteMol.Bootstrap.Utils.Molecule {
         if (Entity.isMoleculeModel(source)) {
             return source.props.model.queryContext;
         } else {
-            let cache = source.tree.context.entityCache;
+            let cache = source.tree!.context.entityCache;
             let ctx = cache.get<Core.Structure.Query.Context>(source, Entity.Cache.Keys.QueryContext);
             if (ctx) return ctx;            
             ctx = Core.Structure.Query.Context.ofAtomIndices(findModel(source).props.model, source.props.indices);
@@ -69,10 +69,11 @@ namespace LiteMol.Bootstrap.Utils.Molecule {
         return Math.sqrt(d);        
     }
     
-    export function getModelAndIndicesFromQuery(m: Entity.Any, query: Core.Structure.Query.Source): { model?: Entity.Molecule.Model, indices?: number[], queryContext?: Core.Structure.Query.Context } {
+    export function getModelAndIndicesFromQuery(m: Entity.Any, query: Core.Structure.Query.Source): { model: Entity.Molecule.Model, indices: number[], queryContext: Core.Structure.Query.Context } | undefined {
         let model = findModel(m);
         if (!model) {
             console.warn('Could not find a model for query selection.');
+            return void 0;
         }
         
         let queryContext = findQueryContext(m);
@@ -81,7 +82,7 @@ namespace LiteMol.Bootstrap.Utils.Molecule {
             return { model, indices: q(queryContext).unionAtomIndices(), queryContext };
         } catch (e) {
             console.error('Query Execution', e);
-            return { };
+            return void 0;
         }
     }
     

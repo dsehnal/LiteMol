@@ -6,12 +6,13 @@
     "removeComments": false,
     "sourceMap": false,
     "declaration": true,
+    "strictNullChecks": true,
+    "noImplicitThis": true,
+    "lib": [ "es5", "es2015.collection", "dom" ],
     "target": "es5",
     "out": "LiteMol-bootstrap-temp.js"
   },
   "files": [
-    "../lib/es6-collections.d.ts",
-
     "../build/LiteMol-core.d.ts",
     "../build/LiteMol-visualization.d.ts",
 
@@ -62,8 +63,8 @@
     "Visualization/Visual.ts",
     
     "Visualization/Molecule/Theme.ts", // must go before the rest in /Molecule?
+    "Visualization/Molecule/Styles.ts",
     "Visualization/Molecule/Model.ts",    
-    "Visualization/Molecule/Styles.ts", // last because it references others
     
     "Visualization/Density/Model.ts",    
     "Visualization/Density/Styles.ts", // last because it references others

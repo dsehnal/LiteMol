@@ -20,7 +20,7 @@ namespace LiteMol.Bootstrap.Entity.Transformer.Density {
             isUpdatable: true,
             defaultParams: () => ({ format: LiteMol.Core.Formats.Density.SupportedFormats.CCP4, normalize: false })
         }, (ctx, a, t) => { 
-            return Task.fromComputation(`Parse Density (${a.props.label})`, 'Normal', t.params.format.parse(a.props.data))
+            return Task.fromComputation(`Parse Density (${a.props.label})`, 'Normal', t.params.format!.parse(a.props.data))
                 .setReportTime(true) 
                 .bind(`Create Density (${a.props.label})`, 'Silent', data => {
                     if (data.error) {
@@ -63,11 +63,11 @@ namespace LiteMol.Bootstrap.Entity.Transformer.Density {
             customController: (ctx, t, e) => new Components.Transform.DensityVisual(ctx, t, e),
         }, (ctx, a, t) => {      
             let params = t.params;
-            return Visualization.Density.create(a, t, params.style).setReportTime(!t.params.style.computeOnBackground);
+            return Visualization.Density.create(a, t, params.style!).setReportTime(!t.params.style!.computeOnBackground);
         }, (ctx, b, t) => {
             
             let oldParams = b.transform.params as CreateVisualParams;            
-            if (oldParams.style.type !== t.params.style.type || !Utils.deepEqual(oldParams.style.params, t.params.style.params)) return void 0;
+            if (oldParams.style!.type !== t.params.style!.type || !Utils.deepEqual(oldParams.style!.params, t.params.style!.params)) return void 0;
             
             let parent = Tree.Node.findClosestNodeOfType(b, [Entity.Density.Data]);            
             if (!parent) return void 0;
@@ -75,8 +75,8 @@ namespace LiteMol.Bootstrap.Entity.Transformer.Density {
             let model = b.props.model;
             if (!model) return void 0;            
             
-            let ti = t.params.style.theme;
-            let theme = ti.template.provider(parent, Visualization.Theme.getProps(ti));
+            let ti = t.params.style!.theme!;
+            let theme = ti.template!.provider(parent, Visualization.Theme.getProps(ti));
             
             model.applyTheme(theme);
             b.props.style.theme = ti;
@@ -107,10 +107,10 @@ namespace LiteMol.Bootstrap.Entity.Transformer.Density {
         }, (ctx, a, t) => {      
             let params = t.params;
             let b = new Bootstrap.Behaviour.Density.ShowElectronDensityAroundSelection(ctx, {
-                style: params.style,
-                radius: params.radius
+                style: params.style!,
+                radius: params.radius!
             })
-            return Task.resolve('Behaviour', 'Background', Entity.Density.InteractiveSurface.create(t, { label: `${t.params.id ? t.params.id : 'Interactive'}, ${Utils.round(t.params.style.params.isoSigma, 2)} \u03C3`, behaviour: b }));
+            return Task.resolve('Behaviour', 'Background', Entity.Density.InteractiveSurface.create(t, { label: `${t.params.id ? t.params.id : 'Interactive'}, ${Utils.round(t.params.style!.params!.isoSigma!, 2)} \u03C3`, behaviour: b }));
         }
     );
 }

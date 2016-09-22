@@ -85,9 +85,9 @@ namespace LiteMol.Visualization.Molecule.Cartoons.Geometry {
             this.uPositions = this.uPositionsBuilder.array;
             this.vPositions = this.vPositionsBuilder.array;
 
-            this.typeBuilder = null;
-            this.uPositionsBuilder = null;
-            this.vPositionsBuilder = null;
+            this.typeBuilder = <any>null;
+            this.uPositionsBuilder = <any>null;
+            this.vPositionsBuilder = <any>null;
 
             this.uvLength = this.residueType.length;
             this.residueCount = this.uvLength - 4;
@@ -103,8 +103,8 @@ namespace LiteMol.Visualization.Molecule.Cartoons.Geometry {
             this.pPositions = this.pPositionsBuilder.array;
             this.dPositions = this.dPositionsBuilder.array;
             
-            this.pPositionsBuilder = null;
-            this.dPositionsBuilder = null; 
+            this.pPositionsBuilder = <any>null;
+            this.dPositionsBuilder = <any>null; 
 
         }
     }
@@ -195,7 +195,7 @@ namespace LiteMol.Visualization.Molecule.Cartoons.Geometry {
                         
             CartoonAsymUnit.throwIfEmpty(ss);
             
-            let previous = ss[0],
+            let previous: Core.Structure.SecondaryStructureElement | null = ss[0],
                 asymId = model.residues.asymId,
                 authSeqNumber = model.residues.authSeqNumber,
                 currentElements: Core.Structure.SecondaryStructureElement[] = [],
@@ -295,9 +295,9 @@ namespace LiteMol.Visualization.Molecule.Cartoons.Geometry {
             this.torsionVectors = this.torsionVectorsBuilder.array;
             this.normalVectors = this.normalVectorsBuilder.array;
 
-            this.controlPointsBuilder = null;
-            this.torsionVectorsBuilder = null;
-            this.normalVectorsBuilder = null;
+            this.controlPointsBuilder = <any>null;
+            this.torsionVectorsBuilder = <any>null;
+            this.normalVectorsBuilder = <any>null;
         }
 
         private initPositions(state: CartoonAsymUnitState) {

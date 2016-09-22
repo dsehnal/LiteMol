@@ -3,10 +3,10 @@
 	"version": "0.1.0",
 	"command": "gulp",
 	"isShellCommand": true,
-	"args": [ "--silent" ],
+	"args": [ "Core-standalone", "--silent" ],
 	"tasks": [
         {
-            "taskName": "default",
+            "taskName": "default", // default
             "args": [],
             "isBuildCommand": true,
             "isWatching": false,

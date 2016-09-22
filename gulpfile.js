@@ -9,6 +9,7 @@ var gulp = require('gulp'),
         unique: require('gulp-unique-files'),
         sass: require('gulp-sass'),
         uglify: require('gulp-uglify'),
+        tsc: require('typescript')
     };
 
 function build(name) {
@@ -16,7 +17,7 @@ function build(name) {
 }
 
 function buildts(root) {
-    let project = plugins.ts.createProject(root + '/tsconfig.json');
+    let project = plugins.ts.createProject(root + '/tsconfig.json', { typescript: plugins.tsc });
     let b = project.src().pipe(plugins.ts(project));    
     return b.js.pipe(gulp.dest(root));
 }

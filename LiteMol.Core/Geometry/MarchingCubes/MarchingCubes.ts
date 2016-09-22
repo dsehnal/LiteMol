@@ -95,8 +95,8 @@ namespace LiteMol.Core.Geometry.MarchingCubes {
             let vertices = <any>this.state.vertexBuffer.compact() as Float32Array;
             let triangles = <any>this.state.triangleBuffer.compact() as Uint32Array;
 
-            this.state.vertexBuffer = null;
-            this.state.verticesOnEdges = null;
+            this.state.vertexBuffer = <any>void 0;
+            this.state.verticesOnEdges = <any>void 0;
 
             let ret: Surface = {
                 vertexCount: (vertices.length / 3) | 0,
@@ -145,7 +145,7 @@ namespace LiteMol.Core.Geometry.MarchingCubes {
         nX: number; nY: number; nZ: number;
         isoLevel: number;
         scalarField: Formats.Density.Field3D;
-        annotationField: Formats.Density.Field3D;
+        annotationField?: Formats.Density.Field3D;
         annotate: boolean;
 
         verticesOnEdges: Int32Array;
@@ -157,7 +157,7 @@ namespace LiteMol.Core.Geometry.MarchingCubes {
         triangleBuffer: Core.Utils.ChunkedArrayBuilder<number>;
 
         private getAnnotation() {
-            return this.annotationField.get(this.i, this.j, this.k);
+            return this.annotationField!.get(this.i, this.j, this.k);
         }
 
         private getFieldFromIndices(i: number, j: number, k: number) {
@@ -202,7 +202,7 @@ namespace LiteMol.Core.Geometry.MarchingCubes {
             this.isoLevel = params.isoLevel; this.scalarField = params.scalarField;
             this.annotationField = params.annotationField;
 
-            let dX = params.topRight[0] - params.bottomLeft[0], dY = params.topRight[1] - params.bottomLeft[1], dZ = params.topRight[2] - params.bottomLeft[2],
+            let dX = params.topRight![0] - params.bottomLeft![0], dY = params.topRight![1] - params.bottomLeft![1], dZ = params.topRight![2] - params.bottomLeft![2],
                 vertexBufferSize = Math.min(262144, Math.max(dX * dY * dZ / 16, 1024) | 0),
                 triangleBufferSize = Math.min(1 << 16, vertexBufferSize * 4);
 

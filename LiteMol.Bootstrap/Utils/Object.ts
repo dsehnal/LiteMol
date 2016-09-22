@@ -8,7 +8,7 @@ namespace LiteMol.Bootstrap.Utils {
     const hasOwnProperty = Object.prototype.hasOwnProperty;
     
     export function shallowClone<T>(o: T): T {
-        return LiteMol.Core.Utils.extend({}, o);
+        return LiteMol.Core.Utils.extend({}, o) as T;
     }
     
     

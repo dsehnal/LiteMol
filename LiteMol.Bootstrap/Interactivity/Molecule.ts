@@ -104,12 +104,12 @@ namespace LiteMol.Bootstrap.Interactivity.Molecule {
         };  
     }   
     
-    export function transformInteraction(info: Interactivity.Info): SelectionInfo {
+    export function transformInteraction(info: Interactivity.Info): SelectionInfo | undefined {
         if (!info.entity || !(Tree.Node.is(info.entity, Entity.Molecule.Model) || Tree.Node.is(info.entity, Entity.Molecule.Selection))) return void 0;
         let context = Utils.Molecule.findQueryContext(info.entity);
         let model = Utils.Molecule.findModel(info.entity);
         if (!context || !model) return void 0;
-        return transformMoleculeAtomIndices(model, context, info.elements);
+        return transformMoleculeAtomIndices(model, context, info.elements!);
     }
     
     function formatAtomExtra(a: AtomInfo) {
@@ -136,7 +136,7 @@ namespace LiteMol.Bootstrap.Interactivity.Molecule {
         return `<span>${r.authName} ${r.chain.asymId} ${r.authSeqNumber}${r.insCode !== null ? ' i: ' + r.insCode : ''}</span>`;
     }
     
-    export function formatInfo(info: SelectionInfo) {
+    export function formatInfo(info: SelectionInfo | undefined) {
         if (!info || !info.atoms.length) return ``;
         if (info.atoms.length === 1) {
             return `<span>${formatAtom(info.atoms[0])} on <b><small>${formatResidue(info.residues[0])}</small></b></span>`;
@@ -147,7 +147,7 @@ namespace LiteMol.Bootstrap.Interactivity.Molecule {
         }
     }
     
-    export function formatInfoShort(info: SelectionInfo) {
+    export function formatInfoShort(info: SelectionInfo | undefined) {
         if (!info || !info.atoms.length) return ``;
         if (info.atoms.length === 1) {
             return `<span><b>${formatAtomShort(info.atoms[0])}<b></span>`;

@@ -70,7 +70,7 @@ namespace LiteMol.Core.Formats.CIF {
     export interface Column {
         isDefined: boolean;
         
-        getString(row: number): string;
+        getString(row: number): string | null;
         getInteger(row: number): number;
         getFloat(row: number): number;        
         
@@ -85,7 +85,7 @@ namespace LiteMol.Core.Formats.CIF {
      */
     class _UndefinedColumn implements Column {
         isDefined = false;
-        getString(row: number): string { return null; };
+        getString(row: number): string | null { return null; };
         getInteger(row: number): number { return 0; }
         getFloat(row: number): number { return 0.0; }
         getValuePresence(row: number): ValuePresence { return ValuePresence.NotSpecified; }

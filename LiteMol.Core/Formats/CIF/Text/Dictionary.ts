@@ -255,7 +255,7 @@ namespace LiteMol.Core.Formats.CIF.Text {
         /**
          * Returns the string value at given row.
          */
-        getString(row: number): string {
+        getString(row: number): string | null {
             let i = (row * this.columnCount + this.index) * 2;
             let ret = ShortStringPool.get(this.stringPool, this.data.substring(this.tokens[i], this.tokens[i + 1]));
             if (ret === "." || ret === "?") return null;

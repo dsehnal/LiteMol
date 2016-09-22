@@ -9,11 +9,11 @@ namespace LiteMol.Visualization.Molecule.Cartoons.Geometry {
 
     export class Data extends GeometryBase {
 
-        geometry: THREE.BufferGeometry = void 0;
-        pickGeometry: THREE.BufferGeometry = void 0;
+        geometry: THREE.BufferGeometry = <any>void 0;
+        pickGeometry: THREE.BufferGeometry = <any>void 0;
 
-        vertexMap: Selection.VertexMap = void 0;
-        vertexStateBuffer: THREE.BufferAttribute = void 0;
+        vertexMap: Selection.VertexMap = <any>void 0;
+        vertexStateBuffer: THREE.BufferAttribute = <any>void 0;
         
         dispose() {
             this.geometry.dispose();
@@ -64,10 +64,10 @@ namespace LiteMol.Visualization.Molecule.Cartoons.Geometry {
             
             params,
             state: new CartoonsGeometryState(params, model.residues.count),
-            units: void 0,
+            units: <any>void 0,
             
-            strandArrays: void 0,
-            strandTemplate: void 0,
+            strandArrays: <any>void 0,
+            strandTemplate: <any>void 0,
             
             builder: new Builder(),
             

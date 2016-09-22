@@ -6,12 +6,13 @@
     "removeComments": false,
     "sourceMap": false,
     "declaration": true,
+    "strictNullChecks": true,
+    "noImplicitThis": true,
+    "lib": [ "es5", "es2015.collection", "dom" ],
     "target": "es5",
     "out": "LiteMol-core-temp.js"
   },
-  "files": [
-    "../lib/es6-collections.d.ts",
-    
+  "files": [    
     "lib/promise.d.ts",
     "lib/rx-lite.d.ts",
     "lib/Lib.ts",

@@ -26,7 +26,7 @@ namespace LiteMol.Bootstrap.Entity {
     /* Base */
     
     
-    export const RootTransform = Tree.Transform.create<Root, Root, {}>({}, {}, void 0);
+    export const RootTransform = Tree.Transform.create<Root, Root, {}>({}, {}, <any>void 0);
         
     export interface Root extends Entity<Root, RootType, CommonProps> { } 
     export interface RootType extends Type<RootType, Root, CommonProps> {}

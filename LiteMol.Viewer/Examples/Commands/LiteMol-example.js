@@ -418,7 +418,9 @@ var LiteMol;
                 var currentServer = this.servers.filter(function (s) { return s.url === params.server; })[0];
                 // to update the params, you can use "this.updateParams" or "this.autoUpdateParams". Auto update params will work only on "updateable transforms"
                 // and will work similarly to how visuals are updated. If autoUpdateParams is not used, the user has to click "Update" buttom manually.                                    
-                return React.createElement("div", null, React.createElement(Controls.OptionsGroup, {options: this.servers, caption: function (s) { return s.name; }, current: currentServer, onChange: function (o) { return _this.updateParams({ server: o.url }); }, label: 'Server'}), React.createElement(Controls.TextBoxGroup, {value: params.id, onChange: function (v) { return _this.updateParams({ id: v }); }, label: 'Id', onEnter: function (e) { return _this.applyEnter(e); }, placeholder: 'PDB id...'}));
+                return React.createElement("div", null, 
+                    React.createElement(Controls.OptionsGroup, {options: this.servers, caption: function (s) { return s.name; }, current: currentServer, onChange: function (o) { return _this.updateParams({ server: o.url }); }, label: 'Server'}), 
+                    React.createElement(Controls.TextBoxGroup, {value: params.id, onChange: function (v) { return _this.updateParams({ id: v }); }, label: 'Id', onEnter: function (e) { return _this.applyEnter(e); }, placeholder: 'PDB id...'}));
             };
             return CoordianteStreamingCustomView;
         }(LiteMol.Plugin.Views.Transform.ControllerBase));

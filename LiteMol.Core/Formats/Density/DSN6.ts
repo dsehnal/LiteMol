@@ -77,14 +77,14 @@ namespace LiteMol.Core.Formats.Density.DSN6 {
                 if (dataOffset === headerSize) {
                     warnings.push("File contains bogus symmetry record.");
                 } else if (dataOffset < headerSize) {
-                    return ParserResult.error("File appears truncated and doesn't match header.");
+                    return ParserResult.error<Data>("File appears truncated and doesn't match header.");
                 } else if ((dataOffset > headerSize) && (dataOffset < (1024 * 1024))) {
                     // Fix for loading SPIDER files which are larger than usual
                     // In this specific case, we must absolutely trust the symBytes record
                     dataOffset = headerSize + header.symBytes;
                     warnings.push("File is larger than expected and doesn't match header. Continuing file load, good luck!");
                 } else {
-                    return ParserResult.error("File is MUCH larger than expected and doesn't match header.");
+                    return ParserResult.error<Data>("File is MUCH larger than expected and doesn't match header.");
                 }
             }
 

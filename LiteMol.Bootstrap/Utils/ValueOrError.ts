@@ -9,7 +9,7 @@ namespace LiteMol.Bootstrap.Utils.Query {
         
         bind<B>(f: (v: A) => ValueOrError<B>): ValueOrError<B> {
             if (this.isError) return <any>this;
-            return f(this.value);
+            return f(this.value!);
         }
         
         constructor(public isError: boolean, public value?: A, public error?: any) {

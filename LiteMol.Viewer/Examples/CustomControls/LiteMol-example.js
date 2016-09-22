@@ -434,11 +434,13 @@ var LiteMol;
                     options.push('Assembly');
                 if (model && model.props.model.symmetryInfo)
                     options.push('Symmetry');
-                return React.createElement("div", null, React.createElement(Controls.OptionsGroup, {options: options, caption: function (s) { return s; }, current: params.source, onChange: function (o) { return _this.updateSource(o); }, label: 'Source'}), params.source === 'Assembly'
-                    ? this.asm()
-                    : params.source === 'Symmetry'
-                        ? this.symm()
-                        : void 0);
+                return React.createElement("div", null, 
+                    React.createElement(Controls.OptionsGroup, {options: options, caption: function (s) { return s; }, current: params.source, onChange: function (o) { return _this.updateSource(o); }, label: 'Source'}), 
+                    params.source === 'Assembly'
+                        ? this.asm()
+                        : params.source === 'Symmetry'
+                            ? this.symm()
+                            : void 0);
             };
             return RepresentationView;
         }(LiteMol.Plugin.Views.Transform.ControllerBase));

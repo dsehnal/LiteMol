@@ -16,7 +16,7 @@ namespace LiteMol.Plugin.Views.Transform {
          protected abstract renderControls(): void;
          
          get params(): P {
-             return this.controller.latestState.params;
+             return this.controller.latestState.params!;
          }    
          
          updateParams(p: P) {
@@ -41,7 +41,7 @@ namespace LiteMol.Plugin.Views.Transform {
          
          get canApply() {
             let state = this.controller.latestState;
-            let base = state.canApply && (!this.isUpdate || state.isDirty) && !state.isBusy;
+            let base = state.canApply! && (!this.isUpdate || state.isDirty!) && !state.isBusy;
             if (base && this.isUpdate && state.parametersAutoUpdating) return false; 
             return base;
          }
@@ -74,7 +74,7 @@ namespace LiteMol.Plugin.Views.Transform {
                 <Controls.Panel 
                     header={header} 
                     badge={this.props.hideBadge ? void 0 : <Entity.Badge type={t.to[0].info} />}
-                    className={'lm-control lm-transformer lm-panel-' + t.to[0].info.typeClass} key={t.id} title={t.description} isExpanded={state.isExpanded}
+                    className={'lm-control lm-transformer lm-panel-' + t.to[0].info.typeClass} key={t.id} title={t.description} isExpanded={state.isExpanded!}
                     onExpand={e => { this.controller.setState({ isExpanded: e }) } } 
                     description={this.controller.transformer.info.description}>
                     {this.renderControls()}
@@ -100,7 +100,7 @@ namespace LiteMol.Plugin.Views.Transform {
              
              let plugin = ctx.plugin as Instance;
              let state = this.controller.latestState;
-             let transforms = state.transforms;
+             let transforms = state.transforms!;
                           
              let views = transforms.map(t => {
                  let v = plugin.getTransformerInfo(t.transformer).view; 
@@ -124,7 +124,7 @@ namespace LiteMol.Plugin.Views.Transform {
         definition: LiteMol.Visualization.Theme.Transparency
     }) => {       
         
-        let d = props.definition.alpha;
+        let d = props.definition.alpha!;
         return <Controls.Slider label='Opacity' onChange={v => props.onChange({ alpha: v, writeDepth: props.definition.writeDepth }) }  
                 min={0} max={1} step={0.01} value={ d } />
     }

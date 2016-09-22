@@ -5960,7 +5960,7 @@ declare namespace LiteMol.Visualization {
         object: THREE.Object3D;
         theme: Theme;
         disposeList: IDisposable[];
-        pickObject: THREE.Object3D;
+        pickObject: THREE.Object3D | undefined;
         pickBufferAttributes: THREE.BufferAttribute[];
         dirty: boolean;
         props: Model.Props;
@@ -5992,10 +5992,10 @@ declare namespace LiteMol.Visualization {
         private map;
         private maxId;
         private _idWidth;
-        idWidth: number;
-        all: Model[];
-        count: number;
-        getBySceneId(id: number): Model;
+        readonly idWidth: number;
+        readonly all: Model[];
+        readonly count: number;
+        getBySceneId(id: number): Model | undefined;
         add(model: Model, resetCamera?: boolean): void;
         private dispose(model);
         removeAndDispose(model: Model): void;
@@ -6048,8 +6048,8 @@ declare namespace LiteMol.Visualization {
             z: number;
         }): void;
         updateSize(w: number, h: number): void;
-        position: THREE.Vector3;
-        object: THREE.Camera;
+        readonly position: THREE.Vector3;
+        readonly object: THREE.Camera;
         private unbindCamera;
         dispose(): void;
         private handleMouseWheel(event);
@@ -6266,10 +6266,10 @@ declare namespace LiteMol.Visualization.Selection {
         elements?: number[];
     }
     class Pick {
-        current: Info;
+        current: Info | null;
         currentPickId: number;
         currentPickElementId: number;
-        getPickInfo(): Info;
+        getPickInfo(): Info | null;
         reset(): boolean;
         private selectPos;
         selectStart(x: number, y: number): void;
@@ -6389,18 +6389,6 @@ declare namespace LiteMol.Visualization.Lines {
     }
 }
 declare namespace LiteMol.Visualization.Molecule.BallsAndSticks {
-    function buildGeometry(model: Core.Structure.MoleculeModel, parameters: Parameters, atomIndices: number[], ctx: Core.Computation.Context<Model>, done: (geom: BallsAndSticksGeometry) => void): void;
-    class BallsAndSticksGeometry extends GeometryBase {
-        atomsGeometry: THREE.BufferGeometry;
-        bondsGeometry: THREE.BufferGeometry;
-        pickGeometry: THREE.BufferGeometry;
-        atomVertexMap: Selection.VertexMap;
-        bondVertexMap: Selection.VertexMap;
-        vertexStateBuffer: THREE.BufferAttribute;
-        dispose(): void;
-    }
-}
-declare namespace LiteMol.Visualization.Molecule.BallsAndSticks {
     interface Parameters {
         tessalation?: number;
         atomRadius?: (i: number) => number;
@@ -6427,6 +6415,18 @@ declare namespace LiteMol.Visualization.Molecule.BallsAndSticks {
             params: Parameters;
             props?: Model.Props;
         }): Core.Computation<Model>;
+    }
+}
+declare namespace LiteMol.Visualization.Molecule.BallsAndSticks {
+    function buildGeometry(model: Core.Structure.MoleculeModel, parameters: Parameters, atomIndices: number[], ctx: Core.Computation.Context<Model>, done: (geom: BallsAndSticksGeometry) => void): void;
+    class BallsAndSticksGeometry extends GeometryBase {
+        atomsGeometry: THREE.BufferGeometry;
+        bondsGeometry: THREE.BufferGeometry;
+        pickGeometry: THREE.BufferGeometry;
+        atomVertexMap: Selection.VertexMap;
+        bondVertexMap: Selection.VertexMap;
+        vertexStateBuffer: THREE.BufferAttribute;
+        dispose(): void;
     }
 }
 declare namespace LiteMol.Visualization.Molecule.Cartoons.Geometry {

@@ -12,7 +12,7 @@ namespace LiteMol.Plugin.Views.Transform.Data {
             let params = this.params;
             return <div>
                 <Controls.OptionsGroup options={Bootstrap.Entity.Data.Types} caption={s => s} current={params.type} onChange={(o) => this.updateParams({ type: o }) } label='Type' />
-                <Controls.TextBoxGroup value={params.url} onChange={(v) => this.updateParams({ url: v })} label='URL' onEnter={e => this.applyEnter(e) } placeholder='Enter URL...' />
+                <Controls.TextBoxGroup value={params.url!} onChange={(v) => this.updateParams({ url: v })} label='URL' onEnter={e => this.applyEnter(e) } placeholder='Enter URL...' />
             </div>
         }        
     }
@@ -24,7 +24,7 @@ namespace LiteMol.Plugin.Views.Transform.Data {
             return <div>
                 <Controls.OptionsGroup options={Bootstrap.Entity.Data.Types} caption={s => s} current={params.type} onChange={(o) => this.updateParams({ type: o }) } label='Type' />
                 <div className='btn btn-block btn-action lm-loader-btn-file' style={{marginTop: '1px'}}>
-                     {params.file ? params.file.name : 'Select a file...'} <input disabled={state.isBusy} type='file' onChange={ (evt: Event) => this.updateParams({ file: (evt.target as any).files[0] }) } multiple={false} />
+                     {params.file ? params.file.name : 'Select a file...'} <input disabled={state.isBusy} type='file' onChange={ evt => this.updateParams({ file: (evt.target as any).files[0] }) } multiple={false} />
                 </div>
             </div>
         }        

@@ -10,11 +10,11 @@ namespace LiteMol.Visualization.Selection {
     }
 
     export class Pick {
-        current: Info = null;
+        current: Info | null = null;
         currentPickId: number = -1;
         currentPickElementId: number = -1;
 
-        getPickInfo(): Info {
+        getPickInfo(): Info | null {
             if (!this.current) return this.current;
             return {
                 model: this.current.model,
