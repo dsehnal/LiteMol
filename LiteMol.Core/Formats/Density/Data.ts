@@ -15,8 +15,14 @@ namespace LiteMol.Core.Formats.Density {
         fill(v: number): void;
     }
     
-    export class Field3DZYX implements Field3D {
-        
+    function fill(data: number[], value: number) {
+        let len = data.length;
+        for (let i = 0; i < this.len; i++) {
+            data[i] = value;
+        } 
+    }
+
+    export class Field3DZYX implements Field3D {        
         private nX: number;
         private nY: number;
         private len: number;
@@ -42,9 +48,7 @@ namespace LiteMol.Core.Formats.Density {
         }
         
         fill(v: number) {
-            for (let i = 0; i < this.len; i++) {
-                this.data[i] = v;
-            }   
+            fill(this.data, v);
         }
         
         constructor(public data: number[], public dimensions: number[]) {
@@ -54,7 +58,6 @@ namespace LiteMol.Core.Formats.Density {
         }        
     }
 
-    
     /**
      * Represents electron density data.
      */

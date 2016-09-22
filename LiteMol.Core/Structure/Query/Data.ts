@@ -24,7 +24,6 @@ namespace LiteMol.Core.Structure {
          * 
          */
         export class Context {
-
             private mask: Context.Mask;
             private lazyTree: Geometry.SubdivisionTree3D<number>;
 

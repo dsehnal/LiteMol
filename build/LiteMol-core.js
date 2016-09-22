@@ -12548,6 +12548,12 @@ var LiteMol;
             var Density;
             (function (Density) {
                 "use strict";
+                function fill(data, value) {
+                    var len = data.length;
+                    for (var i = 0; i < this.len; i++) {
+                        data[i] = value;
+                    }
+                }
                 var Field3DZYX = (function () {
                     function Field3DZYX(data, dimensions) {
                         this.data = data;
@@ -12576,9 +12582,7 @@ var LiteMol;
                         this.data[(this.nX * (k * this.nY + j) + i) | 0] = v;
                     };
                     Field3DZYX.prototype.fill = function (v) {
-                        for (var i = 0; i < this.len; i++) {
-                            this.data[i] = v;
-                        }
+                        fill(this.data, v);
                     };
                     return Field3DZYX;
                 }());
