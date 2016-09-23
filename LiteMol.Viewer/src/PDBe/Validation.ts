@@ -12,7 +12,7 @@ namespace LiteMol.Viewer.PDBe.Validation {
     export const Report = Entity.create<Report, ReportType, ReportProps>({ name: 'PDBe Molecule Validation Report', typeClass: 'Behaviour', shortName: 'VR', description: 'Represents PDBe validation report.' });
     
     namespace Api {        
-        export function getResidueId(seqNumber: number, insCode: string) {
+        export function getResidueId(seqNumber: number, insCode: string | null) {
             var id = seqNumber.toString();
             if ((insCode || "").length !== 0) id += " " + insCode;
             return id;
@@ -75,7 +75,7 @@ namespace LiteMol.Viewer.PDBe.Validation {
                  this.context.highlight.addProvider(this.provider);
             }
             
-            private processInfo(info: Bootstrap.Interactivity.Info): string {
+            private processInfo(info: Bootstrap.Interactivity.Info): string | undefined {
                 let i = Bootstrap.Interactivity.Molecule.transformInteraction(info);
                 
                 if (!i || i.residues.length > 1) return void 0;                    
@@ -147,13 +147,13 @@ namespace LiteMol.Viewer.PDBe.Validation {
         function createResidueMapComputed(model: LiteMol.Core.Structure.MoleculeModel, report: any) {
             let map = new Uint8Array(model.residues.count);            
             let mId = model.modelId;
-            let parent = model.parent;
+            let parent = model.parent!;
             let { entityId, seqNumber, insCode, chainIndex } = model.residues; 
             let { sourceChainIndex } = model.chains;
             let { asymId } = parent.chains;
                                    
             for (let i = 0, _b = model.residues.count; i < _b; i++) {     
-                let aId = asymId[sourceChainIndex[chainIndex[i]]];           
+                let aId = asymId[sourceChainIndex![chainIndex[i]]];           
                 let e = Api.getEntry(report, mId, entityId[i], aId, Api.getResidueId(seqNumber[i], insCode[i]));
                 if (e) {
                     map[i] = Math.min(e.numIssues, 3);
@@ -191,7 +191,7 @@ namespace LiteMol.Viewer.PDBe.Validation {
                 ctx.update('Parsing...');
                 ctx.schedule(() => {
                     let data = JSON.parse(a.props.data);
-                    let model = data[t.params.id];
+                    let model = data[t.params.id!];
                     let report = Api.createReport(model || {});                    
                     ctx.resolve(Report.create(t, { label: 'Validation Report', behaviour: new Interactivity.Behaviour(context, report) }))
                 });

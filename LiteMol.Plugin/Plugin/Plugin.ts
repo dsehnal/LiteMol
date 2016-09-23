@@ -27,7 +27,7 @@ namespace LiteMol.Plugin {
         tree: {
             view: ViewDefinition,
             region: LayoutRegion
-        },
+        } | undefined,
         viewport: {
             view: ViewDefinition,            
             controlsView: ViewDefinition

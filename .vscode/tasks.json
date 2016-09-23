@@ -3,7 +3,7 @@
 	"version": "0.1.0",
 	"command": "gulp",
 	"isShellCommand": true,
-	"args": [ "Core-standalone", "--silent" ],
+	"args": [ "--silent" ],
 	"tasks": [
         {
             "taskName": "default", // default

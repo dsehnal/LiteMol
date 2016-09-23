@@ -3,8 +3,8 @@
  */
 
 namespace LiteMol.Viewer {       
-    let version = '1.1.3';     
-    let plugin = new Plugin.Instance(PluginSpec, document.getElementById('app'));
+    let version = '1.1.4';     
+    let plugin = new Plugin.Instance(PluginSpec, document.getElementById('app')!);
     plugin.context.logger.message(`LiteMol Viewer ${version}`);
     LiteMol.Bootstrap.Command.Layout.SetState.dispatch(plugin.context, { isExpanded: true });
 }

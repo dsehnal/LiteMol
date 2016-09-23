@@ -66,7 +66,6 @@ Install Node.js (tested on version 6.4.0).
 LiteMol is written in TypeScript and needs to be compiled to JavaScript before use. To build it, use
 
     npm install -g gulp
-    npm install -g typescript
     npm install
     gulp
 

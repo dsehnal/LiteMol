@@ -76,7 +76,7 @@ namespace LiteMol.Custom {
     // create the instance...
     
     let id = '1cbs';
-    let plugin = create(document.getElementById('app'));
+    let plugin = create(document.getElementById('app')!);
 
     LiteMol.Bootstrap.Command.Layout.SetState.dispatch(plugin.context, { isExpanded: true });
 

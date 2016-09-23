@@ -65,7 +65,7 @@ namespace LiteMol.Surface {
     }
         
     let id = '1cbs';
-    let plugin = create(document.getElementById('app'));
+    let plugin = create(document.getElementById('app')!);
 
     LiteMol.Bootstrap.Command.Layout.SetState.dispatch(plugin.context, { 
         // isExpanded: true,

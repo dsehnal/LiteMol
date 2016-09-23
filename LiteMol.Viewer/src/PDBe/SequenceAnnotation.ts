@@ -26,11 +26,11 @@ namespace LiteMol.Viewer.PDBe.SequenceAnnotation {
     namespace Interactivity {
         
         export class Behaviour implements Bootstrap.Behaviour.Dynamic {
-            private node: SequenceAnnotation.Behaviour = void 0;
-            private current: Annotation = void 0;
+            private node: SequenceAnnotation.Behaviour = <any>void 0;
+            private current: Annotation | undefined = void 0;
             private subs: Bootstrap.Rx.IDisposable[] = [];
             
-            private toHighlight: Entity.Any = void 0;
+            private toHighlight: Entity.Any | undefined = void 0;
             private isHighlightOn = false;
             
             dispose() {
@@ -39,7 +39,7 @@ namespace LiteMol.Viewer.PDBe.SequenceAnnotation {
                     sub.dispose();
                 }
                 this.subs = [];
-                this.node = void 0;
+                this.node = <any>void 0;
             }
                     
             register(behaviour: SequenceAnnotation.Behaviour) {
@@ -127,7 +127,7 @@ namespace LiteMol.Viewer.PDBe.SequenceAnnotation {
                 }    
             }
             
-            private update(e: Entity.Any) {                
+            private update(e: Entity.Any | undefined) {                
                 if (!e || e.type !== Annotation) {
                     if (this.current) this.resetTheme();         
                     this.current = void 0;
@@ -230,7 +230,7 @@ namespace LiteMol.Viewer.PDBe.SequenceAnnotation {
                             { seqNumber: m.start.residue_number, insCode: getInsCode(m.start.author_insertion_code) },
                             { seqNumber: m.end.residue_number, insCode: getInsCode(m.end.author_insertion_code) })))
                         .union();                                    
-                ctx.resolve(Annotation.create(t, { label: data.identifier, description: t.params.id, query, color: t.params.color }));
+                ctx.resolve(Annotation.create(t, { label: data.identifier, description: t.params.id, query, color: t.params.color! }));
             });
         }       
     );

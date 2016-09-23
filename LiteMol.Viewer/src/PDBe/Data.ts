@@ -39,8 +39,8 @@ namespace LiteMol.Viewer.PDBe.Data {
         validateParams: p => (!p.id || !p.id.trim().length) ? ['Enter Id'] : (!p.serverUrl || !p.serverUrl.trim().length) ? ['Enter CoordinateServer base URL'] : void 0,  
     }, (context, a, t) => {
         let query = t.params.type === 'Cartoon' ? 'cartoon' : 'full';
-        let id = t.params.id.toLowerCase().trim();
-        let url = `${t.params.serverUrl}${t.params.serverUrl[t.params.serverUrl.length - 1] === '/' ? '' : '/'}${id}/${query}?encoding=bcif&lowPrecisionCoords=${t.params.lowPrecisionCoords ? '1' : '2'}`;
+        let id = t.params.id!.toLowerCase().trim();
+        let url = `${t.params.serverUrl}${t.params.serverUrl![t.params.serverUrl!.length - 1] === '/' ? '' : '/'}${id}/${query}?encoding=bcif&lowPrecisionCoords=${t.params.lowPrecisionCoords ? '1' : '2'}`;
 
         return Bootstrap.Tree.Transform.build()
             .add(a, <Bootstrap.Tree.Transformer.To<Entity.Data.String | Entity.Data.Binary>>Entity.Transformer.Data.Download, { url, type: 'Binary', id })
@@ -60,7 +60,7 @@ namespace LiteMol.Viewer.PDBe.Data {
     }, (context, a, t) => {
         
         let action = Bootstrap.Tree.Transform.build();
-        let id = t.params.id.trim().toLocaleLowerCase();
+        let id = t.params.id!.trim().toLocaleLowerCase();
         
         let group = action.add(a, Transformer.Basic.CreateGroup, { label: id, description: 'Density' }, { ref: t.props.ref })
             

@@ -17,7 +17,7 @@ namespace LiteMol.Custom {
         defaultParams: () => ({ id: '1cbs' }),
         validateParams: (p) => p.id && p.id.trim().length > 0 ? void 0 : ['Enter Id.']
     }, (context, a, t) => {        
-        let id = t.params.id.trim().toLowerCase();
+        let id = t.params.id!.trim().toLowerCase();
 
         // Clear the previous data.
         Bootstrap.Command.Tree.RemoveNode.dispatch(context, context.tree.root);

@@ -6,12 +6,14 @@
     "removeComments": false,
     "sourceMap": false,
     "declaration": false,
+    "strictNullChecks": true,
+    "noImplicitThis": true,
+    "lib": [ "es5", "es2015.collection", "dom" ],
     "target": "es5",
     "jsx": "react",
     "out": "LiteMol-example.js"
   },
   "files": [
-    "../../../lib/es6-collections.d.ts",
     "../../../dist/LiteMol-plugin.d.ts",
     
     "../../src/DataSources.ts",

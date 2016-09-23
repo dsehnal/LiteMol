@@ -43,7 +43,7 @@ namespace LiteMol.BinaryCIFInspect {
                 text.innerHTML = `Error:\n${cif.error.toString()}`;
                 return;
             }
-            text.innerHTML = JSON.stringify(cif.result.toJSON(), null, 2);
+            text.innerHTML = JSON.stringify(cif.result!.toJSON(), null, 2);
         });
     }
 

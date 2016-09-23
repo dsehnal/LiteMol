@@ -38,7 +38,7 @@ namespace LiteMol.Bootstrap.Command {
         
     export namespace Visual {
         export const ResetScene = create<void>('bs.cmd.Visual.ResetScene', Lane.Slow);
-        export const ResetTheme = create<{ selection?: Bootstrap.Tree.Selector<Bootstrap.Entity.Any> }>('bs.cmd.Visual.ResetTheme', Lane.Slow);
+        export const ResetTheme = create<{ selection?: Bootstrap.Tree.Selector<Bootstrap.Entity.Any> } | undefined>('bs.cmd.Visual.ResetTheme', Lane.Slow);
         export const UpdateBasicTheme = create<{ visual: Bootstrap.Entity.Visual.Any, theme: LiteMol.Visualization.Theme }>('bs.cmd.Visual.UpdateBasicTheme', Lane.Slow);
     }    
 }

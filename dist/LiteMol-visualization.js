@@ -35189,7 +35189,7 @@ var LiteMol;
 (function (LiteMol) {
     var Visualization;
     (function (Visualization) {
-        Visualization.VERSION = { number: "1.3.0", date: "August 31 2016" };
+        Visualization.VERSION = { number: "1.3.1", date: "Sep 23 2016" };
     })(Visualization = LiteMol.Visualization || (LiteMol.Visualization = {}));
 })(LiteMol || (LiteMol = {}));
 var LiteMol;
@@ -37997,14 +37997,17 @@ var LiteMol;
                                         continue;
                                     for (var jj = ii + 1; jj < endAtomIndex; jj++) {
                                         var iB = indices[jj], altB = altLoc[iB];
-                                        if (altA !== altB)
+                                        if (!altA || !altB || altA === altB) {
+                                            var order = pairs.get(atomName[iB]);
+                                            if (order !== void 0) {
+                                                if (order < 1 || order > 4)
+                                                    order = 1;
+                                                builder.add3(iA, iB, order);
+                                                stickCount += order;
+                                            }
+                                        }
+                                        else {
                                             continue;
-                                        var order = pairs.get(atomName[iB]);
-                                        if (order !== void 0) {
-                                            if (order < 1 || order > 4)
-                                                order = 1;
-                                            builder.add3(iA, iB, order);
-                                            stickCount += order;
                                         }
                                     }
                                     processed.add(iA);
@@ -38031,7 +38034,8 @@ var LiteMol;
                                             }
                                             continue;
                                         }
-                                        if (len && altA === altLoc[idx]) {
+                                        var altB = altLoc[idx];
+                                        if (len && (!altA || !altB || altA === altB)) {
                                             builder.add3(atom, idx, 1);
                                             stickCount++;
                                         }

@@ -95,13 +95,15 @@ namespace LiteMol.Visualization.Molecule.BallsAndSticks {
                             let iB = indices[jj],
                                 altB = altLoc[iB];
 
-                            if (altA !== altB) continue;
-
-                            let order = pairs.get(atomName[iB]);
-                            if (order !== void 0) {
-                                if (order < 1 || order > 4) order = 1;
-                                builder.add3(iA, iB, order);
-                                stickCount += order;
+                            if (!altA || !altB || altA === altB) {
+                                let order = pairs.get(atomName[iB]);
+                                if (order !== void 0) {
+                                    if (order < 1 || order > 4) order = 1;
+                                    builder.add3(iA, iB, order);
+                                    stickCount += order;
+                                }
+                            } else {
+                                continue;
                             }
                         }
 
@@ -141,7 +143,9 @@ namespace LiteMol.Visualization.Molecule.BallsAndSticks {
                                 continue;
                             }
 
-                            if (len && altA === altLoc[idx]) {
+                            let altB = altLoc[idx];
+
+                            if (len && (!altA || !altB || altA === altB)) {
                                 builder.add3(atom, idx, 1);
                                 stickCount++;
                             }

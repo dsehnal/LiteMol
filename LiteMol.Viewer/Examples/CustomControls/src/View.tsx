@@ -15,10 +15,10 @@ namespace LiteMol.Custom {
                         
         private asm() {
 
-            let n = this.params.params ? this.params.params.name : this.params.assemblyNames[0];
-            if (!n) n = this.params.assemblyNames[0];
+            let n = this.params.params ? this.params.params.name : this.params.assemblyNames![0];
+            if (!n) n = this.params.assemblyNames![0];
 
-            return [<Controls.OptionsGroup options={this.params.assemblyNames} current={n}
+            return [<Controls.OptionsGroup options={this.params.assemblyNames!} current={n}
                      onChange={(o) => this.updateParams({ params: { name: o } }) } label='Asm. Name' />];
         }
 
@@ -35,7 +35,7 @@ namespace LiteMol.Custom {
         private updateSource(source: string) {
             switch (source) {
                 case 'Assembly':
-                    this.updateParams({ source: source as any, params: { name: this.params.assemblyNames[0] } });
+                    this.updateParams({ source: source as any, params: { name: this.params.assemblyNames![0] } });
                     break;
                 case 'Symmetry':
                     this.updateParams({ source: source as any, params: { type: 'Mates', radius: 5.0 } });

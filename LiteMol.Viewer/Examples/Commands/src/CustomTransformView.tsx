@@ -37,7 +37,7 @@ namespace LiteMol.Example {
             // and will work similarly to how visuals are updated. If autoUpdateParams is not used, the user has to click "Update" buttom manually.                                    
             return <div>
                 <Controls.OptionsGroup options={this.servers} caption={s => s.name} current={currentServer} onChange={(o) => this.updateParams({ server: o.url }) } label='Server' />
-                <Controls.TextBoxGroup value={params.id} onChange={(v) => this.updateParams({ id: v })} label='Id' onEnter={e => this.applyEnter(e)} placeholder='PDB id...' />
+                <Controls.TextBoxGroup value={params.id!} onChange={(v) => this.updateParams({ id: v })} label='Id' onEnter={e => this.applyEnter(e)} placeholder='PDB id...' />
             </div>
         }        
     }

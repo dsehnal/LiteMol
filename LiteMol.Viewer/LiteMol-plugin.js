@@ -53896,7 +53896,7 @@ var LiteMol;
 (function (LiteMol) {
     var Visualization;
     (function (Visualization) {
-        Visualization.VERSION = { number: "1.3.0", date: "August 31 2016" };
+        Visualization.VERSION = { number: "1.3.1", date: "Sep 23 2016" };
     })(Visualization = LiteMol.Visualization || (LiteMol.Visualization = {}));
 })(LiteMol || (LiteMol = {}));
 var LiteMol;
@@ -54524,7 +54524,6 @@ var LiteMol;
                     if (d)
                         d.dispose();
                 }
-                this.disposeList = null;
                 this.disposeList = [];
             };
             Model.prototype.highlight = function (isOn) {
@@ -54833,7 +54832,7 @@ var LiteMol;
             };
             Camera.prototype.cameraUpdated = function () {
                 var options = this.scene.options;
-                this.fogEnabled = options.enableFog;
+                this.fogEnabled = !!options.enableFog;
                 var camera = this.camera;
                 if (camera instanceof Visualization.THREE.PerspectiveCamera) {
                     camera.fov = options.cameraFOV;
@@ -55269,14 +55268,14 @@ var LiteMol;
                     return;
                 }
                 if (!this.mouseInfo.isInside) {
-                    return;
+                    return void 0;
                 }
                 this.mouseInfo.setExactPosition();
                 var position = this.mouseInfo.exactPosition;
                 var cY = this.pickTarget.height - position.y;
                 if (this.pickTarget.width < position.x - 1 || position.x < 0.01 ||
                     this.pickTarget.height < cY - 1 || cY < 0.01) {
-                    return;
+                    return void 0;
                 }
                 this.renderer.readRenderTargetPixels(this.pickTarget, position.x | 0, cY | 0, 1, 1, this.pickBuffer);
                 var id = Visualization.Selection.Picking.getSceneId(this.models.idWidth, this.pickBuffer), pickId = Visualization.Selection.Picking.getElementId(this.models.idWidth, this.pickBuffer), info = this.pickInfo;
@@ -55290,12 +55289,12 @@ var LiteMol;
                 }
                 else {
                     if (id === info.currentPickId && pickId === info.currentPickElementId)
-                        return;
+                        return void 0;
                     var changed = this.clearHighlights(false), model = this.models.getBySceneId(id);
                     if (id === 255 || !model) {
                         if (changed)
                             this.needsRender();
-                        return;
+                        return void 0;
                     }
                     info.currentPickId = id;
                     info.currentPickElementId = pickId;
@@ -56264,8 +56263,8 @@ var LiteMol;
                     this.pickGeometry = void 0;
                     this.pickPlatesGeometry = void 0;
                     this.vertexStateBuffer = void 0;
-                    this.center = void 0;
-                    this.radius = void 0;
+                    this.center = new Visualization.THREE.Vector3(0, 0, 0);
+                    this.radius = 0;
                 }
                 Geometry.prototype.dispose = function () {
                     this.geometry.dispose();
@@ -56368,7 +56367,7 @@ var LiteMol;
                 };
                 Model.prototype.createObjects = function () {
                     var mesh = new Visualization.THREE.Mesh(this.geometry.geometry, this.material);
-                    var pickObj = null;
+                    var pickObj = void 0;
                     if (this.geometry.pickGeometry) {
                         pickObj = new Visualization.THREE.Object3D();
                         var pick = new Visualization.THREE.Mesh(this.geometry.pickGeometry, this.pickMaterial);
@@ -56426,8 +56425,8 @@ var LiteMol;
                 function Geometry() {
                     _super.call(this);
                     this.geometry = void 0;
-                    this.center = void 0;
-                    this.radius = void 0;
+                    this.center = new Visualization.THREE.Vector3(0, 0, 0);
+                    this.radius = 0;
                 }
                 Geometry.prototype.dispose = function () {
                     this.geometry.dispose();
@@ -56705,14 +56704,17 @@ var LiteMol;
                                         continue;
                                     for (var jj = ii + 1; jj < endAtomIndex; jj++) {
                                         var iB = indices[jj], altB = altLoc[iB];
-                                        if (altA !== altB)
+                                        if (!altA || !altB || altA === altB) {
+                                            var order = pairs.get(atomName[iB]);
+                                            if (order !== void 0) {
+                                                if (order < 1 || order > 4)
+                                                    order = 1;
+                                                builder.add3(iA, iB, order);
+                                                stickCount += order;
+                                            }
+                                        }
+                                        else {
                                             continue;
-                                        var order = pairs.get(atomName[iB]);
-                                        if (order !== void 0) {
-                                            if (order < 1 || order > 4)
-                                                order = 1;
-                                            builder.add3(iA, iB, order);
-                                            stickCount += order;
                                         }
                                     }
                                     processed.add(iA);
@@ -56739,7 +56741,8 @@ var LiteMol;
                                             }
                                             continue;
                                         }
-                                        if (len && altA === altLoc[idx]) {
+                                        var altB = altLoc[idx];
+                                        if (len && (!altA || !altB || altA === altB)) {
                                             builder.add3(atom, idx, 1);
                                             stickCount++;
                                         }
@@ -63948,7 +63951,7 @@ var LiteMol;
         var Utils;
         (function (Utils) {
             "use strict";
-            var VDWRadii = undefined;
+            var VDWRadii = void 0;
             function vdwRadiusFromElementSymbol(model) {
                 if (!VDWRadii)
                     VDWRadii = createVdwRadii();
@@ -64263,6 +64266,7 @@ var LiteMol;
                     var model = findModel(m);
                     if (!model) {
                         console.warn('Could not find a model for query selection.');
+                        return void 0;
                     }
                     var queryContext = findQueryContext(m);
                     try {
@@ -64271,7 +64275,7 @@ var LiteMol;
                     }
                     catch (e) {
                         console.error('Query Execution', e);
-                        return {};
+                        return void 0;
                     }
                 }
                 Molecule.getModelAndIndicesFromQuery = getModelAndIndicesFromQuery;
@@ -64509,11 +64513,11 @@ var LiteMol;
             };
             Task.prototype.run = function (context) {
                 var _this = this;
-                var ctx;
-                var ret = new LiteMol.Core.Promise(function (resolve, reject) {
+                return new Task.Running(function (resolve, reject, setCtx) {
                     Bootstrap.Event.Task.Started.dispatch(context, _this);
                     context.performance.start('task' + _this.id);
-                    ctx = new Task.Context(context, _this, resolve, reject);
+                    var ctx = new Task.Context(context, _this, resolve, reject);
+                    setCtx(ctx);
                     try {
                         _this.task(new Task.Context(context, _this, resolve, reject));
                     }
@@ -64521,7 +64525,6 @@ var LiteMol;
                         ctx.reject(e);
                     }
                 });
-                return new Task.Running(ret, ctx);
             };
             Task.prototype.setReportTime = function (report) {
                 this.reportTime = report;
@@ -64533,9 +64536,9 @@ var LiteMol;
         var Task;
         (function (Task) {
             var Running = (function () {
-                function Running(promise, ctx) {
-                    this.promise = promise;
-                    this.ctx = ctx;
+                function Running(p) {
+                    var _this = this;
+                    this.promise = new Bootstrap.Promise(function (res, rej) { return p(res, rej, function (ctx) { return _this.ctx = ctx; }); });
                 }
                 Running.prototype.then = function (action) {
                     return this.promise.then(action);
@@ -64966,7 +64969,7 @@ var LiteMol;
             function updatePath(node) {
                 if (!node)
                     return;
-                var top;
+                var top = void 0;
                 while (node !== node.parent) {
                     top = node;
                     Tree.Node.update(node);
@@ -65947,7 +65950,7 @@ var LiteMol;
                     if (!targets.length)
                         return;
                     var q = Bootstrap.Utils.Molecule.getModelAndIndicesFromQuery(model, what.query);
-                    if (!q.model || !q.indices.length)
+                    if (!q || !q.indices.length)
                         return;
                     var action = what.isOn ? 3 /* Highlight */ : 4 /* RemoveHighlight */;
                     for (var _i = 0, targets_1 = targets; _i < targets_1.length; _i++) {
@@ -66048,7 +66051,7 @@ var LiteMol;
                 };
                 SceneWrapper.prototype.focusMoleculeModelOnQuery = function (what) {
                     var q = Bootstrap.Utils.Molecule.getModelAndIndicesFromQuery(what.model, what.query);
-                    if (!q.model || !q.indices.length)
+                    if (!q || !q.indices.length)
                         return;
                     var center = { x: 0.1, y: 0.1, z: 0.1 };
                     var r = Bootstrap.Utils.Molecule.getCentroidAndRadius(q.model.props.model, q.indices, center);
@@ -66141,7 +66144,7 @@ var LiteMol;
                 }
                 Molecule.createPaletteThemeProvider = createPaletteThemeProvider;
                 function uniformThemeProvider(e, props) {
-                    if (props.colors) {
+                    if (props && props.colors) {
                         props.colors.set('Bond', props.colors.get('Uniform'));
                     }
                     return Vis.Theme.createUniform(props);
@@ -66540,7 +66543,7 @@ var LiteMol;
                             ctx.reject({ warn: true, message: 'Empty box.' });
                             return;
                         }
-                        var isoValue = data.valuesInfo.mean + data.valuesInfo.sigma * style.params.isoSigma;
+                        var isoValue = data.valuesInfo.mean + data.valuesInfo.sigma * params.isoSigma;
                         var surface = Geom.MarchingCubes.compute({
                             isoLevel: isoValue,
                             scalarField: data.data,
@@ -67633,7 +67636,8 @@ var LiteMol;
                     if (!Bootstrap.Tree.Node.is(e.data, Bootstrap.Entity.Molecule.Model) || e.data.isHidden) {
                         return;
                     }
-                    Bootstrap.Command.Tree.ApplyTransform.dispatch(context, { node: e.data, transform: Bootstrap.Entity.Transformer.Molecule.CreateMacromoleculeVisual.create(Bootstrap.Entity.Transformer.Molecule.CreateMacromoleculeVisual.info.defaultParams(context)) });
+                    var prms = Bootstrap.Entity.Transformer.Molecule.CreateMacromoleculeVisual.info.defaultParams(context, e.data);
+                    Bootstrap.Command.Tree.ApplyTransform.dispatch(context, { node: e.data, transform: Bootstrap.Entity.Transformer.Molecule.CreateMacromoleculeVisual.create(prms) });
                 });
             }
             Behaviour.CreateVisualWhenModelIsAdded = CreateVisualWhenModelIsAdded;
@@ -67657,13 +67661,13 @@ var LiteMol;
             }
             Behaviour.ApplySelectionToVisual = ApplySelectionToVisual;
             function ApplyInteractivitySelection(context) {
-                var latestIndices = undefined;
-                var latestModel = undefined;
+                var latestIndices = void 0;
+                var latestModel = void 0;
                 context.behaviours.click.subscribe(function (info) {
                     if (latestModel) {
                         latestModel.applySelection(latestIndices, 2 /* RemoveSelect */);
-                        latestModel = undefined;
-                        latestIndices = undefined;
+                        latestModel = void 0;
+                        latestIndices = void 0;
                     }
                     if (!info.entity || !info.visual)
                         return;
@@ -67777,9 +67781,9 @@ var LiteMol;
                 }
                 Molecule.HighlightElementInfo = HighlightElementInfo;
                 function DistanceToLastClickedElement(context) {
-                    var lastInfo = undefined;
-                    var lastSel = undefined;
-                    var lastModel = undefined;
+                    var lastInfo = void 0;
+                    var lastSel = void 0;
+                    var lastModel = void 0;
                     context.behaviours.click.subscribe(function (info) {
                         if (!info.entity || !(Bootstrap.Tree.Node.is(info.entity, Bootstrap.Entity.Molecule.Model) || Bootstrap.Tree.Node.is(info.entity, Bootstrap.Entity.Molecule.Selection)) || !info.elements || !info.elements.length) {
                             lastInfo = undefined;
@@ -67838,7 +67842,6 @@ var LiteMol;
                         this.obs = [];
                         this.ref = Bootstrap.Utils.generateUUID();
                         this.isBusy = false;
-                        this.latestInfo = void 0;
                     }
                     ShowElectronDensityAroundSelection.prototype.remove = function () {
                         var v = this.getVisual();
@@ -68037,8 +68040,8 @@ var LiteMol;
                         function CacheEntry(key, data) {
                             this.key = key;
                             this.data = data;
-                            this.previous = void 0;
-                            this.next = void 0;
+                            this.previous = null;
+                            this.next = null;
                         }
                         return CacheEntry;
                     }());
@@ -68548,7 +68551,8 @@ var LiteMol;
                                 continue;
                             }
                             var c = manager.getController(t, e);
-                            transforms.push(c);
+                            if (c)
+                                transforms.push(c);
                         }
                         this.setState({ update: update, transforms: transforms });
                     };
@@ -69042,7 +69046,7 @@ var LiteMol;
                 return;
             }
             var q = Bootstrap.Utils.Molecule.getModelAndIndicesFromQuery(what.visual, what.query);
-            if (!q.model || !q.indices.length)
+            if (!q || q.indices.length)
                 return;
             var entity = Bootstrap.Tree.Node.findClosestNodeOfType(what.visual, [Bootstrap.Entity.Molecule.Model, Bootstrap.Entity.Molecule.Selection]);
             Bootstrap.Event.Visual.VisualSelectElement.dispatch(context, { entity: entity, visual: what.visual, elements: q.indices });
@@ -74808,8 +74812,9 @@ var LiteMol;
                         var count = entries.count();
                         return Plugin.React.createElement("div", {className: 'lm-log-wrap'}, 
                             Plugin.React.createElement("div", {className: 'lm-log', ref: 'log'}, 
-                                Plugin.React.createElement("ul", {className: 'list-unstyled'}, entries.map(function (e, i, arr) {
+                                Plugin.React.createElement("ul", {className: 'list-unstyled'}, entries.map(function (entry, i, arr) {
                                     var msg;
+                                    var e = entry;
                                     switch (e.type) {
                                         case EntryType.Message:
                                             msg = Plugin.React.createElement("div", {className: 'lm-log-entry'}, e.message);
@@ -75235,7 +75240,6 @@ var LiteMol;
                     function CurrentEntityControl() {
                         _super.apply(this, arguments);
                         this.state = { current: void 0 };
-                        this.currentStateSub = void 0;
                     }
                     CurrentEntityControl.prototype.componentWillMount = function () {
                         var _this = this;

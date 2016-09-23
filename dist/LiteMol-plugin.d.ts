@@ -3069,7 +3069,7 @@ declare namespace LiteMol.Plugin {
         tree: {
             view: ViewDefinition;
             region: LayoutRegion;
-        };
+        } | undefined;
         viewport: {
             view: ViewDefinition;
             controlsView: ViewDefinition;
@@ -15321,7 +15321,7 @@ declare namespace LiteMol.Bootstrap.Command {
         const ResetScene: Event.Type<void>;
         const ResetTheme: Event.Type<{
             selection?: string | Bootstrap.Entity.Any | Bootstrap.Tree.Selection.Query<Bootstrap.Entity.Any> | Bootstrap.Tree.Selection.Helpers.Builder<Bootstrap.Entity.Any> | undefined;
-        }>;
+        } | undefined>;
         const UpdateBasicTheme: Event.Type<{
             visual: Bootstrap.Entity.Visual.Any;
             theme: LiteMol.Visualization.Theme;

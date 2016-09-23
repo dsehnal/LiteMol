@@ -39,8 +39,8 @@ namespace LiteMolPluginInstance {
     let moleculeId = '1cbs';
     
     let plugin: Plugin.Instance;
-    let interactivityTarget = document.getElementById('interactions');
-    function showInteraction(type: string, i: Bootstrap.Interactivity.Molecule.SelectionInfo) {
+    let interactivityTarget = document.getElementById('interactions')!;
+    function showInteraction(type: string, i: Bootstrap.Interactivity.Molecule.SelectionInfo | undefined) {
         if (!i) { // can be undefined meaning "empty interaction"
             interactivityTarget.innerHTML = `${type}: nothing<br/>` + interactivityTarget.innerHTML;
             return;    
@@ -69,7 +69,7 @@ namespace LiteMolPluginInstance {
         // you will want to do a browser version check here
         // it will not work on IE <= 10 (no way around this, no WebGL in IE10)
         // also needs ES6 Map and Set -- so check browser compatibility for that, you can try a polyfill using modernizr or something 
-        plugin = create(document.getElementById('app'));
+        plugin = create(document.getElementById('app')!);
         Command.Layout.SetState.dispatch(plugin.context, { hideControls: true })
                 
         let select = Event.Molecule.ModelSelect.getStream(plugin.context).subscribe(e => showInteraction('select', e.data));
@@ -82,7 +82,7 @@ namespace LiteMolPluginInstance {
         // you can use this to view the event/command stream
         //plugin.context.dispatcher.LOG_DISPATCH_STREAM = true;
     });
-    addControl('Destroy Plugin', () => { plugin.destroy(); plugin = void 0; });
+    addControl('Destroy Plugin', () => { plugin.destroy(); plugin = <any>void 0; });
     addControl('Show Controls', () => Command.Layout.SetState.dispatch(plugin.context, { hideControls: false }));
     addControl('Hide Controls', () => Command.Layout.SetState.dispatch(plugin.context, { hideControls: true }));
     addControl('Expand', () => Command.Layout.SetState.dispatch(plugin.context, { isExpanded: true }));
@@ -118,7 +118,7 @@ namespace LiteMolPluginInstance {
         let ambStyle: Visualization.Molecule.Style<Visualization.Molecule.BallsAndSticksParams> = {
             type: 'BallsAndSticks',
             params: { useVDW: false, atomRadius: 0.15, bondRadius: 0.07, detail: 'Automatic' },
-            theme: { template: Visualization.Molecule.Default.UniformThemeTemplate, colors: Visualization.Molecule.Default.UniformThemeTemplate.colors.set('Uniform', { r: 0.4, g: 0.4, b: 0.4 }), transparency: { alpha: 0.75 } }
+            theme: { template: Visualization.Molecule.Default.UniformThemeTemplate, colors: Visualization.Molecule.Default.UniformThemeTemplate.colors!.set('Uniform', { r: 0.4, g: 0.4, b: 0.4 }), transparency: { alpha: 0.75 } }
         }   
         
          let ligandQ = Query.residues({ name: 'REA' }); // here you will fill in the whole info 
@@ -168,7 +168,7 @@ namespace LiteMolPluginInstance {
         colors.set('Uniform', CoreVis.Color.fromHex(0xffffff))
         colors.set('Selection', color)
         colors.set('Highlight', CoreVis.Theme.Default.HighlightColor);
-        return Visualization.Molecule.uniformThemeProvider(void 0, { colors });
+        return Visualization.Molecule.uniformThemeProvider(<any>void 0, { colors });
     }
     
     addControl('Select, Extract, Focus', () => {            
