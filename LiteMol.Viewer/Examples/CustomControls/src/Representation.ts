@@ -9,30 +9,31 @@ namespace LiteMol.Custom {
     import Query = LiteMol.Core.Structure.Query;
 
     export interface CreateRepresentationParams {
+        modelIndex?: number,
         source?: 'Asymmetric Unit' | 'Assembly' | 'Symmetry',
         assemblyNames?: string[],
         params?: any
     }
 
-    export const CreateRepresentation = Bootstrap.Tree.Transformer.action<Entity.Molecule.Model, Entity.Action, CreateRepresentationParams>({
+    export const CreateRepresentation = Bootstrap.Tree.Transformer.action<Entity.Molecule.Molecule, Entity.Action, CreateRepresentationParams>({
             id: 'lm-custom-create-representation',
             name: 'Representation',
             description: 'Create visual representation from the selected source.',
-            from: [Entity.Molecule.Model],
+            from: [Entity.Molecule.Molecule],
             to: [Entity.Action],
             defaultParams: (ctx, e) => {
-                let m = Bootstrap.Utils.Molecule.findModel(e); 
-                let asm = m.props.model.assemblyInfo;
+                let m = Bootstrap.Utils.Molecule.findMolecule(e)!.props.molecule.models[0]; 
+                let asm = m.assemblyInfo;
                 if (!asm || !asm.assemblies.length) return { source: 'Asymmetric Unit', assemblyNames: [] };
-                return { source: 'Asymmetric Unit', assemblyNames: asm.assemblies.map(a => a.name) };                
+                return { source: 'Asymmetric Unit', assemblyNames: asm.assemblies.map(a => a.name), modelIndex: 0 };                
             }
         }, (context, a, t) => { 
 
             // remove any old representation
-            let children = Bootstrap.Tree.Selection.byRef('model').children();
+            let children = Bootstrap.Tree.Selection.byRef('molecule').children();
             Bootstrap.Command.Tree.RemoveNode.dispatch(context, children);
 
-            let action = Bootstrap.Tree.Transform.build();
+            let action = Bootstrap.Tree.Transform.build().add(a, Transformer.Molecule.CreateModel, { modelIndex: t.params.modelIndex || 0 }, { ref: 'model' });
             let visualParams: Transformer.Molecule.CreateMacromoleculeVisualParams = { 
                 polymer: true, 
                 polymerRef: 'polymer-visual', 
@@ -45,16 +46,16 @@ namespace LiteMol.Custom {
             switch (t.params.source || 'Asymmetric Unit') {
                 case 'Assembly':
                     action
-                        .add(a, Transformer.Molecule.CreateAssembly, t.params.params)
+                        .then(Transformer.Molecule.CreateAssembly, t.params.params)
                         .then(Transformer.Molecule.CreateMacromoleculeVisual, visualParams);
                     break;
                 case 'Symmetry':
                     action
-                        .add(a, Transformer.Molecule.CreateSymmetryMates, t.params.params)
+                        .then(Transformer.Molecule.CreateSymmetryMates, t.params.params)
                         .then(Transformer.Molecule.CreateMacromoleculeVisual, visualParams);
                     break;
                 default:
-                    action.add(a, Transformer.Molecule.CreateMacromoleculeVisual, visualParams);
+                    action.then(Transformer.Molecule.CreateMacromoleculeVisual, visualParams);
                     break;
             }
 

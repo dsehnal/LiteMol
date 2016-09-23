@@ -25,7 +25,7 @@ namespace LiteMol.Bootstrap.Visualization.Molecule {
     
     export function createPaletteThemeProvider(provider: (m: Core.Structure.MoleculeModel) => { index: number[], property: any[] }, pallete: LiteMol.Visualization.Color[]) {
         return function (e: Entity.Any, props?: LiteMol.Visualization.Theme.Props) {
-            let model = Utils.Molecule.findModel(e).props.model;
+            let model = Utils.Molecule.findModel(e)!.props.model;
             let map = provider(model);
             let mapping = Vis.Theme.createPalleteMapping(mappingClosure(map.index, map.property), pallete);
             return Vis.Theme.createMapping(mapping, props);   
@@ -42,7 +42,7 @@ namespace LiteMol.Bootstrap.Visualization.Molecule {
     export function createColorMapThemeProvider(
         provider: (m: Core.Structure.MoleculeModel) => { index: number[], property: any[] }, colorMap: Map<string, LiteMol.Visualization.Color>, fallbackColor: LiteMol.Visualization.Color) {
         return function (e: Entity.Any, props?: LiteMol.Visualization.Theme.Props) {            
-            let model = Utils.Molecule.findModel(e).props.model;
+            let model = Utils.Molecule.findModel(e)!.props.model;
             let map = provider(model);
             let mapping = Vis.Theme.createColorMapMapping(mappingClosure(map.index, map.property), colorMap, fallbackColor);
             return Vis.Theme.createMapping(mapping, props);   
@@ -112,7 +112,7 @@ namespace LiteMol.Bootstrap.Visualization.Molecule {
 
     function createRainbowProvider(groups: (m: Core.Structure.MoleculeModel) => Core.Structure.DefaultChainTableSchema | Core.Structure.DefaultEntityTableSchema) {
         return function (e: Entity.Any, props?: LiteMol.Visualization.Theme.Props) {     
-            let model = Utils.Molecule.findModel(e).props.model;
+            let model = Utils.Molecule.findModel(e)!.props.model;
             let colors = makeRainbow(model, groups);
             let mapping = new RainbowMapping(model, colors);
             return Vis.Theme.createMapping(mapping, props);   

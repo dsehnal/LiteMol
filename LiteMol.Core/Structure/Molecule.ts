@@ -476,7 +476,7 @@ namespace LiteMol.Core.Structure {
     
     export class MoleculeModel implements MoleculeModelData {
 
-        private _queryContext: Query.Context;
+        private _queryContext: Query.Context | undefined = void 0;
 
         id: string;
         modelId: string;

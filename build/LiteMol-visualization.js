@@ -37936,10 +37936,9 @@ var LiteMol;
             var BallsAndSticks;
             (function (BallsAndSticks) {
                 "use strict";
-                var BallsAndSticksHelper = (function () {
-                    function BallsAndSticksHelper() {
-                    }
-                    BallsAndSticksHelper.addPrecomputedBonds = function (molecule, atomIndices, builder) {
+                var BallsAndSticksHelper;
+                (function (BallsAndSticksHelper) {
+                    function addPrecomputedBonds(molecule, atomIndices, builder) {
                         var mask = LiteMol.Core.Structure.Query.Context.Mask.ofIndices(molecule, atomIndices);
                         var stickCount = 0;
                         var residueCount = 0;
@@ -37955,8 +37954,9 @@ var LiteMol;
                             stickCount += order;
                         }
                         return stickCount;
-                    };
-                    BallsAndSticksHelper.analyze = function (molecule, atomIndices) {
+                    }
+                    BallsAndSticksHelper.addPrecomputedBonds = addPrecomputedBonds;
+                    function analyze(molecule, atomIndices) {
                         var indices, atomCount = 0;
                         indices = atomIndices;
                         atomCount = indices.length;
@@ -38047,9 +38047,9 @@ var LiteMol;
                             stickCount: stickCount,
                             residueCount: residueCount
                         };
-                    };
-                    return BallsAndSticksHelper;
-                }());
+                    }
+                    BallsAndSticksHelper.analyze = analyze;
+                })(BallsAndSticksHelper || (BallsAndSticksHelper = {}));
                 var BondModelState = (function () {
                     function BondModelState(template, templateVB, templateNB, templateIB, templateVertexCount, vertices, normals, indices) {
                         this.template = template;

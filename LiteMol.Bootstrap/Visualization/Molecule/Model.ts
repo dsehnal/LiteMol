@@ -65,7 +65,7 @@ namespace LiteMol.Bootstrap.Visualization.Molecule {
             
     function createModel(source: Entity.Molecule.Model | Entity.Molecule.Selection, style: Style<DetailParams>, theme: Vis.Theme): Core.Computation<Vis.Model> | undefined {
     
-        let model = Utils.Molecule.findModel(source).props.model;
+        let model = Utils.Molecule.findModel(source)!.props.model;
         let atomIndices = Entity.isMoleculeModel(source) ? source.props.model.atoms.indices : source.props.indices;
                     
         if (!atomIndices.length) return void 0;
@@ -100,7 +100,7 @@ namespace LiteMol.Bootstrap.Visualization.Molecule {
             
             
             ctx.schedule(() => {  
-                let theme = style.theme!.template!.provider(Utils.Molecule.findModel(source), Theme.getProps(style.theme!));
+                let theme = style.theme!.template!.provider(Utils.Molecule.findModel(source)!, Theme.getProps(style.theme!));
                 let mc = createModel(source, style, theme);    
                 
                 if (!mc) {
@@ -124,7 +124,7 @@ namespace LiteMol.Bootstrap.Visualization.Molecule {
         style: Style<SurfaceParams>): Task<Entity.Molecule.Visual> {
 
         return Task.create<Entity.Molecule.Visual>(`Molecular Surface (${source.props.label})`, style.computeOnBackground ? 'Silent' : 'Normal', ctx => {
-            let model = Utils.Molecule.findModel(source).props.model;
+            let model = Utils.Molecule.findModel(source)!.props.model;
             let atomIndices = Entity.isMoleculeModel(source) ? source.props.model.atoms.indices : source.props.indices;
             let params = style.params!;
             let label = TypeDescriptions[style.type!].label;
@@ -144,7 +144,7 @@ namespace LiteMol.Bootstrap.Visualization.Molecule {
             data.progress.subscribe(p => ctx.update(label + ': ' + Utils.formatProgress(p), p.requestAbort));
             
             data.result.then(data => {    
-                let theme = style.theme!.template!.provider(Utils.Molecule.findModel(source), Theme.getProps(style.theme!));                
+                let theme = style.theme!.template!.provider(Utils.Molecule.findModel(source)!, Theme.getProps(style.theme!));                
                 ctx.update('Creating visual...');
                 ctx.schedule(() => {               
                     let surface = LiteMol.Visualization.Surface.Model.create(source, { surface: data.surface, theme, parameters: { isWireframe: style.params!.isWireframe } }).run();                    

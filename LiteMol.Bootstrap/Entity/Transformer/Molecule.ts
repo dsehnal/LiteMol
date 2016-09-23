@@ -161,7 +161,7 @@ namespace LiteMol.Bootstrap.Entity.Transformer.Molecule {
             return Task.create<Entity.Molecule.Selection>(`Create Selection (${a.props.label})`, 'Background', ctx => { 
                 let params = t.params;
                 let query = Core.Structure.Query.Builder.toQuery(params.queryString!);
-                let queryCtx = t.params.inFullContext ? Utils.Molecule.findModel(a).props.model.queryContext : Utils.Molecule.findQueryContext(a);
+                let queryCtx = t.params.inFullContext ? Utils.Molecule.findModel(a)!.props.model.queryContext : Utils.Molecule.findQueryContext(a);
                 let indices = query(queryCtx).unionAtomIndices();
                 if (!indices.length) {
                     ctx.reject({ warn: true, message: `Empty selection${t.params.name ? ' (' + t.params.name + ')' : ''}.` });
@@ -190,7 +190,7 @@ namespace LiteMol.Bootstrap.Entity.Transformer.Molecule {
             return Task.create<Entity.Molecule.Selection>(`Create Selection (${a.props.label})`, 'Background', ctx => {                
                 let params = t.params;
                 let query = Core.Structure.Query.Builder.toQuery(params.query!);
-                let queryCtx = t.params.inFullContext ? Utils.Molecule.findModel(a).props.model.queryContext : Utils.Molecule.findQueryContext(a);
+                let queryCtx = t.params.inFullContext ? Utils.Molecule.findModel(a)!.props.model.queryContext : Utils.Molecule.findQueryContext(a);
                 let indices = query(queryCtx).unionAtomIndices();
                 if (!indices.length) {
                     ctx.reject({ warn: true, message: `Empty selection${t.params.name ? ' (' + t.params.name + ')' : ''}.` });
@@ -212,7 +212,7 @@ namespace LiteMol.Bootstrap.Entity.Transformer.Molecule {
             from: [Entity.Molecule.Model],
             to: [Entity.Molecule.Model],
             defaultParams: (ctx, e) => {
-                let m = Utils.Molecule.findModel(e); 
+                let m = Utils.Molecule.findModel(e)!; 
                 let ret = ({ name: ctx.settings.get('molecule.model.defaultAssemblyName') || '1' }); 
                 let asm = m.props.model.assemblyInfo;
                 if (!asm || !asm.assemblies.length) return ret;

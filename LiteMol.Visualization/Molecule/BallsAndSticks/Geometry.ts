@@ -5,9 +5,9 @@
 namespace LiteMol.Visualization.Molecule.BallsAndSticks {
     "use strict";
 
-    class BallsAndSticksHelper {
+    namespace BallsAndSticksHelper {
 
-        static addPrecomputedBonds(molecule: Core.Structure.MoleculeModel, atomIndices: number[], builder: Core.Utils.ChunkedArrayBuilder<number>) {            
+        export function addPrecomputedBonds(molecule: Core.Structure.MoleculeModel, atomIndices: number[], builder: Core.Utils.ChunkedArrayBuilder<number>) {            
             let mask = Core.Structure.Query.Context.Mask.ofIndices(molecule, atomIndices);            
             let stickCount = 0;
             let residueCount = 0;
@@ -24,7 +24,7 @@ namespace LiteMol.Visualization.Molecule.BallsAndSticks {
             return stickCount;
         }
 
-        static analyze(molecule: Core.Structure.MoleculeModel, atomIndices: number[]) {
+        export function analyze(molecule: Core.Structure.MoleculeModel, atomIndices: number[]) {
             let indices: Int32Array,
                 atomCount = 0;
             

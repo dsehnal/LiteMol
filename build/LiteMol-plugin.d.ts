@@ -15072,8 +15072,8 @@ declare namespace LiteMol.Bootstrap.Utils {
 declare namespace LiteMol.Bootstrap.Utils.Molecule {
     import Structure = LiteMol.Core.Structure;
     import Geometry = LiteMol.Core.Geometry;
-    function findModel(entity: Entity.Any): Entity.Molecule.Model;
-    function findMolecule(entity: Entity.Any): Entity.Molecule.Molecule;
+    function findModel(entity: Entity.Any): Entity.Molecule.Model | undefined;
+    function findMolecule(entity: Entity.Any): Entity.Molecule.Molecule | undefined;
     function findQueryContext(entity: Entity.Any): Structure.Query.Context;
     function getDistance(mA: Structure.MoleculeModel, startAtomIndexA: number, endAtomIndexA: number, mB: Structure.MoleculeModel, startAtomIndexB: number, endAtomIndexB: number): number;
     function getDistanceSet(mA: Structure.MoleculeModel, setA: number[], mB: Structure.MoleculeModel, setB: number[]): number;

@@ -8,11 +8,11 @@ namespace LiteMol.Bootstrap.Utils.Molecule {
     import Structure = LiteMol.Core.Structure;
     import Geometry = LiteMol.Core.Geometry;
      
-    export function findModel(entity: Entity.Any): Entity.Molecule.Model  {
+    export function findModel(entity: Entity.Any): Entity.Molecule.Model | undefined  {
         return Tree.Node.findClosestNodeOfType(entity, [Entity.Molecule.Model]) as Entity.Molecule.Model; 
     }
     
-    export function findMolecule(entity: Entity.Any): Entity.Molecule.Molecule  {
+    export function findMolecule(entity: Entity.Any): Entity.Molecule.Molecule | undefined  {
         return Tree.Node.findClosestNodeOfType(entity, [Entity.Molecule.Molecule]) as Entity.Molecule.Molecule; 
     }
  
@@ -25,7 +25,7 @@ namespace LiteMol.Bootstrap.Utils.Molecule {
             let cache = source.tree!.context.entityCache;
             let ctx = cache.get<Core.Structure.Query.Context>(source, Entity.Cache.Keys.QueryContext);
             if (ctx) return ctx;            
-            ctx = Core.Structure.Query.Context.ofAtomIndices(findModel(source).props.model, source.props.indices);
+            ctx = Core.Structure.Query.Context.ofAtomIndices(findModel(source)!.props.model, source.props.indices);
             return cache.set(source, Entity.Cache.Keys.QueryContext, ctx);
         }
     }

@@ -94,7 +94,7 @@ namespace LiteMol.Custom {
             components: [
                 Plugin.Components.Visualization.HighlightInfo(LayoutRegion.Main, true),               
 
-                Plugin.Components.create('RepresentationControls', ctx => new Bootstrap.Components.Transform.Action(ctx, 'model', CreateRepresentation, 'Source'), Plugin.Views.Transform.Action)(LayoutRegion.Right),
+                Plugin.Components.create('RepresentationControls', ctx => new Bootstrap.Components.Transform.Action(ctx, 'molecule', CreateRepresentation, 'Source'), Plugin.Views.Transform.Action)(LayoutRegion.Right),
 
                 Plugin.Components.create('PolymerControls', ctx => new Bootstrap.Components.Transform.Updater(ctx, 'polymer-visual', 'Polymer Visual'), Plugin.Views.Transform.Updater)(LayoutRegion.Right),
                 Plugin.Components.create('HetControls', ctx => new Bootstrap.Components.Transform.Updater(ctx, 'het-visual', 'HET Groups Visual'), Plugin.Views.Transform.Updater)(LayoutRegion.Right),
@@ -120,7 +120,7 @@ namespace LiteMol.Custom {
     
     // create the instance...
     
-    let id = '1tqn';
+    let id = '1grm';
     let plugin = create(document.getElementById('app')!);
 
     LiteMol.Bootstrap.Command.Layout.SetState.dispatch(plugin.context, { isExpanded: true });
@@ -129,9 +129,10 @@ namespace LiteMol.Custom {
     
     action.add(plugin.context.tree.root, <Bootstrap.Tree.Transformer.To<Bootstrap.Entity.Data.String>>Transformer.Data.Download, { url: `http://www.ebi.ac.uk/pdbe/static/entry/${id}_updated.cif`, type: 'String', id })
         .then(Transformer.Data.ParseCif, { id }, { isBinding: true })
-        .then(Transformer.Molecule.CreateFromMmCif, { blockIndex: 0 }, { isBinding: true })
-        .then(Transformer.Molecule.CreateModel, { modelIndex: 0 }, { isBinding: false, ref: 'model' })
+        .then(Transformer.Molecule.CreateFromMmCif, { blockIndex: 0 }, { ref: 'molecule' })
         .then(CreateRepresentation, { });
 
-     Bootstrap.Tree.Transform.apply(plugin.context, action).run(plugin.context);        
+     Bootstrap.Tree.Transform.apply(plugin.context, action).run(plugin.context).then(() => {
+         console.log(plugin.context.select('molecule'));
+     });        
 }

@@ -10884,6 +10884,7 @@ var LiteMol;
                                         case 2 /* Int32 */: return int32(data);
                                         case 4 /* Float32 */: return float32(data);
                                         case 5 /* Float64 */: return float64(data);
+                                        default: throw new Error('Unsupported ByteArray type.');
                                     }
                                 }
                                 case 'FixedPoint': return fixedPoint(data, encoding);
@@ -15229,6 +15230,7 @@ var LiteMol;
             Structure.Operator = Operator;
             var MoleculeModel = (function () {
                 function MoleculeModel(data) {
+                    this._queryContext = void 0;
                     this.id = data.id;
                     this.modelId = data.modelId;
                     this.atoms = data.atoms;

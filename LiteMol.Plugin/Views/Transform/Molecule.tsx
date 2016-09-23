@@ -77,7 +77,7 @@ namespace LiteMol.Plugin.Views.Transform.Molecule {
         protected renderControls() {            
             let params = this.params;
             //let model = this.isUpdate ? Bootstrap.Utils.Molecule.findModel(this.transformSourceEntity) : this.entity as Bootstrap.Entity.Molecule.Model;
-            let model = Bootstrap.Utils.Molecule.findModel(this.transformSourceEntity);
+            let model = Bootstrap.Utils.Molecule.findModel(this.transformSourceEntity)!;
             let asm = model.props.model.assemblyInfo;
             if (!asm) return void 0;            
             let names =  asm.assemblies.map(a => a.name);            

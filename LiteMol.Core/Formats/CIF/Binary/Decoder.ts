@@ -23,20 +23,21 @@ namespace LiteMol.Core.Formats.CIF.Binary {
         export function decodeStep(data: any, encoding: Encoding): any {
             switch (encoding.kind) {
                 case 'ByteArray': {
-                    switch ((encoding as Encoding.ByteArray).type) {
+                    switch (encoding.type) {
                         case Encoding.DataType.Uint8: return data;
                         case Encoding.DataType.Int8: return int8(data);
                         case Encoding.DataType.Int16: return int16(data);
                         case Encoding.DataType.Int32: return int32(data);
                         case Encoding.DataType.Float32: return float32(data);
                         case Encoding.DataType.Float64: return float64(data);
+                        default: throw new Error('Unsupported ByteArray type.')
                     }
                 }
-                case 'FixedPoint': return fixedPoint(data, encoding as Encoding.FixedPoint);
-                case 'RunLength': return runLength(data, encoding as Encoding.RunLength);
-                case 'Delta': return delta(data, encoding as Encoding.Delta);
-                case 'IntegerPacking': return integerPacking(data, encoding as Encoding.IntegerPacking);
-                case 'StringArray': return stringArray(data, encoding as Encoding.StringArray);
+                case 'FixedPoint': return fixedPoint(data, encoding);
+                case 'RunLength': return runLength(data, encoding);
+                case 'Delta': return delta(data, encoding);
+                case 'IntegerPacking': return integerPacking(data, encoding);
+                case 'StringArray': return stringArray(data, encoding);
             }
         }
 

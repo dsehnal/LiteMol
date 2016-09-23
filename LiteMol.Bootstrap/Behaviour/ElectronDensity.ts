@@ -36,7 +36,7 @@ namespace LiteMol.Bootstrap.Behaviour.Density {
                 return;
             }
             
-            let model = Utils.Molecule.findModel(info.entity!);
+            let model = Utils.Molecule.findModel(info.entity!)!;
             let center = {x:0, y:0, z:0};
             let elems = info.elements;
             let m = model.props.model;

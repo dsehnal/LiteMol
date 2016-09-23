@@ -428,19 +428,24 @@ var LiteMol;
             RepresentationView.prototype.renderControls = function () {
                 var _this = this;
                 var params = this.params;
-                var model = this.controller.entity;
+                var molecule = this.controller.entity.props.molecule;
+                var model = molecule.models[0];
                 var options = ['Asymmetric Unit'];
                 if (params.assemblyNames && params.assemblyNames.length > 0)
                     options.push('Assembly');
-                if (model && model.props.model.symmetryInfo)
+                if (model.symmetryInfo)
                     options.push('Symmetry');
+                var modelIndex = molecule.models.length > 1
+                    ? React.createElement(Controls.Slider, {label: 'Model', onChange: function (v) { return _this.updateParams({ modelIndex: v - 1 }); }, min: 1, max: molecule.models.length, step: 1, value: params.modelIndex + 1, title: 'Interaction radius.'})
+                    : void 0;
                 return React.createElement("div", null, 
                     React.createElement(Controls.OptionsGroup, {options: options, caption: function (s) { return s; }, current: params.source, onChange: function (o) { return _this.updateSource(o); }, label: 'Source'}), 
                     params.source === 'Assembly'
                         ? this.asm()
                         : params.source === 'Symmetry'
                             ? this.symm()
-                            : void 0);
+                            : void 0, 
+                    modelIndex);
             };
             return RepresentationView;
         }(LiteMol.Plugin.Views.Transform.ControllerBase));
@@ -460,20 +465,20 @@ var LiteMol;
             id: 'lm-custom-create-representation',
             name: 'Representation',
             description: 'Create visual representation from the selected source.',
-            from: [Entity.Molecule.Model],
+            from: [Entity.Molecule.Molecule],
             to: [Entity.Action],
             defaultParams: function (ctx, e) {
-                var m = LiteMol.Bootstrap.Utils.Molecule.findModel(e);
-                var asm = m.props.model.assemblyInfo;
+                var m = LiteMol.Bootstrap.Utils.Molecule.findMolecule(e).props.molecule.models[0];
+                var asm = m.assemblyInfo;
                 if (!asm || !asm.assemblies.length)
                     return { source: 'Asymmetric Unit', assemblyNames: [] };
-                return { source: 'Asymmetric Unit', assemblyNames: asm.assemblies.map(function (a) { return a.name; }) };
+                return { source: 'Asymmetric Unit', assemblyNames: asm.assemblies.map(function (a) { return a.name; }), modelIndex: 0 };
             }
         }, function (context, a, t) {
             // remove any old representation
-            var children = LiteMol.Bootstrap.Tree.Selection.byRef('model').children();
+            var children = LiteMol.Bootstrap.Tree.Selection.byRef('molecule').children();
             LiteMol.Bootstrap.Command.Tree.RemoveNode.dispatch(context, children);
-            var action = LiteMol.Bootstrap.Tree.Transform.build();
+            var action = LiteMol.Bootstrap.Tree.Transform.build().add(a, Transformer.Molecule.CreateModel, { modelIndex: t.params.modelIndex || 0 }, { ref: 'model' });
             var visualParams = {
                 polymer: true,
                 polymerRef: 'polymer-visual',
@@ -485,16 +490,16 @@ var LiteMol;
             switch (t.params.source || 'Asymmetric Unit') {
                 case 'Assembly':
                     action
-                        .add(a, Transformer.Molecule.CreateAssembly, t.params.params)
+                        .then(Transformer.Molecule.CreateAssembly, t.params.params)
                         .then(Transformer.Molecule.CreateMacromoleculeVisual, visualParams);
                     break;
                 case 'Symmetry':
                     action
-                        .add(a, Transformer.Molecule.CreateSymmetryMates, t.params.params)
+                        .then(Transformer.Molecule.CreateSymmetryMates, t.params.params)
                         .then(Transformer.Molecule.CreateMacromoleculeVisual, visualParams);
                     break;
                 default:
-                    action.add(a, Transformer.Molecule.CreateMacromoleculeVisual, visualParams);
+                    action.then(Transformer.Molecule.CreateMacromoleculeVisual, visualParams);
                     break;
             }
             return action;
@@ -578,7 +583,7 @@ var LiteMol;
                 ],
                 components: [
                     Plugin.Components.Visualization.HighlightInfo(LayoutRegion.Main, true),
-                    Plugin.Components.create('RepresentationControls', function (ctx) { return new Bootstrap.Components.Transform.Action(ctx, 'model', Custom.CreateRepresentation, 'Source'); }, Plugin.Views.Transform.Action)(LayoutRegion.Right),
+                    Plugin.Components.create('RepresentationControls', function (ctx) { return new Bootstrap.Components.Transform.Action(ctx, 'molecule', Custom.CreateRepresentation, 'Source'); }, Plugin.Views.Transform.Action)(LayoutRegion.Right),
                     Plugin.Components.create('PolymerControls', function (ctx) { return new Bootstrap.Components.Transform.Updater(ctx, 'polymer-visual', 'Polymer Visual'); }, Plugin.Views.Transform.Updater)(LayoutRegion.Right),
                     Plugin.Components.create('HetControls', function (ctx) { return new Bootstrap.Components.Transform.Updater(ctx, 'het-visual', 'HET Groups Visual'); }, Plugin.Views.Transform.Updater)(LayoutRegion.Right),
                     Plugin.Components.create('WaterControls', function (ctx) { return new Bootstrap.Components.Transform.Updater(ctx, 'water-visual', 'Water Visual'); }, Plugin.Views.Transform.Updater)(LayoutRegion.Right),
@@ -600,15 +605,16 @@ var LiteMol;
         }
         Custom.create = create;
         // create the instance...
-        var id = '1tqn';
+        var id = '1grm';
         var plugin = create(document.getElementById('app'));
         LiteMol.Bootstrap.Command.Layout.SetState.dispatch(plugin.context, { isExpanded: true });
         var action = Bootstrap.Tree.Transform.build();
         action.add(plugin.context.tree.root, Transformer.Data.Download, { url: "http://www.ebi.ac.uk/pdbe/static/entry/" + id + "_updated.cif", type: 'String', id: id })
             .then(Transformer.Data.ParseCif, { id: id }, { isBinding: true })
-            .then(Transformer.Molecule.CreateFromMmCif, { blockIndex: 0 }, { isBinding: true })
-            .then(Transformer.Molecule.CreateModel, { modelIndex: 0 }, { isBinding: false, ref: 'model' })
+            .then(Transformer.Molecule.CreateFromMmCif, { blockIndex: 0 }, { ref: 'molecule' })
             .then(Custom.CreateRepresentation, {});
-        Bootstrap.Tree.Transform.apply(plugin.context, action).run(plugin.context);
+        Bootstrap.Tree.Transform.apply(plugin.context, action).run(plugin.context).then(function () {
+            console.log(plugin.context.select('molecule'));
+        });
     })(Custom = LiteMol.Custom || (LiteMol.Custom = {}));
 })(LiteMol || (LiteMol = {}));

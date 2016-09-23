@@ -49,10 +49,14 @@ namespace LiteMol.Custom {
         protected renderControls() {            
             let params = this.params;
 
-            let model = this.controller.entity as Bootstrap.Entity.Molecule.Model;
+            let molecule = (this.controller.entity as Bootstrap.Entity.Molecule.Molecule).props.molecule;
+            let model = molecule.models[0];
             let options = ['Asymmetric Unit'];
             if (params.assemblyNames && params.assemblyNames.length > 0) options.push('Assembly');
-            if (model && model.props.model.symmetryInfo) options.push('Symmetry');
+            if (model.symmetryInfo) options.push('Symmetry');
+            let modelIndex = molecule.models.length > 1 
+                ? <Controls.Slider label='Model' onChange={v => this.updateParams({ modelIndex: v - 1 })} min={1} max={molecule.models.length} step={1} value={params.modelIndex + 1} title='Interaction radius.' />
+                : void 0;
 
             return <div>
                 <Controls.OptionsGroup options={options} caption={s => s} current={params.source} onChange={(o) => this.updateSource(o) } label='Source' />
@@ -63,6 +67,7 @@ namespace LiteMol.Custom {
                             ? this.symm()
                             : void 0
                 }
+                { modelIndex }
             </div>
         }        
     }

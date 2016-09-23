@@ -6,7 +6,7 @@
 	"args": [ "--silent" ],
 	"tasks": [
         {
-            "taskName": "default", // default
+            "taskName": "default",
             "args": [],
             "isBuildCommand": true,
             "isWatching": false,

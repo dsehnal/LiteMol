@@ -54,7 +54,7 @@ namespace LiteMol.Bootstrap.Behaviour.Molecule {
                 return;
             }
             
-            let model = Utils.Molecule.findModel(info.entity!).props.model;
+            let model = Utils.Molecule.findModel(info.entity!)!.props.model;
             
             let i = model.atoms.residueIndex[info.elements![0]];
             let rs = model.residues;
