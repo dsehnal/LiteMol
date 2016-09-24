@@ -33,12 +33,10 @@ namespace LiteMol.Plugin.Views.Context {
              let tasks: any[] = [];
              state.tasks!.forEach((t, k) => tasks.push(<TaskState key={k} info={t!} />));
             
-             
-           //tasks.push(<span><TaskState key={-1} info={{ message: 'Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Ut te', name: 'occaecat ', abort: () => {} }} /><br/></span>)
+        //    tasks.push(<span><TaskState key={-1} info={{ message: 'Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Ut te', name: 'occaecat ', abort: () => {} }} /><br/></span>)
         //    tasks.push(<br/>)
-           //tasks.push(<TaskState key={-2} info={{ message: 'uam metus. Duis risus. F', name: 'dsads' }} />)
-          // tasks.push(<TaskState key={-3} info={{ message: 'm dapibus fermentum ipsum. Lorem ipsum dolor', name: 'bibendum ', abort: () => {} }} />)
-           
+        //    tasks.push(<TaskState key={-2} info={{ message: 'uam metus. Duis risus. F', name: 'dsads' }} />)
+        //   tasks.push(<TaskState key={-3} info={{ message: 'm dapibus fermentum ipsum. Lorem ipsum dolor', name: 'bibendum ', abort: () => {} }} />)          
            
             return <div className='lm-overlay'>
                 <div className='lm-overlay-background' />
@@ -63,8 +61,8 @@ namespace LiteMol.Plugin.Views.Context {
             let tasks: any[] = [];
             state.tasks!.forEach((t, k) => tasks.push(<TaskState key={k} info={t!} isSmall={true} />));
            
-         //   tasks.push(<TaskState key={-1} isSmall={true} info={{ message: 's diam. Vivamus luctus egestas l', name: 'bibendum ', abort: () => {} }} />)
-         //   tasks.push(<TaskState key={-3} isSmall={true} info={{ message: 'ccaecat cupidatat non proid', name: 'dsadsad', abort: () => {} }} />)
+        //    tasks.push(<TaskState key={-1} isSmall={true} info={{ message: 's diam. Vivamus luctus egestas l', name: 'bibendum ', abort: () => {} }} />)
+        //    tasks.push(<TaskState key={-3} isSmall={true} info={{ message: 'ccaecat cupidatat non proid', name: 'dsadsad', abort: () => {} }} />)
         //    tasks.push(<TaskState key={-2} isSmall={true} info={{ message: 'modo dui eget wisi. Nullam sap', name: 'dsads' }} />)
            
             return <div className='lm-background-tasks'>

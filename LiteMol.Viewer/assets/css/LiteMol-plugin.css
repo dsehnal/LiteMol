@@ -2595,7 +2595,8 @@
       height: 32px;
       margin-top: 1px;
       position: relative;
-      width: 100%; }
+      width: 100%;
+      background: #111318; }
       .lm-plugin .lm-background-tasks .lm-task-state > div > div {
         height: 32px;
         line-height: 32px;
