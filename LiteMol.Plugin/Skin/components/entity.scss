@@ -65,7 +65,7 @@
 }
 
 .lm-entity-tree-entry-current {
-    background: darken($default-background, 4%) !important; 
+    background: color-lower-contrast($default-background, 4%) !important; 
     
     .lm-entity-tree-entry-label {
         color: $entity-current-font-color;
@@ -80,9 +80,9 @@
 }
 
 .lm-entity-tree-entry-current-path {
-    background: darken($default-background, 2%) !important;
+    background: color-lower-contrast($default-background, 2%) !important;
     .lm-entity-tree-entry-label {
-        color: darken($entity-current-font-color, 5%);
+        color: color-lower-contrast($entity-current-font-color, 5%);
         &:hover {
             color: $hover-font-color;
         }
@@ -134,7 +134,7 @@
     padding: 0 !important;
     text-align: center;
     font-size: 80%;
-    color: darken($font-color, 66%)
+    color: color-lower-contrast($font-color, 66%)
 }
 
 .lm-entity-tree-entry-body {

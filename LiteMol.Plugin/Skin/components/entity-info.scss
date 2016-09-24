@@ -103,7 +103,7 @@
         //border-bottom-left-radius: $entity-subtree-offset;
         padding: $info-vertical-padding $control-spacing $info-vertical-padding ($row-height + $control-spacing +  $row-height - $entity-subtree-offset);        
         position: relative;    
-        background: darken($default-background, 4%);
+        background: color-lower-contrast($default-background, 4%);
         margin-bottom: $control-spacing;    
         
         .icon {
@@ -134,7 +134,7 @@
     
     .lm-entity-splash-class > div:first-child {
         //border-top-left-radius: $entity-subtree-offset;
-        background: darken($default-background, 4%);
+        background: color-lower-contrast($default-background, 4%);
         line-height: $row-height;
         padding-left: $row-height + $control-spacing + $row-height - $entity-subtree-offset;
         font-weight: bold;
@@ -174,7 +174,7 @@
         //@include non-selectable;
         padding: $info-vertical-padding $control-spacing $info-vertical-padding ($row-height + $control-spacing + $row-height - $entity-subtree-offset);
         margin-top: 1px;
-        background: $default-background; // lighten($form-control-background, 20%);
+        background: $default-background; // color-increase-contrast($form-control-background, 20%);
         //font-size: 90%;
         //border-bottom-left-radius: $entity-subtree-offset;
     }

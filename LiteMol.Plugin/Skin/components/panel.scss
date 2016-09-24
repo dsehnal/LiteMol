@@ -34,7 +34,7 @@
             font-weight: bold;
             //color: $panel-header-font-color;
             padding-left: 0;
-            background: darken($default-background, 4%);   
+            background: color-lower-contrast($default-background, 4%);   
             //text-align: right!important;
             
             .icon {
@@ -45,7 +45,7 @@
             }
             
             &:hover {
-                background: darken($default-background, 4%); 
+                background: color-lower-contrast($default-background, 4%); 
             }
         }
     }
@@ -55,7 +55,7 @@
         color: $font-color;
         float: right;
         width: 2 * $row-height;
-        background: darken($default-background, 4%);
+        background: color-lower-contrast($default-background, 4%);
         //margin-right: $row-height;
         
         > .icon {
@@ -66,8 +66,8 @@
             text-align: center;
             font-size: 70%;
             cursor: default;
-            background: darken($default-background, 4%);  
-            color: darken($font-color, 66%);
+            background: color-lower-contrast($default-background, 4%);  
+            color: color-lower-contrast($font-color, 66%);
             margin-left: $row-height;
         }
         
@@ -79,12 +79,12 @@
             position: absolute;
             left: 0;
             width: 100%;
-            background: lighten($form-control-background, 20%);
+            background: color-increase-contrast($form-control-background, 20%);
             min-height: $row-height;
             z-index: 1000000;
             padding: $info-vertical-padding  $control-spacing $info-vertical-padding ($row-height + $control-spacing);
             text-align: left;
-            //border-bottom: 1px solid darken($default-background, 4%);
+            //border-bottom: 1px solid color-lower-contrast($default-background, 4%);
             
             > .icon {
                 position: absolute;

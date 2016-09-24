@@ -11,7 +11,7 @@
         width: $control-label-width + $control-spacing;
         text-align: right;
         padding: 0 $control-spacing; 
-        color: darken($font-color, 15%);
+        color: color-lower-contrast($font-color, 15%);
         
         @include non-selectable;        
     }
@@ -46,10 +46,10 @@
     }
     
     > div > button:hover {
-        border-color: lighten($form-control-background, 5%) !important;
+        border-color: color-increase-contrast($form-control-background, 5%) !important;
         border: none;
         outline-offset: -1px  !important;
-        outline: 1px solid lighten($form-control-background, 20%) !important;  
+        outline: 1px solid color-increase-contrast($form-control-background, 20%) !important;  
     }
 }
 
@@ -100,10 +100,10 @@
         padding-left: $control-spacing;        
         
         &:hover {
-            border-color: lighten($form-control-background, 5%) !important;
+            border-color: color-increase-contrast($form-control-background, 5%) !important;
             border: none;
             outline-offset: -1px  !important;
-            outline: 1px solid lighten($form-control-background, 20%) !important;  
+            outline: 1px solid color-increase-contrast($form-control-background, 20%) !important;  
         }
     }
     

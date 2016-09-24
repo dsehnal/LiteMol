@@ -42,7 +42,7 @@
     
     .lm-log-entry {
         margin-left: $control-label-width;
-        background: darken($control-background, 5%);
+        background: color-lower-contrast($control-background, 5%);
         padding: $info-vertical-padding ($control-spacing + 15px) $info-vertical-padding $control-spacing ;
     }
     

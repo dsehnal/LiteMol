@@ -5,7 +5,24 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=1" />
     <title>LiteMol Viewer</title>    
-    <link rel="stylesheet" href="assets/css/LiteMol-plugin.css" type="text/css" />
+
+    <script>
+        (function () {
+            var theme = (((window.location.search || '').match(/theme=([a-z]+)[&]?/i) || [])[1] || '').toLowerCase();
+            if (theme === 'dark') theme = '';
+            else if (theme === 'blue') theme = '-blue';
+            else if (theme === 'light') theme = '-light';
+            else theme = '';
+                        
+            var head  = document.getElementsByTagName('head')[0];
+            var link  = document.createElement('link');
+            link.rel  = 'stylesheet';
+            link.type = 'text/css';
+            link.href = 'assets/css/LiteMol-plugin' + theme + '.css';
+            link.media = 'all';
+            head.appendChild(link);
+        })();
+    </script>
     <script src="LiteMol-plugin.js"></script>
 
     <style>

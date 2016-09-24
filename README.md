@@ -166,6 +166,15 @@ What external dependencies do I need to include LiteMol?
 
 LiteMol does not require any external dependencies.
 
+How do I change the color scheme of the plugin?
+------------
+
+LiteMol is available with 3 colors schemes: Dark (default), Light, and Blue. The palette can be changed by including a different css file from the `LiteMol.Viewer/assets/css` folder. 
+
+If this is not enough for your needs, you can easily customize the color palette. Add your palette to `LiteMol.Plugin/Skin/colors` using an existing palette as a template and 
+create new `LiteMol.Plugin/Skin/LiteMol-plugin-MYTHEME.scss` that refences your new colors. Edit the function `CSS` in `gulpfile.js` to include the `-MYTHEME` affix and rebuild
+LiteMol. Your theme will now appear in `LiteMol.Viewer/assets/css`.     
+
 Can I contribute to LiteMol?
 ------------
 
