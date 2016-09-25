@@ -2610,6 +2610,7 @@ declare namespace LiteMol.Core.Structure.Query {
     function sequence(entityId: string, asymId: string, startId: ResidueIdSchema, endId: ResidueIdSchema): Builder;
     function hetGroups(): Builder;
     function nonHetPolymer(): Builder;
+    function polymerTrace(...atomNames: string[]): Builder;
     function cartoons(): Builder;
     function backbone(): Builder;
     function sidechain(): Builder;

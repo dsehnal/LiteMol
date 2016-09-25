@@ -1,4 +1,7 @@
-﻿== 2.4.3 ==
+﻿== 2.4.4 ==
+* Added polymerTrace(...atomNames) query.
+
+== 2.4.3 ==
 * Refactored code that used "private classes" to a procedural style to avoid it from being deoptimized by garbage collector on long computations.
 
 == 2.4.2 ==

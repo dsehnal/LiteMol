@@ -73,6 +73,7 @@ namespace LiteMol.Core.Structure.Query {
     export function sequence(entityId: string, asymId: string, startId: ResidueIdSchema, endId: ResidueIdSchema) { return Builder.build(() => Compiler.compileSequence(entityId, asymId, startId, endId)); }
     export function hetGroups() { return Builder.build(() => Compiler.compileHetGroups()); }
     export function nonHetPolymer() { return Builder.build(() => Compiler.compileNonHetPolymer()); }
+    export function polymerTrace(...atomNames: string[]) { return Builder.build(() => Compiler.compilePolymerNames(atomNames, false)); }
     export function cartoons() { return or(Builder.build(() => Compiler.compilePolymerNames(["CA", "O", "O5'", "C3'", "N3"], false)), hetGroups(), entities({ type: 'water' })); }
     export function backbone() { return Builder.build(() => Compiler.compilePolymerNames(["N", "CA", "C", "O", "P", "OP1", "OP2", "O3'", "O5'", "C3'", "C5'", "C4"], false)); }
     export function sidechain() { return Builder.build(() => Compiler.compilePolymerNames(["N", "CA", "C", "O", "P", "OP1", "OP2", "O3'", "O5'", "C3'", "C5'", "C4"], true)); }

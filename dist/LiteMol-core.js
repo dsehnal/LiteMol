@@ -8083,7 +8083,7 @@ var LiteMol;
 (function (LiteMol) {
     var Core;
     (function (Core) {
-        Core.VERSION = { number: "2.4.3", date: "Sep 21 2016" };
+        Core.VERSION = { number: "2.4.4", date: "Sep 25 2016" };
     })(Core = LiteMol.Core || (LiteMol.Core = {}));
 })(LiteMol || (LiteMol = {}));
 /*
@@ -18021,6 +18021,14 @@ var LiteMol;
                 Query.hetGroups = hetGroups;
                 function nonHetPolymer() { return Builder.build(function () { return Compiler.compileNonHetPolymer(); }); }
                 Query.nonHetPolymer = nonHetPolymer;
+                function polymerTrace() {
+                    var atomNames = [];
+                    for (var _i = 0; _i < arguments.length; _i++) {
+                        atomNames[_i - 0] = arguments[_i];
+                    }
+                    return Builder.build(function () { return Compiler.compilePolymerNames(atomNames, false); });
+                }
+                Query.polymerTrace = polymerTrace;
                 function cartoons() { return or(Builder.build(function () { return Compiler.compilePolymerNames(["CA", "O", "O5'", "C3'", "N3"], false); }), hetGroups(), entities({ type: 'water' })); }
                 Query.cartoons = cartoons;
                 function backbone() { return Builder.build(function () { return Compiler.compilePolymerNames(["N", "CA", "C", "O", "P", "OP1", "OP2", "O3'", "O5'", "C3'", "C5'", "C4"], false); }); }

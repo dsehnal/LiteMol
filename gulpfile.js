@@ -40,12 +40,9 @@ function CSS(minify) {
         .pipe(gulp.dest('./LiteMol.Viewer/assets/css')));
 }
 
-function Viewer() {
-    var css =  gulp.src(['./LiteMol.Plugin/Skin/LiteMol-plugin.scss'])
-        .pipe(plugins.sass().on('error', plugins.sass.logError))
-        .pipe(gulp.dest('./LiteMol.Viewer/assets/css'));
-        
+function Viewer() {        
     var js =  gulp.src(['./dist/LiteMol-plugin.js', './dist/LiteMol-core.js'])
+        //.pipe(plugins.uglify())
         .pipe(gulp.dest('./LiteMol.Viewer'));
    
    console.log('Building Viewer and Examples');

@@ -799,7 +799,6 @@ namespace LiteMol.Core.Structure {
                 return model;
             }
 
-
             let pivotIndices: number[];
 
             if (!pivotsQuery) pivotIndices = model.atoms.indices;
