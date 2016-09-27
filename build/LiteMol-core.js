@@ -8080,7 +8080,7 @@ var LiteMol;
 (function (LiteMol) {
     var Core;
     (function (Core) {
-        Core.VERSION = { number: "2.4.4", date: "Sep 25 2016" };
+        Core.VERSION = { number: "2.4.5", date: "Sep 27 2016" };
     })(Core = LiteMol.Core || (LiteMol.Core = {}));
 })(LiteMol || (LiteMol = {}));
 /*
@@ -12152,6 +12152,9 @@ var LiteMol;
                                 else {
                                     Formats.TokenIndexBuilder.addToken(tokens, startPos + 12, startPos + 13);
                                 }
+                            }
+                            else {
+                                Formats.TokenIndexBuilder.addToken(tokens, startPos + 12, startPos + 13);
                             }
                             //79 - 80        LString(2)      Charge on the atom.      
                             // ignored

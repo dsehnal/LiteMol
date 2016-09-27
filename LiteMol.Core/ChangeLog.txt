@@ -1,4 +1,7 @@
-﻿== 2.4.4 ==
+﻿== 2.4.5 ==
+* PDB parser fix.
+
+== 2.4.4 ==
 * Added polymerTrace(...atomNames) query.
 
 == 2.4.3 ==

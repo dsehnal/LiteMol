@@ -159,6 +159,8 @@ namespace LiteMol.Core.Formats.Molecule.PDB {
                 } else {
                     TokenIndexBuilder.addToken(tokens, startPos + 12, startPos + 13);
                 }
+            } else {
+                TokenIndexBuilder.addToken(tokens, startPos + 12, startPos + 13);
             }
 
             //79 - 80        LString(2)      Charge on the atom.      
