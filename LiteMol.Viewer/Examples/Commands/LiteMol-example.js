@@ -450,12 +450,46 @@ var LiteMolPluginInstance;
     // you can subsribe to any command or event using <Event/Command>.getStream(plugin.context).subscribe(e => ....)
     var Command = Bootstrap.Command;
     var Event = Bootstrap.Event;
-    function addControl(name, action) {
+    function addButton(name, action) {
         var actions = document.getElementById('actions');
         var button = document.createElement('button');
         button.innerText = name;
         button.onclick = action;
         actions.appendChild(button);
+    }
+    function addSeparator() {
+        var actions = document.getElementById('actions');
+        actions.appendChild(document.createElement('hr'));
+    }
+    function addHeader(title) {
+        var actions = document.getElementById('actions');
+        var h = document.createElement('h4');
+        h.innerText = title;
+        actions.appendChild(h);
+    }
+    function addTextInput(id, value, placeholder) {
+        var actions = document.getElementById('actions');
+        var input = document.createElement('input');
+        input.id = id;
+        input.type = 'text';
+        input.placeholder = placeholder;
+        input.value = value;
+        actions.appendChild(input);
+    }
+    function addHoverArea(title, mouseEnter, mouseLeave) {
+        var actions = document.getElementById('actions');
+        var div = document.createElement('div');
+        div.innerText = title;
+        div.className = 'hover-area';
+        div.onmouseenter = function () {
+            if (plugin)
+                mouseEnter();
+        };
+        div.onmouseleave = function () {
+            if (plugin)
+                mouseLeave();
+        };
+        actions.appendChild(div);
     }
     var moleculeId = '1cbs';
     var plugin;
@@ -480,7 +514,8 @@ var LiteMolPluginInstance;
         // the themes will reset automatically, but you need to cleanup all the other stuff you've created that you dont want to persist
         Command.Tree.RemoveNode.dispatch(plugin.context, 'sequence-selection');
     }
-    addControl('Create Plugin', function () {
+    addHeader('Create & Destroy');
+    addButton('Create Plugin', function () {
         // you will want to do a browser version check here
         // it will not work on IE <= 10 (no way around this, no WebGL in IE10)
         // also needs ES6 Map and Set -- so check browser compatibility for that, you can try a polyfill using modernizr or something 
@@ -494,12 +529,16 @@ var LiteMolPluginInstance;
         // you can use this to view the event/command stream
         //plugin.context.dispatcher.LOG_DISPATCH_STREAM = true;
     });
-    addControl('Destroy Plugin', function () { plugin.destroy(); plugin = void 0; });
-    addControl('Show Controls', function () { return Command.Layout.SetState.dispatch(plugin.context, { hideControls: false }); });
-    addControl('Hide Controls', function () { return Command.Layout.SetState.dispatch(plugin.context, { hideControls: true }); });
-    addControl('Expand', function () { return Command.Layout.SetState.dispatch(plugin.context, { isExpanded: true }); });
-    addControl('Set Background', function () { return Command.Layout.SetViewportOptions.dispatch(plugin.context, { clearColor: CoreVis.Color.fromRgb(255, 255, 255) }); });
-    addControl('Load Molecule', function () {
+    addButton('Destroy Plugin', function () { plugin.destroy(); plugin = void 0; });
+    addSeparator();
+    addHeader('Layout');
+    addButton('Show Controls', function () { return Command.Layout.SetState.dispatch(plugin.context, { hideControls: false }); });
+    addButton('Hide Controls', function () { return Command.Layout.SetState.dispatch(plugin.context, { hideControls: true }); });
+    addButton('Expand', function () { return Command.Layout.SetState.dispatch(plugin.context, { isExpanded: true }); });
+    addButton('Set Background', function () { return Command.Layout.SetViewportOptions.dispatch(plugin.context, { clearColor: CoreVis.Color.fromRgb(255, 255, 255) }); });
+    addSeparator();
+    addHeader('Basics');
+    addButton('Load Molecule', function () {
         var id = moleculeId;
         // this builds the transforms needed to create a molecule
         var action = Transform.build()
@@ -513,7 +552,7 @@ var LiteMolPluginInstance;
         //.then(() => nextAction())
         //.catch(e => reportError(e));
     });
-    addControl('Load Ligand', function () {
+    addButton('Load Ligand', function () {
         // in the ligand instance, you will want to NOT include Bootstrap.Behaviour.ShowInteractionOnSelect(5) 
         var ligandStyle = {
             type: 'BallsAndSticks',
@@ -545,14 +584,14 @@ var LiteMolPluginInstance;
         });
         //.catch(e => reportError(e));
     });
-    addControl('Load Density', function () {
+    addButton('Load Density', function () {
         var id = moleculeId;
         // this builds the transforms needed to create a molecule
         var action = Transform.build()
             .add(plugin.context.tree.root, LiteMol.Viewer.PDBe.Data.DownloadDensity, { id: id }, { ref: 'density' });
         applyTransforms(action);
     });
-    addControl('Toggle Density', function () {
+    addButton('Toggle Density', function () {
         var density = selectNodes('density')[0];
         if (!density)
             return;
@@ -566,7 +605,7 @@ var LiteMolPluginInstance;
         colors.set('Highlight', CoreVis.Theme.Default.HighlightColor);
         return Visualization.Molecule.uniformThemeProvider(void 0, { colors: colors });
     }
-    addControl('Select, Extract, Focus', function () {
+    addButton('Select, Extract, Focus', function () {
         var visual = selectNodes('polymer-visual')[0];
         if (!visual)
             return;
@@ -582,14 +621,14 @@ var LiteMolPluginInstance;
             //Command.Molecule.FocusQuery.dispatch(plugin.context, { model: selectNodes('model')[0] as any, query })
         });
     });
-    addControl('Focus Query', function () {
+    addButton('Focus Query', function () {
         var model = selectNodes('model')[0];
         if (!model)
             return;
         var query = Query.sequence('1', 'A', { seqNumber: 10 }, { seqNumber: 25 });
         Command.Molecule.FocusQuery.dispatch(plugin.context, { model: model, query: query });
     });
-    addControl('Color Chains', function () {
+    addButton('Color Chains', function () {
         var visual = selectNodes('polymer-visual')[0];
         var model = selectNodes('model')[0];
         if (!model || !visual)
@@ -609,26 +648,26 @@ var LiteMolPluginInstance;
         Command.Visual.UpdateBasicTheme.dispatch(plugin.context, { visual: visual, theme: theme });
         // if you also want to color the ligands and waters, you have to safe references to them and do it manually.          
     });
-    addControl('Highlight On', function () {
+    addButton('Highlight On', function () {
         var model = selectNodes('model')[0];
         if (!model)
             return;
         var query = Query.sequence('1', 'A', { seqNumber: 10 }, { seqNumber: 25 });
         Command.Molecule.Highlight.dispatch(plugin.context, { model: model, query: query, isOn: true });
     });
-    addControl('Highlight Off', function () {
+    addButton('Highlight Off', function () {
         var model = selectNodes('model')[0];
         if (!model)
             return;
         var query = Query.sequence('1', 'A', { seqNumber: 10 }, { seqNumber: 25 });
         Command.Molecule.Highlight.dispatch(plugin.context, { model: model, query: query, isOn: false });
     });
-    addControl('Reset Theme, Sel, Highlight', function () {
+    addButton('Reset Theme, Sel, Highlight', function () {
         Command.Visual.ResetTheme.dispatch(plugin.context, void 0);
         cleanUp();
     });
     var AQ = Query.Algebraic;
-    addControl('Algebraic Query', function () {
+    addButton('Algebraic Query', function () {
         var model = selectNodes('model')[0];
         if (!model)
             return;
@@ -638,6 +677,67 @@ var LiteMolPluginInstance;
             .add(model, Transformer.Molecule.CreateSelectionFromQuery, { query: query, name: 'Alg. query' }, { ref: 'alg-selection' })
             .then(Transformer.Molecule.CreateVisual, { style: Visualization.Molecule.Default.ForType.get('BallsAndSticks') });
         applyTransforms(action);
+    });
+    addSeparator();
+    addHeader('Multiple Models');
+    addTextInput('models-pdbid', '1grm', '4 letter PDB id...');
+    addButton('Clear, Download, and Parse', function () {
+        var id = ((document.getElementById('models-pdbid').value) || '').trim().toLowerCase();
+        if (id.length !== 4) {
+            console.log('id must be a 4 letter string.');
+            return;
+        }
+        Bootstrap.Command.Tree.RemoveNode.dispatch(plugin.context, plugin.context.tree.root);
+        // this builds the transforms needed to create a molecule
+        var action = Transform.build()
+            .add(plugin.context.tree.root, Transformer.Data.Download, { url: "http://www.ebi.ac.uk/pdbe/static/entry/" + id + "_updated.cif", type: 'String', id: id })
+            .then(Transformer.Molecule.CreateFromData, { format: LiteMol.Core.Formats.Molecule.SupportedFormats.mmCIF }, { ref: 'molecule' });
+        //.then(Transformer.Molecule.CreateModel, { modelIndex: 0 }, { isBinding: false, ref: 'model' })
+        //.then(Transformer.Molecule.CreateMacromoleculeVisual, { polymer: true, polymerRef: 'polymer-visual', het: true, water: true });
+        // can also add hetRef and waterRef; the refs allow us to reference the model and visual later.
+        applyTransforms(action);
+        //.then(() => nextAction())
+        //.catch(e => reportError(e));
+    });
+    addButton('Create All Models', function () {
+        // this function can be called 'automatically' in applyTransforms(action).then(....) from 'Clear, Download, and Parse';
+        var molecule = plugin.context.select('molecule' /* accessed by ref created in 'Clear, Download, and Parse' */)[0];
+        if (!molecule) {
+            console.log('Molecule not loaded.');
+            return;
+        }
+        var count = molecule.props.molecule.models.length;
+        var action = Transform.build();
+        var colors = Bootstrap.Immutable.Map()
+            .set('Selection', LiteMol.Visualization.Theme.Default.SelectionColor)
+            .set('Highlight', LiteMol.Visualization.Theme.Default.HighlightColor);
+        for (var i = 0; i < count; i++) {
+            // More styles in Bootstrap/Visualization/Molecule/Styles.ts
+            var style = {
+                type: 'Cartoons',
+                params: { detail: 'Automatic' },
+                theme: {
+                    template: Bootstrap.Visualization.Molecule.Default.UniformThemeTemplate,
+                    colors: colors.set('Uniform', LiteMol.Visualization.Molecule.Colors.DefaultPallete[i]),
+                    transparency: {}
+                }
+            };
+            action
+                .add(molecule, Transformer.Molecule.CreateModel, { modelIndex: i }, { isBinding: false, ref: 'model-' + i })
+                .then(Transformer.Molecule.CreateVisual, { style: style }, { ref: 'model-visual-' + i });
+        }
+        applyTransforms(action);
+    });
+    addButton('Toggle Model 2 Visibility', function () {
+        var entity = plugin.context.select('model-1' /* indexed from 0 */)[0];
+        if (!entity)
+            return;
+        Bootstrap.Command.Entity.SetVisibility.dispatch(plugin.context, { entity: entity, visible: entity.state.visibility === 0 /* Full */ ? false : true });
+    });
+    addHoverArea('Hover to Highlight Model 1', function () {
+        Bootstrap.Command.Entity.Highlight.dispatch(plugin.context, { entities: plugin.context.select('model-visual-0' /* indexed from 0 */), isOn: true });
+    }, function () {
+        Bootstrap.Command.Entity.Highlight.dispatch(plugin.context, { entities: plugin.context.select('model-visual-0' /* indexed from 0 */), isOn: false });
     });
     function create(target) {
         var spec = {
