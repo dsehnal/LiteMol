@@ -12,7 +12,7 @@ namespace LiteMol.Bootstrap {
             return;
         }        
         let q = Utils.Molecule.getModelAndIndicesFromQuery(what.visual, what.query);
-        if (!q || q.indices.length) return;
+        if (!q || !q.indices.length) return;
         
         let entity = Tree.Node.findClosestNodeOfType(what.visual, [Entity.Molecule.Model, Entity.Molecule.Selection]);
         Event.Visual.VisualSelectElement.dispatch(context, { entity, visual: what.visual, elements: q.indices });

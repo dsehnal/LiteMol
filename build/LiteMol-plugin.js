@@ -63591,7 +63591,7 @@ var LiteMol;
 (function (LiteMol) {
     var Bootstrap;
     (function (Bootstrap) {
-        Bootstrap.VERSION = { number: "1.1.4", date: "Sep 17 2016" };
+        Bootstrap.VERSION = { number: "1.1.5", date: "Sep 30 2016" };
     })(Bootstrap = LiteMol.Bootstrap || (LiteMol.Bootstrap = {}));
 })(LiteMol || (LiteMol = {}));
 /*
@@ -69056,7 +69056,7 @@ var LiteMol;
                 return;
             }
             var q = Bootstrap.Utils.Molecule.getModelAndIndicesFromQuery(what.visual, what.query);
-            if (!q || q.indices.length)
+            if (!q || !q.indices.length)
                 return;
             var entity = Bootstrap.Tree.Node.findClosestNodeOfType(what.visual, [Bootstrap.Entity.Molecule.Model, Bootstrap.Entity.Molecule.Selection]);
             Bootstrap.Event.Visual.VisualSelectElement.dispatch(context, { entity: entity, visual: what.visual, elements: q.indices });

@@ -1,4 +1,7 @@
-﻿== 1.1.4 ==
+﻿== 1.1.5 ==
+* Bugfix in CreateSelectInteraction command.
+
+== 1.1.4 ==
 * Added rainbow coloring.
 * Coordinate Streaming now uses BinaryCIF.
 
