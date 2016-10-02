@@ -1,29 +1,29 @@
-﻿== 2.4.5 ==
+﻿# 2.4.5
 * PDB parser fix.
 
-== 2.4.4 ==
+# 2.4.4
 * Added polymerTrace(...atomNames) query.
 
-== 2.4.3 ==
+# 2.4.3
 * Refactored code that used "private classes" to a procedural style to avoid it from being deoptimized by garbage collector on long computations.
 
-== 2.4.2 ==
+# 2.4.2
 * SDF parser fix.
 * StringPool is now "local" to avoid memory leaks.
 
-== 2.4.1 ==
+# 2.4.1
 * A bugfix in BinaryCIF decoder.
 * A bugfix in mmCIF assembly parsing.
 
-== 2.4.0 ==
+# 2.4.0
 * Refactored CIF support. The CIF access is now a lot more streamlined.
 * Added support for BinarCIF.
 * Renamed Formats.Density.BRIX to Formats.Density.DSN6 
 
-== 2.3.1 ==
+# 2.3.1
 * Adding MOL/SDF support.
 
-== 2.3.0 ==
+# 2.3.0
 * Refactoring of "Formats" namespace to enable easier support for additional formats.
   - Formats.Cif is now Formats.CIF
   - Moved Formats.Cif.mmCif to Formats.Molecule.mmCIF
@@ -32,115 +32,115 @@
   - Moved Formats/Field.ts to Formats/Density/Data.ts and changed the namespace to Formats.Density
   - Added a "common" parsing functions for all formats supported by the Core.
 
-== 2.2.7 ==
+# 2.2.7
 * Fixed a bug in PDB parser.
 
-== 2.2.6 ==
+# 2.2.6
 * Fixed a bug that prevented creating of "non-interactive" molecular surfaces.
 
-== 2.2.5 ==
+# 2.2.5
 * Added query flatten and function Fragment.find(query). (for example residuesByName('ALA').flatten(f => f.find(atomsByElement('C')))).
 
-== 2.2.4 ==
+# 2.2.4
 * Added intersectWith query.
 * Fixed a problem with kD tree based queries (ambient*) in "partial contexts" (i.e. when inside "inside" query).
 
-== 2.2.3 ==
+# 2.2.3
 * Added algebraic query support.
 
-== 2.2.2 ==
+# 2.2.2
 * Added complement query.
 
-== 2.2.1 ==
+# 2.2.1
 * Added additional pattern queries.
 
-== 2.2.0 ==
+# 2.2.0
 * Added support for the BRIX density format.
 
-== 2.1.15 ==
+# 2.1.15
 * Fix to overlaping secondary structure elements.
 
-== 2.1.14 ==
+# 2.1.14
 * Fixes to assembly generation.
 
-== 2.1.13 ==
+# 2.1.13
 * Refactored symmetry generation code to be slightly more readable.
 
-== 2.1.12 ==
+# 2.1.12
 * Fixed symmetry/assembly generation that contained lower amount of entities in it's result. 
 * Fixed secondary structure indexing in symmetry/assembly generation when the output molecule is smaller than the original.
 
-== 2.1.11 ==
+# 2.1.11
 * Updated sequence query to work on computed models.
 
-== 2.1.10 ==
+# 2.1.10
 * Fixed another bug in asymIds :)
 
-== 2.1.9 ==
+# 2.1.9
 * Fixed a bug with incorrect asymIds in the symmetry mate generation.
 
-== 2.1.8 ==
+# 2.1.8
 * Refactored queries.
 
-== 2.1.7 ==
+# 2.1.7
 * Added C4 atom to the sidechain and backbone queries.
 
-== 2.1.6 ==
+# 2.1.6
 * Computed molecules (assemblies) now include operator indices used. 
 
-== 2.1.5 ==
+# 2.1.5
 * Fixed a bug in the CIF parser that crashed on ' X' (i.e. string token that starts with space).
 
-== 2.1.4 ==
+# 2.1.4
 * Added support for TURN secondary structure.
 
-== 2.1.3 ==
+# 2.1.3
 * Assembly and symmetry generation now supports secondary structure.
 
-== 2.1.2 ==
+# 2.1.2
 * Updated the module system (again).
 
-== 2.1.1 ==
+# 2.1.1
 * Moved marching cubes from Visualization to Core
 * Added PerformanceMonitor to Utils
 
-== 2.1.0 ==
+# 2.1.0
 * Added support for generating symmetry mates and assembly models.
 
-== 2.0.1 ==
+# 2.0.1
 * Fixes in module support.
 
-== 2.0.0 ==
+# 2.0.0
 * Big code refactoring.
 
-== 1.3.0 ==
+# 1.3.0
 * Added basic support for the PDB format.
 * Fixed a minor bug in visualization picking code.
 
-== 1.2.1 ==
+# 1.2.1
 * Changed the visuals' constructors to take a single object as input rather than a long list of arguments.
 
-== 1.2.0 ==
+# 1.2.0
 * Added basic support for molecule comparison based on RMSD.
 
-== 1.1.5 ==
+# 1.1.5
 * Added support for "full" density surfaces.
 
-== 1.1.4 ==
+# 1.1.4
 * Added entityId property to chain table in molecule representation.
 * Changed entity table id to entityId.
 
-== 1.1.3 ==
+# 1.1.3
 * Fixed a bug "atom names" queries.
 
-== 1.1.2 ==
+# 1.1.2
 * Coloring of molecular surfaces.
 
-== 1.1.1 ==
+# 1.1.1
 * Fixed a bug in assembly visuals.
 * Fixed symmetry visuals.
 
-== 1.1.0 ==
+# 1.1.0
 * Updated Density/MarchingCubes to support vertex annotation.
 * Added MolecularSurface support.
 * Added namespace LiteMol.Visualization.Molecule.

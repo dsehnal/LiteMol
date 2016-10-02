@@ -123,15 +123,15 @@
 
 .lm-toggle-color-picker-above {
     .lm-color-picker {
-        top: -2 * 32px - $control-spacing / 2;
-        height: 2 * 32px + $control-spacing / 2;
+        top: -2 * 32px - 16px - $control-spacing / 2;
+        height: 2 * 32px + 16px + $control-spacing / 2;
     }
 }
 
 .lm-toggle-color-picker-below {
     .lm-color-picker {
         top: $row-height;
-        height: 2 * 32px;
+        height: 2 * 32px + 16px;
     }
 }
 

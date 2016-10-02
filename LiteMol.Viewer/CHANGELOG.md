@@ -1,23 +1,21 @@
-1.1.4
------
+# 1.1.5
+* Improved color picker.
+
+# 1.1.4
 * Fixed bond display between atoms that have no altLoc specified and these that do.
 
-1.1.3
------
+# 1.1.3
 * Added rainbow coloring for molecules.
 * Coordinate Streaming now uses BinaryCIF.
 
-1.1.2
------
+# 1.1.2
 * Added support for BinaryCIF.
 
-1.1.1
------
+# 1.1.1
 * Added basic SDF support.
 * Improved the behaviour of selecting the next node when the current one is removed.
 
-1.1.0
------
+# 1.1.0
 * This version is the result of refactoring the "format" support in the Core to better support different formats in the future.
 * To support these features, refactored parsing of molecular and desnity data.
   - This introduces a few breaking changes. 
@@ -26,50 +24,40 @@
   - Refer to changelogs for Core, Bootstrap, and Plugin for more details.
 * Added the ability to download/open/parse old PDB files.
 
-1.0.14
-------
+# 1.0.14
 * Added query flatten and function Fragment.find(query). (for example residuesByName('ALA').flatten(f => f.find(atomsByElement('C')))).
 
-1.0.13
-------
+# 1.0.13
 * Added xs.intersectWith(ys) query.
 * Fixed and issue with ambientResidues/Atoms query when used inside "inside" query.
 * Fixed transparent objects incorrectly being made interactive when updating visibility.
 * Fixed a mouse-scrolling issue that would scroll the entire page is scrolled on top of the plugin.
 
-1.0.12
-------
+# 1.0.12
 * Updated some internals (the way "collapsed" transforms are handled).
 
-1.0.11
-------
+# 1.0.11
 * Added behaviour to unselect elements on repeated click.
 * Added new queries: atomsByElement, atomsByName, atomsById, residuesByName, residuesById, chainsById.
 
-1.0.10
-------
+# 1.0.10
 * Added BRIX density data support.
 
-1.0.9
------
+# 1.0.9
 * Fixed mouse issues related to scrollbar position.
 * Toggling expand no longer resets scrollbar position to 0.
 
-1.0.8
------
+# 1.0.8
 * Screenshot support.
 
-1.0.7
------
+# 1.0.7
 * Fix to overlapping secondary structure elements.
 
-1.0.6
------
+# 1.0.6
 * Added support for wireframe models of all surfaces.
 * Camera zoom reversed (moving mouse down brings the structure closer).
 
-1.0.5
------
+# 1.0.5
 * Fix for visibility state not updating in Chrome.
 * Fix for strange behaviour of themes when updating visuals.
 * Fix of assembly generation.
@@ -77,24 +65,19 @@
 * Fixed slider issues in chrome.
 * Align label of the header in the "transform panel" to the center + added bottom border.
 
-1.0.4
------
+# 1.0.4
 * Fixes in assembly/symmetry generation.
 * Tweaks in atom highlight label.
 * Added atom count to molecule model nodes.
 
-1.0.3
------
+# 1.0.3
 * Added support for sequence annotations.
 
-1.0.2
------
+# 1.0.2
 * Added support for validation coloring.
 
-1.0.1
------
+# 1.0.1
 * Fix for non-displaying C-alpha only molecules.
 
-1.0.0
------
+# 1.0.0
 * Initial release.
