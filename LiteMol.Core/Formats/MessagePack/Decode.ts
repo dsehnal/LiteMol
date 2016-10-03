@@ -49,7 +49,8 @@ namespace LiteMol.Core.Formats.MessagePack {
         // than creating the new byte array.
                 
         let value = new Uint8Array(length);
-        for (let i = 0; i < length; i++) value[i] = state.buffer[i + state.offset];
+        let o = state.offset;
+        for (let i = 0; i < length; i++) value[i] = state.buffer[i + o];
         state.offset += length;
         return value;
     }

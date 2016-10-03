@@ -9187,8 +9187,9 @@ var LiteMol;
                     // in the background, which causes the element access to be several times slower
                     // than creating the new byte array.
                     var value = new Uint8Array(length);
+                    var o = state.offset;
                     for (var i = 0; i < length; i++)
-                        value[i] = state.buffer[i + state.offset];
+                        value[i] = state.buffer[i + o];
                     state.offset += length;
                     return value;
                 }

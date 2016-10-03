@@ -17,7 +17,7 @@ namespace LiteMol.Core.Utils.FastNumberParsers {
     }
 
     export function parseInt(str: string, start: number, end: number) {
-        var ret = 0, neg = 1;
+        let ret = 0, neg = 1;
         if (str.charCodeAt(start) === 45 /* - */) { neg = -1; start++; }
         for (; start < end; start++) {
             let c = str.charCodeAt(start) - 48;
@@ -37,7 +37,7 @@ namespace LiteMol.Core.Utils.FastNumberParsers {
     }
 
     export function parseFloat(str: string, start: number, end: number) {
-        var neg = 1.0, ret = 0.0, point = 0.0, div = 1.0;
+        let neg = 1.0, ret = 0.0, point = 0.0, div = 1.0;
 
         if (str.charCodeAt(start) === 45) {
             neg = -1.0;

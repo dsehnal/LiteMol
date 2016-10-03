@@ -156,14 +156,6 @@ namespace LiteMol.Core.Geometry.MarchingCubes {
         annotationBuffer: Core.Utils.ChunkedArrayBuilder<number>;
         triangleBuffer: Core.Utils.ChunkedArrayBuilder<number>;
 
-        private getAnnotation() {
-            return this.annotationField!.get(this.i, this.j, this.k);
-        }
-
-        private getFieldFromIndices(i: number, j: number, k: number) {
-            return this.scalarField.get(i, j, k);
-        }
-
         private get3dOffsetFromEdgeInfo(index: Index) {
             return (this.nX * ((this.k + index.k) * this.nY + this.j + index.j) + this.i + index.i) | 0;
         }
@@ -179,8 +171,8 @@ namespace LiteMol.Core.Geometry.MarchingCubes {
             let a = edge.a, b = edge.b,
                 li = a.i + this.i, lj = a.j + this.j, lk = a.k + this.k,
                 hi = b.i + this.i, hj = b.j + this.j, hk = b.k + this.k,
-                v0 = this.getFieldFromIndices(li, lj, lk),
-                v1 = this.getFieldFromIndices(hi, hj, hk),
+                v0 = this.scalarField.get(li, lj, lk),
+                v1 = this.scalarField.get(hi, hj, hk),
                 t = (this.isoLevel - v0) / (v0 - v1);
 
             let id = this.vertexBuffer.add3(
@@ -191,7 +183,7 @@ namespace LiteMol.Core.Geometry.MarchingCubes {
             this.verticesOnEdges[edgeId] = id + 1;
 
             if (this.annotate) {
-                this.annotationBuffer.add(this.getAnnotation());
+                this.annotationBuffer.add(this.annotationField!.get(this.i, this.j, this.k));
             }
 
             return id;
@@ -218,14 +210,14 @@ namespace LiteMol.Core.Geometry.MarchingCubes {
         processCell(i: number, j: number, k: number) {
             let tableIndex = 0;
             
-            if (this.getFieldFromIndices(i, j, k) < this.isoLevel) tableIndex |= 1;
-            if (this.getFieldFromIndices(i + 1, j, k) < this.isoLevel) tableIndex |= 2;
-            if (this.getFieldFromIndices(i + 1, j + 1, k) < this.isoLevel) tableIndex |= 4;
-            if (this.getFieldFromIndices(i, j + 1, k) < this.isoLevel) tableIndex |= 8;
-            if (this.getFieldFromIndices(i, j, k + 1) < this.isoLevel) tableIndex |= 16;
-            if (this.getFieldFromIndices(i + 1, j, k + 1) < this.isoLevel) tableIndex |= 32;
-            if (this.getFieldFromIndices(i + 1, j + 1, k + 1) < this.isoLevel) tableIndex |= 64;
-            if (this.getFieldFromIndices(i, j + 1, k + 1) < this.isoLevel) tableIndex |= 128;
+            if (this.scalarField.get(i, j, k) < this.isoLevel) tableIndex |= 1;
+            if (this.scalarField.get(i + 1, j, k) < this.isoLevel) tableIndex |= 2;
+            if (this.scalarField.get(i + 1, j + 1, k) < this.isoLevel) tableIndex |= 4;
+            if (this.scalarField.get(i, j + 1, k) < this.isoLevel) tableIndex |= 8;
+            if (this.scalarField.get(i, j, k + 1) < this.isoLevel) tableIndex |= 16;
+            if (this.scalarField.get(i + 1, j, k + 1) < this.isoLevel) tableIndex |= 32;
+            if (this.scalarField.get(i + 1, j + 1, k + 1) < this.isoLevel) tableIndex |= 64;
+            if (this.scalarField.get(i, j + 1, k + 1) < this.isoLevel) tableIndex |= 128;
 
             if (tableIndex === 0 || tableIndex === 255) return;
 
