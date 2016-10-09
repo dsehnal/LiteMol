@@ -1517,7 +1517,7 @@ declare namespace LiteMol.Core.Formats.CIF.Binary {
     }
     namespace Encoder {
         interface Result {
-            encoding: Encoding;
+            encodings: Encoding[];
             data: any;
         }
         type Provider = (data: any) => Result;
@@ -1531,7 +1531,10 @@ declare namespace LiteMol.Core.Formats.CIF.Binary {
         function fixedPoint(factor: number): Provider;
         function runLength(data: (Uint8Array | Int8Array | Int16Array | Int32Array | number[])): Result;
         function delta(data: (Int8Array | Int16Array | Int32Array | number[])): Result;
-        function integerPacking(byteCount: number): Provider;
+        /**
+         * Packs Int32 array. The packing level is determined automatically to either 1-, 2-, or 4-byte words.
+         */
+        function integerPacking(data: Int32Array): Result;
         function stringArray(data: string[]): Result;
     }
 }

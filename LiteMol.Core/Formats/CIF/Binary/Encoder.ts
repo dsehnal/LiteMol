@@ -19,8 +19,15 @@ namespace LiteMol.Core.Formats.CIF.Binary {
             let encoding: Encoding[] = [];
             for (let p of this.providers) {
                 let t = p(data);
+
+                if (!t.encodings.length) {
+                    throw new Error('Encodings must be non-empty.');
+                }
+
                 data = t.data;
-                encoding.push(t.encoding);
+                for (let e of t.encodings) {
+                    encoding.push(e);
+                }
             }
             if (!(data instanceof Uint8Array)) {
                 throw new Error('The encoding must result in a Uint8Array. Fix your encoding chain.');
@@ -41,7 +48,7 @@ namespace LiteMol.Core.Formats.CIF.Binary {
         type TypedArray = { buffer: ArrayBuffer, byteOffset: number, byteLength: number }
 
         export interface Result {
-            encoding: Encoding,
+            encodings: Encoding[],
             data: any
         }
 
@@ -57,14 +64,14 @@ namespace LiteMol.Core.Formats.CIF.Binary {
 
         export function uint8(data: Int16Array): Result {
             return {
-                encoding: { kind: 'ByteArray', type: Encoding.DataType.Uint8 },
+                encodings: [{ kind: 'ByteArray', type: Encoding.DataType.Uint8 }],
                 data: data
             };
         }
 
         export function int8(data: Int8Array): Result {
             return {
-                encoding: { kind: 'ByteArray', type: Encoding.DataType.Int8 },
+                encodings: [{ kind: 'ByteArray', type: Encoding.DataType.Int8 }],
                 data: new Uint8Array(data.buffer, data.byteOffset)
             };
         }
@@ -76,7 +83,7 @@ namespace LiteMol.Core.Formats.CIF.Binary {
                 view.setInt16(2 * i, data[i]);
             }
             return {
-                encoding: { kind: 'ByteArray', type: Encoding.DataType.Int16 },
+                encodings: [{ kind: 'ByteArray', type: Encoding.DataType.Int16 }],
                 data: result
             };
         }
@@ -88,7 +95,7 @@ namespace LiteMol.Core.Formats.CIF.Binary {
                 view.setInt32(4 * i, data[i]);
             }
             return {
-                encoding: { kind: 'ByteArray', type: Encoding.DataType.Int32 },
+                encodings: [{ kind: 'ByteArray', type: Encoding.DataType.Int32 }],
                 data: result
             };
         }
@@ -100,7 +107,7 @@ namespace LiteMol.Core.Formats.CIF.Binary {
                 view.setFloat32(4 * i, data[i]);
             }
             return {
-                encoding: { kind: 'ByteArray', type: Encoding.DataType.Float32 },
+                encodings: [{ kind: 'ByteArray', type: Encoding.DataType.Float32 }],
                 data: result
             };
         }
@@ -112,7 +119,7 @@ namespace LiteMol.Core.Formats.CIF.Binary {
                 view.setFloat64(8 * i, data[i]);
             }
             return {
-                encoding: { kind: 'ByteArray', type: Encoding.DataType.Float64 },
+                encodings: [{ kind: 'ByteArray', type: Encoding.DataType.Float64 }],
                 data: result
             };
         }
@@ -123,7 +130,7 @@ namespace LiteMol.Core.Formats.CIF.Binary {
                 result[i] = Math.round(data[i] * factor);
             }
             return {
-                encoding: { kind: 'FixedPoint', factor },
+                encodings: [{ kind: 'FixedPoint', factor }],
                 data: result
             };
         }
@@ -138,7 +145,7 @@ namespace LiteMol.Core.Formats.CIF.Binary {
 
             if (!data.length) {
                 return {
-                    encoding: { kind: 'RunLength', srcType, srcSize: 0 },
+                    encodings: [{ kind: 'RunLength', srcType, srcSize: 0 }],
                     data: new Int32Array(0)
                 };
             }
@@ -166,7 +173,7 @@ namespace LiteMol.Core.Formats.CIF.Binary {
             output[offset] = data[data.length - 1];
             output[offset + 1] = runLength;
             return {
-                encoding: { kind: 'RunLength', srcType, srcSize: data.length },
+                encodings: [{ kind: 'RunLength', srcType, srcSize: data.length }],
                 data: output
             };
         }
@@ -179,7 +186,7 @@ namespace LiteMol.Core.Formats.CIF.Binary {
             }
             if (!data.length) {
                 return {
-                    encoding: { kind: 'Delta', srcType },
+                    encodings: [{ kind: 'Delta', srcType }],
                     data: new (data as any).constructor(0)
                 };
             }
@@ -190,20 +197,18 @@ namespace LiteMol.Core.Formats.CIF.Binary {
                 output[i] = data[i] - data[i - 1];
             }
             return {
-                encoding: { kind: 'Delta', srcType },
+                encodings: [{ kind: 'Delta', srcType }],
                 data: output
             };
         }
 
-        function _integerPacking(data: Int32Array, byteCount: number): Result {
-            let upperLimit = byteCount === 1 ? 0x7F : 0x7FFF;
+        function packingSize(data: Int32Array, upperLimit: number) {
             let lowerLimit = -upperLimit - 1;
-            let n = data.length;
             let size = 0;
-            for (let i = 0; i < n; i++) {
+            for (let i = 0, n = data.length; i < n; i++) {
                 let value = data[i];
                 if (value === 0) {
-                    ++size;
+                    size += 1;
                 } else if (value === upperLimit || value === lowerLimit) {
                     size += 2;
                 } else if (value > 0) {
@@ -212,32 +217,75 @@ namespace LiteMol.Core.Formats.CIF.Binary {
                     size += Math.ceil(value / lowerLimit);
                 }
             }
-            let output = byteCount === 1 ? new Int8Array(size) : new Int16Array(size);
+            return size;
+        }
+
+        function determinePacking(data: Int32Array): { size: number, bytesPerElement: number } {
+            let size8 = packingSize(data, 0x7f);
+            let size16 = packingSize(data, 0x7fff);
+
+            if (data.length * 4 < size16 * 2) {
+                // 4 byte packing is the most effective
+                return {
+                    size: data.length,
+                    bytesPerElement: 4
+                };
+            } else if (size16 * 2 < size8) {
+                // 2 byte packing is the most effective
+                return {
+                    size: size16,
+                    bytesPerElement: 2
+                }
+            } else {
+                // 1 byte packing is the most effective
+                return {
+                    size: size8,
+                    bytesPerElement: 1
+                }
+            };
+        }
+
+        /**
+         * Packs Int32 array. The packing level is determined automatically to either 1-, 2-, or 4-byte words.
+         */
+        export function integerPacking(data: Int32Array): Result {
+            let packing = determinePacking(data);
+
+            if (packing.bytesPerElement === 4) {                
+                // no packing done, Int32 encoding will be used
+                return int32(data);
+            }
+
+            let upperLimit = packing.bytesPerElement === 1 ? 0x7F : 0x7FFF;
+            let lowerLimit = -upperLimit - 1;
+            let n = data.length;
+            let packed = packing.bytesPerElement === 1 ? new Int8Array(packing.size) : new Int16Array(packing.size);
             let j = 0;
             for (let i = 0; i < n; i++) {
                 let value = data[i];
                 if (value >= 0) {
                     while (value >= upperLimit) {
-                        output[j] = upperLimit;
+                        packed[j] = upperLimit;
                         ++j;
                         value -= upperLimit;
                     }
                 } else {
                     while (value <= lowerLimit) {
-                        output[j] = lowerLimit;
+                        packed[j] = lowerLimit;
                         ++j;
                         value -= lowerLimit;
                     }
                 }
-                output[j] = value;
+                packed[j] = value;
                 ++j;
             }
+
+            let result = packing.bytesPerElement === 1 ? int8(packed) : int16(packed);
             return {
-                encoding: { kind: 'IntegerPacking', byteCount, srcSize: n },
-                data: output
+                encodings: [{ kind: 'IntegerPacking', byteCount: packing.bytesPerElement, srcSize: n }, result.encodings[0]],
+                data: result.data
             };
         }
-        export function integerPacking(byteCount: number): Provider { return data => _integerPacking(data, byteCount); }
 
         export function stringArray(data: string[]): Result {
             let map = new Map<string, number>();
@@ -245,8 +293,7 @@ namespace LiteMol.Core.Formats.CIF.Binary {
             let accLength = 0;
             let offsets = new Utils.ChunkedArrayBuilder<number>(s => new Int32Array(s), 1024, 1);
             let output = new Int32Array(data.length);
-            let bigCount = 0;
-
+            
             offsets.add(0);
             let i = 0;
             for (let s of data) {
@@ -270,17 +317,13 @@ namespace LiteMol.Core.Formats.CIF.Binary {
                     offsets.add(accLength);
                 } 
                 output[i++] = index;
-                if (index >= 0x7f) bigCount++;
             }
 
-            let encOffsets = Encoder.by(delta).and(integerPacking(2)).and(int16).encode(offsets.compact());            
-            let bigFraction = bigCount / data.length;
-            let encOutput = bigFraction > 0.25 
-                ? Encoder.by(delta).and(runLength).and(integerPacking(2)).and(int16).encode(output)
-                : Encoder.by(delta).and(runLength).and(integerPacking(1)).and(int8).encode(output);
+            let encOffsets = Encoder.by(delta).and(integerPacking).encode(offsets.compact());
+            let encOutput = Encoder.by(delta).and(runLength).and(integerPacking).encode(output);
             
             return {
-                encoding: { kind: 'StringArray', dataEncoding: encOutput.encoding, stringData: strings.join(''), offsetEncoding: encOffsets.encoding, offsets: encOffsets.data },
+                encodings: [{ kind: 'StringArray', dataEncoding: encOutput.encoding, stringData: strings.join(''), offsetEncoding: encOffsets.encoding, offsets: encOffsets.data }],
                 data: encOutput.data
             };
         }

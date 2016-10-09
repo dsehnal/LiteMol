@@ -1,4 +1,7 @@
-﻿# 2.4.5
+﻿# 2.4.6
+* Improved BinaryCIF interger packing encoder.
+
+# 2.4.5
 * PDB parser fix.
 
 # 2.4.4

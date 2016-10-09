@@ -8083,7 +8083,7 @@ var LiteMol;
 (function (LiteMol) {
     var Core;
     (function (Core) {
-        Core.VERSION = { number: "2.4.5", date: "Sep 27 2016" };
+        Core.VERSION = { number: "2.4.6", date: "Oct 9 2016" };
     })(Core = LiteMol.Core || (LiteMol.Core = {}));
 })(LiteMol || (LiteMol = {}));
 /*
@@ -10590,8 +10590,14 @@ var LiteMol;
                             for (var _i = 0, _a = this.providers; _i < _a.length; _i++) {
                                 var p = _a[_i];
                                 var t = p(data);
+                                if (!t.encodings.length) {
+                                    throw new Error('Encodings must be non-empty.');
+                                }
                                 data = t.data;
-                                encoding.push(t.encoding);
+                                for (var _b = 0, _c = t.encodings; _b < _c.length; _b++) {
+                                    var e = _c[_b];
+                                    encoding.push(e);
+                                }
                             }
                             if (!(data instanceof Uint8Array)) {
                                 throw new Error('The encoding must result in a Uint8Array. Fix your encoding chain.');
@@ -10615,14 +10621,14 @@ var LiteMol;
                         }
                         function uint8(data) {
                             return {
-                                encoding: { kind: 'ByteArray', type: 3 /* Uint8 */ },
+                                encodings: [{ kind: 'ByteArray', type: 3 /* Uint8 */ }],
                                 data: data
                             };
                         }
                         Encoder.uint8 = uint8;
                         function int8(data) {
                             return {
-                                encoding: { kind: 'ByteArray', type: 0 /* Int8 */ },
+                                encodings: [{ kind: 'ByteArray', type: 0 /* Int8 */ }],
                                 data: new Uint8Array(data.buffer, data.byteOffset)
                             };
                         }
@@ -10634,7 +10640,7 @@ var LiteMol;
                                 view.setInt16(2 * i, data[i]);
                             }
                             return {
-                                encoding: { kind: 'ByteArray', type: 1 /* Int16 */ },
+                                encodings: [{ kind: 'ByteArray', type: 1 /* Int16 */ }],
                                 data: result
                             };
                         }
@@ -10646,7 +10652,7 @@ var LiteMol;
                                 view.setInt32(4 * i, data[i]);
                             }
                             return {
-                                encoding: { kind: 'ByteArray', type: 2 /* Int32 */ },
+                                encodings: [{ kind: 'ByteArray', type: 2 /* Int32 */ }],
                                 data: result
                             };
                         }
@@ -10658,7 +10664,7 @@ var LiteMol;
                                 view.setFloat32(4 * i, data[i]);
                             }
                             return {
-                                encoding: { kind: 'ByteArray', type: 4 /* Float32 */ },
+                                encodings: [{ kind: 'ByteArray', type: 4 /* Float32 */ }],
                                 data: result
                             };
                         }
@@ -10670,7 +10676,7 @@ var LiteMol;
                                 view.setFloat64(8 * i, data[i]);
                             }
                             return {
-                                encoding: { kind: 'ByteArray', type: 5 /* Float64 */ },
+                                encodings: [{ kind: 'ByteArray', type: 5 /* Float64 */ }],
                                 data: result
                             };
                         }
@@ -10681,7 +10687,7 @@ var LiteMol;
                                 result[i] = Math.round(data[i] * factor);
                             }
                             return {
-                                encoding: { kind: 'FixedPoint', factor: factor },
+                                encodings: [{ kind: 'FixedPoint', factor: factor }],
                                 data: result
                             };
                         }
@@ -10695,7 +10701,7 @@ var LiteMol;
                             }
                             if (!data.length) {
                                 return {
-                                    encoding: { kind: 'RunLength', srcType: srcType, srcSize: 0 },
+                                    encodings: [{ kind: 'RunLength', srcType: srcType, srcSize: 0 }],
                                     data: new Int32Array(0)
                                 };
                             }
@@ -10723,7 +10729,7 @@ var LiteMol;
                             output[offset] = data[data.length - 1];
                             output[offset + 1] = runLength;
                             return {
-                                encoding: { kind: 'RunLength', srcType: srcType, srcSize: data.length },
+                                encodings: [{ kind: 'RunLength', srcType: srcType, srcSize: data.length }],
                                 data: output
                             };
                         }
@@ -10736,7 +10742,7 @@ var LiteMol;
                             }
                             if (!data.length) {
                                 return {
-                                    encoding: { kind: 'Delta', srcType: srcType },
+                                    encodings: [{ kind: 'Delta', srcType: srcType }],
                                     data: new data.constructor(0)
                                 };
                             }
@@ -10746,20 +10752,18 @@ var LiteMol;
                                 output[i] = data[i] - data[i - 1];
                             }
                             return {
-                                encoding: { kind: 'Delta', srcType: srcType },
+                                encodings: [{ kind: 'Delta', srcType: srcType }],
                                 data: output
                             };
                         }
                         Encoder.delta = delta;
-                        function _integerPacking(data, byteCount) {
-                            var upperLimit = byteCount === 1 ? 0x7F : 0x7FFF;
+                        function packingSize(data, upperLimit) {
                             var lowerLimit = -upperLimit - 1;
-                            var n = data.length;
                             var size = 0;
-                            for (var i = 0; i < n; i++) {
+                            for (var i = 0, n = data.length; i < n; i++) {
                                 var value = data[i];
                                 if (value === 0) {
-                                    ++size;
+                                    size += 1;
                                 }
                                 else if (value === upperLimit || value === lowerLimit) {
                                     size += 2;
@@ -10771,33 +10775,73 @@ var LiteMol;
                                     size += Math.ceil(value / lowerLimit);
                                 }
                             }
-                            var output = byteCount === 1 ? new Int8Array(size) : new Int16Array(size);
+                            return size;
+                        }
+                        function determinePacking(data) {
+                            var size8 = packingSize(data, 0x7f);
+                            var size16 = packingSize(data, 0x7fff);
+                            if (data.length * 4 < size16 * 2) {
+                                // 4 byte packing is the most effective
+                                return {
+                                    size: data.length,
+                                    bytesPerElement: 4
+                                };
+                            }
+                            else if (size16 * 2 < size8) {
+                                // 2 byte packing is the most effective
+                                return {
+                                    size: size16,
+                                    bytesPerElement: 2
+                                };
+                            }
+                            else {
+                                // 1 byte packing is the most effective
+                                return {
+                                    size: size8,
+                                    bytesPerElement: 1
+                                };
+                            }
+                            ;
+                        }
+                        /**
+                         * Packs Int32 array. The packing level is determined automatically to either 1-, 2-, or 4-byte words.
+                         */
+                        function integerPacking(data) {
+                            var packing = determinePacking(data);
+                            if (packing.bytesPerElement === 4) {
+                                // no packing done, Int32 encoding will be used
+                                return int32(data);
+                            }
+                            var upperLimit = packing.bytesPerElement === 1 ? 0x7F : 0x7FFF;
+                            var lowerLimit = -upperLimit - 1;
+                            var n = data.length;
+                            var packed = packing.bytesPerElement === 1 ? new Int8Array(packing.size) : new Int16Array(packing.size);
                             var j = 0;
                             for (var i = 0; i < n; i++) {
                                 var value = data[i];
                                 if (value >= 0) {
                                     while (value >= upperLimit) {
-                                        output[j] = upperLimit;
+                                        packed[j] = upperLimit;
                                         ++j;
                                         value -= upperLimit;
                                     }
                                 }
                                 else {
                                     while (value <= lowerLimit) {
-                                        output[j] = lowerLimit;
+                                        packed[j] = lowerLimit;
                                         ++j;
                                         value -= lowerLimit;
                                     }
                                 }
-                                output[j] = value;
+                                packed[j] = value;
                                 ++j;
                             }
+                            var result = packing.bytesPerElement === 1 ? int8(packed) : int16(packed);
                             return {
-                                encoding: { kind: 'IntegerPacking', byteCount: byteCount, srcSize: n },
-                                data: output
+                                encodings: [{ kind: 'IntegerPacking', byteCount: packing.bytesPerElement, srcSize: n }, result.encodings[0]],
+                                data: result.data
                             };
                         }
-                        function integerPacking(byteCount) { return function (data) { return _integerPacking(data, byteCount); }; }
                         Encoder.integerPacking = integerPacking;
                         function stringArray(data) {
                             var map = new Map();
@@ -10805,7 +10849,6 @@ var LiteMol;
                             var accLength = 0;
                             var offsets = new Core.Utils.ChunkedArrayBuilder(function (s) { return new Int32Array(s); }, 1024, 1);
                             var output = new Int32Array(data.length);
-                            var bigCount = 0;
                             offsets.add(0);
                             var i = 0;
                             for (var _i = 0, data_1 = data; _i < data_1.length; _i++) {
@@ -10827,16 +10870,11 @@ var LiteMol;
                                     offsets.add(accLength);
                                 }
                                 output[i++] = index;
-                                if (index >= 0x7f)
-                                    bigCount++;
                             }
-                            var encOffsets = Encoder.by(delta).and(integerPacking(2)).and(int16).encode(offsets.compact());
-                            var bigFraction = bigCount / data.length;
-                            var encOutput = bigFraction > 0.25
-                                ? Encoder.by(delta).and(runLength).and(integerPacking(2)).and(int16).encode(output)
-                                : Encoder.by(delta).and(runLength).and(integerPacking(1)).and(int8).encode(output);
+                            var encOffsets = Encoder.by(delta).and(integerPacking).encode(offsets.compact());
+                            var encOutput = Encoder.by(delta).and(runLength).and(integerPacking).encode(output);
                             return {
-                                encoding: { kind: 'StringArray', dataEncoding: encOutput.encoding, stringData: strings.join(''), offsetEncoding: encOffsets.encoding, offsets: encOffsets.data },
+                                encodings: [{ kind: 'StringArray', dataEncoding: encOutput.encoding, stringData: strings.join(''), offsetEncoding: encOffsets.encoding, offsets: encOffsets.data }],
                                 data: encOutput.data
                             };
                         }
@@ -14087,12 +14125,6 @@ var LiteMol;
                             this.annotationBuffer = Core.Utils.ChunkedArrayBuilder.forInt32(vertexBufferSize);
                         this.verticesOnEdges = new Int32Array(3 * this.nX * this.nY * this.nZ);
                     }
-                    MarchingCubesState.prototype.getAnnotation = function () {
-                        return this.annotationField.get(this.i, this.j, this.k);
-                    };
-                    MarchingCubesState.prototype.getFieldFromIndices = function (i, j, k) {
-                        return this.scalarField.get(i, j, k);
-                    };
                     MarchingCubesState.prototype.get3dOffsetFromEdgeInfo = function (index) {
                         return (this.nX * ((this.k + index.k) * this.nY + this.j + index.j) + this.i + index.i) | 0;
                     };
@@ -14102,31 +14134,31 @@ var LiteMol;
                         if (ret > 0)
                             return (ret - 1) | 0;
                         var edge = MarchingCubes.CubeEdges[edgeNum];
-                        var a = edge.a, b = edge.b, li = a.i + this.i, lj = a.j + this.j, lk = a.k + this.k, hi = b.i + this.i, hj = b.j + this.j, hk = b.k + this.k, v0 = this.getFieldFromIndices(li, lj, lk), v1 = this.getFieldFromIndices(hi, hj, hk), t = (this.isoLevel - v0) / (v0 - v1);
+                        var a = edge.a, b = edge.b, li = a.i + this.i, lj = a.j + this.j, lk = a.k + this.k, hi = b.i + this.i, hj = b.j + this.j, hk = b.k + this.k, v0 = this.scalarField.get(li, lj, lk), v1 = this.scalarField.get(hi, hj, hk), t = (this.isoLevel - v0) / (v0 - v1);
                         var id = this.vertexBuffer.add3(li + t * (li - hi), lj + t * (lj - hj), lk + t * (lk - hk)) | 0;
                         this.verticesOnEdges[edgeId] = id + 1;
                         if (this.annotate) {
-                            this.annotationBuffer.add(this.getAnnotation());
+                            this.annotationBuffer.add(this.annotationField.get(this.i, this.j, this.k));
                         }
                         return id;
                     };
                     MarchingCubesState.prototype.processCell = function (i, j, k) {
                         var tableIndex = 0;
-                        if (this.getFieldFromIndices(i, j, k) < this.isoLevel)
+                        if (this.scalarField.get(i, j, k) < this.isoLevel)
                             tableIndex |= 1;
-                        if (this.getFieldFromIndices(i + 1, j, k) < this.isoLevel)
+                        if (this.scalarField.get(i + 1, j, k) < this.isoLevel)
                             tableIndex |= 2;
-                        if (this.getFieldFromIndices(i + 1, j + 1, k) < this.isoLevel)
+                        if (this.scalarField.get(i + 1, j + 1, k) < this.isoLevel)
                             tableIndex |= 4;
-                        if (this.getFieldFromIndices(i, j + 1, k) < this.isoLevel)
+                        if (this.scalarField.get(i, j + 1, k) < this.isoLevel)
                             tableIndex |= 8;
-                        if (this.getFieldFromIndices(i, j, k + 1) < this.isoLevel)
+                        if (this.scalarField.get(i, j, k + 1) < this.isoLevel)
                             tableIndex |= 16;
-                        if (this.getFieldFromIndices(i + 1, j, k + 1) < this.isoLevel)
+                        if (this.scalarField.get(i + 1, j, k + 1) < this.isoLevel)
                             tableIndex |= 32;
-                        if (this.getFieldFromIndices(i + 1, j + 1, k + 1) < this.isoLevel)
+                        if (this.scalarField.get(i + 1, j + 1, k + 1) < this.isoLevel)
                             tableIndex |= 64;
-                        if (this.getFieldFromIndices(i, j + 1, k + 1) < this.isoLevel)
+                        if (this.scalarField.get(i, j + 1, k + 1) < this.isoLevel)
                             tableIndex |= 128;
                         if (tableIndex === 0 || tableIndex === 255)
                             return;
