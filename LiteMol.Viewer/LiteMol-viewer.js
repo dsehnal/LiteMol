@@ -828,5 +828,10 @@ var LiteMol;
         if (theme === 'light') {
             LiteMol.Bootstrap.Command.Layout.SetViewportOptions.dispatch(plugin.context, { clearColor: LiteMol.Visualization.Color.fromRgb(255, 255, 255) });
         }
+        var pdbId = (((window.location.search || '').match(/loadFromPDB=([a-z0-9]+)[&]?/i) || [])[1] || '').toLowerCase().trim();
+        if (pdbId.length === 4) {
+            var t = LiteMol.Bootstrap.Tree.Transform.build().add(plugin.context.tree.root, Viewer.PDBe.Data.DownloadMolecule, { id: pdbId });
+            LiteMol.Bootstrap.Tree.Transform.apply(plugin.context, t).run(plugin.context);
+        }
     })(Viewer = LiteMol.Viewer || (LiteMol.Viewer = {}));
 })(LiteMol || (LiteMol = {}));

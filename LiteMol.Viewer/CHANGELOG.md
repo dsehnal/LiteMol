@@ -1,3 +1,6 @@
+# 1.1.6
+* Support for ?loadFromPDB=ID URL query to enable loading of default structures.
+
 # 1.1.5
 * Improved color picker.
 
