@@ -8,52 +8,37 @@
     "declaration": true,
     "strictNullChecks": true,
     "noImplicitThis": true,
-    "lib": [ "es5", "es2015.collection", "dom" ],
+    "lib": [
+      "es5",
+      "es2015.collection",
+      "dom"
+    ],
     "target": "es5",
     "out": "LiteMol-core-temp.js"
   },
-  "files": [    
+  "files": [
     "lib/promise.d.ts",
     "lib/rx-lite.d.ts",
+    "lib/CIFTools.d.ts",
     "lib/Lib.ts",
-
     "Version.ts",
-
     "Base/Computation.ts",
-    
     // UTILS
     "Utils/MiscUtils.ts",
     "Utils/ArrayBuilder.ts",
     "Utils/NumberParsers.ts",
     "Utils/PerformanceMonitor.ts",
-
     // FORMATS
     "Formats/Common.ts",
-
-    "Formats/MessagePack/Encode.ts",
-    "Formats/MessagePack/Decode.ts",
-    "Formats/MessagePack/Utf8.ts",
-
-    "Formats/CIF/Dictionary.ts",    
-    "Formats/CIF/Text/Dictionary.ts",
-    "Formats/CIF/Text/Parser.ts",
-    "Formats/CIF/Binary/Dictionary.ts",
-    "Formats/CIF/Binary/Encoding.ts",
-    "Formats/CIF/Binary/Encoder.ts",
-    "Formats/CIF/Binary/Decoder.ts",
-    "Formats/CIF/Binary/Parser.ts",
-
     "Formats/Molecule/mmCIF.ts",
     "Formats/Molecule/PDB/Data.ts",
     "Formats/Molecule/PDB/Parser.ts",
     "Formats/Molecule/SDF.ts",
     "Formats/Molecule/Formats.ts",
-    
     "Formats/Density/Data.ts",
     "Formats/Density/CCP4.ts",
     "Formats/Density/DSN6.ts",
     "Formats/Density/Formats.ts",
-
     // GEOMETRY
     "Geometry/LinearAlgebra.ts",
     "Geometry/SubdivisionTree.ts",
@@ -61,7 +46,6 @@
     "Geometry/MarchingCubes/MarchingCubes.ts",
     "Geometry/MarchingCubes/Tables.ts",
     "Geometry/MolecularSurface/MolecularIsoSurface.ts",
-
     // STRUCTURE
     "Structure/Molecule.ts",
     "Structure/Spacegroups.ts",
@@ -69,7 +53,6 @@
     "Structure/Query/Data.ts",
     "Structure/Query/Queries.ts",
     "Structure/Query/Algebraic.ts",
-
     "Module.ts"
   ]
 }

@@ -7,8 +7,10 @@ namespace LiteMol.Visualization.Molecule.BallsAndSticks {
 
     namespace BallsAndSticksHelper {
 
-        export function addPrecomputedBonds(molecule: Core.Structure.MoleculeModel, atomIndices: number[], builder: Core.Utils.ChunkedArrayBuilder<number>) {            
-            let mask = Core.Structure.Query.Context.Mask.ofIndices(molecule, atomIndices);            
+        import ChunkedArray = Core.Utils.ChunkedArray;
+
+        export function addPrecomputedBonds(molecule: Core.Structure.MoleculeModel, atomIndices: number[], builder: ChunkedArray<number>) {
+            let mask = Core.Structure.Query.Context.Mask.ofIndices(molecule, atomIndices);
             let stickCount = 0;
             let residueCount = 0;
 
@@ -18,7 +20,7 @@ namespace LiteMol.Visualization.Molecule.BallsAndSticks {
                 if (!mask.has(a) || !mask.has(b)) continue;
                 let order = type[i];
                 if (order < 1 || order > 4) order = 1;
-                builder.add3(a, b, order);
+                ChunkedArray.add3(builder, a, b, order);
                 stickCount += order;
             }
             return stickCount;
@@ -27,10 +29,10 @@ namespace LiteMol.Visualization.Molecule.BallsAndSticks {
         export function analyze(molecule: Core.Structure.MoleculeModel, atomIndices: number[]) {
             let indices: Int32Array,
                 atomCount = 0;
-            
+
             indices = <any>atomIndices;
             atomCount = indices.length;
-                        
+
             let atoms = molecule.atoms,
                 cX = atoms.x, cY = atoms.y, cZ = atoms.z,
                 elementSymbol = atoms.elementSymbol,
@@ -44,7 +46,7 @@ namespace LiteMol.Visualization.Molecule.BallsAndSticks {
             let bondLength = 2;
 
             let compBonds = molecule.componentBonds,
-                builder = new Core.Utils.ChunkedArrayBuilder<number>(size => new Int32Array(size), (indices.length * 1.33) | 0, 3),
+                builder = ChunkedArray.create<number>(size => new Int32Array(size), (indices.length * 1.33) | 0, 3),
                 residueCount = 1,
                 stickCount = 0,
                 startAtomIndex = 0, endAtomIndex = 0;
@@ -57,9 +59,9 @@ namespace LiteMol.Visualization.Molecule.BallsAndSticks {
                     while (endAtomIndex < atomCount && atomResidueIndex[indices[endAtomIndex]] == rIndex) endAtomIndex++;
                     residueCount++;
                     startAtomIndex = endAtomIndex;
-                }    
+                }
                 return {
-                    bonds: builder.compact(),
+                    bonds: ChunkedArray.compact(builder),
                     stickCount,
                     residueCount
                 };
@@ -80,14 +82,14 @@ namespace LiteMol.Visualization.Molecule.BallsAndSticks {
 
                 let bondInfo: Core.Structure.ComponentBondInfoEntry | undefined;
                 if (compBonds && (bondInfo = compBonds.entries.get(residueName[atomResidueIndex[indices[startAtomIndex]]]))) {
-                    
+
                     for (let ii = startAtomIndex; ii < endAtomIndex - 1; ii++) {
 
                         let iA = indices[ii],
                             nA = atomName[iA],
                             altA = altLoc[iA],
                             pairs = bondInfo.map.get(nA);
-                        
+
                         if (!pairs) continue;
 
                         for (let jj = ii + 1; jj < endAtomIndex; jj++) {
@@ -99,7 +101,7 @@ namespace LiteMol.Visualization.Molecule.BallsAndSticks {
                                 let order = pairs.get(atomName[iB]);
                                 if (order !== void 0) {
                                     if (order < 1 || order > 4) order = 1;
-                                    builder.add3(iA, iB, order);
+                                    ChunkedArray.add3(builder, iA, iB, order);
                                     stickCount += order;
                                 }
                             } else {
@@ -137,7 +139,7 @@ namespace LiteMol.Visualization.Molecule.BallsAndSticks {
 
                             if (isHA || isHB) {
                                 if (len < 1.1) {
-                                    builder.add3(atom, idx, 1);
+                                    ChunkedArray.add3(builder, atom, idx, 1);
                                     stickCount++;
                                 }
                                 continue;
@@ -146,7 +148,7 @@ namespace LiteMol.Visualization.Molecule.BallsAndSticks {
                             let altB = altLoc[idx];
 
                             if (len && (!altA || !altB || altA === altB)) {
-                                builder.add3(atom, idx, 1);
+                                ChunkedArray.add3(builder, atom, idx, 1);
                                 stickCount++;
                             }
                         }
@@ -156,20 +158,20 @@ namespace LiteMol.Visualization.Molecule.BallsAndSticks {
                 }
 
                 residueCount++;
-                startAtomIndex = endAtomIndex;                
+                startAtomIndex = endAtomIndex;
             }
 
             return {
-                bonds: builder.compact(),
+                bonds: ChunkedArray.compact(builder),
                 stickCount,
                 residueCount
             };
         }
-                
+
     }
 
     class BondModelState {
-        
+
         atomsVector = new THREE.Vector3();
         center = new THREE.Vector3();
         rotationAxis = new THREE.Vector3();
@@ -193,14 +195,14 @@ namespace LiteMol.Visualization.Molecule.BallsAndSticks {
             public templateNB: Float32Array,
             public templateIB: Uint32Array,
             public templateVertexCount: number,
-            
+
             public vertices: Float32Array,
             public normals: Float32Array,
             public indices: Uint32Array) {
         }
 
     }
-    
+
     class BuildState {
         static getBondTemplate(radius: number, tessalation: number) {
             let detail: number;
@@ -234,12 +236,12 @@ namespace LiteMol.Visualization.Molecule.BallsAndSticks {
             }
             return GeometryHelper.getIndexedBufferGeometry(base);
         }
-        
+
         tessalation = this.params.tessalation;
         atomRadius = this.params.atomRadius;
         bondRadius = this.params.bondRadius;
         hideBonds = this.params.hideBonds;
-        
+
         bondTemplate = BuildState.getBondTemplate(1.0, this.tessalation!);
         atomTemplate = BuildState.getAtomTemplate(1.0, this.tessalation!);
 
@@ -268,7 +270,7 @@ namespace LiteMol.Visualization.Molecule.BallsAndSticks {
         cX = this.atoms.x; cY = this.atoms.y; cZ = this.atoms.z;
         atomSymbols = this.atoms.elementSymbol;
         residueIndex = this.atoms.residueIndex;
-        atomsDone = 0; 
+        atomsDone = 0;
         offset = 0;
         bondsDone = 0;
 
@@ -284,54 +286,54 @@ namespace LiteMol.Visualization.Molecule.BallsAndSticks {
         atom1Vec = new THREE.Vector3();
         atom2Vec = new THREE.Vector3();
         finalMatrix: THREE.Matrix4;
-        
+
         pickColor = { r: 0.1, g: 0.1, b: 0.1 };
 
         atomMapBuilder = new Selection.VertexMapBuilder(this.atomIndices.length);
         tempVector = new THREE.Vector3(0, 0, 0);
-                
-        bs: BondsBuildState = <any>void 0;       
-        
+
+        bs: BondsBuildState = <any>void 0;
+
         constructor(public model: Core.Structure.MoleculeModel, public atomIndices: number[], public params: Parameters) {
-            
-        }        
+
+        }
     }
-    
+
     class BondsBuildState {
-        
+
         model = this.state.model;
         atomIndices = this.state.atomIndices;
         info = BallsAndSticksHelper.analyze(this.state.model, this.state.atomIndices);
-                
+
         bondMapBuilder = new Selection.VertexMapBuilder(this.info.residueCount);
-    
+
         bondBufferSize = this.state.bondTemplateVertexBufferLength * this.info.stickCount;
         bondVertices = new Float32Array(this.bondBufferSize);
         bondNormals = new Float32Array(this.bondBufferSize);
         bondColors = new Float32Array(this.bondBufferSize);
         bondIndices = new Uint32Array(this.state.bondTemplateIndexBufferLength * this.info.stickCount);
-        
+
         bondRadius = this.state.params.bondRadius;
-    
+
         residueIndex = this.model.atoms.residueIndex;
         currentResidueIndex = this.residueIndex[this.info.bonds[0]];
-        bondMapVertexOffsetStart = 0; 
+        bondMapVertexOffsetStart = 0;
         bondMapVertexOffsetEnd = 0;
         bondState = new BondModelState(
             this.state.bondTemplate, this.state.bondTemplateVertexBuffer, this.state.bondTemplateNormalBuffer, this.state.bondTemplateIndexBuffer, this.state.bondTemplateVertexCount,
             this.bondVertices, this.bondNormals, this.bondIndices);
         bondCount = (this.info.bonds.length / 3) | 0;
-        
+
         constructor(public state: BuildState) {
-            
+
         }
     }
-    
+
     class BallsAndSticksGeometryBuilder {
 
         atomsGeometry: THREE.BufferGeometry;
         bondsGeometry: THREE.BufferGeometry;
-        
+
         pickGeometry: THREE.BufferGeometry;
 
         atomVertexMap: Selection.VertexMap;
@@ -356,7 +358,7 @@ namespace LiteMol.Visualization.Molecule.BallsAndSticks {
 
             state.translationMatrix.makeTranslation(state.tempVector.x, state.tempVector.y, state.tempVector.z).multiply(state.scaleMatrix);
             state.atomTemplate.applyMatrix(state.translationMatrix);
-            
+
             for (let i = 0; i < state.atomTemplateVertexBufferLength; i++) {
                 state.offset = state.atomsDone * state.atomTemplateVertexBufferLength + i;
                 state.atomVertices[state.offset] = state.atomTemplateVertexBuffer[i];
@@ -385,10 +387,10 @@ namespace LiteMol.Visualization.Molecule.BallsAndSticks {
 
             state.atomsDone++;
         }
-        
+
         private static addBond(b: number, state: BuildState, bs: BondsBuildState) {
             let aI = bs.info.bonds[3 * b], bI = bs.info.bonds[3 * b + 1], order = bs.info.bonds[3 * b + 2];
-                    
+
             if (bs.currentResidueIndex !== bs.residueIndex[aI]) {
 
                 bs.bondMapBuilder.addVertexRange(bs.bondMapVertexOffsetStart, bs.bondMapVertexOffsetEnd);
@@ -406,11 +408,11 @@ namespace LiteMol.Visualization.Molecule.BallsAndSticks {
 
             state.tempVector.set(state.cX[bI], state.cY[bI], state.cZ[bI]);
             bs.bondState.b.set(state.tempVector.x, state.tempVector.y, state.tempVector.z);
-            
+
             let r = bs.bondRadius, //atomSymbols[aI] === 'H' || atomSymbols[bI] === 'H' ? hydrogenBondRadius : bondRadius,
                 o = 2 * r / 3,
                 h = r / 2;
-            
+
             let bondState = bs.bondState;
             switch (order) {
                 case 2:
@@ -457,13 +459,13 @@ namespace LiteMol.Visualization.Molecule.BallsAndSticks {
                     BallsAndSticksGeometryBuilder.addBondPart(bondState);
                     break;
             }
-            
+
             bs.bondMapVertexOffsetEnd += order * bs.state.bondTemplateVertexBufferLength;
         }
-        
+
 
         private static addBondPart(state: BondModelState) {
-            
+
             state.atomsVector.subVectors(state.a, state.b);
 
             let length = state.atomsVector.length();
@@ -471,7 +473,7 @@ namespace LiteMol.Visualization.Molecule.BallsAndSticks {
             state.center.addVectors(state.a, state.b).divideScalar(2);
             state.rotationAxis.crossVectors(state.atomsVector, state.upVector).normalize();
             let rotationAngle = state.atomsVector.angleTo(state.upVector);
-            
+
             state.scaleMatrix.makeScale(state.radius, length, state.radius);
             state.offsetMatrix.makeTranslation(state.offset.x, state.offset.y, state.offset.z);
             state.rotationMatrix.makeRotationAxis(state.rotationAxis, -rotationAngle);
@@ -511,17 +513,17 @@ namespace LiteMol.Visualization.Molecule.BallsAndSticks {
             state.sticksDone++;
 
         }
-        
+
         private static getEmptyBondsGeometry() {
             let bondsGeometry = new THREE.BufferGeometry();
             bondsGeometry.addAttribute('position', new THREE.BufferAttribute(new Float32Array(0), 3));
             bondsGeometry.addAttribute('normal', new THREE.BufferAttribute(new Float32Array(0), 3));
             bondsGeometry.addAttribute('index', new THREE.BufferAttribute(new Uint32Array(0), 1));
-            bondsGeometry.addAttribute('color', new THREE.BufferAttribute(new Float32Array(0), 3));            
-            let bondMapBuilder = new Selection.VertexMapBuilder(1);            
+            bondsGeometry.addAttribute('color', new THREE.BufferAttribute(new Float32Array(0), 3));
+            let bondMapBuilder = new Selection.VertexMapBuilder(1);
             return { bondsGeometry, bondVertexMap: bondMapBuilder.getMap() };
         }
-        
+
         private static getBondsGeometry(state: BondsBuildState) {
             let bondsGeometry = new THREE.BufferGeometry();
             bondsGeometry.addAttribute('position', new THREE.BufferAttribute(state.bondVertices, 3));
@@ -530,23 +532,23 @@ namespace LiteMol.Visualization.Molecule.BallsAndSticks {
             bondsGeometry.addAttribute('color', new THREE.BufferAttribute(state.bondColors, 3));
             return { bondsGeometry, bondVertexMap: state.bondMapBuilder.getMap() };
         }
-        
+
         private static getAtomsGeometry(state: BuildState) {
-            let atomsGeometry = new THREE.BufferGeometry();            
+            let atomsGeometry = new THREE.BufferGeometry();
             atomsGeometry.addAttribute('position', new THREE.BufferAttribute(state.atomVertices, 3));
             atomsGeometry.addAttribute('normal', new THREE.BufferAttribute(state.atomNormals, 3));
             atomsGeometry.addAttribute('index', new THREE.BufferAttribute(state.atomTriangleIndices, 1));
             atomsGeometry.addAttribute('color', new THREE.BufferAttribute(state.atomColors, 3));
-           
+
             let stateBuffer = new Float32Array(state.atomVertices.length);
             let vertexStateBuffer = new THREE.BufferAttribute(stateBuffer, 1);
             atomsGeometry.addAttribute('vState', vertexStateBuffer);
-            
+
             let atomsPickGeometry = new THREE.BufferGeometry();
             atomsPickGeometry.addAttribute('position', new THREE.BufferAttribute(state.atomVertices, 3));
             atomsPickGeometry.addAttribute('index', new THREE.BufferAttribute(state.atomTriangleIndices, 1));
             atomsPickGeometry.addAttribute('pColor', new THREE.BufferAttribute(state.atomPickColors, 4));
-            
+
             return {
                 vertexStateBuffer,
                 atomsGeometry,
@@ -554,57 +556,57 @@ namespace LiteMol.Visualization.Molecule.BallsAndSticks {
                 atomVertexMap: state.atomMapBuilder.getMap()
             };
         }
-        
+
         private static addAtomsChunk(start: number, state: BuildState, ctx: Core.Computation.Context<Model>, done: () => void) {
             let chunkSize = 1250;
-            
+
             if (ctx.abortRequested) {
                 ctx.abort();
                 return;
             }
-            
+
             if (start >= state.atomIndices.length) {
                 done();
                 return;
             }
-            
-            ctx.update('Adding atoms...', ctx.abortRequest, start, state.atomIndices.length);            
+
+            ctx.update('Adding atoms...', ctx.abortRequest, start, state.atomIndices.length);
             for (let i = start, _b = Math.min(start + chunkSize, state.atomIndices.length); i < _b; i++) {
-                BallsAndSticksGeometryBuilder.addAtom(state.atomIndices[i], state); 
+                BallsAndSticksGeometryBuilder.addAtom(state.atomIndices[i], state);
             }
-            
+
             ctx.schedule(() => BallsAndSticksGeometryBuilder.addAtomsChunk(start + chunkSize, state, ctx, done));
         }
-        
+
         private static addBondsChunk(start: number, state: BuildState, bs: BondsBuildState, ctx: Core.Computation.Context<Model>, done: () => void) {
             let chunkSize = 1250;
-            
+
             if (ctx.abortRequested) {
                 ctx.abort();
                 return;
             }
-            
+
             if (start >= bs.bondCount) {
                 done();
                 return;
             }
-            
-            ctx.update('Adding bonds...', ctx.abortRequest, start, bs.bondCount);            
+
+            ctx.update('Adding bonds...', ctx.abortRequest, start, bs.bondCount);
             for (let i = start, _b = Math.min(start + chunkSize, bs.bondCount); i < _b; i++) {
-                BallsAndSticksGeometryBuilder.addBond(i, state, bs); 
+                BallsAndSticksGeometryBuilder.addBond(i, state, bs);
             }
-            
+
             ctx.schedule(() => BallsAndSticksGeometryBuilder.addBondsChunk(start + chunkSize, state, bs, ctx, done));
         }
-        
+
         private static addBonds(state: BuildState, ctx: Core.Computation.Context<Model>, done: () => void) {
             if (state.params.hideBonds) {
                 done();
                 return;
-            }          
-            
+            }
+
             ctx.update('Computing bonds...');
-            
+
             ctx.schedule(() => {
                 let bs = new BondsBuildState(state);
                 state.bs = bs;
@@ -613,31 +615,31 @@ namespace LiteMol.Visualization.Molecule.BallsAndSticks {
                 BallsAndSticksGeometryBuilder.addBondsChunk(0, state, bs, ctx, () => {
                     bs.bondMapBuilder.addVertexRange(bs.bondMapVertexOffsetStart, bs.bondMapVertexOffsetEnd);
                     bs.bondMapBuilder.endElement();
-                    
+
                     ctx.update('Finishing up...');
                     ctx.schedule(done, 1000 / 30);
                 });
             });
         }
-        
+
         private static addAtoms(state: BuildState, ctx: Core.Computation.Context<Model>, done: () => void) {
             BallsAndSticksGeometryBuilder.addAtomsChunk(0, state, ctx, done)
         }
-        
+
         static build(model: Core.Structure.MoleculeModel,
-            parameters: Parameters, 
+            parameters: Parameters,
             atomIndices: number[],
             ctx: Core.Computation.Context<Model>,
             done: (geom: BallsAndSticksGeometry) => void) {
-                
-            ctx.update('Creating atoms...');            
+
+            ctx.update('Creating atoms...');
             ctx.schedule(() => {
-            
+
                 let state = new BuildState(model, atomIndices, <Parameters>Core.Utils.extend({}, parameters, DefaultBallsAndSticksModelParameters))
-                
+
                 BallsAndSticksGeometryBuilder.addAtoms(state, ctx, () => {
                     BallsAndSticksGeometryBuilder.addBonds(state, ctx, () => {
-                        
+
                         let ret = new BallsAndSticksGeometry();
                         if (state.bs) {
                             let geometry = BallsAndSticksGeometryBuilder.getBondsGeometry(state.bs)
@@ -648,40 +650,40 @@ namespace LiteMol.Visualization.Molecule.BallsAndSticks {
                             ret.bondsGeometry = geometry.bondsGeometry;
                             ret.bondVertexMap = geometry.bondVertexMap;
                         }
-                        
+
                         let atomGeometry = BallsAndSticksGeometryBuilder.getAtomsGeometry(state);
-            
-                        ret.vertexStateBuffer = atomGeometry.vertexStateBuffer;            
+
+                        ret.vertexStateBuffer = atomGeometry.vertexStateBuffer;
                         ret.atomsGeometry = atomGeometry.atomsGeometry;
                         ret.pickGeometry = atomGeometry.atomsPickGeometry;
                         ret.atomVertexMap = atomGeometry.atomVertexMap;
-                        
+
                         done(ret);
                     })
                 });
-                                
+
             });
         }
     }
-    
+
     export function buildGeometry(model: Core.Structure.MoleculeModel,
-        parameters: Parameters, 
+        parameters: Parameters,
         atomIndices: number[],
         ctx: Core.Computation.Context<Model>,
         done: (geom: BallsAndSticksGeometry) => void) {
-        
-        BallsAndSticksGeometryBuilder.build(model, parameters, atomIndices, ctx, done);      
+
+        BallsAndSticksGeometryBuilder.build(model, parameters, atomIndices, ctx, done);
     }
-    
+
     export class BallsAndSticksGeometry extends GeometryBase {
-        
+
         atomsGeometry: THREE.BufferGeometry = <any>void 0;
-        bondsGeometry: THREE.BufferGeometry = <any>void 0;                
+        bondsGeometry: THREE.BufferGeometry = <any>void 0;
         pickGeometry: THREE.BufferGeometry = <any>void 0;
         atomVertexMap: Selection.VertexMap = <any>void 0;
         bondVertexMap: Selection.VertexMap = <any>void 0;
         vertexStateBuffer: THREE.BufferAttribute = <any>void 0;
-        
+
         dispose() {
             this.atomsGeometry.dispose();
             this.bondsGeometry.dispose();

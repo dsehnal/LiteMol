@@ -30,14 +30,14 @@ namespace LiteMol.Core.Formats.Molecule.PDB {
                 `2 non-polymer syn non-polymer 0.0 0 ? ? ? ?`,
                 `3 water nat water 0.0 0 ? ? ? ?`
             ].join('\n');
-            
+
             let file = CIF.Text.parse(data);
-            if (file.error) {
-                throw file.error.toString();
+            if (file.isError) {
+                throw file.toString();
             }
-            return file.result!.dataBlocks[0].getCategory('_entity') as CIF.Text.Category;
+            return file.result.dataBlocks[0].getCategory('_entity') as CIF.Text.Category;
         }
-        
+
         toCifFile(): CIF.File {
 
             let helpers = {
@@ -51,7 +51,7 @@ namespace LiteMol.Core.Formats.Molecule.PDB {
 
             let block = new CIF.Text.DataBlock(this.data, this.header.id);
             file.dataBlocks.push(block);
-                        
+
             block.addCategory(this.makeEntities());
 
             if (this.crystInfo) {
@@ -61,7 +61,7 @@ namespace LiteMol.Core.Formats.Molecule.PDB {
             }
 
             block.addCategory(this.models.toCifCategory(block, helpers));
-            
+
             return file;
         }
 
@@ -81,7 +81,7 @@ namespace LiteMol.Core.Formats.Molecule.PDB {
     }
 
     export class CrystStructureInfo {
-    
+
         toCifCategory(id: string) {
 
             //COLUMNS       DATA TYPE      CONTENTS
@@ -106,19 +106,23 @@ namespace LiteMol.Core.Formats.Molecule.PDB {
                 `_cell.angle_gamma        ${this.record.substr(48, 7).trim()}`,
                 `_cell.Z_PDB              ${this.record.substr(66, 4).trim()}`,
                 `_cell.pdbx_unique_axis   ?`,
-                `_symmetry.entry_id                         '${id}'`, 
+                `_symmetry.entry_id                         '${id}'`,
                 `_symmetry.space_group_name_H-M             '${this.record.substr(55, 11).trim()}'`,
                 `_symmetry.pdbx_full_space_group_name_H-M   ?`,
-                `_symmetry.cell_setting                     ?`, 
-                `_symmetry.Int_Tables_number                ?`, 
+                `_symmetry.cell_setting                     ?`,
+                `_symmetry.Int_Tables_number                ?`,
                 `_symmetry.space_group_name_Hall            ?`
             ].join('\n');
 
-            let cif = CIF.Text.parse(data).result!.dataBlocks[0];
+            let cif = CIF.Text.parse(data);
+
+            if (cif.isError) {
+                throw new Error(cif.toString());
+            }
 
             return {
-                cell: cif.getCategory('_cell'),
-                symm: cif.getCategory('_symmetry')
+                cell: cif.result.dataBlocks[0].getCategory('_cell'),
+                symm: cif.result.dataBlocks[0].getCategory('_symmetry')
             };
         }
 
@@ -170,19 +174,19 @@ namespace LiteMol.Core.Formats.Molecule.PDB {
         ];
 
         private writeToken(index: number, cifTokens: Utils.ArrayBuilder<number>) {
-            cifTokens.add2(this.atomTokens[2 * index], this.atomTokens[2 * index + 1]);            
+            Utils.ArrayBuilder.add2(cifTokens, this.atomTokens[2 * index], this.atomTokens[2 * index + 1]);
         }
 
         private writeTokenCond(index: number, cifTokens: Utils.ArrayBuilder<number>, dot: TokenRange) {
             let s = this.atomTokens[2 * index];
             let e = this.atomTokens[2 * index + 1];
 
-            if (s === e) cifTokens.add2(dot.start, dot.end);
-            else cifTokens.add2(s, e);
+            if (s === e) Utils.ArrayBuilder.add2(cifTokens, dot.start, dot.end);
+            else Utils.ArrayBuilder.add2(cifTokens, s, e);
         }
 
         private writeRange(range: TokenRange, cifTokens: Utils.ArrayBuilder<number>) {
-            cifTokens.add2(range.start, range.end);
+            Utils.ArrayBuilder.add2(cifTokens, range.start, range.end);
         }
 
         private tokenEquals(start: number, end: number, value: string, data: string) {
@@ -198,7 +202,7 @@ namespace LiteMol.Core.Formats.Molecule.PDB {
 
         private getEntityType(row: number, data: string) {
 
-            let o = row * 14;            
+            let o = row * 14;
             if (this.tokenEquals(this.atomTokens[2 * o], this.atomTokens[2 * o + 1], "HETATM", data)) {
                 let s = this.atomTokens[2 * (o + 4)], e = this.atomTokens[2 * (o + 4) + 1];
 
@@ -278,11 +282,11 @@ namespace LiteMol.Core.Formats.Molecule.PDB {
                 this.writeToken(o + columnIndices.CHAIN_ID, cifTokens);
 
                 //_atom_site.label_entity_id
-                this.writeRange(helpers.numberTokens.get(this.getEntityType(i, helpers.data))!, cifTokens);
+                this.writeRange(helpers.numberTokens.get(this.getEntityType(i, helpers.data)) !, cifTokens);
 
                 //_atom_site.label_seq_id
                 this.writeToken(o + columnIndices.RES_SEQN, cifTokens);
-                
+
                 //_atom_site.pdbx_PDB_ins_code
                 this.writeTokenCond(o + columnIndices.INS_CODE, cifTokens, helpers.dot);
 
@@ -297,7 +301,7 @@ namespace LiteMol.Core.Formats.Molecule.PDB {
 
                 //_atom_site.occupancy
                 this.writeToken(o + columnIndices.OCCUPANCY, cifTokens);
-                
+
                 //_atom_site.B_iso_or_equiv
                 this.writeToken(o + columnIndices.TEMP_FACTOR, cifTokens);
 
@@ -336,7 +340,7 @@ namespace LiteMol.Core.Formats.Molecule.PDB {
             }
         }
 
-        constructor(public idToken: TokenRange, public atomTokens: number[], public atomCount: number) {            
+        constructor(public idToken: TokenRange, public atomTokens: number[], public atomCount: number) {
         }
     }
 
@@ -355,7 +359,7 @@ namespace LiteMol.Core.Formats.Molecule.PDB {
                 m.writeCifTokens(m.idToken, tokens, helpers);
             }
 
-            return new CIF.Text.Category(block.data, "_atom_site", 0, 0, ModelData.COLUMNS, tokens.array, atomCount * 26); 
+            return new CIF.Text.Category(block.data, "_atom_site", 0, 0, ModelData.COLUMNS, tokens.array, atomCount * 26);
         }
 
         constructor(public models: ModelData[]) {

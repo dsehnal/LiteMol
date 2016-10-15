@@ -10,7 +10,7 @@ namespace LiteMol.Core.Formats {
         // a list of extensions, including the ., e.g. ['.cif']
         extensions: string[],
         isBinary?: boolean,
-        parse: (data: string | ArrayBuffer, params?: { id?: string }) => Computation<ParserResult<any>> 
+        parse: (data: string | ArrayBuffer, params?: { id?: string }) => Computation<ParserResult<any>>
     }
 
     export namespace FormatInfo {
@@ -30,7 +30,21 @@ namespace LiteMol.Core.Formats {
         }
     }
 
+    export type ParserResult<T> = ParserSuccess<T> | ParserError
+
+    export namespace ParserResult {
+        export function error<T>(message: string, line = -1): ParserResult<T> {
+            return new ParserError(message, line);
+        }
+
+        export function success<T>(result: T, warnings: string[] = []): ParserResult<T> {
+            return new ParserSuccess<T>(result, warnings);
+        }
+    }
+
     export class ParserError {
+        isError: true = true;
+
         toString() {
             if (this.line >= 0) {
                 return `[Line ${this.line}] ${this.message}`;
@@ -44,22 +58,11 @@ namespace LiteMol.Core.Formats {
         }
     }
 
-    /**
-     * A generic parser result.
-     */
-    export class ParserResult<T> {
-        static error<T>(message: string, line = -1) {
-            return new ParserResult<T>(new ParserError(message, line), [], void 0);
-        }
+    export class ParserSuccess<T> {
+        isError: false = false;
 
-        static success<T>(result: T, warnings: string[] = []) {
-            return new ParserResult<T>(void 0, warnings, result);
-        }
-
-        constructor(
-            public error: ParserError | undefined,
-            public warnings: string[],
-            public result: T | undefined) { }
+        constructor(public result: T,
+            public warnings: string[]) { }
     }
 
     /**
@@ -102,13 +105,13 @@ namespace LiteMol.Core.Formats {
      */
     export type ShortStringPool = Map<string, string>
     export namespace ShortStringPool {
-        export function create(): ShortStringPool { return new Map<string, string>();  }    
+        export function create(): ShortStringPool { return new Map<string, string>(); }
         export function get(pool: ShortStringPool, str: string) {
             if (str.length > 6) return str;
             var value = pool.get(str);
             if (value !== void 0) return value;
             pool.set(str, str);
             return str;
-        } 
+        }
     }
 }

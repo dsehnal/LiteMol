@@ -6467,6 +6467,7 @@ declare namespace LiteMol.Visualization.Molecule.Cartoons.Geometry {
     function create(model: Core.Structure.MoleculeModel, atomIndices: number[], linearSegments: number, parameters: any, isTrace: boolean, computation: Core.Computation.Context<Model>, done: (g: Data) => void): void;
 }
 declare namespace LiteMol.Visualization.Molecule.Cartoons.Geometry {
+    import ChunkedArray = Core.Utils.ChunkedArray;
     class CartoonAsymUnitState {
         private typeBuilder;
         private uPositionsBuilder;
@@ -6544,9 +6545,9 @@ declare namespace LiteMol.Visualization.Molecule.Cartoons.Geometry {
         residueIndex: number;
         verticesDone: number;
         trianglesDone: number;
-        vertexBuffer: Core.Utils.ChunkedArrayBuilder<number>;
-        normalBuffer: Core.Utils.ChunkedArrayBuilder<number>;
-        indexBuffer: Core.Utils.ChunkedArrayBuilder<number>;
+        vertexBuffer: ChunkedArray<number>;
+        normalBuffer: ChunkedArray<number>;
+        indexBuffer: ChunkedArray<number>;
         translationMatrix: THREE.Matrix4;
         scaleMatrix: THREE.Matrix4;
         rotationMatrix: THREE.Matrix4;

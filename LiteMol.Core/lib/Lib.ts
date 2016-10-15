@@ -4,10 +4,14 @@
 
 namespace LiteMol.Core {
     "use strict";
-    
+
     export import Rx = __LiteMolRx;
-    
+
     declare var __LiteMolPromise: typeof __Promise.Promise;
     export type Promise<T> = __Promise.Promise<T>;
     export const Promise: typeof __Promise.Promise = __LiteMolPromise;
+
+    export namespace Formats {
+        export import CIF = CIFTools;
+    }
 }

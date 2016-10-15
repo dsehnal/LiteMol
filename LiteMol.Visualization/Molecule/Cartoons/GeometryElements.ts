@@ -5,14 +5,17 @@
 namespace LiteMol.Visualization.Molecule.Cartoons.Geometry {
 
     import SSTypes = Core.Structure.SecondaryStructureType;
-    
+
+    import ChunkedArray = Core.Utils.ChunkedArray;
+    import ArrayBuilder = Core.Utils.ArrayBuilder;
+
     export class CartoonAsymUnitState {
-        
-        private typeBuilder = Core.Utils.ArrayBuilder.forArray<Core.Structure.SecondaryStructureType>(10000);
-        private uPositionsBuilder: Core.Utils.ArrayBuilder<number>;
-        private vPositionsBuilder: Core.Utils.ArrayBuilder<number>;
-        private pPositionsBuilder: Core.Utils.ArrayBuilder<number>;
-        private dPositionsBuilder: Core.Utils.ArrayBuilder<number>;
+
+        private typeBuilder = ArrayBuilder.forArray<Core.Structure.SecondaryStructureType>(10000);
+        private uPositionsBuilder: ArrayBuilder<number>;
+        private vPositionsBuilder: ArrayBuilder<number>;
+        private pPositionsBuilder: ArrayBuilder<number>;
+        private dPositionsBuilder: ArrayBuilder<number>;
 
         residueType: Core.Structure.SecondaryStructureType[] = [];
         uPositions: number[] = <any>new Float32Array(0);
@@ -21,34 +24,34 @@ namespace LiteMol.Visualization.Molecule.Cartoons.Geometry {
         dPositions: number[] = <any>new Float32Array(0);
         uvLength = 0;
         residueCount = 0;
-        
+
         constructor(residueCount: number) {
 
-            this.typeBuilder = Core.Utils.ArrayBuilder.forArray<Core.Structure.SecondaryStructureType>(residueCount + 4);
-            this.uPositionsBuilder = Core.Utils.ArrayBuilder.forVertex3D(residueCount + 4);
-            this.vPositionsBuilder = Core.Utils.ArrayBuilder.forVertex3D(residueCount + 4);
-            this.pPositionsBuilder = Core.Utils.ArrayBuilder.forVertex3D(residueCount + 4);
-            this.dPositionsBuilder = Core.Utils.ArrayBuilder.forVertex3D(residueCount + 4);
+            this.typeBuilder = ArrayBuilder.forArray<Core.Structure.SecondaryStructureType>(residueCount + 4);
+            this.uPositionsBuilder = ArrayBuilder.forVertex3D(residueCount + 4);
+            this.vPositionsBuilder = ArrayBuilder.forVertex3D(residueCount + 4);
+            this.pPositionsBuilder = ArrayBuilder.forVertex3D(residueCount + 4);
+            this.dPositionsBuilder = ArrayBuilder.forVertex3D(residueCount + 4);
 
 
-            this.typeBuilder.add(Core.Structure.SecondaryStructureType.None); this.typeBuilder.add(Core.Structure.SecondaryStructureType.None);
-            this.uPositionsBuilder.add3(0, 0, 0); this.uPositionsBuilder.add3(0, 0, 0);
-            this.vPositionsBuilder.add3(0, 0, 0); this.vPositionsBuilder.add3(0, 0, 0);
+            ArrayBuilder.add(this.typeBuilder, Core.Structure.SecondaryStructureType.None); ArrayBuilder.add(this.typeBuilder, Core.Structure.SecondaryStructureType.None);
+            ArrayBuilder.add3(this.uPositionsBuilder, 0, 0, 0); ArrayBuilder.add3(this.uPositionsBuilder, 0, 0, 0);
+            ArrayBuilder.add3(this.vPositionsBuilder, 0, 0, 0); ArrayBuilder.add3(this.vPositionsBuilder, 0, 0, 0);
         }
-        
+
         addResidue(rIndex: number, arrays: { atomStartIndex: number[]; atomEndIndex: number[]; name: string[]; x: number[]; y: number[]; z: number[] }, sType: Core.Structure.SecondaryStructureType) {
             let start = arrays.atomStartIndex[rIndex], end = arrays.atomEndIndex[rIndex],
                 aU = false, aV = false;
-                
-            let name = arrays.name;    
-            
+
+            let name = arrays.name;
+
             if (sType !== Core.Structure.SecondaryStructureType.Strand) {
                 for (let i = start; i < end; i++) {
                     if (!aU && name[i] === "CA") {
-                        this.uPositionsBuilder.add3(arrays.x[i], arrays.y[i], arrays.z[i]);
+                        ArrayBuilder.add3(this.uPositionsBuilder, arrays.x[i], arrays.y[i], arrays.z[i]);
                         aU = true;
                     } else if (!aV && name[i] === "O") {
-                        this.vPositionsBuilder.add3(arrays.x[i], arrays.y[i], arrays.z[i]);
+                        ArrayBuilder.add3(this.vPositionsBuilder, arrays.x[i], arrays.y[i], arrays.z[i]);
                         aV = true;
                     }
 
@@ -57,10 +60,10 @@ namespace LiteMol.Visualization.Molecule.Cartoons.Geometry {
             } else {
                 for (let i = start; i < end; i++) {
                     if (!aU && name[i] === "O5'") {
-                        this.uPositionsBuilder.add3(arrays.x[i], arrays.y[i], arrays.z[i]);
+                        ArrayBuilder.add3(this.uPositionsBuilder, arrays.x[i], arrays.y[i], arrays.z[i]);
                         aU = true;
                     } else if (!aV && name[i] === "C3'") {
-                        this.vPositionsBuilder.add3(arrays.x[i], arrays.y[i], arrays.z[i]);
+                        ArrayBuilder.add3(this.vPositionsBuilder, arrays.x[i], arrays.y[i], arrays.z[i]);
                         aV = true;
                     }
 
@@ -70,16 +73,16 @@ namespace LiteMol.Visualization.Molecule.Cartoons.Geometry {
 
             if (!aV) {
                 let arr = this.pPositionsBuilder.array, len = arr.length;
-                this.vPositionsBuilder.add3(arr[len - 3], arr[len - 2], arr[len - 1]);
+                ArrayBuilder.add3(this.vPositionsBuilder, arr[len - 3], arr[len - 2], arr[len - 1]);
             }
 
-            this.typeBuilder.add(sType);            
+            ArrayBuilder.add(this.typeBuilder, sType);
         }
 
         finishResidues() {
-            this.typeBuilder.add(Core.Structure.SecondaryStructureType.None); this.typeBuilder.add(Core.Structure.SecondaryStructureType.None);
-            this.uPositionsBuilder.add3(0, 0, 0); this.uPositionsBuilder.add3(0, 0, 0);
-            this.vPositionsBuilder.add3(0, 0, 0); this.vPositionsBuilder.add3(0, 0, 0);
+            ArrayBuilder.add(this.typeBuilder, Core.Structure.SecondaryStructureType.None); ArrayBuilder.add(this.typeBuilder, Core.Structure.SecondaryStructureType.None);
+            ArrayBuilder.add3(this.uPositionsBuilder, 0, 0, 0); ArrayBuilder.add3(this.uPositionsBuilder, 0, 0, 0);
+            ArrayBuilder.add3(this.vPositionsBuilder, 0, 0, 0); ArrayBuilder.add3(this.vPositionsBuilder, 0, 0, 0);
 
             this.residueType = this.typeBuilder.array;
             this.uPositions = this.uPositionsBuilder.array;
@@ -92,19 +95,19 @@ namespace LiteMol.Visualization.Molecule.Cartoons.Geometry {
             this.uvLength = this.residueType.length;
             this.residueCount = this.uvLength - 4;
         }
-        
+
         addControlPoint(p: THREE.Vector3, d: THREE.Vector3) {
-            this.pPositionsBuilder.add3(p.x, p.y, p.z);
-            this.dPositionsBuilder.add3(d.x, d.y, d.z);
+            ArrayBuilder.add3(this.pPositionsBuilder, p.x, p.y, p.z);
+            ArrayBuilder.add3(this.dPositionsBuilder, d.x, d.y, d.z);
         }
 
         finishContols() {
 
             this.pPositions = this.pPositionsBuilder.array;
             this.dPositions = this.dPositionsBuilder.array;
-            
+
             this.pPositionsBuilder = <any>null;
-            this.dPositionsBuilder = <any>null; 
+            this.dPositionsBuilder = <any>null;
 
         }
     }
@@ -113,8 +116,8 @@ namespace LiteMol.Visualization.Molecule.Cartoons.Geometry {
 
 
         private static maskSplit(
-            element: Core.Structure.SecondaryStructureElement, 
-            mask: boolean[], 
+            element: Core.Structure.SecondaryStructureElement,
+            mask: boolean[],
             target: Core.Structure.SecondaryStructureElement[]) {
             let current = element,
                 start = element.startResidueIndex,
@@ -128,63 +131,64 @@ namespace LiteMol.Visualization.Molecule.Cartoons.Geometry {
                     current = new Core.Structure.SecondaryStructureElement(element.type, element.startResidueId, element.endResidueId);
                     current.startResidueIndex = i;
                 }
-                
+
                 while (i < end && mask[i]) { i++; }
-                
+
                 current.endResidueIndex = i;
-                target[target.length] = current;                 
+                target[target.length] = current;
             }
         }
-        
+
         static hasNames(atomIndices: number[], start: number, end: number, name: string[], a: string, b: string, isAmk: boolean) {
-            let aU = false, aV = false;            
+            let aU = false, aV = false;
             for (let i = start; i < end; i++) {
-                if (!aU && name[atomIndices[i]] === a) {  aU = true;
+                if (!aU && name[atomIndices[i]] === a) {
+                    aU = true;
                 } else if (!aV && name[atomIndices[i]] === b) { aV = true; }
                 if (aU && aV) return true;
-            }            
+            }
             return isAmk && aU;
         }
-                
+
         static createMask(
             model: Core.Structure.MoleculeModel,
             atomIndices: number[]): boolean[] {
-                
+
             let ret = new Uint8Array(model.residues.count);
             let { residueIndex, name } = model.atoms;
             let ssIndex = model.residues.secondaryStructureIndex;
             let ss = model.secondaryStructure;
-                       
-            for (let i = 0, _b = atomIndices.length - 1; i < _b; i++) {                
-                let aI = atomIndices[i];                
+
+            for (let i = 0, _b = atomIndices.length - 1; i < _b; i++) {
+                let aI = atomIndices[i];
                 let rStart = i;
                 let residue = residueIndex[aI];
                 i++;
-                while (residue === residueIndex[atomIndices[i]]) i++;                
-                let s = ss[ssIndex[residue]].type;                
+                while (residue === residueIndex[atomIndices[i]]) i++;
+                let s = ss[ssIndex[residue]].type;
                 if (s === SSTypes.None) continue;
                 if (s === SSTypes.Strand) {
                     ret[residue] = +CartoonAsymUnit.hasNames(atomIndices, rStart, i, name, "O5'", "C3'", false);
                 } else {
                     ret[residue] = +CartoonAsymUnit.hasNames(atomIndices, rStart, i, name, "CA", "O", true);
-                }            
-                i--;    
+                }
+                i--;
             }
-            
-            
-            return <any>ret;   
+
+
+            return <any>ret;
         }
-        
+
         private static throwIfEmpty(ss: any[]) {
             if (ss.length === 0) {
                 throw `Cartoons cannot be constructred from this model/selection.`;
             }
         }
-        
+
         static buildUnits(
             model: Core.Structure.MoleculeModel,
             atomIndices: number[],
-            linearSegmentCount: number): CartoonAsymUnit[]{
+            linearSegmentCount: number): CartoonAsymUnit[] {
 
             let mask = CartoonAsymUnit.createMask(model, atomIndices);
             let ss: Core.Structure.SecondaryStructureElement[] = [];
@@ -192,16 +196,16 @@ namespace LiteMol.Visualization.Molecule.Cartoons.Geometry {
             for (let e of model.secondaryStructure) {
                 CartoonAsymUnit.maskSplit(e, mask, ss);
             }
-                        
+
             CartoonAsymUnit.throwIfEmpty(ss);
-            
+
             let previous: Core.Structure.SecondaryStructureElement | null = ss[0],
                 asymId = model.residues.asymId,
                 authSeqNumber = model.residues.authSeqNumber,
                 currentElements: Core.Structure.SecondaryStructureElement[] = [],
                 units: CartoonAsymUnit[] = [],
                 none = Core.Structure.SecondaryStructureType.None;
-            
+
             if (previous.type === none) {
                 previous = null;
             }
@@ -215,13 +219,13 @@ namespace LiteMol.Visualization.Molecule.Cartoons.Geometry {
 
                     previous = null;
                     currentElements = [];
-                } else {                    
+                } else {
                     if (previous === null) previous = e;
-                                        
+
                     if (asymId[previous.endResidueIndex - 1] !== asymId[e.startResidueIndex]
                         || (previous !== e && authSeqNumber[e.startResidueIndex] - authSeqNumber[previous.endResidueIndex - 1] > 1)
                         || (previous.startResidueIndex !== e.startResidueIndex && (e.startResidueIndex - previous.endResidueIndex > 0))) {
-                        
+
                         if (currentElements.length > 0) {
                             units.push(new CartoonAsymUnit(model, currentElements, linearSegmentCount));
                         } else if (previous !== null) {
@@ -241,20 +245,20 @@ namespace LiteMol.Visualization.Molecule.Cartoons.Geometry {
             if (currentElements.length > 0) {
                 units.push(new CartoonAsymUnit(model, currentElements, linearSegmentCount));
             }
-                        
+
             return units; // [units[units.length - 1]];
         }
-        
-        private controlPointsBuilder: Core.Utils.ArrayBuilder<number>;
-        private torsionVectorsBuilder: Core.Utils.ArrayBuilder<number>;
-        private normalVectorsBuilder: Core.Utils.ArrayBuilder<number>;
+
+        private controlPointsBuilder: ArrayBuilder<number>;
+        private torsionVectorsBuilder: ArrayBuilder<number>;
+        private normalVectorsBuilder: ArrayBuilder<number>;
 
         private tempA = new THREE.Vector3();
         private tempB = new THREE.Vector3();
         private tempC = new THREE.Vector3();
 
 
-        controlPoints:number[] = <any>new Float32Array(0);
+        controlPoints: number[] = <any>new Float32Array(0);
         torsionVectors: number[] = <any>new Float32Array(0);
         normalVectors: number[] = <any>new Float32Array(0);
 
@@ -264,7 +268,7 @@ namespace LiteMol.Visualization.Molecule.Cartoons.Geometry {
 
         residueType: Core.Structure.SecondaryStructureType[] = [];
         residueIndex: Int32Array = new Int32Array(0);
-        
+
         constructor(
             private model: Core.Structure.MoleculeModel,
             private elements: Core.Structure.SecondaryStructureElement[],
@@ -278,15 +282,15 @@ namespace LiteMol.Visualization.Molecule.Cartoons.Geometry {
 
             let state = new CartoonAsymUnitState(this.residueCount);
 
-            this.controlPointsBuilder = Core.Utils.ArrayBuilder.forVertex3D(this.residueCount * this.linearSegmentCount + 1);
-            this.torsionVectorsBuilder = Core.Utils.ArrayBuilder.forVertex3D(this.residueCount * this.linearSegmentCount + 1);
-            this.normalVectorsBuilder = Core.Utils.ArrayBuilder.forVertex3D(this.residueCount * this.linearSegmentCount + 1);
+            this.controlPointsBuilder = ArrayBuilder.forVertex3D(this.residueCount * this.linearSegmentCount + 1);
+            this.torsionVectorsBuilder = ArrayBuilder.forVertex3D(this.residueCount * this.linearSegmentCount + 1);
+            this.normalVectorsBuilder = ArrayBuilder.forVertex3D(this.residueCount * this.linearSegmentCount + 1);
 
             this.createControlPoints(state);
         }
 
         private createControlPoints(state: CartoonAsymUnitState) {
-            
+
             this.initPositions(state);
             this.initControlsPoints(state);
             this.computeSplines(state);
@@ -307,7 +311,7 @@ namespace LiteMol.Visualization.Molecule.Cartoons.Geometry {
                 residueType: Core.Structure.SecondaryStructureType[] = [],
                 offset = 0,
                 i = 0;
-                            
+
             for (let e of this.elements) {
                 this.structureStarts.add(e.startResidueIndex);
                 this.structureEnds.add(e.endResidueIndex - 1);
@@ -324,19 +328,19 @@ namespace LiteMol.Visualization.Molecule.Cartoons.Geometry {
                     this.residueIndex[offset++] = i;
                 }
             }
-            
+
             this.residueType = residueType;
-            
+
             state.finishResidues();
 
 
             let len = this.residueCount;
-            
+
             state.residueType[0] = state.residueType[2];
             state.residueType[1] = state.residueType[3];
             state.residueType[state.residueType.length - 2] = state.residueType[state.residueType.length - 4];
             state.residueType[state.residueType.length - 1] = state.residueType[state.residueType.length - 3];
-            
+
             if (len > 2) {
 
                 let a = 2, b = 3, c = 4;
@@ -377,19 +381,19 @@ namespace LiteMol.Visualization.Molecule.Cartoons.Geometry {
                 }
             } else {
                 let d = [state.uPositions[6] - state.vPositions[6],
-                         state.uPositions[7] - state.vPositions[7],
-                         state.uPositions[8] - state.vPositions[8]];
-                
+                state.uPositions[7] - state.vPositions[7],
+                state.uPositions[8] - state.vPositions[8]];
+
                 for (let i = 0; i < 2; i++) {
                     for (let j = 0; j < 3; j++) {
                         state.uPositions[3 * i + j] = state.uPositions[6 + j] - 0.5 * (i + 1) * d[j];
                         state.uPositions[9 + 3 * i + j] = state.uPositions[6 + j] + 0.5 * (i + 1) * d[j];
-                        
+
                         state.vPositions[3 * i + j] = state.vPositions[6 + j] + 0.5 * (i + 1) * d[j];
-                        state.vPositions[9 + 3 * i + j] = state.vPositions[6 + j] - 0.5 * (i + 1) * d[j];      
+                        state.vPositions[9 + 3 * i + j] = state.vPositions[6 + j] - 0.5 * (i + 1) * d[j];
                     }
                 }
-                    
+
                 //state.uPositions[0] = state.uPositions[6] - dx;
                 //state.uPositions[9] = state.uPositions[6] - dx;                
                 //console.log(state.uPositions, state.vPositions);
@@ -410,7 +414,7 @@ namespace LiteMol.Visualization.Molecule.Cartoons.Geometry {
                 i++;
                 ca2.set(state.uPositions[3 * i], state.uPositions[3 * i + 1], state.uPositions[3 * i + 2]);
                 i--;
-                
+
                 p.set((ca1.x + ca2.x) / 2, (ca1.y + ca2.y) / 2, (ca1.z + ca2.z) / 2);
 
                 a.subVectors(ca2, ca1);
@@ -434,7 +438,7 @@ namespace LiteMol.Visualization.Molecule.Cartoons.Geometry {
                 a.addVectors(p, d);
                 state.addControlPoint(p, a);
             }
-            
+
             state.finishContols();
         }
 
@@ -451,7 +455,7 @@ namespace LiteMol.Visualization.Molecule.Cartoons.Geometry {
 
             for (let i = 0; i < len; i++) {
 
-                p1.set(pPositions[3 * i], pPositions[3 * i + 1], pPositions[3 * i + 2]);                
+                p1.set(pPositions[3 * i], pPositions[3 * i + 1], pPositions[3 * i + 2]);
                 i++; p2.set(pPositions[3 * i], pPositions[3 * i + 1], pPositions[3 * i + 2]);
                 i++; p3.set(pPositions[3 * i], pPositions[3 * i + 1], pPositions[3 * i + 2]);
                 i++; p4.set(pPositions[3 * i], pPositions[3 * i + 1], pPositions[3 * i + 2]);
@@ -463,7 +467,7 @@ namespace LiteMol.Visualization.Molecule.Cartoons.Geometry {
                 i++; d3.set(dPositions[3 * i], dPositions[3 * i + 1], dPositions[3 * i + 2]);
                 i++; d4.set(dPositions[3 * i], dPositions[3 * i + 1], dPositions[3 * i + 2]);
                 i = i - 3;
-                
+
                 for (let j = 1; j <= this.linearSegmentCount; j++) {
 
                     let t = j * 1.0 / this.linearSegmentCount;
@@ -491,18 +495,18 @@ namespace LiteMol.Visualization.Molecule.Cartoons.Geometry {
 
         private addSplineNode(previousControlPoint: THREE.Vector3, controlPoint: THREE.Vector3, torsionPoint: THREE.Vector3): void {
 
-            this.controlPointsBuilder.add3(controlPoint.x, controlPoint.y, controlPoint.z);
+            ArrayBuilder.add3(this.controlPointsBuilder, controlPoint.x, controlPoint.y, controlPoint.z);
 
             let torsionVector = this.tempA.subVectors(torsionPoint, controlPoint);
             torsionVector.normalize();
-            this.torsionVectorsBuilder.add3(torsionVector.x, torsionVector.y, torsionVector.z);
+            ArrayBuilder.add3(this.torsionVectorsBuilder, torsionVector.x, torsionVector.y, torsionVector.z);
 
             let controlVector = this.tempB.subVectors(controlPoint, previousControlPoint);
             let normalVector = this.tempC.crossVectors(torsionVector, controlVector);
             normalVector.normalize();
-            this.normalVectorsBuilder.add3(normalVector.x, normalVector.y, normalVector.z);
+            ArrayBuilder.add3(this.normalVectorsBuilder, normalVector.x, normalVector.y, normalVector.z);
         }
-        
+
         private reflectPositions(xs: number[], u: number, v: number, a: number, b: number, c: number, d: number, r1: number, r2: number) {
 
             this.tempA.set(xs[3 * a], xs[3 * a + 1], xs[3 * a + 2]);
@@ -535,9 +539,9 @@ namespace LiteMol.Visualization.Molecule.Cartoons.Geometry {
 
     export class CartoonsGeometryParams {
         radialSegmentCount = 10;
-        
+
         turnWidth = 0.1;
-        
+
         strandWidth = 0.15;
         strandLineWidth = 0.1;
 
@@ -559,10 +563,10 @@ namespace LiteMol.Visualization.Molecule.Cartoons.Geometry {
         verticesDone = 0;
         trianglesDone = 0;
 
-        vertexBuffer = Core.Utils.ChunkedArrayBuilder.forVertex3D();
-        normalBuffer = Core.Utils.ChunkedArrayBuilder.forVertex3D();
-        indexBuffer = Core.Utils.ChunkedArrayBuilder.forIndexBuffer();
-        
+        vertexBuffer = ChunkedArray.forVertex3D();
+        normalBuffer = ChunkedArray.forVertex3D();
+        indexBuffer = ChunkedArray.forIndexBuffer();
+
         translationMatrix: THREE.Matrix4 = new THREE.Matrix4();
         scaleMatrix: THREE.Matrix4 = new THREE.Matrix4();
         rotationMatrix: THREE.Matrix4 = new THREE.Matrix4();
@@ -571,20 +575,19 @@ namespace LiteMol.Visualization.Molecule.Cartoons.Geometry {
         vertexMap: Selection.VertexMapBuilder;
 
         addVertex(v: THREE.Vector3, n: THREE.Vector3) {
-            this.vertexBuffer.add3(v.x, v.y, v.z);
-            this.normalBuffer.add3(n.x, n.y, n.z);
+            ChunkedArray.add3(this.vertexBuffer, v.x, v.y, v.z);
+            ChunkedArray.add3(this.normalBuffer, n.x, n.y, n.z);
             this.verticesDone++;
         }
 
         addTriangle(i: number, j: number, k: number) {
-
-            this.indexBuffer.add3(i, j, k);
+            ChunkedArray.add3(this.indexBuffer, i, j, k);
             this.trianglesDone++;
         }
 
         addTriangles(i: number, j: number, k: number, u: number, v: number, w: number) {
-            this.indexBuffer.add3(i, j, k);
-            this.indexBuffer.add3(u, v, w);
+            ChunkedArray.add3(this.indexBuffer, i, j, k);
+            ChunkedArray.add3(this.indexBuffer, u, v, w);
             this.trianglesDone += 2;
         }
 
@@ -596,7 +599,7 @@ namespace LiteMol.Visualization.Molecule.Cartoons.Geometry {
     function makeStrandLineTemplate(ctx: Context) {
         let radius = ctx.params.strandLineWidth, tessalation = ctx.params.tessalation;
         let capPoints = 0, radiusPoints = 0, geom: THREE.Geometry;
-        
+
         switch (tessalation) {
             case 0: radiusPoints = 2; capPoints = 1; break;
             case 1: radiusPoints = 3; capPoints = 2; break;
@@ -632,17 +635,17 @@ namespace LiteMol.Visualization.Molecule.Cartoons.Geometry {
     }
 
     export function buildUnit(unit: CartoonAsymUnit, ctx: Context) {
-        
+
         let state = ctx.state, params = ctx.params, atoms = ctx.model.atoms, residues = ctx.model.residues;
         let builder = ctx.builder;
         for (let index = 0, _max = unit.residueCount; index < _max; index++) {
             state.vertexMap.startElement(unit.residueIndex[index]);
             let numVertices = state.verticesDone;
-            state.residueIndex = index;                                
+            state.residueIndex = index;
             let start = unit.structureStarts.has(unit.residueIndex[index]);
             let end = unit.structureEnds.has(unit.residueIndex[index]);
             if (ctx.isTrace) {
-                switch (unit.residueType[index]) {                          
+                switch (unit.residueType[index]) {
                     case Core.Structure.SecondaryStructureType.Strand:
                         builder.addTube(unit, state, params.strandWidth, params.strandWidth);
                         if (start || end) {
@@ -700,46 +703,46 @@ namespace LiteMol.Visualization.Molecule.Cartoons.Geometry {
 
             state.vertexMap.addVertexRange(numVertices, state.verticesDone);
             state.vertexMap.endElement();
-        }        
+        }
     }
-    
+
     export function buildUnitsChunk(start: number, ctx: Context, done: () => void) {
         let chunkSize = 10000; // residues
-       
-         
+
+
         if (start >= ctx.units.length) {
             done();
             return;
         }
-        
+
         if (ctx.computation.abortRequested) {
             ctx.computation.abort();
             return;
         }
-        
+
         let residuesDone = 0;
         let index = start;
-        
+
         while (residuesDone < chunkSize && index < ctx.units.length) {
             buildUnit(ctx.units[index], ctx);
             residuesDone += ctx.units[index].residueCount;
-            index++;    
+            index++;
         }
-        
-        ctx.computation.update('Building units...', ctx.computation.abortRequest, start, ctx.units.length)      
+
+        ctx.computation.update('Building units...', ctx.computation.abortRequest, start, ctx.units.length)
         ctx.computation.schedule(() => buildUnitsChunk(index, ctx, done));
     }
-    
+
     export function createGeometry(ctx: Context) {
         let state = ctx.state;
-        
-        let vertexBuffer = new Float32Array(state.vertexBuffer.compact()),
-            normalBuffer = new Float32Array(state.normalBuffer.compact()),
+
+        let vertexBuffer = new Float32Array(ChunkedArray.compact(state.vertexBuffer)),
+            normalBuffer = new Float32Array(ChunkedArray.compact(state.normalBuffer)),
             colorBuffer = new Float32Array(state.verticesDone * 3),
             pickColorBuffer = new Float32Array(state.verticesDone * 4),
-            indexBuffer = new Uint32Array(state.indexBuffer.compact()),
+            indexBuffer = new Uint32Array(ChunkedArray.compact(state.indexBuffer)),
             stateBuffer = new Float32Array(state.verticesDone);
-        
+
         let geometry = new THREE.BufferGeometry();
         geometry.addAttribute('position', new THREE.BufferAttribute(vertexBuffer, 3));
         geometry.addAttribute('normal', new THREE.BufferAttribute(normalBuffer, 3));
@@ -764,11 +767,11 @@ namespace LiteMol.Visualization.Molecule.Cartoons.Geometry {
             if (rangeStart === rangeEnd) continue;
 
             Selection.Picking.assignPickColor(elementIndex, color);
-            
+
             for (let i = rangeStart; i < rangeEnd; i += 2) {
 
                 let vStart = vertexRanges[i], vEnd = vertexRanges[i + 1];
-                                    
+
                 for (let j = vStart; j < vEnd; j++) {
                     pickColorBuffer[j * 4] = color.r;
                     pickColorBuffer[j * 4 + 1] = color.g;
@@ -776,7 +779,7 @@ namespace LiteMol.Visualization.Molecule.Cartoons.Geometry {
                 }
             }
         }
-        
+
         let pickGeometry = new THREE.BufferGeometry();
         pickGeometry.addAttribute('position', new THREE.BufferAttribute(vertexBuffer, 3));
         pickGeometry.addAttribute('index', new THREE.BufferAttribute(indexBuffer, 1));
@@ -789,7 +792,7 @@ namespace LiteMol.Visualization.Molecule.Cartoons.Geometry {
         constructor() {
         }
 
-        
+
         private tempVectors = [
             new THREE.Vector3(), new THREE.Vector3(), new THREE.Vector3(), new THREE.Vector3(), new THREE.Vector3(), new THREE.Vector3(),
             new THREE.Vector3(), new THREE.Vector3(), new THREE.Vector3(), new THREE.Vector3(), new THREE.Vector3(), new THREE.Vector3(),
@@ -801,7 +804,7 @@ namespace LiteMol.Visualization.Molecule.Cartoons.Geometry {
         }
 
         addTube(element: CartoonAsymUnit, state: CartoonsGeometryState, width: number, height: number) {
-            
+
             let verticesDone = state.verticesDone,
                 i = 0, j = 0, t = 0,
                 radialVector = this.tempVectors[0], normalVector = this.tempVectors[1],
@@ -815,7 +818,7 @@ namespace LiteMol.Visualization.Molecule.Cartoons.Geometry {
                 torsionVectors = element.torsionVectors,
                 normalVectors = element.normalVectors,
                 radialSegmentCount = state.params.radialSegmentCount;
-            
+
             for (i = elementOffsetStart; i <= elementOffsetEnd; i++) {
                 this.setVector(torsionVectors, i, u);
                 this.setVector(normalVectors, i, v);
@@ -832,7 +835,7 @@ namespace LiteMol.Visualization.Molecule.Cartoons.Geometry {
                     b.copy(v);
                     normalVector.addVectors(a.multiplyScalar(height * Math.cos(t)), b.multiplyScalar(width * Math.sin(t)));
                     normalVector.normalize();
-                    
+
                     this.setVector(elementPoints, i, tempPos);
                     tempPos.add(radialVector);
 
@@ -968,7 +971,7 @@ namespace LiteMol.Visualization.Molecule.Cartoons.Geometry {
 
                 tA.copy(positionVector).sub(horizontalVector).sub(verticalVector);
                 state.addVertex(tA, tB);
-                
+
                 tA.copy(positionVector).sub(horizontalVector).sub(verticalVector);
                 tB.copy(normalVector).negate();
                 state.addVertex(tA, tB);
@@ -981,7 +984,7 @@ namespace LiteMol.Visualization.Molecule.Cartoons.Geometry {
                 state.addVertex(tA, tB);
 
                 tA.copy(positionVector).add(horizontalVector).add(verticalVector);
-                state.addVertex(tA, tB);                
+                state.addVertex(tA, tB);
             }
 
             for (i = 0; i < element.linearSegmentCount; i++) {
@@ -1002,7 +1005,7 @@ namespace LiteMol.Visualization.Molecule.Cartoons.Geometry {
 
             let horizontalVector = this.setVector(element.torsionVectors, elementOffsetStart, this.tempVectors[1]).multiplyScalar(params.sheetWidth);
             let verticalVector = this.setVector(element.normalVectors, elementOffsetStart, this.tempVectors[2]).multiplyScalar(params.sheetHeight);
-            
+
             let p1 = this.tempVectors[3].addVectors(elementPoint, horizontalVector).add(verticalVector),
                 p2 = this.tempVectors[4].subVectors(elementPoint, horizontalVector).add(verticalVector),
                 p3 = this.tempVectors[5].subVectors(elementPoint, horizontalVector).sub(verticalVector),
@@ -1044,7 +1047,7 @@ namespace LiteMol.Visualization.Molecule.Cartoons.Geometry {
                 if (arrays.name[i] === "N3") {
                     target.set(arrays.x[i], arrays.y[i], arrays.z[i]);
                     break;
-                } 
+                }
             }
 
             return target;
@@ -1086,7 +1089,7 @@ namespace LiteMol.Visualization.Molecule.Cartoons.Geometry {
             state.invMatrix.getInverse(state.translationMatrix);
             template.geometry.applyMatrix(state.invMatrix);
         }
-       
+
     }
 
 }

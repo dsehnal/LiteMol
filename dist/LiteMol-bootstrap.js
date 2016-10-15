@@ -8649,8 +8649,8 @@ var LiteMol;
                         return Bootstrap.Task.fromComputation("Create Molecule (" + a.props.label + ")", 'Normal', t.params.format.parse(a.props.data, { id: t.params.customId }))
                             .setReportTime(true)
                             .bind("Create Molecule (" + a.props.label + ")", 'Silent', function (r) {
-                            if (r.error)
-                                return Bootstrap.Task.reject("Create Molecule (" + a.props.label + ")", 'Background', r.error.toString());
+                            if (r.isError)
+                                return Bootstrap.Task.reject("Create Molecule (" + a.props.label + ")", 'Background', r.toString());
                             if (r.warnings && r.warnings.length > 0) {
                                 for (var _i = 0, _a = r.warnings; _i < _a.length; _i++) {
                                     var w = _a[_i];
@@ -8960,8 +8960,8 @@ var LiteMol;
                             ctx.update('Parsing...');
                             ctx.schedule(function () {
                                 var d = LiteMol.Core.Formats.CIF.Text.parse(a.props.data);
-                                if (d.error) {
-                                    ctx.reject(d.error.toString());
+                                if (d.isError) {
+                                    ctx.reject(d.toString());
                                     return;
                                 }
                                 ctx.resolve(Entity.Data.CifDictionary.create(t, { label: t.params.id ? t.params.id : 'CIF Dictionary', description: t.params.description, dictionary: d.result }));
@@ -8980,8 +8980,8 @@ var LiteMol;
                             ctx.update('Parsing...');
                             ctx.schedule(function () {
                                 var d = LiteMol.Core.Formats.CIF.Binary.parse(a.props.data);
-                                if (d.error) {
-                                    ctx.reject(d.error.toString());
+                                if (d.isError) {
+                                    ctx.reject(d.toString());
                                     return;
                                 }
                                 ctx.resolve(Entity.Data.CifDictionary.create(t, { label: t.params.id ? t.params.id : 'CIF Dictionary', description: t.params.description, dictionary: d.result }));
@@ -9035,8 +9035,8 @@ var LiteMol;
                         return Bootstrap.Task.fromComputation("Parse Density (" + a.props.label + ")", 'Normal', t.params.format.parse(a.props.data))
                             .setReportTime(true)
                             .bind("Create Density (" + a.props.label + ")", 'Silent', function (data) {
-                            if (data.error) {
-                                return Bootstrap.Task.reject("Create Density (" + a.props.label + ")", 'Background', data.error.toString());
+                            if (data.isError) {
+                                return Bootstrap.Task.reject("Create Density (" + a.props.label + ")", 'Background', data.toString());
                             }
                             if (t.params.normalize) {
                                 data.result.normalize();
@@ -9147,8 +9147,10 @@ var LiteMol;
                             defaultParams: function () { return ({}); }
                         }, function (ctx, a, t) {
                             return Bootstrap.Task.create('Load', 'Silent', function (ctx) {
-                                var cif = LiteMol.Core.Formats.CIF.Binary.parse(t.params.data).result;
-                                var model = LiteMol.Core.Formats.Molecule.mmCIF.ofDataBlock(cif.dataBlocks[0]).models[0];
+                                var cif = LiteMol.Core.Formats.CIF.Binary.parse(t.params.data);
+                                if (cif.isError)
+                                    return;
+                                var model = LiteMol.Core.Formats.Molecule.mmCIF.ofDataBlock(cif.result.dataBlocks[0]).models[0];
                                 if (t.params.transform)
                                     LiteMol.Core.Structure.Operator.applyToModelUnsafe(t.params.transform, model);
                                 ctx.resolve(Entity.Molecule.Model.create(t, { label: 'part', model: model }));

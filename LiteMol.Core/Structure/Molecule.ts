@@ -17,7 +17,7 @@ namespace LiteMol.Core.Structure {
         /*
          * Indices <0 .. count - 1>
          */
-        indices: number[];        
+        indices: number[];
         columns: DataTableColumnDescriptor[];
 
         clone() {
@@ -66,10 +66,10 @@ namespace LiteMol.Core.Structure {
                 for (let col of source.columns) {
 
                     let data = (<any>source)[col.name];
-                    if (data instanceof Utils.ChunkedArrayBuilder) {
-                        data = <any>(<Utils.ChunkedArrayBuilder<{}>><any>data).compact();
+                    if (Utils.ChunkedArray.is(data)) {
+                        data = Utils.ChunkedArray.compact(data);
                     }
-                    Object.defineProperty(this, col.name, { enumerable: true, configurable: false, writable: false, value: data });                    
+                    Object.defineProperty(this, col.name, { enumerable: true, configurable: false, writable: false, value: data });
                     this.columns[this.columns.length] = col;
                 }
             }
@@ -80,8 +80,8 @@ namespace LiteMol.Core.Structure {
         count: number;
 
         columns: DataTableColumnDescriptor[] = [];
-        
-        addColumn<T>(name: string, creator: (size: number) => T): T {            
+
+        addColumn<T>(name: string, creator: (size: number) => T): T {
             let c = creator(this.count);
             Object.defineProperty(this, name, { enumerable: true, configurable: false, writable: false, value: c });
             this.columns[this.columns.length] = new DataTableColumnDescriptor(name, creator);
@@ -91,7 +91,7 @@ namespace LiteMol.Core.Structure {
         getRawData(): any[][] {
             return this.columns.map(c => (<any>this)[c.name]);
         }
-        
+
         /**
          * This functions clones the table and defines all its column inside the constructor, hopefully making the JS engine 
          * use internal class instead of dictionary representation.
@@ -113,20 +113,20 @@ namespace LiteMol.Core.Structure {
     }
 
     export const enum BondType {
-        Unknown         = 0,
+        Unknown = 0,
 
-        Single          = 1,
-        Double          = 2,
-        Triple          = 3,
-        Aromatic        = 4,
+        Single = 1,
+        Double = 2,
+        Triple = 3,
+        Aromatic = 4,
 
-        Metallic        = 5,
-        Ion             = 6,
-        Hydrogen        = 7,
-        DisulfideBridge = 8 
+        Metallic = 5,
+        Ion = 6,
+        Hydrogen = 7,
+        DisulfideBridge = 8
     }
 
-    export class ComponentBondInfoEntry {        
+    export class ComponentBondInfoEntry {
 
         map: Map<string, Map<string, BondType>> = new Map<string, Map<string, BondType>>();
 
@@ -173,7 +173,7 @@ namespace LiteMol.Core.Structure {
                 && a.seqNumber === bSeqNumber[index]
                 && a.insCode === bInsCode[index];
         }
-        
+
         static compare(a: PolyResidueIdentifier, b: PolyResidueIdentifier) {
             if (a.asymId === b.asymId) {
                 if (a.seqNumber === b.seqNumber) {
@@ -187,7 +187,7 @@ namespace LiteMol.Core.Structure {
             return a.asymId < b.asymId ? -1 : 1;
         }
 
-        static compareResidue(a: PolyResidueIdentifier, index:number, bAsymId: string[], bSeqNumber: number[], bInsCode: string[]) {
+        static compareResidue(a: PolyResidueIdentifier, index: number, bAsymId: string[], bSeqNumber: number[], bInsCode: string[]) {
             if (a.asymId === bAsymId[index]) {
                 if (a.seqNumber === bSeqNumber[index]) {
                     if (a.insCode === bInsCode[index]) return 0;
@@ -198,7 +198,7 @@ namespace LiteMol.Core.Structure {
                 return a.seqNumber < bSeqNumber[index] ? -1 : 1;
             }
             return a.asymId < bAsymId[index] ? -1 : 1;
-        }        
+        }
     }
 
     export const enum SecondaryStructureType { None = 0, Helix = 1, Turn = 2, Sheet = 3, AminoSeq = 4, Strand = 5 }
@@ -245,8 +245,8 @@ namespace LiteMol.Core.Structure {
     /**
      * Wraps an assembly generation template.
      */
-    export class AssemblyGen { 
-        gens: AssemblyGenEntry[] = [];        
+    export class AssemblyGen {
+        gens: AssemblyGenEntry[] = [];
         constructor(public name: string) { }
     }
 
@@ -263,7 +263,7 @@ namespace LiteMol.Core.Structure {
         y: number[];
         z: number[];
     }
-    
+
     export interface DefaultAtomTableSchema extends DataTable {
         id: number[];
         name: string[];
@@ -277,13 +277,13 @@ namespace LiteMol.Core.Structure {
         tempFactor: number[];
 
         rowIndex: number[];
-        
+
         residueIndex: number[];
         chainIndex: number[];
         entityIndex: number[];
     }
 
-    export interface DefaultResidueTableSchema extends DataTable {        
+    export interface DefaultResidueTableSchema extends DataTable {
         name: string[];
         seqNumber: number[];
         asymId: string[];
@@ -294,17 +294,17 @@ namespace LiteMol.Core.Structure {
         entityId: string[];
 
         isHet: number[];
-        
+
         atomStartIndex: number[];
         atomEndIndex: number[];
 
         chainIndex: number[];
         entityIndex: number[];
-        
+
         secondaryStructureIndex: number[];
     }
 
-    export interface DefaultChainTableSchema extends DataTable {        
+    export interface DefaultChainTableSchema extends DataTable {
         asymId: string[];
         authAsymId: string[];
         entityId: string[];
@@ -313,7 +313,7 @@ namespace LiteMol.Core.Structure {
         atomEndIndex: number[];
         residueStartIndex: number[];
         residueEndIndex: number[];
-        
+
         entityIndex: number[];
 
         // used by computed molecules (symmetry, assembly)
@@ -347,7 +347,7 @@ namespace LiteMol.Core.Structure {
     export namespace DefaultDataTables {
         export function forAtoms(count: number) {
             let builder = new DataTableBuilder(count);
-            let columns = { 
+            let columns = {
                 id: builder.addColumn("id", size => new Int32Array(size)),
                 x: builder.addColumn("x", size => new Float32Array(size)),
                 y: builder.addColumn("y", size => new Float32Array(size)),
@@ -368,7 +368,7 @@ namespace LiteMol.Core.Structure {
 
         export function forResidues(count: number) {
             let builder = new DataTableBuilder(count);
-            let columns = { 
+            let columns = {
                 name: builder.addColumn("name", size => <string[]>[]),
                 seqNumber: builder.addColumn("seqNumber", size => new Int32Array(size)),
                 asymId: builder.addColumn("asymId", size => <string[]>[]),
@@ -389,7 +389,7 @@ namespace LiteMol.Core.Structure {
 
         export function forChains(count: number) {
             let builder = new DataTableBuilder(count);
-            let columns = { 
+            let columns = {
                 asymId: builder.addColumn("asymId", size => <string[]>[]),
                 entityId: builder.addColumn("entityId", size => <string[]>[]),
                 authAsymId: builder.addColumn("authAsymId", size => <string[]>[]),
@@ -404,7 +404,7 @@ namespace LiteMol.Core.Structure {
 
         export function forEntities(count: number) {
             let builder = new DataTableBuilder(count);
-            let columns = { 
+            let columns = {
                 entityId: builder.addColumn("entityId", size => <string[]>[]),
                 entityType: builder.addColumn("entityType", size => <Structure.EntityType[]>[]),
                 type: builder.addColumn("type", size => <string[]>[]),
@@ -420,7 +420,7 @@ namespace LiteMol.Core.Structure {
 
         export function forBonds(count: number) {
             let builder = new DataTableBuilder(count);
-            let columns = { 
+            let columns = {
                 atomAIndex: builder.addColumn("atomAIndex", size => new Int32Array(size)),
                 atomBIndex: builder.addColumn("atomBIndex", size => new Int32Array(size)),
                 type: builder.addColumn("type", size => new Int8Array(size))
@@ -434,25 +434,25 @@ namespace LiteMol.Core.Structure {
         File,
         Computed
     }
-    
+
     export class Operator {
-        
+
         apply(v: Geometry.LinearAlgebra.ObjectVec3) {
             Geometry.LinearAlgebra.Matrix4.transformVector3(v, v, this.matrix)
         }
-        
+
         static applyToModelUnsafe(matrix: number[], m: MoleculeModel) {
-            let v = { x: 0.1, y: 0.1, z: 0.1};
-            let {x,y,z} = m.atoms;
+            let v = { x: 0.1, y: 0.1, z: 0.1 };
+            let {x, y, z} = m.atoms;
             for (let i = 0, _b = m.atoms.count; i < _b; i++) {
                 v.x = x[i]; v.y = y[i]; v.z = z[i];
                 Geometry.LinearAlgebra.Matrix4.transformVector3(v, v, matrix);
-                x[i] = v.x; y[i] = v.y; z[i] = v.z;                
+                x[i] = v.x; y[i] = v.y; z[i] = v.z;
             }
         }
-        
+
         constructor(public matrix: number[], public id: string, public isIdentity: boolean) {
-            
+
         }
     }
 
@@ -464,8 +464,8 @@ namespace LiteMol.Core.Structure {
         chains: DefaultChainTableSchema,
         entities: DefaultEntityTableSchema,
         covalentBonds?: DefaultBondTableSchema,
-        nonCovalentbonds?: DefaultBondTableSchema, 
-        componentBonds?: ComponentBondInfo,        
+        nonCovalentbonds?: DefaultBondTableSchema,
+        componentBonds?: ComponentBondInfo,
         secondaryStructure: SecondaryStructureElement[],
         symmetryInfo?: SymmetryInfo,
         assemblyInfo?: AssemblyInfo,
@@ -473,7 +473,7 @@ namespace LiteMol.Core.Structure {
         source: MoleculeModelSource,
         operators?: Operator[]
     }
-    
+
     export class MoleculeModel implements MoleculeModelData {
 
         private _queryContext: Query.Context | undefined = void 0;

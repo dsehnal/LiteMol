@@ -4,13 +4,13 @@
 
 namespace LiteMol.Core.Geometry.MarchingCubes {
     "use strict";
-    
+
     /**
      * The parameters required by the algorithm.
      */
     export interface MarchingCubesParameters {
         isoLevel: number;
-        scalarField: Formats.Density.Field3D;        
+        scalarField: Formats.Density.Field3D;
 
         bottomLeft?: number[];
         topRight?: number[];
@@ -45,42 +45,42 @@ namespace LiteMol.Core.Geometry.MarchingCubes {
 
     //     return new MarchingCubesResult(<Float32Array><any>vertices, <Uint32Array><any>triangles, state.annotate ? state.annotationBuffer.compact() : null);
     // }
-    
+
     export function compute(parameters: MarchingCubesParameters): Computation<Surface> {
-        return Computation.create(ctx => {           
+        return Computation.create(ctx => {
             let comp = new MarchingCubesComputation(parameters, ctx);
             comp.start();
         });
     }
 
     class MarchingCubesComputation {
-        
+
         private chunkSize = 80 * 80 * 80;
-        private size: number; 
+        private size: number;
         private sliceSize: number;
         private done = 0;
-        
+
         private k = 0;
         private minX = 0; private minY = 0; private minZ = 0;
         private maxX = 0; private maxY = 0; private maxZ = 0;
         private state: MarchingCubesState;
-        
+
         private nextSlice() {
             if (this.ctx.abortRequested) {
                 this.ctx.abort();
                 return;
             }
-            
+
             this.done += this.sliceSize;
             this.ctx.update('Computing surface...', this.ctx.abortRequest, this.done, this.size);
-                        
+
             if (this.k >= this.maxZ) {
                 this.finish();
-            } else {            
+            } else {
                 this.ctx.schedule(this._slice);
             }
         }
-        
+
         private slice() {
             for (let j = this.minY; j < this.maxY; j++) {
                 for (let i = this.minX; i < this.maxX; i++) {
@@ -90,10 +90,10 @@ namespace LiteMol.Core.Geometry.MarchingCubes {
             this.k++;
             this.nextSlice();
         }
-        
+
         private finish() {
-            let vertices = <any>this.state.vertexBuffer.compact() as Float32Array;
-            let triangles = <any>this.state.triangleBuffer.compact() as Uint32Array;
+            let vertices = <any>Utils.ChunkedArray.compact(this.state.vertexBuffer) as Float32Array;
+            let triangles = <any>Utils.ChunkedArray.compact(this.state.triangleBuffer) as Uint32Array;
 
             this.state.vertexBuffer = <any>void 0;
             this.state.verticesOnEdges = <any>void 0;
@@ -103,12 +103,12 @@ namespace LiteMol.Core.Geometry.MarchingCubes {
                 triangleCount: (triangles.length / 3) | 0,
                 vertices,
                 triangleIndices: triangles,
-                annotation: this.state.annotate ? this.state.annotationBuffer.compact() : void 0
-            } 
-                        
+                annotation: this.state.annotate ? Utils.ChunkedArray.compact(this.state.annotationBuffer) : void 0
+            }
+
             this.ctx.resolve(ret);
         }
-        
+
         private _slice = () => {
             try {
                 this.slice();
@@ -116,26 +116,26 @@ namespace LiteMol.Core.Geometry.MarchingCubes {
                 this.ctx.reject('' + e);
             }
         }
-        
+
         start() {
-            this.ctx.update('Computing surface...', this.ctx.abortRequest, 0, this.size);                        
+            this.ctx.update('Computing surface...', this.ctx.abortRequest, 0, this.size);
             this.ctx.schedule(this._slice);
         }
-        
+
         constructor(
-            parameters: MarchingCubesParameters, 
+            parameters: MarchingCubesParameters,
             private ctx: Computation.Context<Surface>) {
-            
+
             let params = <MarchingCubesParameters>Core.Utils.extend({}, parameters);
 
             if (!params.bottomLeft) params.bottomLeft = [0, 0, 0];
             if (!params.topRight) params.topRight = params.scalarField.dimensions;
-                    
+
             this.state = new MarchingCubesState(params),
-            this.minX = params.bottomLeft[0]; this.minY = params.bottomLeft[1]; this.minZ = params.bottomLeft[2];
+                this.minX = params.bottomLeft[0]; this.minY = params.bottomLeft[1]; this.minZ = params.bottomLeft[2];
             this.maxX = params.topRight[0] - 1; this.maxY = params.topRight[1] - 1; this.maxZ = params.topRight[2] - 1;
-            
-            this.k = this.minZ;            
+
+            this.k = this.minZ;
             this.size = (this.maxX - this.minX) * (this.maxY - this.minY) * (this.maxZ - this.minZ);
             this.sliceSize = (this.maxX - this.minX) * (this.maxY - this.minY);
         }
@@ -151,15 +151,15 @@ namespace LiteMol.Core.Geometry.MarchingCubes {
         verticesOnEdges: Int32Array;
         vertList: number[] = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
         i: number = 0; j: number = 0; k: number = 0;
-        
-        vertexBuffer: Core.Utils.ChunkedArrayBuilder<number>;
-        annotationBuffer: Core.Utils.ChunkedArrayBuilder<number>;
-        triangleBuffer: Core.Utils.ChunkedArrayBuilder<number>;
+
+        vertexBuffer: Core.Utils.ChunkedArray<number>;
+        annotationBuffer: Core.Utils.ChunkedArray<number>;
+        triangleBuffer: Core.Utils.ChunkedArray<number>;
 
         private get3dOffsetFromEdgeInfo(index: Index) {
             return (this.nX * ((this.k + index.k) * this.nY + this.j + index.j) + this.i + index.i) | 0;
         }
-        
+
         private interpolate(edgeNum: number) {
             let info = EdgeIdInfo[edgeNum],
                 edgeId = 3 * this.get3dOffsetFromEdgeInfo(info) + info.e;
@@ -175,7 +175,8 @@ namespace LiteMol.Core.Geometry.MarchingCubes {
                 v1 = this.scalarField.get(hi, hj, hk),
                 t = (this.isoLevel - v0) / (v0 - v1);
 
-            let id = this.vertexBuffer.add3(
+            let id = Utils.ChunkedArray.add3(
+                this.vertexBuffer,
                 li + t * (li - hi),
                 lj + t * (lj - hj),
                 lk + t * (lk - hk)) | 0;
@@ -183,7 +184,7 @@ namespace LiteMol.Core.Geometry.MarchingCubes {
             this.verticesOnEdges[edgeId] = id + 1;
 
             if (this.annotate) {
-                this.annotationBuffer.add(this.annotationField!.get(this.i, this.j, this.k));
+                Utils.ChunkedArray.add(this.annotationBuffer, this.annotationField!.get(this.i, this.j, this.k));
             }
 
             return id;
@@ -198,18 +199,18 @@ namespace LiteMol.Core.Geometry.MarchingCubes {
                 vertexBufferSize = Math.min(262144, Math.max(dX * dY * dZ / 16, 1024) | 0),
                 triangleBufferSize = Math.min(1 << 16, vertexBufferSize * 4);
 
-            this.vertexBuffer = Core.Utils.ChunkedArrayBuilder.forVertex3D(vertexBufferSize);
-            this.triangleBuffer = new Core.Utils.ChunkedArrayBuilder<number>(size => new Uint32Array(size), triangleBufferSize, 3);
+            this.vertexBuffer = Core.Utils.ChunkedArray.forVertex3D(vertexBufferSize);
+            this.triangleBuffer = Core.Utils.ChunkedArray.create<number>(size => new Uint32Array(size), triangleBufferSize, 3);
 
             this.annotate = !!params.annotationField;
-            if (this.annotate) this.annotationBuffer = Core.Utils.ChunkedArrayBuilder.forInt32(vertexBufferSize);
+            if (this.annotate) this.annotationBuffer = Core.Utils.ChunkedArray.forInt32(vertexBufferSize);
 
             this.verticesOnEdges = new Int32Array(3 * this.nX * this.nY * this.nZ);
         }
 
         processCell(i: number, j: number, k: number) {
             let tableIndex = 0;
-            
+
             if (this.scalarField.get(i, j, k) < this.isoLevel) tableIndex |= 1;
             if (this.scalarField.get(i + 1, j, k) < this.isoLevel) tableIndex |= 2;
             if (this.scalarField.get(i + 1, j + 1, k) < this.isoLevel) tableIndex |= 4;
@@ -238,7 +239,7 @@ namespace LiteMol.Core.Geometry.MarchingCubes {
 
             let triInfo = TriTable[tableIndex];
             for (let t = 0; t < triInfo.length; t += 3) {
-                this.triangleBuffer.add3(this.vertList[triInfo[t]], this.vertList[triInfo[t + 1]], this.vertList[triInfo[t + 2]]);
+                Utils.ChunkedArray.add3(this.triangleBuffer, this.vertList[triInfo[t]], this.vertList[triInfo[t + 1]], this.vertList[triInfo[t + 2]]);
             }
         }
     }

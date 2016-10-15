@@ -35,8 +35,8 @@ var LiteMol;
             fetch(url, binary, document.querySelector("#" + id + " .status"), function (data) {
                 var cif = parse(data);
                 var text = document.querySelector("#" + id + " textarea");
-                if (cif.error) {
-                    text.innerHTML = "Error:\n" + cif.error.toString();
+                if (cif.isError) {
+                    text.innerHTML = "Error:\n" + cif.toString();
                     return;
                 }
                 text.innerHTML = JSON.stringify(cif.result.toJSON(), null, 2);

@@ -35189,7 +35189,7 @@ var LiteMol;
 (function (LiteMol) {
     var Visualization;
     (function (Visualization) {
-        Visualization.VERSION = { number: "1.3.1", date: "Sep 23 2016" };
+        Visualization.VERSION = { number: "1.3.2", date: "Oct 14 2016" };
     })(Visualization = LiteMol.Visualization || (LiteMol.Visualization = {}));
 })(LiteMol || (LiteMol = {}));
 var LiteMol;
@@ -37182,6 +37182,7 @@ var LiteMol;
                 Picking.getSceneId = getSceneId;
             })(Picking = Selection.Picking || (Selection.Picking = {}));
             ;
+            var ChunkedArray = LiteMol.Core.Utils.ChunkedArray;
             var VertexMapBuilder = (function () {
                 function VertexMapBuilder(elementCount) {
                     this.elementCount = elementCount;
@@ -37190,9 +37191,9 @@ var LiteMol;
                     this.elementRangeIndex = 0;
                     this.rangeIndex = 0;
                     this.added = 0;
-                    this.elementIndices = new LiteMol.Core.Utils.ChunkedArrayBuilder(function (size) { return new Int32Array(size); }, elementCount, 1);
+                    this.elementIndices = ChunkedArray.create(function (size) { return new Int32Array(size); }, elementCount, 1);
                     this.elementRanges = new Int32Array(2 * elementCount);
-                    this.vertexRanges = new LiteMol.Core.Utils.ChunkedArrayBuilder(function (size) { return new Int32Array(size); }, elementCount, 2);
+                    this.vertexRanges = ChunkedArray.create(function (size) { return new Int32Array(size); }, elementCount, 2);
                 }
                 VertexMapBuilder.prototype.startElement = function (index) {
                     this.elementIndex = index;
@@ -37202,16 +37203,16 @@ var LiteMol;
                 };
                 VertexMapBuilder.prototype.addVertexRange = function (start, end) {
                     this.added++;
-                    this.vertexRanges.add2(start, end);
+                    ChunkedArray.add2(this.vertexRanges, start, end);
                 };
                 VertexMapBuilder.prototype.endElement = function () {
-                    this.elementIndices.add(this.elementIndex);
+                    ChunkedArray.add(this.elementIndices, this.elementIndex);
                     this.elementMap.set(this.elementIndex, this.elementRangeIndex);
                     this.elementRanges[2 * this.elementRangeIndex] = 2 * this.rangeIndex;
                     this.elementRanges[2 * this.elementRangeIndex + 1] = 2 * (this.rangeIndex + this.added);
                 };
                 VertexMapBuilder.prototype.getMap = function () {
-                    return new VertexMap(this.elementIndices.compact(), this.elementMap, this.elementRanges, this.vertexRanges.compact());
+                    return new VertexMap(ChunkedArray.compact(this.elementIndices), this.elementMap, this.elementRanges, ChunkedArray.compact(this.vertexRanges));
                 };
                 return VertexMapBuilder;
             }());
@@ -37296,6 +37297,7 @@ var LiteMol;
         var Surface;
         (function (Surface) {
             "use strict";
+            var ChunkedArray = LiteMol.Core.Utils.ChunkedArray;
             function sortAnnotation(ctx) {
                 var indices = new Int32Array(ctx.data.annotation.length);
                 var annotation = ctx.data.annotation;
@@ -37397,14 +37399,14 @@ var LiteMol;
                     var a = tri[3 * i], b = tri[3 * i + 1], c = tri[3 * i + 2];
                     var aI = ids[a], bI = ids[b], cI = ids[c];
                     if (aI === bI && bI === cI) {
-                        pickTris.add3(a, b, c);
+                        ChunkedArray.add3(pickTris, a, b, c);
                         continue;
                     }
                     var s = aI === bI ? aI : bI;
-                    pickPlatesVertices.add3(vs[3 * a], vs[3 * a + 1], vs[3 * a + 2]);
-                    pickPlatesVertices.add3(vs[3 * b], vs[3 * b + 1], vs[3 * b + 2]);
-                    pickPlatesVertices.add3(vs[3 * c], vs[3 * c + 1], vs[3 * c + 2]);
-                    pickPlatesTris.add3(platesVertexCount++, platesVertexCount++, platesVertexCount++);
+                    ChunkedArray.add3(pickPlatesVertices, vs[3 * a], vs[3 * a + 1], vs[3 * a + 2]);
+                    ChunkedArray.add3(pickPlatesVertices, vs[3 * b], vs[3 * b + 1], vs[3 * b + 2]);
+                    ChunkedArray.add3(pickPlatesVertices, vs[3 * c], vs[3 * c + 1], vs[3 * c + 2]);
+                    ChunkedArray.add3(pickPlatesTris, platesVertexCount++, platesVertexCount++, platesVertexCount++);
                     if (s < 0) {
                         color.r = 0;
                         color.g = 0;
@@ -37413,16 +37415,16 @@ var LiteMol;
                     else {
                         Visualization.Selection.Picking.assignPickColor(s, color);
                     }
-                    pickPlatesColors.add4(color.r, color.g, color.b, 0.0);
-                    pickPlatesColors.add4(color.r, color.g, color.b, 0.0);
-                    pickPlatesColors.add4(color.r, color.g, color.b, 0.0);
+                    ChunkedArray.add4(pickPlatesColors, color.r, color.g, color.b, 0.0);
+                    ChunkedArray.add4(pickPlatesColors, color.r, color.g, color.b, 0.0);
+                    ChunkedArray.add4(pickPlatesColors, color.r, color.g, color.b, 0.0);
                 }
                 ctx.platesVertexCount += platesVertexCount;
                 ctx.computation.schedule(function () { return computePickPlatesChunk(start + chunkSize, ctx, next); });
             }
             function assignPickColors(ctx) {
                 var color = { r: 0.45, g: 0.45, b: 0.45 }, vs = ctx.data.vertices, ids = ctx.data.annotation, tri = ctx.data.triangleIndices;
-                ctx.pickTris = LiteMol.Core.Utils.ChunkedArrayBuilder.forIndexBuffer(ctx.triCount);
+                ctx.pickTris = ChunkedArray.forIndexBuffer(ctx.triCount);
                 var pickColorBuffer = ctx.pickColorBuffer;
                 for (var i = 0, _b = ctx.vertexCount; i < _b; i++) {
                     var id = ids[i];
@@ -37449,13 +37451,13 @@ var LiteMol;
             function createPickGeometry(ctx) {
                 var pickGeometry = new Visualization.THREE.BufferGeometry();
                 pickGeometry.addAttribute('position', new Visualization.THREE.BufferAttribute(ctx.data.vertices, 3));
-                pickGeometry.addAttribute('index', new Visualization.THREE.BufferAttribute(ctx.pickTris.compact(), 1));
+                pickGeometry.addAttribute('index', new Visualization.THREE.BufferAttribute(ChunkedArray.compact(ctx.pickTris), 1));
                 pickGeometry.addAttribute('pColor', new Visualization.THREE.BufferAttribute(ctx.pickColorBuffer, 4));
                 ctx.geom.pickGeometry = pickGeometry;
                 pickGeometry = new Visualization.THREE.BufferGeometry();
-                pickGeometry.addAttribute('position', new Visualization.THREE.BufferAttribute(ctx.pickPlatesVertices.compact(), 3));
-                pickGeometry.addAttribute('index', new Visualization.THREE.BufferAttribute(ctx.pickPlatesTris.compact(), 1));
-                pickGeometry.addAttribute('pColor', new Visualization.THREE.BufferAttribute(ctx.pickPlatesColors.compact(), 4));
+                pickGeometry.addAttribute('position', new Visualization.THREE.BufferAttribute(ChunkedArray.compact(ctx.pickPlatesVertices), 3));
+                pickGeometry.addAttribute('index', new Visualization.THREE.BufferAttribute(ChunkedArray.compact(ctx.pickPlatesTris), 1));
+                pickGeometry.addAttribute('pColor', new Visualization.THREE.BufferAttribute(ChunkedArray.compact(ctx.pickPlatesColors), 4));
                 ctx.geom.pickPlatesGeometry = pickGeometry;
             }
             function addWireframeEdge(edges, included, a, b) {
@@ -37469,11 +37471,11 @@ var LiteMol;
                 included.add(cantorPairing);
                 if (included.size === oldSize)
                     return;
-                edges.add2(a, b);
+                ChunkedArray.add2(edges, a, b);
             }
             function buildWireframeIndices(ctx) {
                 var tris = ctx.data.triangleIndices;
-                var edges = new LiteMol.Core.Utils.ChunkedArrayBuilder(function (size) { return new Uint32Array(size); }, (1.5 * ctx.triCount) | 0, 2);
+                var edges = ChunkedArray.create(function (size) { return new Uint32Array(size); }, (1.5 * ctx.triCount) | 0, 2);
                 var includedEdges = new Set();
                 for (var i = 0, _b = tris.length; i < _b; i += 3) {
                     var a = tris[i], b = tris[i + 1], c = tris[i + 2];
@@ -37481,7 +37483,7 @@ var LiteMol;
                     addWireframeEdge(edges, includedEdges, a, c);
                     addWireframeEdge(edges, includedEdges, b, c);
                 }
-                return new Visualization.THREE.BufferAttribute(edges.compact(), 1);
+                return new Visualization.THREE.BufferAttribute(ChunkedArray.compact(edges), 1);
             }
             function createGeometry(isWireframe, ctx) {
                 var geometry = new Visualization.THREE.BufferGeometry();
@@ -37508,9 +37510,9 @@ var LiteMol;
                     }
                     else {
                         assignPickColors(ctx);
-                        ctx.pickPlatesVertices = LiteMol.Core.Utils.ChunkedArrayBuilder.forVertex3D(Math.max(ctx.vertexCount / 10, 10));
-                        ctx.pickPlatesTris = LiteMol.Core.Utils.ChunkedArrayBuilder.forIndexBuffer(Math.max(ctx.triCount / 10, 10));
-                        ctx.pickPlatesColors = new LiteMol.Core.Utils.ChunkedArrayBuilder(function (s) { return new Float32Array(s); }, Math.max(ctx.vertexCount / 10, 10), 4);
+                        ctx.pickPlatesVertices = ChunkedArray.forVertex3D(Math.max(ctx.vertexCount / 10, 10));
+                        ctx.pickPlatesTris = ChunkedArray.forIndexBuffer(Math.max(ctx.triCount / 10, 10));
+                        ctx.pickPlatesColors = ChunkedArray.create(function (s) { return new Float32Array(s); }, Math.max(ctx.vertexCount / 10, 10), 4);
                         ctx.platesVertexCount = 0;
                         computePickPlatesChunk(0, ctx, function () {
                             createPickGeometry(ctx);
@@ -37942,6 +37944,7 @@ var LiteMol;
                 "use strict";
                 var BallsAndSticksHelper;
                 (function (BallsAndSticksHelper) {
+                    var ChunkedArray = LiteMol.Core.Utils.ChunkedArray;
                     function addPrecomputedBonds(molecule, atomIndices, builder) {
                         var mask = LiteMol.Core.Structure.Query.Context.Mask.ofIndices(molecule, atomIndices);
                         var stickCount = 0;
@@ -37954,7 +37957,7 @@ var LiteMol;
                             var order = type[i];
                             if (order < 1 || order > 4)
                                 order = 1;
-                            builder.add3(a, b, order);
+                            ChunkedArray.add3(builder, a, b, order);
                             stickCount += order;
                         }
                         return stickCount;
@@ -37966,7 +37969,7 @@ var LiteMol;
                         atomCount = indices.length;
                         var atoms = molecule.atoms, cX = atoms.x, cY = atoms.y, cZ = atoms.z, elementSymbol = atoms.elementSymbol, atomName = atoms.name, altLoc = atoms.altLoc, atomResidueIndex = atoms.residueIndex, atomEntityIndex = atoms.entityIndex, entityType = molecule.entities.entityType, waterType = LiteMol.Core.Structure.EntityType.Water, residueName = molecule.residues.name;
                         var bondLength = 2;
-                        var compBonds = molecule.componentBonds, builder = new LiteMol.Core.Utils.ChunkedArrayBuilder(function (size) { return new Int32Array(size); }, (indices.length * 1.33) | 0, 3), residueCount = 1, stickCount = 0, startAtomIndex = 0, endAtomIndex = 0;
+                        var compBonds = molecule.componentBonds, builder = ChunkedArray.create(function (size) { return new Int32Array(size); }, (indices.length * 1.33) | 0, 3), residueCount = 1, stickCount = 0, startAtomIndex = 0, endAtomIndex = 0;
                         if (molecule.covalentBonds) {
                             stickCount = BallsAndSticksHelper.addPrecomputedBonds(molecule, atomIndices, builder);
                             while (startAtomIndex < atomCount) {
@@ -37978,7 +37981,7 @@ var LiteMol;
                                 startAtomIndex = endAtomIndex;
                             }
                             return {
-                                bonds: builder.compact(),
+                                bonds: ChunkedArray.compact(builder),
                                 stickCount: stickCount,
                                 residueCount: residueCount
                             };
@@ -38002,7 +38005,7 @@ var LiteMol;
                                             if (order !== void 0) {
                                                 if (order < 1 || order > 4)
                                                     order = 1;
-                                                builder.add3(iA, iB, order);
+                                                ChunkedArray.add3(builder, iA, iB, order);
                                                 stickCount += order;
                                             }
                                         }
@@ -38029,14 +38032,14 @@ var LiteMol;
                                             continue;
                                         if (isHA || isHB) {
                                             if (len < 1.1) {
-                                                builder.add3(atom, idx, 1);
+                                                ChunkedArray.add3(builder, atom, idx, 1);
                                                 stickCount++;
                                             }
                                             continue;
                                         }
                                         var altB = altLoc[idx];
                                         if (len && (!altA || !altB || altA === altB)) {
-                                            builder.add3(atom, idx, 1);
+                                            ChunkedArray.add3(builder, atom, idx, 1);
                                             stickCount++;
                                         }
                                     }
@@ -38047,7 +38050,7 @@ var LiteMol;
                             startAtomIndex = endAtomIndex;
                         }
                         return {
-                            bonds: builder.compact(),
+                            bonds: ChunkedArray.compact(builder),
                             stickCount: stickCount,
                             residueCount: residueCount
                         };
@@ -38575,9 +38578,11 @@ var LiteMol;
             (function (Cartoons) {
                 var Geometry;
                 (function (Geometry) {
+                    var ChunkedArray = LiteMol.Core.Utils.ChunkedArray;
+                    var ArrayBuilder = LiteMol.Core.Utils.ArrayBuilder;
                     var CartoonAsymUnitState = (function () {
                         function CartoonAsymUnitState(residueCount) {
-                            this.typeBuilder = LiteMol.Core.Utils.ArrayBuilder.forArray(10000);
+                            this.typeBuilder = ArrayBuilder.forArray(10000);
                             this.residueType = [];
                             this.uPositions = new Float32Array(0);
                             this.vPositions = new Float32Array(0);
@@ -38585,17 +38590,17 @@ var LiteMol;
                             this.dPositions = new Float32Array(0);
                             this.uvLength = 0;
                             this.residueCount = 0;
-                            this.typeBuilder = LiteMol.Core.Utils.ArrayBuilder.forArray(residueCount + 4);
-                            this.uPositionsBuilder = LiteMol.Core.Utils.ArrayBuilder.forVertex3D(residueCount + 4);
-                            this.vPositionsBuilder = LiteMol.Core.Utils.ArrayBuilder.forVertex3D(residueCount + 4);
-                            this.pPositionsBuilder = LiteMol.Core.Utils.ArrayBuilder.forVertex3D(residueCount + 4);
-                            this.dPositionsBuilder = LiteMol.Core.Utils.ArrayBuilder.forVertex3D(residueCount + 4);
-                            this.typeBuilder.add(0 /* None */);
-                            this.typeBuilder.add(0 /* None */);
-                            this.uPositionsBuilder.add3(0, 0, 0);
-                            this.uPositionsBuilder.add3(0, 0, 0);
-                            this.vPositionsBuilder.add3(0, 0, 0);
-                            this.vPositionsBuilder.add3(0, 0, 0);
+                            this.typeBuilder = ArrayBuilder.forArray(residueCount + 4);
+                            this.uPositionsBuilder = ArrayBuilder.forVertex3D(residueCount + 4);
+                            this.vPositionsBuilder = ArrayBuilder.forVertex3D(residueCount + 4);
+                            this.pPositionsBuilder = ArrayBuilder.forVertex3D(residueCount + 4);
+                            this.dPositionsBuilder = ArrayBuilder.forVertex3D(residueCount + 4);
+                            ArrayBuilder.add(this.typeBuilder, 0 /* None */);
+                            ArrayBuilder.add(this.typeBuilder, 0 /* None */);
+                            ArrayBuilder.add3(this.uPositionsBuilder, 0, 0, 0);
+                            ArrayBuilder.add3(this.uPositionsBuilder, 0, 0, 0);
+                            ArrayBuilder.add3(this.vPositionsBuilder, 0, 0, 0);
+                            ArrayBuilder.add3(this.vPositionsBuilder, 0, 0, 0);
                         }
                         CartoonAsymUnitState.prototype.addResidue = function (rIndex, arrays, sType) {
                             var start = arrays.atomStartIndex[rIndex], end = arrays.atomEndIndex[rIndex], aU = false, aV = false;
@@ -38603,11 +38608,11 @@ var LiteMol;
                             if (sType !== 5 /* Strand */) {
                                 for (var i = start; i < end; i++) {
                                     if (!aU && name[i] === "CA") {
-                                        this.uPositionsBuilder.add3(arrays.x[i], arrays.y[i], arrays.z[i]);
+                                        ArrayBuilder.add3(this.uPositionsBuilder, arrays.x[i], arrays.y[i], arrays.z[i]);
                                         aU = true;
                                     }
                                     else if (!aV && name[i] === "O") {
-                                        this.vPositionsBuilder.add3(arrays.x[i], arrays.y[i], arrays.z[i]);
+                                        ArrayBuilder.add3(this.vPositionsBuilder, arrays.x[i], arrays.y[i], arrays.z[i]);
                                         aV = true;
                                     }
                                     if (aU && aV)
@@ -38617,11 +38622,11 @@ var LiteMol;
                             else {
                                 for (var i = start; i < end; i++) {
                                     if (!aU && name[i] === "O5'") {
-                                        this.uPositionsBuilder.add3(arrays.x[i], arrays.y[i], arrays.z[i]);
+                                        ArrayBuilder.add3(this.uPositionsBuilder, arrays.x[i], arrays.y[i], arrays.z[i]);
                                         aU = true;
                                     }
                                     else if (!aV && name[i] === "C3'") {
-                                        this.vPositionsBuilder.add3(arrays.x[i], arrays.y[i], arrays.z[i]);
+                                        ArrayBuilder.add3(this.vPositionsBuilder, arrays.x[i], arrays.y[i], arrays.z[i]);
                                         aV = true;
                                     }
                                     if (aU && aV)
@@ -38630,17 +38635,17 @@ var LiteMol;
                             }
                             if (!aV) {
                                 var arr = this.pPositionsBuilder.array, len = arr.length;
-                                this.vPositionsBuilder.add3(arr[len - 3], arr[len - 2], arr[len - 1]);
+                                ArrayBuilder.add3(this.vPositionsBuilder, arr[len - 3], arr[len - 2], arr[len - 1]);
                             }
-                            this.typeBuilder.add(sType);
+                            ArrayBuilder.add(this.typeBuilder, sType);
                         };
                         CartoonAsymUnitState.prototype.finishResidues = function () {
-                            this.typeBuilder.add(0 /* None */);
-                            this.typeBuilder.add(0 /* None */);
-                            this.uPositionsBuilder.add3(0, 0, 0);
-                            this.uPositionsBuilder.add3(0, 0, 0);
-                            this.vPositionsBuilder.add3(0, 0, 0);
-                            this.vPositionsBuilder.add3(0, 0, 0);
+                            ArrayBuilder.add(this.typeBuilder, 0 /* None */);
+                            ArrayBuilder.add(this.typeBuilder, 0 /* None */);
+                            ArrayBuilder.add3(this.uPositionsBuilder, 0, 0, 0);
+                            ArrayBuilder.add3(this.uPositionsBuilder, 0, 0, 0);
+                            ArrayBuilder.add3(this.vPositionsBuilder, 0, 0, 0);
+                            ArrayBuilder.add3(this.vPositionsBuilder, 0, 0, 0);
                             this.residueType = this.typeBuilder.array;
                             this.uPositions = this.uPositionsBuilder.array;
                             this.vPositions = this.vPositionsBuilder.array;
@@ -38651,8 +38656,8 @@ var LiteMol;
                             this.residueCount = this.uvLength - 4;
                         };
                         CartoonAsymUnitState.prototype.addControlPoint = function (p, d) {
-                            this.pPositionsBuilder.add3(p.x, p.y, p.z);
-                            this.dPositionsBuilder.add3(d.x, d.y, d.z);
+                            ArrayBuilder.add3(this.pPositionsBuilder, p.x, p.y, p.z);
+                            ArrayBuilder.add3(this.dPositionsBuilder, d.x, d.y, d.z);
                         };
                         CartoonAsymUnitState.prototype.finishContols = function () {
                             this.pPositions = this.pPositionsBuilder.array;
@@ -38684,9 +38689,9 @@ var LiteMol;
                                 this.residueCount += e.endResidueIndex - e.startResidueIndex;
                             }
                             var state = new CartoonAsymUnitState(this.residueCount);
-                            this.controlPointsBuilder = LiteMol.Core.Utils.ArrayBuilder.forVertex3D(this.residueCount * this.linearSegmentCount + 1);
-                            this.torsionVectorsBuilder = LiteMol.Core.Utils.ArrayBuilder.forVertex3D(this.residueCount * this.linearSegmentCount + 1);
-                            this.normalVectorsBuilder = LiteMol.Core.Utils.ArrayBuilder.forVertex3D(this.residueCount * this.linearSegmentCount + 1);
+                            this.controlPointsBuilder = ArrayBuilder.forVertex3D(this.residueCount * this.linearSegmentCount + 1);
+                            this.torsionVectorsBuilder = ArrayBuilder.forVertex3D(this.residueCount * this.linearSegmentCount + 1);
+                            this.normalVectorsBuilder = ArrayBuilder.forVertex3D(this.residueCount * this.linearSegmentCount + 1);
                             this.createControlPoints(state);
                         }
                         CartoonAsymUnit.maskSplit = function (element, mask, target) {
@@ -38952,14 +38957,14 @@ var LiteMol;
                             }
                         };
                         CartoonAsymUnit.prototype.addSplineNode = function (previousControlPoint, controlPoint, torsionPoint) {
-                            this.controlPointsBuilder.add3(controlPoint.x, controlPoint.y, controlPoint.z);
+                            ArrayBuilder.add3(this.controlPointsBuilder, controlPoint.x, controlPoint.y, controlPoint.z);
                             var torsionVector = this.tempA.subVectors(torsionPoint, controlPoint);
                             torsionVector.normalize();
-                            this.torsionVectorsBuilder.add3(torsionVector.x, torsionVector.y, torsionVector.z);
+                            ArrayBuilder.add3(this.torsionVectorsBuilder, torsionVector.x, torsionVector.y, torsionVector.z);
                             var controlVector = this.tempB.subVectors(controlPoint, previousControlPoint);
                             var normalVector = this.tempC.crossVectors(torsionVector, controlVector);
                             normalVector.normalize();
-                            this.normalVectorsBuilder.add3(normalVector.x, normalVector.y, normalVector.z);
+                            ArrayBuilder.add3(this.normalVectorsBuilder, normalVector.x, normalVector.y, normalVector.z);
                         };
                         CartoonAsymUnit.prototype.reflectPositions = function (xs, u, v, a, b, c, d, r1, r2) {
                             this.tempA.set(xs[3 * a], xs[3 * a + 1], xs[3 * a + 2]);
@@ -39013,9 +39018,9 @@ var LiteMol;
                             this.residueIndex = 0;
                             this.verticesDone = 0;
                             this.trianglesDone = 0;
-                            this.vertexBuffer = LiteMol.Core.Utils.ChunkedArrayBuilder.forVertex3D();
-                            this.normalBuffer = LiteMol.Core.Utils.ChunkedArrayBuilder.forVertex3D();
-                            this.indexBuffer = LiteMol.Core.Utils.ChunkedArrayBuilder.forIndexBuffer();
+                            this.vertexBuffer = ChunkedArray.forVertex3D();
+                            this.normalBuffer = ChunkedArray.forVertex3D();
+                            this.indexBuffer = ChunkedArray.forIndexBuffer();
                             this.translationMatrix = new Visualization.THREE.Matrix4();
                             this.scaleMatrix = new Visualization.THREE.Matrix4();
                             this.rotationMatrix = new Visualization.THREE.Matrix4();
@@ -39023,17 +39028,17 @@ var LiteMol;
                             this.vertexMap = new Visualization.Selection.VertexMapBuilder(residueCount);
                         }
                         CartoonsGeometryState.prototype.addVertex = function (v, n) {
-                            this.vertexBuffer.add3(v.x, v.y, v.z);
-                            this.normalBuffer.add3(n.x, n.y, n.z);
+                            ChunkedArray.add3(this.vertexBuffer, v.x, v.y, v.z);
+                            ChunkedArray.add3(this.normalBuffer, n.x, n.y, n.z);
                             this.verticesDone++;
                         };
                         CartoonsGeometryState.prototype.addTriangle = function (i, j, k) {
-                            this.indexBuffer.add3(i, j, k);
+                            ChunkedArray.add3(this.indexBuffer, i, j, k);
                             this.trianglesDone++;
                         };
                         CartoonsGeometryState.prototype.addTriangles = function (i, j, k, u, v, w) {
-                            this.indexBuffer.add3(i, j, k);
-                            this.indexBuffer.add3(u, v, w);
+                            ChunkedArray.add3(this.indexBuffer, i, j, k);
+                            ChunkedArray.add3(this.indexBuffer, u, v, w);
                             this.trianglesDone += 2;
                         };
                         return CartoonsGeometryState;
@@ -39185,7 +39190,7 @@ var LiteMol;
                     Geometry.buildUnitsChunk = buildUnitsChunk;
                     function createGeometry(ctx) {
                         var state = ctx.state;
-                        var vertexBuffer = new Float32Array(state.vertexBuffer.compact()), normalBuffer = new Float32Array(state.normalBuffer.compact()), colorBuffer = new Float32Array(state.verticesDone * 3), pickColorBuffer = new Float32Array(state.verticesDone * 4), indexBuffer = new Uint32Array(state.indexBuffer.compact()), stateBuffer = new Float32Array(state.verticesDone);
+                        var vertexBuffer = new Float32Array(ChunkedArray.compact(state.vertexBuffer)), normalBuffer = new Float32Array(ChunkedArray.compact(state.normalBuffer)), colorBuffer = new Float32Array(state.verticesDone * 3), pickColorBuffer = new Float32Array(state.verticesDone * 4), indexBuffer = new Uint32Array(ChunkedArray.compact(state.indexBuffer)), stateBuffer = new Float32Array(state.verticesDone);
                         var geometry = new Visualization.THREE.BufferGeometry();
                         geometry.addAttribute('position', new Visualization.THREE.BufferAttribute(vertexBuffer, 3));
                         geometry.addAttribute('normal', new Visualization.THREE.BufferAttribute(normalBuffer, 3));

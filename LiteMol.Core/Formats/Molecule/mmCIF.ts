@@ -15,12 +15,24 @@ namespace LiteMol.Core.Formats.Molecule.mmCIF {
         export const EntityId = '1';
         export const ModelId = '1';
     }
-            
+
+    function getTransform(category: CIF.Category, matrixField: string, translationField: string, row: number): number[] {
+        let ret = Geometry.LinearAlgebra.Matrix4.identity(), i: number, j: number, c: string;
+        for (i = 1; i <= 3; i++) {
+            for (j = 1; j <= 3; j++) {
+                c = matrixField + "[" + i + "][" + j + "]";
+                Geometry.LinearAlgebra.Matrix4.setValue(ret, i - 1, j - 1, category.getColumn(matrixField + "[" + i + "][" + j + "]").getFloat(row))
+            }
+            Geometry.LinearAlgebra.Matrix4.setValue(ret, i - 1, 3, category.getColumn(translationField + "[" + i + "]").getFloat(row))
+        }
+        return ret;
+    }
+
     function getModelEndRow(startRow: number, _atom_site: CIF.Category) {
         let size = _atom_site.rowCount,
             modelNum = _atom_site.getColumn('pdbx_PDB_model_num'),
             i = 0;
-        
+
         if (!modelNum.isDefined) return size;
         for (i = startRow + 1; i < size; i++) {
             if (!modelNum.areValuesEqual(i - 1, i)) break;
@@ -31,7 +43,7 @@ namespace LiteMol.Core.Formats.Molecule.mmCIF {
     function buildModelAtomTable(startRow: number, category: CIF.Category): { atoms: Structure.DefaultAtomTableSchema; modelId: string; endRow: number } {
 
         let endRow = getModelEndRow(startRow, category);
-        
+
         let colCount = category.columnCount,
             atoms = new Structure.DataTableBuilder(endRow - startRow),
             id = atoms.addColumn('id', size => new Int32Array(size)), idCol = category.getColumn('id'),
@@ -52,7 +64,7 @@ namespace LiteMol.Core.Formats.Molecule.mmCIF {
             occupancy = atoms.addColumn('occupancy', size => new Float32Array(size)), occupancyCol = category.getColumn('occupancy'),
             tempFactor = atoms.addColumn('tempFactor', size => new Float32Array(size)), tempFactorCol = category.getColumn('B_iso_or_equiv'),
             authName: string[] = atoms.addColumn('authName', size => new Array(size)), authNameCol = category.getColumn('auth_atom_id');
-            
+
 
         let resSeqNumberCol = category.getColumn('label_seq_id'),
             asymIdCol = category.getColumn('label_asym_id'),
@@ -67,9 +79,9 @@ namespace LiteMol.Core.Formats.Molecule.mmCIF {
             numResidues = 0,
             numEntities = 0;
 
-        let prev = startRow;                    
+        let prev = startRow;
         for (let row = startRow; row < endRow; row++) {
-            let index = row - startRow;   
+            let index = row - startRow;
 
             id[index] = idCol.getInteger(row);
             pX[index] = pXCol.getFloat(row);
@@ -84,21 +96,21 @@ namespace LiteMol.Core.Formats.Molecule.mmCIF {
 
             occupancy[index] = occupancyCol.getFloat(row);
             tempFactor[index] = tempFactorCol.getFloat(row);
-                            
+
             let newChain = false;
-            let newResidue = !authResSeqNumberCol.areValuesEqual(prev, row) || !insCodeCol.areValuesEqual(prev, row);            
-            
-            if (!asymIdCol.areValuesEqual(prev, row)) {                
+            let newResidue = !authResSeqNumberCol.areValuesEqual(prev, row) || !insCodeCol.areValuesEqual(prev, row);
+
+            if (!asymIdCol.areValuesEqual(prev, row)) {
                 newChain = true;
                 newResidue = true;
             }
 
             if (!entityIdCol.areValuesEqual(prev, row)) {
-                numEntities++;  
+                numEntities++;
                 newChain = true;
                 newResidue = true;
             }
-           
+
             if (newResidue) numResidues++;
             if (newChain) numChains++;
             rowIndex[index] = row;
@@ -107,7 +119,7 @@ namespace LiteMol.Core.Formats.Molecule.mmCIF {
             entityIndex[index] = numEntities;
             prev = row;
         }
-        
+
         let modelId = !modelNumCol.isDefined ? Defaults.ModelId : modelNumCol.getString(startRow) || Defaults.ModelId;
 
         return {
@@ -183,9 +195,9 @@ namespace LiteMol.Core.Formats.Molecule.mmCIF {
             chainResidueStart = 0,
 
             currentResidue = 0, currentChain = 0, currentEntity = 0;
-        
-        let i = 0;        
-        for (i = 0; i < count; i++) {               
+
+        let i = 0;
+        for (i = 0; i < count; i++) {
 
             if (residueIndexCol[i] !== residueIndexCol[residueStart]) {
                 residueName[currentResidue] = resNameCol.getString(residueStart) || Defaults.ResidueName;
@@ -193,7 +205,7 @@ namespace LiteMol.Core.Formats.Molecule.mmCIF {
                 residueAsymId[currentResidue] = asymIdCol.getString(residueStart) || Defaults.AsymId;
                 residueAuthName[currentResidue] = authResNameCol.getString(residueStart) || residueName[currentResidue];
                 residueAuthSeqNumber[currentResidue] = authResSeqNumberCol.getInteger(residueStart);
-                residueAuthAsymId[currentResidue] = authAsymIdCol.getString(residueStart) || residueAsymId[currentResidue];                    
+                residueAuthAsymId[currentResidue] = authAsymIdCol.getString(residueStart) || residueAsymId[currentResidue];
                 residueInsertionCode[currentResidue] = insCodeCol.getString(residueStart);
                 residueEntityId[currentResidue] = entityCol.getString(residueStart) || Defaults.EntityId;
                 residueIsHet[currentResidue] = isHetCol.stringEquals(residueStart, 'HETATM') ? 1 : 0;
@@ -201,7 +213,7 @@ namespace LiteMol.Core.Formats.Molecule.mmCIF {
                 residueAtomStartIndex[currentResidue] = residueStart;
                 residueAtomEndIndex[currentResidue] = i;
                 residueChainIndex[currentResidue] = currentChain;
-                residueEntityIndex[currentResidue] = currentEntity;                    
+                residueEntityIndex[currentResidue] = currentEntity;
 
                 currentResidue++;
                 residueStart = i;
@@ -241,7 +253,7 @@ namespace LiteMol.Core.Formats.Molecule.mmCIF {
             }
 
         }
-        
+
         // entity
         entityId[currentEntity] = entityCol.getString(entityStart) || Defaults.EntityId;
         entityTypeEnum[currentEntity] = Structure.EntityType.Unknown;
@@ -252,7 +264,7 @@ namespace LiteMol.Core.Formats.Molecule.mmCIF {
         entityResidueEndIndex[currentEntity] = currentResidue + 1;
         entityChainStartIndex[currentEntity] = entityChainStart;
         entityChainEndIndex[currentEntity] = currentChain + 1;
-                    
+
         // chain
         chainAsymId[currentChain] = asymIdCol.getString(chainStart) || Defaults.AsymId;
         chainAuthAsymId[currentChain] = authAsymIdCol.getString(chainStart) || chainAsymId[currentChain];
@@ -276,7 +288,7 @@ namespace LiteMol.Core.Formats.Molecule.mmCIF {
         residueChainIndex[currentResidue] = currentChain;
         residueEntityIndex[currentResidue] = currentEntity;
         residueIsHet[currentResidue] = isHetCol.stringEquals(residueStart, 'HETATM') ? 1 : 0;
-                
+
         return {
             residues: <Structure.DefaultResidueTableSchema>residues.seal(),
             chains: <Structure.DefaultChainTableSchema>chains.seal(),
@@ -320,7 +332,7 @@ namespace LiteMol.Core.Formats.Molecule.mmCIF {
                 entities.entityType[i] = et;
                 entities.type[i] = data[entities.entityId[i]];
             }
-        }            
+        }
     }
 
     function residueIdfromColumns(row: number, asymId: CIF.Column, seqNum: CIF.Column, insCode: CIF.Column) {
@@ -340,7 +352,7 @@ namespace LiteMol.Core.Formats.Molecule.mmCIF {
         let ca = false, o = false,
             names = atoms.name,
             assigned = 0;
-        
+
         for (let i = residues.atomStartIndex[index], max = residues.atomEndIndex[index]; i < max; i++) {
             let n = names[i];
             if (!ca && n === 'CA') {
@@ -352,7 +364,7 @@ namespace LiteMol.Core.Formats.Molecule.mmCIF {
             }
             if (assigned === 2) break;
         }
-        
+
         return (ca && o) || (ca && !residues.isHet[index]);
     }
 
@@ -386,7 +398,7 @@ namespace LiteMol.Core.Formats.Molecule.mmCIF {
             currentType = Structure.SecondaryStructureType.None,
             currentElementStartIndex = start, currentResidueIndex = start,
             residueCount = end;
-                    
+
         while (currentElementStartIndex < residueCount) {
             if (isResidueNucleotide(<any>atoms, residues, entities, currentElementStartIndex)) {
                 currentResidueIndex = currentElementStartIndex + 1;
@@ -471,7 +483,7 @@ namespace LiteMol.Core.Formats.Molecule.mmCIF {
             key = '',
             starts = new Map<string, Structure.SecondaryStructureElement>(),
             ends = new Map<string, Structure.SecondaryStructureElement>();
-        
+
         for (let e of elements) {
             key = e.startResidueId.asymId + ' ' + e.startResidueId.seqNumber;
             if (e.startResidueId.insCode) key += ' ' + e.startResidueId.insCode;
@@ -495,11 +507,11 @@ namespace LiteMol.Core.Formats.Molecule.mmCIF {
 
             currentElement = ends.get(key);
             if (currentElement) {
-                if (currentElement.startResidueIndex < 0) currentElement.startResidueIndex = i; 
+                if (currentElement.startResidueIndex < 0) currentElement.startResidueIndex = i;
                 currentElement.endResidueIndex = i + 1;
             }
         }
-        
+
         if (currentElement) {
             currentElement.endResidueIndex = count;
         }
@@ -528,7 +540,7 @@ namespace LiteMol.Core.Formats.Molecule.mmCIF {
         for (let i = 1; i < nonEmpty.length; i++) {
             let a = ret[ret.length - 1], b = nonEmpty[i];
             if (b.startResidueIndex < a.endResidueIndex) {
-                handleSecondaryStructureCollision(a, b);    
+                handleSecondaryStructureCollision(a, b);
             } else {
                 ret[ret.length] = b;
             }
@@ -544,7 +556,7 @@ namespace LiteMol.Core.Formats.Molecule.mmCIF {
         }
     }
 
-    function getSecondaryStructureInfo(data: CIF.DataBlock, atoms: Structure.DataTable, structure: StructureWrapper): Structure.SecondaryStructureElement[]{
+    function getSecondaryStructureInfo(data: CIF.DataBlock, atoms: Structure.DataTable, structure: StructureWrapper): Structure.SecondaryStructureElement[] {
 
         let input: Structure.SecondaryStructureElement[] = [],
             elements: Structure.SecondaryStructureElement[] = [];
@@ -595,7 +607,7 @@ namespace LiteMol.Core.Formats.Molecule.mmCIF {
             let end_label_asym_id = _struct_sheet_range.getColumn('end_label_asym_id');
             let end_label_seq_id = _struct_sheet_range.getColumn('end_label_seq_id');
             let pdbx_end_PDB_ins_code = _struct_sheet_range.getColumn('pdbx_end_PDB_ins_code');
-            
+
             let symmetry = _struct_sheet_range.getColumn('symmetry');
             let sheet_id = _struct_sheet_range.getColumn('sheet_id');
             let id = _struct_sheet_range.getColumn('id');
@@ -614,9 +626,9 @@ namespace LiteMol.Core.Formats.Molecule.mmCIF {
         }
 
         let secondary = input.length > 0 ? updateSSIndicesAndFilterEmpty(input, structure) : [];
-                    
 
-        let residues = structure.residues,                                
+
+        let residues = structure.residues,
             residueCount = residues.count;
 
         if (secondary.length === 0) {
@@ -639,7 +651,7 @@ namespace LiteMol.Core.Formats.Molecule.mmCIF {
             analyzeSecondaryStructure(atoms, residues, structure.entities, secondary[_max].endResidueIndex, residueCount, elements);
         }
 
-        return splitNonconsecutiveSecondaryStructure(residues, elements);            
+        return splitNonconsecutiveSecondaryStructure(residues, elements);
     }
 
     function assignSecondaryStructureIndex(residues: Structure.DefaultResidueTableSchema, ss: Structure.SecondaryStructureElement[]) {
@@ -665,7 +677,7 @@ namespace LiteMol.Core.Formats.Molecule.mmCIF {
         while (g = oeRegex.exec(value)) groups[groups.length] = g[1];
 
         groups.forEach(g => {
-            let group:string[] = [];
+            let group: string[] = [];
             g.split(',').forEach(e => {
                 let dashIndex = e.indexOf('-');
                 if (dashIndex > 0) {
@@ -699,22 +711,22 @@ namespace LiteMol.Core.Formats.Molecule.mmCIF {
         let oper_expression = _gen.getColumn('oper_expression');
         let asym_id_list = _gen.getColumn('asym_id_list');
         for (i = 0; i < _gen.rowCount; i++) {
-            
+
             let id = assembly_id.getString(i);
             if (!id) {
                 return void 0;
             }
             let entry = genMap.get(id);
-            
+
             if (!entry) {
                 entry = new Structure.AssemblyGen(id);
                 genMap.set(id, entry);
                 gens.push(entry);
             }
-                            
+
             entry.gens.push(new Structure.AssemblyGenEntry(
                 parseOperatorList(oper_expression.getString(i) as string),
-                asym_id_list.getString(i)!.split(',')     
+                asym_id_list.getString(i) !.split(',')
             ));
         }
 
@@ -722,7 +734,7 @@ namespace LiteMol.Core.Formats.Molecule.mmCIF {
         let _pdbx_struct_oper_list_id = _opers.getColumn('id');
         let _pdbx_struct_oper_list_name = _opers.getColumn('name');
         for (i = 0; i < _opers.rowCount; i++) {
-            let oper = CIF.Category.getTransform(_opers, 'matrix', 'vector', i);
+            let oper = getTransform(_opers, 'matrix', 'vector', i);
             if (!oper) {
                 return void 0;
             }
@@ -732,7 +744,7 @@ namespace LiteMol.Core.Formats.Molecule.mmCIF {
 
         return new Structure.AssemblyInfo(opers, gens);
     }
-    
+
     function getSymmetryInfo(data: CIF.DataBlock): Structure.SymmetryInfo | undefined {
         let _cell = data.getCategory('_cell'),
             _symmetry = data.getCategory('_symmetry'),
@@ -755,7 +767,7 @@ namespace LiteMol.Core.Formats.Molecule.mmCIF {
         if (!spacegroupName || cellSize.every(s => isNaN(s) || s === 0.0) || cellSize.every(s => isNaN(s) || s === 0.0)) {
             return void 0;
         }
-        
+
         let sq = (x: number) => x * x;
         let toRadians = (degs: number) => degs * Math.PI / 180.0;
         let la = cellSize[0], lb = cellSize[1], lc = cellSize[2],
@@ -771,7 +783,7 @@ namespace LiteMol.Core.Formats.Molecule.mmCIF {
         Geometry.LinearAlgebra.Matrix4.invert(toFracComputed, fromFrac);
 
         if (_atom_sites) {
-            let transform = CIF.Category.getTransform(_atom_sites, 'fract_transf_matrix', 'fract_transf_vector', 0);
+            let transform = getTransform(_atom_sites, 'fract_transf_matrix', 'fract_transf_vector', 0);
             if (transform) {
                 toFracTransform = transform;
                 if (!Geometry.LinearAlgebra.Matrix4.areEqual(toFracComputed, transform, 0.0001)) {
@@ -786,7 +798,7 @@ namespace LiteMol.Core.Formats.Molecule.mmCIF {
     }
 
 
-    function getComponentBonds(category: CIF.Category): Structure.ComponentBondInfo | undefined {            
+    function getComponentBonds(category: CIF.Category): Structure.ComponentBondInfo | undefined {
         if (!category || !category.rowCount) return void 0;
 
         let info = new Structure.ComponentBondInfo();
@@ -837,14 +849,14 @@ namespace LiteMol.Core.Formats.Molecule.mmCIF {
             structure = buildStructure(data.getCategory('_atom_site'), atoms),
             entry = data.getCategory('_entry'),
             id: string;
-        
+
         if (entry && entry.getColumn('id').isDefined) id = entry.getColumn('id').getString(0) as string;
         else id = data.header;
 
         assignEntityTypes(data.getCategory('_entity'), <any>structure.entities);
         let ss = getSecondaryStructureInfo(data, atoms, structure);
-        assignSecondaryStructureIndex(structure.residues, ss); 
-                
+        assignSecondaryStructureIndex(structure.residues, ss);
+
         return {
             model: new Structure.MoleculeModel({
                 id,
@@ -877,7 +889,7 @@ namespace LiteMol.Core.Formats.Molecule.mmCIF {
 
         if (entry && entry.getColumn('id').isDefined) id = entry.getColumn('id').getString(0) as string;
         else id = data.header;
-        
+
         while (startRow < atomSite.rowCount) {
             let { model, endRow } = getModel(startRow, data);
             models.push(model);

@@ -1,4 +1,7 @@
-﻿# 1.3.1
+﻿# 1.3.2
+* Modified to reflect changes in the core.
+
+# 1.3.1
 * Fixed bond display between atoms that have no altLoc specified and these that do.
 
 # 1.3.0

@@ -4,7 +4,7 @@
 
 namespace LiteMol.Core.Structure {
     "use strict";
-    
+
     namespace SymmetryHelpers {
 
         import Mat4 = Geometry.LinearAlgebra.Matrix4;
@@ -43,7 +43,7 @@ namespace LiteMol.Core.Structure {
             z: number[];
             r: number[];
         }
-        
+
         function getSphereDist(c: Vector3, r: number, q: Sphere3) {
             let dx = c.x - q.center.x,
                 dy = c.y - q.center.y,
@@ -51,7 +51,7 @@ namespace LiteMol.Core.Structure {
 
             return Math.sqrt(dx * dx + dy * dy + dz * dz) - (r + q.radius);
         }
-        
+
         function isWithinRadius(
             bounds: Sphere3, i: number, data: BoundingDataTable, t: number[], r: number, v: Vector3) {
 
@@ -129,10 +129,10 @@ namespace LiteMol.Core.Structure {
         interface SymmetryTransform {
             isIdentity: boolean,
             id: string,
-            transform: number[]            
+            transform: number[]
         }
 
-        function createSymmetryTransform(i: number, j: number, k: number, opIndex: number, transform: number[]): SymmetryTransform  {
+        function createSymmetryTransform(i: number, j: number, k: number, opIndex: number, transform: number[]): SymmetryTransform {
             return {
                 isIdentity: !i && !j && !k && !opIndex,
                 id: `${opIndex + 1}_${5 + i}${5 + j}${5 + k}`,
@@ -140,7 +140,7 @@ namespace LiteMol.Core.Structure {
             }
         }
 
-        function createAssemblyTransform(i: number, transform: number[]): SymmetryTransform  {
+        function createAssemblyTransform(i: number, transform: number[]): SymmetryTransform {
             let isIdentity = true;
             for (let i = 0; i < 4; i++) {
                 for (let j = 0; j < 4; j++) {
@@ -172,7 +172,7 @@ namespace LiteMol.Core.Structure {
                 eY = entityTable.addColumn("y", s => new Float64Array(s)),
                 eZ = entityTable.addColumn("z", s => new Float64Array(s)),
                 eR = entityTable.addColumn("r", s => new Float64Array(s)),
-           
+
                 chainTable = new DataTableBuilder(chains.count),
                 cX = chainTable.addColumn("x", s => new Float64Array(s)),
                 cY = chainTable.addColumn("y", s => new Float64Array(s)),
@@ -185,7 +185,7 @@ namespace LiteMol.Core.Structure {
                 rZ = residueTable.addColumn("z", s => new Float64Array(s)),
                 rR = residueTable.addColumn("r", s => new Float64Array(s));
 
-            let allCenter = newVec(), allRadius = 0, 
+            let allCenter = newVec(), allRadius = 0,
                 pivotCenter = newVec(), pivotRadius = 0,
 
                 n = 0,
@@ -193,19 +193,19 @@ namespace LiteMol.Core.Structure {
                 eCenter = newVec(), eRadius = 0,
                 cCenter = newVec(), cRadius = 0,
                 rCenter = newVec(), rRadius = 0;
-                        
+
             for (let eI = 0, _eC = entities.count; eI < _eC; eI++) {
 
                 eCenter.x = 0; eCenter.y = 0; eCenter.z = 0;
-                                
+
                 for (let cI = entities.chainStartIndex[eI], _cC = entities.chainEndIndex[eI]; cI < _cC; cI++) {
 
                     cCenter.x = 0; cCenter.y = 0; cCenter.z = 0;
-                    
+
                     for (let rI = chains.residueStartIndex[cI], _rC = chains.residueEndIndex[cI]; rI < _rC; rI++) {
 
                         rCenter.x = 0; rCenter.y = 0; rCenter.z = 0;
-                        
+
                         for (let aI = residues.atomStartIndex[rI], _aC = residues.atomEndIndex[rI]; aI < _aC; aI++) {
                             rCenter.x += x[aI];
                             rCenter.y += y[aI];
@@ -217,18 +217,18 @@ namespace LiteMol.Core.Structure {
                         allCenter.z += rCenter.z;
 
                         n = residues.atomEndIndex[rI] - residues.atomStartIndex[rI];
-                        
+
                         cCenter.x += rCenter.x;
                         cCenter.y += rCenter.y;
                         cCenter.z += rCenter.z;
-                        
+
                         rX[rI] = rCenter.x / n; rY[rI] = rCenter.y / n; rZ[rI] = rCenter.z / n;
                     }
 
                     eCenter.x += cCenter.x;
                     eCenter.y += cCenter.y;
                     eCenter.z += cCenter.z;
-                    
+
                     n = chains.atomEndIndex[cI] - chains.atomStartIndex[cI];
                     cX[cI] = cCenter.x / n; cY[cI] = cCenter.y / n; cZ[cI] = cCenter.z / n;
                 }
@@ -255,12 +255,12 @@ namespace LiteMol.Core.Structure {
             for (let eI = 0, _eC = entities.count; eI < _eC; eI++) {
 
                 eRadius = 0;
-                
+
                 for (let cI = entities.chainStartIndex[eI], _cC = entities.chainEndIndex[eI]; cI < _cC; cI++) {
-                    
+
                     cRadius = 0;
                     for (let rI = chains.residueStartIndex[cI], _rC = chains.residueEndIndex[cI]; rI < _rC; rI++) {
-                 
+
                         rRadius = 0;
                         for (let aI = residues.atomStartIndex[rI], _aC = residues.atomEndIndex[rI]; aI < _aC; aI++) {
                             rRadius = Math.max(rRadius, indexedDistSq(aI, rI, rDA));
@@ -280,7 +280,7 @@ namespace LiteMol.Core.Structure {
             }
 
             allRadius = Math.sqrt(allRadius);
-            
+
             for (let aI of pivotIndices) {
                 pivotRadius = Math.max(pivotRadius, indexedVectorDistSq(aI, pivotCenter, rDA));
             }
@@ -304,12 +304,12 @@ namespace LiteMol.Core.Structure {
 
             ctx.transform = Mat4.identity();
             ret[0] = symmetryContextGetTransform(ctx);
-            
+
             for (let i = -3; i <= 3; i++) {
                 for (let j = -3; j <= 3; j++) {
                     for (let k = -3; k <= 3; k++) {
                         for (let l = (i === 0 && j === 0 && k === 0 ? 1 : 0), lm = sg.operatorCount; l < lm; l++) {
-                        //for (let l = 0, lm = sg.operatorCount; l < lm; l++) {                            
+                            //for (let l = 0, lm = sg.operatorCount; l < lm; l++) {                            
 
                             sg.getOperatorMatrix(l, i, j, k, ctx.transform);
                             ctx.i = i;
@@ -334,7 +334,7 @@ namespace LiteMol.Core.Structure {
 
         function getSymmetryResidues(ctx: SymmetryContext, transforms: SymmetryTransform[]) {
 
-            let bounds = ctx.boundingInfo,                
+            let bounds = ctx.boundingInfo,
                 radius = ctx.radius,
                 targetBounds = bounds.target;
 
@@ -344,8 +344,8 @@ namespace LiteMol.Core.Structure {
                 chains = model.chains,
                 entities = model.entities;
 
-            let residueIndices = new Utils.ChunkedArrayBuilder<number>(s => new Int32Array(s), ctx.model.residues.count, 1),
-                operatorIndices = new Utils.ChunkedArrayBuilder<number>(s => new Int32Array(s), ctx.model.residues.count, 1);
+            let residueIndices = Utils.ChunkedArray.create<number>(s => new Int32Array(s), ctx.model.residues.count, 1),
+                operatorIndices = Utils.ChunkedArray.create<number>(s => new Int32Array(s), ctx.model.residues.count, 1);
 
             let v = { x: 0, y: 0, z: 0 },
                 opIndex = 0;
@@ -353,11 +353,11 @@ namespace LiteMol.Core.Structure {
             let atomCount = 0,
                 chainCount = 0,
                 entityCount = 0;
-            
+
             for (let eI = 0, _eC = entities.count; eI < _eC; eI++) {
 
                 //if (!isWithinRadius(hetBounds, eI, bounds.entities, t.transform, radius, v)) continue;
-                
+
                 opIndex = 0;
                 let chainAdded = false;
                 for (let t of transforms) {
@@ -371,14 +371,14 @@ namespace LiteMol.Core.Structure {
                         for (let rI = chains.residueStartIndex[cI], _rC = chains.residueEndIndex[cI]; rI < _rC; rI++) {
 
                             if (!isWithinRadius(targetBounds, rI, bounds.residues, t.transform, radius, v)) continue;
-                
-                            residueIndices.add(rI);
-                            operatorIndices.add(opIndex);
+
+                            Utils.ChunkedArray.add(residueIndices, rI);
+                            Utils.ChunkedArray.add(operatorIndices, opIndex);
 
                             atomCount += residues.atomEndIndex[rI] - residues.atomStartIndex[rI];
                             residueAdded = true;
                         }
-                        if (residueAdded) { 
+                        if (residueAdded) {
                             chainCount += 1;
                             chainAdded = true;
                         }
@@ -391,8 +391,8 @@ namespace LiteMol.Core.Structure {
             }
 
             return {
-                residues: residueIndices.compact(),
-                operators: operatorIndices.compact(),
+                residues: Utils.ChunkedArray.compact(residueIndices),
+                operators: Utils.ChunkedArray.compact(operatorIndices),
 
                 atomCount,
                 chainCount,
@@ -405,14 +405,14 @@ namespace LiteMol.Core.Structure {
                 target[i][tI] = src[i][sI];
             }
         }
-        
+
         // class PartsSorter {
         //     private ordering: Int32Array;
         //     private entityIndex: number[];
         //     private chainIndex: number[];
         //     private residues: number[];
         //     private operators: number[];
-            
+
         //     private compare(i: number, j: number) {
         //         let a = this.residues[i], b = this.residues[j];
         //         let E = this.entityIndex[a] - this.entityIndex[b];
@@ -423,7 +423,7 @@ namespace LiteMol.Core.Structure {
         //         if (O !== 0) return O;
         //         return a - b; 
         //     }
-            
+
         //     apply() {
         //         let buffer = new Int32Array(this.parts.residues.length);
         //         for (let i = 0, _b = this.ordering.length; i < _b; i++) buffer[i] = this.residues[this.ordering[i]];
@@ -433,7 +433,7 @@ namespace LiteMol.Core.Structure {
         //         for (let i = 0, _b = this.ordering.length; i < _b; i++) buffer[i] = this.operators[this.ordering[i]];
         //         this.parts.operators = <any>buffer;
         //     }            
-            
+
         //     constructor(model: MoleculeModel, private parts: { residues: number[], operators: number[], atomCount: number; chainCount: number }) {
         //         this.ordering = new Int32Array(parts.residues.length);
         //         for (let i = 0, _b = this.ordering.length; i < _b; i++) this.ordering[i] = i;                
@@ -447,12 +447,12 @@ namespace LiteMol.Core.Structure {
         //         //console.log(this.ordering);                             
         //     }
         // }        
-        
+
         function assemble(
             model: MoleculeModel,
             assemblyParts: { residues: number[], operators: number[], atomCount: number; chainCount: number, entityCount: number },
             transforms: SymmetryTransform[]) {
-                
+
             // let sorter = new PartsSorter(model, assemblyParts);
             // sorter.apply();
             // sorter = undefined;
@@ -498,7 +498,7 @@ namespace LiteMol.Core.Structure {
                 residueAsymId = residueTable.asymId, residueAuthAsymId = residueTable.authAsymId,
                 residueChain = residueTable.chainIndex,
                 residueEntity = residueTable.entityIndex;
-            
+
             for (let col of model.atoms.columns) {
                 let c = atomTable.addColumn(col.name, col.creator);
                 if (col.name === "x") atomX = c;
@@ -540,7 +540,7 @@ namespace LiteMol.Core.Structure {
             chainAtomStart[0] = 0;
             currentAsymId = model.chains.asymId[residueChainIndex[rI]];
             currentAuthAsymId = model.chains.authAsymId[residueChainIndex[rI]];
-            
+
             let transform = transforms[assemblyOpParts[0]];
 
             if (transform && !transform.isIdentity) {
@@ -551,9 +551,9 @@ namespace LiteMol.Core.Structure {
                 currentAsymId = chainId[chainOffset];
                 currentAuthAsymId = chainAuthId[chainOffset];
             }
-                        
+
             for (let residueOffset = 0, _mi = assemblyResidueParts.length; residueOffset < _mi; residueOffset++) {
-                 
+
                 rI = assemblyResidueParts[residueOffset];
 
                 let opI = assemblyOpParts[residueOffset];
@@ -565,17 +565,17 @@ namespace LiteMol.Core.Structure {
 
                 let cE = residueEntityIndex[rI],
                     cC = residueChainIndex[rI];
-                    
+
                 let chainChanged = false;
-                
-                if (cE !== currentEntity) {                                                           
+
+                if (cE !== currentEntity) {
 
                     // update chain
                     chainResidueEnd[chainOffset] = residueOffset;
                     chainAtomEnd[chainOffset] = atomOffset;
                     chainOffset += 1;
-                    
-                    
+
+
                     // update entity
                     entityChainEnd[entityOffset] = chainOffset;
                     entityResidueEnd[entityOffset] = residueOffset;
@@ -589,7 +589,7 @@ namespace LiteMol.Core.Structure {
                     entityAtomStart[entityOffset] = atomOffset;
 
                     chainChanged = true;
-                    
+
                     // // new chain
                     // cloneRow(srcChainData, cC, chainData, chainOffset, srcChainData.length);
                     // chainEntity[chainOffset] = entityOffset;
@@ -641,7 +641,7 @@ namespace LiteMol.Core.Structure {
                     // chainEntity[chainOffset] = entityOffset;
                     // chainResidueStart[chainOffset] = residueOffset;
                     // chainAtomStart[chainOffset] = atomOffset;
-                
+
                     // // update the residue identifier if needed
                     // if (!transform.isIdentity) {
                     //     chainId[chainOffset] = model.chains.asymId[cC] + '-' + transform.id;
@@ -653,7 +653,7 @@ namespace LiteMol.Core.Structure {
                     // currentAsymId = chainId[chainOffset];
                     // currentAuthAsymId = chainAuthId[chainOffset];
                 }
-                
+
                 if (chainChanged) {
                     // new chain
                     cloneRow(srcChainData, cC, chainData, chainOffset, srcChainData.length);
@@ -672,7 +672,7 @@ namespace LiteMol.Core.Structure {
                     currentAsymId = chainId[chainOffset];
                     currentAuthAsymId = chainAuthId[chainOffset];
                 }
-                
+
                 currentChain = cC;
                 currentEntity = cE;
                 currentOp = opI;
@@ -682,7 +682,7 @@ namespace LiteMol.Core.Structure {
                 residueAtomStart[residueOffset] = atomOffset;
                 residueAsymId[residueOffset] = currentAsymId;
                 residueAuthAsymId[residueOffset] = currentAuthAsymId;
-                
+
                 for (let aI = residueAtomStartIndex[rI], _mAI = residueAtomEndIndex[rI]; aI < _mAI; aI++) {
 
                     temp.x = x[aI]; temp.y = y[aI]; temp.z = z[aI];
@@ -706,12 +706,12 @@ namespace LiteMol.Core.Structure {
                 }
                 residueAtomEnd[residueOffset] = atomOffset;
             }
-            
+
             // finalize entity
             entityChainEnd[entityOffset] = chainOffset + 1;
             entityResidueEnd[entityOffset] = assemblyResidueParts.length;
             entityAtomEnd[entityOffset] = atomOffset;
-            
+
             // finalize chain
             chainResidueEnd[chainOffset] = assemblyResidueParts.length;
             chainAtomEnd[chainOffset] = atomOffset;
@@ -720,24 +720,24 @@ namespace LiteMol.Core.Structure {
                 finalResidues = <DefaultResidueTableSchema>(<any>residueTable).seal(),
                 finalChains = <DefaultChainTableSchema>chainTableBuilder.seal(),
                 finalEntities = <DefaultEntityTableSchema>entityTableBuilder.seal();
-            
+
             // let eIdSet = new Set<number>();
             // for (let eId of finalChains.entityIndex) eIdSet.add(eId);
             // eIdSet.forEach(x => console.log('ceid', x));
             // console.log(assemblyParts.entityCount, finalEntities);
-               
+
             let ss = buildSS(model, assemblyParts, finalResidues);
-            
+
             return new MoleculeModel({
-                id: model.id, 
+                id: model.id,
                 modelId: model.modelId,
-                atoms: finalAtoms, 
+                atoms: finalAtoms,
                 residues: finalResidues,
-                chains: finalChains, 
+                chains: finalChains,
                 entities: finalEntities,
-                componentBonds: model.componentBonds, 
+                componentBonds: model.componentBonds,
                 secondaryStructure: ss,
-                parent: model, 
+                parent: model,
                 source: MoleculeModelSource.Computed,
                 operators: transforms.map(t => new Operator(t.transform, t.id, t.isIdentity))
             });
@@ -760,7 +760,7 @@ namespace LiteMol.Core.Structure {
             let start = 0;
             while (start < count) {
                 let end = start;
-                
+
                 let ssI = index[residues[start]], op = operators[start];
 
                 while (end < count && operators[end] == op && index[residues[end]] == ssI) end++;
@@ -774,9 +774,9 @@ namespace LiteMol.Core.Structure {
                 e.startResidueIndex = start;
                 e.endResidueIndex = end;
 
-                let updatedSSI = ret.length;                
+                let updatedSSI = ret.length;
                 for (let i = start; i < end; i++) {
-                    secondaryStructureIndex[i] = updatedSSI;    
+                    secondaryStructureIndex[i] = updatedSSI;
                 }
                 ret[updatedSSI] = e;
 
@@ -810,7 +810,7 @@ namespace LiteMol.Core.Structure {
 
             let transforms = findSuitableTransforms(ctx),
                 residues = getSymmetryResidues(ctx, transforms);
-            
+
             return assemble(model, residues, transforms);
         }
 
@@ -822,7 +822,7 @@ namespace LiteMol.Core.Structure {
             let v = { x: 0, y: 0, z: 0 };
 
             let transforms: SymmetryTransform[] = [];
-            
+
             for (let i = -3; i <= 3; i++) {
                 for (let j = -3; j <= 3; j++) {
                     for (let k = -3; k <= 3; k++) {
@@ -831,7 +831,7 @@ namespace LiteMol.Core.Structure {
                             spacegroup.getOperatorMatrix(op, i, j, k, t);
 
                             Mat4.transformVector3(v, bounds.center, t);
-                            
+
                             if (getSphereDist(v, bounds.radius, bounds) > radius) continue;
 
                             let copy = Mat4.empty();
@@ -846,14 +846,14 @@ namespace LiteMol.Core.Structure {
         }
 
         function findMateParts(model: MoleculeModel, transforms: SymmetryTransform[]) {
-            
+
             let atoms = model.atoms,
                 residues = model.residues,
                 chains = model.chains,
                 entities = model.entities;
 
-            let residueIndices = new Utils.ArrayBuilder<number>(s => new Int32Array(s), model.residues.count * transforms.length, 1),
-                operatorIndices = new Utils.ArrayBuilder<number>(s => new Int32Array(s), model.residues.count * transforms.length, 1);
+            let residueIndices = Utils.ArrayBuilder.create<number>(s => new Int32Array(s), model.residues.count * transforms.length, 1),
+                operatorIndices = Utils.ArrayBuilder.create<number>(s => new Int32Array(s), model.residues.count * transforms.length, 1);
 
             let v = { x: 0, y: 0, z: 0 },
                 opIndex = 0;
@@ -865,11 +865,11 @@ namespace LiteMol.Core.Structure {
             for (let eI = 0, _eC = entities.count; eI < _eC; eI++) {
 
                 opIndex = 0;
-                for (let t of transforms) {                    
-                    for (let cI = entities.chainStartIndex[eI], _cC = entities.chainEndIndex[eI]; cI < _cC; cI++) {                        
-                        for (let rI = chains.residueStartIndex[cI], _rC = chains.residueEndIndex[cI]; rI < _rC; rI++) {                            
-                            residueIndices.add(rI);
-                            operatorIndices.add(opIndex);
+                for (let t of transforms) {
+                    for (let cI = entities.chainStartIndex[eI], _cC = entities.chainEndIndex[eI]; cI < _cC; cI++) {
+                        for (let rI = chains.residueStartIndex[cI], _rC = chains.residueEndIndex[cI]; rI < _rC; rI++) {
+                            Utils.ArrayBuilder.add(residueIndices, rI);
+                            Utils.ArrayBuilder.add(operatorIndices, opIndex);
                         }
                     }
                     opIndex++;
@@ -901,12 +901,12 @@ namespace LiteMol.Core.Structure {
 
             let transforms = findMates(model, radius);
             let parts = findMateParts(model, transforms);
-                        
+
             return assemble(model, parts, transforms);
         }
 
         function createOperators(operators: string[][], list: string[][], i: number, current: string[]) {
-            
+
             if (i < 0) {
                 list[list.length] = current.slice(0);
                 return;
@@ -928,31 +928,31 @@ namespace LiteMol.Core.Structure {
 
             let index = 0;
             for (let op of operators) {
-                var m = Mat4.identity();                
+                var m = Mat4.identity();
                 for (var i = 0; i < op.length; i++) {
                     Mat4.mul(m, m, info!.operators[op[i]].operator);
                 }
                 index++;
                 transforms[transforms.length] = createAssemblyTransform(index, m);
             }
-            
+
             return transforms;
         }
-        
+
         interface AssemblyBuildState {
             atomCount: number,
             chainCount: number,
             entityCount: number,
-            
+
             transformsOffset: number,
             transforms: SymmetryTransform[],
             mask: Int8Array,
-            residueIndices: Utils.ChunkedArrayBuilder<number>,
-            operatorIndices: Utils.ChunkedArrayBuilder<number>
+            residueIndices: Utils.ChunkedArray<number>,
+            operatorIndices: Utils.ChunkedArray<number>
         }
 
         function getAssemblyParts(model: MoleculeModel, residueMask: Int8Array, currentTransforms: SymmetryTransform[], state: AssemblyBuildState) {
-            
+
             let atoms = model.atoms,
                 residues = model.residues,
                 chains = model.chains,
@@ -968,20 +968,20 @@ namespace LiteMol.Core.Structure {
                 chainCount = 0,
                 entityCount = 0;
 
-            for (let eI = 0, _eC = entities.count; eI < _eC; eI++) {                
+            for (let eI = 0, _eC = entities.count; eI < _eC; eI++) {
                 opIndex = state.transformsOffset;  //0;
                 let chainAdded = false;
                 for (let t of currentTransforms) {
 
                     for (let cI = entities.chainStartIndex[eI], _cC = entities.chainEndIndex[eI]; cI < _cC; cI++) {
-                        
+
                         let residueAdded = false;
                         for (let rI = chains.residueStartIndex[cI], _rC = chains.residueEndIndex[cI]; rI < _rC; rI++) {
 
                             if (!residueMask[rI]) continue;
 
-                            residueIndices.add(rI);
-                            operatorIndices.add(opIndex);
+                            Utils.ChunkedArray.add(residueIndices, rI);
+                            Utils.ChunkedArray.add(operatorIndices, opIndex);
 
                             atomCount += residues.atomEndIndex[rI] - residues.atomStartIndex[rI];
                             residueAdded = true;
@@ -990,7 +990,7 @@ namespace LiteMol.Core.Structure {
                             chainCount += 1;
                             chainAdded = true;
                         }
-                            
+
                     }
                     opIndex++;
                 }
@@ -1011,9 +1011,9 @@ namespace LiteMol.Core.Structure {
             //     entityCount
             // };
         }
-        
+
         export function buildAssemblyEntry(model: MoleculeModel, entry: AssemblyGenEntry, state: AssemblyBuildState) {
-            
+
             let ops: string[][] = [],
                 currentOp: string[] = [];
             for (let i = 0; i < entry.operators.length; i++) currentOp[i] = "";
@@ -1022,7 +1022,7 @@ namespace LiteMol.Core.Structure {
             let transforms = getAssemblyTransforms(model, ops);
             state.transformsOffset += state.transforms.length;
             state.transforms.push(...transforms);
-            
+
             let asymIds = new Set<string>();
             entry.asymIds.forEach(id => asymIds.add(id));
 
@@ -1036,7 +1036,7 @@ namespace LiteMol.Core.Structure {
             getAssemblyParts(model, mask, transforms, state);
         }
 
-        export function buildAssembly(model: MoleculeModel, assembly: AssemblyGen) {            
+        export function buildAssembly(model: MoleculeModel, assembly: AssemblyGen) {
             let state: AssemblyBuildState = {
                 atomCount: 0,
                 chainCount: 0,
@@ -1044,17 +1044,17 @@ namespace LiteMol.Core.Structure {
                 transforms: [],
                 transformsOffset: 0,
                 mask: new Int8Array(model.residues.count),
-                residueIndices: new Utils.ChunkedArrayBuilder<number>(s => new Int32Array(s), model.residues.count, 1),
-                operatorIndices: new Utils.ChunkedArrayBuilder<number>(s => new Int32Array(s), model.residues.count, 1)
-            } 
-            
+                residueIndices: Utils.ChunkedArray.create<number>(s => new Int32Array(s), model.residues.count, 1),
+                operatorIndices: Utils.ChunkedArray.create<number>(s => new Int32Array(s), model.residues.count, 1)
+            }
+
             for (let a of assembly.gens) {
                 buildAssemblyEntry(model, a, state);
             }
-            
+
             let parts = {
-                residues: state.residueIndices.compact(),
-                operators: state.operatorIndices.compact(),
+                residues: Utils.ChunkedArray.compact(state.residueIndices),
+                operators: Utils.ChunkedArray.compact(state.operatorIndices),
 
                 atomCount: state.atomCount,
                 chainCount: state.chainCount,
@@ -1069,7 +1069,7 @@ namespace LiteMol.Core.Structure {
         model: MoleculeModel,
         radius: number,
         pivotsQuery?: Query.Source): MoleculeModel {
-        
+
         return SymmetryHelpers.buildPivotGroupSymmetry(model, radius, pivotsQuery);
     }
 

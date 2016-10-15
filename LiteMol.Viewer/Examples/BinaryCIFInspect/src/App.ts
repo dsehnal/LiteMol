@@ -6,7 +6,7 @@ namespace LiteMol.BinaryCIFInspect {
 
     import CIF = Core.Formats.CIF;
 
-    function fetch(url: string, binary:boolean, status: HTMLElement, done: (data: string | ArrayBuffer) => void) {
+    function fetch(url: string, binary: boolean, status: HTMLElement, done: (data: string | ArrayBuffer) => void) {
         status.innerText = 'Downloading...';
         let xhttp = new XMLHttpRequest();
 
@@ -17,15 +17,15 @@ namespace LiteMol.BinaryCIFInspect {
 
         xhttp.onprogress = e => {
             status.innerText = `Downloading... ${(e.loaded / 1024 / 1024).toFixed(2)} MB`;
-        }  
+        }
 
         xhttp.onload = e => {
             let req = (e.target as XMLHttpRequest);
             if (req.status >= 200 && req.status < 400) {
                 status.innerText = `Download done.`;
                 setTimeout(() => done(binary ? req.response : req.responseText), 0);
-            } else {        
-                status.innerText = `Error: ${req.statusText}`;     
+            } else {
+                status.innerText = `Error: ${req.statusText}`;
             }
         }
 
@@ -35,12 +35,12 @@ namespace LiteMol.BinaryCIFInspect {
     }
 
     function process(id: string, binary: boolean, parse: (data: string | ArrayBuffer) => Core.Formats.ParserResult<CIF.File>) {
-        let url = (document.querySelector(`#${id} input[type=text]`) as HTMLInputElement).value;        
+        let url = (document.querySelector(`#${id} input[type=text]`) as HTMLInputElement).value;
         fetch(url, binary, document.querySelector(`#${id} .status`) as HTMLElement, data => {
             let cif = parse(data);
             let text = document.querySelector(`#${id} textarea`) as HTMLTextAreaElement
-            if (cif.error) {
-                text.innerHTML = `Error:\n${cif.error.toString()}`;
+            if (cif.isError) {
+                text.innerHTML = `Error:\n${cif.toString()}`;
                 return;
             }
             text.innerHTML = JSON.stringify(cif.result!.toJSON(), null, 2);

@@ -1040,6 +1040,2973 @@ if (typeof window !== 'undefined' && window && window.Promise) {
 }
 
 
+
+; var __CIFTools = function () {
+    'use strict';
+    /*
+     * Copyright (c) 2016 David Sehnal, licensed under MIT License, See LICENSE file for more info.
+     */
+    var CIFTools;
+    (function (CIFTools) {
+        CIFTools.VERSION = { number: "1.0.0", date: "Oct 14 2016" };
+    })(CIFTools || (CIFTools = {}));
+    /*
+     * Copyright (c) 2016 David Sehnal, licensed under MIT License, See LICENSE file for more info.
+     */
+    var CIFTools;
+    (function (CIFTools) {
+        var Utils;
+        (function (Utils) {
+            var ChunkedArray;
+            (function (ChunkedArray) {
+                function is(x) {
+                    return x.creator && x.chunkSize;
+                }
+                ChunkedArray.is = is;
+                function add4(array, x, y, z, w) {
+                    if (array.currentIndex >= array.chunkSize) {
+                        array.currentIndex = 0;
+                        array.current = array.creator(array.chunkSize);
+                        array.parts[array.parts.length] = array.current;
+                    }
+                    array.current[array.currentIndex++] = x;
+                    array.current[array.currentIndex++] = y;
+                    array.current[array.currentIndex++] = z;
+                    array.current[array.currentIndex++] = w;
+                    return array.elementCount++;
+                }
+                ChunkedArray.add4 = add4;
+                function add3(array, x, y, z) {
+                    if (array.currentIndex >= array.chunkSize) {
+                        array.currentIndex = 0;
+                        array.current = array.creator(array.chunkSize);
+                        array.parts[array.parts.length] = array.current;
+                    }
+                    array.current[array.currentIndex++] = x;
+                    array.current[array.currentIndex++] = y;
+                    array.current[array.currentIndex++] = z;
+                    return array.elementCount++;
+                }
+                ChunkedArray.add3 = add3;
+                function add2(array, x, y) {
+                    if (array.currentIndex >= array.chunkSize) {
+                        array.currentIndex = 0;
+                        array.current = array.creator(array.chunkSize);
+                        array.parts[array.parts.length] = array.current;
+                    }
+                    array.current[array.currentIndex++] = x;
+                    array.current[array.currentIndex++] = y;
+                    return array.elementCount++;
+                }
+                ChunkedArray.add2 = add2;
+                function add(array, x) {
+                    if (array.currentIndex >= array.chunkSize) {
+                        array.currentIndex = 0;
+                        array.current = array.creator(array.chunkSize);
+                        array.parts[array.parts.length] = array.current;
+                    }
+                    array.current[array.currentIndex++] = x;
+                    return array.elementCount++;
+                }
+                ChunkedArray.add = add;
+                function compact(array) {
+                    var ret = array.creator(array.elementSize * array.elementCount), offset = (array.parts.length - 1) * array.chunkSize, offsetInner = 0, part;
+                    if (array.parts.length > 1) {
+                        if (array.parts[0].buffer) {
+                            for (var i = 0; i < array.parts.length - 1; i++) {
+                                ret.set(array.parts[i], array.chunkSize * i);
+                            }
+                        }
+                        else {
+                            for (var i = 0; i < array.parts.length - 1; i++) {
+                                offsetInner = array.chunkSize * i;
+                                part = array.parts[i];
+                                for (var j = 0; j < array.chunkSize; j++) {
+                                    ret[offsetInner + j] = part[j];
+                                }
+                            }
+                        }
+                    }
+                    if (array.current.buffer && array.currentIndex >= array.chunkSize) {
+                        ret.set(array.current, array.chunkSize * (array.parts.length - 1));
+                    }
+                    else {
+                        for (var i = 0; i < array.currentIndex; i++) {
+                            ret[offset + i] = array.current[i];
+                        }
+                    }
+                    return ret;
+                }
+                ChunkedArray.compact = compact;
+                function forVertex3D(chunkVertexCount) {
+                    if (chunkVertexCount === void 0) { chunkVertexCount = 262144; }
+                    return create(function (size) { return new Float32Array(size); }, chunkVertexCount, 3);
+                }
+                ChunkedArray.forVertex3D = forVertex3D;
+                function forIndexBuffer(chunkIndexCount) {
+                    if (chunkIndexCount === void 0) { chunkIndexCount = 262144; }
+                    return create(function (size) { return new Uint32Array(size); }, chunkIndexCount, 3);
+                }
+                ChunkedArray.forIndexBuffer = forIndexBuffer;
+                function forTokenIndices(chunkTokenCount) {
+                    if (chunkTokenCount === void 0) { chunkTokenCount = 131072; }
+                    return create(function (size) { return new Int32Array(size); }, chunkTokenCount, 2);
+                }
+                ChunkedArray.forTokenIndices = forTokenIndices;
+                function forIndices(chunkTokenCount) {
+                    if (chunkTokenCount === void 0) { chunkTokenCount = 131072; }
+                    return create(function (size) { return new Int32Array(size); }, chunkTokenCount, 1);
+                }
+                ChunkedArray.forIndices = forIndices;
+                function forInt32(chunkSize) {
+                    if (chunkSize === void 0) { chunkSize = 131072; }
+                    return create(function (size) { return new Int32Array(size); }, chunkSize, 1);
+                }
+                ChunkedArray.forInt32 = forInt32;
+                function forFloat32(chunkSize) {
+                    if (chunkSize === void 0) { chunkSize = 131072; }
+                    return create(function (size) { return new Float32Array(size); }, chunkSize, 1);
+                }
+                ChunkedArray.forFloat32 = forFloat32;
+                function forArray(chunkSize) {
+                    if (chunkSize === void 0) { chunkSize = 131072; }
+                    return create(function (size) { return []; }, chunkSize, 1);
+                }
+                ChunkedArray.forArray = forArray;
+                function create(creator, chunkElementCount, elementSize) {
+                    chunkElementCount = chunkElementCount | 0;
+                    if (chunkElementCount <= 0)
+                        chunkElementCount = 1;
+                    var chunkSize = chunkElementCount * elementSize;
+                    var current = creator(chunkSize);
+                    return {
+                        elementSize: elementSize,
+                        chunkSize: chunkSize,
+                        creator: creator,
+                        current: current,
+                        parts: [current],
+                        currentIndex: 0,
+                        elementCount: 0
+                    };
+                }
+                ChunkedArray.create = create;
+            })(ChunkedArray = Utils.ChunkedArray || (Utils.ChunkedArray = {}));
+        })(Utils = CIFTools.Utils || (CIFTools.Utils = {}));
+    })(CIFTools || (CIFTools = {}));
+    /*
+     * Copyright (c) 2016 David Sehnal, licensed under MIT License, See LICENSE file for more info.
+     */
+    /**
+     * Efficient integer and float parsers.
+     *
+     * For the purposes of parsing numbers from the mmCIF data representations,
+     * up to 4 times faster than JS parseInt/parseFloat.
+     */
+    var CIFTools;
+    (function (CIFTools) {
+        var Utils;
+        (function (Utils) {
+            var FastNumberParsers;
+            (function (FastNumberParsers) {
+                "use strict";
+                function parseIntSkipTrailingWhitespace(str, start, end) {
+                    while (start < end && str.charCodeAt(start) === 32)
+                        start++;
+                    return parseInt(str, start, end);
+                }
+                FastNumberParsers.parseIntSkipTrailingWhitespace = parseIntSkipTrailingWhitespace;
+                function parseInt(str, start, end) {
+                    var ret = 0, neg = 1;
+                    if (str.charCodeAt(start) === 45 /* - */) {
+                        neg = -1;
+                        start++;
+                    }
+                    for (; start < end; start++) {
+                        var c = str.charCodeAt(start) - 48;
+                        if (c > 9 || c < 0)
+                            return (neg * ret) | 0;
+                        else
+                            ret = (10 * ret + c) | 0;
+                    }
+                    return neg * ret;
+                }
+                FastNumberParsers.parseInt = parseInt;
+                function parseScientific(main, str, start, end) {
+                    return main * Math.pow(10.0, parseInt(str, start, end));
+                }
+                FastNumberParsers.parseScientific = parseScientific;
+                function parseFloatSkipTrailingWhitespace(str, start, end) {
+                    while (start < end && str.charCodeAt(start) === 32)
+                        start++;
+                    return parseFloat(str, start, end);
+                }
+                FastNumberParsers.parseFloatSkipTrailingWhitespace = parseFloatSkipTrailingWhitespace;
+                function parseFloat(str, start, end) {
+                    var neg = 1.0, ret = 0.0, point = 0.0, div = 1.0;
+                    if (str.charCodeAt(start) === 45) {
+                        neg = -1.0;
+                        ++start;
+                    }
+                    while (start < end) {
+                        var c = str.charCodeAt(start) - 48;
+                        if (c >= 0 && c < 10) {
+                            ret = ret * 10 + c;
+                            ++start;
+                        }
+                        else if (c === -2) {
+                            ++start;
+                            while (start < end) {
+                                c = str.charCodeAt(start) - 48;
+                                if (c >= 0 && c < 10) {
+                                    point = 10.0 * point + c;
+                                    div = 10.0 * div;
+                                    ++start;
+                                }
+                                else if (c === 53 || c === 21) {
+                                    return parseScientific(neg * (ret + point / div), str, start + 1, end);
+                                }
+                                else {
+                                    return neg * (ret + point / div);
+                                }
+                            }
+                            return neg * (ret + point / div);
+                        }
+                        else if (c === 53 || c === 21) {
+                            return parseScientific(neg * ret, str, start + 1, end);
+                        }
+                        else
+                            break;
+                    }
+                    return neg * ret;
+                }
+                FastNumberParsers.parseFloat = parseFloat;
+            })(FastNumberParsers = Utils.FastNumberParsers || (Utils.FastNumberParsers = {}));
+        })(Utils = CIFTools.Utils || (CIFTools.Utils = {}));
+    })(CIFTools || (CIFTools = {}));
+    /*
+     * Copyright (c) 2016 David Sehnal, licensed under MIT License, See LICENSE file for more info.
+     */
+    var CIFTools;
+    (function (CIFTools) {
+        var Utils;
+        (function (Utils) {
+            var __paddingSpaces = [];
+            (function () {
+                var s = '';
+                for (var i = 0; i < 512; i++) {
+                    __paddingSpaces[i] = s;
+                    s = s + ' ';
+                }
+            })();
+            var StringWriter;
+            (function (StringWriter) {
+                function create(chunkCapacity) {
+                    if (chunkCapacity === void 0) { chunkCapacity = 512; }
+                    return {
+                        chunkData: [],
+                        chunkOffset: 0,
+                        chunkCapacity: chunkCapacity,
+                        data: []
+                    };
+                }
+                StringWriter.create = create;
+                function asString(writer) {
+                    if (!writer.data.length) {
+                        if (writer.chunkData.length === writer.chunkOffset)
+                            return writer.chunkData.join('');
+                        return writer.chunkData.splice(0, writer.chunkOffset).join('');
+                    }
+                    if (writer.chunkOffset > 0) {
+                        writer.data[writer.data.length] = writer.chunkData.splice(0, writer.chunkOffset).join('');
+                    }
+                    return writer.data.join('');
+                }
+                StringWriter.asString = asString;
+                function writeTo(writer, stream) {
+                    finalize(writer);
+                    for (var _i = 0, _a = writer.data; _i < _a.length; _i++) {
+                        var s = _a[_i];
+                        stream.writeString(s);
+                    }
+                }
+                StringWriter.writeTo = writeTo;
+                function finalize(writer) {
+                    if (writer.chunkOffset > 0) {
+                        if (writer.chunkData.length === writer.chunkOffset)
+                            writer.data[writer.data.length] = writer.chunkData.join('');
+                        else
+                            writer.data[writer.data.length] = writer.chunkData.splice(0, writer.chunkOffset).join('');
+                        writer.chunkOffset = 0;
+                    }
+                }
+                function newline(writer) {
+                    write(writer, '\n');
+                }
+                StringWriter.newline = newline;
+                function whitespace(writer, len) {
+                    write(writer, __paddingSpaces[len]);
+                }
+                StringWriter.whitespace = whitespace;
+                function write(writer, val) {
+                    if (val === undefined || val === null) {
+                        return;
+                    }
+                    if (writer.chunkOffset === writer.chunkCapacity) {
+                        writer.data[writer.data.length] = writer.chunkData.join('');
+                        writer.chunkOffset = 0;
+                    }
+                    writer.chunkData[writer.chunkOffset++] = val;
+                }
+                StringWriter.write = write;
+                function writeSafe(writer, val) {
+                    if (writer.chunkOffset === writer.chunkCapacity) {
+                        writer.data[writer.data.length] = writer.chunkData.join('');
+                        writer.chunkOffset = 0;
+                    }
+                    writer.chunkData[writer.chunkOffset++] = val;
+                }
+                StringWriter.writeSafe = writeSafe;
+                function writePadLeft(writer, val, totalWidth) {
+                    if (val === undefined || val === null) {
+                        write(writer, __paddingSpaces[totalWidth]);
+                    }
+                    var padding = totalWidth - val.length;
+                    if (padding > 0)
+                        write(writer, __paddingSpaces[padding]);
+                    write(writer, val);
+                }
+                StringWriter.writePadLeft = writePadLeft;
+                function writePadRight(writer, val, totalWidth) {
+                    if (val === undefined || val === null) {
+                        write(writer, __paddingSpaces[totalWidth]);
+                    }
+                    var padding = totalWidth - val.length;
+                    write(writer, val);
+                    if (padding > 0)
+                        write(writer, __paddingSpaces[padding]);
+                }
+                StringWriter.writePadRight = writePadRight;
+                function writeInteger(writer, val) {
+                    write(writer, '' + val);
+                }
+                StringWriter.writeInteger = writeInteger;
+                function writeIntegerPadLeft(writer, val, totalWidth) {
+                    var s = '' + val;
+                    var padding = totalWidth - s.length;
+                    if (padding > 0)
+                        write(writer, __paddingSpaces[padding]);
+                    write(writer, s);
+                }
+                StringWriter.writeIntegerPadLeft = writeIntegerPadLeft;
+                function writeIntegerPadRight(writer, val, totalWidth) {
+                    var s = '' + val;
+                    var padding = totalWidth - s.length;
+                    write(writer, s);
+                    if (padding > 0)
+                        write(writer, __paddingSpaces[padding]);
+                }
+                StringWriter.writeIntegerPadRight = writeIntegerPadRight;
+                /**
+                 * @example writeFloat(123.2123, 100) -- 2 decim
+                 */
+                function writeFloat(writer, val, precisionMultiplier) {
+                    write(writer, '' + Math.round(precisionMultiplier * val) / precisionMultiplier);
+                }
+                StringWriter.writeFloat = writeFloat;
+                function writeFloatPadLeft(writer, val, precisionMultiplier, totalWidth) {
+                    var s = '' + Math.round(precisionMultiplier * val) / precisionMultiplier;
+                    var padding = totalWidth - s.length;
+                    if (padding > 0)
+                        write(writer, __paddingSpaces[padding]);
+                    write(writer, s);
+                }
+                StringWriter.writeFloatPadLeft = writeFloatPadLeft;
+                function writeFloatPadRight(writer, val, precisionMultiplier, totalWidth) {
+                    var s = '' + Math.round(precisionMultiplier * val) / precisionMultiplier;
+                    var padding = totalWidth - s.length;
+                    write(writer, s);
+                    if (padding > 0)
+                        write(writer, __paddingSpaces[padding]);
+                }
+                StringWriter.writeFloatPadRight = writeFloatPadRight;
+            })(StringWriter = Utils.StringWriter || (Utils.StringWriter = {}));
+        })(Utils = CIFTools.Utils || (CIFTools.Utils = {}));
+    })(CIFTools || (CIFTools = {}));
+    /*
+     * Copyright (c) 2016 David Sehnal, licensed under MIT License, See LICENSE file for more info.
+     */
+    var CIFTools;
+    (function (CIFTools) {
+        "use strict";
+        /**
+         * Represents a column that is not present.
+         */
+        var _UndefinedColumn = (function () {
+            function _UndefinedColumn() {
+                this.isDefined = false;
+            }
+            _UndefinedColumn.prototype.getString = function (row) { return null; };
+            ;
+            _UndefinedColumn.prototype.getInteger = function (row) { return 0; };
+            _UndefinedColumn.prototype.getFloat = function (row) { return 0.0; };
+            _UndefinedColumn.prototype.getValuePresence = function (row) { return 1 /* NotSpecified */; };
+            _UndefinedColumn.prototype.areValuesEqual = function (rowA, rowB) { return true; };
+            _UndefinedColumn.prototype.stringEquals = function (row, value) { return value === null; };
+            return _UndefinedColumn;
+        } ());
+        CIFTools.UndefinedColumn = new _UndefinedColumn();
+        /**
+         * Helper functions for categoies.
+         */
+        var Category;
+        (function (Category) {
+            /**
+             * Extracts a matrix from a category from a specified rowIndex.
+             *
+             * _category.matrix[1][1] v11
+             * ....
+             * ....
+             * _category.matrix[rows][cols] vRowsCols
+             */
+            function getMatrix(category, field, rows, cols, rowIndex) {
+                var ret = [];
+                for (var i = 1; i <= rows; i++) {
+                    var row = [];
+                    for (var j = 1; j <= cols; j++) {
+                        row[j - 1] = category.getColumn(field + "[" + i + "][" + j + "]").getFloat(rowIndex);
+                    }
+                    ret[i - 1] = row;
+                }
+                return ret;
+            }
+            Category.getMatrix = getMatrix;
+            /**
+             * Extracts a vector from a category from a specified rowIndex.
+             *
+             * _category.matrix[1][1] v11
+             * ....
+             * ....
+             * _category.matrix[rows][cols] vRowsCols
+             */
+            function getVector(category, field, rows, cols, rowIndex) {
+                var ret = [];
+                for (var i = 1; i <= rows; i++) {
+                    ret[i - 1] = category.getColumn(field + "[" + i + "]").getFloat(rowIndex);
+                }
+                return ret;
+            }
+            Category.getVector = getVector;
+        })(Category = CIFTools.Category || (CIFTools.Category = {}));
+    })(CIFTools || (CIFTools = {}));
+    /*
+     * Copyright (c) 2016 David Sehnal, licensed under MIT License, See LICENSE file for more info.
+     */
+    var CIFTools;
+    (function (CIFTools) {
+        "use strict";
+        var ParserResult;
+        (function (ParserResult) {
+            function error(message, line) {
+                if (line === void 0) { line = -1; }
+                return new ParserError(message, line);
+            }
+            ParserResult.error = error;
+            function success(result, warnings) {
+                if (warnings === void 0) { warnings = []; }
+                return new ParserSuccess(result, warnings);
+            }
+            ParserResult.success = success;
+        })(ParserResult = CIFTools.ParserResult || (CIFTools.ParserResult = {}));
+        var ParserError = (function () {
+            function ParserError(message, line) {
+                this.message = message;
+                this.line = line;
+                this.isError = true;
+            }
+            ParserError.prototype.toString = function () {
+                if (this.line >= 0) {
+                    return "[Line " + this.line + "] " + this.message;
+                }
+                return this.message;
+            };
+            return ParserError;
+        } ());
+        CIFTools.ParserError = ParserError;
+        var ParserSuccess = (function () {
+            function ParserSuccess(result, warnings) {
+                this.result = result;
+                this.warnings = warnings;
+                this.isError = false;
+            }
+            return ParserSuccess;
+        } ());
+        CIFTools.ParserSuccess = ParserSuccess;
+    })(CIFTools || (CIFTools = {}));
+    /*
+     * Copyright (c) 2016 David Sehnal, licensed under MIT License, See LICENSE file for more info.
+     */
+    /*
+     * Copyright (c) 2016 David Sehnal, licensed under MIT License, See LICENSE file for more info.
+     */
+    /*
+        On data representation of molecular files
+    
+        Consider an mmCIF file that stores a molecule with 100k atoms. For the sake of simplicity,
+        lets ignore things like symmetry or assemblies, and assume, that the file only stores the
+        _atom_site records. The atom site "table" in the standard mmCIF from PDB database currently
+        has 26 columns.
+    
+        So the data looks something like this:
+    
+            loop_
+            _atom_site.column1
+            ....
+            _atom_site.column26
+            t1,1 .... t1,26
+            t100000,1 .... t100000,26
+    
+        The straightforward way to represent this data in JavaScript is to have an array of objects
+        with properties named "column1" ..., "column26":
+    
+            [{ column1: "t1,1", ..., column26: "t1,26" },
+              ...,
+             { column1: "t100000,1", ..., column26: "t100000,26" }]
+    
+        So in order to represent the atoms sites, we would need 100k objects and 2.6 million strings.
+        Is this bad? well, sort of. It would not be so bad if this representation would be the only
+        thing we need to keep in memory and/or the life time of the object was short. But usually
+        we would need to keep the object around for the entire lifetime of the app. This alone
+        adds a very non-significant overhead for the garbage collector (which increases the app's
+        latency). What's worse is that we usually only need a fraction of this data, but this can
+        vary application for application. For just 100k atoms, the overhead is not "that bad", but
+        consider 1M atoms and suddenly we have a problem.
+    
+        The following data model shows an alternative way of storing molecular file s
+        in memory that is very efficient, fast and introduces a very minimal overhead.
+    
+     */
+    var CIFTools;
+    (function (CIFTools) {
+        var Text;
+        (function (Text) {
+            "use strict";
+            var ShortStringPool;
+            (function (ShortStringPool) {
+                function create() { return new Map(); }
+                ShortStringPool.create = create;
+                function get(pool, str) {
+                    if (str.length > 6)
+                        return str;
+                    var value = pool.get(str);
+                    if (value !== void 0)
+                        return value;
+                    pool.set(str, str);
+                    return str;
+                }
+                ShortStringPool.get = get;
+            })(ShortStringPool || (ShortStringPool = {}));
+            /**
+             * Represents the input file.
+             */
+            var File = (function () {
+                function File(data) {
+                    /**
+                     * Data blocks inside the file. If no data block is present, a "default" one is created.
+                     */
+                    this.dataBlocks = [];
+                    this.data = data;
+                }
+                File.prototype.toJSON = function () {
+                    return this.dataBlocks.map(function (b) { return b.toJSON(); });
+                };
+                return File;
+            } ());
+            Text.File = File;
+            /**
+             * Represents a single data block.
+             */
+            var DataBlock = (function () {
+                function DataBlock(data, header) {
+                    this.header = header;
+                    this.data = data;
+                    this.categoryList = [];
+                    this.additionalData = {};
+                    this.categoryMap = {};
+                }
+                Object.defineProperty(DataBlock.prototype, "categories", {
+                    /**
+                     * Categories of the block.
+                     * block.categories._atom_site / ['_atom_site']
+                     */
+                    get: function () {
+                        return this.categoryList;
+                    },
+                    enumerable: true,
+                    configurable: true
+                });
+                /**
+                 * Gets a category by its name.
+                 */
+                DataBlock.prototype.getCategory = function (name) {
+                    return this.categoryMap[name];
+                };
+                /**
+                 * Adds a category.
+                 */
+                DataBlock.prototype.addCategory = function (category) {
+                    this.categoryList[this.categoryList.length] = category;
+                    this.categoryMap[category.name] = category;
+                };
+                DataBlock.prototype.toJSON = function () {
+                    return {
+                        id: this.header,
+                        categories: this.categoryList.map(function (c) { return c.toJSON(); }),
+                        additionalData: this.additionalData
+                    };
+                };
+                return DataBlock;
+            } ());
+            Text.DataBlock = DataBlock;
+            /**
+             * Represents a single CIF category.
+             */
+            var Category = (function () {
+                function Category(data, name, startIndex, endIndex, columns, tokens, tokenCount) {
+                    this.name = name;
+                    this.tokens = tokens;
+                    this.data = data;
+                    this.startIndex = startIndex;
+                    this.endIndex = endIndex;
+                    this.columnCount = columns.length;
+                    this.rowCount = (tokenCount / columns.length) | 0;
+                    this.columnWrappers = {};
+                    this.columnNameList = [];
+                    for (var i = 0; i < columns.length; i++) {
+                        var colName = columns[i].substr(name.length + 1);
+                        var col = new Column(this, data, colName, i);
+                        this.columnWrappers[colName] = col;
+                        this.columnNameList.push(colName);
+                    }
+                }
+                Object.defineProperty(Category.prototype, "columnNames", {
+                    /**
+                     * The array of columns.
+                     */
+                    get: function () {
+                        return this.columnNameList;
+                    },
+                    enumerable: true,
+                    configurable: true
+                });
+                /**
+                 * Get a column object that makes accessing data easier.
+                 * @returns undefined if the column isn't present, the Column object otherwise.
+                 */
+                Category.prototype.getColumn = function (name) {
+                    return this.columnWrappers[name] || CIFTools.UndefinedColumn;
+                };
+                Category.prototype.toJSON = function () {
+                    var rows = [], data = this.data, tokens = this.tokens;
+                    var colNames = this.columnNameList;
+                    var strings = ShortStringPool.create();
+                    for (var i = 0; i < this.rowCount; i++) {
+                        var item = {};
+                        for (var j = 0; j < this.columnCount; j++) {
+                            var tk = (i * this.columnCount + j) * 2;
+                            item[colNames[j]] = ShortStringPool.get(strings, data.substring(tokens[tk], tokens[tk + 1]));
+                        }
+                        rows[i] = item;
+                    }
+                    return { name: this.name, columns: colNames, rows: rows };
+                };
+                return Category;
+            } ());
+            Text.Category = Category;
+            var fastParseInt = CIFTools.Utils.FastNumberParsers.parseInt;
+            var fastParseFloat = CIFTools.Utils.FastNumberParsers.parseFloat;
+            /**
+             * Represents a single column of a CIF category.
+             */
+            var Column = (function () {
+                function Column(category, data, name, index) {
+                    this.data = data;
+                    this.name = name;
+                    this.index = index;
+                    this.stringPool = ShortStringPool.create();
+                    this.isDefined = true;
+                    this.tokens = category.tokens;
+                    this.columnCount = category.columnCount;
+                }
+                /**
+                 * Returns the string value at given row.
+                 */
+                Column.prototype.getString = function (row) {
+                    var i = (row * this.columnCount + this.index) * 2;
+                    var ret = ShortStringPool.get(this.stringPool, this.data.substring(this.tokens[i], this.tokens[i + 1]));
+                    if (ret === "." || ret === "?")
+                        return null;
+                    return ret;
+                };
+                /**
+                 * Returns the integer value at given row.
+                 */
+                Column.prototype.getInteger = function (row) {
+                    var i = (row * this.columnCount + this.index) * 2;
+                    return fastParseInt(this.data, this.tokens[i], this.tokens[i + 1]);
+                };
+                /**
+                 * Returns the float value at given row.
+                 */
+                Column.prototype.getFloat = function (row) {
+                    var i = (row * this.columnCount + this.index) * 2;
+                    return fastParseFloat(this.data, this.tokens[i], this.tokens[i + 1]);
+                };
+                /**
+                 * Returns true if the token has the specified string value.
+                 */
+                Column.prototype.stringEquals = function (row, value) {
+                    var aIndex = (row * this.columnCount + this.index) * 2, s = this.tokens[aIndex], len = value.length;
+                    if (len !== this.tokens[aIndex + 1] - s)
+                        return false;
+                    for (var i = 0; i < len; i++) {
+                        if (this.data.charCodeAt(i + s) !== value.charCodeAt(i))
+                            return false;
+                    }
+                    return true;
+                };
+                /**
+                 * Determines if values at the given rows are equal.
+                 */
+                Column.prototype.areValuesEqual = function (rowA, rowB) {
+                    var aIndex = (rowA * this.columnCount + this.index) * 2, bIndex = (rowB * this.columnCount + this.index) * 2;
+                    var aS = this.tokens[aIndex], bS = this.tokens[bIndex], len = this.tokens[aIndex + 1] - aS;
+                    if (len !== this.tokens[bIndex + 1] - bS)
+                        return false;
+                    for (var i = 0; i < len; i++) {
+                        if (this.data.charCodeAt(i + aS) !== this.data.charCodeAt(i + bS)) {
+                            return false;
+                        }
+                    }
+                    return true;
+                };
+                /**
+                 * Returns true if the value is not defined (. or ? token).
+                 */
+                Column.prototype.getValuePresence = function (row) {
+                    var index = row * this.columnCount + this.index;
+                    var s = this.tokens[2 * index];
+                    if (this.tokens[2 * index + 1] - s !== 1)
+                        return 0 /* Present */;
+                    var v = this.data.charCodeAt(s);
+                    if (v === 46 /* . */)
+                        return 1 /* NotSpecified */;
+                    if (v === 63 /* ? */)
+                        return 2 /* Unknown */;
+                    return 0 /* Present */;
+                };
+                return Column;
+            } ());
+            Text.Column = Column;
+        })(Text = CIFTools.Text || (CIFTools.Text = {}));
+    })(CIFTools || (CIFTools = {}));
+    /*
+     * Copyright (c) 2016 David Sehnal, licensed under MIT License, See LICENSE file for more info.
+     */
+    var CIFTools;
+    (function (CIFTools) {
+        var Text;
+        (function (Text) {
+            "use strict";
+            var TokenIndexBuilder;
+            (function (TokenIndexBuilder) {
+                function resize(builder) {
+                    // scale the size using golden ratio, because why not.
+                    var newBuffer = new Int32Array((1.61 * builder.tokens.length) | 0);
+                    newBuffer.set(builder.tokens);
+                    builder.tokens = newBuffer;
+                    builder.tokensLenMinus2 = (newBuffer.length - 2) | 0;
+                }
+                function addToken(builder, start, end) {
+                    if (builder.count >= builder.tokensLenMinus2) {
+                        resize(builder);
+                    }
+                    builder.tokens[builder.count++] = start;
+                    builder.tokens[builder.count++] = end;
+                }
+                TokenIndexBuilder.addToken = addToken;
+                function create(size) {
+                    return {
+                        tokensLenMinus2: (size - 2) | 0,
+                        count: 0,
+                        tokens: new Int32Array(size)
+                    };
+                }
+                TokenIndexBuilder.create = create;
+            })(TokenIndexBuilder || (TokenIndexBuilder = {}));
+            /**
+             * Eat everything until a whitespace/newline occurs.
+             */
+            function eatValue(state) {
+                while (state.position < state.length) {
+                    switch (state.data.charCodeAt(state.position)) {
+                        case 9: // \t
+                        case 10: // \n
+                        case 13: // \r
+                        case 32:
+                            state.currentTokenEnd = state.position;
+                            return;
+                        default:
+                            ++state.position;
+                            break;
+                    }
+                }
+                state.currentTokenEnd = state.position;
+            }
+            /**
+             * Eats an escaped values. Handles the "degenerate" cases as well.
+             *
+             * "Degenerate" cases:
+             * - 'xx'x' => xx'x
+             * - 'xxxNEWLINE => 'xxx
+             *
+             */
+            function eatEscaped(state, esc) {
+                var next, c;
+                ++state.position;
+                while (state.position < state.length) {
+                    c = state.data.charCodeAt(state.position);
+                    if (c === esc) {
+                        next = state.data.charCodeAt(state.position + 1);
+                        switch (next) {
+                            case 9: // \t
+                            case 10: // \n
+                            case 13: // \r
+                            case 32:
+                                // get rid of the quotes.
+                                state.currentTokenStart++;
+                                state.currentTokenEnd = state.position;
+                                state.isEscaped = true;
+                                ++state.position;
+                                return;
+                            default:
+                                if (next === void 0) {
+                                    // get rid of the quotes.
+                                    state.currentTokenStart++;
+                                    state.currentTokenEnd = state.position;
+                                    state.isEscaped = true;
+                                    ++state.position;
+                                    return;
+                                }
+                                ++state.position;
+                                break;
+                        }
+                    }
+                    else {
+                        // handle 'xxxNEWLINE => 'xxx
+                        if (c === 10 || c === 13) {
+                            state.currentTokenEnd = state.position;
+                            return;
+                        }
+                        ++state.position;
+                    }
+                }
+                state.currentTokenEnd = state.position;
+            }
+            /**
+             * Eats a multiline token of the form NL;....NL;
+             */
+            function eatMultiline(state) {
+                var prev = 59, pos = state.position + 1, c;
+                while (pos < state.length) {
+                    c = state.data.charCodeAt(pos);
+                    if (c === 59 && (prev === 10 || prev === 13)) {
+                        state.position = pos + 1;
+                        // get rid of the ;
+                        state.currentTokenStart++;
+                        // remove trailing newlines
+                        pos--;
+                        c = state.data.charCodeAt(pos);
+                        while (c === 10 || c === 13) {
+                            pos--;
+                            c = state.data.charCodeAt(pos);
+                        }
+                        state.currentTokenEnd = pos + 1;
+                        state.isEscaped = true;
+                        return;
+                    }
+                    else {
+                        // handle line numbers
+                        if (c === 13) {
+                            state.currentLineNumber++;
+                        }
+                        else if (c === 10 && prev !== 13) {
+                            state.currentLineNumber++;
+                        }
+                        prev = c;
+                        ++pos;
+                    }
+                }
+                state.position = pos;
+                return prev;
+            }
+            /**
+             * Skips until \n or \r occurs -- therefore the newlines get handled by the "skipWhitespace" function.
+             */
+            function skipCommentLine(state) {
+                while (state.position < state.length) {
+                    var c = state.data.charCodeAt(state.position);
+                    if (c === 10 || c === 13) {
+                        return;
+                    }
+                    ++state.position;
+                }
+            }
+            /**
+             * Skips all the whitespace - space, tab, newline, CR
+             * Handles incrementing line count.
+             */
+            function skipWhitespace(state) {
+                var prev = 10;
+                while (state.position < state.length) {
+                    var c = state.data.charCodeAt(state.position);
+                    switch (c) {
+                        case 9: // '\t'
+                        case 32:
+                            prev = c;
+                            ++state.position;
+                            break;
+                        case 10:
+                            // handle \r\n
+                            if (prev !== 13) {
+                                ++state.currentLineNumber;
+                            }
+                            prev = c;
+                            ++state.position;
+                            break;
+                        case 13:
+                            prev = c;
+                            ++state.position;
+                            ++state.currentLineNumber;
+                            break;
+                        default:
+                            return prev;
+                    }
+                }
+                return prev;
+            }
+            function isData(state) {
+                // here we already assume the 5th char is _ and that the length >= 5
+                // d/D
+                var c = state.data.charCodeAt(state.currentTokenStart);
+                if (c !== 68 && c !== 100)
+                    return false;
+                // a/A
+                c = state.data.charCodeAt(state.currentTokenStart + 1);
+                if (c !== 65 && c !== 97)
+                    return false;
+                // t/t
+                c = state.data.charCodeAt(state.currentTokenStart + 2);
+                if (c !== 84 && c !== 116)
+                    return false;
+                // a/A
+                c = state.data.charCodeAt(state.currentTokenStart + 3);
+                if (c !== 65 && c !== 97)
+                    return false;
+                return true;
+            }
+            function isSave(state) {
+                // here we already assume the 5th char is _ and that the length >= 5
+                // s/S
+                var c = state.data.charCodeAt(state.currentTokenStart);
+                if (c !== 83 && c !== 115)
+                    return false;
+                // a/A
+                c = state.data.charCodeAt(state.currentTokenStart + 1);
+                if (c !== 65 && c !== 97)
+                    return false;
+                // v/V
+                c = state.data.charCodeAt(state.currentTokenStart + 2);
+                if (c !== 86 && c !== 118)
+                    return false;
+                // e/E
+                c = state.data.charCodeAt(state.currentTokenStart + 3);
+                if (c !== 69 && c !== 101)
+                    return false;
+                return true;
+            }
+            function isLoop(state) {
+                // here we already assume the 5th char is _ and that the length >= 5
+                if (state.currentTokenEnd - state.currentTokenStart !== 5)
+                    return false;
+                // l/L
+                var c = state.data.charCodeAt(state.currentTokenStart);
+                if (c !== 76 && c !== 108)
+                    return false;
+                // o/O
+                c = state.data.charCodeAt(state.currentTokenStart + 1);
+                if (c !== 79 && c !== 111)
+                    return false;
+                // o/O
+                c = state.data.charCodeAt(state.currentTokenStart + 2);
+                if (c !== 79 && c !== 111)
+                    return false;
+                // p/P
+                c = state.data.charCodeAt(state.currentTokenStart + 3);
+                if (c !== 80 && c !== 112)
+                    return false;
+                return true;
+            }
+            /**
+             * Checks if the current token shares the namespace with string at <start,end).
+             */
+            function isNamespace(state, start, end) {
+                var i, nsLen = end - start, offset = state.currentTokenStart - start, tokenLen = state.currentTokenEnd - state.currentTokenStart;
+                if (tokenLen < nsLen)
+                    return false;
+                for (i = start; i < end; ++i) {
+                    if (state.data.charCodeAt(i) !== state.data.charCodeAt(i + offset))
+                        return false;
+                }
+                if (nsLen === tokenLen)
+                    return true;
+                if (state.data.charCodeAt(i + offset) === 46) {
+                    return true;
+                }
+                return false;
+            }
+            /**
+             * Returns the index of '.' in the current token. If no '.' is present, returns currentTokenEnd.
+             */
+            function getNamespaceEnd(state) {
+                var i;
+                for (i = state.currentTokenStart; i < state.currentTokenEnd; ++i) {
+                    if (state.data.charCodeAt(i) === 46)
+                        return i;
+                }
+                return i;
+            }
+            /**
+             * Get the namespace string. endIndex is obtained by the getNamespaceEnd() function.
+             */
+            function getNamespace(state, endIndex) {
+                return state.data.substring(state.currentTokenStart, endIndex);
+            }
+            /**
+             * String representation of the current token.
+             */
+            function getTokenString(state) {
+                return state.data.substring(state.currentTokenStart, state.currentTokenEnd);
+            }
+            /**
+             * Move to the next token.
+             */
+            function moveNextInternal(state) {
+                var prev = skipWhitespace(state);
+                if (state.position >= state.length) {
+                    state.currentTokenType = 6 /* End */;
+                    return;
+                }
+                state.currentTokenStart = state.position;
+                state.currentTokenEnd = state.position;
+                state.isEscaped = false;
+                var c = state.data.charCodeAt(state.position);
+                switch (c) {
+                    case 35:
+                        skipCommentLine(state);
+                        state.currentTokenType = 5 /* Comment */;
+                        break;
+                    case 34: // ", escaped value
+                    case 39:
+                        eatEscaped(state, c);
+                        state.currentTokenType = 3 /* Value */;
+                        break;
+                    case 59:
+                        // multiline value must start at the beginning of the line.
+                        if (prev === 10 || prev === 13) {
+                            eatMultiline(state);
+                        }
+                        else {
+                            eatValue(state);
+                        }
+                        state.currentTokenType = 3 /* Value */;
+                        break;
+                    default:
+                        eatValue(state);
+                        // escaped is always Value
+                        if (state.isEscaped) {
+                            state.currentTokenType = 3 /* Value */;
+                        }
+                        else if (state.data.charCodeAt(state.currentTokenStart) === 95) {
+                            state.currentTokenType = 4 /* ColumnName */;
+                        }
+                        else if (state.currentTokenEnd - state.currentTokenStart >= 5 && state.data.charCodeAt(state.currentTokenStart + 4) === 95) {
+                            if (isData(state))
+                                state.currentTokenType = 0 /* Data */;
+                            else if (isSave(state))
+                                state.currentTokenType = 1 /* Save */;
+                            else if (isLoop(state))
+                                state.currentTokenType = 2 /* Loop */;
+                            else
+                                state.currentTokenType = 3 /* Value */;
+                        }
+                        else {
+                            state.currentTokenType = 3 /* Value */;
+                        }
+                        break;
+                }
+            }
+            /**
+             * Moves to the next non-comment token.
+             */
+            function moveNext(state) {
+                moveNextInternal(state);
+                while (state.currentTokenType === 5 /* Comment */)
+                    moveNextInternal(state);
+            }
+            function createTokenizer(data) {
+                return {
+                    data: data,
+                    length: data.length,
+                    position: 0,
+                    currentTokenStart: 0,
+                    currentTokenEnd: 0,
+                    currentTokenType: 6 /* End */,
+                    currentLineNumber: 1,
+                    isEscaped: false
+                };
+            }
+            /**
+             * Reads a category containing a single row.
+             */
+            function handleSingle(tokenizer, block) {
+                var nsStart = tokenizer.currentTokenStart, nsEnd = getNamespaceEnd(tokenizer), name = getNamespace(tokenizer, nsEnd), column, columns = [], tokens = TokenIndexBuilder.create(512), tokenCount = 0, readingNames = true;
+                while (readingNames) {
+                    if (tokenizer.currentTokenType !== 4 /* ColumnName */ || !isNamespace(tokenizer, nsStart, nsEnd)) {
+                        readingNames = false;
+                        break;
+                    }
+                    column = getTokenString(tokenizer);
+                    moveNext(tokenizer);
+                    if (tokenizer.currentTokenType !== 3 /* Value */) {
+                        return {
+                            hasError: true,
+                            errorLine: tokenizer.currentLineNumber,
+                            errorMessage: "Expected value."
+                        };
+                    }
+                    columns[columns.length] = column;
+                    TokenIndexBuilder.addToken(tokens, tokenizer.currentTokenStart, tokenizer.currentTokenEnd);
+                    tokenCount++;
+                    moveNext(tokenizer);
+                }
+                block.addCategory(new Text.Category(block.data, name, nsStart, tokenizer.currentTokenStart, columns, tokens.tokens, tokenCount));
+                return {
+                    hasError: false,
+                    errorLine: 0,
+                    errorMessage: ""
+                };
+            }
+            /**
+             * Reads a loop.
+             */
+            function handleLoop(tokenizer, block) {
+                var start = tokenizer.currentTokenStart, loopLine = tokenizer.currentLineNumber;
+                moveNext(tokenizer);
+                var name = getNamespace(tokenizer, getNamespaceEnd(tokenizer)), columns = [], tokens = TokenIndexBuilder.create(name === "_atom_site" ? (block.data.length / 1.85) | 0 : 1024), tokenCount = 0;
+                while (tokenizer.currentTokenType === 4 /* ColumnName */) {
+                    columns[columns.length] = getTokenString(tokenizer);
+                    moveNext(tokenizer);
+                }
+                while (tokenizer.currentTokenType === 3 /* Value */) {
+                    TokenIndexBuilder.addToken(tokens, tokenizer.currentTokenStart, tokenizer.currentTokenEnd);
+                    tokenCount++;
+                    moveNext(tokenizer);
+                }
+                if (tokenCount % columns.length !== 0) {
+                    return {
+                        hasError: true,
+                        errorLine: tokenizer.currentLineNumber,
+                        errorMessage: "The number of values for loop starting at line " + loopLine + " is not a multiple of the number of columns."
+                    };
+                }
+                block.addCategory(new Text.Category(block.data, name, start, tokenizer.currentTokenStart, columns, tokens.tokens, tokenCount));
+                return {
+                    hasError: false,
+                    errorLine: 0,
+                    errorMessage: ""
+                };
+            }
+            /**
+             * Creates an error result.
+             */
+            function error(line, message) {
+                return CIFTools.ParserResult.error(message, line);
+            }
+            /**
+             * Creates a data result.
+             */
+            function result(data) {
+                return CIFTools.ParserResult.success(data);
+            }
+            /**
+             * Parses an mmCIF file.
+             *
+             * @returns CifParserResult wrapper of the result.
+             */
+            function parseInternal(data) {
+                var tokenizer = createTokenizer(data), cat, id, file = new Text.File(data), block = new Text.DataBlock(data, "default"), saveFrame = new Text.DataBlock(data, "empty"), inSaveFrame = false, blockSaveFrames;
+                moveNext(tokenizer);
+                while (tokenizer.currentTokenType !== 6 /* End */) {
+                    var token = tokenizer.currentTokenType;
+                    // Data block
+                    if (token === 0 /* Data */) {
+                        if (inSaveFrame) {
+                            return error(tokenizer.currentLineNumber, "Unexpected data block inside a save frame.");
+                        }
+                        if (block.categories.length > 0) {
+                            file.dataBlocks.push(block);
+                        }
+                        block = new Text.DataBlock(data, data.substring(tokenizer.currentTokenStart + 5, tokenizer.currentTokenEnd));
+                        moveNext(tokenizer);
+                    }
+                    else if (token === 1 /* Save */) {
+                        id = data.substring(tokenizer.currentTokenStart + 5, tokenizer.currentTokenEnd);
+                        if (id.length === 0) {
+                            if (saveFrame.categories.length > 0) {
+                                blockSaveFrames = block.additionalData["saveFrames"];
+                                if (!blockSaveFrames) {
+                                    blockSaveFrames = [];
+                                    block.additionalData["saveFrames"] = blockSaveFrames;
+                                }
+                                blockSaveFrames[blockSaveFrames.length] = saveFrame;
+                            }
+                            inSaveFrame = false;
+                        }
+                        else {
+                            if (inSaveFrame) {
+                                return error(tokenizer.currentLineNumber, "Save frames cannot be nested.");
+                            }
+                            inSaveFrame = true;
+                            saveFrame = new Text.DataBlock(data, id);
+                        }
+                        moveNext(tokenizer);
+                    }
+                    else if (token === 2 /* Loop */) {
+                        cat = handleLoop(tokenizer, inSaveFrame ? saveFrame : block);
+                        if (cat.hasError) {
+                            return error(cat.errorLine, cat.errorMessage);
+                        }
+                    }
+                    else if (token === 4 /* ColumnName */) {
+                        cat = handleSingle(tokenizer, inSaveFrame ? saveFrame : block);
+                        if (cat.hasError) {
+                            return error(cat.errorLine, cat.errorMessage);
+                        }
+                    }
+                    else {
+                        return error(tokenizer.currentLineNumber, "Unexpected token. Expected data_, loop_, or data name.");
+                    }
+                }
+                // Check if the latest save frame was closed.
+                if (inSaveFrame) {
+                    return error(tokenizer.currentLineNumber, "Unfinished save frame (`" + saveFrame.header + "`).");
+                }
+                if (block.categories.length > 0) {
+                    file.dataBlocks.push(block);
+                }
+                return result(file);
+            }
+            function parse(data) {
+                return parseInternal(data);
+            }
+            Text.parse = parse;
+        })(Text = CIFTools.Text || (CIFTools.Text = {}));
+    })(CIFTools || (CIFTools = {}));
+    /*
+     * Copyright (c) 2016 David Sehnal, licensed under MIT License, See LICENSE file for more info.
+     */
+    var CIFTools;
+    (function (CIFTools) {
+        var Text;
+        (function (Text) {
+            "use strict";
+            var StringWriter = CIFTools.Utils.StringWriter;
+            var Writer = (function () {
+                function Writer(header) {
+                    this.writer = StringWriter.create();
+                    this.encoded = false;
+                    StringWriter.write(this.writer, "data_" + (header || '').replace(/[ \n\t]/g, '').toUpperCase() + "\n#\n");
+                }
+                Writer.prototype.writeCategory = function (category, contexts) {
+                    if (this.encoded) {
+                        throw new Error('The writer contents have already been encoded, no more writing.');
+                    }
+                    var src = !contexts || !contexts.length ? [category(void 0)] : contexts.map(function (c) { return category(c); });
+                    var data = src.filter(function (c) { return c && c.count > 0; });
+                    if (!data.length)
+                        return;
+                    var count = data.reduce(function (a, c) { return a + (c.count === void 0 ? 1 : c.count); }, 0);
+                    if (!count)
+                        return;
+                    else if (count === 1) {
+                        writeCifSingleRecord(data[0], this.writer);
+                    }
+                    else {
+                        writeCifLoop(data, this.writer);
+                    }
+                };
+                Writer.prototype.encode = function () {
+                    this.encoded = true;
+                };
+                Writer.prototype.flush = function (stream) {
+                    StringWriter.writeTo(this.writer, stream);
+                };
+                return Writer;
+            } ());
+            Text.Writer = Writer;
+            function isMultiline(value) {
+                return !!value && value.indexOf('\n') >= 0;
+            }
+            function writeCifSingleRecord(category, writer) {
+                var fields = category.desc.fields;
+                var data = category.data;
+                var width = fields.reduce(function (w, s) { return Math.max(w, s.name.length); }, 0) + category.desc.name.length + 5;
+                for (var _i = 0, fields_1 = fields; _i < fields_1.length; _i++) {
+                    var f = fields_1[_i];
+                    StringWriter.writePadRight(writer, category.desc.name + "." + f.name, width);
+                    var presence = f.presence;
+                    var p = void 0;
+                    if (presence && (p = presence(data, 0)) !== 0 /* Present */) {
+                        if (p === 1 /* NotSpecified */)
+                            writeNotSpecified(writer);
+                        else
+                            writeUnknown(writer);
+                    }
+                    else {
+                        var val = f.string(data, 0);
+                        if (isMultiline(val)) {
+                            writeMultiline(writer, val);
+                            StringWriter.newline(writer);
+                        }
+                        else {
+                            writeChecked(writer, val);
+                        }
+                    }
+                    StringWriter.newline(writer);
+                }
+                StringWriter.write(writer, '#\n');
+            }
+            function writeCifLoop(categories, writer) {
+                writeLine(writer, 'loop_');
+                var first = categories[0];
+                var fields = first.desc.fields;
+                for (var _i = 0, fields_2 = fields; _i < fields_2.length; _i++) {
+                    var f = fields_2[_i];
+                    writeLine(writer, first.desc.name + "." + f.name);
+                }
+                for (var _a = 0, categories_1 = categories; _a < categories_1.length; _a++) {
+                    var category = categories_1[_a];
+                    var data = category.data;
+                    var count = category.count;
+                    for (var i = 0; i < count; i++) {
+                        for (var _b = 0, fields_3 = fields; _b < fields_3.length; _b++) {
+                            var f = fields_3[_b];
+                            var presence = f.presence;
+                            var p = void 0;
+                            if (presence && (p = presence(data, i)) !== 0 /* Present */) {
+                                if (p === 1 /* NotSpecified */)
+                                    writeNotSpecified(writer);
+                                else
+                                    writeUnknown(writer);
+                            }
+                            else {
+                                var val = f.string(data, i);
+                                if (isMultiline(val)) {
+                                    writeMultiline(writer, val);
+                                    StringWriter.newline(writer);
+                                }
+                                else {
+                                    writeChecked(writer, val);
+                                }
+                            }
+                        }
+                        StringWriter.newline(writer);
+                    }
+                }
+                StringWriter.write(writer, '#\n');
+            }
+            function writeLine(writer, val) {
+                StringWriter.write(writer, val);
+                StringWriter.newline(writer);
+            }
+            function writeInteger(writer, val) {
+                StringWriter.writeSafe(writer, '' + val + ' ');
+            }
+            /**
+                * eg writeFloat(123.2123, 100) -- 2 decim
+                */
+            function writeFloat(writer, val, precisionMultiplier) {
+                StringWriter.writeSafe(writer, '' + Math.round(precisionMultiplier * val) / precisionMultiplier + ' ');
+            }
+            /**
+                * Writes '. '
+                */
+            function writeNotSpecified(writer) {
+                StringWriter.writeSafe(writer, '. ');
+            }
+            /**
+                * Writes '? '
+                */
+            function writeUnknown(writer) {
+                StringWriter.writeSafe(writer, '? ');
+            }
+            function writeChecked(writer, val) {
+                if (!val) {
+                    StringWriter.writeSafe(writer, '. ');
+                    return;
+                }
+                var escape = false, escapeCharStart = '\'', escapeCharEnd = '\' ';
+                var whitespace = false;
+                var hasSingle = false;
+                var hasDouble = false;
+                for (var i = 0, _l = val.length - 1; i < _l; i++) {
+                    var c = val.charCodeAt(i);
+                    switch (c) {
+                        case 9:
+                            whitespace = true;
+                            break; // \t
+                        case 10:
+                            StringWriter.writeSafe(writer, '\n;' + val);
+                            StringWriter.writeSafe(writer, '\n; ');
+                            return;
+                        case 32:
+                            whitespace = true;
+                            break; // ' '
+                        case 34:
+                            if (hasSingle) {
+                                StringWriter.writeSafe(writer, '\n;' + val);
+                                StringWriter.writeSafe(writer, '\n; ');
+                                return;
+                            }
+                            hasDouble = true;
+                            escape = true;
+                            escapeCharStart = '\'';
+                            escapeCharEnd = '\' ';
+                            break;
+                        case 39:
+                            if (hasDouble) {
+                                StringWriter.writeSafe(writer, '\n;' + val);
+                                StringWriter.writeSafe(writer, '\n; ');
+                                return;
+                            }
+                            escape = true;
+                            hasSingle = true;
+                            escapeCharStart = '"';
+                            escapeCharEnd = '" ';
+                            break;
+                    }
+                }
+                if (!escape && (val.charCodeAt(0) === 59 /* ; */ || whitespace)) {
+                    escapeCharStart = '\'';
+                    escapeCharEnd = '\' ';
+                    escape = true;
+                }
+                if (escape) {
+                    StringWriter.writeSafe(writer, escapeCharStart + val + escapeCharEnd);
+                }
+                else {
+                    StringWriter.write(writer, val);
+                    StringWriter.writeSafe(writer, ' ');
+                }
+            }
+            function writeMultiline(writer, val) {
+                StringWriter.writeSafe(writer, '\n;' + val);
+                StringWriter.writeSafe(writer, '\n; ');
+            }
+            function writeToken(writer, data, start, end) {
+                var escape = false, escapeCharStart = '\'', escapeCharEnd = '\' ';
+                for (var i = start; i < end - 1; i++) {
+                    var c = data.charCodeAt(i);
+                    switch (c) {
+                        case 10:
+                            StringWriter.writeSafe(writer, '\n;' + data.substring(start, end));
+                            StringWriter.writeSafe(writer, '\n; ');
+                            return;
+                        case 34:
+                            escape = true;
+                            escapeCharStart = '\'';
+                            escapeCharEnd = '\' ';
+                            break;
+                        case 39:
+                            escape = true;
+                            escapeCharStart = '"';
+                            escapeCharEnd = '" ';
+                            break;
+                    }
+                }
+                if (!escape && data.charCodeAt(start) === 59 /* ; */) {
+                    escapeCharStart = '\'';
+                    escapeCharEnd = '\' ';
+                    escape = true;
+                }
+                if (escape) {
+                    StringWriter.writeSafe(writer, escapeCharStart + data.substring(start, end));
+                    StringWriter.writeSafe(writer, escapeCharStart);
+                }
+                else {
+                    StringWriter.write(writer, data.substring(start, end));
+                    StringWriter.writeSafe(writer, ' ');
+                }
+            }
+        })(Text = CIFTools.Text || (CIFTools.Text = {}));
+    })(CIFTools || (CIFTools = {}));
+    /*
+     * Copyright (c) 2016 David Sehnal, licensed under MIT License, See LICENSE file for more info.
+     */
+    var CIFTools;
+    (function (CIFTools) {
+        var Binary;
+        (function (Binary) {
+            var MessagePack;
+            (function (MessagePack) {
+                /**
+                 * decode all key-value pairs of a map into an object
+                 * @param  {Integer} length - number of key-value pairs
+                 * @return {Object} decoded map
+                 */
+                function map(state, length) {
+                    var value = {};
+                    for (var i = 0; i < length; i++) {
+                        var key = parse(state);
+                        value[key] = parse(state);
+                    }
+                    return value;
+                }
+                /**
+                 * decode binary array
+                 * @param  {Integer} length - number of elements in the array
+                 * @return {Uint8Array} decoded array
+                 */
+                function bin(state, length) {
+                    // This approach to binary parsing wastes a bit of memory to trade for speed compared to:
+                    //
+                    //   let value = buffer.subarray(offset, offset + length); //new Uint8Array(buffer.buffer, offset, length);
+                    // 
+                    // It turns out that using the view created by subarray probably uses DataView
+                    // in the background, which causes the element access to be several times slower
+                    // than creating the new byte array.
+                    var value = new Uint8Array(length);
+                    var o = state.offset;
+                    for (var i = 0; i < length; i++)
+                        value[i] = state.buffer[i + o];
+                    state.offset += length;
+                    return value;
+                }
+                /**
+                 * decode string
+                 * @param  {Integer} length - number string characters
+                 * @return {String} decoded string
+                 */
+                function str(state, length) {
+                    var value = MessagePack.utf8Read(state.buffer, state.offset, length);
+                    state.offset += length;
+                    return value;
+                }
+                /**
+                     * decode array
+                     * @param  {Integer} length - number of array elements
+                     * @return {Array} decoded array
+                     */
+                function array(state, length) {
+                    var value = new Array(length);
+                    for (var i = 0; i < length; i++) {
+                        value[i] = parse(state);
+                    }
+                    return value;
+                }
+                /**
+                 * recursively parse the MessagePack data
+                 * @return {Object|Array|String|Number|Boolean|null} decoded MessagePack data
+                 */
+                function parse(state) {
+                    var type = state.buffer[state.offset];
+                    var value, length;
+                    // Positive FixInt
+                    if ((type & 0x80) === 0x00) {
+                        state.offset++;
+                        return type;
+                    }
+                    // FixMap
+                    if ((type & 0xf0) === 0x80) {
+                        length = type & 0x0f;
+                        state.offset++;
+                        return map(state, length);
+                    }
+                    // FixArray
+                    if ((type & 0xf0) === 0x90) {
+                        length = type & 0x0f;
+                        state.offset++;
+                        return array(state, length);
+                    }
+                    // FixStr
+                    if ((type & 0xe0) === 0xa0) {
+                        length = type & 0x1f;
+                        state.offset++;
+                        return str(state, length);
+                    }
+                    // Negative FixInt
+                    if ((type & 0xe0) === 0xe0) {
+                        value = state.dataView.getInt8(state.offset);
+                        state.offset++;
+                        return value;
+                    }
+                    switch (type) {
+                        // nil
+                        case 0xc0:
+                            state.offset++;
+                            return null;
+                        // false
+                        case 0xc2:
+                            state.offset++;
+                            return false;
+                        // true
+                        case 0xc3:
+                            state.offset++;
+                            return true;
+                        // bin 8
+                        case 0xc4:
+                            length = state.dataView.getUint8(state.offset + 1);
+                            state.offset += 2;
+                            return bin(state, length);
+                        // bin 16
+                        case 0xc5:
+                            length = state.dataView.getUint16(state.offset + 1);
+                            state.offset += 3;
+                            return bin(state, length);
+                        // bin 32
+                        case 0xc6:
+                            length = state.dataView.getUint32(state.offset + 1);
+                            state.offset += 5;
+                            return bin(state, length);
+                        // float 32
+                        case 0xca:
+                            value = state.dataView.getFloat32(state.offset + 1);
+                            state.offset += 5;
+                            return value;
+                        // float 64
+                        case 0xcb:
+                            value = state.dataView.getFloat64(state.offset + 1);
+                            state.offset += 9;
+                            return value;
+                        // uint8
+                        case 0xcc:
+                            value = state.buffer[state.offset + 1];
+                            state.offset += 2;
+                            return value;
+                        // uint 16
+                        case 0xcd:
+                            value = state.dataView.getUint16(state.offset + 1);
+                            state.offset += 3;
+                            return value;
+                        // uint 32
+                        case 0xce:
+                            value = state.dataView.getUint32(state.offset + 1);
+                            state.offset += 5;
+                            return value;
+                        // int 8
+                        case 0xd0:
+                            value = state.dataView.getInt8(state.offset + 1);
+                            state.offset += 2;
+                            return value;
+                        // int 16
+                        case 0xd1:
+                            value = state.dataView.getInt16(state.offset + 1);
+                            state.offset += 3;
+                            return value;
+                        // int 32
+                        case 0xd2:
+                            value = state.dataView.getInt32(state.offset + 1);
+                            state.offset += 5;
+                            return value;
+                        // str 8
+                        case 0xd9:
+                            length = state.dataView.getUint8(state.offset + 1);
+                            state.offset += 2;
+                            return str(state, length);
+                        // str 16
+                        case 0xda:
+                            length = state.dataView.getUint16(state.offset + 1);
+                            state.offset += 3;
+                            return str(state, length);
+                        // str 32
+                        case 0xdb:
+                            length = state.dataView.getUint32(state.offset + 1);
+                            state.offset += 5;
+                            return str(state, length);
+                        // array 16
+                        case 0xdc:
+                            length = state.dataView.getUint16(state.offset + 1);
+                            state.offset += 3;
+                            return array(state, length);
+                        // array 32
+                        case 0xdd:
+                            length = state.dataView.getUint32(state.offset + 1);
+                            state.offset += 5;
+                            return array(state, length);
+                        // map 16:
+                        case 0xde:
+                            length = state.dataView.getUint16(state.offset + 1);
+                            state.offset += 3;
+                            return map(state, length);
+                        // map 32
+                        case 0xdf:
+                            length = state.dataView.getUint32(state.offset + 1);
+                            state.offset += 5;
+                            return map(state, length);
+                    }
+                    throw new Error("Unknown type 0x" + type.toString(16));
+                }
+                function decode(buffer) {
+                    return parse({
+                        buffer: buffer,
+                        offset: 0,
+                        dataView: new DataView(buffer.buffer)
+                    });
+                }
+                MessagePack.decode = decode;
+            })(MessagePack = Binary.MessagePack || (Binary.MessagePack = {}));
+        })(Binary = CIFTools.Binary || (CIFTools.Binary = {}));
+    })(CIFTools || (CIFTools = {}));
+    /*
+     * Copyright (c) 2016 David Sehnal, licensed under MIT License, See LICENSE file for more info.
+     */
+    var CIFTools;
+    (function (CIFTools) {
+        var Binary;
+        (function (Binary) {
+            var MessagePack;
+            (function (MessagePack) {
+                /*
+                 * Adapted from https://github.com/rcsb/mmtf-javascript
+                 * by Alexander Rose <alexander.rose@weirdbyte.de>, MIT License, Copyright (c) 2016
+                 */
+                function encode(value) {
+                    var buffer = new ArrayBuffer(encodedSize(value));
+                    var view = new DataView(buffer);
+                    var bytes = new Uint8Array(buffer);
+                    encodeInternal(value, view, bytes, 0);
+                    return bytes;
+                }
+                MessagePack.encode = encode;
+                function encodedSize(value) {
+                    var type = typeof value;
+                    // Raw Bytes
+                    if (type === "string") {
+                        var length_1 = MessagePack.utf8ByteCount(value);
+                        if (length_1 < 0x20) {
+                            return 1 + length_1;
+                        }
+                        if (length_1 < 0x100) {
+                            return 2 + length_1;
+                        }
+                        if (length_1 < 0x10000) {
+                            return 3 + length_1;
+                        }
+                        if (length_1 < 0x100000000) {
+                            return 5 + length_1;
+                        }
+                    }
+                    if (value instanceof Uint8Array) {
+                        var length_2 = value.byteLength;
+                        if (length_2 < 0x100) {
+                            return 2 + length_2;
+                        }
+                        if (length_2 < 0x10000) {
+                            return 3 + length_2;
+                        }
+                        if (length_2 < 0x100000000) {
+                            return 5 + length_2;
+                        }
+                    }
+                    if (type === "number") {
+                        // Floating Point
+                        // double
+                        if (Math.floor(value) !== value)
+                            return 9;
+                        // Integers
+                        if (value >= 0) {
+                            // positive fixnum
+                            if (value < 0x80)
+                                return 1;
+                            // uint 8
+                            if (value < 0x100)
+                                return 2;
+                            // uint 16
+                            if (value < 0x10000)
+                                return 3;
+                            // uint 32
+                            if (value < 0x100000000)
+                                return 5;
+                            throw new Error("Number too big 0x" + value.toString(16));
+                        }
+                        // negative fixnum
+                        if (value >= -0x20)
+                            return 1;
+                        // int 8
+                        if (value >= -0x80)
+                            return 2;
+                        // int 16
+                        if (value >= -0x8000)
+                            return 3;
+                        // int 32
+                        if (value >= -0x80000000)
+                            return 5;
+                        throw new Error("Number too small -0x" + value.toString(16).substr(1));
+                    }
+                    // Boolean, null
+                    if (type === "boolean" || value === null || value === void 0)
+                        return 1;
+                    // Container Types
+                    if (type === "object") {
+                        var length_3, size = 0;
+                        if (Array.isArray(value)) {
+                            length_3 = value.length;
+                            for (var i = 0; i < length_3; i++) {
+                                size += encodedSize(value[i]);
+                            }
+                        }
+                        else {
+                            var keys = Object.keys(value);
+                            length_3 = keys.length;
+                            for (var i = 0; i < length_3; i++) {
+                                var key = keys[i];
+                                size += encodedSize(key) + encodedSize(value[key]);
+                            }
+                        }
+                        if (length_3 < 0x10) {
+                            return 1 + size;
+                        }
+                        if (length_3 < 0x10000) {
+                            return 3 + size;
+                        }
+                        if (length_3 < 0x100000000) {
+                            return 5 + size;
+                        }
+                        throw new Error("Array or object too long 0x" + length_3.toString(16));
+                    }
+                    throw new Error("Unknown type " + type);
+                }
+                function encodeInternal(value, view, bytes, offset) {
+                    var type = typeof value;
+                    // Strings Bytes
+                    if (type === "string") {
+                        var length_4 = MessagePack.utf8ByteCount(value);
+                        // fix str
+                        if (length_4 < 0x20) {
+                            view.setUint8(offset, length_4 | 0xa0);
+                            MessagePack.utf8Write(bytes, offset + 1, value);
+                            return 1 + length_4;
+                        }
+                        // str 8
+                        if (length_4 < 0x100) {
+                            view.setUint8(offset, 0xd9);
+                            view.setUint8(offset + 1, length_4);
+                            MessagePack.utf8Write(bytes, offset + 2, value);
+                            return 2 + length_4;
+                        }
+                        // str 16
+                        if (length_4 < 0x10000) {
+                            view.setUint8(offset, 0xda);
+                            view.setUint16(offset + 1, length_4);
+                            MessagePack.utf8Write(bytes, offset + 3, value);
+                            return 3 + length_4;
+                        }
+                        // str 32
+                        if (length_4 < 0x100000000) {
+                            view.setUint8(offset, 0xdb);
+                            view.setUint32(offset + 1, length_4);
+                            MessagePack.utf8Write(bytes, offset + 5, value);
+                            return 5 + length_4;
+                        }
+                    }
+                    if (value instanceof Uint8Array) {
+                        var length_5 = value.byteLength;
+                        var bytes_1 = new Uint8Array(view.buffer);
+                        // bin 8
+                        if (length_5 < 0x100) {
+                            view.setUint8(offset, 0xc4);
+                            view.setUint8(offset + 1, length_5);
+                            bytes_1.set(value, offset + 2);
+                            return 2 + length_5;
+                        }
+                        // bin 16
+                        if (length_5 < 0x10000) {
+                            view.setUint8(offset, 0xc5);
+                            view.setUint16(offset + 1, length_5);
+                            bytes_1.set(value, offset + 3);
+                            return 3 + length_5;
+                        }
+                        // bin 32
+                        if (length_5 < 0x100000000) {
+                            view.setUint8(offset, 0xc6);
+                            view.setUint32(offset + 1, length_5);
+                            bytes_1.set(value, offset + 5);
+                            return 5 + length_5;
+                        }
+                    }
+                    if (type === "number") {
+                        if (!isFinite(value)) {
+                            throw new Error("Number not finite: " + value);
+                        }
+                        // Floating point
+                        if (Math.floor(value) !== value) {
+                            view.setUint8(offset, 0xcb);
+                            view.setFloat64(offset + 1, value);
+                            return 9;
+                        }
+                        // Integers
+                        if (value >= 0) {
+                            // positive fixnum
+                            if (value < 0x80) {
+                                view.setUint8(offset, value);
+                                return 1;
+                            }
+                            // uint 8
+                            if (value < 0x100) {
+                                view.setUint8(offset, 0xcc);
+                                view.setUint8(offset + 1, value);
+                                return 2;
+                            }
+                            // uint 16
+                            if (value < 0x10000) {
+                                view.setUint8(offset, 0xcd);
+                                view.setUint16(offset + 1, value);
+                                return 3;
+                            }
+                            // uint 32
+                            if (value < 0x100000000) {
+                                view.setUint8(offset, 0xce);
+                                view.setUint32(offset + 1, value);
+                                return 5;
+                            }
+                            throw new Error("Number too big 0x" + value.toString(16));
+                        }
+                        // negative fixnum
+                        if (value >= -0x20) {
+                            view.setInt8(offset, value);
+                            return 1;
+                        }
+                        // int 8
+                        if (value >= -0x80) {
+                            view.setUint8(offset, 0xd0);
+                            view.setInt8(offset + 1, value);
+                            return 2;
+                        }
+                        // int 16
+                        if (value >= -0x8000) {
+                            view.setUint8(offset, 0xd1);
+                            view.setInt16(offset + 1, value);
+                            return 3;
+                        }
+                        // int 32
+                        if (value >= -0x80000000) {
+                            view.setUint8(offset, 0xd2);
+                            view.setInt32(offset + 1, value);
+                            return 5;
+                        }
+                        throw new Error("Number too small -0x" + (-value).toString(16).substr(1));
+                    }
+                    // null
+                    if (value === null || value === undefined) {
+                        view.setUint8(offset, 0xc0);
+                        return 1;
+                    }
+                    // Boolean
+                    if (type === "boolean") {
+                        view.setUint8(offset, value ? 0xc3 : 0xc2);
+                        return 1;
+                    }
+                    // Container Types
+                    if (type === "object") {
+                        var length_6, size = 0;
+                        var isArray = Array.isArray(value);
+                        var keys = void 0;
+                        if (isArray) {
+                            length_6 = value.length;
+                        }
+                        else {
+                            keys = Object.keys(value);
+                            length_6 = keys.length;
+                        }
+                        if (length_6 < 0x10) {
+                            view.setUint8(offset, length_6 | (isArray ? 0x90 : 0x80));
+                            size = 1;
+                        }
+                        else if (length_6 < 0x10000) {
+                            view.setUint8(offset, isArray ? 0xdc : 0xde);
+                            view.setUint16(offset + 1, length_6);
+                            size = 3;
+                        }
+                        else if (length_6 < 0x100000000) {
+                            view.setUint8(offset, isArray ? 0xdd : 0xdf);
+                            view.setUint32(offset + 1, length_6);
+                            size = 5;
+                        }
+                        if (isArray) {
+                            for (var i = 0; i < length_6; i++) {
+                                size += encodeInternal(value[i], view, bytes, offset + size);
+                            }
+                        }
+                        else {
+                            for (var _i = 0, _a = keys; _i < _a.length; _i++) {
+                                var key = _a[_i];
+                                size += encodeInternal(key, view, bytes, offset + size);
+                                size += encodeInternal(value[key], view, bytes, offset + size);
+                            }
+                        }
+                        return size;
+                    }
+                    throw new Error("Unknown type " + type);
+                }
+            })(MessagePack = Binary.MessagePack || (Binary.MessagePack = {}));
+        })(Binary = CIFTools.Binary || (CIFTools.Binary = {}));
+    })(CIFTools || (CIFTools = {}));
+    /*
+     * Copyright (c) 2016 David Sehnal, licensed under MIT License, See LICENSE file for more info.
+     */
+    var CIFTools;
+    (function (CIFTools) {
+        var Binary;
+        (function (Binary) {
+            var MessagePack;
+            (function (MessagePack) {
+                /*
+                 * Adapted from https://github.com/rcsb/mmtf-javascript
+                 * by Alexander Rose <alexander.rose@weirdbyte.de>, MIT License, Copyright (c) 2016
+                 */
+                function utf8Write(data, offset, str) {
+                    var byteLength = data.byteLength;
+                    for (var i = 0, l = str.length; i < l; i++) {
+                        var codePoint = str.charCodeAt(i);
+                        // One byte of UTF-8
+                        if (codePoint < 0x80) {
+                            data[offset++] = codePoint >>> 0 & 0x7f | 0x00;
+                            continue;
+                        }
+                        // Two bytes of UTF-8
+                        if (codePoint < 0x800) {
+                            data[offset++] = codePoint >>> 6 & 0x1f | 0xc0;
+                            data[offset++] = codePoint >>> 0 & 0x3f | 0x80;
+                            continue;
+                        }
+                        // Three bytes of UTF-8.
+                        if (codePoint < 0x10000) {
+                            data[offset++] = codePoint >>> 12 & 0x0f | 0xe0;
+                            data[offset++] = codePoint >>> 6 & 0x3f | 0x80;
+                            data[offset++] = codePoint >>> 0 & 0x3f | 0x80;
+                            continue;
+                        }
+                        // Four bytes of UTF-8
+                        if (codePoint < 0x110000) {
+                            data[offset++] = codePoint >>> 18 & 0x07 | 0xf0;
+                            data[offset++] = codePoint >>> 12 & 0x3f | 0x80;
+                            data[offset++] = codePoint >>> 6 & 0x3f | 0x80;
+                            data[offset++] = codePoint >>> 0 & 0x3f | 0x80;
+                            continue;
+                        }
+                        throw new Error("bad codepoint " + codePoint);
+                    }
+                }
+                MessagePack.utf8Write = utf8Write;
+                function utf8Read(data, offset, length) {
+                    var str = [];
+                    for (var i = offset, end = offset + length; i < end; i++) {
+                        var byte = data[i];
+                        // One byte character
+                        if ((byte & 0x80) === 0x00) {
+                            str[str.length] = String.fromCharCode(byte);
+                            continue;
+                        }
+                        // Two byte character
+                        if ((byte & 0xe0) === 0xc0) {
+                            str[str.length] = String.fromCharCode(((byte & 0x0f) << 6) |
+                                (data[++i] & 0x3f));
+                            continue;
+                        }
+                        // Three byte character
+                        if ((byte & 0xf0) === 0xe0) {
+                            str[str.length] = String.fromCharCode(((byte & 0x0f) << 12) |
+                                ((data[++i] & 0x3f) << 6) |
+                                ((data[++i] & 0x3f) << 0));
+                            continue;
+                        }
+                        // Four byte character
+                        if ((byte & 0xf8) === 0xf0) {
+                            str[str.length] = String.fromCharCode(((byte & 0x07) << 18) |
+                                ((data[++i] & 0x3f) << 12) |
+                                ((data[++i] & 0x3f) << 6) |
+                                ((data[++i] & 0x3f) << 0));
+                            continue;
+                        }
+                        throw new Error("Invalid byte " + byte.toString(16));
+                    }
+                    return str.join('');
+                }
+                MessagePack.utf8Read = utf8Read;
+                function utf8ByteCount(str) {
+                    var count = 0;
+                    for (var i = 0, l = str.length; i < l; i++) {
+                        var codePoint = str.charCodeAt(i);
+                        if (codePoint < 0x80) {
+                            count += 1;
+                            continue;
+                        }
+                        if (codePoint < 0x800) {
+                            count += 2;
+                            continue;
+                        }
+                        if (codePoint < 0x10000) {
+                            count += 3;
+                            continue;
+                        }
+                        if (codePoint < 0x110000) {
+                            count += 4;
+                            continue;
+                        }
+                        throw new Error("bad codepoint " + codePoint);
+                    }
+                    return count;
+                }
+                MessagePack.utf8ByteCount = utf8ByteCount;
+            })(MessagePack = Binary.MessagePack || (Binary.MessagePack = {}));
+        })(Binary = CIFTools.Binary || (CIFTools.Binary = {}));
+    })(CIFTools || (CIFTools = {}));
+    /*
+     * Copyright (c) 2016 David Sehnal, licensed under MIT License, See LICENSE file for more info.
+     */
+    var CIFTools;
+    (function (CIFTools) {
+        var Binary;
+        (function (Binary) {
+            "use strict";
+            /**
+             * Fixed point, delta, RLE, integer packing adopted from https://github.com/rcsb/mmtf-javascript/
+             * by Alexander Rose <alexander.rose@weirdbyte.de>, MIT License, Copyright (c) 2016
+             */
+            function decode(data) {
+                var current = data.data;
+                for (var i = data.encoding.length - 1; i >= 0; i--) {
+                    current = Decoder.decodeStep(current, data.encoding[i]);
+                }
+                return current;
+            }
+            Binary.decode = decode;
+            var Decoder;
+            (function (Decoder) {
+                function decodeStep(data, encoding) {
+                    switch (encoding.kind) {
+                        case 'ByteArray': {
+                            switch (encoding.type) {
+                                case 3 /* Uint8 */: return data;
+                                case 0 /* Int8 */: return int8(data);
+                                case 1 /* Int16 */: return int16(data);
+                                case 2 /* Int32 */: return int32(data);
+                                case 4 /* Float32 */: return float32(data);
+                                case 5 /* Float64 */: return float64(data);
+                                default: throw new Error('Unsupported ByteArray type.');
+                            }
+                        }
+                        case 'FixedPoint': return fixedPoint(data, encoding);
+                        case 'RunLength': return runLength(data, encoding);
+                        case 'Delta': return delta(data, encoding);
+                        case 'IntegerPacking': return integerPacking(data, encoding);
+                        case 'StringArray': return stringArray(data, encoding);
+                    }
+                }
+                Decoder.decodeStep = decodeStep;
+                function dataView(array) {
+                    return new DataView(array.buffer, array.byteOffset, array.byteLength);
+                }
+                function int8(data) {
+                    return new Int8Array(data.buffer, data.byteOffset);
+                }
+                function int16(data) {
+                    var n = (data.length / 2) | 0;
+                    var output = new Int16Array(n);
+                    for (var i = 0, i2 = 0; i < n; i++ , i2 += 2) {
+                        output[i] = data[i2] << 8 ^ data[i2 + 1] << 0;
+                    }
+                    return output;
+                }
+                function int32(data) {
+                    var n = (data.length / 4) | 0;
+                    var output = new Int32Array(n);
+                    for (var i = 0, i4 = 0; i < n; i++ , i4 += 4) {
+                        output[i] = data[i4] << 24 ^ data[i4 + 1] << 16 ^ data[i4 + 2] << 8 ^ data[i4 + 3] << 0;
+                    }
+                    return output;
+                }
+                function float32(data) {
+                    var n = (data.length / 4) | 0;
+                    var output = new Float32Array(n);
+                    var src = dataView(data);
+                    for (var i = 0, i4 = 0; i < n; i++ , i4 += 4) {
+                        output[i] = src.getFloat32(i4);
+                    }
+                    return output;
+                }
+                function float64(data) {
+                    var n = (data.length / 8) | 0;
+                    var output = new Float64Array(n);
+                    var src = dataView(data);
+                    for (var i = 0, i8 = 0; i < n; i++ , i8 += 8) {
+                        output[i] = src.getFloat64(i8);
+                    }
+                    return output;
+                }
+                function fixedPoint(data, encoding) {
+                    var n = data.length;
+                    var output = new Float32Array(n);
+                    var f = 1 / encoding.factor;
+                    for (var i = 0; i < n; i++) {
+                        output[i] = f * data[i];
+                    }
+                    return output;
+                }
+                function getIntArray(type, size) {
+                    switch (type) {
+                        case 0 /* Int8 */: return new Int8Array(size);
+                        case 1 /* Int16 */: return new Int16Array(size);
+                        case 2 /* Int32 */: return new Int32Array(size);
+                        case 3 /* Uint8 */: return new Uint8Array(size);
+                        default: throw new Error('Unsupported integer data type.');
+                    }
+                }
+                function runLength(data, encoding) {
+                    var output = getIntArray(encoding.srcType, encoding.srcSize);
+                    var dataOffset = 0;
+                    for (var i = 0, il = data.length; i < il; i += 2) {
+                        var value = data[i]; // value to be repeated
+                        var length_7 = data[i + 1]; // number of repeats
+                        for (var j = 0; j < length_7; ++j) {
+                            output[dataOffset++] = value;
+                        }
+                    }
+                    return output;
+                }
+                function delta(data, encoding) {
+                    var n = data.length;
+                    var output = getIntArray(encoding.srcType, n);
+                    if (!n)
+                        return output;
+                    output[0] = data[0];
+                    for (var i = 1; i < n; ++i) {
+                        output[i] = data[i] + output[i - 1];
+                    }
+                    return output;
+                }
+                function integerPacking(data, encoding) {
+                    var upperLimit = data instanceof Int8Array ? 0x7F : 0x7FFF;
+                    var lowerLimit = -upperLimit - 1;
+                    var n = data.length;
+                    var output = new Int32Array(encoding.srcSize);
+                    var i = 0;
+                    var j = 0;
+                    while (i < n) {
+                        var value = 0, t = data[i];
+                        while (t === upperLimit || t === lowerLimit) {
+                            value += t;
+                            i++;
+                            t = data[i];
+                        }
+                        value += t;
+                        output[j] = value;
+                        i++;
+                        j++;
+                    }
+                    return output;
+                }
+                function stringArray(data, encoding) {
+                    var str = encoding.stringData;
+                    var offsets = decode({ encoding: encoding.offsetEncoding, data: encoding.offsets });
+                    var indices = decode({ encoding: encoding.dataEncoding, data: data });
+                    var cache = new Map();
+                    var result = new Array(indices.length);
+                    var offset = 0;
+                    for (var _i = 0, indices_1 = indices; _i < indices_1.length; _i++) {
+                        var i = indices_1[_i];
+                        if (i < 0) {
+                            result[offset++] = null;
+                            continue;
+                        }
+                        var v = cache.get(i);
+                        if (v === void 0) {
+                            v = str.substring(offsets[i], offsets[i + 1]);
+                            cache.set(i, v);
+                        }
+                        result[offset++] = v;
+                    }
+                    return result;
+                }
+            })(Decoder || (Decoder = {}));
+        })(Binary = CIFTools.Binary || (CIFTools.Binary = {}));
+    })(CIFTools || (CIFTools = {}));
+    /*
+     * Copyright (c) 2016 David Sehnal, licensed under MIT License, See LICENSE file for more info.
+     */
+    var CIFTools;
+    (function (CIFTools) {
+        var Binary;
+        (function (Binary) {
+            "use strict";
+            var File = (function () {
+                function File(data) {
+                    this.dataBlocks = data.dataBlocks.map(function (b) { return new DataBlock(b); });
+                }
+                File.prototype.toJSON = function () {
+                    return this.dataBlocks.map(function (b) { return b.toJSON(); });
+                };
+                return File;
+            } ());
+            Binary.File = File;
+            var DataBlock = (function () {
+                function DataBlock(data) {
+                    this.additionalData = {};
+                    this.header = data.header;
+                    this.categoryList = data.categories.map(function (c) { return new Category(c); });
+                    this.categoryMap = {};
+                    for (var _i = 0, _a = this.categoryList; _i < _a.length; _i++) {
+                        var c = _a[_i];
+                        this.categoryMap[c.name] = c;
+                    }
+                }
+                Object.defineProperty(DataBlock.prototype, "categories", {
+                    get: function () { return this.categoryList; },
+                    enumerable: true,
+                    configurable: true
+                });
+                DataBlock.prototype.getCategory = function (name) { return this.categoryMap[name]; };
+                DataBlock.prototype.toJSON = function () {
+                    return {
+                        id: this.header,
+                        categories: this.categoryList.map(function (c) { return c.toJSON(); }),
+                        additionalData: this.additionalData
+                    };
+                };
+                return DataBlock;
+            } ());
+            Binary.DataBlock = DataBlock;
+            var Category = (function () {
+                function Category(data) {
+                    this.name = data.name;
+                    this.columnCount = data.columns.length;
+                    this.rowCount = data.rowCount;
+                    this.columnNameList = [];
+                    this.encodedColumns = {};
+                    this.columnWrappers = {};
+                    for (var _i = 0, _a = data.columns; _i < _a.length; _i++) {
+                        var c = _a[_i];
+                        this.encodedColumns[c.name] = c;
+                        this.columnWrappers[c.name] = null;
+                        this.columnNameList.push(c.name);
+                    }
+                }
+                Object.defineProperty(Category.prototype, "columnNames", {
+                    get: function () { return this.columnNameList; },
+                    enumerable: true,
+                    configurable: true
+                });
+                Category.prototype.getColumn = function (name) {
+                    var c = this.columnWrappers[name];
+                    if (c)
+                        return c;
+                    var w = this.encodedColumns[name];
+                    if (w) {
+                        c = wrapColumn(w);
+                        this.columnWrappers[name] = c;
+                        return c;
+                    }
+                    return CIFTools.UndefinedColumn;
+                };
+                Category.prototype.toJSON = function () {
+                    var _this = this;
+                    var rows = [];
+                    var columns = this.columnNameList.map(function (name) { return ({ name: name, column: _this.getColumn(name) }); });
+                    for (var i = 0; i < this.rowCount; i++) {
+                        var item = {};
+                        for (var _i = 0, columns_1 = columns; _i < columns_1.length; _i++) {
+                            var c = columns_1[_i];
+                            var d = c.column.getValuePresence(i);
+                            if (d === 0 /* Present */)
+                                item[c.name] = c.column.getString(i);
+                            else if (d === 1 /* NotSpecified */)
+                                item[c.name] = '.';
+                            else
+                                item[c.name] = '?';
+                        }
+                        rows[i] = item;
+                    }
+                    return { name: this.name, columns: this.columnNames, rows: rows };
+                };
+                return Category;
+            } ());
+            Binary.Category = Category;
+            function wrapColumn(column) {
+                if (!column.data.data)
+                    return CIFTools.UndefinedColumn;
+                var data = Binary.decode(column.data);
+                var mask = void 0;
+                if (column.mask)
+                    mask = Binary.decode(column.mask);
+                if (data.buffer && data.byteLength && data.BYTES_PER_ELEMENT) {
+                    return mask ? new MaskedNumericColumn(data, mask) : new NumericColumn(data);
+                }
+                return mask ? new MaskedStringColumn(data, mask) : new StringColumn(data);
+            }
+            var fastParseInt = CIFTools.Utils.FastNumberParsers.parseInt;
+            var fastParseFloat = CIFTools.Utils.FastNumberParsers.parseFloat;
+            var NumericColumn = (function () {
+                function NumericColumn(data) {
+                    this.data = data;
+                    this.isDefined = true;
+                }
+                NumericColumn.prototype.getString = function (row) { return "" + this.data[row]; };
+                NumericColumn.prototype.getInteger = function (row) { return this.data[row] | 0; };
+                NumericColumn.prototype.getFloat = function (row) { return 1.0 * this.data[row]; };
+                NumericColumn.prototype.stringEquals = function (row, value) { return this.data[row] === fastParseFloat(value, 0, value.length); };
+                NumericColumn.prototype.areValuesEqual = function (rowA, rowB) { return this.data[rowA] === this.data[rowB]; };
+                NumericColumn.prototype.getValuePresence = function (row) { return 0 /* Present */; };
+                return NumericColumn;
+            } ());
+            var MaskedNumericColumn = (function () {
+                function MaskedNumericColumn(data, mask) {
+                    this.data = data;
+                    this.mask = mask;
+                    this.isDefined = true;
+                }
+                MaskedNumericColumn.prototype.getString = function (row) { return this.mask[row] === 0 /* Present */ ? "" + this.data[row] : null; };
+                MaskedNumericColumn.prototype.getInteger = function (row) { return this.mask[row] === 0 /* Present */ ? this.data[row] : 0; };
+                MaskedNumericColumn.prototype.getFloat = function (row) { return this.mask[row] === 0 /* Present */ ? this.data[row] : 0; };
+                MaskedNumericColumn.prototype.stringEquals = function (row, value) { return this.mask[row] === 0 /* Present */ ? this.data[row] === fastParseFloat(value, 0, value.length) : value === null || value === void 0; };
+                MaskedNumericColumn.prototype.areValuesEqual = function (rowA, rowB) { return this.data[rowA] === this.data[rowB]; };
+                MaskedNumericColumn.prototype.getValuePresence = function (row) { return this.mask[row]; };
+                return MaskedNumericColumn;
+            } ());
+            var StringColumn = (function () {
+                function StringColumn(data) {
+                    this.data = data;
+                    this.isDefined = true;
+                }
+                StringColumn.prototype.getString = function (row) { return this.data[row]; };
+                StringColumn.prototype.getInteger = function (row) { var v = this.data[row]; return fastParseInt(v, 0, v.length); };
+                StringColumn.prototype.getFloat = function (row) { var v = this.data[row]; return fastParseFloat(v, 0, v.length); };
+                StringColumn.prototype.stringEquals = function (row, value) { return this.data[row] === value; };
+                StringColumn.prototype.areValuesEqual = function (rowA, rowB) { return this.data[rowA] === this.data[rowB]; };
+                StringColumn.prototype.getValuePresence = function (row) { return 0 /* Present */; };
+                return StringColumn;
+            } ());
+            var MaskedStringColumn = (function () {
+                function MaskedStringColumn(data, mask) {
+                    this.data = data;
+                    this.mask = mask;
+                    this.isDefined = true;
+                }
+                MaskedStringColumn.prototype.getString = function (row) { return this.mask[row] === 0 /* Present */ ? this.data[row] : null; };
+                MaskedStringColumn.prototype.getInteger = function (row) {
+                    if (this.mask[row] !== 0 /* Present */)
+                        return 0; var v = this.data[row]; return fastParseInt(v || '', 0, (v || '').length);
+                };
+                MaskedStringColumn.prototype.getFloat = function (row) {
+                    if (this.mask[row] !== 0 /* Present */)
+                        return 0; var v = this.data[row]; return fastParseFloat(v || '', 0, (v || '').length);
+                };
+                MaskedStringColumn.prototype.stringEquals = function (row, value) { return this.data[row] === value; };
+                MaskedStringColumn.prototype.areValuesEqual = function (rowA, rowB) { return this.data[rowA] === this.data[rowB]; };
+                MaskedStringColumn.prototype.getValuePresence = function (row) { return this.mask[row]; };
+                return MaskedStringColumn;
+            } ());
+        })(Binary = CIFTools.Binary || (CIFTools.Binary = {}));
+    })(CIFTools || (CIFTools = {}));
+    /*
+     * Copyright (c) 2016 David Sehnal, licensed under MIT License, See LICENSE file for more info.
+     */
+    var CIFTools;
+    (function (CIFTools) {
+        var Binary;
+        (function (Binary) {
+            "use strict";
+            /**
+             * Fixed point, delta, RLE, integer packing adopted from https://github.com/rcsb/mmtf-javascript/
+             * by Alexander Rose <alexander.rose@weirdbyte.de>, MIT License, Copyright (c) 2016
+             */
+            var Encoder = (function () {
+                function Encoder(providers) {
+                    this.providers = providers;
+                }
+                Encoder.prototype.and = function (f) {
+                    return new Encoder(this.providers.concat([f]));
+                };
+                Encoder.prototype.encode = function (data) {
+                    var encoding = [];
+                    for (var _i = 0, _a = this.providers; _i < _a.length; _i++) {
+                        var p = _a[_i];
+                        var t = p(data);
+                        if (!t.encodings.length) {
+                            throw new Error('Encodings must be non-empty.');
+                        }
+                        data = t.data;
+                        for (var _b = 0, _c = t.encodings; _b < _c.length; _b++) {
+                            var e = _c[_b];
+                            encoding.push(e);
+                        }
+                    }
+                    if (!(data instanceof Uint8Array)) {
+                        throw new Error('The encoding must result in a Uint8Array. Fix your encoding chain.');
+                    }
+                    return {
+                        encoding: encoding,
+                        data: data
+                    };
+                };
+                return Encoder;
+            } ());
+            Binary.Encoder = Encoder;
+            var Encoder;
+            (function (Encoder) {
+                function by(f) {
+                    return new Encoder([f]);
+                }
+                Encoder.by = by;
+                function dataView(array) {
+                    return new DataView(array.buffer, array.byteOffset, array.byteLength);
+                }
+                function uint8(data) {
+                    return {
+                        encodings: [{ kind: 'ByteArray', type: 3 /* Uint8 */ }],
+                        data: data
+                    };
+                }
+                Encoder.uint8 = uint8;
+                function int8(data) {
+                    return {
+                        encodings: [{ kind: 'ByteArray', type: 0 /* Int8 */ }],
+                        data: new Uint8Array(data.buffer, data.byteOffset)
+                    };
+                }
+                Encoder.int8 = int8;
+                function int16(data) {
+                    var result = new Uint8Array(data.length * 2);
+                    var view = dataView(result);
+                    for (var i = 0, n = data.length; i < n; i++) {
+                        view.setInt16(2 * i, data[i]);
+                    }
+                    return {
+                        encodings: [{ kind: 'ByteArray', type: 1 /* Int16 */ }],
+                        data: result
+                    };
+                }
+                Encoder.int16 = int16;
+                function int32(data) {
+                    var result = new Uint8Array(data.length * 4);
+                    var view = dataView(result);
+                    for (var i = 0, n = data.length; i < n; i++) {
+                        view.setInt32(4 * i, data[i]);
+                    }
+                    return {
+                        encodings: [{ kind: 'ByteArray', type: 2 /* Int32 */ }],
+                        data: result
+                    };
+                }
+                Encoder.int32 = int32;
+                function float32(data) {
+                    var result = new Uint8Array(data.length * 4);
+                    var view = dataView(result);
+                    for (var i = 0, n = data.length; i < n; i++) {
+                        view.setFloat32(4 * i, data[i]);
+                    }
+                    return {
+                        encodings: [{ kind: 'ByteArray', type: 4 /* Float32 */ }],
+                        data: result
+                    };
+                }
+                Encoder.float32 = float32;
+                function float64(data) {
+                    var result = new Uint8Array(data.length * 8);
+                    var view = dataView(result);
+                    for (var i = 0, n = data.length; i < n; i++) {
+                        view.setFloat64(8 * i, data[i]);
+                    }
+                    return {
+                        encodings: [{ kind: 'ByteArray', type: 5 /* Float64 */ }],
+                        data: result
+                    };
+                }
+                Encoder.float64 = float64;
+                function _fixedPoint(data, factor) {
+                    var result = new Int32Array(data.length);
+                    for (var i = 0, n = data.length; i < n; i++) {
+                        result[i] = Math.round(data[i] * factor);
+                    }
+                    return {
+                        encodings: [{ kind: 'FixedPoint', factor: factor }],
+                        data: result
+                    };
+                }
+                function fixedPoint(factor) { return function (data) { return _fixedPoint(data, factor); }; }
+                Encoder.fixedPoint = fixedPoint;
+                function runLength(data) {
+                    var srcType = Binary.Encoding.getIntDataType(data);
+                    if (srcType === void 0) {
+                        data = new Int32Array(data);
+                        srcType = 2 /* Int32 */;
+                    }
+                    if (!data.length) {
+                        return {
+                            encodings: [{ kind: 'RunLength', srcType: srcType, srcSize: 0 }],
+                            data: new Int32Array(0)
+                        };
+                    }
+                    // calculate output size
+                    var fullLength = 2;
+                    for (var i = 1, il = data.length; i < il; i++) {
+                        if (data[i - 1] !== data[i]) {
+                            fullLength += 2;
+                        }
+                    }
+                    var output = new Int32Array(fullLength);
+                    var offset = 0;
+                    var runLength = 1;
+                    for (var i = 1, il = data.length; i < il; i++) {
+                        if (data[i - 1] !== data[i]) {
+                            output[offset] = data[i - 1];
+                            output[offset + 1] = runLength;
+                            runLength = 1;
+                            offset += 2;
+                        }
+                        else {
+                            ++runLength;
+                        }
+                    }
+                    output[offset] = data[data.length - 1];
+                    output[offset + 1] = runLength;
+                    return {
+                        encodings: [{ kind: 'RunLength', srcType: srcType, srcSize: data.length }],
+                        data: output
+                    };
+                }
+                Encoder.runLength = runLength;
+                function delta(data) {
+                    var srcType = Binary.Encoding.getIntDataType(data);
+                    if (srcType === void 0) {
+                        data = new Int32Array(data);
+                        srcType = 2 /* Int32 */;
+                    }
+                    if (!data.length) {
+                        return {
+                            encodings: [{ kind: 'Delta', srcType: srcType }],
+                            data: new data.constructor(0)
+                        };
+                    }
+                    var output = new data.constructor(data.length);
+                    output[0] = data[0];
+                    for (var i = 1, n = data.length; i < n; i++) {
+                        output[i] = data[i] - data[i - 1];
+                    }
+                    return {
+                        encodings: [{ kind: 'Delta', srcType: srcType }],
+                        data: output
+                    };
+                }
+                Encoder.delta = delta;
+                function packingSize(data, upperLimit) {
+                    var lowerLimit = -upperLimit - 1;
+                    var size = 0;
+                    for (var i = 0, n = data.length; i < n; i++) {
+                        var value = data[i];
+                        if (value === 0) {
+                            size += 1;
+                        }
+                        else if (value === upperLimit || value === lowerLimit) {
+                            size += 2;
+                        }
+                        else if (value > 0) {
+                            size += Math.ceil(value / upperLimit);
+                        }
+                        else {
+                            size += Math.ceil(value / lowerLimit);
+                        }
+                    }
+                    return size;
+                }
+                function determinePacking(data) {
+                    var size8 = packingSize(data, 0x7f);
+                    var size16 = packingSize(data, 0x7fff);
+                    if (data.length * 4 < size16 * 2) {
+                        // 4 byte packing is the most effective
+                        return {
+                            size: data.length,
+                            bytesPerElement: 4
+                        };
+                    }
+                    else if (size16 * 2 < size8) {
+                        // 2 byte packing is the most effective
+                        return {
+                            size: size16,
+                            bytesPerElement: 2
+                        };
+                    }
+                    else {
+                        // 1 byte packing is the most effective
+                        return {
+                            size: size8,
+                            bytesPerElement: 1
+                        };
+                    }
+                    ;
+                }
+                /**
+                 * Packs Int32 array. The packing level is determined automatically to either 1-, 2-, or 4-byte words.
+                 */
+                function integerPacking(data) {
+                    var packing = determinePacking(data);
+                    if (packing.bytesPerElement === 4) {
+                        // no packing done, Int32 encoding will be used
+                        return int32(data);
+                    }
+                    var upperLimit = packing.bytesPerElement === 1 ? 0x7F : 0x7FFF;
+                    var lowerLimit = -upperLimit - 1;
+                    var n = data.length;
+                    var packed = packing.bytesPerElement === 1 ? new Int8Array(packing.size) : new Int16Array(packing.size);
+                    var j = 0;
+                    for (var i = 0; i < n; i++) {
+                        var value = data[i];
+                        if (value >= 0) {
+                            while (value >= upperLimit) {
+                                packed[j] = upperLimit;
+                                ++j;
+                                value -= upperLimit;
+                            }
+                        }
+                        else {
+                            while (value <= lowerLimit) {
+                                packed[j] = lowerLimit;
+                                ++j;
+                                value -= lowerLimit;
+                            }
+                        }
+                        packed[j] = value;
+                        ++j;
+                    }
+                    var result = packing.bytesPerElement === 1 ? int8(packed) : int16(packed);
+                    return {
+                        encodings: [{ kind: 'IntegerPacking', byteCount: packing.bytesPerElement, srcSize: n }, result.encodings[0]],
+                        data: result.data
+                    };
+                }
+                Encoder.integerPacking = integerPacking;
+                function stringArray(data) {
+                    var map = new Map();
+                    var strings = [];
+                    var accLength = 0;
+                    var offsets = CIFTools.Utils.ChunkedArray.create(function (s) { return new Int32Array(s); }, 1024, 1);
+                    var output = new Int32Array(data.length);
+                    CIFTools.Utils.ChunkedArray.add(offsets, 0);
+                    var i = 0;
+                    for (var _i = 0, data_1 = data; _i < data_1.length; _i++) {
+                        var s = data_1[_i];
+                        // handle null strings.
+                        if (s === null || s === void 0) {
+                            output[i++] = -1;
+                            continue;
+                        }
+                        var index = map.get(s);
+                        if (index === void 0) {
+                            // increment the length
+                            accLength += s.length;
+                            // store the string and index                   
+                            index = strings.length;
+                            strings[index] = s;
+                            map.set(s, index);
+                            // write the offset
+                            CIFTools.Utils.ChunkedArray.add(offsets, accLength);
+                        }
+                        output[i++] = index;
+                    }
+                    var encOffsets = Encoder.by(delta).and(integerPacking).encode(CIFTools.Utils.ChunkedArray.compact(offsets));
+                    var encOutput = Encoder.by(delta).and(runLength).and(integerPacking).encode(output);
+                    return {
+                        encodings: [{ kind: 'StringArray', dataEncoding: encOutput.encoding, stringData: strings.join(''), offsetEncoding: encOffsets.encoding, offsets: encOffsets.data }],
+                        data: encOutput.data
+                    };
+                }
+                Encoder.stringArray = stringArray;
+            })(Encoder = Binary.Encoder || (Binary.Encoder = {}));
+        })(Binary = CIFTools.Binary || (CIFTools.Binary = {}));
+    })(CIFTools || (CIFTools = {}));
+    /*
+     * Copyright (c) 2016 David Sehnal, licensed under MIT License, See LICENSE file for more info.
+     */
+    var CIFTools;
+    (function (CIFTools) {
+        var Binary;
+        (function (Binary) {
+            "use strict";
+            Binary.VERSION = '0.1.0';
+            var Encoding;
+            (function (Encoding) {
+                function getIntDataType(data) {
+                    var srcType;
+                    if (data instanceof Int8Array)
+                        srcType = 0 /* Int8 */;
+                    else if (data instanceof Int16Array)
+                        srcType = 1 /* Int16 */;
+                    else if (data instanceof Int32Array)
+                        srcType = 2 /* Int32 */;
+                    else if (data instanceof Uint8Array)
+                        srcType = 3 /* Uint8 */;
+                    else
+                        throw new Error('Unsupported integer data type.');
+                    return srcType;
+                }
+                Encoding.getIntDataType = getIntDataType;
+            })(Encoding = Binary.Encoding || (Binary.Encoding = {}));
+        })(Binary = CIFTools.Binary || (CIFTools.Binary = {}));
+    })(CIFTools || (CIFTools = {}));
+    /*
+     * Copyright (c) 2016 David Sehnal, licensed under MIT License, See LICENSE file for more info.
+     */
+    var CIFTools;
+    (function (CIFTools) {
+        var Binary;
+        (function (Binary) {
+            "use strict";
+            function parse(data) {
+                try {
+                    var array = new Uint8Array(data);
+                    var unpacked = Binary.MessagePack.decode(array);
+                    var file = new Binary.File(unpacked);
+                    return CIFTools.ParserResult.success(file);
+                }
+                catch (e) {
+                    return CIFTools.ParserResult.error('' + e);
+                }
+            }
+            Binary.parse = parse;
+        })(Binary = CIFTools.Binary || (CIFTools.Binary = {}));
+    })(CIFTools || (CIFTools = {}));
+    /*
+     * Copyright (c) 2016 David Sehnal, licensed under MIT License, See LICENSE file for more info.
+     */
+    var CIFTools;
+    (function (CIFTools) {
+        var Binary;
+        (function (Binary) {
+            "use strict";
+            function encodeField(field, data, totalCount) {
+                var array, isNative = false;
+                if (field.typedArray) {
+                    array = new field.typedArray(totalCount);
+                }
+                else {
+                    isNative = true;
+                    array = new Array(totalCount);
+                }
+                var mask = new Uint8Array(totalCount);
+                var presence = field.presence;
+                var getter = field.number ? field.number : field.string;
+                var allPresent = true;
+                var offset = 0;
+                for (var _i = 0, data_2 = data; _i < data_2.length; _i++) {
+                    var _d = data_2[_i];
+                    var d = _d.data;
+                    for (var i = 0, _b = _d.count; i < _b; i++) {
+                        var p = void 0;
+                        if (presence && (p = presence(d, i)) !== 0 /* Present */) {
+                            mask[offset] = p;
+                            if (isNative)
+                                array[offset] = null;
+                            allPresent = false;
+                        }
+                        else {
+                            mask[offset] = 0 /* Present */;
+                            array[offset] = getter(d, i);
+                        }
+                        offset++;
+                    }
+                }
+                var encoder = field.encoder ? field.encoder : Binary.Encoder.by(Binary.Encoder.stringArray);
+                var encoded = encoder.encode(array);
+                var maskData = void 0;
+                if (!allPresent) {
+                    var maskRLE = Binary.Encoder.by(Binary.Encoder.runLength).and(Binary.Encoder.int32).encode(mask);
+                    if (maskRLE.data.length < mask.length) {
+                        maskData = maskRLE;
+                    }
+                    else {
+                        maskData = Binary.Encoder.by(Binary.Encoder.uint8).encode(mask);
+                    }
+                }
+                return {
+                    name: field.name,
+                    data: encoded,
+                    mask: maskData
+                };
+            }
+            var Writer = (function () {
+                function Writer(header, encoder) {
+                    this.dataBlock = {
+                        header: (header || '').replace(/[ \n\t]/g, '').toUpperCase(),
+                        categories: []
+                    };
+                    this.data = {
+                        encoder: encoder,
+                        version: Binary.VERSION,
+                        dataBlocks: [this.dataBlock]
+                    };
+                }
+                Writer.prototype.writeCategory = function (category, contexts) {
+                    if (!this.data) {
+                        throw new Error('The writer contents have already been encoded, no more writing.');
+                    }
+                    var src = !contexts || !contexts.length ? [category(void 0)] : contexts.map(function (c) { return category(c); });
+                    var categories = src.filter(function (c) { return c && c.count > 0; });
+                    if (!categories.length)
+                        return;
+                    var count = categories.reduce(function (a, c) { return a + c.count; }, 0);
+                    if (!count)
+                        return;
+                    var first = categories[0];
+                    var cat = { name: first.desc.name, columns: [], rowCount: count };
+                    var data = categories.map(function (c) { return ({ data: c.data, count: c.count }); });
+                    for (var _i = 0, _a = first.desc.fields; _i < _a.length; _i++) {
+                        var f = _a[_i];
+                        cat.columns.push(encodeField(f, data, count));
+                    }
+                    this.dataBlock.categories.push(cat);
+                };
+                Writer.prototype.encode = function () {
+                    this.encodedData = Binary.MessagePack.encode(this.data);
+                    this.data = null;
+                    this.dataBlock = null;
+                };
+                Writer.prototype.flush = function (stream) {
+                    stream.writeBinary(this.encodedData);
+                };
+                return Writer;
+            } ());
+            Binary.Writer = Writer;
+        })(Binary = CIFTools.Binary || (CIFTools.Binary = {}));
+    })(CIFTools || (CIFTools = {}));
+    return CIFTools;
+}
+if (typeof module === 'object' && typeof module.exports === 'object') {
+    module.exports = __CIFTools();
+} else if (typeof define === 'function' && define.amd) {
+    define(['require'], function (require) { return __CIFTools(); })
+} else {
+    var __target = !!window ? window : this;
+    __target.CIFTools = __CIFTools();
+}
 // Copyright (c) Microsoft, All rights reserved. See License.txt in the project root for license information.
 
 /*
@@ -8139,6 +11106,10 @@ var LiteMol;
         "use strict";
         Core.Rx = __LiteMolRx;
         Core.Promise = __LiteMolPromise;
+        var Formats;
+        (function (Formats) {
+            Formats.CIF = CIFTools;
+        })(Formats = Core.Formats || (Core.Formats = {}));
     })(Core = LiteMol.Core || (LiteMol.Core = {}));
 })(LiteMol || (LiteMol = {}));
 /*
@@ -8148,7 +11119,7 @@ var LiteMol;
 (function (LiteMol) {
     var Core;
     (function (Core) {
-        Core.VERSION = { number: "2.4.6", date: "Oct 9 2016" };
+        Core.VERSION = { number: "2.4.7", date: "Oct 16 2016" };
     })(Core = LiteMol.Core || (LiteMol.Core = {}));
 })(LiteMol || (LiteMol = {}));
 /*
@@ -8459,172 +11430,200 @@ var LiteMol;
                 return arr;
             }
             Utils.makeNativeFloatArray = makeNativeFloatArray;
-            /**
-             * A generic chunked array builder.
-             */
-            var ChunkedArrayBuilder = (function () {
-                function ChunkedArrayBuilder(creator, chunkElementCount, elementSize) {
-                    chunkElementCount = chunkElementCount | 0;
-                    if (chunkElementCount <= 0)
-                        chunkElementCount = 1;
-                    this.elementSize = elementSize;
-                    this.chunkSize = chunkElementCount * elementSize;
-                    this.creator = creator;
-                    this.current = creator(this.chunkSize);
-                    this.parts = [this.current];
-                    this.currentIndex = 0;
-                    this.elementCount = 0;
+            var ChunkedArray;
+            (function (ChunkedArray) {
+                function is(x) {
+                    return x.creator && x.chunkSize;
                 }
-                ChunkedArrayBuilder.prototype.add4 = function (x, y, z, w) {
-                    if (this.currentIndex >= this.chunkSize) {
-                        this.currentIndex = 0;
-                        this.current = this.creator(this.chunkSize);
-                        this.parts[this.parts.length] = this.current;
+                ChunkedArray.is = is;
+                function add4(array, x, y, z, w) {
+                    if (array.currentIndex >= array.chunkSize) {
+                        array.currentIndex = 0;
+                        array.current = array.creator(array.chunkSize);
+                        array.parts[array.parts.length] = array.current;
                     }
-                    this.current[this.currentIndex++] = x;
-                    this.current[this.currentIndex++] = y;
-                    this.current[this.currentIndex++] = z;
-                    this.current[this.currentIndex++] = w;
-                    return this.elementCount++;
-                };
-                ChunkedArrayBuilder.prototype.add3 = function (x, y, z) {
-                    if (this.currentIndex >= this.chunkSize) {
-                        this.currentIndex = 0;
-                        this.current = this.creator(this.chunkSize);
-                        this.parts[this.parts.length] = this.current;
+                    array.current[array.currentIndex++] = x;
+                    array.current[array.currentIndex++] = y;
+                    array.current[array.currentIndex++] = z;
+                    array.current[array.currentIndex++] = w;
+                    return array.elementCount++;
+                }
+                ChunkedArray.add4 = add4;
+                function add3(array, x, y, z) {
+                    if (array.currentIndex >= array.chunkSize) {
+                        array.currentIndex = 0;
+                        array.current = array.creator(array.chunkSize);
+                        array.parts[array.parts.length] = array.current;
                     }
-                    this.current[this.currentIndex++] = x;
-                    this.current[this.currentIndex++] = y;
-                    this.current[this.currentIndex++] = z;
-                    return this.elementCount++;
-                };
-                ChunkedArrayBuilder.prototype.add2 = function (x, y) {
-                    if (this.currentIndex >= this.chunkSize) {
-                        this.currentIndex = 0;
-                        this.current = this.creator(this.chunkSize);
-                        this.parts[this.parts.length] = this.current;
+                    array.current[array.currentIndex++] = x;
+                    array.current[array.currentIndex++] = y;
+                    array.current[array.currentIndex++] = z;
+                    return array.elementCount++;
+                }
+                ChunkedArray.add3 = add3;
+                function add2(array, x, y) {
+                    if (array.currentIndex >= array.chunkSize) {
+                        array.currentIndex = 0;
+                        array.current = array.creator(array.chunkSize);
+                        array.parts[array.parts.length] = array.current;
                     }
-                    this.current[this.currentIndex++] = x;
-                    this.current[this.currentIndex++] = y;
-                    return this.elementCount++;
-                };
-                ChunkedArrayBuilder.prototype.add = function (x) {
-                    if (this.currentIndex >= this.chunkSize) {
-                        this.currentIndex = 0;
-                        this.current = this.creator(this.chunkSize);
-                        this.parts[this.parts.length] = this.current;
+                    array.current[array.currentIndex++] = x;
+                    array.current[array.currentIndex++] = y;
+                    return array.elementCount++;
+                }
+                ChunkedArray.add2 = add2;
+                function add(array, x) {
+                    if (array.currentIndex >= array.chunkSize) {
+                        array.currentIndex = 0;
+                        array.current = array.creator(array.chunkSize);
+                        array.parts[array.parts.length] = array.current;
                     }
-                    this.current[this.currentIndex++] = x;
-                    return this.elementCount++;
-                };
-                ChunkedArrayBuilder.prototype.compact = function () {
-                    var ret = this.creator(this.elementSize * this.elementCount), i, j, offset = (this.parts.length - 1) * this.chunkSize, offsetInner = 0, part;
-                    if (this.parts.length > 1) {
-                        if (this.parts[0].buffer) {
-                            for (i = 0; i < this.parts.length - 1; i++) {
-                                ret.set(this.parts[i], this.chunkSize * i);
+                    array.current[array.currentIndex++] = x;
+                    return array.elementCount++;
+                }
+                ChunkedArray.add = add;
+                function compact(array) {
+                    var ret = array.creator(array.elementSize * array.elementCount), offset = (array.parts.length - 1) * array.chunkSize, offsetInner = 0, part;
+                    if (array.parts.length > 1) {
+                        if (array.parts[0].buffer) {
+                            for (var i = 0; i < array.parts.length - 1; i++) {
+                                ret.set(array.parts[i], array.chunkSize * i);
                             }
                         }
                         else {
-                            for (i = 0; i < this.parts.length - 1; i++) {
-                                offsetInner = this.chunkSize * i;
-                                part = this.parts[i];
-                                for (j = 0; j < this.chunkSize; j++) {
+                            for (var i = 0; i < array.parts.length - 1; i++) {
+                                offsetInner = array.chunkSize * i;
+                                part = array.parts[i];
+                                for (var j = 0; j < array.chunkSize; j++) {
                                     ret[offsetInner + j] = part[j];
                                 }
                             }
                         }
                     }
-                    if (this.current.buffer && this.currentIndex >= this.chunkSize) {
-                        ret.set(this.current, this.chunkSize * (this.parts.length - 1));
+                    if (array.current.buffer && array.currentIndex >= array.chunkSize) {
+                        ret.set(array.current, array.chunkSize * (array.parts.length - 1));
                     }
                     else {
-                        for (i = 0; i < this.currentIndex; i++) {
-                            ret[offset + i] = this.current[i];
+                        for (var i = 0; i < array.currentIndex; i++) {
+                            ret[offset + i] = array.current[i];
                         }
                     }
                     return ret;
-                };
-                ChunkedArrayBuilder.forVertex3D = function (chunkVertexCount) {
-                    if (chunkVertexCount === void 0) { chunkVertexCount = 262144; }
-                    return new ChunkedArrayBuilder(function (size) { return new Float32Array(size); }, chunkVertexCount, 3);
-                };
-                ChunkedArrayBuilder.forIndexBuffer = function (chunkIndexCount) {
-                    if (chunkIndexCount === void 0) { chunkIndexCount = 262144; }
-                    return new ChunkedArrayBuilder(function (size) { return new Uint32Array(size); }, chunkIndexCount, 3);
-                };
-                ChunkedArrayBuilder.forTokenIndices = function (chunkTokenCount) {
-                    if (chunkTokenCount === void 0) { chunkTokenCount = 131072; }
-                    return new ChunkedArrayBuilder(function (size) { return new Int32Array(size); }, chunkTokenCount, 2);
-                };
-                ChunkedArrayBuilder.forIndices = function (chunkTokenCount) {
-                    if (chunkTokenCount === void 0) { chunkTokenCount = 131072; }
-                    return new ChunkedArrayBuilder(function (size) { return new Int32Array(size); }, chunkTokenCount, 1);
-                };
-                ChunkedArrayBuilder.forInt32 = function (chunkSize) {
-                    if (chunkSize === void 0) { chunkSize = 131072; }
-                    return new ChunkedArrayBuilder(function (size) { return new Int32Array(size); }, chunkSize, 1);
-                };
-                ChunkedArrayBuilder.forFloat32 = function (chunkSize) {
-                    if (chunkSize === void 0) { chunkSize = 131072; }
-                    return new ChunkedArrayBuilder(function (size) { return new Float32Array(size); }, chunkSize, 1);
-                };
-                ChunkedArrayBuilder.forArray = function (chunkSize) {
-                    if (chunkSize === void 0) { chunkSize = 131072; }
-                    return new ChunkedArrayBuilder(function (size) { return []; }, chunkSize, 1);
-                };
-                return ChunkedArrayBuilder;
-            }());
-            Utils.ChunkedArrayBuilder = ChunkedArrayBuilder;
-            /**
-             * Static size array builder.
-             */
-            var ArrayBuilder = (function () {
-                function ArrayBuilder(creator, chunkElementCount, elementSize) {
-                    chunkElementCount = chunkElementCount | 0;
-                    this.array = creator(chunkElementCount * elementSize);
-                    this.currentIndex = 0;
-                    this.elementCount = 0;
                 }
-                ArrayBuilder.prototype.add3 = function (x, y, z) {
-                    this.array[this.currentIndex++] = x;
-                    this.array[this.currentIndex++] = y;
-                    this.array[this.currentIndex++] = z;
-                    this.elementCount++;
-                };
-                ArrayBuilder.prototype.add2 = function (x, y) {
-                    this.array[this.currentIndex++] = x;
-                    this.array[this.currentIndex++] = y;
-                    this.elementCount++;
-                };
-                ArrayBuilder.prototype.add = function (x) {
-                    this.array[this.currentIndex++] = x;
-                    this.elementCount++;
-                };
-                ArrayBuilder.forVertex3D = function (count) {
-                    return new ArrayBuilder(function (size) { return new Float32Array(size); }, count, 3);
-                };
-                ArrayBuilder.forIndexBuffer = function (count) {
-                    return new ArrayBuilder(function (size) { return new Int32Array(size); }, count, 3);
-                };
-                ArrayBuilder.forTokenIndices = function (count) {
-                    return new ArrayBuilder(function (size) { return new Int32Array(size); }, count, 2);
-                };
-                ArrayBuilder.forIndices = function (count) {
-                    return new ArrayBuilder(function (size) { return new Int32Array(size); }, count, 1);
-                };
-                ArrayBuilder.forInt32 = function (count) {
-                    return new ArrayBuilder(function (size) { return new Int32Array(size); }, count, 1);
-                };
-                ArrayBuilder.forFloat32 = function (count) {
-                    return new ArrayBuilder(function (size) { return new Float32Array(size); }, count, 1);
-                };
-                ArrayBuilder.forArray = function (count) {
-                    return new ArrayBuilder(function (size) { return []; }, count, 1);
-                };
-                return ArrayBuilder;
-            }());
-            Utils.ArrayBuilder = ArrayBuilder;
+                ChunkedArray.compact = compact;
+                function forVertex3D(chunkVertexCount) {
+                    if (chunkVertexCount === void 0) { chunkVertexCount = 262144; }
+                    return create(function (size) { return new Float32Array(size); }, chunkVertexCount, 3);
+                }
+                ChunkedArray.forVertex3D = forVertex3D;
+                function forIndexBuffer(chunkIndexCount) {
+                    if (chunkIndexCount === void 0) { chunkIndexCount = 262144; }
+                    return create(function (size) { return new Uint32Array(size); }, chunkIndexCount, 3);
+                }
+                ChunkedArray.forIndexBuffer = forIndexBuffer;
+                function forTokenIndices(chunkTokenCount) {
+                    if (chunkTokenCount === void 0) { chunkTokenCount = 131072; }
+                    return create(function (size) { return new Int32Array(size); }, chunkTokenCount, 2);
+                }
+                ChunkedArray.forTokenIndices = forTokenIndices;
+                function forIndices(chunkTokenCount) {
+                    if (chunkTokenCount === void 0) { chunkTokenCount = 131072; }
+                    return create(function (size) { return new Int32Array(size); }, chunkTokenCount, 1);
+                }
+                ChunkedArray.forIndices = forIndices;
+                function forInt32(chunkSize) {
+                    if (chunkSize === void 0) { chunkSize = 131072; }
+                    return create(function (size) { return new Int32Array(size); }, chunkSize, 1);
+                }
+                ChunkedArray.forInt32 = forInt32;
+                function forFloat32(chunkSize) {
+                    if (chunkSize === void 0) { chunkSize = 131072; }
+                    return create(function (size) { return new Float32Array(size); }, chunkSize, 1);
+                }
+                ChunkedArray.forFloat32 = forFloat32;
+                function forArray(chunkSize) {
+                    if (chunkSize === void 0) { chunkSize = 131072; }
+                    return create(function (size) { return []; }, chunkSize, 1);
+                }
+                ChunkedArray.forArray = forArray;
+                function create(creator, chunkElementCount, elementSize) {
+                    chunkElementCount = chunkElementCount | 0;
+                    if (chunkElementCount <= 0)
+                        chunkElementCount = 1;
+                    var chunkSize = chunkElementCount * elementSize;
+                    var current = creator(chunkSize);
+                    return {
+                        elementSize: elementSize,
+                        chunkSize: chunkSize,
+                        creator: creator,
+                        current: current,
+                        parts: [current],
+                        currentIndex: 0,
+                        elementCount: 0
+                    };
+                }
+                ChunkedArray.create = create;
+            })(ChunkedArray = Utils.ChunkedArray || (Utils.ChunkedArray = {}));
+            var ArrayBuilder;
+            (function (ArrayBuilder) {
+                function add3(array, x, y, z) {
+                    var a = array.array;
+                    a[array.currentIndex++] = x;
+                    a[array.currentIndex++] = y;
+                    a[array.currentIndex++] = z;
+                    array.elementCount++;
+                }
+                ArrayBuilder.add3 = add3;
+                function add2(array, x, y) {
+                    var a = array.array;
+                    a[array.currentIndex++] = x;
+                    a[array.currentIndex++] = y;
+                    array.elementCount++;
+                }
+                ArrayBuilder.add2 = add2;
+                function add(array, x) {
+                    array.array[array.currentIndex++] = x;
+                    array.elementCount++;
+                }
+                ArrayBuilder.add = add;
+                function forVertex3D(count) {
+                    return create(function (size) { return new Float32Array(size); }, count, 3);
+                }
+                ArrayBuilder.forVertex3D = forVertex3D;
+                function forIndexBuffer(count) {
+                    return create(function (size) { return new Int32Array(size); }, count, 3);
+                }
+                ArrayBuilder.forIndexBuffer = forIndexBuffer;
+                function forTokenIndices(count) {
+                    return create(function (size) { return new Int32Array(size); }, count, 2);
+                }
+                ArrayBuilder.forTokenIndices = forTokenIndices;
+                function forIndices(count) {
+                    return create(function (size) { return new Int32Array(size); }, count, 1);
+                }
+                ArrayBuilder.forIndices = forIndices;
+                function forInt32(count) {
+                    return create(function (size) { return new Int32Array(size); }, count, 1);
+                }
+                ArrayBuilder.forInt32 = forInt32;
+                function forFloat32(count) {
+                    return create(function (size) { return new Float32Array(size); }, count, 1);
+                }
+                ArrayBuilder.forFloat32 = forFloat32;
+                function forArray(count) {
+                    return create(function (size) { return []; }, count, 1);
+                }
+                ArrayBuilder.forArray = forArray;
+                function create(creator, chunkElementCount, elementSize) {
+                    chunkElementCount = chunkElementCount | 0;
+                    return {
+                        array: creator(chunkElementCount * elementSize),
+                        currentIndex: 0,
+                        elementCount: 0
+                    };
+                }
+                ArrayBuilder.create = create;
+            })(ArrayBuilder = Utils.ArrayBuilder || (Utils.ArrayBuilder = {}));
         })(Utils = Core.Utils || (Core.Utils = {}));
     })(Core = LiteMol.Core || (LiteMol.Core = {}));
 })(LiteMol || (LiteMol = {}));
@@ -8842,10 +11841,24 @@ var LiteMol;
                 }
                 FormatInfo.getFormat = getFormat;
             })(FormatInfo = Formats.FormatInfo || (Formats.FormatInfo = {}));
+            var ParserResult;
+            (function (ParserResult) {
+                function error(message, line) {
+                    if (line === void 0) { line = -1; }
+                    return new ParserError(message, line);
+                }
+                ParserResult.error = error;
+                function success(result, warnings) {
+                    if (warnings === void 0) { warnings = []; }
+                    return new ParserSuccess(result, warnings);
+                }
+                ParserResult.success = success;
+            })(ParserResult = Formats.ParserResult || (Formats.ParserResult = {}));
             var ParserError = (function () {
                 function ParserError(message, line) {
                     this.message = message;
                     this.line = line;
+                    this.isError = true;
                 }
                 ParserError.prototype.toString = function () {
                     if (this.line >= 0) {
@@ -8856,26 +11869,15 @@ var LiteMol;
                 return ParserError;
             }());
             Formats.ParserError = ParserError;
-            /**
-             * A generic parser result.
-             */
-            var ParserResult = (function () {
-                function ParserResult(error, warnings, result) {
-                    this.error = error;
-                    this.warnings = warnings;
+            var ParserSuccess = (function () {
+                function ParserSuccess(result, warnings) {
                     this.result = result;
+                    this.warnings = warnings;
+                    this.isError = false;
                 }
-                ParserResult.error = function (message, line) {
-                    if (line === void 0) { line = -1; }
-                    return new ParserResult(new ParserError(message, line), [], void 0);
-                };
-                ParserResult.success = function (result, warnings) {
-                    if (warnings === void 0) { warnings = []; }
-                    return new ParserResult(void 0, warnings, result);
-                };
-                return ParserResult;
+                return ParserSuccess;
             }());
-            Formats.ParserResult = ParserResult;
+            Formats.ParserSuccess = ParserSuccess;
             var TokenIndexBuilder;
             (function (TokenIndexBuilder) {
                 function resize(builder) {
@@ -8929,2246 +11931,6 @@ var LiteMol;
     (function (Core) {
         var Formats;
         (function (Formats) {
-            var MessagePack;
-            (function (MessagePack) {
-                /*
-                 * Adapted from https://github.com/rcsb/mmtf-javascript
-                 * by Alexander Rose <alexander.rose@weirdbyte.de>, MIT License, Copyright (c) 2016
-                 */
-                function encode(value) {
-                    var buffer = new ArrayBuffer(encodedSize(value));
-                    var view = new DataView(buffer);
-                    var bytes = new Uint8Array(buffer);
-                    encodeInternal(value, view, bytes, 0);
-                    return bytes;
-                }
-                MessagePack.encode = encode;
-                function encodedSize(value) {
-                    var type = typeof value;
-                    // Raw Bytes
-                    if (type === "string") {
-                        var length_1 = MessagePack.utf8ByteCount(value);
-                        if (length_1 < 0x20) {
-                            return 1 + length_1;
-                        }
-                        if (length_1 < 0x100) {
-                            return 2 + length_1;
-                        }
-                        if (length_1 < 0x10000) {
-                            return 3 + length_1;
-                        }
-                        if (length_1 < 0x100000000) {
-                            return 5 + length_1;
-                        }
-                    }
-                    if (value instanceof Uint8Array) {
-                        var length_2 = value.byteLength;
-                        if (length_2 < 0x100) {
-                            return 2 + length_2;
-                        }
-                        if (length_2 < 0x10000) {
-                            return 3 + length_2;
-                        }
-                        if (length_2 < 0x100000000) {
-                            return 5 + length_2;
-                        }
-                    }
-                    if (type === "number") {
-                        // Floating Point
-                        // double
-                        if (Math.floor(value) !== value)
-                            return 9;
-                        // Integers
-                        if (value >= 0) {
-                            // positive fixnum
-                            if (value < 0x80)
-                                return 1;
-                            // uint 8
-                            if (value < 0x100)
-                                return 2;
-                            // uint 16
-                            if (value < 0x10000)
-                                return 3;
-                            // uint 32
-                            if (value < 0x100000000)
-                                return 5;
-                            throw new Error("Number too big 0x" + value.toString(16));
-                        }
-                        // negative fixnum
-                        if (value >= -0x20)
-                            return 1;
-                        // int 8
-                        if (value >= -0x80)
-                            return 2;
-                        // int 16
-                        if (value >= -0x8000)
-                            return 3;
-                        // int 32
-                        if (value >= -0x80000000)
-                            return 5;
-                        throw new Error("Number too small -0x" + value.toString(16).substr(1));
-                    }
-                    // Boolean, null
-                    if (type === "boolean" || value === null || value === void 0)
-                        return 1;
-                    // Container Types
-                    if (type === "object") {
-                        var length_3, size = 0;
-                        if (Array.isArray(value)) {
-                            length_3 = value.length;
-                            for (var i = 0; i < length_3; i++) {
-                                size += encodedSize(value[i]);
-                            }
-                        }
-                        else {
-                            var keys = Object.keys(value);
-                            length_3 = keys.length;
-                            for (var i = 0; i < length_3; i++) {
-                                var key = keys[i];
-                                size += encodedSize(key) + encodedSize(value[key]);
-                            }
-                        }
-                        if (length_3 < 0x10) {
-                            return 1 + size;
-                        }
-                        if (length_3 < 0x10000) {
-                            return 3 + size;
-                        }
-                        if (length_3 < 0x100000000) {
-                            return 5 + size;
-                        }
-                        throw new Error("Array or object too long 0x" + length_3.toString(16));
-                    }
-                    throw new Error("Unknown type " + type);
-                }
-                function encodeInternal(value, view, bytes, offset) {
-                    var type = typeof value;
-                    // Strings Bytes
-                    if (type === "string") {
-                        var length_4 = MessagePack.utf8ByteCount(value);
-                        // fix str
-                        if (length_4 < 0x20) {
-                            view.setUint8(offset, length_4 | 0xa0);
-                            MessagePack.utf8Write(bytes, offset + 1, value);
-                            return 1 + length_4;
-                        }
-                        // str 8
-                        if (length_4 < 0x100) {
-                            view.setUint8(offset, 0xd9);
-                            view.setUint8(offset + 1, length_4);
-                            MessagePack.utf8Write(bytes, offset + 2, value);
-                            return 2 + length_4;
-                        }
-                        // str 16
-                        if (length_4 < 0x10000) {
-                            view.setUint8(offset, 0xda);
-                            view.setUint16(offset + 1, length_4);
-                            MessagePack.utf8Write(bytes, offset + 3, value);
-                            return 3 + length_4;
-                        }
-                        // str 32
-                        if (length_4 < 0x100000000) {
-                            view.setUint8(offset, 0xdb);
-                            view.setUint32(offset + 1, length_4);
-                            MessagePack.utf8Write(bytes, offset + 5, value);
-                            return 5 + length_4;
-                        }
-                    }
-                    if (value instanceof Uint8Array) {
-                        var length_5 = value.byteLength;
-                        var bytes_1 = new Uint8Array(view.buffer);
-                        // bin 8
-                        if (length_5 < 0x100) {
-                            view.setUint8(offset, 0xc4);
-                            view.setUint8(offset + 1, length_5);
-                            bytes_1.set(value, offset + 2);
-                            return 2 + length_5;
-                        }
-                        // bin 16
-                        if (length_5 < 0x10000) {
-                            view.setUint8(offset, 0xc5);
-                            view.setUint16(offset + 1, length_5);
-                            bytes_1.set(value, offset + 3);
-                            return 3 + length_5;
-                        }
-                        // bin 32
-                        if (length_5 < 0x100000000) {
-                            view.setUint8(offset, 0xc6);
-                            view.setUint32(offset + 1, length_5);
-                            bytes_1.set(value, offset + 5);
-                            return 5 + length_5;
-                        }
-                    }
-                    if (type === "number") {
-                        if (!isFinite(value)) {
-                            throw new Error("Number not finite: " + value);
-                        }
-                        // Floating point
-                        if (Math.floor(value) !== value) {
-                            view.setUint8(offset, 0xcb);
-                            view.setFloat64(offset + 1, value);
-                            return 9;
-                        }
-                        // Integers
-                        if (value >= 0) {
-                            // positive fixnum
-                            if (value < 0x80) {
-                                view.setUint8(offset, value);
-                                return 1;
-                            }
-                            // uint 8
-                            if (value < 0x100) {
-                                view.setUint8(offset, 0xcc);
-                                view.setUint8(offset + 1, value);
-                                return 2;
-                            }
-                            // uint 16
-                            if (value < 0x10000) {
-                                view.setUint8(offset, 0xcd);
-                                view.setUint16(offset + 1, value);
-                                return 3;
-                            }
-                            // uint 32
-                            if (value < 0x100000000) {
-                                view.setUint8(offset, 0xce);
-                                view.setUint32(offset + 1, value);
-                                return 5;
-                            }
-                            throw new Error("Number too big 0x" + value.toString(16));
-                        }
-                        // negative fixnum
-                        if (value >= -0x20) {
-                            view.setInt8(offset, value);
-                            return 1;
-                        }
-                        // int 8
-                        if (value >= -0x80) {
-                            view.setUint8(offset, 0xd0);
-                            view.setInt8(offset + 1, value);
-                            return 2;
-                        }
-                        // int 16
-                        if (value >= -0x8000) {
-                            view.setUint8(offset, 0xd1);
-                            view.setInt16(offset + 1, value);
-                            return 3;
-                        }
-                        // int 32
-                        if (value >= -0x80000000) {
-                            view.setUint8(offset, 0xd2);
-                            view.setInt32(offset + 1, value);
-                            return 5;
-                        }
-                        throw new Error("Number too small -0x" + (-value).toString(16).substr(1));
-                    }
-                    // null
-                    if (value === null || value === undefined) {
-                        view.setUint8(offset, 0xc0);
-                        return 1;
-                    }
-                    // Boolean
-                    if (type === "boolean") {
-                        view.setUint8(offset, value ? 0xc3 : 0xc2);
-                        return 1;
-                    }
-                    // Container Types
-                    if (type === "object") {
-                        var length_6, size = 0;
-                        var isArray = Array.isArray(value);
-                        var keys = void 0;
-                        if (isArray) {
-                            length_6 = value.length;
-                        }
-                        else {
-                            keys = Object.keys(value);
-                            length_6 = keys.length;
-                        }
-                        if (length_6 < 0x10) {
-                            view.setUint8(offset, length_6 | (isArray ? 0x90 : 0x80));
-                            size = 1;
-                        }
-                        else if (length_6 < 0x10000) {
-                            view.setUint8(offset, isArray ? 0xdc : 0xde);
-                            view.setUint16(offset + 1, length_6);
-                            size = 3;
-                        }
-                        else if (length_6 < 0x100000000) {
-                            view.setUint8(offset, isArray ? 0xdd : 0xdf);
-                            view.setUint32(offset + 1, length_6);
-                            size = 5;
-                        }
-                        if (isArray) {
-                            for (var i = 0; i < length_6; i++) {
-                                size += encodeInternal(value[i], view, bytes, offset + size);
-                            }
-                        }
-                        else {
-                            for (var _i = 0, _a = keys; _i < _a.length; _i++) {
-                                var key = _a[_i];
-                                size += encodeInternal(key, view, bytes, offset + size);
-                                size += encodeInternal(value[key], view, bytes, offset + size);
-                            }
-                        }
-                        return size;
-                    }
-                    throw new Error("Unknown type " + type);
-                }
-            })(MessagePack = Formats.MessagePack || (Formats.MessagePack = {}));
-        })(Formats = Core.Formats || (Core.Formats = {}));
-    })(Core = LiteMol.Core || (LiteMol.Core = {}));
-})(LiteMol || (LiteMol = {}));
-/*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
- */
-var LiteMol;
-(function (LiteMol) {
-    var Core;
-    (function (Core) {
-        var Formats;
-        (function (Formats) {
-            var MessagePack;
-            (function (MessagePack) {
-                /**
-                 * decode all key-value pairs of a map into an object
-                 * @param  {Integer} length - number of key-value pairs
-                 * @return {Object} decoded map
-                 */
-                function map(state, length) {
-                    var value = {};
-                    for (var i = 0; i < length; i++) {
-                        var key = parse(state);
-                        value[key] = parse(state);
-                    }
-                    return value;
-                }
-                /**
-                 * decode binary array
-                 * @param  {Integer} length - number of elements in the array
-                 * @return {Uint8Array} decoded array
-                 */
-                function bin(state, length) {
-                    // This approach to binary parsing wastes a bit of memory to trade for speed compared to:
-                    //
-                    //   let value = buffer.subarray(offset, offset + length); //new Uint8Array(buffer.buffer, offset, length);
-                    // 
-                    // It turns out that using the view created by subarray probably uses DataView
-                    // in the background, which causes the element access to be several times slower
-                    // than creating the new byte array.
-                    var value = new Uint8Array(length);
-                    var o = state.offset;
-                    for (var i = 0; i < length; i++)
-                        value[i] = state.buffer[i + o];
-                    state.offset += length;
-                    return value;
-                }
-                /**
-                 * decode string
-                 * @param  {Integer} length - number string characters
-                 * @return {String} decoded string
-                 */
-                function str(state, length) {
-                    var value = MessagePack.utf8Read(state.buffer, state.offset, length);
-                    state.offset += length;
-                    return value;
-                }
-                /**
-                     * decode array
-                     * @param  {Integer} length - number of array elements
-                     * @return {Array} decoded array
-                     */
-                function array(state, length) {
-                    var value = new Array(length);
-                    for (var i = 0; i < length; i++) {
-                        value[i] = parse(state);
-                    }
-                    return value;
-                }
-                /**
-                 * recursively parse the MessagePack data
-                 * @return {Object|Array|String|Number|Boolean|null} decoded MessagePack data
-                 */
-                function parse(state) {
-                    var type = state.buffer[state.offset];
-                    var value, length;
-                    // Positive FixInt
-                    if ((type & 0x80) === 0x00) {
-                        state.offset++;
-                        return type;
-                    }
-                    // FixMap
-                    if ((type & 0xf0) === 0x80) {
-                        length = type & 0x0f;
-                        state.offset++;
-                        return map(state, length);
-                    }
-                    // FixArray
-                    if ((type & 0xf0) === 0x90) {
-                        length = type & 0x0f;
-                        state.offset++;
-                        return array(state, length);
-                    }
-                    // FixStr
-                    if ((type & 0xe0) === 0xa0) {
-                        length = type & 0x1f;
-                        state.offset++;
-                        return str(state, length);
-                    }
-                    // Negative FixInt
-                    if ((type & 0xe0) === 0xe0) {
-                        value = state.dataView.getInt8(state.offset);
-                        state.offset++;
-                        return value;
-                    }
-                    switch (type) {
-                        // nil
-                        case 0xc0:
-                            state.offset++;
-                            return null;
-                        // false
-                        case 0xc2:
-                            state.offset++;
-                            return false;
-                        // true
-                        case 0xc3:
-                            state.offset++;
-                            return true;
-                        // bin 8
-                        case 0xc4:
-                            length = state.dataView.getUint8(state.offset + 1);
-                            state.offset += 2;
-                            return bin(state, length);
-                        // bin 16
-                        case 0xc5:
-                            length = state.dataView.getUint16(state.offset + 1);
-                            state.offset += 3;
-                            return bin(state, length);
-                        // bin 32
-                        case 0xc6:
-                            length = state.dataView.getUint32(state.offset + 1);
-                            state.offset += 5;
-                            return bin(state, length);
-                        // float 32
-                        case 0xca:
-                            value = state.dataView.getFloat32(state.offset + 1);
-                            state.offset += 5;
-                            return value;
-                        // float 64
-                        case 0xcb:
-                            value = state.dataView.getFloat64(state.offset + 1);
-                            state.offset += 9;
-                            return value;
-                        // uint8
-                        case 0xcc:
-                            value = state.buffer[state.offset + 1];
-                            state.offset += 2;
-                            return value;
-                        // uint 16
-                        case 0xcd:
-                            value = state.dataView.getUint16(state.offset + 1);
-                            state.offset += 3;
-                            return value;
-                        // uint 32
-                        case 0xce:
-                            value = state.dataView.getUint32(state.offset + 1);
-                            state.offset += 5;
-                            return value;
-                        // int 8
-                        case 0xd0:
-                            value = state.dataView.getInt8(state.offset + 1);
-                            state.offset += 2;
-                            return value;
-                        // int 16
-                        case 0xd1:
-                            value = state.dataView.getInt16(state.offset + 1);
-                            state.offset += 3;
-                            return value;
-                        // int 32
-                        case 0xd2:
-                            value = state.dataView.getInt32(state.offset + 1);
-                            state.offset += 5;
-                            return value;
-                        // str 8
-                        case 0xd9:
-                            length = state.dataView.getUint8(state.offset + 1);
-                            state.offset += 2;
-                            return str(state, length);
-                        // str 16
-                        case 0xda:
-                            length = state.dataView.getUint16(state.offset + 1);
-                            state.offset += 3;
-                            return str(state, length);
-                        // str 32
-                        case 0xdb:
-                            length = state.dataView.getUint32(state.offset + 1);
-                            state.offset += 5;
-                            return str(state, length);
-                        // array 16
-                        case 0xdc:
-                            length = state.dataView.getUint16(state.offset + 1);
-                            state.offset += 3;
-                            return array(state, length);
-                        // array 32
-                        case 0xdd:
-                            length = state.dataView.getUint32(state.offset + 1);
-                            state.offset += 5;
-                            return array(state, length);
-                        // map 16:
-                        case 0xde:
-                            length = state.dataView.getUint16(state.offset + 1);
-                            state.offset += 3;
-                            return map(state, length);
-                        // map 32
-                        case 0xdf:
-                            length = state.dataView.getUint32(state.offset + 1);
-                            state.offset += 5;
-                            return map(state, length);
-                    }
-                    throw new Error("Unknown type 0x" + type.toString(16));
-                }
-                function decode(buffer) {
-                    return parse({
-                        buffer: buffer,
-                        offset: 0,
-                        dataView: new DataView(buffer.buffer)
-                    });
-                }
-                MessagePack.decode = decode;
-            })(MessagePack = Formats.MessagePack || (Formats.MessagePack = {}));
-        })(Formats = Core.Formats || (Core.Formats = {}));
-    })(Core = LiteMol.Core || (LiteMol.Core = {}));
-})(LiteMol || (LiteMol = {}));
-/*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
- */
-var LiteMol;
-(function (LiteMol) {
-    var Core;
-    (function (Core) {
-        var Formats;
-        (function (Formats) {
-            var MessagePack;
-            (function (MessagePack) {
-                /*
-                 * Adapted from https://github.com/rcsb/mmtf-javascript
-                 * by Alexander Rose <alexander.rose@weirdbyte.de>, MIT License, Copyright (c) 2016
-                 */
-                function utf8Write(data, offset, str) {
-                    var byteLength = data.byteLength;
-                    for (var i = 0, l = str.length; i < l; i++) {
-                        var codePoint = str.charCodeAt(i);
-                        // One byte of UTF-8
-                        if (codePoint < 0x80) {
-                            data[offset++] = codePoint >>> 0 & 0x7f | 0x00;
-                            continue;
-                        }
-                        // Two bytes of UTF-8
-                        if (codePoint < 0x800) {
-                            data[offset++] = codePoint >>> 6 & 0x1f | 0xc0;
-                            data[offset++] = codePoint >>> 0 & 0x3f | 0x80;
-                            continue;
-                        }
-                        // Three bytes of UTF-8.
-                        if (codePoint < 0x10000) {
-                            data[offset++] = codePoint >>> 12 & 0x0f | 0xe0;
-                            data[offset++] = codePoint >>> 6 & 0x3f | 0x80;
-                            data[offset++] = codePoint >>> 0 & 0x3f | 0x80;
-                            continue;
-                        }
-                        // Four bytes of UTF-8
-                        if (codePoint < 0x110000) {
-                            data[offset++] = codePoint >>> 18 & 0x07 | 0xf0;
-                            data[offset++] = codePoint >>> 12 & 0x3f | 0x80;
-                            data[offset++] = codePoint >>> 6 & 0x3f | 0x80;
-                            data[offset++] = codePoint >>> 0 & 0x3f | 0x80;
-                            continue;
-                        }
-                        throw new Error("bad codepoint " + codePoint);
-                    }
-                }
-                MessagePack.utf8Write = utf8Write;
-                function utf8Read(data, offset, length) {
-                    var str = [];
-                    for (var i = offset, end = offset + length; i < end; i++) {
-                        var byte = data[i];
-                        // One byte character
-                        if ((byte & 0x80) === 0x00) {
-                            str[str.length] = String.fromCharCode(byte);
-                            continue;
-                        }
-                        // Two byte character
-                        if ((byte & 0xe0) === 0xc0) {
-                            str[str.length] = String.fromCharCode(((byte & 0x0f) << 6) |
-                                (data[++i] & 0x3f));
-                            continue;
-                        }
-                        // Three byte character
-                        if ((byte & 0xf0) === 0xe0) {
-                            str[str.length] = String.fromCharCode(((byte & 0x0f) << 12) |
-                                ((data[++i] & 0x3f) << 6) |
-                                ((data[++i] & 0x3f) << 0));
-                            continue;
-                        }
-                        // Four byte character
-                        if ((byte & 0xf8) === 0xf0) {
-                            str[str.length] = String.fromCharCode(((byte & 0x07) << 18) |
-                                ((data[++i] & 0x3f) << 12) |
-                                ((data[++i] & 0x3f) << 6) |
-                                ((data[++i] & 0x3f) << 0));
-                            continue;
-                        }
-                        throw new Error("Invalid byte " + byte.toString(16));
-                    }
-                    return str.join('');
-                }
-                MessagePack.utf8Read = utf8Read;
-                function utf8ByteCount(str) {
-                    var count = 0;
-                    for (var i = 0, l = str.length; i < l; i++) {
-                        var codePoint = str.charCodeAt(i);
-                        if (codePoint < 0x80) {
-                            count += 1;
-                            continue;
-                        }
-                        if (codePoint < 0x800) {
-                            count += 2;
-                            continue;
-                        }
-                        if (codePoint < 0x10000) {
-                            count += 3;
-                            continue;
-                        }
-                        if (codePoint < 0x110000) {
-                            count += 4;
-                            continue;
-                        }
-                        throw new Error("bad codepoint " + codePoint);
-                    }
-                    return count;
-                }
-                MessagePack.utf8ByteCount = utf8ByteCount;
-            })(MessagePack = Formats.MessagePack || (Formats.MessagePack = {}));
-        })(Formats = Core.Formats || (Core.Formats = {}));
-    })(Core = LiteMol.Core || (LiteMol.Core = {}));
-})(LiteMol || (LiteMol = {}));
-/*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
- */
-var LiteMol;
-(function (LiteMol) {
-    var Core;
-    (function (Core) {
-        var Formats;
-        (function (Formats) {
-            var CIF;
-            (function (CIF) {
-                "use strict";
-                /**
-                 * Represents a column that is not present.
-                 */
-                var _UndefinedColumn = (function () {
-                    function _UndefinedColumn() {
-                        this.isDefined = false;
-                    }
-                    _UndefinedColumn.prototype.getString = function (row) { return null; };
-                    ;
-                    _UndefinedColumn.prototype.getInteger = function (row) { return 0; };
-                    _UndefinedColumn.prototype.getFloat = function (row) { return 0.0; };
-                    _UndefinedColumn.prototype.getValuePresence = function (row) { return 1 /* NotSpecified */; };
-                    _UndefinedColumn.prototype.areValuesEqual = function (rowA, rowB) { return true; };
-                    _UndefinedColumn.prototype.stringEquals = function (row, value) { return value === null; };
-                    return _UndefinedColumn;
-                }());
-                CIF.UndefinedColumn = new _UndefinedColumn();
-                /**
-                 * Helper functions for categoies.
-                 */
-                var Category;
-                (function (Category) {
-                    /**
-                     * Extracts a matrix from a category from a specified rowIndex.
-                     *
-                     * _category.matrix[1][1] v11
-                     * ....
-                     * ....
-                     * _category.matrix[rows][cols] vRowsCols
-                     */
-                    function getMatrix(category, field, rows, cols, rowIndex) {
-                        var ret = [];
-                        for (var i = 1; i <= rows; i++) {
-                            var row = [];
-                            for (var j = 1; j <= cols; j++) {
-                                row[j - 1] = category.getColumn(field + "[" + i + "][" + j + "]").getFloat(rowIndex);
-                            }
-                            ret[i - 1] = row;
-                        }
-                        return ret;
-                    }
-                    Category.getMatrix = getMatrix;
-                    /**
-                     * Extracts a vector from a category from a specified rowIndex.
-                     *
-                     * _category.matrix[1][1] v11
-                     * ....
-                     * ....
-                     * _category.matrix[rows][cols] vRowsCols
-                     */
-                    function getVector(category, field, rows, cols, rowIndex) {
-                        var ret = [];
-                        for (var i = 1; i <= rows; i++) {
-                            ret[i - 1] = category.getColumn(field + "[" + i + "]").getFloat(rowIndex);
-                        }
-                        return ret;
-                    }
-                    Category.getVector = getVector;
-                    /**
-                     * Extracts a 3D transform given by a 3x3 matrix and a translation vector from a category from a specified row.
-                     * The transform is represented a column major matrix stored as 1D array.
-                     *
-                     * _category.matrix[1][1] m11
-                     * ....
-                     * ....
-                     * _category.matrix[3][3] m33
-                     * _category.translation[1] t1
-                     * _category.translation[1][1] m11
-                     *
-                     * @example
-                     * Category.getTransform(_atom_sites, 'fract_transf_matrix', 'fract_transf_vector', 0)
-                     */
-                    function getTransform(category, matrixField, translationField, row) {
-                        var ret = Core.Geometry.LinearAlgebra.Matrix4.identity(), i, j, c;
-                        for (i = 1; i <= 3; i++) {
-                            for (j = 1; j <= 3; j++) {
-                                c = matrixField + "[" + i + "][" + j + "]";
-                                Core.Geometry.LinearAlgebra.Matrix4.setValue(ret, i - 1, j - 1, category.getColumn(matrixField + "[" + i + "][" + j + "]").getFloat(row));
-                            }
-                            Core.Geometry.LinearAlgebra.Matrix4.setValue(ret, i - 1, 3, category.getColumn(translationField + "[" + i + "]").getFloat(row));
-                        }
-                        return ret;
-                    }
-                    Category.getTransform = getTransform;
-                })(Category = CIF.Category || (CIF.Category = {}));
-            })(CIF = Formats.CIF || (Formats.CIF = {}));
-        })(Formats = Core.Formats || (Core.Formats = {}));
-    })(Core = LiteMol.Core || (LiteMol.Core = {}));
-})(LiteMol || (LiteMol = {}));
-/*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
- */
-/*
-    On data representation of molecular files
-
-    Consider an mmCIF file that stores a molecule with 100k atoms. For the sake of simplicity,
-    lets ignore things like symmetry or assemblies, and assume, that the file only stores the
-    _atom_site records. The atom site "table" in the standard mmCIF from PDB database currently
-    has 26 columns.
-
-    So the data looks something like this:
-
-        loop_
-        _atom_site.column1
-        ....
-        _atom_site.column26
-        t1,1 .... t1,26
-        t100000,1 .... t100000,26
-
-    The straightforward way to represent this data in JavaScript is to have an array of objects
-    with properties named "column1" ..., "column26":
-
-        [{ column1: "t1,1", ..., column26: "t1,26" },
-          ...,
-         { column1: "t100000,1", ..., column26: "t100000,26" }]
-
-    So in order to represent the atoms sites, we would need 100k objects and 2.6 million strings.
-    Is this bad? well, sort of. It would not be so bad if this representation would be the only
-    thing we need to keep in memory and/or the life time of the object was short. But usually
-    we would need to keep the object around for the entire lifetime of the app. This alone
-    adds a very non-significant overhead for the garbage collector (which increases the app's
-    latency). What's worse is that we usually only need a fraction of this data, but this can
-    vary application for application. For just 100k atoms, the overhead is not "that bad", but
-    consider 1M atoms and suddenly we have a problem.
-
-    The following data model shows an alternative way of storing molecular file s
-    in memory that is very efficient, fast and introduces a very minimal overhead.
-
- */
-var LiteMol;
-(function (LiteMol) {
-    var Core;
-    (function (Core) {
-        var Formats;
-        (function (Formats) {
-            var CIF;
-            (function (CIF) {
-                var Text;
-                (function (Text) {
-                    "use strict";
-                    var ShortStringPool = Formats.ShortStringPool;
-                    /**
-                     * Represents the input file.
-                     */
-                    var File = (function () {
-                        function File(data) {
-                            /**
-                             * Data blocks inside the file. If no data block is present, a "default" one is created.
-                             */
-                            this.dataBlocks = [];
-                            this.data = data;
-                        }
-                        File.prototype.toJSON = function () {
-                            return this.dataBlocks.map(function (b) { return b.toJSON(); });
-                        };
-                        return File;
-                    }());
-                    Text.File = File;
-                    /**
-                     * Represents a single data block.
-                     */
-                    var DataBlock = (function () {
-                        function DataBlock(data, header) {
-                            this.header = header;
-                            this.data = data;
-                            this.categoryList = [];
-                            this.additionalData = {};
-                            this.categoryMap = {};
-                        }
-                        Object.defineProperty(DataBlock.prototype, "categories", {
-                            /**
-                             * Categories of the block.
-                             * block.categories._atom_site / ['_atom_site']
-                             */
-                            get: function () {
-                                return this.categoryList;
-                            },
-                            enumerable: true,
-                            configurable: true
-                        });
-                        /**
-                         * Gets a category by its name.
-                         */
-                        DataBlock.prototype.getCategory = function (name) {
-                            return this.categoryMap[name];
-                        };
-                        /**
-                         * Adds a category.
-                         */
-                        DataBlock.prototype.addCategory = function (category) {
-                            this.categoryList[this.categoryList.length] = category;
-                            this.categoryMap[category.name] = category;
-                        };
-                        DataBlock.prototype.toJSON = function () {
-                            return {
-                                id: this.header,
-                                categories: this.categoryList.map(function (c) { return c.toJSON(); }),
-                                additionalData: this.additionalData
-                            };
-                        };
-                        return DataBlock;
-                    }());
-                    Text.DataBlock = DataBlock;
-                    /**
-                     * Represents a single CIF category.
-                     */
-                    var Category = (function () {
-                        function Category(data, name, startIndex, endIndex, columns, tokens, tokenCount) {
-                            this.name = name;
-                            this.tokens = tokens;
-                            this.data = data;
-                            this.startIndex = startIndex;
-                            this.endIndex = endIndex;
-                            this.columnCount = columns.length;
-                            this.rowCount = (tokenCount / columns.length) | 0;
-                            this.columnWrappers = {};
-                            this.columnNameList = [];
-                            for (var i = 0; i < columns.length; i++) {
-                                var colName = columns[i].substr(name.length + 1);
-                                var col = new Column(this, data, colName, i);
-                                this.columnWrappers[colName] = col;
-                                this.columnNameList.push(colName);
-                            }
-                        }
-                        Object.defineProperty(Category.prototype, "columnNames", {
-                            /**
-                             * The array of columns.
-                             */
-                            get: function () {
-                                return this.columnNameList;
-                            },
-                            enumerable: true,
-                            configurable: true
-                        });
-                        /**
-                         * Get a column object that makes accessing data easier.
-                         * @returns undefined if the column isn't present, the Column object otherwise.
-                         */
-                        Category.prototype.getColumn = function (name) {
-                            return this.columnWrappers[name] || CIF.UndefinedColumn;
-                        };
-                        Category.prototype.toJSON = function () {
-                            var rows = [], data = this.data, tokens = this.tokens;
-                            var colNames = this.columnNameList;
-                            var strings = ShortStringPool.create();
-                            for (var i = 0; i < this.rowCount; i++) {
-                                var item = {};
-                                for (var j = 0; j < this.columnCount; j++) {
-                                    var tk = (i * this.columnCount + j) * 2;
-                                    item[colNames[j]] = ShortStringPool.get(strings, data.substring(tokens[tk], tokens[tk + 1]));
-                                }
-                                rows[i] = item;
-                            }
-                            return { name: this.name, columns: colNames, rows: rows };
-                        };
-                        return Category;
-                    }());
-                    Text.Category = Category;
-                    var fastParseInt = Core.Utils.FastNumberParsers.parseInt;
-                    var fastParseFloat = Core.Utils.FastNumberParsers.parseFloat;
-                    /**
-                     * Represents a single column of a CIF category.
-                     */
-                    var Column = (function () {
-                        function Column(category, data, name, index) {
-                            this.data = data;
-                            this.name = name;
-                            this.index = index;
-                            this.stringPool = ShortStringPool.create();
-                            this.isDefined = true;
-                            this.tokens = category.tokens;
-                            this.columnCount = category.columnCount;
-                        }
-                        /**
-                         * Returns the string value at given row.
-                         */
-                        Column.prototype.getString = function (row) {
-                            var i = (row * this.columnCount + this.index) * 2;
-                            var ret = ShortStringPool.get(this.stringPool, this.data.substring(this.tokens[i], this.tokens[i + 1]));
-                            if (ret === "." || ret === "?")
-                                return null;
-                            return ret;
-                        };
-                        /**
-                         * Returns the integer value at given row.
-                         */
-                        Column.prototype.getInteger = function (row) {
-                            var i = (row * this.columnCount + this.index) * 2;
-                            return fastParseInt(this.data, this.tokens[i], this.tokens[i + 1]);
-                        };
-                        /**
-                         * Returns the float value at given row.
-                         */
-                        Column.prototype.getFloat = function (row) {
-                            var i = (row * this.columnCount + this.index) * 2;
-                            return fastParseFloat(this.data, this.tokens[i], this.tokens[i + 1]);
-                        };
-                        /**
-                         * Returns true if the token has the specified string value.
-                         */
-                        Column.prototype.stringEquals = function (row, value) {
-                            var aIndex = (row * this.columnCount + this.index) * 2, s = this.tokens[aIndex], len = value.length;
-                            if (len !== this.tokens[aIndex + 1] - s)
-                                return false;
-                            for (var i = 0; i < len; i++) {
-                                if (this.data.charCodeAt(i + s) !== value.charCodeAt(i))
-                                    return false;
-                            }
-                            return true;
-                        };
-                        /**
-                         * Determines if values at the given rows are equal.
-                         */
-                        Column.prototype.areValuesEqual = function (rowA, rowB) {
-                            var aIndex = (rowA * this.columnCount + this.index) * 2, bIndex = (rowB * this.columnCount + this.index) * 2;
-                            var aS = this.tokens[aIndex], bS = this.tokens[bIndex], len = this.tokens[aIndex + 1] - aS;
-                            if (len !== this.tokens[bIndex + 1] - bS)
-                                return false;
-                            for (var i = 0; i < len; i++) {
-                                if (this.data.charCodeAt(i + aS) !== this.data.charCodeAt(i + bS)) {
-                                    return false;
-                                }
-                            }
-                            return true;
-                        };
-                        /**
-                         * Returns true if the value is not defined (. or ? token).
-                         */
-                        Column.prototype.getValuePresence = function (row) {
-                            var index = row * this.columnCount + this.index;
-                            var s = this.tokens[2 * index];
-                            if (this.tokens[2 * index + 1] - s !== 1)
-                                return 0 /* Present */;
-                            var v = this.data.charCodeAt(s);
-                            if (v === 46 /* . */)
-                                return 1 /* NotSpecified */;
-                            if (v === 63 /* ? */)
-                                return 2 /* Unknown */;
-                            return 0 /* Present */;
-                        };
-                        return Column;
-                    }());
-                    Text.Column = Column;
-                })(Text = CIF.Text || (CIF.Text = {}));
-            })(CIF = Formats.CIF || (Formats.CIF = {}));
-        })(Formats = Core.Formats || (Core.Formats = {}));
-    })(Core = LiteMol.Core || (LiteMol.Core = {}));
-})(LiteMol || (LiteMol = {}));
-/*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
- */
-var LiteMol;
-(function (LiteMol) {
-    var Core;
-    (function (Core) {
-        var Formats;
-        (function (Formats) {
-            var CIF;
-            (function (CIF) {
-                var Text;
-                (function (Text) {
-                    "use strict";
-                    /**
-                     * Eat everything until a whitespace/newline occurs.
-                     */
-                    function eatValue(state) {
-                        while (state.position < state.length) {
-                            switch (state.data.charCodeAt(state.position)) {
-                                case 9: // \t
-                                case 10: // \n
-                                case 13: // \r
-                                case 32:
-                                    state.currentTokenEnd = state.position;
-                                    return;
-                                default:
-                                    ++state.position;
-                                    break;
-                            }
-                        }
-                        state.currentTokenEnd = state.position;
-                    }
-                    /**
-                     * Eats an escaped values. Handles the "degenerate" cases as well.
-                     *
-                     * "Degenerate" cases:
-                     * - 'xx'x' => xx'x
-                     * - 'xxxNEWLINE => 'xxx
-                     *
-                     */
-                    function eatEscaped(state, esc) {
-                        var next, c;
-                        ++state.position;
-                        while (state.position < state.length) {
-                            c = state.data.charCodeAt(state.position);
-                            if (c === esc) {
-                                next = state.data.charCodeAt(state.position + 1);
-                                switch (next) {
-                                    case 9: // \t
-                                    case 10: // \n
-                                    case 13: // \r
-                                    case 32:
-                                        // get rid of the quotes.
-                                        state.currentTokenStart++;
-                                        state.currentTokenEnd = state.position;
-                                        state.isEscaped = true;
-                                        ++state.position;
-                                        return;
-                                    default:
-                                        if (next === void 0) {
-                                            // get rid of the quotes.
-                                            state.currentTokenStart++;
-                                            state.currentTokenEnd = state.position;
-                                            state.isEscaped = true;
-                                            ++state.position;
-                                            return;
-                                        }
-                                        ++state.position;
-                                        break;
-                                }
-                            }
-                            else {
-                                // handle 'xxxNEWLINE => 'xxx
-                                if (c === 10 || c === 13) {
-                                    state.currentTokenEnd = state.position;
-                                    return;
-                                }
-                                ++state.position;
-                            }
-                        }
-                        state.currentTokenEnd = state.position;
-                    }
-                    /**
-                     * Eats a multiline token of the form NL;....NL;
-                     */
-                    function eatMultiline(state) {
-                        var prev = 59, pos = state.position + 1, c;
-                        while (pos < state.length) {
-                            c = state.data.charCodeAt(pos);
-                            if (c === 59 && (prev === 10 || prev === 13)) {
-                                state.position = pos + 1;
-                                // get rid of the ;
-                                state.currentTokenStart++;
-                                // remove trailing newlines
-                                pos--;
-                                c = state.data.charCodeAt(pos);
-                                while (c === 10 || c === 13) {
-                                    pos--;
-                                    c = state.data.charCodeAt(pos);
-                                }
-                                state.currentTokenEnd = pos + 1;
-                                state.isEscaped = true;
-                                return;
-                            }
-                            else {
-                                // handle line numbers
-                                if (c === 13) {
-                                    state.currentLineNumber++;
-                                }
-                                else if (c === 10 && prev !== 13) {
-                                    state.currentLineNumber++;
-                                }
-                                prev = c;
-                                ++pos;
-                            }
-                        }
-                        state.position = pos;
-                        return prev;
-                    }
-                    /**
-                     * Skips until \n or \r occurs -- therefore the newlines get handled by the "skipWhitespace" function.
-                     */
-                    function skipCommentLine(state) {
-                        while (state.position < state.length) {
-                            var c = state.data.charCodeAt(state.position);
-                            if (c === 10 || c === 13) {
-                                return;
-                            }
-                            ++state.position;
-                        }
-                    }
-                    /**
-                     * Skips all the whitespace - space, tab, newline, CR
-                     * Handles incrementing line count.
-                     */
-                    function skipWhitespace(state) {
-                        var prev = 10;
-                        while (state.position < state.length) {
-                            var c = state.data.charCodeAt(state.position);
-                            switch (c) {
-                                case 9: // '\t'
-                                case 32:
-                                    prev = c;
-                                    ++state.position;
-                                    break;
-                                case 10:
-                                    // handle \r\n
-                                    if (prev !== 13) {
-                                        ++state.currentLineNumber;
-                                    }
-                                    prev = c;
-                                    ++state.position;
-                                    break;
-                                case 13:
-                                    prev = c;
-                                    ++state.position;
-                                    ++state.currentLineNumber;
-                                    break;
-                                default:
-                                    return prev;
-                            }
-                        }
-                        return prev;
-                    }
-                    function isData(state) {
-                        // here we already assume the 5th char is _ and that the length >= 5
-                        // d/D
-                        var c = state.data.charCodeAt(state.currentTokenStart);
-                        if (c !== 68 && c !== 100)
-                            return false;
-                        // a/A
-                        c = state.data.charCodeAt(state.currentTokenStart + 1);
-                        if (c !== 65 && c !== 97)
-                            return false;
-                        // t/t
-                        c = state.data.charCodeAt(state.currentTokenStart + 2);
-                        if (c !== 84 && c !== 116)
-                            return false;
-                        // a/A
-                        c = state.data.charCodeAt(state.currentTokenStart + 3);
-                        if (c !== 65 && c !== 97)
-                            return false;
-                        return true;
-                    }
-                    function isSave(state) {
-                        // here we already assume the 5th char is _ and that the length >= 5
-                        // s/S
-                        var c = state.data.charCodeAt(state.currentTokenStart);
-                        if (c !== 83 && c !== 115)
-                            return false;
-                        // a/A
-                        c = state.data.charCodeAt(state.currentTokenStart + 1);
-                        if (c !== 65 && c !== 97)
-                            return false;
-                        // v/V
-                        c = state.data.charCodeAt(state.currentTokenStart + 2);
-                        if (c !== 86 && c !== 118)
-                            return false;
-                        // e/E
-                        c = state.data.charCodeAt(state.currentTokenStart + 3);
-                        if (c !== 69 && c !== 101)
-                            return false;
-                        return true;
-                    }
-                    function isLoop(state) {
-                        // here we already assume the 5th char is _ and that the length >= 5
-                        if (state.currentTokenEnd - state.currentTokenStart !== 5)
-                            return false;
-                        // l/L
-                        var c = state.data.charCodeAt(state.currentTokenStart);
-                        if (c !== 76 && c !== 108)
-                            return false;
-                        // o/O
-                        c = state.data.charCodeAt(state.currentTokenStart + 1);
-                        if (c !== 79 && c !== 111)
-                            return false;
-                        // o/O
-                        c = state.data.charCodeAt(state.currentTokenStart + 2);
-                        if (c !== 79 && c !== 111)
-                            return false;
-                        // p/P
-                        c = state.data.charCodeAt(state.currentTokenStart + 3);
-                        if (c !== 80 && c !== 112)
-                            return false;
-                        return true;
-                    }
-                    /**
-                     * Checks if the current token shares the namespace with string at <start,end).
-                     */
-                    function isNamespace(state, start, end) {
-                        var i, nsLen = end - start, offset = state.currentTokenStart - start, tokenLen = state.currentTokenEnd - state.currentTokenStart;
-                        if (tokenLen < nsLen)
-                            return false;
-                        for (i = start; i < end; ++i) {
-                            if (state.data.charCodeAt(i) !== state.data.charCodeAt(i + offset))
-                                return false;
-                        }
-                        if (nsLen === tokenLen)
-                            return true;
-                        if (state.data.charCodeAt(i + offset) === 46) {
-                            return true;
-                        }
-                        return false;
-                    }
-                    /**
-                     * Returns the index of '.' in the current token. If no '.' is present, returns currentTokenEnd.
-                     */
-                    function getNamespaceEnd(state) {
-                        var i;
-                        for (i = state.currentTokenStart; i < state.currentTokenEnd; ++i) {
-                            if (state.data.charCodeAt(i) === 46)
-                                return i;
-                        }
-                        return i;
-                    }
-                    /**
-                     * Get the namespace string. endIndex is obtained by the getNamespaceEnd() function.
-                     */
-                    function getNamespace(state, endIndex) {
-                        return state.data.substring(state.currentTokenStart, endIndex);
-                    }
-                    /**
-                     * String representation of the current token.
-                     */
-                    function getTokenString(state) {
-                        return state.data.substring(state.currentTokenStart, state.currentTokenEnd);
-                    }
-                    /**
-                     * Move to the next token.
-                     */
-                    function moveNextInternal(state) {
-                        var prev = skipWhitespace(state);
-                        if (state.position >= state.length) {
-                            state.currentTokenType = 6 /* End */;
-                            return;
-                        }
-                        state.currentTokenStart = state.position;
-                        state.currentTokenEnd = state.position;
-                        state.isEscaped = false;
-                        var c = state.data.charCodeAt(state.position);
-                        switch (c) {
-                            case 35:
-                                skipCommentLine(state);
-                                state.currentTokenType = 5 /* Comment */;
-                                break;
-                            case 34: // ", escaped value
-                            case 39:
-                                eatEscaped(state, c);
-                                state.currentTokenType = 3 /* Value */;
-                                break;
-                            case 59:
-                                // multiline value must start at the beginning of the line.
-                                if (prev === 10 || prev === 13) {
-                                    eatMultiline(state);
-                                }
-                                else {
-                                    eatValue(state);
-                                }
-                                state.currentTokenType = 3 /* Value */;
-                                break;
-                            default:
-                                eatValue(state);
-                                // escaped is always Value
-                                if (state.isEscaped) {
-                                    state.currentTokenType = 3 /* Value */;
-                                }
-                                else if (state.data.charCodeAt(state.currentTokenStart) === 95) {
-                                    state.currentTokenType = 4 /* ColumnName */;
-                                }
-                                else if (state.currentTokenEnd - state.currentTokenStart >= 5 && state.data.charCodeAt(state.currentTokenStart + 4) === 95) {
-                                    if (isData(state))
-                                        state.currentTokenType = 0 /* Data */;
-                                    else if (isSave(state))
-                                        state.currentTokenType = 1 /* Save */;
-                                    else if (isLoop(state))
-                                        state.currentTokenType = 2 /* Loop */;
-                                    else
-                                        state.currentTokenType = 3 /* Value */;
-                                }
-                                else {
-                                    state.currentTokenType = 3 /* Value */;
-                                }
-                                break;
-                        }
-                    }
-                    /**
-                     * Moves to the next non-comment token.
-                     */
-                    function moveNext(state) {
-                        moveNextInternal(state);
-                        while (state.currentTokenType === 5 /* Comment */)
-                            moveNextInternal(state);
-                    }
-                    function createTokenizer(data) {
-                        return {
-                            data: data,
-                            length: data.length,
-                            position: 0,
-                            currentTokenStart: 0,
-                            currentTokenEnd: 0,
-                            currentTokenType: 6 /* End */,
-                            currentLineNumber: 1,
-                            isEscaped: false
-                        };
-                    }
-                    /**
-                     * Reads a category containing a single row.
-                     */
-                    function handleSingle(tokenizer, block) {
-                        var nsStart = tokenizer.currentTokenStart, nsEnd = getNamespaceEnd(tokenizer), name = getNamespace(tokenizer, nsEnd), column, columns = [], tokens = Formats.TokenIndexBuilder.create(512), tokenCount = 0, readingNames = true;
-                        while (readingNames) {
-                            if (tokenizer.currentTokenType !== 4 /* ColumnName */ || !isNamespace(tokenizer, nsStart, nsEnd)) {
-                                readingNames = false;
-                                break;
-                            }
-                            column = getTokenString(tokenizer);
-                            moveNext(tokenizer);
-                            if (tokenizer.currentTokenType !== 3 /* Value */) {
-                                return {
-                                    hasError: true,
-                                    errorLine: tokenizer.currentLineNumber,
-                                    errorMessage: "Expected value."
-                                };
-                            }
-                            columns[columns.length] = column;
-                            Formats.TokenIndexBuilder.addToken(tokens, tokenizer.currentTokenStart, tokenizer.currentTokenEnd);
-                            tokenCount++;
-                            moveNext(tokenizer);
-                        }
-                        block.addCategory(new Text.Category(block.data, name, nsStart, tokenizer.currentTokenStart, columns, tokens.tokens, tokenCount));
-                        return {
-                            hasError: false,
-                            errorLine: 0,
-                            errorMessage: ""
-                        };
-                    }
-                    /**
-                     * Reads a loop.
-                     */
-                    function handleLoop(tokenizer, block) {
-                        var start = tokenizer.currentTokenStart, loopLine = tokenizer.currentLineNumber;
-                        moveNext(tokenizer);
-                        var name = getNamespace(tokenizer, getNamespaceEnd(tokenizer)), columns = [], tokens = Formats.TokenIndexBuilder.create(name === "_atom_site" ? (block.data.length / 1.85) | 0 : 1024), tokenCount = 0;
-                        while (tokenizer.currentTokenType === 4 /* ColumnName */) {
-                            columns[columns.length] = getTokenString(tokenizer);
-                            moveNext(tokenizer);
-                        }
-                        while (tokenizer.currentTokenType === 3 /* Value */) {
-                            Formats.TokenIndexBuilder.addToken(tokens, tokenizer.currentTokenStart, tokenizer.currentTokenEnd);
-                            tokenCount++;
-                            moveNext(tokenizer);
-                        }
-                        if (tokenCount % columns.length !== 0) {
-                            return {
-                                hasError: true,
-                                errorLine: tokenizer.currentLineNumber,
-                                errorMessage: "The number of values for loop starting at line " + loopLine + " is not a multiple of the number of columns."
-                            };
-                        }
-                        block.addCategory(new Text.Category(block.data, name, start, tokenizer.currentTokenStart, columns, tokens.tokens, tokenCount));
-                        return {
-                            hasError: false,
-                            errorLine: 0,
-                            errorMessage: ""
-                        };
-                    }
-                    /**
-                     * Creates an error result.
-                     */
-                    function error(line, message) {
-                        return Formats.ParserResult.error(message, line);
-                    }
-                    /**
-                     * Creates a data result.
-                     */
-                    function result(data) {
-                        return Formats.ParserResult.success(data);
-                    }
-                    /**
-                     * Parses an mmCIF file.
-                     *
-                     * @returns CifParserResult wrapper of the result.
-                     */
-                    function parseInternal(data) {
-                        var tokenizer = createTokenizer(data), cat, id, file = new Text.File(data), block = new Text.DataBlock(data, "default"), saveFrame = new Text.DataBlock(data, "empty"), inSaveFrame = false, blockSaveFrames;
-                        moveNext(tokenizer);
-                        while (tokenizer.currentTokenType !== 6 /* End */) {
-                            var token = tokenizer.currentTokenType;
-                            // Data block
-                            if (token === 0 /* Data */) {
-                                if (inSaveFrame) {
-                                    return error(tokenizer.currentLineNumber, "Unexpected data block inside a save frame.");
-                                }
-                                if (block.categories.length > 0) {
-                                    file.dataBlocks.push(block);
-                                }
-                                block = new Text.DataBlock(data, data.substring(tokenizer.currentTokenStart + 5, tokenizer.currentTokenEnd));
-                                moveNext(tokenizer);
-                            }
-                            else if (token === 1 /* Save */) {
-                                id = data.substring(tokenizer.currentTokenStart + 5, tokenizer.currentTokenEnd);
-                                if (id.length === 0) {
-                                    if (saveFrame.categories.length > 0) {
-                                        blockSaveFrames = block.additionalData["saveFrames"];
-                                        if (!blockSaveFrames) {
-                                            blockSaveFrames = [];
-                                            block.additionalData["saveFrames"] = blockSaveFrames;
-                                        }
-                                        blockSaveFrames[blockSaveFrames.length] = saveFrame;
-                                    }
-                                    inSaveFrame = false;
-                                }
-                                else {
-                                    if (inSaveFrame) {
-                                        return error(tokenizer.currentLineNumber, "Save frames cannot be nested.");
-                                    }
-                                    inSaveFrame = true;
-                                    saveFrame = new Text.DataBlock(data, id);
-                                }
-                                moveNext(tokenizer);
-                            }
-                            else if (token === 2 /* Loop */) {
-                                cat = handleLoop(tokenizer, inSaveFrame ? saveFrame : block);
-                                if (cat.hasError) {
-                                    return error(cat.errorLine, cat.errorMessage);
-                                }
-                            }
-                            else if (token === 4 /* ColumnName */) {
-                                cat = handleSingle(tokenizer, inSaveFrame ? saveFrame : block);
-                                if (cat.hasError) {
-                                    return error(cat.errorLine, cat.errorMessage);
-                                }
-                            }
-                            else {
-                                return error(tokenizer.currentLineNumber, "Unexpected token. Expected data_, loop_, or data name.");
-                            }
-                        }
-                        // Check if the latest save frame was closed.
-                        if (inSaveFrame) {
-                            return error(tokenizer.currentLineNumber, "Unfinished save frame (`" + saveFrame.header + "`).");
-                        }
-                        if (block.categories.length > 0) {
-                            file.dataBlocks.push(block);
-                        }
-                        return result(file);
-                    }
-                    function parse(data) {
-                        return parseInternal(data);
-                    }
-                    Text.parse = parse;
-                })(Text = CIF.Text || (CIF.Text = {}));
-            })(CIF = Formats.CIF || (Formats.CIF = {}));
-        })(Formats = Core.Formats || (Core.Formats = {}));
-    })(Core = LiteMol.Core || (LiteMol.Core = {}));
-})(LiteMol || (LiteMol = {}));
-/*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
- */
-var LiteMol;
-(function (LiteMol) {
-    var Core;
-    (function (Core) {
-        var Formats;
-        (function (Formats) {
-            var CIF;
-            (function (CIF) {
-                var Binary;
-                (function (Binary) {
-                    "use strict";
-                    var File = (function () {
-                        function File(data) {
-                            this.dataBlocks = data.dataBlocks.map(function (b) { return new DataBlock(b); });
-                        }
-                        File.prototype.toJSON = function () {
-                            return this.dataBlocks.map(function (b) { return b.toJSON(); });
-                        };
-                        return File;
-                    }());
-                    Binary.File = File;
-                    var DataBlock = (function () {
-                        function DataBlock(data) {
-                            this.additionalData = {};
-                            this.header = data.header;
-                            this.categoryList = data.categories.map(function (c) { return new Category(c); });
-                            this.categoryMap = {};
-                            for (var _i = 0, _a = this.categoryList; _i < _a.length; _i++) {
-                                var c = _a[_i];
-                                this.categoryMap[c.name] = c;
-                            }
-                        }
-                        Object.defineProperty(DataBlock.prototype, "categories", {
-                            get: function () { return this.categoryList; },
-                            enumerable: true,
-                            configurable: true
-                        });
-                        DataBlock.prototype.getCategory = function (name) { return this.categoryMap[name]; };
-                        DataBlock.prototype.toJSON = function () {
-                            return {
-                                id: this.header,
-                                categories: this.categoryList.map(function (c) { return c.toJSON(); }),
-                                additionalData: this.additionalData
-                            };
-                        };
-                        return DataBlock;
-                    }());
-                    Binary.DataBlock = DataBlock;
-                    var Category = (function () {
-                        function Category(data) {
-                            this.name = data.name;
-                            this.columnCount = data.columns.length;
-                            this.rowCount = data.rowCount;
-                            this.columnNameList = [];
-                            this.encodedColumns = {};
-                            this.columnWrappers = {};
-                            for (var _i = 0, _a = data.columns; _i < _a.length; _i++) {
-                                var c = _a[_i];
-                                this.encodedColumns[c.name] = c;
-                                this.columnWrappers[c.name] = null;
-                                this.columnNameList.push(c.name);
-                            }
-                        }
-                        Object.defineProperty(Category.prototype, "columnNames", {
-                            get: function () { return this.columnNameList; },
-                            enumerable: true,
-                            configurable: true
-                        });
-                        Category.prototype.getColumn = function (name) {
-                            var c = this.columnWrappers[name];
-                            if (c)
-                                return c;
-                            var w = this.encodedColumns[name];
-                            if (w) {
-                                c = wrapColumn(w);
-                                this.columnWrappers[name] = c;
-                                return c;
-                            }
-                            return CIF.UndefinedColumn;
-                        };
-                        Category.prototype.toJSON = function () {
-                            var _this = this;
-                            var rows = [];
-                            var columns = this.columnNameList.map(function (name) { return ({ name: name, column: _this.getColumn(name) }); });
-                            for (var i = 0; i < this.rowCount; i++) {
-                                var item = {};
-                                for (var _i = 0, columns_1 = columns; _i < columns_1.length; _i++) {
-                                    var c = columns_1[_i];
-                                    var d = c.column.getValuePresence(i);
-                                    if (d === 0 /* Present */)
-                                        item[c.name] = c.column.getString(i);
-                                    else if (d === 1 /* NotSpecified */)
-                                        item[c.name] = '.';
-                                    else
-                                        item[c.name] = '?';
-                                }
-                                rows[i] = item;
-                            }
-                            return { name: this.name, columns: this.columnNames, rows: rows };
-                        };
-                        return Category;
-                    }());
-                    Binary.Category = Category;
-                    function wrapColumn(column) {
-                        if (!column.data.data)
-                            return CIF.UndefinedColumn;
-                        var data = Binary.decode(column.data);
-                        var mask = void 0;
-                        if (column.mask)
-                            mask = Binary.decode(column.mask);
-                        if (data.buffer && data.byteLength && data.BYTES_PER_ELEMENT) {
-                            return mask ? new MaskedNumericColumn(data, mask) : new NumericColumn(data);
-                        }
-                        return mask ? new MaskedStringColumn(data, mask) : new StringColumn(data);
-                    }
-                    var NumericColumn = (function () {
-                        function NumericColumn(data) {
-                            this.data = data;
-                            this.isDefined = true;
-                        }
-                        NumericColumn.prototype.getString = function (row) { return "" + this.data[row]; };
-                        NumericColumn.prototype.getInteger = function (row) { return this.data[row] | 0; };
-                        NumericColumn.prototype.getFloat = function (row) { return 1.0 * this.data[row]; };
-                        NumericColumn.prototype.stringEquals = function (row, value) { return this.data[row] === Core.Utils.FastNumberParsers.parseFloat(value, 0, value.length); };
-                        NumericColumn.prototype.areValuesEqual = function (rowA, rowB) { return this.data[rowA] === this.data[rowB]; };
-                        NumericColumn.prototype.getValuePresence = function (row) { return 0 /* Present */; };
-                        return NumericColumn;
-                    }());
-                    var MaskedNumericColumn = (function () {
-                        function MaskedNumericColumn(data, mask) {
-                            this.data = data;
-                            this.mask = mask;
-                            this.isDefined = true;
-                        }
-                        MaskedNumericColumn.prototype.getString = function (row) { return this.mask[row] === 0 /* Present */ ? "" + this.data[row] : null; };
-                        MaskedNumericColumn.prototype.getInteger = function (row) { return this.mask[row] === 0 /* Present */ ? this.data[row] : 0; };
-                        MaskedNumericColumn.prototype.getFloat = function (row) { return this.mask[row] === 0 /* Present */ ? this.data[row] : 0; };
-                        MaskedNumericColumn.prototype.stringEquals = function (row, value) { return this.mask[row] === 0 /* Present */ ? this.data[row] === Core.Utils.FastNumberParsers.parseFloat(value, 0, value.length) : value === null || value === void 0; };
-                        MaskedNumericColumn.prototype.areValuesEqual = function (rowA, rowB) { return this.data[rowA] === this.data[rowB]; };
-                        MaskedNumericColumn.prototype.getValuePresence = function (row) { return this.mask[row]; };
-                        return MaskedNumericColumn;
-                    }());
-                    var fastParseInt = Core.Utils.FastNumberParsers.parseInt;
-                    var fastParseFloat = Core.Utils.FastNumberParsers.parseFloat;
-                    var StringColumn = (function () {
-                        function StringColumn(data) {
-                            this.data = data;
-                            this.isDefined = true;
-                        }
-                        StringColumn.prototype.getString = function (row) { return this.data[row]; };
-                        StringColumn.prototype.getInteger = function (row) { var v = this.data[row]; return fastParseInt(v, 0, v.length); };
-                        StringColumn.prototype.getFloat = function (row) { var v = this.data[row]; return fastParseFloat(v, 0, v.length); };
-                        StringColumn.prototype.stringEquals = function (row, value) { return this.data[row] === value; };
-                        StringColumn.prototype.areValuesEqual = function (rowA, rowB) { return this.data[rowA] === this.data[rowB]; };
-                        StringColumn.prototype.getValuePresence = function (row) { return 0 /* Present */; };
-                        return StringColumn;
-                    }());
-                    var MaskedStringColumn = (function () {
-                        function MaskedStringColumn(data, mask) {
-                            this.data = data;
-                            this.mask = mask;
-                            this.isDefined = true;
-                        }
-                        MaskedStringColumn.prototype.getString = function (row) { return this.mask[row] === 0 /* Present */ ? this.data[row] : null; };
-                        MaskedStringColumn.prototype.getInteger = function (row) { if (this.mask[row] !== 0 /* Present */)
-                            return 0; var v = this.data[row]; return fastParseInt(v || '', 0, (v || '').length); };
-                        MaskedStringColumn.prototype.getFloat = function (row) { if (this.mask[row] !== 0 /* Present */)
-                            return 0; var v = this.data[row]; return fastParseFloat(v || '', 0, (v || '').length); };
-                        MaskedStringColumn.prototype.stringEquals = function (row, value) { return this.data[row] === value; };
-                        MaskedStringColumn.prototype.areValuesEqual = function (rowA, rowB) { return this.data[rowA] === this.data[rowB]; };
-                        MaskedStringColumn.prototype.getValuePresence = function (row) { return this.mask[row]; };
-                        return MaskedStringColumn;
-                    }());
-                })(Binary = CIF.Binary || (CIF.Binary = {}));
-            })(CIF = Formats.CIF || (Formats.CIF = {}));
-        })(Formats = Core.Formats || (Core.Formats = {}));
-    })(Core = LiteMol.Core || (LiteMol.Core = {}));
-})(LiteMol || (LiteMol = {}));
-/*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
- */
-var LiteMol;
-(function (LiteMol) {
-    var Core;
-    (function (Core) {
-        var Formats;
-        (function (Formats) {
-            var CIF;
-            (function (CIF) {
-                var Binary;
-                (function (Binary) {
-                    "use strict";
-                    Binary.VERSION = '0.1.0';
-                    var Encoding;
-                    (function (Encoding) {
-                        function getIntDataType(data) {
-                            var srcType;
-                            if (data instanceof Int8Array)
-                                srcType = 0 /* Int8 */;
-                            else if (data instanceof Int16Array)
-                                srcType = 1 /* Int16 */;
-                            else if (data instanceof Int32Array)
-                                srcType = 2 /* Int32 */;
-                            else if (data instanceof Uint8Array)
-                                srcType = 3 /* Uint8 */;
-                            else
-                                throw new Error('Unsupported integer data type.');
-                            return srcType;
-                        }
-                        Encoding.getIntDataType = getIntDataType;
-                    })(Encoding = Binary.Encoding || (Binary.Encoding = {}));
-                })(Binary = CIF.Binary || (CIF.Binary = {}));
-            })(CIF = Formats.CIF || (Formats.CIF = {}));
-        })(Formats = Core.Formats || (Core.Formats = {}));
-    })(Core = LiteMol.Core || (LiteMol.Core = {}));
-})(LiteMol || (LiteMol = {}));
-/*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
- */
-var LiteMol;
-(function (LiteMol) {
-    var Core;
-    (function (Core) {
-        var Formats;
-        (function (Formats) {
-            var CIF;
-            (function (CIF) {
-                var Binary;
-                (function (Binary) {
-                    "use strict";
-                    /**
-                     * Fixed point, delta, RLE, integer packing adopted from https://github.com/rcsb/mmtf-javascript/
-                     * by Alexander Rose <alexander.rose@weirdbyte.de>, MIT License, Copyright (c) 2016
-                     */
-                    var Encoder = (function () {
-                        function Encoder(providers) {
-                            this.providers = providers;
-                        }
-                        Encoder.prototype.and = function (f) {
-                            return new Encoder(this.providers.concat([f]));
-                        };
-                        Encoder.prototype.encode = function (data) {
-                            var encoding = [];
-                            for (var _i = 0, _a = this.providers; _i < _a.length; _i++) {
-                                var p = _a[_i];
-                                var t = p(data);
-                                if (!t.encodings.length) {
-                                    throw new Error('Encodings must be non-empty.');
-                                }
-                                data = t.data;
-                                for (var _b = 0, _c = t.encodings; _b < _c.length; _b++) {
-                                    var e = _c[_b];
-                                    encoding.push(e);
-                                }
-                            }
-                            if (!(data instanceof Uint8Array)) {
-                                throw new Error('The encoding must result in a Uint8Array. Fix your encoding chain.');
-                            }
-                            return {
-                                encoding: encoding,
-                                data: data
-                            };
-                        };
-                        return Encoder;
-                    }());
-                    Binary.Encoder = Encoder;
-                    var Encoder;
-                    (function (Encoder) {
-                        function by(f) {
-                            return new Encoder([f]);
-                        }
-                        Encoder.by = by;
-                        function dataView(array) {
-                            return new DataView(array.buffer, array.byteOffset, array.byteLength);
-                        }
-                        function uint8(data) {
-                            return {
-                                encodings: [{ kind: 'ByteArray', type: 3 /* Uint8 */ }],
-                                data: data
-                            };
-                        }
-                        Encoder.uint8 = uint8;
-                        function int8(data) {
-                            return {
-                                encodings: [{ kind: 'ByteArray', type: 0 /* Int8 */ }],
-                                data: new Uint8Array(data.buffer, data.byteOffset)
-                            };
-                        }
-                        Encoder.int8 = int8;
-                        function int16(data) {
-                            var result = new Uint8Array(data.length * 2);
-                            var view = dataView(result);
-                            for (var i = 0, n = data.length; i < n; i++) {
-                                view.setInt16(2 * i, data[i]);
-                            }
-                            return {
-                                encodings: [{ kind: 'ByteArray', type: 1 /* Int16 */ }],
-                                data: result
-                            };
-                        }
-                        Encoder.int16 = int16;
-                        function int32(data) {
-                            var result = new Uint8Array(data.length * 4);
-                            var view = dataView(result);
-                            for (var i = 0, n = data.length; i < n; i++) {
-                                view.setInt32(4 * i, data[i]);
-                            }
-                            return {
-                                encodings: [{ kind: 'ByteArray', type: 2 /* Int32 */ }],
-                                data: result
-                            };
-                        }
-                        Encoder.int32 = int32;
-                        function float32(data) {
-                            var result = new Uint8Array(data.length * 4);
-                            var view = dataView(result);
-                            for (var i = 0, n = data.length; i < n; i++) {
-                                view.setFloat32(4 * i, data[i]);
-                            }
-                            return {
-                                encodings: [{ kind: 'ByteArray', type: 4 /* Float32 */ }],
-                                data: result
-                            };
-                        }
-                        Encoder.float32 = float32;
-                        function float64(data) {
-                            var result = new Uint8Array(data.length * 8);
-                            var view = dataView(result);
-                            for (var i = 0, n = data.length; i < n; i++) {
-                                view.setFloat64(8 * i, data[i]);
-                            }
-                            return {
-                                encodings: [{ kind: 'ByteArray', type: 5 /* Float64 */ }],
-                                data: result
-                            };
-                        }
-                        Encoder.float64 = float64;
-                        function _fixedPoint(data, factor) {
-                            var result = new Int32Array(data.length);
-                            for (var i = 0, n = data.length; i < n; i++) {
-                                result[i] = Math.round(data[i] * factor);
-                            }
-                            return {
-                                encodings: [{ kind: 'FixedPoint', factor: factor }],
-                                data: result
-                            };
-                        }
-                        function fixedPoint(factor) { return function (data) { return _fixedPoint(data, factor); }; }
-                        Encoder.fixedPoint = fixedPoint;
-                        function runLength(data) {
-                            var srcType = Binary.Encoding.getIntDataType(data);
-                            if (srcType === void 0) {
-                                data = new Int32Array(data);
-                                srcType = 2 /* Int32 */;
-                            }
-                            if (!data.length) {
-                                return {
-                                    encodings: [{ kind: 'RunLength', srcType: srcType, srcSize: 0 }],
-                                    data: new Int32Array(0)
-                                };
-                            }
-                            // calculate output size
-                            var fullLength = 2;
-                            for (var i = 1, il = data.length; i < il; i++) {
-                                if (data[i - 1] !== data[i]) {
-                                    fullLength += 2;
-                                }
-                            }
-                            var output = new Int32Array(fullLength);
-                            var offset = 0;
-                            var runLength = 1;
-                            for (var i = 1, il = data.length; i < il; i++) {
-                                if (data[i - 1] !== data[i]) {
-                                    output[offset] = data[i - 1];
-                                    output[offset + 1] = runLength;
-                                    runLength = 1;
-                                    offset += 2;
-                                }
-                                else {
-                                    ++runLength;
-                                }
-                            }
-                            output[offset] = data[data.length - 1];
-                            output[offset + 1] = runLength;
-                            return {
-                                encodings: [{ kind: 'RunLength', srcType: srcType, srcSize: data.length }],
-                                data: output
-                            };
-                        }
-                        Encoder.runLength = runLength;
-                        function delta(data) {
-                            var srcType = Binary.Encoding.getIntDataType(data);
-                            if (srcType === void 0) {
-                                data = new Int32Array(data);
-                                srcType = 2 /* Int32 */;
-                            }
-                            if (!data.length) {
-                                return {
-                                    encodings: [{ kind: 'Delta', srcType: srcType }],
-                                    data: new data.constructor(0)
-                                };
-                            }
-                            var output = new data.constructor(data.length);
-                            output[0] = data[0];
-                            for (var i = 1, n = data.length; i < n; i++) {
-                                output[i] = data[i] - data[i - 1];
-                            }
-                            return {
-                                encodings: [{ kind: 'Delta', srcType: srcType }],
-                                data: output
-                            };
-                        }
-                        Encoder.delta = delta;
-                        function packingSize(data, upperLimit) {
-                            var lowerLimit = -upperLimit - 1;
-                            var size = 0;
-                            for (var i = 0, n = data.length; i < n; i++) {
-                                var value = data[i];
-                                if (value === 0) {
-                                    size += 1;
-                                }
-                                else if (value === upperLimit || value === lowerLimit) {
-                                    size += 2;
-                                }
-                                else if (value > 0) {
-                                    size += Math.ceil(value / upperLimit);
-                                }
-                                else {
-                                    size += Math.ceil(value / lowerLimit);
-                                }
-                            }
-                            return size;
-                        }
-                        function determinePacking(data) {
-                            var size8 = packingSize(data, 0x7f);
-                            var size16 = packingSize(data, 0x7fff);
-                            if (data.length * 4 < size16 * 2) {
-                                // 4 byte packing is the most effective
-                                return {
-                                    size: data.length,
-                                    bytesPerElement: 4
-                                };
-                            }
-                            else if (size16 * 2 < size8) {
-                                // 2 byte packing is the most effective
-                                return {
-                                    size: size16,
-                                    bytesPerElement: 2
-                                };
-                            }
-                            else {
-                                // 1 byte packing is the most effective
-                                return {
-                                    size: size8,
-                                    bytesPerElement: 1
-                                };
-                            }
-                            ;
-                        }
-                        /**
-                         * Packs Int32 array. The packing level is determined automatically to either 1-, 2-, or 4-byte words.
-                         */
-                        function integerPacking(data) {
-                            var packing = determinePacking(data);
-                            if (packing.bytesPerElement === 4) {
-                                // no packing done, Int32 encoding will be used
-                                return int32(data);
-                            }
-                            var upperLimit = packing.bytesPerElement === 1 ? 0x7F : 0x7FFF;
-                            var lowerLimit = -upperLimit - 1;
-                            var n = data.length;
-                            var packed = packing.bytesPerElement === 1 ? new Int8Array(packing.size) : new Int16Array(packing.size);
-                            var j = 0;
-                            for (var i = 0; i < n; i++) {
-                                var value = data[i];
-                                if (value >= 0) {
-                                    while (value >= upperLimit) {
-                                        packed[j] = upperLimit;
-                                        ++j;
-                                        value -= upperLimit;
-                                    }
-                                }
-                                else {
-                                    while (value <= lowerLimit) {
-                                        packed[j] = lowerLimit;
-                                        ++j;
-                                        value -= lowerLimit;
-                                    }
-                                }
-                                packed[j] = value;
-                                ++j;
-                            }
-                            var result = packing.bytesPerElement === 1 ? int8(packed) : int16(packed);
-                            return {
-                                encodings: [{ kind: 'IntegerPacking', byteCount: packing.bytesPerElement, srcSize: n }, result.encodings[0]],
-                                data: result.data
-                            };
-                        }
-                        Encoder.integerPacking = integerPacking;
-                        function stringArray(data) {
-                            var map = new Map();
-                            var strings = [];
-                            var accLength = 0;
-                            var offsets = new Core.Utils.ChunkedArrayBuilder(function (s) { return new Int32Array(s); }, 1024, 1);
-                            var output = new Int32Array(data.length);
-                            offsets.add(0);
-                            var i = 0;
-                            for (var _i = 0, data_1 = data; _i < data_1.length; _i++) {
-                                var s = data_1[_i];
-                                // handle null strings.
-                                if (s === null || s === void 0) {
-                                    output[i++] = -1;
-                                    continue;
-                                }
-                                var index = map.get(s);
-                                if (index === void 0) {
-                                    // increment the length
-                                    accLength += s.length;
-                                    // store the string and index                   
-                                    index = strings.length;
-                                    strings[index] = s;
-                                    map.set(s, index);
-                                    // write the offset
-                                    offsets.add(accLength);
-                                }
-                                output[i++] = index;
-                            }
-                            var encOffsets = Encoder.by(delta).and(integerPacking).encode(offsets.compact());
-                            var encOutput = Encoder.by(delta).and(runLength).and(integerPacking).encode(output);
-                            return {
-                                encodings: [{ kind: 'StringArray', dataEncoding: encOutput.encoding, stringData: strings.join(''), offsetEncoding: encOffsets.encoding, offsets: encOffsets.data }],
-                                data: encOutput.data
-                            };
-                        }
-                        Encoder.stringArray = stringArray;
-                    })(Encoder = Binary.Encoder || (Binary.Encoder = {}));
-                })(Binary = CIF.Binary || (CIF.Binary = {}));
-            })(CIF = Formats.CIF || (Formats.CIF = {}));
-        })(Formats = Core.Formats || (Core.Formats = {}));
-    })(Core = LiteMol.Core || (LiteMol.Core = {}));
-})(LiteMol || (LiteMol = {}));
-/*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
- */
-var LiteMol;
-(function (LiteMol) {
-    var Core;
-    (function (Core) {
-        var Formats;
-        (function (Formats) {
-            var CIF;
-            (function (CIF) {
-                var Binary;
-                (function (Binary) {
-                    "use strict";
-                    /**
-                     * Fixed point, delta, RLE, integer packing adopted from https://github.com/rcsb/mmtf-javascript/
-                     * by Alexander Rose <alexander.rose@weirdbyte.de>, MIT License, Copyright (c) 2016
-                     */
-                    function decode(data) {
-                        var current = data.data;
-                        for (var i = data.encoding.length - 1; i >= 0; i--) {
-                            current = Decoder.decodeStep(current, data.encoding[i]);
-                        }
-                        return current;
-                    }
-                    Binary.decode = decode;
-                    var Decoder;
-                    (function (Decoder) {
-                        function decodeStep(data, encoding) {
-                            switch (encoding.kind) {
-                                case 'ByteArray': {
-                                    switch (encoding.type) {
-                                        case 3 /* Uint8 */: return data;
-                                        case 0 /* Int8 */: return int8(data);
-                                        case 1 /* Int16 */: return int16(data);
-                                        case 2 /* Int32 */: return int32(data);
-                                        case 4 /* Float32 */: return float32(data);
-                                        case 5 /* Float64 */: return float64(data);
-                                        default: throw new Error('Unsupported ByteArray type.');
-                                    }
-                                }
-                                case 'FixedPoint': return fixedPoint(data, encoding);
-                                case 'RunLength': return runLength(data, encoding);
-                                case 'Delta': return delta(data, encoding);
-                                case 'IntegerPacking': return integerPacking(data, encoding);
-                                case 'StringArray': return stringArray(data, encoding);
-                            }
-                        }
-                        Decoder.decodeStep = decodeStep;
-                        function dataView(array) {
-                            return new DataView(array.buffer, array.byteOffset, array.byteLength);
-                        }
-                        function int8(data) {
-                            return new Int8Array(data.buffer, data.byteOffset);
-                        }
-                        function int16(data) {
-                            var n = (data.length / 2) | 0;
-                            var output = new Int16Array(n);
-                            for (var i = 0, i2 = 0; i < n; i++, i2 += 2) {
-                                output[i] = data[i2] << 8 ^ data[i2 + 1] << 0;
-                            }
-                            return output;
-                        }
-                        function int32(data) {
-                            var n = (data.length / 4) | 0;
-                            var output = new Int32Array(n);
-                            for (var i = 0, i4 = 0; i < n; i++, i4 += 4) {
-                                output[i] = data[i4] << 24 ^ data[i4 + 1] << 16 ^ data[i4 + 2] << 8 ^ data[i4 + 3] << 0;
-                            }
-                            return output;
-                        }
-                        function float32(data) {
-                            var n = (data.length / 4) | 0;
-                            var output = new Float32Array(n);
-                            var src = dataView(data);
-                            for (var i = 0, i4 = 0; i < n; i++, i4 += 4) {
-                                output[i] = src.getFloat32(i4);
-                            }
-                            return output;
-                        }
-                        function float64(data) {
-                            var n = (data.length / 8) | 0;
-                            var output = new Float64Array(n);
-                            var src = dataView(data);
-                            for (var i = 0, i8 = 0; i < n; i++, i8 += 8) {
-                                output[i] = src.getFloat64(i8);
-                            }
-                            return output;
-                        }
-                        function fixedPoint(data, encoding) {
-                            var n = data.length;
-                            var output = new Float32Array(n);
-                            var f = 1 / encoding.factor;
-                            for (var i = 0; i < n; i++) {
-                                output[i] = f * data[i];
-                            }
-                            return output;
-                        }
-                        function getIntArray(type, size) {
-                            switch (type) {
-                                case 0 /* Int8 */: return new Int8Array(size);
-                                case 1 /* Int16 */: return new Int16Array(size);
-                                case 2 /* Int32 */: return new Int32Array(size);
-                                case 3 /* Uint8 */: return new Uint8Array(size);
-                                default: throw new Error('Unsupported integer data type.');
-                            }
-                        }
-                        function runLength(data, encoding) {
-                            var output = getIntArray(encoding.srcType, encoding.srcSize);
-                            var dataOffset = 0;
-                            for (var i = 0, il = data.length; i < il; i += 2) {
-                                var value = data[i]; // value to be repeated
-                                var length_7 = data[i + 1]; // number of repeats
-                                for (var j = 0; j < length_7; ++j) {
-                                    output[dataOffset++] = value;
-                                }
-                            }
-                            return output;
-                        }
-                        function delta(data, encoding) {
-                            var n = data.length;
-                            var output = getIntArray(encoding.srcType, n);
-                            if (!n)
-                                return output;
-                            output[0] = data[0];
-                            for (var i = 1; i < n; ++i) {
-                                output[i] = data[i] + output[i - 1];
-                            }
-                            return output;
-                        }
-                        function integerPacking(data, encoding) {
-                            var upperLimit = data instanceof Int8Array ? 0x7F : 0x7FFF;
-                            var lowerLimit = -upperLimit - 1;
-                            var n = data.length;
-                            var output = new Int32Array(encoding.srcSize);
-                            var i = 0;
-                            var j = 0;
-                            while (i < n) {
-                                var value = 0, t = data[i];
-                                while (t === upperLimit || t === lowerLimit) {
-                                    value += t;
-                                    i++;
-                                    t = data[i];
-                                }
-                                value += t;
-                                output[j] = value;
-                                i++;
-                                j++;
-                            }
-                            return output;
-                        }
-                        function stringArray(data, encoding) {
-                            var str = encoding.stringData;
-                            var offsets = decode({ encoding: encoding.offsetEncoding, data: encoding.offsets });
-                            var indices = decode({ encoding: encoding.dataEncoding, data: data });
-                            var cache = new Map();
-                            var result = new Array(indices.length);
-                            var offset = 0;
-                            for (var _i = 0, indices_1 = indices; _i < indices_1.length; _i++) {
-                                var i = indices_1[_i];
-                                if (i < 0) {
-                                    result[offset++] = null;
-                                    continue;
-                                }
-                                var v = cache.get(i);
-                                if (v === void 0) {
-                                    v = str.substring(offsets[i], offsets[i + 1]);
-                                    cache.set(i, v);
-                                }
-                                result[offset++] = v;
-                            }
-                            return result;
-                        }
-                    })(Decoder || (Decoder = {}));
-                })(Binary = CIF.Binary || (CIF.Binary = {}));
-            })(CIF = Formats.CIF || (Formats.CIF = {}));
-        })(Formats = Core.Formats || (Core.Formats = {}));
-    })(Core = LiteMol.Core || (LiteMol.Core = {}));
-})(LiteMol || (LiteMol = {}));
-/*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
- */
-var LiteMol;
-(function (LiteMol) {
-    var Core;
-    (function (Core) {
-        var Formats;
-        (function (Formats) {
-            var CIF;
-            (function (CIF) {
-                var Binary;
-                (function (Binary) {
-                    "use strict";
-                    function parse(data) {
-                        try {
-                            var array = new Uint8Array(data);
-                            var unpacked = Formats.MessagePack.decode(array);
-                            var file = new Binary.File(unpacked);
-                            return Formats.ParserResult.success(file);
-                        }
-                        catch (e) {
-                            return Formats.ParserResult.error('' + e);
-                        }
-                    }
-                    Binary.parse = parse;
-                })(Binary = CIF.Binary || (CIF.Binary = {}));
-            })(CIF = Formats.CIF || (Formats.CIF = {}));
-        })(Formats = Core.Formats || (Core.Formats = {}));
-    })(Core = LiteMol.Core || (LiteMol.Core = {}));
-})(LiteMol || (LiteMol = {}));
-/*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
- */
-var LiteMol;
-(function (LiteMol) {
-    var Core;
-    (function (Core) {
-        var Formats;
-        (function (Formats) {
             var Molecule;
             (function (Molecule) {
                 var mmCIF;
@@ -11182,6 +11944,17 @@ var LiteMol;
                         Defaults.EntityId = '1';
                         Defaults.ModelId = '1';
                     })(Defaults || (Defaults = {}));
+                    function getTransform(category, matrixField, translationField, row) {
+                        var ret = Core.Geometry.LinearAlgebra.Matrix4.identity(), i, j, c;
+                        for (i = 1; i <= 3; i++) {
+                            for (j = 1; j <= 3; j++) {
+                                c = matrixField + "[" + i + "][" + j + "]";
+                                Core.Geometry.LinearAlgebra.Matrix4.setValue(ret, i - 1, j - 1, category.getColumn(matrixField + "[" + i + "][" + j + "]").getFloat(row));
+                            }
+                            Core.Geometry.LinearAlgebra.Matrix4.setValue(ret, i - 1, 3, category.getColumn(translationField + "[" + i + "]").getFloat(row));
+                        }
+                        return ret;
+                    }
                     function getModelEndRow(startRow, _atom_site) {
                         var size = _atom_site.rowCount, modelNum = _atom_site.getColumn('pdbx_PDB_model_num'), i = 0;
                         if (!modelNum.isDefined)
@@ -11678,7 +12451,7 @@ var LiteMol;
                         var _pdbx_struct_oper_list_id = _opers.getColumn('id');
                         var _pdbx_struct_oper_list_name = _opers.getColumn('name');
                         for (i = 0; i < _opers.rowCount; i++) {
-                            var oper = Formats.CIF.Category.getTransform(_opers, 'matrix', 'vector', i);
+                            var oper = getTransform(_opers, 'matrix', 'vector', i);
                             if (!oper) {
                                 return void 0;
                             }
@@ -11710,7 +12483,7 @@ var LiteMol;
                         var toFracComputed = Core.Geometry.LinearAlgebra.Matrix4.identity();
                         Core.Geometry.LinearAlgebra.Matrix4.invert(toFracComputed, fromFrac);
                         if (_atom_sites) {
-                            var transform = Formats.CIF.Category.getTransform(_atom_sites, 'fract_transf_matrix', 'fract_transf_vector', 0);
+                            var transform = getTransform(_atom_sites, 'fract_transf_matrix', 'fract_transf_vector', 0);
                             if (transform) {
                                 toFracTransform = transform;
                                 if (!Core.Geometry.LinearAlgebra.Matrix4.areEqual(toFracComputed, transform, 0.0001)) {
@@ -11846,8 +12619,8 @@ var LiteMol;
                                 "3 water nat water 0.0 0 ? ? ? ?"
                             ].join('\n');
                             var file = Formats.CIF.Text.parse(data);
-                            if (file.error) {
-                                throw file.error.toString();
+                            if (file.isError) {
+                                throw file.toString();
                             }
                             return file.result.dataBlocks[0].getCategory('_entity');
                         };
@@ -11913,10 +12686,13 @@ var LiteMol;
                                 "_symmetry.Int_Tables_number                ?",
                                 "_symmetry.space_group_name_Hall            ?"
                             ].join('\n');
-                            var cif = Formats.CIF.Text.parse(data).result.dataBlocks[0];
+                            var cif = Formats.CIF.Text.parse(data);
+                            if (cif.isError) {
+                                throw new Error(cif.toString());
+                            }
                             return {
-                                cell: cif.getCategory('_cell'),
-                                symm: cif.getCategory('_symmetry')
+                                cell: cif.result.dataBlocks[0].getCategory('_cell'),
+                                symm: cif.result.dataBlocks[0].getCategory('_symmetry')
                             };
                         };
                         return CrystStructureInfo;
@@ -11940,18 +12716,18 @@ var LiteMol;
                             this.atomCount = atomCount;
                         }
                         ModelData.prototype.writeToken = function (index, cifTokens) {
-                            cifTokens.add2(this.atomTokens[2 * index], this.atomTokens[2 * index + 1]);
+                            Core.Utils.ArrayBuilder.add2(cifTokens, this.atomTokens[2 * index], this.atomTokens[2 * index + 1]);
                         };
                         ModelData.prototype.writeTokenCond = function (index, cifTokens, dot) {
                             var s = this.atomTokens[2 * index];
                             var e = this.atomTokens[2 * index + 1];
                             if (s === e)
-                                cifTokens.add2(dot.start, dot.end);
+                                Core.Utils.ArrayBuilder.add2(cifTokens, dot.start, dot.end);
                             else
-                                cifTokens.add2(s, e);
+                                Core.Utils.ArrayBuilder.add2(cifTokens, s, e);
                         };
                         ModelData.prototype.writeRange = function (range, cifTokens) {
-                            cifTokens.add2(range.start, range.end);
+                            Core.Utils.ArrayBuilder.add2(cifTokens, range.start, range.end);
                         };
                         ModelData.prototype.tokenEquals = function (start, end, value, data) {
                             var len = value.length;
@@ -12578,24 +13354,26 @@ var LiteMol;
             (function (Molecule) {
                 var SupportedFormats;
                 (function (SupportedFormats) {
-                    SupportedFormats.mmCIF = { name: 'mmCIF', extensions: ['.cif'], parse: function (data) {
+                    SupportedFormats.mmCIF = {
+                        name: 'mmCIF', extensions: ['.cif'], parse: function (data) {
                             return Core.Computation.create(function (ctx) {
                                 ctx.update('Parsing...');
                                 ctx.schedule(function () {
                                     var file = Formats.CIF.Text.parse(data);
-                                    if (file.error) {
-                                        ctx.reject(file.error.toString());
+                                    if (file.isError) {
+                                        ctx.reject(file.toString());
                                         return;
                                     }
-                                    if (!file.result.dataBlocks.length) {
+                                    var result = file.result;
+                                    if (!result.dataBlocks.length) {
                                         ctx.reject("The CIF data does not contain a data block.");
                                         return;
                                     }
                                     ctx.update('Creating representation...');
                                     ctx.schedule(function () {
                                         try {
-                                            var mol = Molecule.mmCIF.ofDataBlock(file.result.dataBlocks[0]);
-                                            ctx.resolve(Formats.ParserResult.success(mol, file.result.dataBlocks.length > 1 ? ["The input data contains multiple data blocks, only the first one was parsed. To parse all data blocks, use the function 'mmCIF.ofDataBlock' separately for each block."] : void 0));
+                                            var mol = Molecule.mmCIF.ofDataBlock(result.dataBlocks[0]);
+                                            ctx.resolve(Formats.ParserResult.success(mol, result.dataBlocks.length > 1 ? ["The input data contains multiple data blocks, only the first one was parsed. To parse all data blocks, use the function 'mmCIF.ofDataBlock' separately for each block."] : void 0));
                                         }
                                         catch (e) {
                                             ctx.reject("" + e);
@@ -12603,25 +13381,28 @@ var LiteMol;
                                     });
                                 });
                             });
-                        } };
-                    SupportedFormats.mmBCIF = { name: 'mmCIF (Binary)', extensions: ['.bcif'], isBinary: true, parse: function (data) {
+                        }
+                    };
+                    SupportedFormats.mmBCIF = {
+                        name: 'mmCIF (Binary)', extensions: ['.bcif'], isBinary: true, parse: function (data) {
                             return Core.Computation.create(function (ctx) {
                                 ctx.update('Parsing...');
                                 ctx.schedule(function () {
                                     var file = Formats.CIF.Binary.parse(data);
-                                    if (file.error) {
-                                        ctx.reject(file.error.toString());
+                                    if (file.isError) {
+                                        ctx.reject(file.toString());
                                         return;
                                     }
-                                    if (!file.result.dataBlocks.length) {
+                                    var result = file.result;
+                                    if (!result.dataBlocks.length) {
                                         ctx.reject("The BinaryCIF data does not contain a data block.");
                                         return;
                                     }
                                     ctx.update('Creating representation...');
                                     ctx.schedule(function () {
                                         try {
-                                            var mol = Molecule.mmCIF.ofDataBlock(file.result.dataBlocks[0]);
-                                            ctx.resolve(Formats.ParserResult.success(mol, file.result.dataBlocks.length > 1 ? ["The input data contains multiple data blocks, only the first one was parsed. To parse all data blocks, use the function 'mmCIF.ofDataBlock' separately for each block."] : void 0));
+                                            var mol = Molecule.mmCIF.ofDataBlock(result.dataBlocks[0]);
+                                            ctx.resolve(Formats.ParserResult.success(mol, result.dataBlocks.length > 1 ? ["The input data contains multiple data blocks, only the first one was parsed. To parse all data blocks, use the function 'mmCIF.ofDataBlock' separately for each block."] : void 0));
                                         }
                                         catch (e) {
                                             ctx.reject("" + e);
@@ -12629,24 +13410,27 @@ var LiteMol;
                                     });
                                 });
                             });
-                        } };
-                    SupportedFormats.PDB = { name: 'PDB', extensions: ['.pdb', '.ent'], parse: function (data, options) {
+                        }
+                    };
+                    SupportedFormats.PDB = {
+                        name: 'PDB', extensions: ['.pdb', '.ent'], parse: function (data, options) {
                             return Core.Computation.create(function (ctx) {
                                 ctx.update('Parsing...');
                                 ctx.schedule(function () {
                                     var file = Molecule.PDB.toCifFile((options && options.id) || 'PDB', data);
-                                    if (file.error) {
-                                        ctx.reject(file.error.toString());
+                                    if (file.isError) {
+                                        ctx.reject(file.toString());
                                         return;
                                     }
-                                    if (!file.result.dataBlocks.length) {
+                                    var result = file.result;
+                                    if (!result.dataBlocks.length) {
                                         ctx.reject("The PDB data does not contain a data block.");
                                         return;
                                     }
                                     ctx.update('Creating representation...');
                                     ctx.schedule(function () {
                                         try {
-                                            var mol = Molecule.mmCIF.ofDataBlock(file.result.dataBlocks[0]);
+                                            var mol = Molecule.mmCIF.ofDataBlock(result.dataBlocks[0]);
                                             ctx.resolve(Formats.ParserResult.success(mol));
                                         }
                                         catch (e) {
@@ -12655,20 +13439,23 @@ var LiteMol;
                                     });
                                 });
                             });
-                        } };
-                    SupportedFormats.SDF = { name: 'SDF', extensions: ['.sdf', '.mol'], parse: function (data, options) {
+                        }
+                    };
+                    SupportedFormats.SDF = {
+                        name: 'SDF', extensions: ['.sdf', '.mol'], parse: function (data, options) {
                             return Core.Computation.create(function (ctx) {
                                 ctx.update('Parsing...');
                                 ctx.schedule(function () {
                                     var mol = Molecule.SDF.parse(data, (options && options.id) || undefined);
-                                    if (mol.error) {
-                                        ctx.reject(mol.error.toString());
+                                    if (mol.isError) {
+                                        ctx.reject(mol.toString());
                                         return;
                                     }
                                     ctx.resolve(Formats.ParserResult.success(mol.result));
                                 });
                             });
-                        } };
+                        }
+                    };
                     SupportedFormats.All = [SupportedFormats.mmCIF, SupportedFormats.mmBCIF, SupportedFormats.PDB, SupportedFormats.SDF];
                 })(SupportedFormats = Molecule.SupportedFormats || (Molecule.SupportedFormats = {}));
             })(Molecule = Formats.Molecule || (Formats.Molecule = {}));
@@ -14151,8 +14938,8 @@ var LiteMol;
                         this.nextSlice();
                     };
                     MarchingCubesComputation.prototype.finish = function () {
-                        var vertices = this.state.vertexBuffer.compact();
-                        var triangles = this.state.triangleBuffer.compact();
+                        var vertices = Core.Utils.ChunkedArray.compact(this.state.vertexBuffer);
+                        var triangles = Core.Utils.ChunkedArray.compact(this.state.triangleBuffer);
                         this.state.vertexBuffer = void 0;
                         this.state.verticesOnEdges = void 0;
                         var ret = {
@@ -14160,7 +14947,7 @@ var LiteMol;
                             triangleCount: (triangles.length / 3) | 0,
                             vertices: vertices,
                             triangleIndices: triangles,
-                            annotation: this.state.annotate ? this.state.annotationBuffer.compact() : void 0
+                            annotation: this.state.annotate ? Core.Utils.ChunkedArray.compact(this.state.annotationBuffer) : void 0
                         };
                         this.ctx.resolve(ret);
                     };
@@ -14183,11 +14970,11 @@ var LiteMol;
                         this.scalarField = params.scalarField;
                         this.annotationField = params.annotationField;
                         var dX = params.topRight[0] - params.bottomLeft[0], dY = params.topRight[1] - params.bottomLeft[1], dZ = params.topRight[2] - params.bottomLeft[2], vertexBufferSize = Math.min(262144, Math.max(dX * dY * dZ / 16, 1024) | 0), triangleBufferSize = Math.min(1 << 16, vertexBufferSize * 4);
-                        this.vertexBuffer = Core.Utils.ChunkedArrayBuilder.forVertex3D(vertexBufferSize);
-                        this.triangleBuffer = new Core.Utils.ChunkedArrayBuilder(function (size) { return new Uint32Array(size); }, triangleBufferSize, 3);
+                        this.vertexBuffer = Core.Utils.ChunkedArray.forVertex3D(vertexBufferSize);
+                        this.triangleBuffer = Core.Utils.ChunkedArray.create(function (size) { return new Uint32Array(size); }, triangleBufferSize, 3);
                         this.annotate = !!params.annotationField;
                         if (this.annotate)
-                            this.annotationBuffer = Core.Utils.ChunkedArrayBuilder.forInt32(vertexBufferSize);
+                            this.annotationBuffer = Core.Utils.ChunkedArray.forInt32(vertexBufferSize);
                         this.verticesOnEdges = new Int32Array(3 * this.nX * this.nY * this.nZ);
                     }
                     MarchingCubesState.prototype.get3dOffsetFromEdgeInfo = function (index) {
@@ -14200,10 +14987,10 @@ var LiteMol;
                             return (ret - 1) | 0;
                         var edge = MarchingCubes.CubeEdges[edgeNum];
                         var a = edge.a, b = edge.b, li = a.i + this.i, lj = a.j + this.j, lk = a.k + this.k, hi = b.i + this.i, hj = b.j + this.j, hk = b.k + this.k, v0 = this.scalarField.get(li, lj, lk), v1 = this.scalarField.get(hi, hj, hk), t = (this.isoLevel - v0) / (v0 - v1);
-                        var id = this.vertexBuffer.add3(li + t * (li - hi), lj + t * (lj - hj), lk + t * (lk - hk)) | 0;
+                        var id = Core.Utils.ChunkedArray.add3(this.vertexBuffer, li + t * (li - hi), lj + t * (lj - hj), lk + t * (lk - hk)) | 0;
                         this.verticesOnEdges[edgeId] = id + 1;
                         if (this.annotate) {
-                            this.annotationBuffer.add(this.annotationField.get(this.i, this.j, this.k));
+                            Core.Utils.ChunkedArray.add(this.annotationBuffer, this.annotationField.get(this.i, this.j, this.k));
                         }
                         return id;
                     };
@@ -14257,7 +15044,7 @@ var LiteMol;
                             this.vertList[11] = this.interpolate(11); // 3 7
                         var triInfo = MarchingCubes.TriTable[tableIndex];
                         for (var t = 0; t < triInfo.length; t += 3) {
-                            this.triangleBuffer.add3(this.vertList[triInfo[t]], this.vertList[triInfo[t + 1]], this.vertList[triInfo[t + 2]]);
+                            Core.Utils.ChunkedArray.add3(this.triangleBuffer, this.vertList[triInfo[t]], this.vertList[triInfo[t + 1]], this.vertList[triInfo[t + 2]]);
                         }
                     };
                     return MarchingCubesState;
@@ -14977,8 +15764,8 @@ var LiteMol;
                         for (var _i = 0, _a = source.columns; _i < _a.length; _i++) {
                             var col = _a[_i];
                             var data = source[col.name];
-                            if (data instanceof Core.Utils.ChunkedArrayBuilder) {
-                                data = data.compact();
+                            if (Core.Utils.ChunkedArray.is(data)) {
+                                data = Core.Utils.ChunkedArray.compact(data);
                             }
                             Object.defineProperty(this, col.name, { enumerable: true, configurable: false, writable: false, value: data });
                             this.columns[this.columns.length] = col;
@@ -16785,8 +17572,8 @@ var LiteMol;
                 function getBoudingSphere(arrays, indices) {
                     var x = arrays.x, y = arrays.y, z = arrays.z;
                     var center = { x: 0, y: 0, z: 0 };
-                    for (var _i = 0, indices_2 = indices; _i < indices_2.length; _i++) {
-                        var aI = indices_2[_i];
+                    for (var _i = 0, indices_1 = indices; _i < indices_1.length; _i++) {
+                        var aI = indices_1[_i];
                         center.x += x[aI];
                         center.y += y[aI];
                         center.z += z[aI];
@@ -16796,8 +17583,8 @@ var LiteMol;
                     center.y /= count;
                     center.z /= count;
                     var r = 0;
-                    for (var _a = 0, indices_3 = indices; _a < indices_3.length; _a++) {
-                        var aI = indices_3[_a];
+                    for (var _a = 0, indices_2 = indices; _a < indices_2.length; _a++) {
+                        var aI = indices_2[_a];
                         r = Math.max(indexedVectorDistSq(aI, center, arrays), r);
                     }
                     return { center: center, radius: Math.sqrt(r) };
@@ -16994,7 +17781,7 @@ var LiteMol;
                 function getSymmetryResidues(ctx, transforms) {
                     var bounds = ctx.boundingInfo, radius = ctx.radius, targetBounds = bounds.target;
                     var model = ctx.model, atoms = model.atoms, residues = model.residues, chains = model.chains, entities = model.entities;
-                    var residueIndices = new Core.Utils.ChunkedArrayBuilder(function (s) { return new Int32Array(s); }, ctx.model.residues.count, 1), operatorIndices = new Core.Utils.ChunkedArrayBuilder(function (s) { return new Int32Array(s); }, ctx.model.residues.count, 1);
+                    var residueIndices = Core.Utils.ChunkedArray.create(function (s) { return new Int32Array(s); }, ctx.model.residues.count, 1), operatorIndices = Core.Utils.ChunkedArray.create(function (s) { return new Int32Array(s); }, ctx.model.residues.count, 1);
                     var v = { x: 0, y: 0, z: 0 }, opIndex = 0;
                     var atomCount = 0, chainCount = 0, entityCount = 0;
                     for (var eI = 0, _eC = entities.count; eI < _eC; eI++) {
@@ -17010,8 +17797,8 @@ var LiteMol;
                                 for (var rI = chains.residueStartIndex[cI], _rC = chains.residueEndIndex[cI]; rI < _rC; rI++) {
                                     if (!isWithinRadius(targetBounds, rI, bounds.residues, t.transform, radius, v))
                                         continue;
-                                    residueIndices.add(rI);
-                                    operatorIndices.add(opIndex);
+                                    Core.Utils.ChunkedArray.add(residueIndices, rI);
+                                    Core.Utils.ChunkedArray.add(operatorIndices, opIndex);
                                     atomCount += residues.atomEndIndex[rI] - residues.atomStartIndex[rI];
                                     residueAdded = true;
                                 }
@@ -17027,8 +17814,8 @@ var LiteMol;
                         }
                     }
                     return {
-                        residues: residueIndices.compact(),
-                        operators: operatorIndices.compact(),
+                        residues: Core.Utils.ChunkedArray.compact(residueIndices),
+                        operators: Core.Utils.ChunkedArray.compact(operatorIndices),
                         atomCount: atomCount,
                         chainCount: chainCount,
                         entityCount: entityCount
@@ -17312,7 +18099,7 @@ var LiteMol;
                 }
                 function findMateParts(model, transforms) {
                     var atoms = model.atoms, residues = model.residues, chains = model.chains, entities = model.entities;
-                    var residueIndices = new Core.Utils.ArrayBuilder(function (s) { return new Int32Array(s); }, model.residues.count * transforms.length, 1), operatorIndices = new Core.Utils.ArrayBuilder(function (s) { return new Int32Array(s); }, model.residues.count * transforms.length, 1);
+                    var residueIndices = Core.Utils.ArrayBuilder.create(function (s) { return new Int32Array(s); }, model.residues.count * transforms.length, 1), operatorIndices = Core.Utils.ArrayBuilder.create(function (s) { return new Int32Array(s); }, model.residues.count * transforms.length, 1);
                     var v = { x: 0, y: 0, z: 0 }, opIndex = 0;
                     var atomCount = transforms.length * atoms.count;
                     var chainCount = transforms.length * chains.count;
@@ -17323,8 +18110,8 @@ var LiteMol;
                             var t = transforms_2[_i];
                             for (var cI = entities.chainStartIndex[eI], _cC = entities.chainEndIndex[eI]; cI < _cC; cI++) {
                                 for (var rI = chains.residueStartIndex[cI], _rC = chains.residueEndIndex[cI]; rI < _rC; rI++) {
-                                    residueIndices.add(rI);
-                                    operatorIndices.add(opIndex);
+                                    Core.Utils.ArrayBuilder.add(residueIndices, rI);
+                                    Core.Utils.ArrayBuilder.add(operatorIndices, opIndex);
                                 }
                             }
                             opIndex++;
@@ -17393,8 +18180,8 @@ var LiteMol;
                                 for (var rI = chains.residueStartIndex[cI], _rC = chains.residueEndIndex[cI]; rI < _rC; rI++) {
                                     if (!residueMask[rI])
                                         continue;
-                                    residueIndices.add(rI);
-                                    operatorIndices.add(opIndex);
+                                    Core.Utils.ChunkedArray.add(residueIndices, rI);
+                                    Core.Utils.ChunkedArray.add(operatorIndices, opIndex);
                                     atomCount += residues.atomEndIndex[rI] - residues.atomStartIndex[rI];
                                     residueAdded = true;
                                 }
@@ -17448,16 +18235,16 @@ var LiteMol;
                         transforms: [],
                         transformsOffset: 0,
                         mask: new Int8Array(model.residues.count),
-                        residueIndices: new Core.Utils.ChunkedArrayBuilder(function (s) { return new Int32Array(s); }, model.residues.count, 1),
-                        operatorIndices: new Core.Utils.ChunkedArrayBuilder(function (s) { return new Int32Array(s); }, model.residues.count, 1)
+                        residueIndices: Core.Utils.ChunkedArray.create(function (s) { return new Int32Array(s); }, model.residues.count, 1),
+                        operatorIndices: Core.Utils.ChunkedArray.create(function (s) { return new Int32Array(s); }, model.residues.count, 1)
                     };
                     for (var _i = 0, _a = assembly.gens; _i < _a.length; _i++) {
                         var a = _a[_i];
                         buildAssemblyEntry(model, a, state);
                     }
                     var parts = {
-                        residues: state.residueIndices.compact(),
-                        operators: state.operatorIndices.compact(),
+                        residues: Core.Utils.ChunkedArray.compact(state.residueIndices),
+                        operators: Core.Utils.ChunkedArray.compact(state.operatorIndices),
                         atomCount: state.atomCount,
                         chainCount: state.chainCount,
                         entityCount: state.entityCount
@@ -18250,8 +19037,8 @@ var LiteMol;
                     function compileAtomIndices(indices) {
                         return function (ctx) {
                             var count = 0;
-                            for (var _i = 0, indices_4 = indices; _i < indices_4.length; _i++) {
-                                var aI = indices_4[_i];
+                            for (var _i = 0, indices_3 = indices; _i < indices_3.length; _i++) {
+                                var aI = indices_3[_i];
                                 if (ctx.hasAtom(aI))
                                     count++;
                             }
@@ -18259,8 +19046,8 @@ var LiteMol;
                                 return Query.FragmentSeq.empty(ctx);
                             var offset = 0;
                             var f = new Int32Array(count);
-                            for (var _a = 0, indices_5 = indices; _a < indices_5.length; _a++) {
-                                var aI = indices_5[_a];
+                            for (var _a = 0, indices_4 = indices; _a < indices_4.length; _a++) {
+                                var aI = indices_4[_a];
                                 if (ctx.hasAtom(aI))
                                     f[offset++] = aI;
                             }
@@ -18283,8 +19070,8 @@ var LiteMol;
                                 }
                             }
                             else {
-                                for (var _i = 0, indices_6 = indices; _i < indices_6.length; _i++) {
-                                    var i = indices_6[_i];
+                                for (var _i = 0, indices_5 = indices; _i < indices_5.length; _i++) {
+                                    var i = indices_5[_i];
                                     if (!ctx.hasRange(atomStartIndex[i], atomEndIndex[i]))
                                         continue;
                                     fragments.add(Query.Fragment.ofIndexRange(ctx, atomStartIndex[i], atomEndIndex[i]));
@@ -53942,7 +54729,7 @@ var LiteMol;
 (function (LiteMol) {
     var Visualization;
     (function (Visualization) {
-        Visualization.VERSION = { number: "1.3.1", date: "Sep 23 2016" };
+        Visualization.VERSION = { number: "1.3.2", date: "Oct 14 2016" };
     })(Visualization = LiteMol.Visualization || (LiteMol.Visualization = {}));
 })(LiteMol || (LiteMol = {}));
 var LiteMol;
@@ -55935,6 +56722,7 @@ var LiteMol;
                 Picking.getSceneId = getSceneId;
             })(Picking = Selection.Picking || (Selection.Picking = {}));
             ;
+            var ChunkedArray = LiteMol.Core.Utils.ChunkedArray;
             var VertexMapBuilder = (function () {
                 function VertexMapBuilder(elementCount) {
                     this.elementCount = elementCount;
@@ -55943,9 +56731,9 @@ var LiteMol;
                     this.elementRangeIndex = 0;
                     this.rangeIndex = 0;
                     this.added = 0;
-                    this.elementIndices = new LiteMol.Core.Utils.ChunkedArrayBuilder(function (size) { return new Int32Array(size); }, elementCount, 1);
+                    this.elementIndices = ChunkedArray.create(function (size) { return new Int32Array(size); }, elementCount, 1);
                     this.elementRanges = new Int32Array(2 * elementCount);
-                    this.vertexRanges = new LiteMol.Core.Utils.ChunkedArrayBuilder(function (size) { return new Int32Array(size); }, elementCount, 2);
+                    this.vertexRanges = ChunkedArray.create(function (size) { return new Int32Array(size); }, elementCount, 2);
                 }
                 VertexMapBuilder.prototype.startElement = function (index) {
                     this.elementIndex = index;
@@ -55955,16 +56743,16 @@ var LiteMol;
                 };
                 VertexMapBuilder.prototype.addVertexRange = function (start, end) {
                     this.added++;
-                    this.vertexRanges.add2(start, end);
+                    ChunkedArray.add2(this.vertexRanges, start, end);
                 };
                 VertexMapBuilder.prototype.endElement = function () {
-                    this.elementIndices.add(this.elementIndex);
+                    ChunkedArray.add(this.elementIndices, this.elementIndex);
                     this.elementMap.set(this.elementIndex, this.elementRangeIndex);
                     this.elementRanges[2 * this.elementRangeIndex] = 2 * this.rangeIndex;
                     this.elementRanges[2 * this.elementRangeIndex + 1] = 2 * (this.rangeIndex + this.added);
                 };
                 VertexMapBuilder.prototype.getMap = function () {
-                    return new VertexMap(this.elementIndices.compact(), this.elementMap, this.elementRanges, this.vertexRanges.compact());
+                    return new VertexMap(ChunkedArray.compact(this.elementIndices), this.elementMap, this.elementRanges, ChunkedArray.compact(this.vertexRanges));
                 };
                 return VertexMapBuilder;
             }());
@@ -56049,6 +56837,7 @@ var LiteMol;
         var Surface;
         (function (Surface) {
             "use strict";
+            var ChunkedArray = LiteMol.Core.Utils.ChunkedArray;
             function sortAnnotation(ctx) {
                 var indices = new Int32Array(ctx.data.annotation.length);
                 var annotation = ctx.data.annotation;
@@ -56150,14 +56939,14 @@ var LiteMol;
                     var a = tri[3 * i], b = tri[3 * i + 1], c = tri[3 * i + 2];
                     var aI = ids[a], bI = ids[b], cI = ids[c];
                     if (aI === bI && bI === cI) {
-                        pickTris.add3(a, b, c);
+                        ChunkedArray.add3(pickTris, a, b, c);
                         continue;
                     }
                     var s = aI === bI ? aI : bI;
-                    pickPlatesVertices.add3(vs[3 * a], vs[3 * a + 1], vs[3 * a + 2]);
-                    pickPlatesVertices.add3(vs[3 * b], vs[3 * b + 1], vs[3 * b + 2]);
-                    pickPlatesVertices.add3(vs[3 * c], vs[3 * c + 1], vs[3 * c + 2]);
-                    pickPlatesTris.add3(platesVertexCount++, platesVertexCount++, platesVertexCount++);
+                    ChunkedArray.add3(pickPlatesVertices, vs[3 * a], vs[3 * a + 1], vs[3 * a + 2]);
+                    ChunkedArray.add3(pickPlatesVertices, vs[3 * b], vs[3 * b + 1], vs[3 * b + 2]);
+                    ChunkedArray.add3(pickPlatesVertices, vs[3 * c], vs[3 * c + 1], vs[3 * c + 2]);
+                    ChunkedArray.add3(pickPlatesTris, platesVertexCount++, platesVertexCount++, platesVertexCount++);
                     if (s < 0) {
                         color.r = 0;
                         color.g = 0;
@@ -56166,16 +56955,16 @@ var LiteMol;
                     else {
                         Visualization.Selection.Picking.assignPickColor(s, color);
                     }
-                    pickPlatesColors.add4(color.r, color.g, color.b, 0.0);
-                    pickPlatesColors.add4(color.r, color.g, color.b, 0.0);
-                    pickPlatesColors.add4(color.r, color.g, color.b, 0.0);
+                    ChunkedArray.add4(pickPlatesColors, color.r, color.g, color.b, 0.0);
+                    ChunkedArray.add4(pickPlatesColors, color.r, color.g, color.b, 0.0);
+                    ChunkedArray.add4(pickPlatesColors, color.r, color.g, color.b, 0.0);
                 }
                 ctx.platesVertexCount += platesVertexCount;
                 ctx.computation.schedule(function () { return computePickPlatesChunk(start + chunkSize, ctx, next); });
             }
             function assignPickColors(ctx) {
                 var color = { r: 0.45, g: 0.45, b: 0.45 }, vs = ctx.data.vertices, ids = ctx.data.annotation, tri = ctx.data.triangleIndices;
-                ctx.pickTris = LiteMol.Core.Utils.ChunkedArrayBuilder.forIndexBuffer(ctx.triCount);
+                ctx.pickTris = ChunkedArray.forIndexBuffer(ctx.triCount);
                 var pickColorBuffer = ctx.pickColorBuffer;
                 for (var i = 0, _b = ctx.vertexCount; i < _b; i++) {
                     var id = ids[i];
@@ -56202,13 +56991,13 @@ var LiteMol;
             function createPickGeometry(ctx) {
                 var pickGeometry = new Visualization.THREE.BufferGeometry();
                 pickGeometry.addAttribute('position', new Visualization.THREE.BufferAttribute(ctx.data.vertices, 3));
-                pickGeometry.addAttribute('index', new Visualization.THREE.BufferAttribute(ctx.pickTris.compact(), 1));
+                pickGeometry.addAttribute('index', new Visualization.THREE.BufferAttribute(ChunkedArray.compact(ctx.pickTris), 1));
                 pickGeometry.addAttribute('pColor', new Visualization.THREE.BufferAttribute(ctx.pickColorBuffer, 4));
                 ctx.geom.pickGeometry = pickGeometry;
                 pickGeometry = new Visualization.THREE.BufferGeometry();
-                pickGeometry.addAttribute('position', new Visualization.THREE.BufferAttribute(ctx.pickPlatesVertices.compact(), 3));
-                pickGeometry.addAttribute('index', new Visualization.THREE.BufferAttribute(ctx.pickPlatesTris.compact(), 1));
-                pickGeometry.addAttribute('pColor', new Visualization.THREE.BufferAttribute(ctx.pickPlatesColors.compact(), 4));
+                pickGeometry.addAttribute('position', new Visualization.THREE.BufferAttribute(ChunkedArray.compact(ctx.pickPlatesVertices), 3));
+                pickGeometry.addAttribute('index', new Visualization.THREE.BufferAttribute(ChunkedArray.compact(ctx.pickPlatesTris), 1));
+                pickGeometry.addAttribute('pColor', new Visualization.THREE.BufferAttribute(ChunkedArray.compact(ctx.pickPlatesColors), 4));
                 ctx.geom.pickPlatesGeometry = pickGeometry;
             }
             function addWireframeEdge(edges, included, a, b) {
@@ -56222,11 +57011,11 @@ var LiteMol;
                 included.add(cantorPairing);
                 if (included.size === oldSize)
                     return;
-                edges.add2(a, b);
+                ChunkedArray.add2(edges, a, b);
             }
             function buildWireframeIndices(ctx) {
                 var tris = ctx.data.triangleIndices;
-                var edges = new LiteMol.Core.Utils.ChunkedArrayBuilder(function (size) { return new Uint32Array(size); }, (1.5 * ctx.triCount) | 0, 2);
+                var edges = ChunkedArray.create(function (size) { return new Uint32Array(size); }, (1.5 * ctx.triCount) | 0, 2);
                 var includedEdges = new Set();
                 for (var i = 0, _b = tris.length; i < _b; i += 3) {
                     var a = tris[i], b = tris[i + 1], c = tris[i + 2];
@@ -56234,7 +57023,7 @@ var LiteMol;
                     addWireframeEdge(edges, includedEdges, a, c);
                     addWireframeEdge(edges, includedEdges, b, c);
                 }
-                return new Visualization.THREE.BufferAttribute(edges.compact(), 1);
+                return new Visualization.THREE.BufferAttribute(ChunkedArray.compact(edges), 1);
             }
             function createGeometry(isWireframe, ctx) {
                 var geometry = new Visualization.THREE.BufferGeometry();
@@ -56261,9 +57050,9 @@ var LiteMol;
                     }
                     else {
                         assignPickColors(ctx);
-                        ctx.pickPlatesVertices = LiteMol.Core.Utils.ChunkedArrayBuilder.forVertex3D(Math.max(ctx.vertexCount / 10, 10));
-                        ctx.pickPlatesTris = LiteMol.Core.Utils.ChunkedArrayBuilder.forIndexBuffer(Math.max(ctx.triCount / 10, 10));
-                        ctx.pickPlatesColors = new LiteMol.Core.Utils.ChunkedArrayBuilder(function (s) { return new Float32Array(s); }, Math.max(ctx.vertexCount / 10, 10), 4);
+                        ctx.pickPlatesVertices = ChunkedArray.forVertex3D(Math.max(ctx.vertexCount / 10, 10));
+                        ctx.pickPlatesTris = ChunkedArray.forIndexBuffer(Math.max(ctx.triCount / 10, 10));
+                        ctx.pickPlatesColors = ChunkedArray.create(function (s) { return new Float32Array(s); }, Math.max(ctx.vertexCount / 10, 10), 4);
                         ctx.platesVertexCount = 0;
                         computePickPlatesChunk(0, ctx, function () {
                             createPickGeometry(ctx);
@@ -56695,6 +57484,7 @@ var LiteMol;
                 "use strict";
                 var BallsAndSticksHelper;
                 (function (BallsAndSticksHelper) {
+                    var ChunkedArray = LiteMol.Core.Utils.ChunkedArray;
                     function addPrecomputedBonds(molecule, atomIndices, builder) {
                         var mask = LiteMol.Core.Structure.Query.Context.Mask.ofIndices(molecule, atomIndices);
                         var stickCount = 0;
@@ -56707,7 +57497,7 @@ var LiteMol;
                             var order = type[i];
                             if (order < 1 || order > 4)
                                 order = 1;
-                            builder.add3(a, b, order);
+                            ChunkedArray.add3(builder, a, b, order);
                             stickCount += order;
                         }
                         return stickCount;
@@ -56719,7 +57509,7 @@ var LiteMol;
                         atomCount = indices.length;
                         var atoms = molecule.atoms, cX = atoms.x, cY = atoms.y, cZ = atoms.z, elementSymbol = atoms.elementSymbol, atomName = atoms.name, altLoc = atoms.altLoc, atomResidueIndex = atoms.residueIndex, atomEntityIndex = atoms.entityIndex, entityType = molecule.entities.entityType, waterType = LiteMol.Core.Structure.EntityType.Water, residueName = molecule.residues.name;
                         var bondLength = 2;
-                        var compBonds = molecule.componentBonds, builder = new LiteMol.Core.Utils.ChunkedArrayBuilder(function (size) { return new Int32Array(size); }, (indices.length * 1.33) | 0, 3), residueCount = 1, stickCount = 0, startAtomIndex = 0, endAtomIndex = 0;
+                        var compBonds = molecule.componentBonds, builder = ChunkedArray.create(function (size) { return new Int32Array(size); }, (indices.length * 1.33) | 0, 3), residueCount = 1, stickCount = 0, startAtomIndex = 0, endAtomIndex = 0;
                         if (molecule.covalentBonds) {
                             stickCount = BallsAndSticksHelper.addPrecomputedBonds(molecule, atomIndices, builder);
                             while (startAtomIndex < atomCount) {
@@ -56731,7 +57521,7 @@ var LiteMol;
                                 startAtomIndex = endAtomIndex;
                             }
                             return {
-                                bonds: builder.compact(),
+                                bonds: ChunkedArray.compact(builder),
                                 stickCount: stickCount,
                                 residueCount: residueCount
                             };
@@ -56755,7 +57545,7 @@ var LiteMol;
                                             if (order !== void 0) {
                                                 if (order < 1 || order > 4)
                                                     order = 1;
-                                                builder.add3(iA, iB, order);
+                                                ChunkedArray.add3(builder, iA, iB, order);
                                                 stickCount += order;
                                             }
                                         }
@@ -56782,14 +57572,14 @@ var LiteMol;
                                             continue;
                                         if (isHA || isHB) {
                                             if (len < 1.1) {
-                                                builder.add3(atom, idx, 1);
+                                                ChunkedArray.add3(builder, atom, idx, 1);
                                                 stickCount++;
                                             }
                                             continue;
                                         }
                                         var altB = altLoc[idx];
                                         if (len && (!altA || !altB || altA === altB)) {
-                                            builder.add3(atom, idx, 1);
+                                            ChunkedArray.add3(builder, atom, idx, 1);
                                             stickCount++;
                                         }
                                     }
@@ -56800,7 +57590,7 @@ var LiteMol;
                             startAtomIndex = endAtomIndex;
                         }
                         return {
-                            bonds: builder.compact(),
+                            bonds: ChunkedArray.compact(builder),
                             stickCount: stickCount,
                             residueCount: residueCount
                         };
@@ -57328,9 +58118,11 @@ var LiteMol;
             (function (Cartoons) {
                 var Geometry;
                 (function (Geometry) {
+                    var ChunkedArray = LiteMol.Core.Utils.ChunkedArray;
+                    var ArrayBuilder = LiteMol.Core.Utils.ArrayBuilder;
                     var CartoonAsymUnitState = (function () {
                         function CartoonAsymUnitState(residueCount) {
-                            this.typeBuilder = LiteMol.Core.Utils.ArrayBuilder.forArray(10000);
+                            this.typeBuilder = ArrayBuilder.forArray(10000);
                             this.residueType = [];
                             this.uPositions = new Float32Array(0);
                             this.vPositions = new Float32Array(0);
@@ -57338,17 +58130,17 @@ var LiteMol;
                             this.dPositions = new Float32Array(0);
                             this.uvLength = 0;
                             this.residueCount = 0;
-                            this.typeBuilder = LiteMol.Core.Utils.ArrayBuilder.forArray(residueCount + 4);
-                            this.uPositionsBuilder = LiteMol.Core.Utils.ArrayBuilder.forVertex3D(residueCount + 4);
-                            this.vPositionsBuilder = LiteMol.Core.Utils.ArrayBuilder.forVertex3D(residueCount + 4);
-                            this.pPositionsBuilder = LiteMol.Core.Utils.ArrayBuilder.forVertex3D(residueCount + 4);
-                            this.dPositionsBuilder = LiteMol.Core.Utils.ArrayBuilder.forVertex3D(residueCount + 4);
-                            this.typeBuilder.add(0 /* None */);
-                            this.typeBuilder.add(0 /* None */);
-                            this.uPositionsBuilder.add3(0, 0, 0);
-                            this.uPositionsBuilder.add3(0, 0, 0);
-                            this.vPositionsBuilder.add3(0, 0, 0);
-                            this.vPositionsBuilder.add3(0, 0, 0);
+                            this.typeBuilder = ArrayBuilder.forArray(residueCount + 4);
+                            this.uPositionsBuilder = ArrayBuilder.forVertex3D(residueCount + 4);
+                            this.vPositionsBuilder = ArrayBuilder.forVertex3D(residueCount + 4);
+                            this.pPositionsBuilder = ArrayBuilder.forVertex3D(residueCount + 4);
+                            this.dPositionsBuilder = ArrayBuilder.forVertex3D(residueCount + 4);
+                            ArrayBuilder.add(this.typeBuilder, 0 /* None */);
+                            ArrayBuilder.add(this.typeBuilder, 0 /* None */);
+                            ArrayBuilder.add3(this.uPositionsBuilder, 0, 0, 0);
+                            ArrayBuilder.add3(this.uPositionsBuilder, 0, 0, 0);
+                            ArrayBuilder.add3(this.vPositionsBuilder, 0, 0, 0);
+                            ArrayBuilder.add3(this.vPositionsBuilder, 0, 0, 0);
                         }
                         CartoonAsymUnitState.prototype.addResidue = function (rIndex, arrays, sType) {
                             var start = arrays.atomStartIndex[rIndex], end = arrays.atomEndIndex[rIndex], aU = false, aV = false;
@@ -57356,11 +58148,11 @@ var LiteMol;
                             if (sType !== 5 /* Strand */) {
                                 for (var i = start; i < end; i++) {
                                     if (!aU && name[i] === "CA") {
-                                        this.uPositionsBuilder.add3(arrays.x[i], arrays.y[i], arrays.z[i]);
+                                        ArrayBuilder.add3(this.uPositionsBuilder, arrays.x[i], arrays.y[i], arrays.z[i]);
                                         aU = true;
                                     }
                                     else if (!aV && name[i] === "O") {
-                                        this.vPositionsBuilder.add3(arrays.x[i], arrays.y[i], arrays.z[i]);
+                                        ArrayBuilder.add3(this.vPositionsBuilder, arrays.x[i], arrays.y[i], arrays.z[i]);
                                         aV = true;
                                     }
                                     if (aU && aV)
@@ -57370,11 +58162,11 @@ var LiteMol;
                             else {
                                 for (var i = start; i < end; i++) {
                                     if (!aU && name[i] === "O5'") {
-                                        this.uPositionsBuilder.add3(arrays.x[i], arrays.y[i], arrays.z[i]);
+                                        ArrayBuilder.add3(this.uPositionsBuilder, arrays.x[i], arrays.y[i], arrays.z[i]);
                                         aU = true;
                                     }
                                     else if (!aV && name[i] === "C3'") {
-                                        this.vPositionsBuilder.add3(arrays.x[i], arrays.y[i], arrays.z[i]);
+                                        ArrayBuilder.add3(this.vPositionsBuilder, arrays.x[i], arrays.y[i], arrays.z[i]);
                                         aV = true;
                                     }
                                     if (aU && aV)
@@ -57383,17 +58175,17 @@ var LiteMol;
                             }
                             if (!aV) {
                                 var arr = this.pPositionsBuilder.array, len = arr.length;
-                                this.vPositionsBuilder.add3(arr[len - 3], arr[len - 2], arr[len - 1]);
+                                ArrayBuilder.add3(this.vPositionsBuilder, arr[len - 3], arr[len - 2], arr[len - 1]);
                             }
-                            this.typeBuilder.add(sType);
+                            ArrayBuilder.add(this.typeBuilder, sType);
                         };
                         CartoonAsymUnitState.prototype.finishResidues = function () {
-                            this.typeBuilder.add(0 /* None */);
-                            this.typeBuilder.add(0 /* None */);
-                            this.uPositionsBuilder.add3(0, 0, 0);
-                            this.uPositionsBuilder.add3(0, 0, 0);
-                            this.vPositionsBuilder.add3(0, 0, 0);
-                            this.vPositionsBuilder.add3(0, 0, 0);
+                            ArrayBuilder.add(this.typeBuilder, 0 /* None */);
+                            ArrayBuilder.add(this.typeBuilder, 0 /* None */);
+                            ArrayBuilder.add3(this.uPositionsBuilder, 0, 0, 0);
+                            ArrayBuilder.add3(this.uPositionsBuilder, 0, 0, 0);
+                            ArrayBuilder.add3(this.vPositionsBuilder, 0, 0, 0);
+                            ArrayBuilder.add3(this.vPositionsBuilder, 0, 0, 0);
                             this.residueType = this.typeBuilder.array;
                             this.uPositions = this.uPositionsBuilder.array;
                             this.vPositions = this.vPositionsBuilder.array;
@@ -57404,8 +58196,8 @@ var LiteMol;
                             this.residueCount = this.uvLength - 4;
                         };
                         CartoonAsymUnitState.prototype.addControlPoint = function (p, d) {
-                            this.pPositionsBuilder.add3(p.x, p.y, p.z);
-                            this.dPositionsBuilder.add3(d.x, d.y, d.z);
+                            ArrayBuilder.add3(this.pPositionsBuilder, p.x, p.y, p.z);
+                            ArrayBuilder.add3(this.dPositionsBuilder, d.x, d.y, d.z);
                         };
                         CartoonAsymUnitState.prototype.finishContols = function () {
                             this.pPositions = this.pPositionsBuilder.array;
@@ -57437,9 +58229,9 @@ var LiteMol;
                                 this.residueCount += e.endResidueIndex - e.startResidueIndex;
                             }
                             var state = new CartoonAsymUnitState(this.residueCount);
-                            this.controlPointsBuilder = LiteMol.Core.Utils.ArrayBuilder.forVertex3D(this.residueCount * this.linearSegmentCount + 1);
-                            this.torsionVectorsBuilder = LiteMol.Core.Utils.ArrayBuilder.forVertex3D(this.residueCount * this.linearSegmentCount + 1);
-                            this.normalVectorsBuilder = LiteMol.Core.Utils.ArrayBuilder.forVertex3D(this.residueCount * this.linearSegmentCount + 1);
+                            this.controlPointsBuilder = ArrayBuilder.forVertex3D(this.residueCount * this.linearSegmentCount + 1);
+                            this.torsionVectorsBuilder = ArrayBuilder.forVertex3D(this.residueCount * this.linearSegmentCount + 1);
+                            this.normalVectorsBuilder = ArrayBuilder.forVertex3D(this.residueCount * this.linearSegmentCount + 1);
                             this.createControlPoints(state);
                         }
                         CartoonAsymUnit.maskSplit = function (element, mask, target) {
@@ -57705,14 +58497,14 @@ var LiteMol;
                             }
                         };
                         CartoonAsymUnit.prototype.addSplineNode = function (previousControlPoint, controlPoint, torsionPoint) {
-                            this.controlPointsBuilder.add3(controlPoint.x, controlPoint.y, controlPoint.z);
+                            ArrayBuilder.add3(this.controlPointsBuilder, controlPoint.x, controlPoint.y, controlPoint.z);
                             var torsionVector = this.tempA.subVectors(torsionPoint, controlPoint);
                             torsionVector.normalize();
-                            this.torsionVectorsBuilder.add3(torsionVector.x, torsionVector.y, torsionVector.z);
+                            ArrayBuilder.add3(this.torsionVectorsBuilder, torsionVector.x, torsionVector.y, torsionVector.z);
                             var controlVector = this.tempB.subVectors(controlPoint, previousControlPoint);
                             var normalVector = this.tempC.crossVectors(torsionVector, controlVector);
                             normalVector.normalize();
-                            this.normalVectorsBuilder.add3(normalVector.x, normalVector.y, normalVector.z);
+                            ArrayBuilder.add3(this.normalVectorsBuilder, normalVector.x, normalVector.y, normalVector.z);
                         };
                         CartoonAsymUnit.prototype.reflectPositions = function (xs, u, v, a, b, c, d, r1, r2) {
                             this.tempA.set(xs[3 * a], xs[3 * a + 1], xs[3 * a + 2]);
@@ -57766,9 +58558,9 @@ var LiteMol;
                             this.residueIndex = 0;
                             this.verticesDone = 0;
                             this.trianglesDone = 0;
-                            this.vertexBuffer = LiteMol.Core.Utils.ChunkedArrayBuilder.forVertex3D();
-                            this.normalBuffer = LiteMol.Core.Utils.ChunkedArrayBuilder.forVertex3D();
-                            this.indexBuffer = LiteMol.Core.Utils.ChunkedArrayBuilder.forIndexBuffer();
+                            this.vertexBuffer = ChunkedArray.forVertex3D();
+                            this.normalBuffer = ChunkedArray.forVertex3D();
+                            this.indexBuffer = ChunkedArray.forIndexBuffer();
                             this.translationMatrix = new Visualization.THREE.Matrix4();
                             this.scaleMatrix = new Visualization.THREE.Matrix4();
                             this.rotationMatrix = new Visualization.THREE.Matrix4();
@@ -57776,17 +58568,17 @@ var LiteMol;
                             this.vertexMap = new Visualization.Selection.VertexMapBuilder(residueCount);
                         }
                         CartoonsGeometryState.prototype.addVertex = function (v, n) {
-                            this.vertexBuffer.add3(v.x, v.y, v.z);
-                            this.normalBuffer.add3(n.x, n.y, n.z);
+                            ChunkedArray.add3(this.vertexBuffer, v.x, v.y, v.z);
+                            ChunkedArray.add3(this.normalBuffer, n.x, n.y, n.z);
                             this.verticesDone++;
                         };
                         CartoonsGeometryState.prototype.addTriangle = function (i, j, k) {
-                            this.indexBuffer.add3(i, j, k);
+                            ChunkedArray.add3(this.indexBuffer, i, j, k);
                             this.trianglesDone++;
                         };
                         CartoonsGeometryState.prototype.addTriangles = function (i, j, k, u, v, w) {
-                            this.indexBuffer.add3(i, j, k);
-                            this.indexBuffer.add3(u, v, w);
+                            ChunkedArray.add3(this.indexBuffer, i, j, k);
+                            ChunkedArray.add3(this.indexBuffer, u, v, w);
                             this.trianglesDone += 2;
                         };
                         return CartoonsGeometryState;
@@ -57938,7 +58730,7 @@ var LiteMol;
                     Geometry.buildUnitsChunk = buildUnitsChunk;
                     function createGeometry(ctx) {
                         var state = ctx.state;
-                        var vertexBuffer = new Float32Array(state.vertexBuffer.compact()), normalBuffer = new Float32Array(state.normalBuffer.compact()), colorBuffer = new Float32Array(state.verticesDone * 3), pickColorBuffer = new Float32Array(state.verticesDone * 4), indexBuffer = new Uint32Array(state.indexBuffer.compact()), stateBuffer = new Float32Array(state.verticesDone);
+                        var vertexBuffer = new Float32Array(ChunkedArray.compact(state.vertexBuffer)), normalBuffer = new Float32Array(ChunkedArray.compact(state.normalBuffer)), colorBuffer = new Float32Array(state.verticesDone * 3), pickColorBuffer = new Float32Array(state.verticesDone * 4), indexBuffer = new Uint32Array(ChunkedArray.compact(state.indexBuffer)), stateBuffer = new Float32Array(state.verticesDone);
                         var geometry = new Visualization.THREE.BufferGeometry();
                         geometry.addAttribute('position', new Visualization.THREE.BufferAttribute(vertexBuffer, 3));
                         geometry.addAttribute('normal', new Visualization.THREE.BufferAttribute(normalBuffer, 3));
@@ -67077,8 +67869,8 @@ var LiteMol;
                         return Bootstrap.Task.fromComputation("Create Molecule (" + a.props.label + ")", 'Normal', t.params.format.parse(a.props.data, { id: t.params.customId }))
                             .setReportTime(true)
                             .bind("Create Molecule (" + a.props.label + ")", 'Silent', function (r) {
-                            if (r.error)
-                                return Bootstrap.Task.reject("Create Molecule (" + a.props.label + ")", 'Background', r.error.toString());
+                            if (r.isError)
+                                return Bootstrap.Task.reject("Create Molecule (" + a.props.label + ")", 'Background', r.toString());
                             if (r.warnings && r.warnings.length > 0) {
                                 for (var _i = 0, _a = r.warnings; _i < _a.length; _i++) {
                                     var w = _a[_i];
@@ -67388,8 +68180,8 @@ var LiteMol;
                             ctx.update('Parsing...');
                             ctx.schedule(function () {
                                 var d = LiteMol.Core.Formats.CIF.Text.parse(a.props.data);
-                                if (d.error) {
-                                    ctx.reject(d.error.toString());
+                                if (d.isError) {
+                                    ctx.reject(d.toString());
                                     return;
                                 }
                                 ctx.resolve(Entity.Data.CifDictionary.create(t, { label: t.params.id ? t.params.id : 'CIF Dictionary', description: t.params.description, dictionary: d.result }));
@@ -67408,8 +68200,8 @@ var LiteMol;
                             ctx.update('Parsing...');
                             ctx.schedule(function () {
                                 var d = LiteMol.Core.Formats.CIF.Binary.parse(a.props.data);
-                                if (d.error) {
-                                    ctx.reject(d.error.toString());
+                                if (d.isError) {
+                                    ctx.reject(d.toString());
                                     return;
                                 }
                                 ctx.resolve(Entity.Data.CifDictionary.create(t, { label: t.params.id ? t.params.id : 'CIF Dictionary', description: t.params.description, dictionary: d.result }));
@@ -67463,8 +68255,8 @@ var LiteMol;
                         return Bootstrap.Task.fromComputation("Parse Density (" + a.props.label + ")", 'Normal', t.params.format.parse(a.props.data))
                             .setReportTime(true)
                             .bind("Create Density (" + a.props.label + ")", 'Silent', function (data) {
-                            if (data.error) {
-                                return Bootstrap.Task.reject("Create Density (" + a.props.label + ")", 'Background', data.error.toString());
+                            if (data.isError) {
+                                return Bootstrap.Task.reject("Create Density (" + a.props.label + ")", 'Background', data.toString());
                             }
                             if (t.params.normalize) {
                                 data.result.normalize();
@@ -67575,8 +68367,10 @@ var LiteMol;
                             defaultParams: function () { return ({}); }
                         }, function (ctx, a, t) {
                             return Bootstrap.Task.create('Load', 'Silent', function (ctx) {
-                                var cif = LiteMol.Core.Formats.CIF.Binary.parse(t.params.data).result;
-                                var model = LiteMol.Core.Formats.Molecule.mmCIF.ofDataBlock(cif.dataBlocks[0]).models[0];
+                                var cif = LiteMol.Core.Formats.CIF.Binary.parse(t.params.data);
+                                if (cif.isError)
+                                    return;
+                                var model = LiteMol.Core.Formats.Molecule.mmCIF.ofDataBlock(cif.result.dataBlocks[0]).models[0];
                                 if (t.params.transform)
                                     LiteMol.Core.Structure.Operator.applyToModelUnsafe(t.params.transform, model);
                                 ctx.resolve(Entity.Molecule.Model.create(t, { label: 'part', model: model }));

@@ -3,14 +3,14 @@
  */
 
 namespace LiteMol.Core.Utils {
-    
+
     export function integerSetToSortedTypedArray(set: Set<number>) {
         let array = new Int32Array(set.size);
-        set.forEach(function(this: any, v: number) { this.array[this.index++] = v; }, { array, index: 0 } );
+        set.forEach(function (this: any, v: number) { this.array[this.index++] = v; }, { array, index: 0 });
         Array.prototype.sort.call(array, function (x: number, y: number) { return x - y; });
         return <number[]><any>array;
-    } 
-    
+    }
+
     /**
      * A a JS native array with the given size.
      */
@@ -26,210 +26,229 @@ namespace LiteMol.Core.Utils {
     export function makeNativeFloatArray(size: number) {
         let arr: number[] = [];
         if (!size) return arr;
-        arr[0] = 0.1; 
+        arr[0] = 0.1;
         for (let i = 0; i < size; i++) arr[i] = 0;
         return arr;
     }
 
     /**
      * A generic chunked array builder.
+     * 
+     * When adding elements, the array growns by a specified number
+     * of elements and no copying is done until ChunkedArray.compact
+     * is called.
      */
-    export class ChunkedArrayBuilder<T> {
-        private creator: (size: number) => any;
-        private elementSize: number;
-        private chunkSize: number;
-        private current: any;
-        private currentIndex: number;
+    export interface ChunkedArray<T> {
+        creator: (size: number) => any;
+        elementSize: number;
+        chunkSize: number;
+        current: any;
+        currentIndex: number;
 
         parts: any[];
         elementCount: number;
+    }
 
-
-        add4(x: T, y: T, z: T, w: T) {
-            if (this.currentIndex >= this.chunkSize) {
-                this.currentIndex = 0;
-                this.current = this.creator(this.chunkSize);
-                this.parts[this.parts.length] = this.current;
-            }
-
-            this.current[this.currentIndex++] = x;
-            this.current[this.currentIndex++] = y;
-            this.current[this.currentIndex++] = z;
-            this.current[this.currentIndex++] = w;
-            return this.elementCount++;
+    export namespace ChunkedArray {
+        export function is(x: any): x is ChunkedArray<any> {
+            return x.creator && x.chunkSize;
         }
 
-        add3(x: T, y: T, z: T) {
-            if (this.currentIndex >= this.chunkSize) {
-                this.currentIndex = 0;
-                this.current = this.creator(this.chunkSize);
-                this.parts[this.parts.length] = this.current;
+        export function add4<T>(array: ChunkedArray<T>, x: T, y: T, z: T, w: T) {
+            if (array.currentIndex >= array.chunkSize) {
+                array.currentIndex = 0;
+                array.current = array.creator(array.chunkSize);
+                array.parts[array.parts.length] = array.current;
             }
 
-            this.current[this.currentIndex++] = x;
-            this.current[this.currentIndex++] = y;
-            this.current[this.currentIndex++] = z;            
-            return this.elementCount++;
+            array.current[array.currentIndex++] = x;
+            array.current[array.currentIndex++] = y;
+            array.current[array.currentIndex++] = z;
+            array.current[array.currentIndex++] = w;
+            return array.elementCount++;
         }
-        
-        add2(x: T, y: T) {
-            if (this.currentIndex >= this.chunkSize) {
-                this.currentIndex = 0;
-                this.current = this.creator(this.chunkSize);
-                this.parts[this.parts.length] = this.current;
+
+        export function add3<T>(array: ChunkedArray<T>, x: T, y: T, z: T) {
+            if (array.currentIndex >= array.chunkSize) {
+                array.currentIndex = 0;
+                array.current = array.creator(array.chunkSize);
+                array.parts[array.parts.length] = array.current;
             }
 
-            this.current[this.currentIndex++] = x;
-            this.current[this.currentIndex++] = y;            
-            return this.elementCount++;
+            array.current[array.currentIndex++] = x;
+            array.current[array.currentIndex++] = y;
+            array.current[array.currentIndex++] = z;
+            return array.elementCount++;
         }
 
-        add(x: T) {
-            if (this.currentIndex >= this.chunkSize) {
-                this.currentIndex = 0;
-                this.current = this.creator(this.chunkSize);
-                this.parts[this.parts.length] = this.current;
+        export function add2<T>(array: ChunkedArray<T>, x: T, y: T) {
+            if (array.currentIndex >= array.chunkSize) {
+                array.currentIndex = 0;
+                array.current = array.creator(array.chunkSize);
+                array.parts[array.parts.length] = array.current;
             }
 
-            this.current[this.currentIndex++] = x;            
-            return this.elementCount++;
+            array.current[array.currentIndex++] = x;
+            array.current[array.currentIndex++] = y;
+            return array.elementCount++;
+        }
+
+        export function add<T>(array: ChunkedArray<T>, x: T) {
+            if (array.currentIndex >= array.chunkSize) {
+                array.currentIndex = 0;
+                array.current = array.creator(array.chunkSize);
+                array.parts[array.parts.length] = array.current;
+            }
+
+            array.current[array.currentIndex++] = x;
+            return array.elementCount++;
         }
 
 
-        compact(): T[]{
-            var ret = <any>this.creator(this.elementSize * this.elementCount),
-                i: number, j: number, offset = (this.parts.length - 1) * this.chunkSize, offsetInner = 0, part: any;
+        export function compact<T>(array: ChunkedArray<T>): T[] {
+            let ret = <any>array.creator(array.elementSize * array.elementCount),
+                offset = (array.parts.length - 1) * array.chunkSize, offsetInner = 0, part: any;
 
-            if (this.parts.length > 1) {
-                if (this.parts[0].buffer) {
-                    for (i = 0; i < this.parts.length - 1; i++) {
-                        ret.set(this.parts[i], this.chunkSize * i);
+            if (array.parts.length > 1) {
+                if (array.parts[0].buffer) {
+                    for (let i = 0; i < array.parts.length - 1; i++) {
+                        ret.set(array.parts[i], array.chunkSize * i);
                     }
                 } else {
 
-                    for (i = 0; i < this.parts.length - 1; i++) {
-                        offsetInner = this.chunkSize * i;
-                        part = this.parts[i];
+                    for (let i = 0; i < array.parts.length - 1; i++) {
+                        offsetInner = array.chunkSize * i;
+                        part = array.parts[i];
 
-                        for (j = 0; j < this.chunkSize; j++) {
+                        for (let j = 0; j < array.chunkSize; j++) {
                             ret[offsetInner + j] = part[j];
                         }
                     }
                 }
             }
 
-            if (this.current.buffer && this.currentIndex >= this.chunkSize) {
-                ret.set(this.current, this.chunkSize * (this.parts.length - 1));
+            if (array.current.buffer && array.currentIndex >= array.chunkSize) {
+                ret.set(array.current, array.chunkSize * (array.parts.length - 1));
             } else {
-                for (i = 0; i < this.currentIndex; i++) {
-                    ret[offset + i] = this.current[i];
+                for (let i = 0; i < array.currentIndex; i++) {
+                    ret[offset + i] = array.current[i];
                 }
             }
             return <any>ret;
         }
 
-        static forVertex3D(chunkVertexCount: number = 262144): ChunkedArrayBuilder<number> {
-            return new ChunkedArrayBuilder<number>(size => <any>new Float32Array(size), chunkVertexCount, 3)
+        export function forVertex3D<T>(chunkVertexCount: number = 262144): ChunkedArray<number> {
+            return create<number>(size => <any>new Float32Array(size), chunkVertexCount, 3)
         }
 
-        static forIndexBuffer(chunkIndexCount: number = 262144): ChunkedArrayBuilder<number> {
-            return new ChunkedArrayBuilder<number>(size => <any>new Uint32Array(size), chunkIndexCount, 3)
+        export function forIndexBuffer<T>(chunkIndexCount: number = 262144): ChunkedArray<number> {
+            return create<number>(size => <any>new Uint32Array(size), chunkIndexCount, 3)
         }
 
-        static forTokenIndices(chunkTokenCount: number = 131072): ChunkedArrayBuilder<number> {
-            return new ChunkedArrayBuilder<number>(size => <any>new Int32Array(size), chunkTokenCount, 2)
+        export function forTokenIndices<T>(chunkTokenCount: number = 131072): ChunkedArray<number> {
+            return create<number>(size => <any>new Int32Array(size), chunkTokenCount, 2)
         }
 
-        static forIndices(chunkTokenCount: number = 131072): ChunkedArrayBuilder<number> {
-            return new ChunkedArrayBuilder<number>(size => <any>new Int32Array(size), chunkTokenCount, 1)
+        export function forIndices<T>(chunkTokenCount: number = 131072): ChunkedArray<number> {
+            return create<number>(size => <any>new Int32Array(size), chunkTokenCount, 1)
         }
 
-        static forInt32(chunkSize: number = 131072): ChunkedArrayBuilder<number> {
-            return new ChunkedArrayBuilder<number>(size => <any>new Int32Array(size), chunkSize, 1)
+        export function forInt32<T>(chunkSize: number = 131072): ChunkedArray<number> {
+            return create<number>(size => <any>new Int32Array(size), chunkSize, 1)
         }
 
-        static forFloat32(chunkSize: number = 131072): ChunkedArrayBuilder<number> {
-            return new ChunkedArrayBuilder<number>(size => <any>new Float32Array(size), chunkSize, 1)
+        export function forFloat32<T>(chunkSize: number = 131072): ChunkedArray<number> {
+            return create<number>(size => <any>new Float32Array(size), chunkSize, 1)
         }
 
-        static forArray<TElement>(chunkSize: number = 131072): ChunkedArrayBuilder<TElement> {
-            return new ChunkedArrayBuilder<TElement>(size => <any>[], chunkSize, 1)
+        export function forArray<T>(chunkSize: number = 131072): ChunkedArray<T> {
+            return create<T>(size => <any>[], chunkSize, 1)
         }
-        
-        constructor(creator: (size: number) => any, chunkElementCount: number, elementSize: number) {
+
+        export function create<T>(creator: (size: number) => any, chunkElementCount: number, elementSize: number): ChunkedArray<T> {
             chunkElementCount = chunkElementCount | 0;
             if (chunkElementCount <= 0) chunkElementCount = 1;
 
-            this.elementSize = elementSize;
-            this.chunkSize = chunkElementCount * elementSize;
-            this.creator = creator;
-            this.current = creator(this.chunkSize);
-            this.parts = [this.current];
-            this.currentIndex = 0;
-            this.elementCount = 0;
+            let chunkSize = chunkElementCount * elementSize;
+            let current = creator(chunkSize)
+
+            return <ChunkedArray<T>>{
+                elementSize,
+                chunkSize,
+                creator,
+                current,
+                parts: [current],
+                currentIndex: 0,
+                elementCount: 0
+            }
         }
-    }    
+    }
 
     /**
      * Static size array builder.
      */
-    export class ArrayBuilder<T> {
-        private currentIndex: number;
+    export interface ArrayBuilder<T> {
+        currentIndex: number;
         elementCount: number;
         array: T[];
+    }
 
-        add3(x: T, y: T, z: T) {
-            this.array[this.currentIndex++] = x;
-            this.array[this.currentIndex++] = y;
-            this.array[this.currentIndex++] = z;
-            this.elementCount++;
-
+    export namespace ArrayBuilder {
+        export function add3<T>(array: ArrayBuilder<T>, x: T, y: T, z: T) {
+            let a = array.array;
+            a[array.currentIndex++] = x;
+            a[array.currentIndex++] = y;
+            a[array.currentIndex++] = z;
+            array.elementCount++;
         }
 
-        add2(x: T, y: T) {
-            this.array[this.currentIndex++] = x;
-            this.array[this.currentIndex++] = y;
-            this.elementCount++;
+        export function add2<T>(array: ArrayBuilder<T>, x: T, y: T) {
+            let a = array.array;
+            a[array.currentIndex++] = x;
+            a[array.currentIndex++] = y;
+            array.elementCount++;
         }
 
-        add(x: T) {
-            this.array[this.currentIndex++] = x;
-            this.elementCount++;
-        }
-        
-        static forVertex3D(count: number): ArrayBuilder<number> {
-            return new ArrayBuilder<number>(size => <any>new Float32Array(size), count, 3)
+        export function add<T>(array: ArrayBuilder<T>, x: T) {
+            array.array[array.currentIndex++] = x;
+            array.elementCount++;
         }
 
-        static forIndexBuffer(count: number): ArrayBuilder<number> {
-            return new ArrayBuilder<number>(size => <any>new Int32Array(size), count, 3)
+        export function forVertex3D(count: number): ArrayBuilder<number> {
+            return create<number>(size => <any>new Float32Array(size), count, 3)
         }
 
-        static forTokenIndices(count: number): ArrayBuilder<number> {
-            return new ArrayBuilder<number>(size => <any>new Int32Array(size), count, 2)
+        export function forIndexBuffer(count: number): ArrayBuilder<number> {
+            return create<number>(size => <any>new Int32Array(size), count, 3)
         }
 
-        static forIndices(count: number): ArrayBuilder<number> {
-            return new ArrayBuilder<number>(size => <any>new Int32Array(size), count, 1)
+        export function forTokenIndices(count: number): ArrayBuilder<number> {
+            return create<number>(size => <any>new Int32Array(size), count, 2)
         }
 
-        static forInt32(count: number): ArrayBuilder<number> {
-            return new ArrayBuilder<number>(size => <any>new Int32Array(size), count, 1)
+        export function forIndices(count: number): ArrayBuilder<number> {
+            return create<number>(size => <any>new Int32Array(size), count, 1)
         }
 
-        static forFloat32(count: number): ArrayBuilder<number> {
-            return new ArrayBuilder<number>(size => <any>new Float32Array(size), count, 1)
+        export function forInt32(count: number): ArrayBuilder<number> {
+            return create<number>(size => <any>new Int32Array(size), count, 1)
         }
 
-        static forArray<TElement>(count: number): ArrayBuilder<TElement> {
-            return new ArrayBuilder<TElement>(size => <any>[], count, 1)
+        export function forFloat32(count: number): ArrayBuilder<number> {
+            return create<number>(size => <any>new Float32Array(size), count, 1)
         }
 
-        constructor(creator: (size: number) => any, chunkElementCount: number, elementSize: number) {
+        export function forArray<T>(count: number): ArrayBuilder<T> {
+            return create<T>(size => <any>[], count, 1)
+        }
+
+        export function create<T>(creator: (size: number) => any, chunkElementCount: number, elementSize: number): ArrayBuilder<T> {
             chunkElementCount = chunkElementCount | 0;
-            this.array = creator(chunkElementCount * elementSize);
-            this.currentIndex = 0;
-            this.elementCount = 0;
+            return <ArrayBuilder<T>>{
+                array: creator(chunkElementCount * elementSize),
+                currentIndex: 0,
+                elementCount: 0
+            }
         }
-    }    
+    }
 } 
