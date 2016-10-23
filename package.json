@@ -19,6 +19,7 @@
     "gulp-concat": "^2.6.0",
     "gulp-insert": "^0.5.0",
     "gulp-rename": "^1.2.2",
+    "gulp-replace": "^0.5.4",
     "gulp-sass": "^2.3.2",
     "gulp-typescript": "^2.14.1",
     "gulp-uglify": "^2.0.0",

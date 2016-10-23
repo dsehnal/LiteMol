@@ -1,11 +1,12 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 
 <html lang="en">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=1" />
     <title>LiteMol Viewer</title>    
-
+    <link rel="shortcut icon" type="image/png" href="favicon.png">
+    
     <script>
         (function () {
             var theme = (((window.location.search || '').match(/theme=([a-z]+)[&]?/i) || [])[1] || '').toLowerCase();
@@ -18,12 +19,12 @@
             var link  = document.createElement('link');
             link.rel  = 'stylesheet';
             link.type = 'text/css';
-            link.href = 'assets/css/LiteMol-plugin' + theme + '.css';
+            link.href = 'assets/css/LiteMol-plugin' + theme + '.css?lmversion=3';
             link.media = 'all';
             head.appendChild(link);
         })();
     </script>
-    <script src="LiteMol-plugin.js"></script>
+    <script src="LiteMol-plugin.js?lmversion=3"></script>
 
     <style>
         #app {
@@ -69,6 +70,6 @@
         |
         <a href="https://webchem.ncbr.muni.cz/Wiki/LiteMol:UserManual" target="_blank" />Wiki</a>
     </div>
-    <script src="LiteMol-viewer.js"></script>
+    <script src="LiteMol-viewer.js?lmversion=3"></script>
 </body>
 </html>

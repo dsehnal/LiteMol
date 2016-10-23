@@ -2,6 +2,7 @@ var gulp = require('gulp'),
     plugins = {
         concat: require('gulp-concat'),
         rename: require('gulp-rename'),
+        replace: require('gulp-replace'),
         ts: require('gulp-typescript'),
         merge: require('merge2'),
         clean: require('gulp-clean'),
@@ -67,6 +68,16 @@ function ViewerUpdate() {
    return plugins.merge(CSS(true).concat([js]));    
 }
 
+
+gulp.task('HTML-plugin_version', [], function() {
+    return gulp.src(['./LiteMol.Viewer/**/*.html'])
+        .pipe(plugins.replace(/lmversion=[0-9]+/g, function (s) {
+            let v = (+s.match(/lmversion=([0-9]+)/)[1]) + 1;
+            return 'lmversion=' + v;
+        })) 
+        .pipe(gulp.dest('./LiteMol.Viewer'));
+})
+
 gulp.task('Viewer', [], Viewer)
 gulp.task('Viewer-update', [], ViewerUpdate)
 gulp.task('Viewer-inline', ['Plugin'], Viewer)
@@ -77,7 +88,8 @@ gulp.task('default', [
     build('Visualization'),
     build('Bootstrap'),
     build('Plugin'),
-    'Viewer-inline'
+    'Viewer-inline',
+    'HTML-plugin_version'
 ], function () {
     console.log('Done');
 });
