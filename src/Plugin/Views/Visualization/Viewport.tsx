@@ -106,7 +106,7 @@ namespace LiteMol.Plugin.Views.Visualization {
                 <div>
                     <p><b>WebGL does not seem to be available.</b></p>
                     <p>This can be caused by an outdated browser, graphics card driver issue, or bad weather. Sometimes, just restarting the browser helps.</p>
-                    <p>For a list of supported browsers, refer to <a href='https://caniuse.com/#feat=webgl' target='_blank'>https://caniuse.com/#feat=webgl</a>.</p>
+                    <p>For a list of supported browsers, refer to <a href='http://caniuse.com/#feat=webgl' target='_blank'>http://caniuse.com/#feat=webgl</a>.</p>
                 </div>
             </div>
         }

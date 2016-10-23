@@ -76495,7 +76495,7 @@ var LiteMol;
                                 Plugin.React.createElement("p", null, "This can be caused by an outdated browser, graphics card driver issue, or bad weather. Sometimes, just restarting the browser helps."), 
                                 Plugin.React.createElement("p", null, 
                                     "For a list of supported browsers, refer to ", 
-                                    Plugin.React.createElement("a", {href: 'https://caniuse.com/#feat=webgl', target: '_blank'}, "https://caniuse.com/#feat=webgl"), 
+                                    Plugin.React.createElement("a", {href: 'http://caniuse.com/#feat=webgl', target: '_blank'}, "http://caniuse.com/#feat=webgl"), 
                                     "."))
                         );
                     };
