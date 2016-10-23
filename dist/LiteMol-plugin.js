@@ -76495,7 +76495,7 @@ var LiteMol;
                                 Plugin.React.createElement("p", null, "This can be caused by an outdated browser, graphics card driver issue, or bad weather. Sometimes, just restarting the browser helps."), 
                                 Plugin.React.createElement("p", null, 
                                     "For a list of supported browsers, refer to ", 
-                                    Plugin.React.createElement("a", {href: 'http://caniuse.com/#feat=webgl', target: '_blank'}, "http://caniuse.com/#feat=webgl"), 
+                                    Plugin.React.createElement("a", {href: 'https://caniuse.com/#feat=webgl', target: '_blank'}, "https://caniuse.com/#feat=webgl"), 
                                     "."))
                         );
                     };
@@ -76682,7 +76682,7 @@ var LiteMol;
                 sourceId: 'url-molecule',
                 name: 'URL',
                 description: 'Download a molecule from the specified URL (if the host server supports cross domain requests).',
-                defaultId: 'http://webchemdev.ncbr.muni.cz/CoordinateServer/1tqn/cartoon',
+                defaultId: 'https://webchemdev.ncbr.muni.cz/CoordinateServer/1tqn/cartoon',
                 urlTemplate: function (id) { return id; },
                 isFullUrl: true
             });
@@ -76694,7 +76694,7 @@ var LiteMol;
                     'molecule.model.defaultQuery': "residues({ name: 'ALA' })",
                     'molecule.model.defaultAssemblyName': '1',
                     'molecule.coordinateStreaming.defaultId': '1jj2',
-                    'molecule.coordinateStreaming.defaultServer': 'http://webchemdev.ncbr.muni.cz/CoordinateServer',
+                    'molecule.coordinateStreaming.defaultServer': 'https://webchemdev.ncbr.muni.cz/CoordinateServer',
                     'molecule.coordinateStreaming.defaultRadius': 10,
                     'density.defaultVisualBehaviourRadius': 5
                 },

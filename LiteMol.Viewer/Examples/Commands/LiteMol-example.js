@@ -18,7 +18,7 @@ var LiteMol;
                 sourceId: 'url-molecule',
                 name: 'URL',
                 description: 'Download a molecule from the specified Url (if the host server supports cross domain requests).',
-                defaultId: 'http://webchemdev.ncbr.muni.cz/CoordinateServer/1tqn/cartoon',
+                defaultId: 'https://webchemdev.ncbr.muni.cz/CoordinateServer/1tqn/cartoon',
                 urlTemplate: function (id) { return id; },
                 isFullUrl: true
             });
@@ -47,7 +47,7 @@ var LiteMol;
                     description: 'Download a molecule from PDBe.',
                     defaultId: '1cbs',
                     specificFormat: LiteMol.Core.Formats.Molecule.SupportedFormats.mmCIF,
-                    urlTemplate: function (id) { return ("http://www.ebi.ac.uk/pdbe/static/entry/" + id.toLowerCase() + "_updated.cif"); }
+                    urlTemplate: function (id) { return ("https://www.ebi.ac.uk/pdbe/static/entry/" + id.toLowerCase() + "_updated.cif"); }
                 });
                 Data.DownloadBinaryCIFFromCoordinateServer = Bootstrap.Tree.Transformer.action({
                     id: 'molecule-download-bcif-from-coordinate-server',
@@ -55,7 +55,7 @@ var LiteMol;
                     description: 'Download full or cartoon representation of a PDB entry from the CoordinateServer.',
                     from: [Entity.Root],
                     to: [Entity.Action],
-                    defaultParams: function (ctx) { return ({ id: '5iv5', type: 'Cartoon', lowPrecisionCoords: true, serverUrl: ctx.settings.get('molecule.downloadBinaryCIFFromCoordinateServer.server') ? ctx.settings.get('molecule.downloadBinaryCIFFromCoordinateServer.server') : 'http://webchemdev.ncbr.muni.cz/CoordinateServer' }); },
+                    defaultParams: function (ctx) { return ({ id: '5iv5', type: 'Cartoon', lowPrecisionCoords: true, serverUrl: ctx.settings.get('molecule.downloadBinaryCIFFromCoordinateServer.server') ? ctx.settings.get('molecule.downloadBinaryCIFFromCoordinateServer.server') : 'https://webchemdev.ncbr.muni.cz/CoordinateServer' }); },
                     validateParams: function (p) { return (!p.id || !p.id.trim().length) ? ['Enter Id'] : (!p.serverUrl || !p.serverUrl.trim().length) ? ['Enter CoordinateServer base URL'] : void 0; },
                 }, function (context, a, t) {
                     var query = t.params.type === 'Cartoon' ? 'cartoon' : 'full';
@@ -80,7 +80,7 @@ var LiteMol;
                     var id = t.params.id.trim().toLocaleLowerCase();
                     var group = action.add(a, Transformer.Basic.CreateGroup, { label: id, description: 'Density' }, { ref: t.props.ref });
                     var diff = group
-                        .then(Transformer.Data.Download, { url: "http://www.ebi.ac.uk/pdbe/coordinates/files/" + id + "_diff.ccp4", type: 'Binary', id: t.params.id, description: 'Fo-Fc' })
+                        .then(Transformer.Data.Download, { url: "https://www.ebi.ac.uk/pdbe/coordinates/files/" + id + "_diff.ccp4", type: 'Binary', id: t.params.id, description: 'Fo-Fc' })
                         .then(Transformer.Density.ParseData, { format: LiteMol.Core.Formats.Density.SupportedFormats.CCP4, id: 'Fo-Fc', normalize: false }, { isBinding: true });
                     diff
                         .then(Transformer.Density.CreateVisualBehaviour, {
@@ -109,7 +109,7 @@ var LiteMol;
                         })
                     });
                     var base = group
-                        .then(Transformer.Data.Download, { url: "http://www.ebi.ac.uk/pdbe/coordinates/files/" + id + ".ccp4", type: 'Binary', id: t.params.id, description: '2Fo-Fc' })
+                        .then(Transformer.Data.Download, { url: "https://www.ebi.ac.uk/pdbe/coordinates/files/" + id + ".ccp4", type: 'Binary', id: t.params.id, description: '2Fo-Fc' })
                         .then(Transformer.Density.ParseData, { format: LiteMol.Core.Formats.Density.SupportedFormats.CCP4, id: '2Fo-Fc', normalize: false }, { isBinding: true })
                         .then(Transformer.Density.CreateVisualBehaviour, {
                         id: '2Fo-Fc',
@@ -344,7 +344,7 @@ var LiteMol;
                 }, function (context, a, t) {
                     var id = a.props.molecule.id.trim().toLocaleLowerCase();
                     var action = LiteMol.Bootstrap.Tree.Transform.build()
-                        .add(a, Transformer.Data.Download, { url: "http://www.ebi.ac.uk/pdbe/api/validation/residuewise_outlier_summary/entry/" + id, type: 'String', id: id, description: 'Validation Data' })
+                        .add(a, Transformer.Data.Download, { url: "https://www.ebi.ac.uk/pdbe/api/validation/residuewise_outlier_summary/entry/" + id, type: 'String', id: id, description: 'Validation Data' })
                         .then(Create, { id: id }, { isBinding: true });
                     return action;
                 }, "Validation report loaded. Hovering over residue will now contain validation info. To apply validation coloring, select the entity in the tree and apply it the right panel.");
@@ -405,8 +405,8 @@ var LiteMol;
                 _super.apply(this, arguments);
                 // this is for demonstration only, for dynamic options, store them in the transform params or in the underlying entity props.
                 this.servers = [
-                    { name: 'PDBe', url: 'http://wwwdev.ebi.ac.uk/pdbe/coordinates/' },
-                    { name: 'WebChem', url: 'http://webchemdev.ncbr.muni.cz/CoordinateServer/' }
+                    { name: 'PDBe', url: 'https://wwwdev.ebi.ac.uk/pdbe/coordinates/' },
+                    { name: 'WebChem', url: 'https://webchemdev.ncbr.muni.cz/CoordinateServer/' }
                 ];
             }
             CoordianteStreamingCustomView.prototype.renderControls = function () {
@@ -542,7 +542,7 @@ var LiteMolPluginInstance;
         var id = moleculeId;
         // this builds the transforms needed to create a molecule
         var action = Transform.build()
-            .add(plugin.context.tree.root, Transformer.Data.Download, { url: "http://www.ebi.ac.uk/pdbe/static/entry/" + id + "_updated.cif", type: 'String', id: id })
+            .add(plugin.context.tree.root, Transformer.Data.Download, { url: "https://www.ebi.ac.uk/pdbe/static/entry/" + id + "_updated.cif", type: 'String', id: id })
             .then(Transformer.Data.ParseCif, { id: id }, { isBinding: true })
             .then(Transformer.Molecule.CreateFromMmCif, { blockIndex: 0 }, { isBinding: true })
             .then(Transformer.Molecule.CreateModel, { modelIndex: 0 }, { isBinding: false, ref: 'model' })
@@ -567,7 +567,7 @@ var LiteMolPluginInstance;
         var ligandQ = Query.residues({ name: 'REA' }); // here you will fill in the whole info 
         var ambQ = Query.residues({ name: 'REA' }).ambientResidues(5); // adjust the radius
         var id = '1cbs:REA';
-        var url = "http://webchemdev.ncbr.muni.cz/CoordinateServer/1cbs/ligandInteraction?name=REA"; // here you will fill in the full server etc ...
+        var url = "https://webchemdev.ncbr.muni.cz/CoordinateServer/1cbs/ligandInteraction?name=REA"; // here you will fill in the full server etc ...
         var action = Transform.build()
             .add(plugin.context.tree.root, Transformer.Data.Download, { url: url, type: 'String', id: id })
             .then(Transformer.Data.ParseCif, { id: id }, { isBinding: true })
@@ -690,7 +690,7 @@ var LiteMolPluginInstance;
         Bootstrap.Command.Tree.RemoveNode.dispatch(plugin.context, plugin.context.tree.root);
         // this builds the transforms needed to create a molecule
         var action = Transform.build()
-            .add(plugin.context.tree.root, Transformer.Data.Download, { url: "http://www.ebi.ac.uk/pdbe/static/entry/" + id + "_updated.cif", type: 'String', id: id })
+            .add(plugin.context.tree.root, Transformer.Data.Download, { url: "https://www.ebi.ac.uk/pdbe/static/entry/" + id + "_updated.cif", type: 'String', id: id })
             .then(Transformer.Molecule.CreateFromData, { format: LiteMol.Core.Formats.Molecule.SupportedFormats.mmCIF }, { ref: 'molecule' });
         //.then(Transformer.Molecule.CreateModel, { modelIndex: 0 }, { isBinding: false, ref: 'model' })
         //.then(Transformer.Molecule.CreateMacromoleculeVisual, { polymer: true, polymerRef: 'polymer-visual', het: true, water: true });
@@ -746,7 +746,7 @@ var LiteMolPluginInstance;
                 'molecule.model.defaultQuery': "residues({ name: 'ALA' })",
                 'molecule.model.defaultAssemblyName': '1',
                 'molecule.coordinateStreaming.defaultId': '1jj2',
-                'molecule.coordinateStreaming.defaultServer': 'http://webchemdev.ncbr.muni.cz/CoordinateServer/',
+                'molecule.coordinateStreaming.defaultServer': 'https://webchemdev.ncbr.muni.cz/CoordinateServer/',
                 'molecule.coordinateStreaming.defaultRadius': 10,
                 'density.defaultVisualBehaviourRadius': 5
             },

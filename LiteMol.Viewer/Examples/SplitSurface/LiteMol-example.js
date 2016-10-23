@@ -86,7 +86,7 @@ var LiteMol;
         // Represent an action to perform on the app state.
         var action = Bootstrap.Tree.Transform.build();
         // This loads the model from PDBe
-        var modelAction = action.add(plugin.context.tree.root, Transformer.Data.Download, { url: "http://www.ebi.ac.uk/pdbe/static/entry/" + id + "_updated.cif", type: 'String', id: id })
+        var modelAction = action.add(plugin.context.tree.root, Transformer.Data.Download, { url: "https://www.ebi.ac.uk/pdbe/static/entry/" + id + "_updated.cif", type: 'String', id: id })
             .then(Transformer.Data.ParseCif, { id: id }, { isBinding: true })
             .then(Transformer.Molecule.CreateFromMmCif, { blockIndex: 0 }, { isBinding: true })
             .then(Transformer.Molecule.CreateModel, { modelIndex: 0 }, { isBinding: false, ref: 'model' });
