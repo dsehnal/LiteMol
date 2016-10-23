@@ -176,8 +176,6 @@ $(function () {
     };
     $('a.lm-feature-preview').click(function (e) {
         if (e.preventDefault) e.preventDefault();
-
-        //console.log($(this).data('preview-feature'));
-        featurePreviewImg.attr('src', 'img/features/' + featurePreviewMap[$(this).data('preview-feature')]);
+        featurePreviewImg.attr('src', 'assets/img/features/' + featurePreviewMap[$(this).data('preview-feature')]);
     })
 });
