@@ -1,7 +1,7 @@
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg?style=flat)](https://github.com/dsehnal/LiteMol/blob/master/LICENSE)
 
-![Logo](web/img/lm_logo_small.png)
+![Logo](web/assets/img/lm_logo_small.png)
 
 What is LiteMol
 ===============
