@@ -20,7 +20,7 @@ namespace LiteMol.Viewer.PDBe.Data {
         description: 'Download a molecule from PDBe.',  
         defaultId: '1cbs',
         specificFormat: LiteMol.Core.Formats.Molecule.SupportedFormats.mmCIF,
-        urlTemplate: id => `http://www.ebi.ac.uk/pdbe/static/entry/${id.toLowerCase()}_updated.cif`
+        urlTemplate: id => `https://www.ebi.ac.uk/pdbe/static/entry/${id.toLowerCase()}_updated.cif`
     });
     
     export interface DownloadBinaryCIFFromCoordinateServerParams {
@@ -35,7 +35,7 @@ namespace LiteMol.Viewer.PDBe.Data {
         description: 'Download full or cartoon representation of a PDB entry from the CoordinateServer.',
         from: [Entity.Root],
         to: [Entity.Action],
-        defaultParams: (ctx) => ({ id: '5iv5', type: 'Cartoon', lowPrecisionCoords: true, serverUrl: ctx.settings.get('molecule.downloadBinaryCIFFromCoordinateServer.server') ? ctx.settings.get('molecule.downloadBinaryCIFFromCoordinateServer.server') : 'http://webchemdev.ncbr.muni.cz/CoordinateServer' }),
+        defaultParams: (ctx) => ({ id: '5iv5', type: 'Cartoon', lowPrecisionCoords: true, serverUrl: ctx.settings.get('molecule.downloadBinaryCIFFromCoordinateServer.server') ? ctx.settings.get('molecule.downloadBinaryCIFFromCoordinateServer.server') : 'https://webchemdev.ncbr.muni.cz/CoordinateServer' }),
         validateParams: p => (!p.id || !p.id.trim().length) ? ['Enter Id'] : (!p.serverUrl || !p.serverUrl.trim().length) ? ['Enter CoordinateServer base URL'] : void 0,  
     }, (context, a, t) => {
         let query = t.params.type === 'Cartoon' ? 'cartoon' : 'full';
@@ -65,7 +65,7 @@ namespace LiteMol.Viewer.PDBe.Data {
         let group = action.add(a, Transformer.Basic.CreateGroup, { label: id, description: 'Density' }, { ref: t.props.ref })
             
         let diff = group
-            .then(<Bootstrap.Tree.Transformer.To<Entity.Data.Binary | Entity.Data.String>>Transformer.Data.Download, { url: `http://www.ebi.ac.uk/pdbe/coordinates/files/${id}_diff.ccp4`, type: 'Binary', id: t.params.id, description: 'Fo-Fc' })
+            .then(<Bootstrap.Tree.Transformer.To<Entity.Data.Binary | Entity.Data.String>>Transformer.Data.Download, { url: `https://www.ebi.ac.uk/pdbe/coordinates/files/${id}_diff.ccp4`, type: 'Binary', id: t.params.id, description: 'Fo-Fc' })
             .then(Transformer.Density.ParseData, { format: LiteMol.Core.Formats.Density.SupportedFormats.CCP4, id: 'Fo-Fc', normalize: false }, { isBinding: true });
             
         diff
@@ -97,7 +97,7 @@ namespace LiteMol.Viewer.PDBe.Data {
             });            
         
         let base = group
-            .then(<Bootstrap.Tree.Transformer.To<Entity.Data.Binary | Entity.Data.String>>Transformer.Data.Download, { url: `http://www.ebi.ac.uk/pdbe/coordinates/files/${id}.ccp4`, type: 'Binary', id: t.params.id, description: '2Fo-Fc' })
+            .then(<Bootstrap.Tree.Transformer.To<Entity.Data.Binary | Entity.Data.String>>Transformer.Data.Download, { url: `https://www.ebi.ac.uk/pdbe/coordinates/files/${id}.ccp4`, type: 'Binary', id: t.params.id, description: '2Fo-Fc' })
             .then(Transformer.Density.ParseData, { format: LiteMol.Core.Formats.Density.SupportedFormats.CCP4, id: '2Fo-Fc', normalize: false }, { isBinding: true })
             .then(Transformer.Density.CreateVisualBehaviour, {  
                 id: '2Fo-Fc',

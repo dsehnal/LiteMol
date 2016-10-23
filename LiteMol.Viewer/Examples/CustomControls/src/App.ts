@@ -18,7 +18,7 @@ namespace LiteMol.Custom {
                 'molecule.model.defaultQuery': `residues({ name: 'ALA' })`,
                 'molecule.model.defaultAssemblyName': '1', 
                 'molecule.coordinateStreaming.defaultId': '1jj2',
-                'molecule.coordinateStreaming.defaultServer': 'http://webchemdev.ncbr.muni.cz/CoordinateServer/',
+                'molecule.coordinateStreaming.defaultServer': 'https://webchemdev.ncbr.muni.cz/CoordinateServer/',
                 'molecule.coordinateStreaming.defaultRadius': 10,
                 'density.defaultVisualBehaviourRadius': 5
             },
@@ -127,7 +127,7 @@ namespace LiteMol.Custom {
 
     let action = Bootstrap.Tree.Transform.build();
     
-    action.add(plugin.context.tree.root, <Bootstrap.Tree.Transformer.To<Bootstrap.Entity.Data.String>>Transformer.Data.Download, { url: `http://www.ebi.ac.uk/pdbe/static/entry/${id}_updated.cif`, type: 'String', id })
+    action.add(plugin.context.tree.root, <Bootstrap.Tree.Transformer.To<Bootstrap.Entity.Data.String>>Transformer.Data.Download, { url: `https://www.ebi.ac.uk/pdbe/static/entry/${id}_updated.cif`, type: 'String', id })
         .then(Transformer.Data.ParseCif, { id }, { isBinding: true })
         .then(Transformer.Molecule.CreateFromMmCif, { blockIndex: 0 }, { ref: 'molecule' })
         .then(CreateRepresentation, { });

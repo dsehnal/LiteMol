@@ -138,7 +138,7 @@ namespace LiteMolPluginInstance {
         let id = moleculeId;        
         // this builds the transforms needed to create a molecule
         let action = Transform.build()
-            .add(plugin.context.tree.root, <Tree.Transformer.To<Entity.Data.String>>Transformer.Data.Download, { url: `http://www.ebi.ac.uk/pdbe/static/entry/${id}_updated.cif`, type: 'String', id })
+            .add(plugin.context.tree.root, <Tree.Transformer.To<Entity.Data.String>>Transformer.Data.Download, { url: `https://www.ebi.ac.uk/pdbe/static/entry/${id}_updated.cif`, type: 'String', id })
             .then(Transformer.Data.ParseCif, { id }, { isBinding: true })
             .then(Transformer.Molecule.CreateFromMmCif, { blockIndex: 0 }, { isBinding: true })
             .then(Transformer.Molecule.CreateModel, { modelIndex: 0 }, { isBinding: false, ref: 'model' })
@@ -171,7 +171,7 @@ namespace LiteMolPluginInstance {
                 
         
         let id = '1cbs:REA'
-        let url = `http://webchemdev.ncbr.muni.cz/CoordinateServer/1cbs/ligandInteraction?name=REA`; // here you will fill in the full server etc ...
+        let url = `https://webchemdev.ncbr.muni.cz/CoordinateServer/1cbs/ligandInteraction?name=REA`; // here you will fill in the full server etc ...
         let action = Transform.build()
             .add(plugin.context.tree.root, <Tree.Transformer.To<Entity.Data.String>>Transformer.Data.Download, { url, type: 'String', id })
             .then(Transformer.Data.ParseCif, { id }, { isBinding: true })
@@ -320,7 +320,7 @@ namespace LiteMolPluginInstance {
 
         // this builds the transforms needed to create a molecule
         let action = Transform.build()
-            .add(plugin.context.tree.root, Transformer.Data.Download, { url: `http://www.ebi.ac.uk/pdbe/static/entry/${id}_updated.cif`, type: <'String'>'String', id })
+            .add(plugin.context.tree.root, Transformer.Data.Download, { url: `https://www.ebi.ac.uk/pdbe/static/entry/${id}_updated.cif`, type: <'String'>'String', id })
             .then(Transformer.Molecule.CreateFromData, { format: LiteMol.Core.Formats.Molecule.SupportedFormats.mmCIF }, { ref: 'molecule' })            
             
             //.then(Transformer.Molecule.CreateModel, { modelIndex: 0 }, { isBinding: false, ref: 'model' })
@@ -391,7 +391,7 @@ namespace LiteMolPluginInstance {
                 'molecule.model.defaultQuery': `residues({ name: 'ALA' })`,
                 'molecule.model.defaultAssemblyName': '1', 
                 'molecule.coordinateStreaming.defaultId': '1jj2',
-                'molecule.coordinateStreaming.defaultServer': 'http://webchemdev.ncbr.muni.cz/CoordinateServer/',
+                'molecule.coordinateStreaming.defaultServer': 'https://webchemdev.ncbr.muni.cz/CoordinateServer/',
                 'molecule.coordinateStreaming.defaultRadius': 10,
                 'density.defaultVisualBehaviourRadius': 5
             },

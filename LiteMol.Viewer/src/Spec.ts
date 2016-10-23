@@ -15,8 +15,8 @@ namespace LiteMol.Viewer {
             'molecule.model.defaultQuery': `residuesByName('GLY', 'ALA')`,
             'molecule.model.defaultAssemblyName': '1', 
             'molecule.coordinateStreaming.defaultId': '5iv5',
-            'molecule.coordinateStreaming.defaultServer': 'http://webchemdev.ncbr.muni.cz/CoordinateServer',
-            'molecule.downloadBinaryCIFFromCoordinateServer.server': 'http://webchemdev.ncbr.muni.cz/CoordinateServer',
+            'molecule.coordinateStreaming.defaultServer': 'https://webchemdev.ncbr.muni.cz/CoordinateServer',
+            'molecule.downloadBinaryCIFFromCoordinateServer.server': 'https://webchemdev.ncbr.muni.cz/CoordinateServer',
             'molecule.coordinateStreaming.defaultRadius': 10,
             'density.defaultVisualBehaviourRadius': 5
         },
