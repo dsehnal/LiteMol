@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=1" />
+    <title>LiteMol Commands Example</title>    
+    <link rel="stylesheet" href="../../assets/css/LiteMol-plugin.css?lmversion=8" type="text/css" />
+    <script src="../../assets/js/LiteMol-plugin.js?lmversion=8"></script>
+
+    <style>
+        body {
+            font-family: sans-serif;
+        }
+
+        #app {
+            position: absolute;
+            margin-top: 100px;
+            margin-bottom: 360px;
+            margin-left: 10px;
+            width: 640px;
+            height: 480px;
+            left: 270px;
+            top: 10px;
+            background: blue;
+        }
+        
+        #actions {
+            position: absolute;
+            width: 250px;
+            top: 10px;            
+            left: 10px;
+            bottom: 10px;
+            overflow-y: auto;
+            padding-right: 10px;         
+        }
+        
+        #actions > button {
+            margin-bottom: 5px;
+            display: block;
+            width: 100%;
+        }
+        
+        #actions > input[type=text] {
+            width: 100%;
+            margin-bottom: 2px;
+        }
+        
+        #actions > .hover-area {
+            padding: 6px 4px;
+            background: #66aa99;
+            margin-bottom: 5px;
+            text-align: center;
+            font-size: smaller;
+            cursor: default;
+        }
+
+        #actions > h4 {
+            margin-top: 0;
+            margin-bottom: 7px;
+        }
+
+        #interactions {
+            position: absolute;
+            width: 240px;
+            top: 10px;
+            left: 940px;
+            height: 300px;
+            overflow-x: auto;
+            background: #333;
+            color: white;
+            line-height: 26px;  
+            padding: 0 6px;
+        }
+    </style>
+</head>
+<body>
+    <div id='actions'>        
+    </div>
+    
+    <div id='interactions'>
+    </div>
+    
+    <div id="app"></div>
+    <script src="LiteMol-example.js?lmversion=8"></script>
+</body>
+</html>

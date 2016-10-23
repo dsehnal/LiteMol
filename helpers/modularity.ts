@@ -4,7 +4,8 @@ interface ModuleSpec {
     include: string[],
     priorityLib: string[],
     isPlugin: boolean,
-    excludeDtsRefs: boolean
+    excludeDtsRefs: boolean,
+    createDist: boolean
 }
 
 function createPre(spec: ModuleSpec) {
@@ -109,12 +110,18 @@ function assemble(root: string, spec: ModuleSpec, gulp: any, plugins: any) {
                 .concat(include.map(i => i + '.d.ts')))
             .pipe(plugins.concat(`LiteMol-${spec.name.toLowerCase()}.d.ts`))
             .pipe(plugins.insert.prepend(info.ts));
-            
-        return plugins.merge([
+        
+        if (spec.createDist) {
+            return plugins.merge([
             js.pipe(gulp.dest('./build')),
             jsMod.pipe(gulp.dest('./dist')),
             
             dts.pipe(gulp.dest('./dist')),
+            dts.pipe(gulp.dest('./build'))]);
+        }
+
+        return plugins.merge([
+            js.pipe(gulp.dest('./build')),
             dts.pipe(gulp.dest('./build'))]);
     }    
 }

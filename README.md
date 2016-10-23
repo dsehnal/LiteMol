@@ -1,14 +1,16 @@
 
-[![License](http://img.shields.io/badge/License-Apache%202.0-blue.svg?style=flat)](https://github.com/dsehnal/LiteMol/blob/master/LICENSE)
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg?style=flat)](https://github.com/dsehnal/LiteMol/blob/master/LICENSE)
+
+![Logo](web/img/lm_logo_small.png)
 
 What is LiteMol
 ===============
 
 LiteMol is a library/plugin for handling 3D structural molecular data (not only) in the browser.
-It is written in [TypeScript](http://www.typescriptlang.org/) (and compiled to JavaScript). LiteMol 
+It is written in [TypeScript](https://www.typescriptlang.org/) (and compiled to JavaScript). LiteMol 
 features include, but are not limited to, displaying 3D coordinates of molecules and density maps.
 
-You can see LiteMol in action [here](http://webchemdev.ncbr.muni.cz/Litemol/).
+You can see LiteMol in action [here](https://webchemdev.ncbr.muni.cz/LiteMol/).
 
 The program is being developed by David Sehnal from the CEITEC/Masaryk University in Brno, Czech Republic
 in collaboration (espectially with Mandar Deshpande) with PDBe in Hinxton, Cambridge, UK.
@@ -29,34 +31,34 @@ Getting Started
 ========
 
 This repository provides the source code for the LiteMol molecular visualizer. 
-Several examples of usage are also provided. It is recommended to use [TypeScript](http://www.typescriptlang.org/) for building apps based 
+Several examples of usage are also provided. It is recommended to use [TypeScript](https://www.typescriptlang.org/) for building apps based 
 on LiteMol (or any other non-trivial JavaScript app for that matter), because you will get code completion and type checking.
 
-If you are interested in using LiteMol for simple visualization and do not need any special functionality, we suggest that you use the [PDB Component Library](http://www.ebi.ac.uk/pdbe/pdb-component-library/doc.html#a_LiteMol).
+If you are interested in using LiteMol for simple visualization and do not need any special functionality, we suggest that you use the [PDB Component Library](https://www.ebi.ac.uk/pdbe/pdb-component-library/doc.html#a_LiteMol).
 
-For feature overview and usage of the app please refer to our [wiki](http://webchem.ncbr.muni.cz/Wiki/LiteMol:UserManual).
+For feature overview and usage of the app please refer to our [wiki](https://webchem.ncbr.muni.cz/Wiki/LiteMol:UserManual).
 
 Project Structure Overview
 ========
 
 The code is structured into several parts:
 
-  - `LiteMol.Core` - parsing, basic data representation
-  - `LiteMol.Visualization` - wrapper around WebGL + geometry
-  - `LiteMol.Bootstrap` - higher level wrapper around Core and Visualization
-  - `LiteMol.Plugin` - React based UI
-  - `LiteMol.Viewer` - Host for plugin + example usage of the plugin
+  - `Core` - parsing, basic data representation
+  - `Visualization` - wrapper around WebGL + geometry
+  - `Bootstrap` - higher level wrapper around Core and Visualization
+  - `Plugin` - React based UI
+  - `Viewer` - Host for plugin + example usage of the plugin
   
 Examples
 --------
 
 Examples are located in the folder `LiteMol.Viewer/Examples`.
 
-  - `Commands` ([view live](http://webchemdev.ncbr.muni.cz/Litemol/Examples/Commands)) - Shows how to control the plugin programmatically, how to consume plugin interactions, focus on certain elements in a molecule, etc.
-  - `CustomControls` ([view live](http://webchemdev.ncbr.muni.cz/Litemol/Examples/CustomControls)) - Shows how to construct a custom control scheme for the plugin.
-  - `CustomDensity` ([view live](http://webchemdev.ncbr.muni.cz/Litemol/Examples/CustomDensity)) - Shows how to download a PDB file, parse it, download density data and allow user interaction with them.
-  - `SplitSurface` ([view live](http://webchemdev.ncbr.muni.cz/Litemol/Examples/SplitSurface)) - Shows how to create two complementary selections and display a surface for each of them.
-  - `BinaryCIFInspect` ([view live](http://webchemdev.ncbr.muni.cz/Litemol/Examples/BinaryCIFInspect)) - A simple app that enables a comparison of data inside CIF and BinaryCIF. Also shows how to use the LiteMol.Core code directly without including/instancing the plugin.
+  - `Commands` ([view live](https://webchemdev.ncbr.muni.cz/LiteMol/Examples/Commands)) - Shows how to control the plugin programmatically, how to consume plugin interactions, focus on certain elements in a molecule, etc.
+  - `CustomControls` ([view live](https://webchemdev.ncbr.muni.cz/LiteMol/Examples/CustomControls)) - Shows how to construct a custom control scheme for the plugin.
+  - `CustomDensity` ([view live](https://webchemdev.ncbr.muni.cz/LiteMol/Examples/CustomDensity)) - Shows how to download a PDB file, parse it, download density data and allow user interaction with them.
+  - `SplitSurface` ([view live](https://webchemdev.ncbr.muni.cz/LiteMol/Examples/SplitSurface)) - Shows how to create two complementary selections and display a surface for each of them.
+  - `BinaryCIFInspect` ([view live](https://webchemdev.ncbr.muni.cz/LiteMol/Examples/BinaryCIFInspect)) - A simple app that enables a comparison of data inside CIF and BinaryCIF. Also shows how to use the LiteMol.Core code directly without including/instancing the plugin.
 
 Building
 ========
@@ -69,23 +71,19 @@ LiteMol is written in TypeScript and needs to be compiled to JavaScript before u
     npm install
     gulp
 
-Any subsequent full LiteMol builds can be done using the command 
+Any subsequent full LiteMol builds can be done using just the command 
 
     gulp
         
-To build the minified version of the plugin and stylesheets, use 
+To build the minified version of the plugin and the stylesheets, use 
 
-    gulp Plugin
-    gulp Viewer-min
+    gulp
+    gulp Dist-min
         
-This will create the files `LiteMol.Viewer/LiteMol-plugin.min.js` file and `LiteMol.Viewer/assets/css/LiteMol-plugin.min.css` will then be minified.
+This will create the files `dist/LiteMol-*.min.js` and `dist/css/LiteMol-plugin*.min.css`.
 
-To build only the Viewer and included examples in `LiteMol.Viewer` when experimenting with the examples, you can use 
-
-    gulp Viewer
-
-When embedding the pluing in your pages, do not forget to include the `LiteMol.Viewer/assets` folder with 
-there required style sheets and fonts.
+When embedding the pluing in your pages, do not forget to include the `dist/css` and `dist/fonts` folders with 
+the required style sheets and fonts.
 
 License
 =======
@@ -156,10 +154,10 @@ FAQ
 How do I include LiteMol in my page?
 ------------
 
-You can include the plugin as shown in the `LiteMol.Viewer` folder.
-For more advanced use cases, please refer to `LiteMol.Viewer/Examples`.
+You can include the plugin as shown in the `src/Viewer` folder.
+For more advanced use cases, please refer to `examples`.
 
-Alternatively, you can use the Angular LiteMol wrapper from the [PDB Component Library](http://www.ebi.ac.uk/pdbe/pdb-component-library/doc.html#a_LiteMol).
+Alternatively, you can use the Angular LiteMol wrapper from the [PDB Component Library](https://www.ebi.ac.uk/pdbe/pdb-component-library/doc.html#a_LiteMol).
 
 What external dependencies do I need to include LiteMol?
 ------------
@@ -169,11 +167,11 @@ LiteMol does not require any external dependencies.
 How do I change the color scheme of the plugin?
 ------------
 
-LiteMol is available with 3 colors schemes: Dark (default), Light, and Blue. The palette can be changed by including a different css file from the `LiteMol.Viewer/assets/css` folder. 
+LiteMol is available with 3 colors schemes: Dark (default), Light, and Blue. The palette can be changed by including a different css file from the `dist/css` folder. 
 
-If this is not enough for your needs, you can easily customize the color palette. Add your palette to `LiteMol.Plugin/Skin/colors` using an existing palette as a template and 
-create new `LiteMol.Plugin/Skin/LiteMol-plugin-MYTHEME.scss` that refences your new colors. Edit the function `CSS` in `gulpfile.js` to include the `-MYTHEME` affix and rebuild
-LiteMol. Your theme will now appear in `LiteMol.Viewer/assets/css`.     
+If this is not enough for your needs, you can easily customize the color palette. Add your palette to `src/Plugin/Skin/colors` using an existing palette as a template and 
+create new `src/Plugin/Skin/LiteMol-plugin-MYTHEME.scss` that refences your new colors. Edit the function `CSS` in `gulpfile.js` to include the `-MYTHEME` affix and rebuild
+LiteMol. Your theme will then appear in `dist/css`.     
 
 Can I contribute to LiteMol?
 ------------
