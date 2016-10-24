@@ -3320,6 +3320,7 @@ declare namespace CIFTools {
         writeBinary: (data: Uint8Array) => boolean;
     };
     interface Writer<Context> {
+        startDataBlock(header: string): void;
         writeCategory(category: CategoryProvider, contexts?: Context[]): void;
         encode(): void;
         flush(stream: OutputStream): void;
@@ -3499,10 +3500,12 @@ declare namespace CIFTools.Text {
     class Writer<Context> implements CIFTools.Writer<Context> {
         private writer;
         private encoded;
+        private dataBlockCreated;
+        startDataBlock(header: string): void;
         writeCategory(category: CategoryProvider, contexts?: Context[]): void;
         encode(): void;
         flush(stream: OutputStream): void;
-        constructor(header: string);
+        constructor();
     }
 }
 declare namespace CIFTools.Binary.MessagePack {
@@ -3699,18 +3702,20 @@ declare namespace CIFTools.Binary {
 declare namespace CIFTools.Binary {
     class Writer<Context> implements CIFTools.Writer<Context> {
         private data;
-        private dataBlock;
+        private dataBlocks;
         private encodedData;
+        startDataBlock(header: string): void;
         writeCategory(category: CategoryProvider, contexts?: Context[]): void;
         encode(): void;
         flush(stream: OutputStream): void;
-        constructor(header: string, encoder: string);
+        constructor(encoder: string);
     }
 }
 declare module 'CIFTools' {
     import __Tools = CIFTools;
     export = __Tools;
 }
+
 
 
 
