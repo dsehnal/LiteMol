@@ -93,34 +93,16 @@ function WebAssets() {
     ]);
 }
 
-gulp.task('Asset-versions', [], function() {
-    var viewer = gulp.src(['./src/Viewer/**/*.html'])
+// this "randomizes" the ?lmversion=X in script and css links to prevent caching of old scripts in the browser
+var versionStamp = (+new Date()).toString();
+function WebVersions() {
+    return gulp.src(['./web/**/*.html'])
         .pipe(plugins.replace(/lmversion=[0-9]+/g, function (s) {
-            var v = (+s.match(/lmversion=([0-9]+)/)[1]) + 1;
-            return 'lmversion=' + v;
+            //var v = (+s.match(/lmversion=([0-9]+)/)[1]) + 1;
+            return 'lmversion=' + versionStamp;
         })) 
-        .pipe(gulp.dest('./src/Viewer'));
-
-    var examples = gulp.src(['./examples/**/*.html'])
-        .pipe(plugins.replace(/lmversion=[0-9]+/g, function (s) {
-            var v = (+s.match(/lmversion=([0-9]+)/)[1]) + 1;
-            return 'lmversion=' + v;
-        })) 
-        .pipe(gulp.dest('./examples'));
-
-    var web = gulp.src(['./web/index.html'])
-        .pipe(plugins.replace(/lmversion=[0-9]+/g, function (s) {
-            var v = (+s.match(/lmversion=([0-9]+)/)[1]) + 1;
-            return 'lmversion=' + v;
-        })) 
-        .pipe(gulp.dest('./web'))
-    
-    return plugins.merge([
-        viewer,
-        examples,
-        web
-    ]);
-});
+        .pipe(gulp.dest('./web'));
+}
 
 gulp.task('Clean-min', [], function () {
     return gulp.src(['./dist/*.min.js', './dist/css/*.min.css']).pipe(plugins.clean());
@@ -132,8 +114,11 @@ gulp.task('ViewerAndExamples', [], ViewerAndExamples)
 gulp.task('ViewerAndExamples-inline', ['Plugin'], ViewerAndExamples)
 
 gulp.task('Web-assets', [], WebAssets)
-gulp.task('Web', ['Web-assets'], Web);
-gulp.task('Web-inline', ['ViewerAndExamples-inline', 'ViewerAndExamples-inline', 'Asset-versions', 'CSS', 'Web-assets'], Web);
+gulp.task('Web-base', [], Web);
+gulp.task('Web-base-inline', ['Plugin'], Web);
+
+gulp.task('Web', ['Web-assets', 'Web-base'], WebVersions);
+gulp.task('Web-inline', ['ViewerAndExamples-inline', 'CSS', 'Web-assets', 'Web-base-inline'], WebVersions);
 
 gulp.task('Dist-min', [], Uglify);
 
@@ -144,7 +129,6 @@ gulp.task('default', [
     build('Bootstrap'),
     build('Plugin'),
     'ViewerAndExamples-inline',
-    'Asset-versions',
     'CSS',
     'Web-inline'
 ], function () {
