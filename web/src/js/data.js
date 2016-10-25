@@ -24,7 +24,7 @@ function createBinaryCIFChart(target) {
         options: {
             title: {
                 display: true,
-                text: 'Size of HIV-1 Capsid (3j3q, 2.44M atoms)',
+                text: 'Size of HIV-1 Capsid, 3j3q, 2,440,800 atoms',
                 fontSize: 16,
                 padding: 24,
                 fontColor: '#fff',
@@ -91,7 +91,7 @@ function createCoordinateServerChart(target) {
         options: {
             title: {
                 display: true,
-                text: 'Server Latency, 5iv5, 549564 atoms',
+                text: 'Server Latency, 5iv5, 549,564 atoms',
                 fontSize: 16,
                 padding: 24,
                 fontColor: '#000',
