@@ -1,4 +1,7 @@
-﻿# 2.4.7
+﻿# 2.4.8
+* Updated CIFTools.
+
+# 2.4.7
 * Refactor ChunkedArray and ArrayBuilder to procedural style to avoid deoptimization on long runs.
 * CIF support has been factored out as CIFTools.js.
 

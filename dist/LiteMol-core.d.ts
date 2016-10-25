@@ -576,6 +576,7 @@ declare namespace CIFTools.Binary {
         }
         interface Delta {
             kind: 'Delta';
+            origin: number;
             srcType: IntDataType;
         }
         interface IntegerPacking {

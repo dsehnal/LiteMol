@@ -3238,7 +3238,7 @@ var CIFTools;
                 var output = getIntArray(encoding.srcType, n);
                 if (!n)
                     return output;
-                output[0] = data[0];
+                output[0] = data[0] + (encoding.origin | 0);
                 for (var i = 1; i < n; ++i) {
                     output[i] = data[i] + output[i - 1];
                 }
@@ -3638,17 +3638,19 @@ var CIFTools;
                 }
                 if (!data.length) {
                     return {
-                        encodings: [{ kind: 'Delta', srcType: srcType }],
+                        encodings: [{ kind: 'Delta', origin: 0, srcType: srcType }],
                         data: new data.constructor(0)
                     };
                 }
                 var output = new data.constructor(data.length);
+                var origin = data[0];
                 output[0] = data[0];
                 for (var i = 1, n = data.length; i < n; i++) {
                     output[i] = data[i] - data[i - 1];
                 }
+                output[0] = 0;
                 return {
-                    encodings: [{ kind: 'Delta', srcType: srcType }],
+                    encodings: [{ kind: 'Delta', origin: origin, srcType: srcType }],
                     data: output
                 };
             }
@@ -3786,7 +3788,7 @@ var CIFTools;
     var Binary;
     (function (Binary) {
         "use strict";
-        Binary.VERSION = '0.1.0';
+        Binary.VERSION = '0.2.0';
         var Encoding;
         (function (Encoding) {
             function getIntDataType(data) {
@@ -11051,7 +11053,7 @@ var LiteMol;
 (function (LiteMol) {
     var Core;
     (function (Core) {
-        Core.VERSION = { number: "2.4.7", date: "Oct 16 2016" };
+        Core.VERSION = { number: "2.4.8", date: "Oct 25 2016" };
     })(Core = LiteMol.Core || (LiteMol.Core = {}));
 })(LiteMol || (LiteMol = {}));
 /*
