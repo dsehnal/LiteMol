@@ -4886,7 +4886,7 @@ declare namespace LiteMol.Core.Formats.Molecule.PDB {
         static parse(id: string, data: string): ParserResult<CIF.File>;
         constructor(id: string, data: string);
     }
-    function toCifFile(id: string, data: string): ParserError | ParserSuccess<CIF.File>;
+    function toCifFile(id: string, data: string): ParserResult<CIF.File>;
 }
 declare namespace LiteMol.Core.Formats.Molecule.SDF {
     function parse(data: string, id?: string): ParserResult<Structure.Molecule>;
@@ -5006,10 +5006,10 @@ declare namespace LiteMol.Core.Formats.Density {
     }
 }
 declare namespace LiteMol.Core.Formats.Density.CCP4 {
-    function parse(buffer: ArrayBuffer): ParserError | ParserSuccess<Data>;
+    function parse(buffer: ArrayBuffer): ParserResult<Data>;
 }
 declare namespace LiteMol.Core.Formats.Density.DSN6 {
-    function parse(buffer: ArrayBuffer): ParserError | ParserSuccess<Data>;
+    function parse(buffer: ArrayBuffer): ParserResult<Data>;
 }
 declare namespace LiteMol.Core.Formats.Density {
     namespace SupportedFormats {
@@ -15484,7 +15484,7 @@ declare namespace LiteMol.Bootstrap.Command {
     namespace Visual {
         const ResetScene: Event.Type<void>;
         const ResetTheme: Event.Type<{
-            selection?: string | Bootstrap.Entity.Any | Bootstrap.Tree.Selection.Query<Bootstrap.Entity.Any> | Bootstrap.Tree.Selection.Helpers.Builder<Bootstrap.Entity.Any> | undefined;
+            selection?: string | Bootstrap.Entity.Any | ((tree: Tree<Bootstrap.Entity.Any>) => Bootstrap.Entity.Any[]) | Bootstrap.Tree.Selection.Helpers.Builder<Bootstrap.Entity.Any> | undefined;
         } | undefined>;
         const UpdateBasicTheme: Event.Type<{
             visual: Bootstrap.Entity.Visual.Any;

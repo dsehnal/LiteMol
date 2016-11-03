@@ -1782,7 +1782,7 @@ declare namespace LiteMol.Core.Formats.Molecule.PDB {
         static parse(id: string, data: string): ParserResult<CIF.File>;
         constructor(id: string, data: string);
     }
-    function toCifFile(id: string, data: string): ParserError | ParserSuccess<CIF.File>;
+    function toCifFile(id: string, data: string): ParserResult<CIF.File>;
 }
 declare namespace LiteMol.Core.Formats.Molecule.SDF {
     function parse(data: string, id?: string): ParserResult<Structure.Molecule>;
@@ -1902,10 +1902,10 @@ declare namespace LiteMol.Core.Formats.Density {
     }
 }
 declare namespace LiteMol.Core.Formats.Density.CCP4 {
-    function parse(buffer: ArrayBuffer): ParserError | ParserSuccess<Data>;
+    function parse(buffer: ArrayBuffer): ParserResult<Data>;
 }
 declare namespace LiteMol.Core.Formats.Density.DSN6 {
-    function parse(buffer: ArrayBuffer): ParserError | ParserSuccess<Data>;
+    function parse(buffer: ArrayBuffer): ParserResult<Data>;
 }
 declare namespace LiteMol.Core.Formats.Density {
     namespace SupportedFormats {
