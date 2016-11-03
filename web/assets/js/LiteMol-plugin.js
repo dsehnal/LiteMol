@@ -13206,10 +13206,8 @@ var LiteMol;
                         var molHeaderInfo = lines[1];
                         var molHeaderComment = lines[2];
                         var cTabInfo = lines[3];
-                        console.log(lines);
                         var atomCount = +cTabInfo.substr(0, 3);
                         var bondCount = +cTabInfo.substr(3, 3);
-                        console.log(molHeaderInfo, molHeaderComment, cTabInfo, atomCount, bondCount);
                         return {
                             id: customId ? customId : id,
                             atomCount: atomCount,
@@ -13321,9 +13319,7 @@ var LiteMol;
                             var state = initState(data, id);
                             readAtoms(state);
                             readBonds(state);
-                            console.log(state);
                             var model = buildModel(state);
-                            console.log(model);
                             if (state.error) {
                                 return Formats.ParserResult.error(state.error, state.currentLine + 1);
                             }

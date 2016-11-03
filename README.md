@@ -36,7 +36,9 @@ on LiteMol (or any other non-trivial JavaScript app for that matter), because yo
 
 If you are interested in using LiteMol for simple visualization and do not need any special functionality, we suggest that you use the [PDB Component Library](https://www.ebi.ac.uk/pdbe/pdb-component-library/doc.html#a_LiteMol).
 
-For feature overview and usage of the app please refer to our [wiki](https://webchem.ncbr.muni.cz/Wiki/LiteMol:UserManual).
+A list of steps for integrating LiteMol is available [here](docs/integrating.md). For basic information about extending LiteMol see the [extending](docs/extending.md) document.
+
+For feature overview and usage of the ``Viewer`` app please refer to our [wiki](https://webchem.ncbr.muni.cz/Wiki/LiteMol:UserManual).
 
 Project Structure Overview
 ========

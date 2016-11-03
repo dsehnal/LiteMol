@@ -7,7 +7,7 @@ var LiteMol;
 (function (LiteMol) {
     var Viewer;
     (function (Viewer) {
-        Viewer.VERSION = { number: "1.1.6", date: "Oct 2 2016" };
+        Viewer.VERSION = { number: "1.1.7", date: "Nov 3 2016" };
     })(Viewer = LiteMol.Viewer || (LiteMol.Viewer = {}));
 })(LiteMol || (LiteMol = {}));
 /*
@@ -827,17 +827,41 @@ var LiteMol;
 (function (LiteMol) {
     var Viewer;
     (function (Viewer) {
+        function getParam(name, regex) {
+            var r = new RegExp(name + "=(" + regex + ")[&]?", 'i');
+            return decodeURIComponent(((window.location.search || '').match(r) || [])[1] || '');
+        }
         var plugin = new LiteMol.Plugin.Instance(Viewer.PluginSpec, document.getElementById('app'));
         plugin.context.logger.message("LiteMol Viewer " + Viewer.VERSION.number);
         LiteMol.Bootstrap.Command.Layout.SetState.dispatch(plugin.context, { isExpanded: true });
-        var theme = (((window.location.search || '').match(/theme=([a-z]+)[&]?/i) || [])[1] || '').toLowerCase();
+        var theme = getParam('theme', '[a-z]+').toLowerCase();
         if (theme === 'light') {
             LiteMol.Bootstrap.Command.Layout.SetViewportOptions.dispatch(plugin.context, { clearColor: LiteMol.Visualization.Color.fromRgb(255, 255, 255) });
         }
-        var pdbId = (((window.location.search || '').match(/loadFromPDB=([a-z0-9]+)[&]?/i) || [])[1] || '').toLowerCase().trim();
-        if (pdbId.length === 4) {
-            var t = LiteMol.Bootstrap.Tree.Transform.build().add(plugin.context.tree.root, Viewer.PDBe.Data.DownloadMolecule, { id: pdbId });
-            LiteMol.Bootstrap.Tree.Transform.apply(plugin.context, t).run(plugin.context);
-        }
+        (function () {
+            var pdbId = getParam('loadFromPDB', '[a-z0-9]+').toLowerCase().trim();
+            if (pdbId.length === 4) {
+                var t = LiteMol.Bootstrap.Tree.Transform.build().add(plugin.context.tree.root, Viewer.PDBe.Data.DownloadMolecule, { id: pdbId });
+                LiteMol.Bootstrap.Tree.Transform.apply(plugin.context, t).run(plugin.context);
+                return;
+            }
+            var downloadUrl = getParam('loadFromURL', '[^&]+').trim();
+            if (downloadUrl) {
+                var format = LiteMol.Core.Formats.Molecule.SupportedFormats.mmCIF;
+                switch (getParam('loadFromURLFormat', '[a-z]+').toLocaleLowerCase().trim()) {
+                    case 'pdb':
+                        format = LiteMol.Core.Formats.Molecule.SupportedFormats.PDB;
+                        break;
+                    case 'sdf':
+                        format = LiteMol.Core.Formats.Molecule.SupportedFormats.SDF;
+                        break;
+                    case 'mmbcif':
+                        format = LiteMol.Core.Formats.Molecule.SupportedFormats.mmBCIF;
+                        break;
+                }
+                var t = LiteMol.Bootstrap.Tree.Transform.build().add(plugin.context.tree.root, Viewer.DataSources.DownloadMolecule, { id: downloadUrl, format: format });
+                LiteMol.Bootstrap.Tree.Transform.apply(plugin.context, t).run(plugin.context);
+            }
+        })();
     })(Viewer = LiteMol.Viewer || (LiteMol.Viewer = {}));
 })(LiteMol || (LiteMol = {}));

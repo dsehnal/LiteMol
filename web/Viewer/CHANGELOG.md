@@ -1,3 +1,6 @@
+# 1.1.7
+* Support for ?loadFromURL=url and loadFromURLFormat=format query params,
+
 # 1.1.6
 * Support for ?loadFromPDB=ID URL query to enable loading of default structures.
 
