@@ -13,7 +13,7 @@ features include, but are not limited to, displaying 3D coordinates of molecules
 You can see LiteMol in action [here](https://webchemdev.ncbr.muni.cz/LiteMol/).
 
 The program is being developed by David Sehnal from the CEITEC/Masaryk University in Brno, Czech Republic
-in collaboration (espectially with Mandar Deshpande) with PDBe in Hinxton, Cambridge, UK.
+in collaboration (especially with Mandar Deshpande) with PDBe in Hinxton, Cambridge, UK.
 
 Table of contents
 =================
@@ -36,6 +36,8 @@ on LiteMol (or any other non-trivial JavaScript app for that matter), because yo
 
 If you are interested in using LiteMol for simple visualization and do not need any special functionality, we suggest that you use the [PDB Component Library](https://www.ebi.ac.uk/pdbe/pdb-component-library/doc.html#a_LiteMol).
 
+An initial walkthrough for how to go about including LiteMol in your web pages can be found in the [FAQ section](#what-are-the-simplest-steps-to-load-a-molecule-in-litemol) and in the [SimpleController](examples/SimpleController) example.
+
 A list of steps for integrating LiteMol is available [here](docs/integrating.md). For basic information about extending LiteMol see the [extending](docs/extending.md) document.
 
 For feature overview and usage of the ``Viewer`` app please refer to our [wiki](https://webchem.ncbr.muni.cz/Wiki/LiteMol:UserManual).
@@ -54,7 +56,7 @@ The code is structured into several parts:
 Examples
 --------
 
-Examples are located in the folder `LiteMol.Viewer/Examples`.
+Examples are located in the folder `examples`.
 
   - `SimpleController` ([view live](https://webchemdev.ncbr.muni.cz/LiteMol/Examples/SimpleController)) - Shows a simple way to create and instance of the plugin and load a molecule.
   - `Commands` ([view live](https://webchemdev.ncbr.muni.cz/LiteMol/Examples/Commands)) - Shows how to control the plugin programmatically, how to consume plugin interactions, focus on certain elements in a molecule, etc.
@@ -85,7 +87,7 @@ To build the minified version of the plugin and the stylesheets, use
         
 This will create the files `dist/LiteMol-*.min.js` and `dist/css/LiteMol-plugin*.min.css`.
 
-When embedding the pluing in your pages, do not forget to include the `dist/css` and `dist/fonts` folders with 
+When embedding the plugin in your pages, do not forget to include the `dist/css` and `dist/fonts` folders with 
 the required style sheets and fonts.
 
 License
@@ -161,6 +163,7 @@ You can include the plugin as shown in the `src/Viewer` folder. For a simple use
 please check the `SimpleController` examples. For further examples, please refer to `examples` directory.
 
 Alternatively, you can use the Angular LiteMol wrapper from the [PDB Component Library](https://www.ebi.ac.uk/pdbe/pdb-component-library/doc.html#a_LiteMol).
+
 
 What are the simplest steps to load a molecule in LiteMol?
 ------------
