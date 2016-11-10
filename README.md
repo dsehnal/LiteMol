@@ -191,7 +191,7 @@ the file ``LiteMol-plugin.js``.
 - Create the plugin instance and load a molecule:
 
     ```JavaScript
-    var plugin = Plugin.create({ target: '#litemol' });
+    var plugin = LiteMol.Plugin.create({ target: '#litemol' });
     plugin.loadMolecule({
         id: '1tqn',
         url: `https://www.ebi.ac.uk/pdbe/static/entry/1tqn_updated.cif`,
