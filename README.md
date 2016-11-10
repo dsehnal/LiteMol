@@ -65,6 +65,20 @@ Examples are located in the folder `examples`.
   - `SplitSurface` ([view live](https://webchemdev.ncbr.muni.cz/LiteMol/Examples/SplitSurface)) - Shows how to create two complementary selections and display a surface for each of them.
   - `BinaryCIFInspect` ([view live](https://webchemdev.ncbr.muni.cz/LiteMol/Examples/BinaryCIFInspect)) - A simple app that enables a comparison of data inside CIF and BinaryCIF. Also shows how to use the LiteMol.Core code directly without including/instancing the plugin.
 
+To run the examples locally, simply open the corresponding ``index.html`` from the ``web/Examples`` directory in your
+favourite web browser (this is because the paths to the LiteMol CSS and JS are set up so that they can be shared
+when deplyed to the web).  
+
+Alternatively, from the LiteMol root directory use 
+
+```
+npm install -g http-server
+cd web
+http-server
+```
+
+Then the examples will be accessible from ``http://localhost:8080/Examples/example_name/``.
+
 Building
 ========
 
@@ -79,6 +93,11 @@ LiteMol is written in TypeScript and needs to be compiled to JavaScript before u
 Any subsequent full LiteMol builds can be done using just the command 
 
     gulp
+
+To rebuild just the ``Viewer`` and the examples, it is possible to use 
+
+    gulp ViewerAndExamples
+    gulp Web
         
 To build the minified version of the plugin and the stylesheets, use 
 
@@ -170,7 +189,9 @@ What are the simplest steps to load a molecule in LiteMol?
 
 - Start by downloading the code:
 
-      git clone https://github.com/dsehnal/LiteMol.git
+    ```
+    git clone https://github.com/dsehnal/LiteMol.git
+    ```
 
 - From ``dist`` folder, copy the folders ``css``, ``fonts``, and
 the file ``LiteMol-plugin.js``.
