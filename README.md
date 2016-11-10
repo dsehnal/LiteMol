@@ -209,13 +209,28 @@ the file ``LiteMol-plugin.js``.
     <div id="litemol" style="width: 640px; height: 480px; margin-top: 200px"></div>
     ```
 
-- Create the plugin instance and load a molecule:
+- Create the plugin instance:
 
     ```JavaScript
     var plugin = LiteMol.Plugin.create({ target: '#litemol' });
+    ```
+    
+- Load the molecule (mmCIF format):
+
+    ```JavaScript
     plugin.loadMolecule({
         id: '1tqn',
         url: `https://www.ebi.ac.uk/pdbe/static/entry/1tqn_updated.cif`,
+    });
+    ```
+
+- Load the molecule (PDB format)
+
+    ```JavaScript
+    plugin.loadMolecule({
+        id: '1tqn',
+        url: `http://www.ebi.ac.uk/pdbe/entry-files/download/pdb1tqn.ent`,
+        format: 'pdb',
     });
     ```
 
