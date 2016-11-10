@@ -47,7 +47,7 @@ var LiteMol;
                     description: 'Download a molecule from PDBe.',
                     defaultId: '1cbs',
                     specificFormat: LiteMol.Core.Formats.Molecule.SupportedFormats.mmCIF,
-                    urlTemplate: function (id) { return ("https://www.ebi.ac.uk/pdbe/static/entry/" + id.toLowerCase() + "_updated.cif"); }
+                    urlTemplate: function (id) { return "https://www.ebi.ac.uk/pdbe/static/entry/" + id.toLowerCase() + "_updated.cif"; }
                 });
                 Data.DownloadBinaryCIFFromCoordinateServer = Bootstrap.Tree.Transformer.action({
                     id: 'molecule-download-bcif-from-coordinate-server',
@@ -396,21 +396,21 @@ var LiteMol;
         var RepresentationView = (function (_super) {
             __extends(RepresentationView, _super);
             function RepresentationView() {
-                _super.apply(this, arguments);
+                return _super.apply(this, arguments) || this;
             }
             RepresentationView.prototype.asm = function () {
                 var _this = this;
                 var n = this.params.params ? this.params.params.name : this.params.assemblyNames[0];
                 if (!n)
                     n = this.params.assemblyNames[0];
-                return [React.createElement(Controls.OptionsGroup, {options: this.params.assemblyNames, current: n, onChange: function (o) { return _this.updateParams({ params: { name: o } }); }, label: 'Asm. Name'})];
+                return [React.createElement(Controls.OptionsGroup, { options: this.params.assemblyNames, current: n, onChange: function (o) { return _this.updateParams({ params: { name: o } }); }, label: 'Asm. Name' })];
             };
             RepresentationView.prototype.symm = function () {
                 var _this = this;
                 var options = ['Mates', 'Interaction'];
                 var params = this.params.params;
-                return [React.createElement(Controls.OptionsGroup, {options: options, current: params.type, onChange: function (o) { return _this.updateParams({ params: { type: o, radius: params.radius } }); }, label: 'Type', title: 'Mates: copies whole asymetric unit. Interaction: Includes only residues that are no more than `radius` from the asymetric unit.'}),
-                    React.createElement(Controls.Slider, {label: 'Radius', onChange: function (v) { return _this.updateParams({ params: { type: params.type, radius: v } }); }, min: 0, max: 25, step: 0.1, value: params.radius, title: 'Interaction radius.'})];
+                return [React.createElement(Controls.OptionsGroup, { options: options, current: params.type, onChange: function (o) { return _this.updateParams({ params: { type: o, radius: params.radius } }); }, label: 'Type', title: 'Mates: copies whole asymetric unit. Interaction: Includes only residues that are no more than `radius` from the asymetric unit.' }),
+                    React.createElement(Controls.Slider, { label: 'Radius', onChange: function (v) { return _this.updateParams({ params: { type: params.type, radius: v } }); }, min: 0, max: 25, step: 0.1, value: params.radius, title: 'Interaction radius.' })];
             };
             RepresentationView.prototype.updateSource = function (source) {
                 switch (source) {
@@ -436,15 +436,15 @@ var LiteMol;
                 if (model.symmetryInfo)
                     options.push('Symmetry');
                 var modelIndex = molecule.models.length > 1
-                    ? React.createElement(Controls.Slider, {label: 'Model', onChange: function (v) { return _this.updateParams({ modelIndex: v - 1 }); }, min: 1, max: molecule.models.length, step: 1, value: params.modelIndex + 1, title: 'Interaction radius.'})
+                    ? React.createElement(Controls.Slider, { label: 'Model', onChange: function (v) { return _this.updateParams({ modelIndex: v - 1 }); }, min: 1, max: molecule.models.length, step: 1, value: params.modelIndex + 1, title: 'Interaction radius.' })
                     : void 0;
-                return React.createElement("div", null, 
-                    React.createElement(Controls.OptionsGroup, {options: options, caption: function (s) { return s; }, current: params.source, onChange: function (o) { return _this.updateSource(o); }, label: 'Source'}), 
+                return React.createElement("div", null,
+                    React.createElement(Controls.OptionsGroup, { options: options, caption: function (s) { return s; }, current: params.source, onChange: function (o) { return _this.updateSource(o); }, label: 'Source' }),
                     params.source === 'Assembly'
                         ? this.asm()
                         : params.source === 'Symmetry'
                             ? this.symm()
-                            : void 0, 
+                            : void 0,
                     modelIndex);
             };
             return RepresentationView;

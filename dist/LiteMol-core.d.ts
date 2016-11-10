@@ -1539,7 +1539,7 @@ declare namespace LiteMol.Core {
             readonly abortRequested: boolean;
             setRequestAbort(abort?: () => void): void;
             private _abortRequest;
-            readonly abortRequest: () => true;
+            readonly abortRequest: () => boolean;
             private progressTick;
             private progress;
             progressStream: Rx.BehaviorSubject<ProgressInfo>;
@@ -1657,6 +1657,7 @@ declare namespace LiteMol.Core.Utils {
 declare namespace LiteMol.Core.Formats {
     interface FormatInfo {
         name: string;
+        shortcuts: string[];
         extensions: string[];
         isBinary?: boolean;
         parse: (data: string | ArrayBuffer, params?: {
@@ -1664,6 +1665,8 @@ declare namespace LiteMol.Core.Formats {
         }) => Computation<ParserResult<any>>;
     }
     namespace FormatInfo {
+        function is(o: any): o is FormatInfo;
+        function fromShortcut(all: FormatInfo[], name: string): FormatInfo | undefined;
         function formatRegExp(info: FormatInfo): RegExp;
         function formatFileFilters(all: FormatInfo[]): string;
         function getFormat(filename: string, all: FormatInfo[]): FormatInfo | undefined;
@@ -2226,8 +2229,8 @@ declare namespace LiteMol.Core.Structure {
         insCode: string | null;
         constructor(asymId: string, seqNumber: number, insCode: string | null);
         static areEqual(a: PolyResidueIdentifier, index: number, bAsymId: string[], bSeqNumber: number[], bInsCode: string[]): boolean;
-        static compare(a: PolyResidueIdentifier, b: PolyResidueIdentifier): number;
-        static compareResidue(a: PolyResidueIdentifier, index: number, bAsymId: string[], bSeqNumber: number[], bInsCode: string[]): number;
+        static compare(a: PolyResidueIdentifier, b: PolyResidueIdentifier): 0 | 1 | -1;
+        static compareResidue(a: PolyResidueIdentifier, index: number, bAsymId: string[], bSeqNumber: number[], bInsCode: string[]): 0 | 1 | -1;
     }
     const enum SecondaryStructureType {
         None = 0,

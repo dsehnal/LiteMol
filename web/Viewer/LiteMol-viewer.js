@@ -54,7 +54,7 @@ var LiteMol;
                     description: 'Download a molecule from PDBe.',
                     defaultId: '1cbs',
                     specificFormat: LiteMol.Core.Formats.Molecule.SupportedFormats.mmCIF,
-                    urlTemplate: function (id) { return ("https://www.ebi.ac.uk/pdbe/static/entry/" + id.toLowerCase() + "_updated.cif"); }
+                    urlTemplate: function (id) { return "https://www.ebi.ac.uk/pdbe/static/entry/" + id.toLowerCase() + "_updated.cif"; }
                 });
                 Data.DownloadBinaryCIFFromCoordinateServer = Bootstrap.Tree.Transformer.action({
                     id: 'molecule-download-bcif-from-coordinate-server',
@@ -575,7 +575,7 @@ var LiteMol;
                         return action;
                     }
                     var baseColor = LiteMol.Visualization.Color.fromHex(0xFA6900);
-                    var _loop_1 = function(g) {
+                    var _loop_1 = function (g) {
                         var ans = data[g];
                         if (!ans)
                             return "continue";
@@ -588,8 +588,8 @@ var LiteMol;
                             group.then(SequenceAnnotation.CreateSingle, { data: ans[a], id: a, color: baseColor });
                         }
                     };
-                    for (var _a = 0, _b = ["Pfam", "InterPro", "CATH", "SCOP", "UniProt"]; _a < _b.length; _a++) {
-                        var g = _b[_a];
+                    for (var _i = 0, _a = ["Pfam", "InterPro", "CATH", "SCOP", "UniProt"]; _i < _a.length; _i++) {
+                        var g = _a[_i];
                         _loop_1(g);
                     }
                     action.add(parent, CreateBehaviour, {}, { isHidden: true });
@@ -690,14 +690,13 @@ var LiteMol;
                 var CreateSequenceAnnotationView = (function (_super) {
                     __extends(CreateSequenceAnnotationView, _super);
                     function CreateSequenceAnnotationView() {
-                        _super.apply(this, arguments);
+                        return _super.apply(this, arguments) || this;
                     }
                     CreateSequenceAnnotationView.prototype.renderControls = function () {
                         var _this = this;
                         var params = this.params;
-                        return React.createElement("div", null, 
-                            React.createElement(Controls.ToggleColorPicker, {label: 'Color', color: params.color, onChange: function (c) { return _this.controller.autoUpdateParams({ color: c }); }, position: 'below'})
-                        );
+                        return React.createElement("div", null,
+                            React.createElement(Controls.ToggleColorPicker, { label: 'Color', color: params.color, onChange: function (c) { return _this.controller.autoUpdateParams({ color: c }); }, position: 'below' }));
                     };
                     return CreateSequenceAnnotationView;
                 }(LiteMol.Plugin.Views.Transform.ControllerBase));
@@ -705,16 +704,16 @@ var LiteMol;
                 var DownloadBinaryCIFFromCoordinateServerView = (function (_super) {
                     __extends(DownloadBinaryCIFFromCoordinateServerView, _super);
                     function DownloadBinaryCIFFromCoordinateServerView() {
-                        _super.apply(this, arguments);
+                        return _super.apply(this, arguments) || this;
                     }
                     DownloadBinaryCIFFromCoordinateServerView.prototype.renderControls = function () {
                         var _this = this;
                         var params = this.params;
-                        return React.createElement("div", null, 
-                            React.createElement(Controls.TextBoxGroup, {value: params.id, onChange: function (v) { return _this.updateParams({ id: v }); }, label: 'Id', onEnter: function (e) { return _this.applyEnter(e); }, placeholder: 'Enter pdb id...'}), 
-                            React.createElement(Controls.OptionsGroup, {options: ['Cartoon', 'Full'], caption: function (s) { return s; }, current: params.type, onChange: function (o) { return _this.updateParams({ type: o }); }, label: 'Type', title: 'Determines whether to send all atoms or just atoms that are needed for the Cartoon representation.'}), 
-                            React.createElement(Controls.Toggle, {onChange: function (v) { return _this.updateParams({ lowPrecisionCoords: v }); }, value: params.lowPrecisionCoords, label: 'Low Precicion', title: 'If on, sends coordinates with 1 digit precision instead of 3. This saves up to 50% of data that need to be sent.'}), 
-                            React.createElement(Controls.TextBoxGroup, {value: params.serverUrl, onChange: function (v) { return _this.updateParams({ serverUrl: v }); }, label: 'Server', title: 'The base URL of the CoordinateServer.', onEnter: function (e) { return _this.applyEnter(e); }, placeholder: 'Enter server URL...'}));
+                        return React.createElement("div", null,
+                            React.createElement(Controls.TextBoxGroup, { value: params.id, onChange: function (v) { return _this.updateParams({ id: v }); }, label: 'Id', onEnter: function (e) { return _this.applyEnter(e); }, placeholder: 'Enter pdb id...' }),
+                            React.createElement(Controls.OptionsGroup, { options: ['Cartoon', 'Full'], caption: function (s) { return s; }, current: params.type, onChange: function (o) { return _this.updateParams({ type: o }); }, label: 'Type', title: 'Determines whether to send all atoms or just atoms that are needed for the Cartoon representation.' }),
+                            React.createElement(Controls.Toggle, { onChange: function (v) { return _this.updateParams({ lowPrecisionCoords: v }); }, value: params.lowPrecisionCoords, label: 'Low Precicion', title: 'If on, sends coordinates with 1 digit precision instead of 3. This saves up to 50% of data that need to be sent.' }),
+                            React.createElement(Controls.TextBoxGroup, { value: params.serverUrl, onChange: function (v) { return _this.updateParams({ serverUrl: v }); }, label: 'Server', title: 'The base URL of the CoordinateServer.', onEnter: function (e) { return _this.applyEnter(e); }, placeholder: 'Enter server URL...' }));
                     };
                     return DownloadBinaryCIFFromCoordinateServerView;
                 }(LiteMol.Plugin.Views.Transform.ControllerBase));

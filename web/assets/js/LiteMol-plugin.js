@@ -11166,7 +11166,6 @@ var LiteMol;
             return Computation;
         }());
         Core.Computation = Computation;
-        var Computation;
         (function (Computation) {
             function create(computation) {
                 return new Computation(computation);
@@ -11822,17 +11821,34 @@ var LiteMol;
             "use strict";
             var FormatInfo;
             (function (FormatInfo) {
+                function is(o) {
+                    return o.name && o.parse;
+                }
+                FormatInfo.is = is;
+                function fromShortcut(all, name) {
+                    name = name.toLowerCase().trim();
+                    for (var _i = 0, all_1 = all; _i < all_1.length; _i++) {
+                        var f = all_1[_i];
+                        for (var _a = 0, _b = f.shortcuts; _a < _b.length; _a++) {
+                            var s = _b[_a];
+                            if (s.toLowerCase() === name)
+                                return f;
+                        }
+                    }
+                    return void 0;
+                }
+                FormatInfo.fromShortcut = fromShortcut;
                 function formatRegExp(info) {
-                    return new RegExp(info.extensions.map(function (e) { return ("(\\" + e + ")"); }).join('|') + '(\\.gz){0,1}$', 'i');
+                    return new RegExp(info.extensions.map(function (e) { return "(\\" + e + ")"; }).join('|') + '(\\.gz){0,1}$', 'i');
                 }
                 FormatInfo.formatRegExp = formatRegExp;
                 function formatFileFilters(all) {
-                    return all.map(function (info) { return info.extensions.map(function (e) { return (e + "," + e + ".gz"); }).join(','); }).join(',');
+                    return all.map(function (info) { return info.extensions.map(function (e) { return e + "," + e + ".gz"; }).join(','); }).join(',');
                 }
                 FormatInfo.formatFileFilters = formatFileFilters;
                 function getFormat(filename, all) {
-                    for (var _i = 0, all_1 = all; _i < all_1.length; _i++) {
-                        var f = all_1[_i];
+                    for (var _i = 0, all_2 = all; _i < all_2.length; _i++) {
+                        var f = all_2[_i];
                         if (formatRegExp(f).test(filename))
                             return f;
                     }
@@ -12478,7 +12494,8 @@ var LiteMol;
                             [la, lb * Math.cos(ac), lc * Math.cos(ab), 0.0],
                             [0.0, lb * Math.sin(ac), lc * (Math.cos(aa) - Math.cos(ab) * Math.cos(ac)) / Math.sin(ac), 0.0],
                             [0.0, 0.0, v / (la * lb * Math.sin(ac)), 0.0],
-                            [0.0, 0.0, 0.0, 1.0]]);
+                            [0.0, 0.0, 0.0, 1.0]
+                        ]);
                         var toFracComputed = Core.Geometry.LinearAlgebra.Matrix4.identity();
                         Core.Geometry.LinearAlgebra.Matrix4.invert(toFracComputed, fromFrac);
                         if (_atom_sites) {
@@ -12669,17 +12686,17 @@ var LiteMol;
                             //56 - 66       LString        Space group       
                             //67 - 70       Integer        Z value           
                             var data = [
-                                ("_cell.entry_id           '" + id + "'"),
-                                ("_cell.length_a           " + this.record.substr(6, 9).trim()),
-                                ("_cell.length_b           " + this.record.substr(15, 9).trim()),
-                                ("_cell.length_c           " + this.record.substr(24, 9).trim()),
-                                ("_cell.angle_alpha        " + this.record.substr(33, 7).trim()),
-                                ("_cell.angle_beta         " + this.record.substr(40, 7).trim()),
-                                ("_cell.angle_gamma        " + this.record.substr(48, 7).trim()),
-                                ("_cell.Z_PDB              " + this.record.substr(66, 4).trim()),
+                                "_cell.entry_id           '" + id + "'",
+                                "_cell.length_a           " + this.record.substr(6, 9).trim(),
+                                "_cell.length_b           " + this.record.substr(15, 9).trim(),
+                                "_cell.length_c           " + this.record.substr(24, 9).trim(),
+                                "_cell.angle_alpha        " + this.record.substr(33, 7).trim(),
+                                "_cell.angle_beta         " + this.record.substr(40, 7).trim(),
+                                "_cell.angle_gamma        " + this.record.substr(48, 7).trim(),
+                                "_cell.Z_PDB              " + this.record.substr(66, 4).trim(),
                                 "_cell.pdbx_unique_axis   ?",
-                                ("_symmetry.entry_id                         '" + id + "'"),
-                                ("_symmetry.space_group_name_H-M             '" + this.record.substr(55, 11).trim() + "'"),
+                                "_symmetry.entry_id                         '" + id + "'",
+                                "_symmetry.space_group_name_H-M             '" + this.record.substr(55, 11).trim() + "'",
                                 "_symmetry.pdbx_full_space_group_name_H-M   ?",
                                 "_symmetry.cell_setting                     ?",
                                 "_symmetry.Int_Tables_number                ?",
@@ -12844,36 +12861,36 @@ var LiteMol;
                                 this.writeRange(modelToken, cifTokens);
                             }
                         };
-                        ModelData.COLUMNS = [
-                            "_atom_site.group_PDB",
-                            "_atom_site.id",
-                            "_atom_site.type_symbol",
-                            "_atom_site.label_atom_id",
-                            "_atom_site.label_alt_id",
-                            "_atom_site.label_comp_id",
-                            "_atom_site.label_asym_id",
-                            "_atom_site.label_entity_id",
-                            "_atom_site.label_seq_id",
-                            "_atom_site.pdbx_PDB_ins_code",
-                            "_atom_site.Cartn_x",
-                            "_atom_site.Cartn_y",
-                            "_atom_site.Cartn_z",
-                            "_atom_site.occupancy",
-                            "_atom_site.B_iso_or_equiv",
-                            "_atom_site.Cartn_x_esd",
-                            "_atom_site.Cartn_y_esd",
-                            "_atom_site.Cartn_z_esd",
-                            "_atom_site.occupancy_esd",
-                            "_atom_site.B_iso_or_equiv_esd",
-                            "_atom_site.pdbx_formal_charge",
-                            "_atom_site.auth_seq_id",
-                            "_atom_site.auth_comp_id",
-                            "_atom_site.auth_asym_id",
-                            "_atom_site.auth_atom_id",
-                            "_atom_site.pdbx_PDB_model_num"
-                        ];
                         return ModelData;
                     }());
+                    ModelData.COLUMNS = [
+                        "_atom_site.group_PDB",
+                        "_atom_site.id",
+                        "_atom_site.type_symbol",
+                        "_atom_site.label_atom_id",
+                        "_atom_site.label_alt_id",
+                        "_atom_site.label_comp_id",
+                        "_atom_site.label_asym_id",
+                        "_atom_site.label_entity_id",
+                        "_atom_site.label_seq_id",
+                        "_atom_site.pdbx_PDB_ins_code",
+                        "_atom_site.Cartn_x",
+                        "_atom_site.Cartn_y",
+                        "_atom_site.Cartn_z",
+                        "_atom_site.occupancy",
+                        "_atom_site.B_iso_or_equiv",
+                        "_atom_site.Cartn_x_esd",
+                        "_atom_site.Cartn_y_esd",
+                        "_atom_site.Cartn_z_esd",
+                        "_atom_site.occupancy_esd",
+                        "_atom_site.B_iso_or_equiv_esd",
+                        "_atom_site.pdbx_formal_charge",
+                        "_atom_site.auth_seq_id",
+                        "_atom_site.auth_comp_id",
+                        "_atom_site.auth_asym_id",
+                        "_atom_site.auth_atom_id",
+                        "_atom_site.pdbx_PDB_model_num"
+                    ];
                     PDB.ModelData = ModelData;
                     var ModelsData = (function () {
                         function ModelsData(models) {
@@ -13350,7 +13367,10 @@ var LiteMol;
                 var SupportedFormats;
                 (function (SupportedFormats) {
                     SupportedFormats.mmCIF = {
-                        name: 'mmCIF', extensions: ['.cif'], parse: function (data) {
+                        name: 'mmCIF',
+                        shortcuts: ['mmcif', 'cif'],
+                        extensions: ['.cif'],
+                        parse: function (data) {
                             return Core.Computation.create(function (ctx) {
                                 ctx.update('Parsing...');
                                 ctx.schedule(function () {
@@ -13379,7 +13399,11 @@ var LiteMol;
                         }
                     };
                     SupportedFormats.mmBCIF = {
-                        name: 'mmCIF (Binary)', extensions: ['.bcif'], isBinary: true, parse: function (data) {
+                        name: 'mmCIF (Binary)',
+                        shortcuts: ['mmbcif', 'bcif', 'binarycif'],
+                        extensions: ['.bcif'],
+                        isBinary: true,
+                        parse: function (data) {
                             return Core.Computation.create(function (ctx) {
                                 ctx.update('Parsing...');
                                 ctx.schedule(function () {
@@ -13408,7 +13432,10 @@ var LiteMol;
                         }
                     };
                     SupportedFormats.PDB = {
-                        name: 'PDB', extensions: ['.pdb', '.ent'], parse: function (data, options) {
+                        name: 'PDB',
+                        shortcuts: ['pdb', 'ent'],
+                        extensions: ['.pdb', '.ent'],
+                        parse: function (data, options) {
                             return Core.Computation.create(function (ctx) {
                                 ctx.update('Parsing...');
                                 ctx.schedule(function () {
@@ -13437,7 +13464,10 @@ var LiteMol;
                         }
                     };
                     SupportedFormats.SDF = {
-                        name: 'SDF', extensions: ['.sdf', '.mol'], parse: function (data, options) {
+                        name: 'SDF',
+                        shortcuts: ['sdf', 'mol'],
+                        extensions: ['.sdf', '.mol'],
+                        parse: function (data, options) {
                             return Core.Computation.create(function (ctx) {
                                 ctx.update('Parsing...');
                                 ctx.schedule(function () {
@@ -14039,8 +14069,8 @@ var LiteMol;
                 }
                 var SupportedFormats;
                 (function (SupportedFormats) {
-                    SupportedFormats.CCP4 = { name: 'CCP4', extensions: ['.ccp4', '.map'], isBinary: true, parse: function (data) { return parse(data, 'CCP4', function (d) { return Density.CCP4.parse(d); }); } };
-                    SupportedFormats.DSN6 = { name: 'DSN6', extensions: ['.dsn6'], isBinary: true, parse: function (data) { return parse(data, 'DSN6', function (d) { return Density.DSN6.parse(d); }); } };
+                    SupportedFormats.CCP4 = { name: 'CCP4', shortcuts: ['ccp4', 'map'], extensions: ['.ccp4', '.map'], isBinary: true, parse: function (data) { return parse(data, 'CCP4', function (d) { return Density.CCP4.parse(d); }); } };
+                    SupportedFormats.DSN6 = { name: 'DSN6', shortcuts: ['dsn6'], extensions: ['.dsn6'], isBinary: true, parse: function (data) { return parse(data, 'DSN6', function (d) { return Density.DSN6.parse(d); }); } };
                     SupportedFormats.All = [SupportedFormats.CCP4, SupportedFormats.DSN6];
                 })(SupportedFormats = Density.SupportedFormats || (Density.SupportedFormats = {}));
             })(Density = Formats.Density || (Formats.Density = {}));
@@ -17625,7 +17655,7 @@ var LiteMol;
                 function createSymmetryTransform(i, j, k, opIndex, transform) {
                     return {
                         isIdentity: !i && !j && !k && !opIndex,
-                        id: (opIndex + 1) + "_" + (5 + i) + (5 + j) + (5 + k),
+                        id: opIndex + 1 + "_" + (5 + i) + (5 + j) + (5 + k),
                         transform: transform
                     };
                 }
@@ -18365,7 +18395,6 @@ var LiteMol;
                     return Context;
                 }());
                 Query.Context = Context;
-                var Context;
                 (function (Context) {
                     var Mask;
                     (function (Mask) {
@@ -18814,7 +18843,7 @@ var LiteMol;
                     function parse(query) {
                         if (typeof window === 'undefined')
                             throw 'parse can only be called from a browser.';
-                        (0, eval)("with (LiteMol.Core.Structure.Query) { window.__LiteMol_query = " + query + "; }");
+                        (function () { }(), eval)("with (LiteMol.Core.Structure.Query) { window.__LiteMol_query = " + query + "; }");
                         var q = window.__LiteMol_query;
                         window.__LiteMol_query = void 0;
                         return q.compile();
@@ -19388,7 +19417,7 @@ var LiteMol;
                         var _where = Builder.toQuery(where);
                         return function (ctx) {
                             var src = _where(ctx), tree = ctx.tree, radiusCtx = Core.Geometry.SubdivisionTree3D.createContextRadius(tree, radius, false), buffer = radiusCtx.buffer, ret = new Query.HashFragmentSeqBuilder(ctx), x = ctx.structure.atoms.x, y = ctx.structure.atoms.y, z = ctx.structure.atoms.z, residueIndex = ctx.structure.atoms.residueIndex, atomStart = ctx.structure.residues.atomStartIndex, atomEnd = ctx.structure.residues.atomEndIndex, residues = new Set(), treeData = tree.data;
-                            var _loop_1 = function(f) {
+                            var _loop_1 = function (f) {
                                 residues.clear();
                                 for (var _i = 0, _a = f.atomIndices; _i < _a.length; _i++) {
                                     var i = _a[_i];
@@ -19409,8 +19438,8 @@ var LiteMol;
                                 Array.prototype.sort.call(indices, function (a, b) { return a - b; });
                                 ret.add(Query.Fragment.ofArray(ctx, indices[0], indices));
                             };
-                            for (var _c = 0, _d = src.fragments; _c < _d.length; _c++) {
-                                var f = _d[_c];
+                            for (var _i = 0, _a = src.fragments; _i < _a.length; _i++) {
+                                var f = _a[_i];
                                 _loop_1(f);
                             }
                             return ret.getSeq();
@@ -19421,7 +19450,7 @@ var LiteMol;
                         var _where = Builder.toQuery(where);
                         return function (ctx) {
                             var src = _where(ctx), ret = new Query.HashFragmentSeqBuilder(ctx), residueIndex = ctx.structure.atoms.residueIndex, atomStart = ctx.structure.residues.atomStartIndex, atomEnd = ctx.structure.residues.atomEndIndex, residues = new Set();
-                            var _loop_2 = function(f) {
+                            var _loop_2 = function (f) {
                                 residues.clear();
                                 for (var _i = 0, _a = f.atomIndices; _i < _a.length; _i++) {
                                     var i = _a[_i];
@@ -19438,8 +19467,8 @@ var LiteMol;
                                 Array.prototype.sort.call(indices, function (a, b) { return a - b; });
                                 ret.add(Query.Fragment.ofArray(ctx, indices[0], indices));
                             };
-                            for (var _c = 0, _d = src.fragments; _c < _d.length; _c++) {
-                                var f = _d[_c];
+                            for (var _i = 0, _a = src.fragments; _i < _a.length; _i++) {
+                                var f = _a[_i];
                                 _loop_2(f);
                             }
                             return ret.getSeq();
@@ -54905,12 +54934,31 @@ var LiteMol;
                 return { r: ((v >> 16) & 0xFF) / 255.0, g: ((v >> 8) & 0xFF) / 255.0, b: (v & 0xFF) / 255.0 };
             }
             Color.fromHex = fromHex;
+            /**
+             * Parse color in formats #rgb and #rrggbb
+             */
+            function fromHexString(s) {
+                if (s[0] !== '#')
+                    return fromHex(0);
+                if (s.length === 4) {
+                    return fromHexString("#" + s[1] + s[1] + s[2] + s[2] + s[3] + s[3]);
+                }
+                else if (s.length === 7) {
+                    return fromHex(parseInt(s.substr(1), 16));
+                }
+                return fromHex(0);
+            }
+            Color.fromHexString = fromHexString;
             function interpolate(a, b, t, target) {
                 target.r = a.r + (b.r - a.r) * t;
                 target.g = a.g + (b.g - a.g) * t;
                 target.b = a.b + (b.b - a.b) * t;
             }
             Color.interpolate = interpolate;
+            function isColor(c) {
+                return c.r !== void 0 && c.g !== void 0 && c.b !== void 0;
+            }
+            Color.isColor = isColor;
         })(Color = Visualization.Color || (Visualization.Color = {}));
         var Theme;
         (function (Theme) {
@@ -55127,10 +55175,10 @@ var LiteMol;
                 return ret;
             };
             MaterialsHelper.getPhongVertexColorMaterial = function () {
-                return new Visualization.THREE.MeshPhongMaterial({ specular: 0xAAAAAA, shininess: 2, shading: Visualization.THREE.SmoothShading, vertexColors: Visualization.THREE.VertexColors, side: Visualization.THREE.DoubleSide, metal: true });
+                return new Visualization.THREE.MeshPhongMaterial({ specular: 0xAAAAAA, /*ambient: 0xffffff, */ shininess: 2, shading: Visualization.THREE.SmoothShading, vertexColors: Visualization.THREE.VertexColors, side: Visualization.THREE.DoubleSide, metal: true });
             };
             MaterialsHelper.getDefaultHighlightMaterial = function () {
-                return new Visualization.THREE.MeshPhongMaterial({ color: 0xFFFFFF, specular: 0xAAAAAA, shininess: 2, shading: Visualization.THREE.SmoothShading, side: Visualization.THREE.DoubleSide, metal: true });
+                return new Visualization.THREE.MeshPhongMaterial({ color: 0xFFFFFF, specular: 0xAAAAAA, /* ambient: 0xffffff,*/ shininess: 2, shading: Visualization.THREE.SmoothShading, side: Visualization.THREE.DoubleSide, metal: true });
             };
             MaterialsHelper.applyColorToMap = function (map, indices, bufferAttribute, getter) {
                 var buffer = bufferAttribute.array, color = { r: 0.45, g: 0.45, b: 0.45 }, vertexRanges = map.vertexRanges;
@@ -55152,123 +55200,125 @@ var LiteMol;
                 }
                 bufferAttribute.needsUpdate = true;
             };
-            MaterialsHelper.pickVertexShader = [
-                "attribute vec4 pColor;",
-                "varying vec4 pC;",
-                "void main() {",
-                "pC = pColor;",
-                "gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );",
-                "}"].join('\n');
-            MaterialsHelper.pickFragmentShader = [
-                "varying vec4 pC;",
-                "void main() {",
-                "gl_FragColor = pC;",
-                "}"].join('\n');
-            MaterialsHelper.shader = {
-                uniforms: Visualization.THREE.UniformsUtils.merge([
-                    Visualization.THREE.UniformsLib["common"],
-                    Visualization.THREE.UniformsLib["bump"],
-                    Visualization.THREE.UniformsLib["normalmap"],
-                    Visualization.THREE.UniformsLib["fog"],
-                    Visualization.THREE.UniformsLib["lights"],
-                    Visualization.THREE.UniformsLib["shadowmap"],
-                    {
-                        "emissive": { type: "c", value: new Visualization.THREE.Color(0x000000) },
-                        "specular": { type: "c", value: new Visualization.THREE.Color(0x111111) },
-                        "shininess": { type: "f", value: 2 },
-                        "wrapRGB": { type: "v3", value: new Visualization.THREE.Vector3(1, 1, 1) },
-                        "highlightColor": { type: "v3", value: new Visualization.THREE.Vector3(1, 1, 0) },
-                        "selectionColor": { type: "v3", value: new Visualization.THREE.Vector3(1, 0, 0) },
-                    }
-                ]),
-                vertexShader: [
-                    "#define PHONG",
-                    "varying vec3 vViewPosition;",
-                    "#ifndef FLAT_SHADED",
-                    "	varying vec3 vNormal;",
-                    "#endif",
-                    Visualization.THREE.ShaderChunk["common"],
-                    Visualization.THREE.ShaderChunk["map_pars_vertex"],
-                    Visualization.THREE.ShaderChunk["lightmap_pars_vertex"],
-                    Visualization.THREE.ShaderChunk["envmap_pars_vertex"],
-                    Visualization.THREE.ShaderChunk["lights_phong_pars_vertex"],
-                    Visualization.THREE.ShaderChunk["color_pars_vertex"],
-                    Visualization.THREE.ShaderChunk["morphtarget_pars_vertex"],
-                    Visualization.THREE.ShaderChunk["skinning_pars_vertex"],
-                    Visualization.THREE.ShaderChunk["shadowmap_pars_vertex"],
-                    Visualization.THREE.ShaderChunk["logdepthbuf_pars_vertex"],
-                    "attribute float vState;",
-                    "varying float vS;",
-                    "void main() {",
-                    "   vS = vState;",
-                    Visualization.THREE.ShaderChunk["map_vertex"],
-                    Visualization.THREE.ShaderChunk["lightmap_vertex"],
-                    Visualization.THREE.ShaderChunk["color_vertex"],
-                    Visualization.THREE.ShaderChunk["morphnormal_vertex"],
-                    Visualization.THREE.ShaderChunk["skinbase_vertex"],
-                    Visualization.THREE.ShaderChunk["skinnormal_vertex"],
-                    Visualization.THREE.ShaderChunk["defaultnormal_vertex"],
-                    "#ifndef FLAT_SHADED",
-                    "	vNormal = normalize( transformedNormal );",
-                    "#endif",
-                    Visualization.THREE.ShaderChunk["morphtarget_vertex"],
-                    Visualization.THREE.ShaderChunk["skinning_vertex"],
-                    Visualization.THREE.ShaderChunk["default_vertex"],
-                    Visualization.THREE.ShaderChunk["logdepthbuf_vertex"],
-                    "	vViewPosition = -mvPosition.xyz;",
-                    Visualization.THREE.ShaderChunk["worldpos_vertex"],
-                    Visualization.THREE.ShaderChunk["envmap_vertex"],
-                    Visualization.THREE.ShaderChunk["lights_phong_vertex"],
-                    Visualization.THREE.ShaderChunk["shadowmap_vertex"],
-                    "}"
-                ].join("\n"),
-                fragmentShader: [
-                    "#define PHONG",
-                    "uniform vec3 diffuse;",
-                    "uniform vec3 emissive;",
-                    "uniform vec3 specular;",
-                    "uniform float shininess;",
-                    "uniform float opacity;",
-                    "uniform vec3 highlightColor;",
-                    "uniform vec3 selectionColor;",
-                    Visualization.THREE.ShaderChunk["common"],
-                    Visualization.THREE.ShaderChunk["color_pars_fragment"],
-                    Visualization.THREE.ShaderChunk["map_pars_fragment"],
-                    Visualization.THREE.ShaderChunk["alphamap_pars_fragment"],
-                    Visualization.THREE.ShaderChunk["lightmap_pars_fragment"],
-                    Visualization.THREE.ShaderChunk["envmap_pars_fragment"],
-                    Visualization.THREE.ShaderChunk["fog_pars_fragment"],
-                    Visualization.THREE.ShaderChunk["lights_phong_pars_fragment"],
-                    Visualization.THREE.ShaderChunk["shadowmap_pars_fragment"],
-                    Visualization.THREE.ShaderChunk["bumpmap_pars_fragment"],
-                    Visualization.THREE.ShaderChunk["normalmap_pars_fragment"],
-                    Visualization.THREE.ShaderChunk["specularmap_pars_fragment"],
-                    Visualization.THREE.ShaderChunk["logdepthbuf_pars_fragment"],
-                    "varying float vS;",
-                    "void main() {",
-                    "	vec3 outgoingLight = vec3( 0.0 );",
-                    "	vec4 diffuseColor;",
-                    "   if (vS < 0.33) { diffuseColor = vec4( vColor, opacity ); }",
-                    "   else if (vS - floor(vS + 0.1) > 0.33) { diffuseColor = vec4(highlightColor, opacity); }",
-                    "	else { diffuseColor = vec4(selectionColor, opacity); }",
-                    Visualization.THREE.ShaderChunk["logdepthbuf_fragment"],
-                    Visualization.THREE.ShaderChunk["map_fragment"],
-                    //THREE.ShaderChunk["color_fragment"], 
-                    Visualization.THREE.ShaderChunk["alphamap_fragment"],
-                    Visualization.THREE.ShaderChunk["alphatest_fragment"],
-                    Visualization.THREE.ShaderChunk["specularmap_fragment"],
-                    Visualization.THREE.ShaderChunk["lights_phong_fragment"],
-                    Visualization.THREE.ShaderChunk["lightmap_fragment"],
-                    Visualization.THREE.ShaderChunk["envmap_fragment"],
-                    Visualization.THREE.ShaderChunk["shadowmap_fragment"],
-                    Visualization.THREE.ShaderChunk["linear_to_gamma_fragment"],
-                    Visualization.THREE.ShaderChunk["fog_fragment"],
-                    "	gl_FragColor = vec4( outgoingLight, diffuseColor.a );",
-                    "}"
-                ].join("\n")
-            };
             return MaterialsHelper;
         }());
+        MaterialsHelper.pickVertexShader = [
+            "attribute vec4 pColor;",
+            "varying vec4 pC;",
+            "void main() {",
+            "pC = pColor;",
+            "gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );",
+            "}"
+        ].join('\n');
+        MaterialsHelper.pickFragmentShader = [
+            "varying vec4 pC;",
+            "void main() {",
+            "gl_FragColor = pC;",
+            "}"
+        ].join('\n');
+        MaterialsHelper.shader = {
+            uniforms: Visualization.THREE.UniformsUtils.merge([
+                Visualization.THREE.UniformsLib["common"],
+                Visualization.THREE.UniformsLib["bump"],
+                Visualization.THREE.UniformsLib["normalmap"],
+                Visualization.THREE.UniformsLib["fog"],
+                Visualization.THREE.UniformsLib["lights"],
+                Visualization.THREE.UniformsLib["shadowmap"],
+                {
+                    "emissive": { type: "c", value: new Visualization.THREE.Color(0x000000) },
+                    "specular": { type: "c", value: new Visualization.THREE.Color(0x111111) },
+                    "shininess": { type: "f", value: 2 },
+                    "wrapRGB": { type: "v3", value: new Visualization.THREE.Vector3(1, 1, 1) },
+                    "highlightColor": { type: "v3", value: new Visualization.THREE.Vector3(1, 1, 0) },
+                    "selectionColor": { type: "v3", value: new Visualization.THREE.Vector3(1, 0, 0) },
+                }
+            ]),
+            vertexShader: [
+                "#define PHONG",
+                "varying vec3 vViewPosition;",
+                "#ifndef FLAT_SHADED",
+                "	varying vec3 vNormal;",
+                "#endif",
+                Visualization.THREE.ShaderChunk["common"],
+                Visualization.THREE.ShaderChunk["map_pars_vertex"],
+                Visualization.THREE.ShaderChunk["lightmap_pars_vertex"],
+                Visualization.THREE.ShaderChunk["envmap_pars_vertex"],
+                Visualization.THREE.ShaderChunk["lights_phong_pars_vertex"],
+                Visualization.THREE.ShaderChunk["color_pars_vertex"],
+                Visualization.THREE.ShaderChunk["morphtarget_pars_vertex"],
+                Visualization.THREE.ShaderChunk["skinning_pars_vertex"],
+                Visualization.THREE.ShaderChunk["shadowmap_pars_vertex"],
+                Visualization.THREE.ShaderChunk["logdepthbuf_pars_vertex"],
+                "attribute float vState;",
+                "varying float vS;",
+                "void main() {",
+                "   vS = vState;",
+                Visualization.THREE.ShaderChunk["map_vertex"],
+                Visualization.THREE.ShaderChunk["lightmap_vertex"],
+                Visualization.THREE.ShaderChunk["color_vertex"],
+                Visualization.THREE.ShaderChunk["morphnormal_vertex"],
+                Visualization.THREE.ShaderChunk["skinbase_vertex"],
+                Visualization.THREE.ShaderChunk["skinnormal_vertex"],
+                Visualization.THREE.ShaderChunk["defaultnormal_vertex"],
+                "#ifndef FLAT_SHADED",
+                "	vNormal = normalize( transformedNormal );",
+                "#endif",
+                Visualization.THREE.ShaderChunk["morphtarget_vertex"],
+                Visualization.THREE.ShaderChunk["skinning_vertex"],
+                Visualization.THREE.ShaderChunk["default_vertex"],
+                Visualization.THREE.ShaderChunk["logdepthbuf_vertex"],
+                "	vViewPosition = -mvPosition.xyz;",
+                Visualization.THREE.ShaderChunk["worldpos_vertex"],
+                Visualization.THREE.ShaderChunk["envmap_vertex"],
+                Visualization.THREE.ShaderChunk["lights_phong_vertex"],
+                Visualization.THREE.ShaderChunk["shadowmap_vertex"],
+                "}"
+            ].join("\n"),
+            fragmentShader: [
+                "#define PHONG",
+                "uniform vec3 diffuse;",
+                "uniform vec3 emissive;",
+                "uniform vec3 specular;",
+                "uniform float shininess;",
+                "uniform float opacity;",
+                "uniform vec3 highlightColor;",
+                "uniform vec3 selectionColor;",
+                Visualization.THREE.ShaderChunk["common"],
+                Visualization.THREE.ShaderChunk["color_pars_fragment"],
+                Visualization.THREE.ShaderChunk["map_pars_fragment"],
+                Visualization.THREE.ShaderChunk["alphamap_pars_fragment"],
+                Visualization.THREE.ShaderChunk["lightmap_pars_fragment"],
+                Visualization.THREE.ShaderChunk["envmap_pars_fragment"],
+                Visualization.THREE.ShaderChunk["fog_pars_fragment"],
+                Visualization.THREE.ShaderChunk["lights_phong_pars_fragment"],
+                Visualization.THREE.ShaderChunk["shadowmap_pars_fragment"],
+                Visualization.THREE.ShaderChunk["bumpmap_pars_fragment"],
+                Visualization.THREE.ShaderChunk["normalmap_pars_fragment"],
+                Visualization.THREE.ShaderChunk["specularmap_pars_fragment"],
+                Visualization.THREE.ShaderChunk["logdepthbuf_pars_fragment"],
+                "varying float vS;",
+                "void main() {",
+                "	vec3 outgoingLight = vec3( 0.0 );",
+                "	vec4 diffuseColor;",
+                "   if (vS < 0.33) { diffuseColor = vec4( vColor, opacity ); }",
+                "   else if (vS - floor(vS + 0.1) > 0.33) { diffuseColor = vec4(highlightColor, opacity); }",
+                "	else { diffuseColor = vec4(selectionColor, opacity); }",
+                Visualization.THREE.ShaderChunk["logdepthbuf_fragment"],
+                Visualization.THREE.ShaderChunk["map_fragment"],
+                //THREE.ShaderChunk["color_fragment"], 
+                Visualization.THREE.ShaderChunk["alphamap_fragment"],
+                Visualization.THREE.ShaderChunk["alphatest_fragment"],
+                Visualization.THREE.ShaderChunk["specularmap_fragment"],
+                Visualization.THREE.ShaderChunk["lights_phong_fragment"],
+                Visualization.THREE.ShaderChunk["lightmap_fragment"],
+                Visualization.THREE.ShaderChunk["envmap_fragment"],
+                Visualization.THREE.ShaderChunk["shadowmap_fragment"],
+                Visualization.THREE.ShaderChunk["linear_to_gamma_fragment"],
+                Visualization.THREE.ShaderChunk["fog_fragment"],
+                "	gl_FragColor = vec4( outgoingLight, diffuseColor.a );",
+                "}"
+            ].join("\n")
+        };
         Visualization.MaterialsHelper = MaterialsHelper;
     })(Visualization = LiteMol.Visualization || (LiteMol.Visualization = {}));
 })(LiteMol || (LiteMol = {}));
@@ -55868,8 +55918,8 @@ var LiteMol;
         Visualization.RenderState = RenderState;
         var Scene = (function () {
             function Scene(element, options) {
-                var _this = this;
                 if (options === void 0) { options = {}; }
+                var _this = this;
                 this.renderState = new RenderState();
                 this.pickInfo = new Visualization.Selection.Pick();
                 this.selectInfo = null;
@@ -56170,10 +56220,10 @@ var LiteMol;
                 while (this.parentElement.lastChild)
                     this.parentElement.removeChild(this.parentElement.lastChild);
             };
-            Scene.hoverEvent = 'hover';
-            Scene.selectEvent = 'select';
             return Scene;
         }());
+        Scene.hoverEvent = 'hover';
+        Scene.selectEvent = 'select';
         Visualization.Scene = Scene;
     })(Visualization = LiteMol.Visualization || (LiteMol.Visualization = {}));
 })(LiteMol || (LiteMol = {}));
@@ -57086,15 +57136,16 @@ var LiteMol;
             var Geometry = (function (_super) {
                 __extends(Geometry, _super);
                 function Geometry() {
-                    _super.call(this);
-                    this.geometry = void 0;
-                    this.vertexToElementMap = void 0;
-                    this.elementToVertexMap = void 0;
-                    this.pickGeometry = void 0;
-                    this.pickPlatesGeometry = void 0;
-                    this.vertexStateBuffer = void 0;
-                    this.center = new Visualization.THREE.Vector3(0, 0, 0);
-                    this.radius = 0;
+                    var _this = _super.call(this) || this;
+                    _this.geometry = void 0;
+                    _this.vertexToElementMap = void 0;
+                    _this.elementToVertexMap = void 0;
+                    _this.pickGeometry = void 0;
+                    _this.pickPlatesGeometry = void 0;
+                    _this.vertexStateBuffer = void 0;
+                    _this.center = new Visualization.THREE.Vector3(0, 0, 0);
+                    _this.radius = 0;
+                    return _this;
                 }
                 Geometry.prototype.dispose = function () {
                     this.geometry.dispose();
@@ -57125,7 +57176,7 @@ var LiteMol;
             var Model = (function (_super) {
                 __extends(Model, _super);
                 function Model() {
-                    _super.apply(this, arguments);
+                    return _super.apply(this, arguments) || this;
                 }
                 Model.prototype.applySelectionInternal = function (indices, action) {
                     var buffer = this.geometry.vertexStateBuffer, array = buffer.array, map = this.geometry.elementToVertexMap, vertexRanges = map.vertexRanges, changed = false;
@@ -57253,10 +57304,11 @@ var LiteMol;
             var Geometry = (function (_super) {
                 __extends(Geometry, _super);
                 function Geometry() {
-                    _super.call(this);
-                    this.geometry = void 0;
-                    this.center = new Visualization.THREE.Vector3(0, 0, 0);
-                    this.radius = 0;
+                    var _this = _super.call(this) || this;
+                    _this.geometry = void 0;
+                    _this.center = new Visualization.THREE.Vector3(0, 0, 0);
+                    _this.radius = 0;
+                    return _this;
                 }
                 Geometry.prototype.dispose = function () {
                     this.geometry.dispose();
@@ -57307,7 +57359,7 @@ var LiteMol;
             var Model = (function (_super) {
                 __extends(Model, _super);
                 function Model() {
-                    _super.apply(this, arguments);
+                    return _super.apply(this, arguments) || this;
                 }
                 Model.prototype.applySelectionInternal = function (indices, action) {
                     return false;
@@ -57382,7 +57434,7 @@ var LiteMol;
                 var Model = (function (_super) {
                     __extends(Model, _super);
                     function Model() {
-                        _super.apply(this, arguments);
+                        return _super.apply(this, arguments) || this;
                     }
                     Model.prototype.applySelectionInternal = function (indices, action) {
                         var buffer = this.ballsAndSticks.vertexStateBuffer, array = buffer.array, map = this.ballsAndSticks.atomVertexMap, vertexRanges = map.vertexRanges, changed = false;
@@ -58009,13 +58061,14 @@ var LiteMol;
                 var BallsAndSticksGeometry = (function (_super) {
                     __extends(BallsAndSticksGeometry, _super);
                     function BallsAndSticksGeometry() {
-                        _super.apply(this, arguments);
-                        this.atomsGeometry = void 0;
-                        this.bondsGeometry = void 0;
-                        this.pickGeometry = void 0;
-                        this.atomVertexMap = void 0;
-                        this.bondVertexMap = void 0;
-                        this.vertexStateBuffer = void 0;
+                        var _this = _super.apply(this, arguments) || this;
+                        _this.atomsGeometry = void 0;
+                        _this.bondsGeometry = void 0;
+                        _this.pickGeometry = void 0;
+                        _this.atomVertexMap = void 0;
+                        _this.bondVertexMap = void 0;
+                        _this.vertexStateBuffer = void 0;
+                        return _this;
                     }
                     BallsAndSticksGeometry.prototype.dispose = function () {
                         this.atomsGeometry.dispose();
@@ -58045,11 +58098,12 @@ var LiteMol;
                     var Data = (function (_super) {
                         __extends(Data, _super);
                         function Data() {
-                            _super.apply(this, arguments);
-                            this.geometry = void 0;
-                            this.pickGeometry = void 0;
-                            this.vertexMap = void 0;
-                            this.vertexStateBuffer = void 0;
+                            var _this = _super.apply(this, arguments) || this;
+                            _this.geometry = void 0;
+                            _this.pickGeometry = void 0;
+                            _this.vertexMap = void 0;
+                            _this.vertexStateBuffer = void 0;
+                            return _this;
                         }
                         Data.prototype.dispose = function () {
                             this.geometry.dispose();
@@ -58543,9 +58597,9 @@ var LiteMol;
                             this.arrowWidth = 1.7;
                             this.tessalation = 2;
                         }
-                        CartoonsGeometryParams.Default = new CartoonsGeometryParams();
                         return CartoonsGeometryParams;
                     }());
+                    CartoonsGeometryParams.Default = new CartoonsGeometryParams();
                     Geometry.CartoonsGeometryParams = CartoonsGeometryParams;
                     var CartoonsGeometryState = (function () {
                         function CartoonsGeometryState(params, residueCount) {
@@ -58763,7 +58817,8 @@ var LiteMol;
                             this.tempVectors = [
                                 new Visualization.THREE.Vector3(), new Visualization.THREE.Vector3(), new Visualization.THREE.Vector3(), new Visualization.THREE.Vector3(), new Visualization.THREE.Vector3(), new Visualization.THREE.Vector3(),
                                 new Visualization.THREE.Vector3(), new Visualization.THREE.Vector3(), new Visualization.THREE.Vector3(), new Visualization.THREE.Vector3(), new Visualization.THREE.Vector3(), new Visualization.THREE.Vector3(),
-                                new Visualization.THREE.Vector3(), new Visualization.THREE.Vector3(), new Visualization.THREE.Vector3(), new Visualization.THREE.Vector3(), new Visualization.THREE.Vector3(), new Visualization.THREE.Vector3()];
+                                new Visualization.THREE.Vector3(), new Visualization.THREE.Vector3(), new Visualization.THREE.Vector3(), new Visualization.THREE.Vector3(), new Visualization.THREE.Vector3(), new Visualization.THREE.Vector3()
+                            ];
                         }
                         Builder.prototype.setVector = function (data, i, v) {
                             v.set(data[3 * i], data[3 * i + 1], data[3 * i + 2]);
@@ -58957,7 +59012,7 @@ var LiteMol;
                 var Model = (function (_super) {
                     __extends(Model, _super);
                     function Model() {
-                        _super.apply(this, arguments);
+                        return _super.apply(this, arguments) || this;
                     }
                     Model.prototype.applySelectionInternal = function (indices, action) {
                         var buffer = this.cartoons.vertexStateBuffer, array = buffer.array, map = this.cartoons.vertexMap, vertexRanges = map.vertexRanges, changed = false, residueIndex = this.model.atoms.residueIndex;
@@ -59209,9 +59264,9 @@ var LiteMol;
                     ret.b = minColor.b + (maxColor.b - minColor.b) * t;
                     return ret;
                 };
-                Palette.previous = Palette.randomMix({ r: 0.75, g: 0, b: 0.25 }, { r: 1, g: 0.5, b: 0 }, { r: 0, g: 0.35, b: 1 }, 0.5);
                 return Palette;
             }());
+            Palette.previous = Palette.randomMix({ r: 0.75, g: 0, b: 0.25 }, { r: 1, g: 0.5, b: 0 }, { r: 0, g: 0.35, b: 1 }, 0.5);
             Utils.Palette = Palette;
         })(Utils = Visualization.Utils || (Visualization.Utils = {}));
     })(Visualization = LiteMol.Visualization || (LiteMol.Visualization = {}));
@@ -64414,7 +64469,7 @@ var LiteMol;
 (function (LiteMol) {
     var Bootstrap;
     (function (Bootstrap) {
-        Bootstrap.VERSION = { number: "1.1.5", date: "Sep 30 2016" };
+        Bootstrap.VERSION = { number: "1.1.6", date: "Nov 10 2016" };
     })(Bootstrap = LiteMol.Bootstrap || (LiteMol.Bootstrap = {}));
 })(LiteMol || (LiteMol = {}));
 /*
@@ -64561,10 +64616,10 @@ var LiteMol;
                         this.pool.push();
                     }
                 };
-                RequestPool.pool = [];
-                RequestPool.poolSize = 15;
                 return RequestPool;
             }());
+            RequestPool.pool = [];
+            RequestPool.poolSize = 15;
             function processAjax(ctx, asArrayBuffer, e) {
                 var req = e.target;
                 if (req.status >= 200 && req.status < 400) {
@@ -64656,7 +64711,6 @@ var LiteMol;
                     return ValueOrError;
                 }());
                 Query.ValueOrError = ValueOrError;
-                var ValueOrError;
                 (function (ValueOrError) {
                     function error(err) {
                         return new ValueOrError(true, void 0, err);
@@ -65248,7 +65302,6 @@ var LiteMol;
                 return Dispatcher;
             }());
             Service.Dispatcher = Dispatcher;
-            var Dispatcher;
             (function (Dispatcher) {
                 (function (Lane) {
                     Lane[Lane["Slow"] = 0] = "Slow";
@@ -65295,7 +65348,6 @@ var LiteMol;
                 return Logger;
             }());
             Service.Logger = Logger;
-            var Logger;
             (function (Logger) {
                 (function (EntryType) {
                     EntryType[EntryType["Message"] = 0] = "Message";
@@ -65366,7 +65418,6 @@ var LiteMol;
             return Task;
         }());
         Bootstrap.Task = Task;
-        var Task;
         (function (Task) {
             var Running = (function () {
                 function Running(p) {
@@ -67723,7 +67774,6 @@ var LiteMol;
                 return Cache;
             }());
             Entity.Cache = Cache;
-            var Cache;
             (function (Cache) {
                 var Keys;
                 (function (Keys) {
@@ -67826,7 +67876,7 @@ var LiteMol;
                             from: [Entity.Root],
                             to: [Entity.Action],
                             defaultParams: function (ctx) { return ({ id: params.defaultId, format: LiteMol.Core.Formats.Molecule.SupportedFormats.mmCIF }); },
-                            validateParams: function (p) { return (!p.id || !p.id.trim().length) ? [("Enter " + (params.isFullUrl ? 'URL' : 'Id'))] : void 0; }
+                            validateParams: function (p) { return (!p.id || !p.id.trim().length) ? ["Enter " + (params.isFullUrl ? 'URL' : 'Id')] : void 0; }
                         }, function (context, a, t) {
                             var format = params.specificFormat ? params.specificFormat : t.params.format;
                             return Bootstrap.Tree.Transform.build()
@@ -67844,7 +67894,7 @@ var LiteMol;
                         to: [Entity.Action],
                         defaultParams: function (ctx) { return ({ format: LiteMol.Core.Formats.Molecule.SupportedFormats.mmCIF }); },
                         validateParams: function (p) { return !p.file ? ['Select a file'] : !LiteMol.Core.Formats.FormatInfo.getFormat(p.file.name, LiteMol.Core.Formats.Molecule.SupportedFormats.All)
-                            ? [("Select a supported file format (" + [].concat(LiteMol.Core.Formats.Molecule.SupportedFormats.All.map(function (f) { return f.extensions; })).join(', ') + ").")]
+                            ? ["Select a supported file format (" + [].concat(LiteMol.Core.Formats.Molecule.SupportedFormats.All.map(function (f) { return f.extensions; })).join(', ') + ")."]
                             : void 0; }
                     }, function (context, a, t) {
                         var format = LiteMol.Core.Formats.FormatInfo.getFormat(t.params.file.name, LiteMol.Core.Formats.Molecule.SupportedFormats.All);
@@ -68218,6 +68268,20 @@ var LiteMol;
                                 ctx.resolve(Entity.Data.Json.create(t, { label: t.params.id ? t.params.id : 'JSON Data', description: t.params.description, data: data }));
                             });
                         }).setReportTime(true);
+                    });
+                    Data.FromData = Bootstrap.Tree.Transformer.create({
+                        id: 'data-from-data',
+                        name: 'From Data',
+                        description: 'Creates a data entity from string or binary data',
+                        from: [Entity.Root],
+                        to: [Entity.Data.String, Entity.Data.Binary],
+                        defaultParams: function () { return ({}); }
+                    }, function (ctx, a, t) {
+                        var data = t.params.data;
+                        var e = data instanceof ArrayBuffer
+                            ? Entity.Data.Binary.create(t, { label: t.params.id ? t.params.id : "Binary Data", description: t.params.description, data: data })
+                            : Entity.Data.String.create(t, { label: t.params.id ? t.params.id : "String Data", description: t.params.description, data: data });
+                        return Bootstrap.Task.resolve("From Data", 'Silent', e);
                     });
                 })(Data = Transformer.Data || (Transformer.Data = {}));
             })(Transformer = Entity.Transformer || (Entity.Transformer = {}));
@@ -68809,7 +68873,7 @@ var LiteMol;
                             authAsymId = p.chains.authAsymId[chain];
                             transform = model.operators[model.chains.operatorIndex[cI]].matrix;
                         }
-                        var url = (this.server + "/")
+                        var url = this.server + "/"
                             + (model.id.toLocaleLowerCase() + "/ambientResidues?")
                             + ("modelId=" + encodeURIComponent(model.modelId) + "&")
                             + ("entityId=" + encodeURIComponent(rs.entityId[i]) + "&")
@@ -68857,7 +68921,6 @@ var LiteMol;
                     return CoordinateStreaming;
                 }());
                 Molecule.CoordinateStreaming = CoordinateStreaming;
-                var CoordinateStreaming;
                 (function (CoordinateStreaming) {
                     function normalizeServerName(s) {
                         if (s[s.length - 1] !== '/')
@@ -69107,19 +69170,19 @@ var LiteMol;
             var Layout = (function (_super) {
                 __extends(Layout, _super);
                 function Layout(context, targets, root) {
-                    var _this = this;
-                    _super.call(this, context, {
+                    var _this = _super.call(this, context, {
                         isExpanded: false,
                         hiddenComponentKeys: Bootstrap.Immutable.Set()
-                    });
-                    this.targets = targets;
-                    this.root = root;
-                    this.rootState = void 0;
-                    Bootstrap.Command.Layout.SetState.getStream(this.context).subscribe(function (e) { return _this.update(e.data); });
+                    }) || this;
+                    _this.targets = targets;
+                    _this.root = root;
+                    _this.rootState = void 0;
+                    Bootstrap.Command.Layout.SetState.getStream(_this.context).subscribe(function (e) { return _this.update(e.data); });
                     // <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" />
-                    this.expandedViewport = document.createElement('meta');
-                    this.expandedViewport.name = 'viewport';
-                    this.expandedViewport.content = 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0';
+                    _this.expandedViewport = document.createElement('meta');
+                    _this.expandedViewport.name = 'viewport';
+                    _this.expandedViewport.content = 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0';
+                    return _this;
                 }
                 Layout.prototype.update = function (state) {
                     var _this = this;
@@ -69251,16 +69314,16 @@ var LiteMol;
                 var Controller = (function (_super) {
                     __extends(Controller, _super);
                     function Controller(context, transformer, entity) {
-                        var _this = this;
-                        _super.call(this, context, { params: transformer.info.defaultParams(context, entity), isDirty: false, isExpanded: true });
-                        this.transformer = transformer;
-                        this.entity = entity;
-                        this.updateTimeout = new Bootstrap.Rx.Subject();
-                        this.timeout = Bootstrap.Rx.Observable.timer(50);
-                        this.never = Bootstrap.Rx.Observable.never();
-                        this.anchorParams = this.latestState.params;
-                        this.updateParams(this.anchorParams);
-                        this.updateTimeout.flatMapLatest(function (t) { return t; }).forEach(function () { return _this.apply(); });
+                        var _this = _super.call(this, context, { params: transformer.info.defaultParams(context, entity), isDirty: false, isExpanded: true }) || this;
+                        _this.transformer = transformer;
+                        _this.entity = entity;
+                        _this.updateTimeout = new Bootstrap.Rx.Subject();
+                        _this.timeout = Bootstrap.Rx.Observable.timer(50);
+                        _this.never = Bootstrap.Rx.Observable.never();
+                        _this.anchorParams = _this.latestState.params;
+                        _this.updateParams(_this.anchorParams);
+                        _this.updateTimeout.flatMapLatest(function (t) { return t; }).forEach(function () { return _this.apply(); });
+                        return _this;
                     }
                     Controller.prototype._update = function () {
                         if (this.isUpdate && !this.latestState.isBusy) {
@@ -69348,10 +69411,10 @@ var LiteMol;
                 var View = (function (_super) {
                     __extends(View, _super);
                     function View(context) {
-                        var _this = this;
-                        _super.call(this, context, { update: void 0, transforms: [] });
-                        this.update();
+                        var _this = _super.call(this, context, { update: void 0, transforms: [] }) || this;
+                        _this.update();
                         Bootstrap.Event.Entity.CurrentChanged.getStream(context).subscribe(function () { return _this.update(); });
+                        return _this;
                     }
                     // private setParams(c: Controller<any>) {
                     //     let prms = c.transformer.info.defaultParams(this.context, this.context.currentEntity);
@@ -69413,7 +69476,7 @@ var LiteMol;
                 var MoleculeVisual = (function (_super) {
                     __extends(MoleculeVisual, _super);
                     function MoleculeVisual() {
-                        _super.apply(this, arguments);
+                        return _super.apply(this, arguments) || this;
                     }
                     MoleculeVisual.prototype.updateTemplate = function (key, all) {
                         var s = all.get(key);
@@ -69475,7 +69538,7 @@ var LiteMol;
                 var DensityVisual = (function (_super) {
                     __extends(DensityVisual, _super);
                     function DensityVisual() {
-                        _super.apply(this, arguments);
+                        return _super.apply(this, arguments) || this;
                     }
                     DensityVisual.prototype.updateStyleParams = function (params) {
                         var s = Bootstrap.Utils.shallowClone(this.latestState.params.style);
@@ -69548,12 +69611,12 @@ var LiteMol;
                 var Updater = (function (_super) {
                     __extends(Updater, _super);
                     function Updater(ctx, selector, header) {
-                        var _this = this;
-                        _super.call(this, ctx, {});
-                        this.selector = selector;
-                        this.header = header;
+                        var _this = _super.call(this, ctx, {}) || this;
+                        _this.selector = selector;
+                        _this.header = header;
                         Bootstrap.Event.Tree.NodeAdded.getStream(ctx).subscribe(function () { return _this.added(); });
                         Bootstrap.Event.Tree.NodeRemoved.getStream(ctx).subscribe(function (e) { return _this.removed(e.data); });
+                        return _this;
                     }
                     Updater.prototype.removed = function (e) {
                         if (!this.latestState.controller)
@@ -69595,13 +69658,13 @@ var LiteMol;
                 var Action = (function (_super) {
                     __extends(Action, _super);
                     function Action(ctx, selector, transformer, header) {
-                        var _this = this;
-                        _super.call(this, ctx, {});
-                        this.selector = selector;
-                        this.transformer = transformer;
-                        this.header = header;
+                        var _this = _super.call(this, ctx, {}) || this;
+                        _this.selector = selector;
+                        _this.transformer = transformer;
+                        _this.header = header;
                         Bootstrap.Event.Tree.NodeAdded.getStream(ctx).subscribe(function () { return _this.added(); });
                         Bootstrap.Event.Tree.NodeRemoved.getStream(ctx).subscribe(function (e) { return _this.removed(e.data); });
+                        return _this;
                     }
                     Action.prototype.removed = function (e) {
                         if (!this.latestState.controller)
@@ -69643,10 +69706,10 @@ var LiteMol;
                 var Log = (function (_super) {
                     __extends(Log, _super);
                     function Log(context) {
-                        var _this = this;
-                        _super.call(this, context, { entries: Bootstrap.Immutable.List() });
-                        Bootstrap.Event.Log.getStream(this.context)
+                        var _this = _super.call(this, context, { entries: Bootstrap.Immutable.List() }) || this;
+                        Bootstrap.Event.Log.getStream(_this.context)
                             .subscribe(function (e) { return _this.setState({ entries: _this.latestState.entries.push(e.data) }); });
+                        return _this;
                     }
                     return Log;
                 }(Components.Component));
@@ -69670,18 +69733,18 @@ var LiteMol;
                 var TaskWatcher = (function (_super) {
                     __extends(TaskWatcher, _super);
                     function TaskWatcher(context, type) {
-                        var _this = this;
-                        _super.call(this, context, {
+                        var _this = _super.call(this, context, {
                             tasks: Bootstrap.Immutable.Map()
-                        });
-                        this.type = type;
-                        Bootstrap.Event.Task.StateUpdated.getStream(this.context)
+                        }) || this;
+                        _this.type = type;
+                        Bootstrap.Event.Task.StateUpdated.getStream(_this.context)
                             .subscribe(function (e) { return _this.updated(e.data); });
-                        Bootstrap.Event.Task.Started.getStream(this.context)
+                        Bootstrap.Event.Task.Started.getStream(_this.context)
                             .filter(function (e) { return e.data.type === type; })
                             .subscribe(function (e) { return _this.started(e.data); });
-                        Bootstrap.Event.Task.Completed.getStream(this.context)
+                        Bootstrap.Event.Task.Completed.getStream(_this.context)
                             .subscribe(function (e) { return _this.completed(e.data); });
+                        return _this;
                     }
                     TaskWatcher.prototype.updated = function (state) {
                         var isWatched = state.type === this.type;
@@ -69734,9 +69797,9 @@ var LiteMol;
                 var HighlightInfo = (function (_super) {
                     __extends(HighlightInfo, _super);
                     function HighlightInfo(context) {
-                        var _this = this;
-                        _super.call(this, context, { info: [] });
-                        Bootstrap.Event.Interactivity.Highlight.getStream(this.context).subscribe(function (e) { return _this.setState({ info: e.data }); });
+                        var _this = _super.call(this, context, { info: [] }) || this;
+                        Bootstrap.Event.Interactivity.Highlight.getStream(_this.context).subscribe(function (e) { return _this.setState({ info: e.data }); });
+                        return _this;
                     }
                     return HighlightInfo;
                 }(Components.Component));
@@ -69761,16 +69824,16 @@ var LiteMol;
                 var Viewport = (function (_super) {
                     __extends(Viewport, _super);
                     function Viewport(context) {
-                        var _this = this;
-                        _super.call(this, context, Bootstrap.Utils.shallowClone(Vis.DefaultSceneOptions));
-                        Bootstrap.Event.Common.LayoutChanged.getStream(this.context).subscribe(function (e) {
+                        var _this = _super.call(this, context, Bootstrap.Utils.shallowClone(Vis.DefaultSceneOptions)) || this;
+                        Bootstrap.Event.Common.LayoutChanged.getStream(_this.context).subscribe(function (e) {
                             if (_this._scene)
                                 _this._scene.scene.resized();
                         });
-                        Bootstrap.Command.Layout.SetViewportOptions.getStream(this.context).subscribe(function (e) { return _this.setState(e.data); });
-                        this.state.throttle(1000 / 30).subscribe(function (s) {
+                        Bootstrap.Command.Layout.SetViewportOptions.getStream(_this.context).subscribe(function (e) { return _this.setState(e.data); });
+                        _this.state.throttle(1000 / 30).subscribe(function (s) {
                             _this.scene.scene.updateOptions(s);
                         });
+                        return _this;
                     }
                     Object.defineProperty(Viewport.prototype, "scene", {
                         get: function () {
@@ -74601,7 +74664,7 @@ var LiteMol;
 (function (LiteMol) {
     var Plugin;
     (function (Plugin) {
-        Plugin.VERSION = { number: "1.1.4", date: "Oct 2 2016" };
+        Plugin.VERSION = { number: "1.2.0", date: "Nov 10 2016" };
     })(Plugin = LiteMol.Plugin || (LiteMol.Plugin = {}));
 })(LiteMol || (LiteMol = {}));
 /*
@@ -74616,6 +74679,8 @@ var LiteMol;
         Plugin.ReactDOM = __LiteMolReactDOM;
         var Controls;
         (function (Controls) {
+            //export const ColorPickerHelper: __LiteMolColorPicker.ColorPicker = <any>__LiteMolColorPicker.ColorPicker;
+            //export const AlphaPickerHelper: __LiteMolColorPicker.AlphaPicker = <any>(__LiteMolColorPicker as any).AlphaPicker;
         })(Controls = Plugin.Controls || (Plugin.Controls = {}));
         Controls.ChromePickerHelper = __LiteMolColorPicker.ChromePicker;
     })(Plugin = LiteMol.Plugin || (LiteMol.Plugin = {}));
@@ -74634,7 +74699,7 @@ var LiteMol;
             var Pure = (function (_super) {
                 __extends(Pure, _super);
                 function Pure() {
-                    _super.apply(this, arguments);
+                    return _super.apply(this, arguments) || this;
                 }
                 Pure.prototype.shouldComponentUpdate = function (nextProps, nextState) {
                     return !shallowEqual(this.props, nextProps) || !shallowEqual(this.state, nextState);
@@ -74645,7 +74710,7 @@ var LiteMol;
             var Button = (function (_super) {
                 __extends(Button, _super);
                 function Button() {
-                    _super.apply(this, arguments);
+                    return _super.apply(this, arguments) || this;
                 }
                 Button.prototype.render = function () {
                     var props = this.props;
@@ -74665,22 +74730,20 @@ var LiteMol;
                     var icon = void 0;
                     if (props.icon) {
                         if (props.active && props.activeIcon)
-                            icon = Plugin.React.createElement("span", {className: "icon icon-" + props.activeIcon});
+                            icon = Plugin.React.createElement("span", { className: "icon icon-" + props.activeIcon });
                         else
-                            icon = Plugin.React.createElement("span", {className: "icon icon-" + props.icon});
+                            icon = Plugin.React.createElement("span", { className: "icon icon-" + props.icon });
                     }
                     //onTouchEnd={(e) => { (e.target as HTMLElement).blur() } }
-                    return Plugin.React.createElement("button", {title: props.title, className: className, style: props.customStyle, disabled: props.disabled, onClick: function (e) { props.onClick.call(null, e); e.target.blur(); }}, 
-                        icon, 
+                    return Plugin.React.createElement("button", { title: props.title, className: className, style: props.customStyle, disabled: props.disabled, onClick: function (e) { props.onClick.call(null, e); e.target.blur(); } },
+                        icon,
                         props.children);
                 };
                 return Button;
             }(Pure));
             Controls.Button = Button;
-            Controls.TextBox = function (props) {
-                return Plugin.React.createElement("input", {type: 'text', className: 'form-control', placeholder: props.placeholder, value: props.value, defaultValue: props.defaultValue, onBlur: function (e) { if (props.onBlur)
-                    props.onBlur.call(null, e); }, onChange: function (e) { return props.onChange.call(null, e.target.value); }, onKeyPress: props.onKeyPress});
-            };
+            Controls.TextBox = function (props) { return Plugin.React.createElement("input", { type: 'text', className: 'form-control', placeholder: props.placeholder, value: props.value, defaultValue: props.defaultValue, onBlur: function (e) { if (props.onBlur)
+                    props.onBlur.call(null, e); }, onChange: function (e) { return props.onChange.call(null, e.target.value); }, onKeyPress: props.onKeyPress }); };
             function isEnter(e) {
                 if ((e.keyCode === 13 || e.charCode === 13)) {
                     return true;
@@ -74689,46 +74752,37 @@ var LiteMol;
             }
             Controls.isEnter = isEnter;
             function TextBoxGroup(props) {
-                return Plugin.React.createElement("div", {className: 'lm-control-row lm-options-group', title: props.title}, 
-                    Plugin.React.createElement("span", null, props.label), 
-                    Plugin.React.createElement("div", null, 
-                        Plugin.React.createElement(Controls.TextBox, {placeholder: props.placeholder, onChange: props.onChange, value: props.value, onKeyPress: function (e) {
-                            if (isEnter(e) && props.onEnter)
-                                props.onEnter.call(null, e);
-                        }})
-                    ));
+                return Plugin.React.createElement("div", { className: 'lm-control-row lm-options-group', title: props.title },
+                    Plugin.React.createElement("span", null, props.label),
+                    Plugin.React.createElement("div", null,
+                        Plugin.React.createElement(Controls.TextBox, { placeholder: props.placeholder, onChange: props.onChange, value: props.value, onKeyPress: function (e) {
+                                if (isEnter(e) && props.onEnter)
+                                    props.onEnter.call(null, e);
+                            } })));
             }
             Controls.TextBoxGroup = TextBoxGroup;
-            Controls.CommitButton = function (props) {
-                return Plugin.React.createElement("div", {style: { marginTop: '1px' }}, 
-                    Plugin.React.createElement("button", {onClick: function (e) { props.action(); e.target.blur(); }, className: 'btn btn-block btn-commit btn-commit-' + (props.isOn ? 'on' : 'off'), disabled: !props.isOn, title: props.title}, 
-                        Plugin.React.createElement("span", {className: "icon icon-" + (props.isOn ? 'ok' : 'cross')}), 
-                        props.isOn ? Plugin.React.createElement("b", null, props.on) : (props.off ? props.off : props.on))
-                );
-            };
+            Controls.CommitButton = function (props) { return Plugin.React.createElement("div", { style: { marginTop: '1px' } },
+                Plugin.React.createElement("button", { onClick: function (e) { props.action(); e.target.blur(); }, className: 'btn btn-block btn-commit btn-commit-' + (props.isOn ? 'on' : 'off'), disabled: !props.isOn, title: props.title },
+                    Plugin.React.createElement("span", { className: "icon icon-" + (props.isOn ? 'ok' : 'cross') }),
+                    props.isOn ? Plugin.React.createElement("b", null, props.on) : (props.off ? props.off : props.on))); };
             // <Controls.Button onClick={() => props.action() }
             //         style={props.isOn ? 'success' : 'default' } asBlock={true} disabled={!props.isOn} icon={props.isOn ? 'ok' : 'cross'} 
             //             customClass='lm-commit-button'>
             //             {props.isOn ? props.on : (props.off ? props.off : props.on) }
             //         </Controls.Button>  
-            Controls.Toggle = function (props) {
-                return Plugin.React.createElement("div", {className: 'lm-control-row lm-toggle-button', title: props.title}, 
-                    Plugin.React.createElement("span", null, props.label), 
-                    Plugin.React.createElement("div", null, 
-                        Plugin.React.createElement("button", {onClick: function (e) { props.onChange.call(null, !props.value); e.target.blur(); }}, 
-                            Plugin.React.createElement("span", {className: "icon icon-" + (props.value ? 'ok' : 'off')}), 
-                            " ", 
-                            props.value ? 'On' : 'Off')
-                    ));
-            };
+            Controls.Toggle = function (props) { return Plugin.React.createElement("div", { className: 'lm-control-row lm-toggle-button', title: props.title },
+                Plugin.React.createElement("span", null, props.label),
+                Plugin.React.createElement("div", null,
+                    Plugin.React.createElement("button", { onClick: function (e) { props.onChange.call(null, !props.value); e.target.blur(); } },
+                        Plugin.React.createElement("span", { className: "icon icon-" + (props.value ? 'ok' : 'off') }),
+                        " ",
+                        props.value ? 'On' : 'Off'))); };
             Controls.ControlGroupExpander = function (props) {
-                return Plugin.React.createElement(Controls.Button, {style: 'link', title: (props.isExpanded ? 'Less' : 'More') + " options", onClick: function () { return props.onChange.call(null, !props.isExpanded); }, icon: props.isExpanded ? 'minus' : 'plus', customClass: 'lm-conrol-group-expander'});
+                return Plugin.React.createElement(Controls.Button, { style: 'link', title: (props.isExpanded ? 'Less' : 'More') + " options", onClick: function () { return props.onChange.call(null, !props.isExpanded); }, icon: props.isExpanded ? 'minus' : 'plus', customClass: 'lm-conrol-group-expander' });
             };
-            Controls.RowText = function (props) {
-                return Plugin.React.createElement("div", {className: 'lm-control-row lm-row-text', title: props.title}, 
-                    Plugin.React.createElement("span", null, props.label), 
-                    Plugin.React.createElement("div", null, props.value));
-            };
+            Controls.RowText = function (props) { return Plugin.React.createElement("div", { className: 'lm-control-row lm-row-text', title: props.title },
+                Plugin.React.createElement("span", null, props.label),
+                Plugin.React.createElement("div", null, props.value)); };
         })(Controls = Plugin.Controls || (Plugin.Controls = {}));
     })(Plugin = LiteMol.Plugin || (LiteMol.Plugin = {}));
 })(LiteMol || (LiteMol = {}));
@@ -74745,8 +74799,9 @@ var LiteMol;
             var OptionsBox = (function (_super) {
                 __extends(OptionsBox, _super);
                 function OptionsBox() {
-                    _super.apply(this, arguments);
-                    this.current = void 0;
+                    var _this = _super.apply(this, arguments) || this;
+                    _this.current = void 0;
+                    return _this;
                 }
                 OptionsBox.prototype.get = function (i) {
                     var opts = this.props.options;
@@ -74760,11 +74815,11 @@ var LiteMol;
                     var idx = this.props.options.indexOf(this.props.current);
                     if (idx < 0)
                         idx = 0;
-                    return Plugin.React.createElement("select", {title: this.props.title, value: idx.toString(), className: 'form-control', onChange: function (e) {
-                        _this.current = _this.get(+e.target.value);
-                        _this.props.onChange(_this.current);
-                    }}, this.props.options.map(function (o, i) {
-                        return Plugin.React.createElement("option", {key: i, value: "" + i, selected: i === idx}, cap(o));
+                    return Plugin.React.createElement("select", { title: this.props.title, value: idx.toString(), className: 'form-control', onChange: function (e) {
+                            _this.current = _this.get(+e.target.value);
+                            _this.props.onChange(_this.current);
+                        } }, this.props.options.map(function (o, i) {
+                        return Plugin.React.createElement("option", { key: i, value: "" + i, selected: i === idx }, cap(o));
                     }));
                 };
                 return OptionsBox;
@@ -74772,11 +74827,10 @@ var LiteMol;
             Controls.OptionsBox = OptionsBox;
             function OptionsGroup(props) {
                 var caption = props.caption ? props.caption : function (o) { return o; };
-                return Plugin.React.createElement("div", {className: 'lm-control-row lm-options-group', title: props.title}, 
-                    Plugin.React.createElement("span", null, props.label), 
-                    Plugin.React.createElement("div", null, 
-                        Plugin.React.createElement(Controls.OptionsBox, {options: props.options, caption: caption, current: props.current, onChange: props.onChange})
-                    ));
+                return Plugin.React.createElement("div", { className: 'lm-control-row lm-options-group', title: props.title },
+                    Plugin.React.createElement("span", null, props.label),
+                    Plugin.React.createElement("div", null,
+                        Plugin.React.createElement(Controls.OptionsBox, { options: props.options, caption: caption, current: props.current, onChange: props.onChange })));
             }
             Controls.OptionsGroup = OptionsGroup;
         })(Controls = Plugin.Controls || (Plugin.Controls = {}));
@@ -74795,40 +74849,39 @@ var LiteMol;
             var Panel = (function (_super) {
                 __extends(Panel, _super);
                 function Panel() {
-                    _super.apply(this, arguments);
+                    return _super.apply(this, arguments) || this;
                 }
                 Panel.prototype.header = function () {
                     var _this = this;
                     var exp = this.props.isExpanded;
                     var title = this.props.title ? this.props.title : this.props.header;
                     var icon = exp ? 'collapse' : 'expand';
-                    var desc = Plugin.React.createElement("div", {className: 'lm-panel-description', onClick: function () { return _this.props.onExpand.call(null, !_this.props.isExpanded); }}, 
-                        Plugin.React.createElement("span", {className: 'icon icon-info'}), 
-                        Plugin.React.createElement("div", {className: 'lm-panel-description-content'}, 
-                            Plugin.React.createElement("span", {className: 'icon icon-info'}), 
+                    var desc = Plugin.React.createElement("div", { className: 'lm-panel-description', onClick: function () { return _this.props.onExpand.call(null, !_this.props.isExpanded); } },
+                        Plugin.React.createElement("span", { className: 'icon icon-info' }),
+                        Plugin.React.createElement("div", { className: 'lm-panel-description-content' },
+                            Plugin.React.createElement("span", { className: 'icon icon-info' }),
                             this.props.description));
-                    return Plugin.React.createElement("div", {className: 'lm-panel-header'}, 
-                        desc, 
-                        Plugin.React.createElement("div", {className: 'lm-panel-expander-wrapper'}, 
-                            Plugin.React.createElement(Controls.Button, {title: title, onClick: function () { return _this.props.onExpand.call(null, !_this.props.isExpanded); }, icon: icon, customClass: 'lm-panel-expander', style: 'link'}, 
-                                this.props.badge, 
-                                this.props.header)
-                        ));
+                    return Plugin.React.createElement("div", { className: 'lm-panel-header' },
+                        desc,
+                        Plugin.React.createElement("div", { className: 'lm-panel-expander-wrapper' },
+                            Plugin.React.createElement(Controls.Button, { title: title, onClick: function () { return _this.props.onExpand.call(null, !_this.props.isExpanded); }, icon: icon, customClass: 'lm-panel-expander', style: 'link' },
+                                this.props.badge,
+                                this.props.header)));
                 };
                 Panel.prototype.render = function () {
                     var cls = 'lm-panel' + (this.props.className ? ' ' + this.props.className : '') + (this.props.isExpanded ? ' lm-panel-expanded' : ' lm-panel-collapsed');
-                    return Plugin.React.createElement("div", {className: cls}, 
-                        this.header(), 
-                        Plugin.React.createElement("div", {className: 'lm-panel-body', style: { display: this.props.isExpanded ? 'block' : 'none' }}, this.props.children));
+                    return Plugin.React.createElement("div", { className: cls },
+                        this.header(),
+                        Plugin.React.createElement("div", { className: 'lm-panel-body', style: { display: this.props.isExpanded ? 'block' : 'none' } }, this.props.children));
                 };
                 return Panel;
             }(Plugin.React.Component));
             Controls.Panel = Panel;
             Controls.ExpandableGroup = function (props) {
-                return Plugin.React.createElement("div", {className: 'lm-control-group'}, 
-                    props.select, 
-                    props.options.length > 0 ? props.expander : void 0, 
-                    props.options.length > 0 ? Plugin.React.createElement("div", {style: { display: props.isExpanded ? 'block' : 'none' }, className: 'lm-control-subgroup'}, props.options) : void 0);
+                return Plugin.React.createElement("div", { className: 'lm-control-group' },
+                    props.select,
+                    props.options.length > 0 ? props.expander : void 0,
+                    props.options.length > 0 ? Plugin.React.createElement("div", { style: { display: props.isExpanded ? 'block' : 'none' }, className: 'lm-control-subgroup' }, props.options) : void 0);
             };
         })(Controls = Plugin.Controls || (Plugin.Controls = {}));
     })(Plugin = LiteMol.Plugin || (LiteMol.Plugin = {}));
@@ -74846,8 +74899,9 @@ var LiteMol;
             var Slider = (function (_super) {
                 __extends(Slider, _super);
                 function Slider() {
-                    _super.apply(this, arguments);
-                    this.state = { value: '0' };
+                    var _this = _super.apply(this, arguments) || this;
+                    _this.state = { value: '0' };
+                    return _this;
                 }
                 Slider.prototype.componentWillMount = function () {
                     this.setState({ value: '' + this.props.value });
@@ -74886,25 +74940,21 @@ var LiteMol;
                     var step = this.props.step;
                     if (step === void 0)
                         step = 1;
-                    return Plugin.React.createElement("div", {className: 'lm-control-row lm-slider', title: this.props.title}, 
-                        Plugin.React.createElement("span", null, this.props.label), 
-                        Plugin.React.createElement("div", null, 
-                            Plugin.React.createElement("div", null, 
-                                Plugin.React.createElement("div", null, 
-                                    Plugin.React.createElement("form", {noValidate: true}, 
-                                        Plugin.React.createElement("input", {type: 'range', min: this.props.min, max: this.props.max, value: this.state.value, ref: 'slider', step: step, onInput: function (e) {
-                                            var s = e.target.value;
-                                            _this.setState({ value: s });
-                                        }, onSelect: function (e) { _this.fire(); e.target.blur(); }, onBlur: function () { return _this.fire(); }, onTouchEnd: function () { return _this.fire(); }})
-                                    )
-                                )
-                            ), 
-                            Plugin.React.createElement("div", null, 
-                                Plugin.React.createElement(Controls.TextBox, {value: this.state.value, onChange: function (v) { return _this.updateValue(v); }, onBlur: function () { return _this.fire(); }, onKeyPress: function (e) {
-                                    if (Controls.isEnter(e))
-                                        _this.fire();
-                                }})
-                            )));
+                    return Plugin.React.createElement("div", { className: 'lm-control-row lm-slider', title: this.props.title },
+                        Plugin.React.createElement("span", null, this.props.label),
+                        Plugin.React.createElement("div", null,
+                            Plugin.React.createElement("div", null,
+                                Plugin.React.createElement("div", null,
+                                    Plugin.React.createElement("form", { noValidate: true },
+                                        Plugin.React.createElement("input", { type: 'range', min: this.props.min, max: this.props.max, value: this.state.value, ref: 'slider', step: step, onInput: function (e) {
+                                                var s = e.target.value;
+                                                _this.setState({ value: s });
+                                            }, onSelect: function (e) { _this.fire(); e.target.blur(); }, onBlur: function () { return _this.fire(); }, onTouchEnd: function () { return _this.fire(); } })))),
+                            Plugin.React.createElement("div", null,
+                                Plugin.React.createElement(Controls.TextBox, { value: this.state.value, onChange: function (v) { return _this.updateValue(v); }, onBlur: function () { return _this.fire(); }, onKeyPress: function (e) {
+                                        if (Controls.isEnter(e))
+                                            _this.fire();
+                                    } }))));
                 };
                 return Slider;
             }(Plugin.React.Component));
@@ -74926,7 +74976,7 @@ var LiteMol;
             var ColorPicker = (function (_super) {
                 __extends(ColorPicker, _super);
                 function ColorPicker() {
-                    _super.apply(this, arguments);
+                    return _super.apply(this, arguments) || this;
                 }
                 ColorPicker.prototype.shouldComponentUpdate = function (nextProps, nextState, nextContext) {
                     return !shallowEqual(this.props, nextProps);
@@ -74937,11 +74987,11 @@ var LiteMol;
                     var color = { a: 1, r: 255 * r, g: 255 * g, b: 255 * b };
                     var onChange = function (e) { return _this.props.onChange({ r: e.rgb.r / 255, g: e.rgb.g / 255, b: e.rgb.b / 255 }); };
                     //let type = this.props.type ? this.props.type : 'chrome';
-                    var picker = Plugin.React.createElement(Controls.ChromePickerHelper, {color: color, onChangeComplete: onChange});
+                    var picker = Plugin.React.createElement(Controls.ChromePickerHelper, { color: color, onChangeComplete: onChange });
                     //  type === 'slider'
                     //     ? <Controls.ColorPickerHelper color={color} onChange={onChange} />
                     //     : <Controls.ChromePickerHelper color={color} onChange={onChange} />;
-                    return Plugin.React.createElement("div", {className: 'lm-color-picker'}, picker);
+                    return Plugin.React.createElement("div", { className: 'lm-color-picker' }, picker);
                 };
                 return ColorPicker;
             }(Plugin.React.Component));
@@ -74949,8 +74999,9 @@ var LiteMol;
             var ToggleColorPicker = (function (_super) {
                 __extends(ToggleColorPicker, _super);
                 function ToggleColorPicker() {
-                    _super.apply(this, arguments);
-                    this.state = { isExpanded: false };
+                    var _this = _super.apply(this, arguments) || this;
+                    _this.state = { isExpanded: false };
+                    return _this;
                 }
                 ToggleColorPicker.prototype.render = function () {
                     var _this = this;
@@ -74958,14 +75009,13 @@ var LiteMol;
                     var clr = this.props.color;
                     var pos = this.props.position ? this.props.position : 'above';
                     //onMouseLeave={() => this.setState({isExpanded: false}) }>
-                    return Plugin.React.createElement("div", {className: 'lm-control-row lm-toggle-color-picker lm-toggle-color-picker-' + pos, onMouseLeave: function () { return _this.setState({ isExpanded: false }); }}, 
-                        Plugin.React.createElement("span", null, this.props.label), 
-                        Plugin.React.createElement("div", null, 
-                            Plugin.React.createElement(Controls.Button, {onClick: function () { _this.setState({ isExpanded: !_this.state.isExpanded }); }, asBlock: true, customStyle: {
-                                backgroundColor: "rgb(" + ((255 * clr.r) | 0) + ", " + ((255 * clr.g) | 0) + ", " + ((255 * clr.b) | 0) + ")",
-                                color: "rgb(" + ((255 * (1 - clr.r)) | 0) + "," + ((255 * (1 - clr.g)) | 0) + "," + ((255 * (1 - clr.b)) | 0) + ")",
-                            }})
-                        ), 
+                    return Plugin.React.createElement("div", { className: 'lm-control-row lm-toggle-color-picker lm-toggle-color-picker-' + pos, onMouseLeave: function () { return _this.setState({ isExpanded: false }); } },
+                        Plugin.React.createElement("span", null, this.props.label),
+                        Plugin.React.createElement("div", null,
+                            Plugin.React.createElement(Controls.Button, { onClick: function () { _this.setState({ isExpanded: !_this.state.isExpanded }); }, asBlock: true, customStyle: {
+                                    backgroundColor: "rgb(" + ((255 * clr.r) | 0) + ", " + ((255 * clr.g) | 0) + ", " + ((255 * clr.b) | 0) + ")",
+                                    color: "rgb(" + ((255 * (1 - clr.r)) | 0) + "," + ((255 * (1 - clr.g)) | 0) + "," + ((255 * (1 - clr.b)) | 0) + ")",
+                                } })),
                         picker);
                 };
                 return ToggleColorPicker;
@@ -74985,12 +75035,11 @@ var LiteMol;
         (function (Controls) {
             "use strict";
             function QueryEditor(props) {
-                return Plugin.React.createElement("div", {className: 'lm-control-row'}, 
-                    Plugin.React.createElement(Controls.TextBox, {placeholder: 'Enter query...', onChange: props.onChange, value: props.value, onKeyPress: function (e) {
-                        if (Controls.isEnter(e) && props.onEnter)
-                            props.onEnter.call(null, e);
-                    }})
-                );
+                return Plugin.React.createElement("div", { className: 'lm-control-row' },
+                    Plugin.React.createElement(Controls.TextBox, { placeholder: 'Enter query...', onChange: props.onChange, value: props.value, onKeyPress: function (e) {
+                            if (Controls.isEnter(e) && props.onEnter)
+                                props.onEnter.call(null, e);
+                        } }));
             }
             Controls.QueryEditor = QueryEditor;
         })(Controls = Plugin.Controls || (Plugin.Controls = {}));
@@ -75010,7 +75059,7 @@ var LiteMol;
             var PureView = (function (_super) {
                 __extends(PureView, _super);
                 function PureView() {
-                    _super.apply(this, arguments);
+                    return _super.apply(this, arguments) || this;
                 }
                 PureView.prototype.update = function (s) {
                     var ns = LiteMol.Bootstrap.Utils.merge(this.props.state, s);
@@ -75026,11 +75075,12 @@ var LiteMol;
             var Component = (function (_super) {
                 __extends(Component, _super);
                 function Component() {
-                    _super.apply(this, arguments);
                     // shouldComponentUpdate(nextProps: any, nextState: any) {
                     //     return !shallowEqual(this.props, nextProps);
                     // }
-                    this.subs = [];
+                    var _this = _super.apply(this, arguments) || this;
+                    _this.subs = [];
+                    return _this;
                 }
                 Component.prototype.subscribe = function (stream, obs) {
                     var sub = stream.subscribe(obs);
@@ -75058,8 +75108,9 @@ var LiteMol;
             var ObserverView = (function (_super) {
                 __extends(ObserverView, _super);
                 function ObserverView() {
-                    _super.apply(this, arguments);
-                    this.subs = [];
+                    var _this = _super.apply(this, arguments) || this;
+                    _this.subs = [];
+                    return _this;
                 }
                 ObserverView.prototype.subscribe = function (stream, obs) {
                     var sub = stream.subscribe(obs);
@@ -75087,7 +75138,7 @@ var LiteMol;
             var View = (function (_super) {
                 __extends(View, _super);
                 function View() {
-                    _super.apply(this, arguments);
+                    return _super.apply(this, arguments) || this;
                 }
                 Object.defineProperty(View.prototype, "controller", {
                     // protected get latestState() {
@@ -75108,6 +75159,24 @@ var LiteMol;
                 return View;
             }(ObserverView));
             Views.View = View;
+            // export abstract class ControlView<Controller extends Bootstrap.Components.Control<any>, CustomProps> 
+            //     extends View<Controller, {}, CustomProps> implements IControlView {
+            //     header = '';
+            //     panelType = 'default';
+            //     // shouldComponentUpdate(nextProps: { controller: Controller }, nextState: {}, nextContext: any) {
+            //     //     return this.props.controller !== nextProps.controller;
+            //     // }
+            //     render() {
+            //         let state = this.controller.latestState;
+            //         if (state.isActive) {
+            //             return <Controls.Panel header={this.header} className={'lm-control lm-panel-' + this.panelType} key={state.currentEntity.id}>
+            //                 {this.renderControl()}
+            //             </Controls.Panel>;                
+            //         } 
+            //         return <div className='lm-empty-control' />;
+            //     }
+            //     protected abstract renderControl(): React.ReactElement<any>;
+            // }
         })(Views = Plugin.Views || (Plugin.Views = {}));
     })(Plugin = LiteMol.Plugin || (LiteMol.Plugin = {}));
 })(LiteMol || (LiteMol = {}));
@@ -75125,7 +75194,7 @@ var LiteMol;
             var Layout = (function (_super) {
                 __extends(Layout, _super);
                 function Layout() {
-                    _super.apply(this, arguments);
+                    return _super.apply(this, arguments) || this;
                 }
                 Layout.prototype.renderTarget = function (target) {
                     var statics = [];
@@ -75133,13 +75202,13 @@ var LiteMol;
                     for (var _i = 0, _a = target.components; _i < _a.length; _i++) {
                         var c = _a[_i];
                         if (c.isStatic)
-                            statics.push(Plugin.React.createElement(c.view, {controller: c.controller}));
+                            statics.push(Plugin.React.createElement(c.view, { controller: c.controller }));
                         else
-                            scrollable.push(Plugin.React.createElement(c.view, {controller: c.controller}));
+                            scrollable.push(Plugin.React.createElement(c.view, { controller: c.controller }));
                     }
-                    return Plugin.React.createElement("div", {className: 'lm-layout-region lm-layout-' + target.cssClass}, 
-                        statics.length ? Plugin.React.createElement("div", {className: 'lm-layout-static'}, statics) : void 0, 
-                        scrollable.length ? Plugin.React.createElement("div", {className: 'lm-layout-scrollable'}, scrollable) : void 0);
+                    return Plugin.React.createElement("div", { className: 'lm-layout-region lm-layout-' + target.cssClass },
+                        statics.length ? Plugin.React.createElement("div", { className: 'lm-layout-static' }, statics) : void 0,
+                        scrollable.length ? Plugin.React.createElement("div", { className: 'lm-layout-scrollable' }, scrollable) : void 0);
                 };
                 Layout.prototype.render = function () {
                     var layoutClass = '';
@@ -75168,14 +75237,12 @@ var LiteMol;
                     else
                         regions.push(this.renderTarget(region));
                     var root = targets[LayoutRegion.Root]
-                        .components.map(function (c) { return Plugin.React.createElement(c.view, {controller: c.controller}); });
-                    return Plugin.React.createElement("div", {className: 'lm-plugin'}, 
-                        Plugin.React.createElement("div", {className: 'lm-plugin-content ' + layoutType}, 
-                            Plugin.React.createElement("div", {className: layoutClass}, 
-                                regions, 
-                                root)
-                        )
-                    );
+                        .components.map(function (c) { return Plugin.React.createElement(c.view, { controller: c.controller }); });
+                    return Plugin.React.createElement("div", { className: 'lm-plugin' },
+                        Plugin.React.createElement("div", { className: 'lm-plugin-content ' + layoutType },
+                            Plugin.React.createElement("div", { className: layoutClass },
+                                regions,
+                                root)));
                 };
                 return Layout;
             }(Views.View));
@@ -75198,7 +75265,7 @@ var LiteMol;
                 var ControllerBase = (function (_super) {
                     __extends(ControllerBase, _super);
                     function ControllerBase() {
-                        _super.apply(this, arguments);
+                        return _super.apply(this, arguments) || this;
                     }
                     Object.defineProperty(ControllerBase.prototype, "params", {
                         get: function () {
@@ -75257,17 +75324,16 @@ var LiteMol;
                         var isBusy = state.isBusy;
                         var offMsg = isBusy ? 'Working...' : isUpdate && !hasError ? 'Nothing to update' : (issues ? issues[0] : void 0);
                         var t = this.controller.transformer.info;
-                        var commit = Plugin.React.createElement(Plugin.Controls.CommitButton, {action: function () { return _this.controller.apply(); }, isOn: this.canApply, title: issues && issues.length ? issues[0] : this.canApply ? isUpdate ? 'An update will remove all child nodes.' : void 0 : void 0, on: isUpdate ? 'Update' : this.props.isAction ? 'Apply' : 'Add', off: offMsg});
+                        var commit = Plugin.React.createElement(Plugin.Controls.CommitButton, { action: function () { return _this.controller.apply(); }, isOn: this.canApply, title: issues && issues.length ? issues[0] : this.canApply ? isUpdate ? 'An update will remove all child nodes.' : void 0 : void 0, on: isUpdate ? 'Update' : this.props.isAction ? 'Apply' : 'Add', off: offMsg });
                         var showCommit = this.canApply || hasError;
                         var header = this.props.customHeader
                             ? this.props.customHeader
                             : (isUpdate ? 'Update ' : '') + t.name;
-                        return Plugin.React.createElement("div", {className: 'lm-transformer-wrapper'}, 
-                            Plugin.React.createElement(Plugin.Controls.Panel, {header: header, badge: this.props.hideBadge ? void 0 : Plugin.React.createElement(Views.Entity.Badge, {type: t.to[0].info}), className: 'lm-control lm-transformer lm-panel-' + t.to[0].info.typeClass, key: t.id, title: t.description, isExpanded: state.isExpanded, onExpand: function (e) { _this.controller.setState({ isExpanded: e }); }, description: this.controller.transformer.info.description}, 
-                                this.renderControls(), 
-                                showCommit ? commit : void 0, 
-                                this.props.showVisibilityIcon ? Plugin.React.createElement(Views.Entity.VisibilityControl, {entity: this.controller.entity}) : void 0)
-                        );
+                        return Plugin.React.createElement("div", { className: 'lm-transformer-wrapper' },
+                            Plugin.React.createElement(Plugin.Controls.Panel, { header: header, badge: this.props.hideBadge ? void 0 : Plugin.React.createElement(Views.Entity.Badge, { type: t.to[0].info }), className: 'lm-control lm-transformer lm-panel-' + t.to[0].info.typeClass, key: t.id, title: t.description, isExpanded: state.isExpanded, onExpand: function (e) { _this.controller.setState({ isExpanded: e }); }, description: this.controller.transformer.info.description },
+                                this.renderControls(),
+                                showCommit ? commit : void 0,
+                                this.props.showVisibilityIcon ? Plugin.React.createElement(Views.Entity.VisibilityControl, { entity: this.controller.entity }) : void 0));
                     };
                     return ControllerBase;
                 }(Views.View));
@@ -75275,7 +75341,7 @@ var LiteMol;
                 var Empty = (function (_super) {
                     __extends(Empty, _super);
                     function Empty() {
-                        _super.apply(this, arguments);
+                        return _super.apply(this, arguments) || this;
                     }
                     Empty.prototype.renderControls = function () {
                         return Plugin.React.createElement("div", null);
@@ -75286,7 +75352,7 @@ var LiteMol;
                 var View = (function (_super) {
                     __extends(View, _super);
                     function View() {
-                        _super.apply(this, arguments);
+                        return _super.apply(this, arguments) || this;
                     }
                     View.prototype.render = function () {
                         var ctx = this.controller.context;
@@ -75301,19 +75367,19 @@ var LiteMol;
                             var v = plugin.getTransformerInfo(state.update.transformer).view;
                             views.push(Plugin.React.createElement(v, { controller: state.update, key: state.update.transformer.info.id + '-' + state.update.entity.id }));
                         }
-                        return Plugin.React.createElement("div", {className: 'lm-transform-view'}, views);
+                        return Plugin.React.createElement("div", { className: 'lm-transform-view' }, views);
                     };
                     return View;
                 }(Views.View));
                 Transform.View = View;
                 Transform.TransparencyControl = function (props) {
                     var d = props.definition.alpha;
-                    return Plugin.React.createElement(Plugin.Controls.Slider, {label: 'Opacity', onChange: function (v) { return props.onChange({ alpha: v, writeDepth: props.definition.writeDepth }); }, min: 0, max: 1, step: 0.01, value: d});
+                    return Plugin.React.createElement(Plugin.Controls.Slider, { label: 'Opacity', onChange: function (v) { return props.onChange({ alpha: v, writeDepth: props.definition.writeDepth }); }, min: 0, max: 1, step: 0.01, value: d });
                 };
                 var Updater = (function (_super) {
                     __extends(Updater, _super);
                     function Updater() {
-                        _super.apply(this, arguments);
+                        return _super.apply(this, arguments) || this;
                     }
                     Updater.prototype.componentWillMount = function () {
                         var _this = this;
@@ -75328,13 +75394,13 @@ var LiteMol;
                     Updater.prototype.render = function () {
                         var c = this.controller.latestState.controller;
                         if (!c)
-                            return Plugin.React.createElement("div", {className: 'lm-empty-control'});
+                            return Plugin.React.createElement("div", { className: 'lm-empty-control' });
                         var ctx = this.controller.context;
                         var plugin = ctx.plugin;
                         var v = plugin.getTransformerInfo(c.transformer).view;
                         if (!v) {
                             console.warn("Count not find view for updater (" + c.transformer.info.id + "), please register it.");
-                            return Plugin.React.createElement("div", {className: 'lm-empty-control'});
+                            return Plugin.React.createElement("div", { className: 'lm-empty-control' });
                         }
                         return Plugin.React.createElement(v, { controller: c, key: c.transformer.info.id + '-' + c.entity.id, customHeader: this.controller.header, hideBadge: true, showVisibilityIcon: true });
                     };
@@ -75344,18 +75410,18 @@ var LiteMol;
                 var Action = (function (_super) {
                     __extends(Action, _super);
                     function Action() {
-                        _super.apply(this, arguments);
+                        return _super.apply(this, arguments) || this;
                     }
                     Action.prototype.render = function () {
                         var c = this.controller.latestState.controller;
                         if (!c)
-                            return Plugin.React.createElement("div", {className: 'lm-empty-control'});
+                            return Plugin.React.createElement("div", { className: 'lm-empty-control' });
                         var ctx = this.controller.context;
                         var plugin = ctx.plugin;
                         var v = plugin.getTransformerInfo(c.transformer).view;
                         if (!v) {
                             console.warn("Count not find view for updater (" + c.transformer.info.id + "), please register it.");
-                            return Plugin.React.createElement("div", {className: 'lm-empty-control'});
+                            return Plugin.React.createElement("div", { className: 'lm-empty-control' });
                         }
                         return Plugin.React.createElement(v, { controller: c, key: c.transformer.info.id + '-' + c.entity.id, customHeader: this.controller.header, hideBadge: true, isAction: true });
                     };
@@ -75383,14 +75449,14 @@ var LiteMol;
                     var Download = (function (_super) {
                         __extends(Download, _super);
                         function Download() {
-                            _super.apply(this, arguments);
+                            return _super.apply(this, arguments) || this;
                         }
                         Download.prototype.renderControls = function () {
                             var _this = this;
                             var params = this.params;
-                            return Plugin.React.createElement("div", null, 
-                                Plugin.React.createElement(Plugin.Controls.OptionsGroup, {options: LiteMol.Bootstrap.Entity.Data.Types, caption: function (s) { return s; }, current: params.type, onChange: function (o) { return _this.updateParams({ type: o }); }, label: 'Type'}), 
-                                Plugin.React.createElement(Plugin.Controls.TextBoxGroup, {value: params.url, onChange: function (v) { return _this.updateParams({ url: v }); }, label: 'URL', onEnter: function (e) { return _this.applyEnter(e); }, placeholder: 'Enter URL...'}));
+                            return Plugin.React.createElement("div", null,
+                                Plugin.React.createElement(Plugin.Controls.OptionsGroup, { options: LiteMol.Bootstrap.Entity.Data.Types, caption: function (s) { return s; }, current: params.type, onChange: function (o) { return _this.updateParams({ type: o }); }, label: 'Type' }),
+                                Plugin.React.createElement(Plugin.Controls.TextBoxGroup, { value: params.url, onChange: function (v) { return _this.updateParams({ url: v }); }, label: 'URL', onEnter: function (e) { return _this.applyEnter(e); }, placeholder: 'Enter URL...' }));
                         };
                         return Download;
                     }(Transform.ControllerBase));
@@ -75398,18 +75464,18 @@ var LiteMol;
                     var OpenFile = (function (_super) {
                         __extends(OpenFile, _super);
                         function OpenFile() {
-                            _super.apply(this, arguments);
+                            return _super.apply(this, arguments) || this;
                         }
                         OpenFile.prototype.renderControls = function () {
                             var _this = this;
                             var params = this.params;
                             var state = this.controller.latestState;
-                            return Plugin.React.createElement("div", null, 
-                                Plugin.React.createElement(Plugin.Controls.OptionsGroup, {options: LiteMol.Bootstrap.Entity.Data.Types, caption: function (s) { return s; }, current: params.type, onChange: function (o) { return _this.updateParams({ type: o }); }, label: 'Type'}), 
-                                Plugin.React.createElement("div", {className: 'btn btn-block btn-action lm-loader-btn-file', style: { marginTop: '1px' }}, 
-                                    params.file ? params.file.name : 'Select a file...', 
-                                    " ", 
-                                    Plugin.React.createElement("input", {disabled: state.isBusy, type: 'file', onChange: function (evt) { return _this.updateParams({ file: evt.target.files[0] }); }, multiple: false})));
+                            return Plugin.React.createElement("div", null,
+                                Plugin.React.createElement(Plugin.Controls.OptionsGroup, { options: LiteMol.Bootstrap.Entity.Data.Types, caption: function (s) { return s; }, current: params.type, onChange: function (o) { return _this.updateParams({ type: o }); }, label: 'Type' }),
+                                Plugin.React.createElement("div", { className: 'btn btn-block btn-action lm-loader-btn-file', style: { marginTop: '1px' } },
+                                    params.file ? params.file.name : 'Select a file...',
+                                    " ",
+                                    Plugin.React.createElement("input", { disabled: state.isBusy, type: 'file', onChange: function (evt) { return _this.updateParams({ file: evt.target.files[0] }); }, multiple: false })));
                         };
                         return OpenFile;
                     }(Transform.ControllerBase));
@@ -75417,14 +75483,13 @@ var LiteMol;
                     var WithIdField = (function (_super) {
                         __extends(WithIdField, _super);
                         function WithIdField() {
-                            _super.apply(this, arguments);
+                            return _super.apply(this, arguments) || this;
                         }
                         WithIdField.prototype.renderControls = function () {
                             var _this = this;
                             var params = this.params;
-                            return Plugin.React.createElement("div", null, 
-                                Plugin.React.createElement(Plugin.Controls.TextBoxGroup, {value: params.id, onChange: function (v) { return _this.updateParams({ id: v }); }, label: 'Id', onEnter: function (e) { return _this.applyEnter(e); }, placeholder: 'Enter PDB id...'})
-                            );
+                            return Plugin.React.createElement("div", null,
+                                Plugin.React.createElement(Plugin.Controls.TextBoxGroup, { value: params.id, onChange: function (v) { return _this.updateParams({ id: v }); }, label: 'Id', onEnter: function (e) { return _this.applyEnter(e); }, placeholder: 'Enter PDB id...' }));
                         };
                         return WithIdField;
                     }(Transform.ControllerBase));
@@ -75432,14 +75497,13 @@ var LiteMol;
                     var WithUrlIdField = (function (_super) {
                         __extends(WithUrlIdField, _super);
                         function WithUrlIdField() {
-                            _super.apply(this, arguments);
+                            return _super.apply(this, arguments) || this;
                         }
                         WithUrlIdField.prototype.renderControls = function () {
                             var _this = this;
                             var params = this.params;
-                            return Plugin.React.createElement("div", null, 
-                                Plugin.React.createElement(Plugin.Controls.TextBoxGroup, {value: params.id, onChange: function (v) { return _this.updateParams({ id: v }); }, label: 'URL', onEnter: function (e) { return _this.applyEnter(e); }, placeholder: 'Enter URL...'})
-                            );
+                            return Plugin.React.createElement("div", null,
+                                Plugin.React.createElement(Plugin.Controls.TextBoxGroup, { value: params.id, onChange: function (v) { return _this.updateParams({ id: v }); }, label: 'URL', onEnter: function (e) { return _this.applyEnter(e); }, placeholder: 'Enter URL...' }));
                         };
                         return WithUrlIdField;
                     }(Transform.ControllerBase));
@@ -75466,14 +75530,13 @@ var LiteMol;
                     var CreateFromData = (function (_super) {
                         __extends(CreateFromData, _super);
                         function CreateFromData() {
-                            _super.apply(this, arguments);
+                            return _super.apply(this, arguments) || this;
                         }
                         CreateFromData.prototype.renderControls = function () {
                             var _this = this;
                             var params = this.params;
-                            return Plugin.React.createElement("div", null, 
-                                Plugin.React.createElement(Plugin.Controls.OptionsGroup, {options: LiteMol.Core.Formats.Molecule.SupportedFormats.All, caption: function (s) { return s.name; }, current: params.format, onChange: function (o) { return _this.updateParams({ format: o }); }, label: 'Format'})
-                            );
+                            return Plugin.React.createElement("div", null,
+                                Plugin.React.createElement(Plugin.Controls.OptionsGroup, { options: LiteMol.Core.Formats.Molecule.SupportedFormats.All, caption: function (s) { return s.name; }, current: params.format, onChange: function (o) { return _this.updateParams({ format: o }); }, label: 'Format' }));
                         };
                         return CreateFromData;
                     }(Transform.ControllerBase));
@@ -75481,14 +75544,14 @@ var LiteMol;
                     var DownloadFromUrl = (function (_super) {
                         __extends(DownloadFromUrl, _super);
                         function DownloadFromUrl() {
-                            _super.apply(this, arguments);
+                            return _super.apply(this, arguments) || this;
                         }
                         DownloadFromUrl.prototype.renderControls = function () {
                             var _this = this;
                             var params = this.params;
-                            return Plugin.React.createElement("div", null, 
-                                Plugin.React.createElement(Plugin.Controls.OptionsGroup, {options: LiteMol.Core.Formats.Molecule.SupportedFormats.All, caption: function (s) { return s.name; }, current: params.format, onChange: function (o) { return _this.updateParams({ format: o }); }, label: 'Format'}), 
-                                Plugin.React.createElement(Plugin.Controls.TextBoxGroup, {value: params.id, onChange: function (v) { return _this.updateParams({ id: v }); }, label: 'URL', onEnter: function (e) { return _this.applyEnter(e); }, placeholder: 'Enter url...'}));
+                            return Plugin.React.createElement("div", null,
+                                Plugin.React.createElement(Plugin.Controls.OptionsGroup, { options: LiteMol.Core.Formats.Molecule.SupportedFormats.All, caption: function (s) { return s.name; }, current: params.format, onChange: function (o) { return _this.updateParams({ format: o }); }, label: 'Format' }),
+                                Plugin.React.createElement(Plugin.Controls.TextBoxGroup, { value: params.id, onChange: function (v) { return _this.updateParams({ id: v }); }, label: 'URL', onEnter: function (e) { return _this.applyEnter(e); }, placeholder: 'Enter url...' }));
                         };
                         return DownloadFromUrl;
                     }(Transform.ControllerBase));
@@ -75496,19 +75559,18 @@ var LiteMol;
                     var OpenFile = (function (_super) {
                         __extends(OpenFile, _super);
                         function OpenFile() {
-                            _super.apply(this, arguments);
+                            return _super.apply(this, arguments) || this;
                         }
                         OpenFile.prototype.renderControls = function () {
                             var _this = this;
                             var params = this.params;
                             var state = this.controller.latestState;
                             var extensions = LiteMol.Core.Formats.FormatInfo.formatFileFilters(LiteMol.Core.Formats.Molecule.SupportedFormats.All);
-                            return Plugin.React.createElement("div", null, 
-                                Plugin.React.createElement("div", {className: 'btn btn-block btn-action lm-loader-btn-file', style: { marginTop: '1px' }}, 
-                                    params.file ? params.file.name : 'Select a file...', 
-                                    " ", 
-                                    Plugin.React.createElement("input", {disabled: state.isBusy, type: 'file', accept: extensions, onChange: function (evt) { return _this.updateParams({ file: evt.target.files[0] }); }, multiple: false}))
-                            );
+                            return Plugin.React.createElement("div", null,
+                                Plugin.React.createElement("div", { className: 'btn btn-block btn-action lm-loader-btn-file', style: { marginTop: '1px' } },
+                                    params.file ? params.file.name : 'Select a file...',
+                                    " ",
+                                    Plugin.React.createElement("input", { disabled: state.isBusy, type: 'file', accept: extensions, onChange: function (evt) { return _this.updateParams({ file: evt.target.files[0] }); }, multiple: false })));
                         };
                         return OpenFile;
                     }(Transform.ControllerBase));
@@ -75516,14 +75578,14 @@ var LiteMol;
                     var InitCoordinateStreaming = (function (_super) {
                         __extends(InitCoordinateStreaming, _super);
                         function InitCoordinateStreaming() {
-                            _super.apply(this, arguments);
+                            return _super.apply(this, arguments) || this;
                         }
                         InitCoordinateStreaming.prototype.renderControls = function () {
                             var _this = this;
                             var params = this.params;
-                            return Plugin.React.createElement("div", null, 
-                                Plugin.React.createElement(Plugin.Controls.TextBoxGroup, {value: params.id, onChange: function (v) { return _this.updateParams({ id: v }); }, label: 'Id', onEnter: function (e) { return _this.applyEnter(e); }, placeholder: 'Enter pdb id...'}), 
-                                Plugin.React.createElement(Plugin.Controls.TextBoxGroup, {value: params.server, onChange: function (v) { return _this.updateParams({ server: v }); }, label: 'Server', onEnter: function (e) { return _this.applyEnter(e); }, placeholder: 'Server url...'}));
+                            return Plugin.React.createElement("div", null,
+                                Plugin.React.createElement(Plugin.Controls.TextBoxGroup, { value: params.id, onChange: function (v) { return _this.updateParams({ id: v }); }, label: 'Id', onEnter: function (e) { return _this.applyEnter(e); }, placeholder: 'Enter pdb id...' }),
+                                Plugin.React.createElement(Plugin.Controls.TextBoxGroup, { value: params.server, onChange: function (v) { return _this.updateParams({ server: v }); }, label: 'Server', onEnter: function (e) { return _this.applyEnter(e); }, placeholder: 'Server url...' }));
                         };
                         return InitCoordinateStreaming;
                     }(Transform.ControllerBase));
@@ -75531,16 +75593,15 @@ var LiteMol;
                     var CreateFromMmCif = (function (_super) {
                         __extends(CreateFromMmCif, _super);
                         function CreateFromMmCif() {
-                            _super.apply(this, arguments);
+                            return _super.apply(this, arguments) || this;
                         }
                         CreateFromMmCif.prototype.renderControls = function () {
                             var _this = this;
                             var params = this.params;
                             var cif = this.transformSourceEntity;
                             var options = cif.props.dictionary.dataBlocks.map(function (b, i) { return ({ b: b.header, i: i }); });
-                            return Plugin.React.createElement("div", null, 
-                                Plugin.React.createElement(Plugin.Controls.OptionsGroup, {options: options, caption: function (s) { return s.b; }, current: options[this.params.blockIndex], onChange: function (o) { return _this.updateParams({ blockIndex: o.i }); }, label: 'Source'})
-                            );
+                            return Plugin.React.createElement("div", null,
+                                Plugin.React.createElement(Plugin.Controls.OptionsGroup, { options: options, caption: function (s) { return s.b; }, current: options[this.params.blockIndex], onChange: function (o) { return _this.updateParams({ blockIndex: o.i }); }, label: 'Source' }));
                         };
                         return CreateFromMmCif;
                     }(Transform.ControllerBase));
@@ -75548,14 +75609,13 @@ var LiteMol;
                     var CreateModel = (function (_super) {
                         __extends(CreateModel, _super);
                         function CreateModel() {
-                            _super.apply(this, arguments);
+                            return _super.apply(this, arguments) || this;
                         }
                         CreateModel.prototype.renderControls = function () {
                             var _this = this;
                             var modelCount = this.transformSourceEntity.props.molecule.models.length;
-                            return Plugin.React.createElement("div", null, 
-                                Plugin.React.createElement(Plugin.Controls.Slider, {label: 'Index', onChange: function (v) { return _this.updateParams({ modelIndex: v - 1 }); }, min: 1, max: modelCount, step: 1, value: (this.params.modelIndex | 0) + 1, title: 'Index of the model.'})
-                            );
+                            return Plugin.React.createElement("div", null,
+                                Plugin.React.createElement(Plugin.Controls.Slider, { label: 'Index', onChange: function (v) { return _this.updateParams({ modelIndex: v - 1 }); }, min: 1, max: modelCount, step: 1, value: (this.params.modelIndex | 0) + 1, title: 'Index of the model.' }));
                         };
                         return CreateModel;
                     }(Transform.ControllerBase));
@@ -75563,7 +75623,7 @@ var LiteMol;
                     var CreateAssembly = (function (_super) {
                         __extends(CreateAssembly, _super);
                         function CreateAssembly() {
-                            _super.apply(this, arguments);
+                            return _super.apply(this, arguments) || this;
                         }
                         CreateAssembly.prototype.renderControls = function () {
                             var _this = this;
@@ -75574,9 +75634,8 @@ var LiteMol;
                             if (!asm)
                                 return void 0;
                             var names = asm.assemblies.map(function (a) { return a.name; });
-                            return Plugin.React.createElement("div", null, 
-                                Plugin.React.createElement(Plugin.Controls.OptionsGroup, {options: names, current: params.name, onChange: function (o) { return _this.updateParams({ name: o }); }, label: 'Name'})
-                            );
+                            return Plugin.React.createElement("div", null,
+                                Plugin.React.createElement(Plugin.Controls.OptionsGroup, { options: names, current: params.name, onChange: function (o) { return _this.updateParams({ name: o }); }, label: 'Name' }));
                         };
                         return CreateAssembly;
                     }(Transform.ControllerBase));
@@ -75584,15 +75643,15 @@ var LiteMol;
                     var CreateSymmetryMates = (function (_super) {
                         __extends(CreateSymmetryMates, _super);
                         function CreateSymmetryMates() {
-                            _super.apply(this, arguments);
+                            return _super.apply(this, arguments) || this;
                         }
                         CreateSymmetryMates.prototype.renderControls = function () {
                             var _this = this;
                             var params = this.params;
                             var options = ['Mates', 'Interaction'];
-                            return Plugin.React.createElement("div", null, 
-                                Plugin.React.createElement(Plugin.Controls.OptionsGroup, {options: options, current: params.type, onChange: function (o) { return _this.updateParams({ type: o }); }, label: 'Type', title: 'Mates: copies whole asymetric unit. Interaction: Includes only residues that are no more than `radius` from the asymetric unit.'}), 
-                                Plugin.React.createElement(Plugin.Controls.Slider, {label: 'Radius', onChange: function (v) { return _this.updateParams({ radius: v }); }, min: 0, max: 25, step: 0.1, value: params.radius, title: 'Interaction radius.'}));
+                            return Plugin.React.createElement("div", null,
+                                Plugin.React.createElement(Plugin.Controls.OptionsGroup, { options: options, current: params.type, onChange: function (o) { return _this.updateParams({ type: o }); }, label: 'Type', title: 'Mates: copies whole asymetric unit. Interaction: Includes only residues that are no more than `radius` from the asymetric unit.' }),
+                                Plugin.React.createElement(Plugin.Controls.Slider, { label: 'Radius', onChange: function (v) { return _this.updateParams({ radius: v }); }, min: 0, max: 25, step: 0.1, value: params.radius, title: 'Interaction radius.' }));
                         };
                         return CreateSymmetryMates;
                     }(Transform.ControllerBase));
@@ -75600,14 +75659,14 @@ var LiteMol;
                     var CreateSelection = (function (_super) {
                         __extends(CreateSelection, _super);
                         function CreateSelection() {
-                            _super.apply(this, arguments);
+                            return _super.apply(this, arguments) || this;
                         }
                         CreateSelection.prototype.renderControls = function () {
                             var _this = this;
                             var params = this.params;
-                            return Plugin.React.createElement("div", null, 
-                                Plugin.React.createElement(Plugin.Controls.TextBoxGroup, {value: params.name, onChange: function (v) { return _this.updateParams({ name: v }); }, label: 'Name', onEnter: function (e) { return _this.applyEnter(e); }, placeholder: 'Optional name...'}), 
-                                Plugin.React.createElement(Plugin.Controls.QueryEditor, {value: params.queryString, onChange: function (v) { return _this.updateParams({ queryString: v }); }, onEnter: function (e) { return _this.applyEnter(e); }}));
+                            return Plugin.React.createElement("div", null,
+                                Plugin.React.createElement(Plugin.Controls.TextBoxGroup, { value: params.name, onChange: function (v) { return _this.updateParams({ name: v }); }, label: 'Name', onEnter: function (e) { return _this.applyEnter(e); }, placeholder: 'Optional name...' }),
+                                Plugin.React.createElement(Plugin.Controls.QueryEditor, { value: params.queryString, onChange: function (v) { return _this.updateParams({ queryString: v }); }, onEnter: function (e) { return _this.applyEnter(e); } }));
                             //<Controls.TextBoxGroup value={params.queryString} onChange={(v) => this.updateParams({ queryString: v })} onEnter={e => this.applyEnter(e) } label='Query' placeholder='Enter a query...' />
                         };
                         return CreateSelection;
@@ -75616,15 +75675,15 @@ var LiteMol;
                     var CreateMacromoleculeVisual = (function (_super) {
                         __extends(CreateMacromoleculeVisual, _super);
                         function CreateMacromoleculeVisual() {
-                            _super.apply(this, arguments);
+                            return _super.apply(this, arguments) || this;
                         }
                         CreateMacromoleculeVisual.prototype.renderControls = function () {
                             var _this = this;
                             var params = this.params;
-                            return Plugin.React.createElement("div", null, 
-                                Plugin.React.createElement(Plugin.Controls.Toggle, {onChange: function (v) { return _this.updateParams({ polymer: v }); }, value: params.polymer, label: 'Polymer'}), 
-                                Plugin.React.createElement(Plugin.Controls.Toggle, {onChange: function (v) { return _this.updateParams({ het: v }); }, value: params.het, label: 'HET'}), 
-                                Plugin.React.createElement(Plugin.Controls.Toggle, {onChange: function (v) { return _this.updateParams({ water: v }); }, value: params.water, label: 'Water'}));
+                            return Plugin.React.createElement("div", null,
+                                Plugin.React.createElement(Plugin.Controls.Toggle, { onChange: function (v) { return _this.updateParams({ polymer: v }); }, value: params.polymer, label: 'Polymer' }),
+                                Plugin.React.createElement(Plugin.Controls.Toggle, { onChange: function (v) { return _this.updateParams({ het: v }); }, value: params.het, label: 'HET' }),
+                                Plugin.React.createElement(Plugin.Controls.Toggle, { onChange: function (v) { return _this.updateParams({ water: v }); }, value: params.water, label: 'Water' }));
                         };
                         return CreateMacromoleculeVisual;
                     }(Transform.ControllerBase));
@@ -75632,36 +75691,36 @@ var LiteMol;
                     var CreateVisual = (function (_super) {
                         __extends(CreateVisual, _super);
                         function CreateVisual() {
-                            _super.apply(this, arguments);
+                            return _super.apply(this, arguments) || this;
                         }
                         CreateVisual.prototype.detail = function () {
                             var _this = this;
                             var p = this.params.style.params;
-                            return [Plugin.React.createElement(Plugin.Controls.OptionsGroup, {options: LiteMol.Bootstrap.Visualization.Molecule.DetailTypes, caption: function (s) { return s; }, current: p.detail, onChange: function (o) { return _this.controller.updateStyleParams({ detail: o }); }, label: 'Detail'})];
+                            return [Plugin.React.createElement(Plugin.Controls.OptionsGroup, { options: LiteMol.Bootstrap.Visualization.Molecule.DetailTypes, caption: function (s) { return s; }, current: p.detail, onChange: function (o) { return _this.controller.updateStyleParams({ detail: o }); }, label: 'Detail' })];
                         };
                         CreateVisual.prototype.ballsAndSticks = function () {
                             var _this = this;
                             var p = this.params.style.params;
                             var controls = [];
-                            controls.push(Plugin.React.createElement(Plugin.Controls.Toggle, {title: 'Scale atoms using their VDW radius.', onChange: function (v) { return _this.controller.updateStyleParams({ useVDW: v }); }, value: p.useVDW, label: 'VDW'}));
+                            controls.push(Plugin.React.createElement(Plugin.Controls.Toggle, { title: 'Scale atoms using their VDW radius.', onChange: function (v) { return _this.controller.updateStyleParams({ useVDW: v }); }, value: p.useVDW, label: 'VDW' }));
                             if (p.useVDW) {
-                                controls.push(Plugin.React.createElement(Plugin.Controls.Slider, {label: 'Scale', onChange: function (v) { return _this.controller.updateStyleParams({ vdwScaling: v }); }, min: 0.1, max: 1, step: 0.01, value: p.vdwScaling, title: 'VDW scale factor.'}));
+                                controls.push(Plugin.React.createElement(Plugin.Controls.Slider, { label: 'Scale', onChange: function (v) { return _this.controller.updateStyleParams({ vdwScaling: v }); }, min: 0.1, max: 1, step: 0.01, value: p.vdwScaling, title: 'VDW scale factor.' }));
                             }
                             else {
-                                controls.push(Plugin.React.createElement(Plugin.Controls.Slider, {label: 'Atom Rds', onChange: function (v) { return _this.controller.updateStyleParams({ atomRadius: v }); }, min: 0.05, max: 2, step: 0.01, value: p.atomRadius, title: 'Atom Radius'}));
+                                controls.push(Plugin.React.createElement(Plugin.Controls.Slider, { label: 'Atom Rds', onChange: function (v) { return _this.controller.updateStyleParams({ atomRadius: v }); }, min: 0.05, max: 2, step: 0.01, value: p.atomRadius, title: 'Atom Radius' }));
                             }
-                            controls.push(Plugin.React.createElement(Plugin.Controls.Slider, {label: 'Bond Rds', onChange: function (v) { return _this.controller.updateStyleParams({ bondRadius: v }); }, min: 0.05, max: 1, step: 0.01, value: p.bondRadius, title: 'Bond Radius'}));
-                            controls.push(Plugin.React.createElement(Plugin.Controls.OptionsGroup, {options: LiteMol.Bootstrap.Visualization.Molecule.DetailTypes, caption: function (s) { return s; }, current: p.detail, onChange: function (o) { return _this.controller.updateStyleParams({ detail: o }); }, label: 'Detail'}));
+                            controls.push(Plugin.React.createElement(Plugin.Controls.Slider, { label: 'Bond Rds', onChange: function (v) { return _this.controller.updateStyleParams({ bondRadius: v }); }, min: 0.05, max: 1, step: 0.01, value: p.bondRadius, title: 'Bond Radius' }));
+                            controls.push(Plugin.React.createElement(Plugin.Controls.OptionsGroup, { options: LiteMol.Bootstrap.Visualization.Molecule.DetailTypes, caption: function (s) { return s; }, current: p.detail, onChange: function (o) { return _this.controller.updateStyleParams({ detail: o }); }, label: 'Detail' }));
                             return controls;
                         };
                         CreateVisual.prototype.surface = function () {
                             var _this = this;
                             var params = this.params.style.params;
                             return [
-                                Plugin.React.createElement(Plugin.Controls.Slider, {label: 'Probe Radius', onChange: function (v) { return _this.controller.updateStyleParams({ probeRadius: v }); }, min: 0, max: 6, step: 0.1, value: params.probeRadius}),
-                                Plugin.React.createElement(Plugin.Controls.Slider, {label: 'Smoothing', onChange: function (v) { return _this.controller.updateStyleParams({ smoothing: v }); }, min: 0, max: 10, step: 1, value: params.smoothing, title: 'Number of laplacian smoothing itrations.'}),
-                                Plugin.React.createElement(Plugin.Controls.Slider, {label: 'Detail', onChange: function (v) { return _this.controller.updateStyleParams({ density: v }); }, min: 0.3, max: 3, step: 0.1, value: params.density, title: 'Determines the size of a grid cell.'}),
-                                Plugin.React.createElement(Plugin.Controls.Toggle, {onChange: function (v) { return _this.controller.updateStyleParams({ isWireframe: v }); }, value: params.isWireframe, label: 'Wireframe'})
+                                Plugin.React.createElement(Plugin.Controls.Slider, { label: 'Probe Radius', onChange: function (v) { return _this.controller.updateStyleParams({ probeRadius: v }); }, min: 0, max: 6, step: 0.1, value: params.probeRadius }),
+                                Plugin.React.createElement(Plugin.Controls.Slider, { label: 'Smoothing', onChange: function (v) { return _this.controller.updateStyleParams({ smoothing: v }); }, min: 0, max: 10, step: 1, value: params.smoothing, title: 'Number of laplacian smoothing itrations.' }),
+                                Plugin.React.createElement(Plugin.Controls.Slider, { label: 'Detail', onChange: function (v) { return _this.controller.updateStyleParams({ density: v }); }, min: 0.3, max: 3, step: 0.1, value: params.density, title: 'Determines the size of a grid cell.' }),
+                                Plugin.React.createElement(Plugin.Controls.Toggle, { onChange: function (v) { return _this.controller.updateStyleParams({ isWireframe: v }); }, value: params.isWireframe, label: 'Wireframe' })
                             ];
                         };
                         CreateVisual.prototype.createColors = function () {
@@ -75671,8 +75730,8 @@ var LiteMol;
                             var colorControls;
                             var controls = theme.colors
                                 .filter(function (c, n) { return !isBallsAndSticks ? n !== 'Bond' : true; })
-                                .map(function (c, n) { return Plugin.React.createElement(Plugin.Controls.ToggleColorPicker, {key: n, label: n, color: c, onChange: function (c) { return _this.controller.updateThemeColor(n, c); }}); }).toArray();
-                            controls.push(Plugin.React.createElement(Transform.TransparencyControl, {definition: theme.transparency, onChange: function (d) { return _this.controller.updateThemeTransparency(d); }}));
+                                .map(function (c, n) { return Plugin.React.createElement(Plugin.Controls.ToggleColorPicker, { key: n, label: n, color: c, onChange: function (c) { return _this.controller.updateThemeColor(n, c); } }); }).toArray();
+                            controls.push(Plugin.React.createElement(Transform.TransparencyControl, { definition: theme.transparency, onChange: function (d) { return _this.controller.updateThemeTransparency(d); } }));
                             // controls.push(<Controls.Toggle 
                             //         onChange={v => this.controller.updateStyleTheme({ wireframe: v }) } value={theme.wireframe} label='Wireframe' />);
                             return controls;
@@ -75695,9 +75754,9 @@ var LiteMol;
                             var desc = function (key) { return LiteMol.Bootstrap.Visualization.Molecule.TypeDescriptions[key]; };
                             var showTypeOptions = this.controller.latestState.showTypeOptions;
                             var showThemeOptions = this.controller.latestState.showThemeOptions;
-                            return Plugin.React.createElement("div", null, 
-                                Plugin.React.createElement(Plugin.Controls.ExpandableGroup, {select: Plugin.React.createElement(Plugin.Controls.OptionsGroup, {options: LiteMol.Bootstrap.Visualization.Molecule.Types, caption: function (k) { return desc(k).label; }, current: params.style.type, onChange: function (o) { return _this.controller.updateTemplate(o, LiteMol.Bootstrap.Visualization.Molecule.Default.ForType); }, label: 'Type'}), expander: Plugin.React.createElement(Plugin.Controls.ControlGroupExpander, {isExpanded: showTypeOptions, onChange: function (e) { return _this.controller.setState({ showTypeOptions: e }); }}), options: controls, isExpanded: showTypeOptions}), 
-                                Plugin.React.createElement(Plugin.Controls.ExpandableGroup, {select: Plugin.React.createElement(Plugin.Controls.OptionsGroup, {options: LiteMol.Bootstrap.Visualization.Molecule.Default.Themes, caption: function (k) { return k.name; }, current: params.style.theme.template, onChange: function (o) { return _this.controller.updateThemeDefinition(o); }, label: 'Coloring'}), expander: Plugin.React.createElement(Plugin.Controls.ControlGroupExpander, {isExpanded: showThemeOptions, onChange: function (e) { return _this.controller.setState({ showThemeOptions: e }); }}), options: this.createColors(), isExpanded: showThemeOptions}));
+                            return Plugin.React.createElement("div", null,
+                                Plugin.React.createElement(Plugin.Controls.ExpandableGroup, { select: Plugin.React.createElement(Plugin.Controls.OptionsGroup, { options: LiteMol.Bootstrap.Visualization.Molecule.Types, caption: function (k) { return desc(k).label; }, current: params.style.type, onChange: function (o) { return _this.controller.updateTemplate(o, LiteMol.Bootstrap.Visualization.Molecule.Default.ForType); }, label: 'Type' }), expander: Plugin.React.createElement(Plugin.Controls.ControlGroupExpander, { isExpanded: showTypeOptions, onChange: function (e) { return _this.controller.setState({ showTypeOptions: e }); } }), options: controls, isExpanded: showTypeOptions }),
+                                Plugin.React.createElement(Plugin.Controls.ExpandableGroup, { select: Plugin.React.createElement(Plugin.Controls.OptionsGroup, { options: LiteMol.Bootstrap.Visualization.Molecule.Default.Themes, caption: function (k) { return k.name; }, current: params.style.theme.template, onChange: function (o) { return _this.controller.updateThemeDefinition(o); }, label: 'Coloring' }), expander: Plugin.React.createElement(Plugin.Controls.ControlGroupExpander, { isExpanded: showThemeOptions, onChange: function (e) { return _this.controller.setState({ showThemeOptions: e }); } }), options: this.createColors(), isExpanded: showThemeOptions }));
                         };
                         return CreateVisual;
                     }(Transform.ControllerBase));
@@ -75721,11 +75780,11 @@ var LiteMol;
                 var Density;
                 (function (Density) {
                     "use strict";
-                    var IsoValue = function (props) { return Plugin.React.createElement(Plugin.Controls.Slider, __assign({label: 'Iso Value (\u03C3)'}, props, {step: 0.001})); };
+                    var IsoValue = function (props) { return Plugin.React.createElement(Plugin.Controls.Slider, __assign({ label: 'Iso Value (\u03C3)' }, props, { step: 0.001 })); };
                     var ParseData = (function (_super) {
                         __extends(ParseData, _super);
                         function ParseData() {
-                            _super.apply(this, arguments);
+                            return _super.apply(this, arguments) || this;
                         }
                         ParseData.prototype.renderControls = function () {
                             var _this = this;
@@ -75735,16 +75794,16 @@ var LiteMol;
                             var round = LiteMol.Bootstrap.Utils.round;
                             if (this.isUpdate) {
                                 var data = this.controller.entity.props.data;
-                                return Plugin.React.createElement("div", null, 
-                                    Plugin.React.createElement(Plugin.Controls.RowText, {label: 'Format', value: params.format.name}), 
-                                    Plugin.React.createElement(Plugin.Controls.RowText, {label: 'Sigma', value: round(data.valuesInfo.sigma, 3)}), 
-                                    Plugin.React.createElement(Plugin.Controls.RowText, {label: 'Mean', value: round(data.valuesInfo.mean, 3)}), 
-                                    Plugin.React.createElement(Plugin.Controls.RowText, {label: 'Value Range', value: "[" + round(data.valuesInfo.min, 3) + ", " + round(data.valuesInfo.max, 3) + "]"}), 
-                                    Plugin.React.createElement(Plugin.Controls.Toggle, {onChange: function (v) { return _this.controller.updateParams({ normalize: v }); }, value: normalize, label: 'Normalized'}));
+                                return Plugin.React.createElement("div", null,
+                                    Plugin.React.createElement(Plugin.Controls.RowText, { label: 'Format', value: params.format.name }),
+                                    Plugin.React.createElement(Plugin.Controls.RowText, { label: 'Sigma', value: round(data.valuesInfo.sigma, 3) }),
+                                    Plugin.React.createElement(Plugin.Controls.RowText, { label: 'Mean', value: round(data.valuesInfo.mean, 3) }),
+                                    Plugin.React.createElement(Plugin.Controls.RowText, { label: 'Value Range', value: "[" + round(data.valuesInfo.min, 3) + ", " + round(data.valuesInfo.max, 3) + "]" }),
+                                    Plugin.React.createElement(Plugin.Controls.Toggle, { onChange: function (v) { return _this.controller.updateParams({ normalize: v }); }, value: normalize, label: 'Normalized' }));
                             }
-                            return Plugin.React.createElement("div", null, 
-                                Plugin.React.createElement(Plugin.Controls.OptionsGroup, {options: LiteMol.Core.Formats.Density.SupportedFormats.All, caption: function (s) { return s.name; }, current: params.format, onChange: function (o) { return _this.updateParams({ format: o }); }, label: 'Format'}), 
-                                Plugin.React.createElement(Plugin.Controls.Toggle, {onChange: function (v) { return _this.controller.updateParams({ normalize: v }); }, value: normalize, label: 'Normalized'}));
+                            return Plugin.React.createElement("div", null,
+                                Plugin.React.createElement(Plugin.Controls.OptionsGroup, { options: LiteMol.Core.Formats.Density.SupportedFormats.All, caption: function (s) { return s.name; }, current: params.format, onChange: function (o) { return _this.updateParams({ format: o }); }, label: 'Format' }),
+                                Plugin.React.createElement(Plugin.Controls.Toggle, { onChange: function (v) { return _this.controller.updateParams({ normalize: v }); }, value: normalize, label: 'Normalized' }));
                         };
                         return ParseData;
                     }(Transform.ControllerBase));
@@ -75752,13 +75811,13 @@ var LiteMol;
                     var CreateVisual = (function (_super) {
                         __extends(CreateVisual, _super);
                         function CreateVisual() {
-                            _super.apply(this, arguments);
+                            return _super.apply(this, arguments) || this;
                         }
                         CreateVisual.prototype.surface = function () {
                             var _this = this;
                             var data = LiteMol.Bootstrap.Tree.Node.findClosestNodeOfType(this.transformSourceEntity, [LiteMol.Bootstrap.Entity.Density.Data]);
                             var params = this.params.style.params;
-                            return Plugin.React.createElement(IsoValue, {onChange: function (v) { return _this.controller.updateStyleParams({ isoSigma: v }); }, min: -5, max: 5, value: params.isoSigma});
+                            return Plugin.React.createElement(IsoValue, { onChange: function (v) { return _this.controller.updateStyleParams({ isoSigma: v }); }, min: -5, max: 5, value: params.isoSigma });
                             // let options = [
                             //     <Controls.Slider label='Smoothing' onChange={v => this.controller.updateStyleParams({ smoothing: v  })} 
                             //         min={0} max={10} step={1} value={params.smoothing} title='Number of laplacian smoothing itrations.' />
@@ -75776,21 +75835,21 @@ var LiteMol;
                             var theme = this.params.style.theme;
                             var colorControls;
                             var uc = theme.colors.get('Uniform');
-                            var uniform = Plugin.React.createElement(Plugin.Controls.ToggleColorPicker, {key: 'Uniform', label: 'Color', color: uc, onChange: function (c) { return _this.controller.updateThemeColor('Uniform', c); }});
+                            var uniform = Plugin.React.createElement(Plugin.Controls.ToggleColorPicker, { key: 'Uniform', label: 'Color', color: uc, onChange: function (c) { return _this.controller.updateThemeColor('Uniform', c); } });
                             var controls = theme.colors
                                 .filter(function (c, n) { return n !== 'Uniform'; })
-                                .map(function (c, n) { return Plugin.React.createElement(Plugin.Controls.ToggleColorPicker, {key: n, label: n, color: c, onChange: function (c) { return _this.controller.updateThemeColor(n, c); }}); }).toArray();
-                            controls.push(Plugin.React.createElement(Transform.TransparencyControl, {definition: theme.transparency, onChange: function (d) { return _this.controller.updateThemeTransparency(d); }}));
+                                .map(function (c, n) { return Plugin.React.createElement(Plugin.Controls.ToggleColorPicker, { key: n, label: n, color: c, onChange: function (c) { return _this.controller.updateThemeColor(n, c); } }); }).toArray();
+                            controls.push(Plugin.React.createElement(Transform.TransparencyControl, { definition: theme.transparency, onChange: function (d) { return _this.controller.updateThemeTransparency(d); } }));
                             var visualParams = this.params.style.params;
-                            controls.push(Plugin.React.createElement(Plugin.Controls.Slider, {label: 'Smoothing', onChange: function (v) { return _this.controller.updateStyleParams({ smoothing: v }); }, min: 0, max: 10, step: 1, value: visualParams.smoothing, title: 'Number of laplacian smoothing itrations.'}));
-                            controls.push(Plugin.React.createElement(Plugin.Controls.Toggle, {onChange: function (v) { return _this.controller.updateStyleParams({ isWireframe: v }); }, value: params.isWireframe, label: 'Wireframe'}));
+                            controls.push(Plugin.React.createElement(Plugin.Controls.Slider, { label: 'Smoothing', onChange: function (v) { return _this.controller.updateStyleParams({ smoothing: v }); }, min: 0, max: 10, step: 1, value: visualParams.smoothing, title: 'Number of laplacian smoothing itrations.' }));
+                            controls.push(Plugin.React.createElement(Plugin.Controls.Toggle, { onChange: function (v) { return _this.controller.updateStyleParams({ isWireframe: v }); }, value: params.isWireframe, label: 'Wireframe' }));
                             var showThemeOptions = this.controller.latestState.showThemeOptions;
-                            return Plugin.React.createElement(Plugin.Controls.ExpandableGroup, {select: uniform, expander: Plugin.React.createElement(Plugin.Controls.ControlGroupExpander, {isExpanded: showThemeOptions, onChange: function (e) { return _this.controller.setState({ showThemeOptions: e }); }}), options: controls, isExpanded: showThemeOptions});
+                            return Plugin.React.createElement(Plugin.Controls.ExpandableGroup, { select: uniform, expander: Plugin.React.createElement(Plugin.Controls.ControlGroupExpander, { isExpanded: showThemeOptions, onChange: function (e) { return _this.controller.setState({ showThemeOptions: e }); } }), options: controls, isExpanded: showThemeOptions });
                         };
                         CreateVisual.prototype.renderControls = function () {
                             var params = this.params;
-                            return Plugin.React.createElement("div", null, 
-                                this.surface(), 
+                            return Plugin.React.createElement("div", null,
+                                this.surface(),
                                 this.colors());
                         };
                         return CreateVisual;
@@ -75799,13 +75858,13 @@ var LiteMol;
                     var CreateVisualBehaviour = (function (_super) {
                         __extends(CreateVisualBehaviour, _super);
                         function CreateVisualBehaviour() {
-                            _super.apply(this, arguments);
+                            return _super.apply(this, arguments) || this;
                         }
                         CreateVisualBehaviour.prototype.surface = function () {
                             var _this = this;
                             var data = LiteMol.Bootstrap.Tree.Node.findClosestNodeOfType(this.transformSourceEntity, [LiteMol.Bootstrap.Entity.Density.Data]);
                             var visualParams = this.params.style.params;
-                            return Plugin.React.createElement(IsoValue, {onChange: function (v) { return _this.controller.updateStyleParams({ isoSigma: v }); }, min: this.params.isoSigmaMin, max: this.params.isoSigmaMax, value: visualParams.isoSigma});
+                            return Plugin.React.createElement(IsoValue, { onChange: function (v) { return _this.controller.updateStyleParams({ isoSigma: v }); }, min: this.params.isoSigmaMin, max: this.params.isoSigmaMax, value: visualParams.isoSigma });
                             // let options = [
                             //     <Controls.Slider label='Smoothing' onChange={v => this.controller.updateStyleParams({ smoothing: v  })} 
                             //         min={0} max={10} step={1} value={visualParams.smoothing} title='Number of laplacian smoothing itrations.' />
@@ -75823,26 +75882,26 @@ var LiteMol;
                             var theme = this.params.style.theme;
                             var colorControls;
                             var uc = theme.colors.get('Uniform');
-                            var uniform = Plugin.React.createElement(Plugin.Controls.ToggleColorPicker, {key: 'Uniform', label: 'Color', color: uc, onChange: function (c) { return _this.controller.updateThemeColor('Uniform', c); }});
+                            var uniform = Plugin.React.createElement(Plugin.Controls.ToggleColorPicker, { key: 'Uniform', label: 'Color', color: uc, onChange: function (c) { return _this.controller.updateThemeColor('Uniform', c); } });
                             var controls = theme.colors
                                 .filter(function (c, n) { return n !== 'Uniform'; })
-                                .map(function (c, n) { return Plugin.React.createElement(Plugin.Controls.ToggleColorPicker, {key: n, label: n, color: c, onChange: function (c) { return _this.controller.updateThemeColor(n, c); }}); }).toArray();
-                            controls.push(Plugin.React.createElement(Transform.TransparencyControl, {definition: theme.transparency, onChange: function (d) { return _this.controller.updateThemeTransparency(d); }}));
+                                .map(function (c, n) { return Plugin.React.createElement(Plugin.Controls.ToggleColorPicker, { key: n, label: n, color: c, onChange: function (c) { return _this.controller.updateThemeColor(n, c); } }); }).toArray();
+                            controls.push(Plugin.React.createElement(Transform.TransparencyControl, { definition: theme.transparency, onChange: function (d) { return _this.controller.updateThemeTransparency(d); } }));
                             var visualParams = this.params.style.params;
-                            controls.push(Plugin.React.createElement(Plugin.Controls.Slider, {label: 'Smoothing', onChange: function (v) { return _this.controller.updateStyleParams({ smoothing: v }); }, min: 0, max: 10, step: 1, value: visualParams.smoothing, title: 'Number of laplacian smoothing itrations.'}));
-                            controls.push(Plugin.React.createElement(Plugin.Controls.Toggle, {onChange: function (v) { return _this.controller.updateStyleParams({ isWireframe: v }); }, value: params.isWireframe, label: 'Wireframe'}));
+                            controls.push(Plugin.React.createElement(Plugin.Controls.Slider, { label: 'Smoothing', onChange: function (v) { return _this.controller.updateStyleParams({ smoothing: v }); }, min: 0, max: 10, step: 1, value: visualParams.smoothing, title: 'Number of laplacian smoothing itrations.' }));
+                            controls.push(Plugin.React.createElement(Plugin.Controls.Toggle, { onChange: function (v) { return _this.controller.updateStyleParams({ isWireframe: v }); }, value: params.isWireframe, label: 'Wireframe' }));
                             // controls.push(<Controls.Toggle 
                             //         onChange={v => this.controller.updateStyleTheme({ wireframe: v }) } value={theme.wireframe} label='Wireframe' />);
                             var showThemeOptions = this.controller.latestState.showThemeOptions;
-                            return Plugin.React.createElement(Plugin.Controls.ExpandableGroup, {select: uniform, expander: Plugin.React.createElement(Plugin.Controls.ControlGroupExpander, {isExpanded: showThemeOptions, onChange: function (e) { return _this.controller.setState({ showThemeOptions: e }); }}), options: controls, isExpanded: showThemeOptions});
+                            return Plugin.React.createElement(Plugin.Controls.ExpandableGroup, { select: uniform, expander: Plugin.React.createElement(Plugin.Controls.ControlGroupExpander, { isExpanded: showThemeOptions, onChange: function (e) { return _this.controller.setState({ showThemeOptions: e }); } }), options: controls, isExpanded: showThemeOptions });
                         };
                         CreateVisualBehaviour.prototype.renderControls = function () {
                             var _this = this;
                             var params = this.params;
-                            return Plugin.React.createElement("div", null, 
-                                this.surface(), 
-                                this.colors(), 
-                                Plugin.React.createElement(Plugin.Controls.Slider, {label: 'Radius', onChange: function (v) { return _this.controller.updateRadius(v); }, min: 0, max: 10, step: 0.005, value: params.radius}));
+                            return Plugin.React.createElement("div", null,
+                                this.surface(),
+                                this.colors(),
+                                Plugin.React.createElement(Plugin.Controls.Slider, { label: 'Radius', onChange: function (v) { return _this.controller.updateRadius(v); }, min: 0, max: 10, step: 0.005, value: params.radius }));
                         };
                         return CreateVisualBehaviour;
                     }(Transform.ControllerBase));
@@ -75868,7 +75927,7 @@ var LiteMol;
                 var Log = (function (_super) {
                     __extends(Log, _super);
                     function Log() {
-                        _super.apply(this, arguments);
+                        return _super.apply(this, arguments) || this;
                     }
                     Log.prototype.componentWillMount = function () {
                         var _this = this;
@@ -75886,42 +75945,40 @@ var LiteMol;
                     Log.prototype.render = function () {
                         var entries = this.controller.latestState.entries;
                         var count = entries.count();
-                        return Plugin.React.createElement("div", {className: 'lm-log-wrap'}, 
-                            Plugin.React.createElement("div", {className: 'lm-log', ref: 'log'}, 
-                                Plugin.React.createElement("ul", {className: 'list-unstyled'}, entries.map(function (entry, i, arr) {
+                        return Plugin.React.createElement("div", { className: 'lm-log-wrap' },
+                            Plugin.React.createElement("div", { className: 'lm-log', ref: 'log' },
+                                Plugin.React.createElement("ul", { className: 'list-unstyled' }, entries.map(function (entry, i, arr) {
                                     var msg;
                                     var e = entry;
                                     switch (e.type) {
                                         case EntryType.Message:
-                                            msg = Plugin.React.createElement("div", {className: 'lm-log-entry'}, e.message);
+                                            msg = Plugin.React.createElement("div", { className: 'lm-log-entry' }, e.message);
                                             break;
                                         case EntryType.Error:
-                                            msg = Plugin.React.createElement("div", {className: 'lm-log-entry'}, 
-                                                Plugin.React.createElement("span", {className: 'label label-danger'}, "Error"), 
-                                                " ", 
+                                            msg = Plugin.React.createElement("div", { className: 'lm-log-entry' },
+                                                Plugin.React.createElement("span", { className: 'label label-danger' }, "Error"),
+                                                " ",
                                                 e.message);
                                             break;
                                         case EntryType.Warning:
-                                            msg = Plugin.React.createElement("div", {className: 'lm-log-entry'}, 
-                                                Plugin.React.createElement("span", {className: 'label label-warning'}, "Warning"), 
-                                                " ", 
+                                            msg = Plugin.React.createElement("div", { className: 'lm-log-entry' },
+                                                Plugin.React.createElement("span", { className: 'label label-warning' }, "Warning"),
+                                                " ",
                                                 e.message);
                                             break;
                                         case EntryType.Info:
-                                            msg = Plugin.React.createElement("div", {className: 'lm-log-entry'}, 
-                                                Plugin.React.createElement("span", {className: 'label label-info'}, "Info"), 
-                                                " ", 
+                                            msg = Plugin.React.createElement("div", { className: 'lm-log-entry' },
+                                                Plugin.React.createElement("span", { className: 'label label-info' }, "Info"),
+                                                " ",
                                                 e.message);
                                             break;
                                     }
                                     var t = LiteMol.Bootstrap.Utils.formatTime(e.timestamp);
-                                    return Plugin.React.createElement("li", {key: i}, 
-                                        Plugin.React.createElement("div", {className: 'lm-log-entry-badge lm-log-entry-' + EntryType[e.type].toLowerCase()}), 
-                                        Plugin.React.createElement("div", {className: 'lm-log-timestamp'}, t), 
-                                        Plugin.React.createElement("div", {className: 'lm-log-entry'}, e.message));
-                                }))
-                            )
-                        );
+                                    return Plugin.React.createElement("li", { key: i },
+                                        Plugin.React.createElement("div", { className: 'lm-log-entry-badge lm-log-entry-' + EntryType[e.type].toLowerCase() }),
+                                        Plugin.React.createElement("div", { className: 'lm-log-timestamp' }, t),
+                                        Plugin.React.createElement("div", { className: 'lm-log-entry' }, e.message));
+                                }))));
                     };
                     return Log;
                 }(Views.View));
@@ -75945,43 +76002,40 @@ var LiteMol;
                 var TaskState = (function (_super) {
                     __extends(TaskState, _super);
                     function TaskState() {
-                        _super.apply(this, arguments);
+                        return _super.apply(this, arguments) || this;
                     }
                     TaskState.prototype.render = function () {
                         var info = this.props.info;
-                        return Plugin.React.createElement("div", {className: 'lm-task-state'}, 
-                            Plugin.React.createElement("div", null, 
-                                info.abort ? Plugin.React.createElement(Plugin.Controls.Button, {onClick: function () { return info.abort.call(null); }, style: 'remove', icon: 'abort', title: 'Abort', customClass: 'btn-icon'}) : void 0, 
-                                Plugin.React.createElement("div", null, 
-                                    info.name, 
-                                    ": ", 
-                                    info.message))
-                        );
+                        return Plugin.React.createElement("div", { className: 'lm-task-state' },
+                            Plugin.React.createElement("div", null,
+                                info.abort ? Plugin.React.createElement(Plugin.Controls.Button, { onClick: function () { return info.abort.call(null); }, style: 'remove', icon: 'abort', title: 'Abort', customClass: 'btn-icon' }) : void 0,
+                                Plugin.React.createElement("div", null,
+                                    info.name,
+                                    ": ",
+                                    info.message)));
                     };
                     return TaskState;
                 }(Plugin.React.Component));
                 var Overlay = (function (_super) {
                     __extends(Overlay, _super);
                     function Overlay() {
-                        _super.apply(this, arguments);
+                        return _super.apply(this, arguments) || this;
                     }
                     Overlay.prototype.render = function () {
                         var state = this.controller.latestState;
                         if (!state.tasks.count())
-                            return Plugin.React.createElement("div", {className: 'lm-empty-control'});
+                            return Plugin.React.createElement("div", { className: 'lm-empty-control' });
                         var tasks = [];
-                        state.tasks.forEach(function (t, k) { return tasks.push(Plugin.React.createElement(TaskState, {key: k, info: t})); });
+                        state.tasks.forEach(function (t, k) { return tasks.push(Plugin.React.createElement(TaskState, { key: k, info: t })); });
                         //    tasks.push(<span><TaskState key={-1} info={{ message: 'Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Ut te', name: 'occaecat ', abort: () => {} }} /><br/></span>)
                         //    tasks.push(<br/>)
                         //    tasks.push(<TaskState key={-2} info={{ message: 'uam metus. Duis risus. F', name: 'dsads' }} />)
                         //   tasks.push(<TaskState key={-3} info={{ message: 'm dapibus fermentum ipsum. Lorem ipsum dolor', name: 'bibendum ', abort: () => {} }} />)          
-                        return Plugin.React.createElement("div", {className: 'lm-overlay'}, 
-                            Plugin.React.createElement("div", {className: 'lm-overlay-background'}), 
-                            Plugin.React.createElement("div", {className: 'lm-overlay-content-wrap'}, 
-                                Plugin.React.createElement("div", {className: 'lm-overlay-content'}, 
-                                    Plugin.React.createElement("div", null, tasks)
-                                )
-                            ));
+                        return Plugin.React.createElement("div", { className: 'lm-overlay' },
+                            Plugin.React.createElement("div", { className: 'lm-overlay-background' }),
+                            Plugin.React.createElement("div", { className: 'lm-overlay-content-wrap' },
+                                Plugin.React.createElement("div", { className: 'lm-overlay-content' },
+                                    Plugin.React.createElement("div", null, tasks))));
                     };
                     return Overlay;
                 }(Views.View));
@@ -75989,18 +76043,18 @@ var LiteMol;
                 var BackgroundTasks = (function (_super) {
                     __extends(BackgroundTasks, _super);
                     function BackgroundTasks() {
-                        _super.apply(this, arguments);
+                        return _super.apply(this, arguments) || this;
                     }
                     BackgroundTasks.prototype.render = function () {
                         var state = this.controller.latestState;
                         if (!state.tasks.count())
-                            return Plugin.React.createElement("div", {className: 'lm-empty-control'});
+                            return Plugin.React.createElement("div", { className: 'lm-empty-control' });
                         var tasks = [];
-                        state.tasks.forEach(function (t, k) { return tasks.push(Plugin.React.createElement(TaskState, {key: k, info: t, isSmall: true})); });
+                        state.tasks.forEach(function (t, k) { return tasks.push(Plugin.React.createElement(TaskState, { key: k, info: t, isSmall: true })); });
                         //    tasks.push(<TaskState key={-1} isSmall={true} info={{ message: 's diam. Vivamus luctus egestas l', name: 'bibendum ', abort: () => {} }} />)
                         //    tasks.push(<TaskState key={-3} isSmall={true} info={{ message: 'ccaecat cupidatat non proid', name: 'dsadsad', abort: () => {} }} />)
                         //    tasks.push(<TaskState key={-2} isSmall={true} info={{ message: 'modo dui eget wisi. Nullam sap', name: 'dsads' }} />)
-                        return Plugin.React.createElement("div", {className: 'lm-background-tasks'}, tasks);
+                        return Plugin.React.createElement("div", { className: 'lm-background-tasks' }, tasks);
                     };
                     return BackgroundTasks;
                 }(Views.View));
@@ -76041,13 +76095,14 @@ var LiteMol;
                         cls = 'partial';
                         title = 'Show';
                     }
-                    return Plugin.React.createElement(Plugin.Controls.Button, {title: title, onClick: command, icon: 'visual-visibility', style: 'link', customClass: 'lm-entity-tree-entry-toggle-visible lm-entity-tree-entry-toggle-visible-' + cls});
+                    return Plugin.React.createElement(Plugin.Controls.Button, { title: title, onClick: command, icon: 'visual-visibility', style: 'link', customClass: 'lm-entity-tree-entry-toggle-visible lm-entity-tree-entry-toggle-visible-' + cls });
                 };
                 var Entity = (function (_super) {
                     __extends(Entity, _super);
                     function Entity() {
-                        _super.apply(this, arguments);
-                        this.renderedVersion = -1;
+                        var _this = _super.apply(this, arguments) || this;
+                        _this.renderedVersion = -1;
+                        return _this;
                     }
                     Entity.prototype.ensureVisible = function () {
                         if (this.ctx.currentEntity === this.props.node) {
@@ -76099,19 +76154,17 @@ var LiteMol;
                         var title = props.label;
                         if (props.description)
                             title += ' (' + props.description + ')';
-                        return Plugin.React.createElement("div", {className: 'lm-entity-tree-entry-body' + (this.ctx.currentEntity === entity ? ' lm-entity-tree-entry-current' : '') + (this.isOnCurrentPath() ? ' lm-entity-tree-entry-current-path' : ''), ref: 'root'}, 
-                            Plugin.React.createElement(Entity_1.Badge, {type: entity.type.info}), 
-                            Plugin.React.createElement("div", {className: 'lm-entity-tree-entry-label-wrap'}, 
-                                Plugin.React.createElement(Plugin.Controls.Button, {onClick: function () { return LiteMol.Bootstrap.Command.Entity.SetCurrent.dispatch(_this.ctx, entity); }, customClass: 'lm-entity-tree-entry-label', style: 'link', title: title}, 
-                                    Plugin.React.createElement("span", null, 
-                                        props.label, 
-                                        Plugin.React.createElement("span", {className: 'lm-entity-tree-entry-label-tag'}, props.description ? ' ' + props.description : void 0))
-                                )
-                            ), 
+                        return Plugin.React.createElement("div", { className: 'lm-entity-tree-entry-body' + (this.ctx.currentEntity === entity ? ' lm-entity-tree-entry-current' : '') + (this.isOnCurrentPath() ? ' lm-entity-tree-entry-current-path' : ''), ref: 'root' },
+                            Plugin.React.createElement(Entity_1.Badge, { type: entity.type.info }),
+                            Plugin.React.createElement("div", { className: 'lm-entity-tree-entry-label-wrap' },
+                                Plugin.React.createElement(Plugin.Controls.Button, { onClick: function () { return LiteMol.Bootstrap.Command.Entity.SetCurrent.dispatch(_this.ctx, entity); }, customClass: 'lm-entity-tree-entry-label', style: 'link', title: title },
+                                    Plugin.React.createElement("span", null,
+                                        props.label,
+                                        Plugin.React.createElement("span", { className: 'lm-entity-tree-entry-label-tag' }, props.description ? ' ' + props.description : void 0)))),
                             !isRoot || childCount
-                                ? Plugin.React.createElement(Plugin.Controls.Button, {title: 'Remove', onClick: function () { return LiteMol.Bootstrap.Command.Tree.RemoveNode.dispatch(entity.tree.context, entity); }, icon: 'remove', style: 'link', customClass: 'lm-entity-tree-entry-remove'})
-                                : void 0, 
-                            isRoot && !childCount ? void 0 : Plugin.React.createElement(Entity_1.VisibilityControl, {entity: entity}));
+                                ? Plugin.React.createElement(Plugin.Controls.Button, { title: 'Remove', onClick: function () { return LiteMol.Bootstrap.Command.Tree.RemoveNode.dispatch(entity.tree.context, entity); }, icon: 'remove', style: 'link', customClass: 'lm-entity-tree-entry-remove' })
+                                : void 0,
+                            isRoot && !childCount ? void 0 : Plugin.React.createElement(Entity_1.VisibilityControl, { entity: entity }));
                         //<RemoveEntityControl entity={entity} />
                     };
                     Entity.prototype.renderFlat = function () {
@@ -76119,9 +76172,9 @@ var LiteMol;
                         var children = [];
                         for (var _i = 0, _a = node.children; _i < _a.length; _i++) {
                             var c = _a[_i];
-                            children.push(Plugin.React.createElement(Entity, {key: c.id, node: c, tree: this.props.tree}));
+                            children.push(Plugin.React.createElement(Entity, { key: c.id, node: c, tree: this.props.tree }));
                         }
-                        return Plugin.React.createElement("div", {key: node.id}, children);
+                        return Plugin.React.createElement("div", { key: node.id }, children);
                     };
                     Entity.prototype.isFullyBound = function () {
                         var isFullyBound = true;
@@ -76165,35 +76218,36 @@ var LiteMol;
                             if (c.isHidden)
                                 continue;
                             if (!isRoot)
-                                children.push(Plugin.React.createElement(Entity, {key: c.id, node: c, tree: this.props.tree}));
+                                children.push(Plugin.React.createElement(Entity, { key: c.id, node: c, tree: this.props.tree }));
                             childCount++;
                         }
                         var expander;
                         if (children.length) {
                             expander = state.isCollapsed
-                                ? Plugin.React.createElement(Plugin.Controls.Button, {style: 'link', title: 'Expand', onClick: function () { return LiteMol.Bootstrap.Command.Entity.ToggleExpanded.dispatch(_this.ctx, node); }, icon: 'expand', customClass: 'lm-entity-tree-entry-toggle-group'})
-                                : Plugin.React.createElement(Plugin.Controls.Button, {style: 'link', title: 'Collapse', onClick: function () { return LiteMol.Bootstrap.Command.Entity.ToggleExpanded.dispatch(_this.ctx, node); }, icon: 'collapse', customClass: 'lm-entity-tree-entry-toggle-group'});
+                                ? Plugin.React.createElement(Plugin.Controls.Button, { style: 'link', title: 'Expand', onClick: function () { return LiteMol.Bootstrap.Command.Entity.ToggleExpanded.dispatch(_this.ctx, node); }, icon: 'expand', customClass: 'lm-entity-tree-entry-toggle-group' })
+                                : Plugin.React.createElement(Plugin.Controls.Button, { style: 'link', title: 'Collapse', onClick: function () { return LiteMol.Bootstrap.Command.Entity.ToggleExpanded.dispatch(_this.ctx, node); }, icon: 'collapse', customClass: 'lm-entity-tree-entry-toggle-group' });
                         }
                         else {
                             if (node.state.visibility === 0 /* Full */ && node.type.traits.isFocusable) {
-                                expander = Plugin.React.createElement(Plugin.Controls.Button, {style: 'link', icon: 'focus-on-visual', title: 'Focus', onClick: function () { return LiteMol.Bootstrap.Command.Entity.Focus.dispatch(_this.ctx, _this.ctx.select(node)); }, customClass: 'lm-entity-tree-entry-toggle-group'});
+                                expander = Plugin.React.createElement(Plugin.Controls.Button, { style: 'link', icon: 'focus-on-visual', title: 'Focus', onClick: function () { return LiteMol.Bootstrap.Command.Entity.Focus.dispatch(_this.ctx, _this.ctx.select(node)); }, customClass: 'lm-entity-tree-entry-toggle-group' });
                             }
                         }
-                        var main = Plugin.React.createElement("div", {className: 'lm-entity-tree-entry', onMouseEnter: function () { return _this.highlight(true); }, onMouseLeave: function () { return _this.highlight(false); }, onTouchStart: function () { return setTimeout(function () { return _this.highlight(true); }, 1000 / 30); }, onTouchCancel: function () { return setTimeout(function () { return _this.highlight(false); }, 1000 / 30); }, onTouchEnd: function () { return setTimeout(function () { return _this.highlight(false); }, 1000 / 30); }}, 
-                            expander, 
+                        var main = Plugin.React.createElement("div", { className: 'lm-entity-tree-entry', onMouseEnter: function () { return _this.highlight(true); }, onMouseLeave: function () { return _this.highlight(false); }, onTouchStart: function () { return setTimeout(function () { return _this.highlight(true); }, 1000 / 30); }, onTouchCancel: function () { return setTimeout(function () { return _this.highlight(false); }, 1000 / 30); }, onTouchEnd: function () { return setTimeout(function () { return _this.highlight(false); }, 1000 / 30); } },
+                            expander,
                             this.row(childCount));
-                        return Plugin.React.createElement("div", {key: node.id, className: (isRoot ? 'lm-entity-tree-root' : '')}, 
-                            main, 
-                            Plugin.React.createElement("div", {className: 'lm-entity-tree-children-wrap', style: { display: state.isCollapsed ? 'none' : 'block' }}, children));
+                        return Plugin.React.createElement("div", { key: node.id, className: (isRoot ? 'lm-entity-tree-root' : '') },
+                            main,
+                            Plugin.React.createElement("div", { className: 'lm-entity-tree-children-wrap', style: { display: state.isCollapsed ? 'none' : 'block' } }, children));
                     };
                     return Entity;
                 }(Views.ObserverView));
                 var Tree = (function (_super) {
                     __extends(Tree, _super);
                     function Tree() {
-                        _super.apply(this, arguments);
-                        this.renderedVersion = -1;
-                        this.splash = Entity_1.SplashInfo.Info();
+                        var _this = _super.apply(this, arguments) || this;
+                        _this.renderedVersion = -1;
+                        _this.splash = Entity_1.SplashInfo.Info();
+                        return _this;
                     }
                     Tree.prototype.scrollIntoView = function (element) {
                         var node = this.refs['chilren'];
@@ -76235,11 +76289,11 @@ var LiteMol;
                             var c = _a[_i];
                             if (c.isHidden)
                                 continue;
-                            children.push(Plugin.React.createElement(Entity, {key: c.id, node: c, tree: this}));
+                            children.push(Plugin.React.createElement(Entity, { key: c.id, node: c, tree: this }));
                         }
-                        return Plugin.React.createElement("div", {className: 'lm-entity-tree', ref: 'root'}, 
-                            Plugin.React.createElement(Entity, {key: root.id, node: root, tree: this}), 
-                            Plugin.React.createElement("div", {className: 'lm-entity-tree-children'}, children.length ? children : this.splash));
+                        return Plugin.React.createElement("div", { className: 'lm-entity-tree', ref: 'root' },
+                            Plugin.React.createElement(Entity, { key: root.id, node: root, tree: this }),
+                            Plugin.React.createElement("div", { className: 'lm-entity-tree-children' }, children.length ? children : this.splash));
                     };
                     return Tree;
                 }(Views.View));
@@ -76260,11 +76314,11 @@ var LiteMol;
             var Entity;
             (function (Entity) {
                 "use strict";
-                Entity.Remove = function (props) { return Plugin.React.createElement(Plugin.Controls.Button, {onClick: function () { LiteMol.Bootstrap.Command.Tree.RemoveNode.dispatch(props.entity.tree.context, props.entity); props.onRemove.call(null); }, style: 'link', icon: 'remove', customClass: 'lm-remove-entity btn-icon'}); };
+                Entity.Remove = function (props) { return Plugin.React.createElement(Plugin.Controls.Button, { onClick: function () { LiteMol.Bootstrap.Command.Tree.RemoveNode.dispatch(props.entity.tree.context, props.entity); props.onRemove.call(null); }, style: 'link', icon: 'remove', customClass: 'lm-remove-entity btn-icon' }); };
                 var Badge = (function (_super) {
                     __extends(Badge, _super);
                     function Badge() {
-                        _super.apply(this, arguments);
+                        return _super.apply(this, arguments) || this;
                     }
                     Badge.prototype.shouldComponentUpdate = function (nextProps, nextState, nextContext) {
                         return this.props.type !== nextProps.type;
@@ -76304,9 +76358,8 @@ var LiteMol;
                     };
                     Badge.prototype.render = function () {
                         var type = this.props.type;
-                        return Plugin.React.createElement("div", {className: 'lm-entity-badge lm-entity-badge-' + this.props.type.typeClass, title: type.name}, 
-                            Plugin.React.createElement("div", null, type === LiteMol.Bootstrap.Entity.Root.info ? void 0 : this.createBadge(type.shortName))
-                        );
+                        return Plugin.React.createElement("div", { className: 'lm-entity-badge lm-entity-badge-' + this.props.type.typeClass, title: type.name },
+                            Plugin.React.createElement("div", null, type === LiteMol.Bootstrap.Entity.Root.info ? void 0 : this.createBadge(type.shortName)));
                     };
                     return Badge;
                 }(Plugin.React.Component));
@@ -76314,8 +76367,9 @@ var LiteMol;
                 var CurrentEntityControl = (function (_super) {
                     __extends(CurrentEntityControl, _super);
                     function CurrentEntityControl() {
-                        _super.apply(this, arguments);
-                        this.state = { current: void 0 };
+                        var _this = _super.apply(this, arguments) || this;
+                        _this.state = { current: void 0 };
+                        return _this;
                     }
                     CurrentEntityControl.prototype.componentWillMount = function () {
                         var _this = this;
@@ -76328,22 +76382,19 @@ var LiteMol;
                     CurrentEntityControl.prototype.render = function () {
                         var _this = this;
                         if (!this.state.current) {
-                            return Plugin.React.createElement("div", {className: 'lm-entity-info'}, 
-                                Plugin.React.createElement("div", null, 
-                                    Plugin.React.createElement("span", null, this.controller.appName)
-                                )
-                            );
+                            return Plugin.React.createElement("div", { className: 'lm-entity-info' },
+                                Plugin.React.createElement("div", null,
+                                    Plugin.React.createElement("span", null, this.controller.appName)));
                         }
                         //<div>{this.controller.appVersion}</div> 
                         var entity = this.state.current;
-                        return Plugin.React.createElement("div", {className: 'lm-entity-info', title: entity.props.label + " " + (entity.props.description ? entity.props.description : '')}, 
-                            Plugin.React.createElement("div", null, 
-                                Plugin.React.createElement(Badge, {type: entity.type.info}), 
-                                Plugin.React.createElement("span", null, 
-                                    entity.props.label, 
-                                    Plugin.React.createElement("span", null, entity.props.description)), 
-                                entity.parent === entity && !entity.children.length ? void 0 : Plugin.React.createElement(Entity.Remove, {entity: entity, onRemove: function () { return _this.forceUpdate(); }}))
-                        );
+                        return Plugin.React.createElement("div", { className: 'lm-entity-info', title: entity.props.label + " " + (entity.props.description ? entity.props.description : '') },
+                            Plugin.React.createElement("div", null,
+                                Plugin.React.createElement(Badge, { type: entity.type.info }),
+                                Plugin.React.createElement("span", null,
+                                    entity.props.label,
+                                    Plugin.React.createElement("span", null, entity.props.description)),
+                                entity.parent === entity && !entity.children.length ? void 0 : Plugin.React.createElement(Entity.Remove, { entity: entity, onRemove: function () { return _this.forceUpdate(); } })));
                         //<div>{entity.props.label}<span>{entity.props.description}</span></div>             
                     };
                     return CurrentEntityControl;
@@ -76352,42 +76403,43 @@ var LiteMol;
                 var SplashInfo;
                 (function (SplashInfo) {
                     SplashInfo.General = function () {
-                        return Plugin.React.createElement("div", {className: 'lm-entity-splash-general'}, 
-                            Plugin.React.createElement("div", null), 
-                            Plugin.React.createElement("span", {className: 'icon icon-info'}), 
+                        return Plugin.React.createElement("div", { className: 'lm-entity-splash-general' },
+                            Plugin.React.createElement("div", null),
+                            Plugin.React.createElement("span", { className: 'icon icon-info' }),
                             "The application operates on an entity tree structure that can be manipulated using the controls on the panel to the right.");
                     };
                     var ClassInfo = (function (_super) {
                         __extends(ClassInfo, _super);
                         function ClassInfo() {
-                            _super.apply(this, arguments);
-                            this.state = { isExpanded: false };
+                            var _this = _super.apply(this, arguments) || this;
+                            _this.state = { isExpanded: false };
+                            return _this;
                         }
                         //onClick={() => this.setState({isExpanded: !this.state.isExpanded} )}
                         //onMouseEnter={() => this.setState({isExpanded: true} )} onMouseLeave={() => this.setState({isExpanded: false} )}
                         ClassInfo.prototype.render = function () {
                             var _this = this;
-                            return Plugin.React.createElement("div", {className: 'lm-entity-splash-class lm-entity-splash-class-' + (this.state.isExpanded ? 'expanded' : 'collapsed')}, 
-                                Plugin.React.createElement("div", {onClick: function () { return _this.setState({ isExpanded: !_this.state.isExpanded }); }}, 
-                                    Plugin.React.createElement("div", null), 
-                                    Plugin.React.createElement("div", {className: 'lm-entity-badge-' + this.props.cls}), 
-                                    " ", 
-                                    Plugin.React.createElement("span", null, this.props.cls)), 
+                            return Plugin.React.createElement("div", { className: 'lm-entity-splash-class lm-entity-splash-class-' + (this.state.isExpanded ? 'expanded' : 'collapsed') },
+                                Plugin.React.createElement("div", { onClick: function () { return _this.setState({ isExpanded: !_this.state.isExpanded }); } },
+                                    Plugin.React.createElement("div", null),
+                                    Plugin.React.createElement("div", { className: 'lm-entity-badge-' + this.props.cls }),
+                                    " ",
+                                    Plugin.React.createElement("span", null, this.props.cls)),
                                 Plugin.React.createElement("div", null, this.props.desc));
                         };
                         return ClassInfo;
                     }(Plugin.React.Component));
                     SplashInfo.Info = function () {
-                        return Plugin.React.createElement("div", {className: 'lm-entity-splash'}, 
-                            Plugin.React.createElement(SplashInfo.General, null), 
-                            Plugin.React.createElement(ClassInfo, {cls: 'Root', desc: 'The root entity represents the starting point of all actions.'}), 
-                            Plugin.React.createElement(ClassInfo, {cls: 'Action', desc: 'Represents a composition of one of more changes to the entity tree.'}), 
-                            Plugin.React.createElement(ClassInfo, {cls: 'Data', desc: 'Low level data, for example a string or a CIF dictionary.'}), 
-                            Plugin.React.createElement(ClassInfo, {cls: 'Object', desc: 'A more complex structure obtained from low level data. For example a molecule.'}), 
-                            Plugin.React.createElement(ClassInfo, {cls: 'Visual', desc: 'A visual representation of an object.'}), 
-                            Plugin.React.createElement(ClassInfo, {cls: 'Selection', desc: 'A description of a substructure of an object or a visual.'}), 
-                            Plugin.React.createElement(ClassInfo, {cls: 'Behaviour', desc: 'Represents a dynamic behavior of the program. For example creating electron density surface when the selection changes.'}), 
-                            Plugin.React.createElement(ClassInfo, {cls: 'Group', desc: 'A collection of related entities.'}));
+                        return Plugin.React.createElement("div", { className: 'lm-entity-splash' },
+                            Plugin.React.createElement(SplashInfo.General, null),
+                            Plugin.React.createElement(ClassInfo, { cls: 'Root', desc: 'The root entity represents the starting point of all actions.' }),
+                            Plugin.React.createElement(ClassInfo, { cls: 'Action', desc: 'Represents a composition of one of more changes to the entity tree.' }),
+                            Plugin.React.createElement(ClassInfo, { cls: 'Data', desc: 'Low level data, for example a string or a CIF dictionary.' }),
+                            Plugin.React.createElement(ClassInfo, { cls: 'Object', desc: 'A more complex structure obtained from low level data. For example a molecule.' }),
+                            Plugin.React.createElement(ClassInfo, { cls: 'Visual', desc: 'A visual representation of an object.' }),
+                            Plugin.React.createElement(ClassInfo, { cls: 'Selection', desc: 'A description of a substructure of an object or a visual.' }),
+                            Plugin.React.createElement(ClassInfo, { cls: 'Behaviour', desc: 'Represents a dynamic behavior of the program. For example creating electron density surface when the selection changes.' }),
+                            Plugin.React.createElement(ClassInfo, { cls: 'Group', desc: 'A collection of related entities.' }));
                     };
                 })(SplashInfo = Entity.SplashInfo || (Entity.SplashInfo = {}));
             })(Entity = Views.Entity || (Views.Entity = {}));
@@ -76409,8 +76461,9 @@ var LiteMol;
                 var ViewportControls = (function (_super) {
                     __extends(ViewportControls, _super);
                     function ViewportControls() {
-                        _super.apply(this, arguments);
-                        this.state = { showSceneOptions: false };
+                        var _this = _super.apply(this, arguments) || this;
+                        _this.state = { showSceneOptions: false };
+                        return _this;
                     }
                     ViewportControls.prototype.render = function () {
                         var _this = this;
@@ -76419,19 +76472,19 @@ var LiteMol;
                         var layoutController = this.controller.context.layout;
                         var layoutState = layoutController.latestState;
                         if (this.state.showSceneOptions) {
-                            options = Plugin.React.createElement("div", {className: 'lm-viewport-controls-scene-options lm-control'}, 
-                                Plugin.React.createElement(Plugin.Controls.Toggle, {onChange: function (v) { return _this.controller.setState({ enableFog: v }); }, value: state.enableFog, label: 'Fog'}), 
-                                Plugin.React.createElement(Plugin.Controls.Slider, {label: 'FOV', min: 30, max: 90, onChange: function (v) { return _this.controller.setState({ cameraFOV: v }); }, value: state.cameraFOV}), 
-                                Plugin.React.createElement(Plugin.Controls.ToggleColorPicker, {color: state.clearColor, label: 'Background', position: 'below', onChange: function (c) { return _this.controller.setState({ clearColor: c }); }}));
+                            options = Plugin.React.createElement("div", { className: 'lm-viewport-controls-scene-options lm-control' },
+                                Plugin.React.createElement(Plugin.Controls.Toggle, { onChange: function (v) { return _this.controller.setState({ enableFog: v }); }, value: state.enableFog, label: 'Fog' }),
+                                Plugin.React.createElement(Plugin.Controls.Slider, { label: 'FOV', min: 30, max: 90, onChange: function (v) { return _this.controller.setState({ cameraFOV: v }); }, value: state.cameraFOV }),
+                                Plugin.React.createElement(Plugin.Controls.ToggleColorPicker, { color: state.clearColor, label: 'Background', position: 'below', onChange: function (c) { return _this.controller.setState({ clearColor: c }); } }));
                         }
                         var controlsShown = !layoutState.hideControls;
-                        return Plugin.React.createElement("div", {className: 'lm-viewport-controls', onMouseLeave: function () { return _this.setState({ showSceneOptions: false }); }}, 
-                            Plugin.React.createElement("div", {className: 'lm-viewport-controls-buttons'}, 
-                                Plugin.React.createElement(Plugin.Controls.Button, {style: 'link', active: this.state.showSceneOptions, customClass: 'btn-link-toggle-' + (this.state.showSceneOptions ? 'on' : 'off'), icon: 'settings', onClick: function (e) { return _this.setState({ showSceneOptions: !_this.state.showSceneOptions }); }, title: 'Scene Options'}), 
-                                Plugin.React.createElement(Plugin.Controls.Button, {style: 'link', icon: 'screenshot', onClick: function (e) { window.open(_this.controller.scene.scene.screenshotAsDataURL(), '_blank'); }, title: 'Screenshot'}), 
-                                Plugin.React.createElement(Plugin.Controls.Button, {onClick: function () { layoutController.update({ hideControls: controlsShown }); _this.forceUpdate(); }, icon: 'tools', title: controlsShown ? 'Hide Controls' : 'Show Controls', active: controlsShown, customClass: 'btn-link-toggle-' + (controlsShown ? 'on' : 'off'), style: 'link'}), 
-                                Plugin.React.createElement(Plugin.Controls.Button, {onClick: function () { return layoutController.update({ isExpanded: !layoutState.isExpanded }); }, icon: 'expand-layout', title: layoutState.isExpanded ? 'Collapse' : 'Expand', active: layoutState.isExpanded, customClass: 'btn-link-toggle-' + (layoutState.isExpanded ? 'on' : 'off'), style: 'link'}), 
-                                Plugin.React.createElement(Plugin.Controls.Button, {style: 'link', icon: 'reset-scene', onClick: function (e) { return LiteMol.Bootstrap.Command.Visual.ResetScene.dispatch(_this.controller.context, void 0); }, title: 'Reset scene'})), 
+                        return Plugin.React.createElement("div", { className: 'lm-viewport-controls', onMouseLeave: function () { return _this.setState({ showSceneOptions: false }); } },
+                            Plugin.React.createElement("div", { className: 'lm-viewport-controls-buttons' },
+                                Plugin.React.createElement(Plugin.Controls.Button, { style: 'link', active: this.state.showSceneOptions, customClass: 'btn-link-toggle-' + (this.state.showSceneOptions ? 'on' : 'off'), icon: 'settings', onClick: function (e) { return _this.setState({ showSceneOptions: !_this.state.showSceneOptions }); }, title: 'Scene Options' }),
+                                Plugin.React.createElement(Plugin.Controls.Button, { style: 'link', icon: 'screenshot', onClick: function (e) { window.open(_this.controller.scene.scene.screenshotAsDataURL(), '_blank'); }, title: 'Screenshot' }),
+                                Plugin.React.createElement(Plugin.Controls.Button, { onClick: function () { layoutController.update({ hideControls: controlsShown }); _this.forceUpdate(); }, icon: 'tools', title: controlsShown ? 'Hide Controls' : 'Show Controls', active: controlsShown, customClass: 'btn-link-toggle-' + (controlsShown ? 'on' : 'off'), style: 'link' }),
+                                Plugin.React.createElement(Plugin.Controls.Button, { onClick: function () { return layoutController.update({ isExpanded: !layoutState.isExpanded }); }, icon: 'expand-layout', title: layoutState.isExpanded ? 'Collapse' : 'Expand', active: layoutState.isExpanded, customClass: 'btn-link-toggle-' + (layoutState.isExpanded ? 'on' : 'off'), style: 'link' }),
+                                Plugin.React.createElement(Plugin.Controls.Button, { style: 'link', icon: 'reset-scene', onClick: function (e) { return LiteMol.Bootstrap.Command.Visual.ResetScene.dispatch(_this.controller.context, void 0); }, title: 'Reset scene' })),
                             options);
                     };
                     return ViewportControls;
@@ -76440,36 +76493,34 @@ var LiteMol;
                 var HighlightInfo = (function (_super) {
                     __extends(HighlightInfo, _super);
                     function HighlightInfo() {
-                        _super.apply(this, arguments);
+                        return _super.apply(this, arguments) || this;
                     }
                     HighlightInfo.prototype.render = function () {
                         var state = this.controller.latestState;
                         var info = state.info;
                         if (!info.length) {
-                            return Plugin.React.createElement("div", {className: 'lm-empty-control'});
+                            return Plugin.React.createElement("div", { className: 'lm-empty-control' });
                         }
                         var html = { __html: info.join(', ') };
-                        return Plugin.React.createElement("div", {className: 'lm-highlight-info'}, 
-                            Plugin.React.createElement("div", {dangerouslySetInnerHTML: html})
-                        );
+                        return Plugin.React.createElement("div", { className: 'lm-highlight-info' },
+                            Plugin.React.createElement("div", { dangerouslySetInnerHTML: html }));
                     };
                     return HighlightInfo;
                 }(Views.View));
                 Visualization.HighlightInfo = HighlightInfo;
                 Visualization.Logo = function () {
-                    return Plugin.React.createElement("div", {className: 'lm-logo'}, 
-                        Plugin.React.createElement("div", null, 
-                            Plugin.React.createElement("div", null, 
-                                Plugin.React.createElement("div", null), 
-                                Plugin.React.createElement("div", {className: 'lm-logo-image'}))
-                        )
-                    );
+                    return Plugin.React.createElement("div", { className: 'lm-logo' },
+                        Plugin.React.createElement("div", null,
+                            Plugin.React.createElement("div", null,
+                                Plugin.React.createElement("div", null),
+                                Plugin.React.createElement("div", { className: 'lm-logo-image' }))));
                 };
                 var Viewport = (function (_super) {
                     __extends(Viewport, _super);
                     function Viewport() {
-                        _super.apply(this, arguments);
-                        this.state = { noWebGl: false, showLogo: true };
+                        var _this = _super.apply(this, arguments) || this;
+                        _this.state = { noWebGl: false, showLogo: true };
+                        return _this;
                     }
                     Viewport.prototype.componentDidMount = function () {
                         if (!this.controller.init(this.refs['host-3d'])) {
@@ -76482,17 +76533,15 @@ var LiteMol;
                         this.controller.destroy();
                     };
                     Viewport.prototype.renderMissing = function () {
-                        return Plugin.React.createElement("div", {className: 'lm-no-webgl'}, 
-                            Plugin.React.createElement("div", null, 
-                                Plugin.React.createElement("p", null, 
-                                    Plugin.React.createElement("b", null, "WebGL does not seem to be available.")
-                                ), 
-                                Plugin.React.createElement("p", null, "This can be caused by an outdated browser, graphics card driver issue, or bad weather. Sometimes, just restarting the browser helps."), 
-                                Plugin.React.createElement("p", null, 
-                                    "For a list of supported browsers, refer to ", 
-                                    Plugin.React.createElement("a", {href: 'http://caniuse.com/#feat=webgl', target: '_blank'}, "http://caniuse.com/#feat=webgl"), 
-                                    "."))
-                        );
+                        return Plugin.React.createElement("div", { className: 'lm-no-webgl' },
+                            Plugin.React.createElement("div", null,
+                                Plugin.React.createElement("p", null,
+                                    Plugin.React.createElement("b", null, "WebGL does not seem to be available.")),
+                                Plugin.React.createElement("p", null, "This can be caused by an outdated browser, graphics card driver issue, or bad weather. Sometimes, just restarting the browser helps."),
+                                Plugin.React.createElement("p", null,
+                                    "For a list of supported browsers, refer to ",
+                                    Plugin.React.createElement("a", { href: 'http://caniuse.com/#feat=webgl', target: '_blank' }, "http://caniuse.com/#feat=webgl"),
+                                    ".")));
                     };
                     Viewport.prototype.handleLogo = function () {
                         var _this = this;
@@ -76513,10 +76562,10 @@ var LiteMol;
                     Viewport.prototype.render = function () {
                         if (this.state.noWebGl)
                             return this.renderMissing();
-                        return Plugin.React.createElement("div", {className: 'lm-viewport'}, 
-                            Plugin.React.createElement("div", {ref: 'host-3d', className: 'lm-viewport-host3d'}), 
-                            this.state.showLogo ? Plugin.React.createElement(Visualization.Logo, null) : void 0, 
-                            Plugin.React.createElement(ViewportControls, {controller: this.controller}));
+                        return Plugin.React.createElement("div", { className: 'lm-viewport' },
+                            Plugin.React.createElement("div", { ref: 'host-3d', className: 'lm-viewport-host3d' }),
+                            this.state.showLogo ? Plugin.React.createElement(Visualization.Logo, null) : void 0,
+                            Plugin.React.createElement(ViewportControls, { controller: this.controller }));
                     };
                     return Viewport;
                 }(Views.View));
@@ -76548,9 +76597,10 @@ var LiteMol;
             var AppInfo = (function (_super) {
                 __extends(AppInfo, _super);
                 function AppInfo(ctx, appName, appVersion) {
-                    _super.call(this, ctx, {});
-                    this.appName = appName;
-                    this.appVersion = appVersion;
+                    var _this = _super.call(this, ctx, {}) || this;
+                    _this.appName = appName;
+                    _this.appVersion = appVersion;
+                    return _this;
                 }
                 return AppInfo;
             }(LiteMol.Bootstrap.Components.Component));
@@ -76683,8 +76733,8 @@ var LiteMol;
             });
         })(DataSources = Plugin.DataSources || (Plugin.DataSources = {}));
         var LayoutRegion = LiteMol.Bootstrap.Components.LayoutRegion;
-        function createDefault(target) {
-            var spec = {
+        function getDefaultSpecification() {
+            return {
                 settings: {
                     'molecule.model.defaultQuery': "residues({ name: 'ALA' })",
                     'molecule.model.defaultAssemblyName': '1',
@@ -76726,8 +76776,7 @@ var LiteMol;
                     LiteMol.Bootstrap.Behaviour.ApplyInteractivitySelection,
                     LiteMol.Bootstrap.Behaviour.Molecule.HighlightElementInfo,
                     LiteMol.Bootstrap.Behaviour.Molecule.DistanceToLastClickedElement,
-                    LiteMol.Bootstrap.Behaviour.Molecule.ShowInteractionOnSelect(5),
-                    LiteMol.Bootstrap.Behaviour.GoogleAnalytics('UA-77062725-1')
+                    LiteMol.Bootstrap.Behaviour.Molecule.ShowInteractionOnSelect(5)
                 ],
                 components: [
                     Plugin.Components.Visualization.HighlightInfo(LayoutRegion.Main, true),
@@ -76747,11 +76796,155 @@ var LiteMol;
                     view: Plugin.Views.Entity.Tree
                 }
             };
-            var plugin = new Plugin.Instance(spec, target);
-            plugin.context.logger.message("LiteMol Viewer " + Plugin.VERSION.number);
-            return plugin;
         }
-        Plugin.createDefault = createDefault;
+        Plugin.getDefaultSpecification = getDefaultSpecification;
+    })(Plugin = LiteMol.Plugin || (LiteMol.Plugin = {}));
+})(LiteMol || (LiteMol = {}));
+/*
+ * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ */
+var LiteMol;
+(function (LiteMol) {
+    var Plugin;
+    (function (Plugin) {
+        "use strict";
+        var Entity = LiteMol.Bootstrap.Entity;
+        var Transformer = Entity.Transformer;
+        var SimpleController = (function () {
+            function SimpleController(options) {
+                var spec = options.customSpecification ? options.customSpecification : Plugin.getDefaultSpecification();
+                if (!options.customSpecification) {
+                    spec.behaviours.push(LiteMol.Bootstrap.Behaviour.GoogleAnalytics(options.analyticsId ? options.analyticsId : 'UA-77062725-1'));
+                }
+                var target;
+                if (options.target instanceof HTMLElement) {
+                    target = options.target;
+                }
+                else {
+                    target = document.querySelector(options.target);
+                }
+                if (!target) {
+                    throw new Error("options.target cannot be undefined.");
+                }
+                this._instance = new Plugin.Instance(spec, target);
+                if (options.viewportBackground) {
+                    this.setViewportBackground(options.viewportBackground);
+                }
+                if (options.layoutState) {
+                    this.setLayoutState(options.layoutState);
+                }
+            }
+            Object.defineProperty(SimpleController.prototype, "instance", {
+                get: function () { return this._instance; },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(SimpleController.prototype, "context", {
+                get: function () { return this._instance.context; },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(SimpleController.prototype, "root", {
+                get: function () { return this._instance.context.tree.root; },
+                enumerable: true,
+                configurable: true
+            });
+            /**
+             * execute a command with the specified params.
+             */
+            SimpleController.prototype.command = function (cmd, params) {
+                cmd.dispatch(this.context, params);
+            };
+            /**
+             * Subscribes the specified event and returns
+             * a disposable for the event.
+             *
+             * let sub = litemol.subscribe(...)
+             * ...
+             * sub.dispose(); // to stop listening
+             */
+            SimpleController.prototype.subscribe = function (event, onEvent) {
+                return event.getStream(this.context).subscribe(onEvent);
+            };
+            /**
+             * Create a transform builder.
+             */
+            SimpleController.prototype.createTransform = function () {
+                return LiteMol.Bootstrap.Tree.Transform.build();
+            };
+            /**
+             * Applies a state trasnform.
+             */
+            SimpleController.prototype.applyTransform = function (transform) {
+                var ctx = this.context;
+                return LiteMol.Bootstrap.Tree.Transform.apply(ctx, transform).run(ctx);
+            };
+            /**
+             * Remove all entities.
+             */
+            SimpleController.prototype.clear = function () {
+                this.command(LiteMol.Bootstrap.Command.Tree.RemoveNode, this.root);
+            };
+            /**
+             * Set the background of the viewport from:
+             *
+             * HEX color in format '#rgb' or '#rrggbb'
+             * or Visualization.Color instance.
+             */
+            SimpleController.prototype.setViewportBackground = function (color) {
+                if (LiteMol.Visualization.Color.isColor(color)) {
+                    this.command(LiteMol.Bootstrap.Command.Layout.SetViewportOptions, { clearColor: color });
+                }
+                else {
+                    this.command(LiteMol.Bootstrap.Command.Layout.SetViewportOptions, { clearColor: LiteMol.Visualization.Color.fromHexString(color) });
+                }
+            };
+            /**
+             * Sets the state of the plugin layout.
+             *
+             * Expanded, show/hide controls, etc..
+             */
+            SimpleController.prototype.setLayoutState = function (state) {
+                this.command(LiteMol.Bootstrap.Command.Layout.SetState, state);
+            };
+            /**
+             * Load molecule from url or string/binary data.
+             *
+             * Default format is mmCIF.
+             */
+            SimpleController.prototype.loadMolecule = function (source) {
+                var action = this.createTransform();
+                if (!source.url && !source.data) {
+                    throw new Error('Please specify either url or data');
+                }
+                var format = LiteMol.Core.Formats.Molecule.SupportedFormats.mmCIF;
+                if (source.format) {
+                    if (LiteMol.Core.Formats.FormatInfo.is(source.format)) {
+                        format = source.format;
+                    }
+                    else {
+                        var f = LiteMol.Core.Formats.FormatInfo.fromShortcut(LiteMol.Core.Formats.Molecule.SupportedFormats.All, source.format);
+                        if (!f) {
+                            throw new Error("'" + source.format + "' is not a supported format.");
+                        }
+                        format = f;
+                    }
+                }
+                var data = source.data
+                    ? action.add(this.root, Entity.Transformer.Data.FromData, { data: source.data, id: source.id })
+                    : action.add(this.root, Transformer.Data.Download, { url: source.url, type: format.isBinary ? 'Binary' : 'String', id: source.id });
+                data
+                    .then(Transformer.Molecule.CreateFromData, { format: format, customId: source.id }, { isBinding: true, ref: source.moleculeRef })
+                    .then(Transformer.Molecule.CreateModel, { modelIndex: 0 }, { isBinding: false, ref: source.modelRef });
+                return this.applyTransform(data);
+            };
+            return SimpleController;
+        }());
+        Plugin.SimpleController = SimpleController;
+        function create(options) {
+            return new SimpleController(options);
+        }
+        Plugin.create = create;
     })(Plugin = LiteMol.Plugin || (LiteMol.Plugin = {}));
 })(LiteMol || (LiteMol = {}));
   return LiteMol;

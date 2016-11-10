@@ -7,6 +7,7 @@ namespace LiteMol.Core.Formats {
 
     export interface FormatInfo {
         name: string,
+        shortcuts: string[],
         // a list of extensions, including the ., e.g. ['.cif']
         extensions: string[],
         isBinary?: boolean,
@@ -14,6 +15,20 @@ namespace LiteMol.Core.Formats {
     }
 
     export namespace FormatInfo {
+        export function is(o: any): o is FormatInfo {
+            return o.name && o.parse;
+        }
+
+        export function fromShortcut(all: FormatInfo[], name: string): FormatInfo | undefined {
+            name = name.toLowerCase().trim();
+            for (let f of all) {
+                for (let s of f.shortcuts) {
+                    if (s.toLowerCase() === name) return f;
+                }
+            }
+            return void 0;
+        }
+
         export function formatRegExp(info: FormatInfo) {
             return new RegExp(info.extensions.map(e => `(\\${e})`).join('|') + '(\\.gz){0,1}$', 'i');
         }

@@ -3095,7 +3095,104 @@ declare namespace LiteMol.Plugin {
     namespace DataSources {
         const DownloadMolecule: Bootstrap.Tree.Transformer<Entity.Root, Entity.Action, Transformer.Molecule.DownloadMoleculeSourceParams>;
     }
-    function createDefault(target: HTMLElement): Instance;
+    function getDefaultSpecification(): Specification;
+}
+declare namespace LiteMol.Plugin {
+    interface SimplePluginOptions {
+        /**
+         * query selector or HTMLElement
+         */
+        target: string | HTMLElement;
+        customSpecification?: Specification;
+        /**
+         * HEX color in format '#rgb' or '#rrggbb'
+         * or Visualization.Color instance.
+         */
+        viewportBackground?: string | Visualization.Color;
+        layoutState?: Bootstrap.Components.LayoutState;
+        /**
+         * This options determines if Google Analytics is enabled
+         * to collect data about the plugin usage.
+         * The type of information includes PDBids downloaded or types
+         * of representations created.
+         *
+         * All information about what data is sent can be found in
+         * src/Bootstrap/Behaviour/Analytics.ts.
+         *
+         * By default this is OFF.
+         * This option is ignored if customSpecification is specified.
+         */
+        allowAnalytics?: boolean;
+        /**
+         * This specifies what Google Analytics ID to use. This
+         * means you can create your own google analytics account
+         * and collect the information for yourself.
+         */
+        analyticsId?: string;
+    }
+    interface SimplePluginLoadMoleculeInfo {
+        id?: string;
+        moleculeRef?: string;
+        modelRef?: string;
+        url?: string;
+        data?: string | ArrayBuffer;
+        format?: string | Core.Formats.FormatInfo;
+        onLoad?: () => void;
+        onError?: (e: any) => void;
+    }
+    import Entity = Bootstrap.Entity;
+    class SimpleController {
+        private _instance;
+        readonly instance: Instance;
+        readonly context: Context;
+        readonly root: Entity.Any;
+        /**
+         * execute a command with the specified params.
+         */
+        command<T>(cmd: Bootstrap.Event.Type<T>, params?: T): void;
+        /**
+         * Subscribes the specified event and returns
+         * a disposable for the event.
+         *
+         * let sub = litemol.subscribe(...)
+         * ...
+         * sub.dispose(); // to stop listening
+         */
+        subscribe<T>(event: Bootstrap.Event.Type<T>, onEvent: (e: Bootstrap.Event<T>) => void): __LiteMolRx.IDisposable;
+        /**
+         * Create a transform builder.
+         */
+        createTransform(): Bootstrap.Tree.Transform.Builder<any, any, any>;
+        /**
+         * Applies a state trasnform.
+         */
+        applyTransform(transform: Bootstrap.Tree.Transform.Source): Bootstrap.Task.Running<{}>;
+        /**
+         * Remove all entities.
+         */
+        clear(): void;
+        /**
+         * Set the background of the viewport from:
+         *
+         * HEX color in format '#rgb' or '#rrggbb'
+         * or Visualization.Color instance.
+         */
+        setViewportBackground(color: string | Visualization.Color): void;
+        /**
+         * Sets the state of the plugin layout.
+         *
+         * Expanded, show/hide controls, etc..
+         */
+        setLayoutState(state: Bootstrap.Components.LayoutState): void;
+        /**
+         * Load molecule from url or string/binary data.
+         *
+         * Default format is mmCIF.
+         */
+        loadMolecule(source: SimplePluginLoadMoleculeInfo): Bootstrap.Task.Running<{}>;
+        constructor(options: SimplePluginOptions);
+    }
+    function create(options: SimplePluginOptions): SimpleController;
 }
 declare module 'LiteMol-plugin' {
     import __Plugin = LiteMol.Plugin;
@@ -4643,7 +4740,7 @@ declare namespace LiteMol.Core {
             readonly abortRequested: boolean;
             setRequestAbort(abort?: () => void): void;
             private _abortRequest;
-            readonly abortRequest: () => true;
+            readonly abortRequest: () => boolean;
             private progressTick;
             private progress;
             progressStream: Rx.BehaviorSubject<ProgressInfo>;
@@ -4761,6 +4858,7 @@ declare namespace LiteMol.Core.Utils {
 declare namespace LiteMol.Core.Formats {
     interface FormatInfo {
         name: string;
+        shortcuts: string[];
         extensions: string[];
         isBinary?: boolean;
         parse: (data: string | ArrayBuffer, params?: {
@@ -4768,6 +4866,8 @@ declare namespace LiteMol.Core.Formats {
         }) => Computation<ParserResult<any>>;
     }
     namespace FormatInfo {
+        function is(o: any): o is FormatInfo;
+        function fromShortcut(all: FormatInfo[], name: string): FormatInfo | undefined;
         function formatRegExp(info: FormatInfo): RegExp;
         function formatFileFilters(all: FormatInfo[]): string;
         function getFormat(filename: string, all: FormatInfo[]): FormatInfo | undefined;
@@ -5330,8 +5430,8 @@ declare namespace LiteMol.Core.Structure {
         insCode: string | null;
         constructor(asymId: string, seqNumber: number, insCode: string | null);
         static areEqual(a: PolyResidueIdentifier, index: number, bAsymId: string[], bSeqNumber: number[], bInsCode: string[]): boolean;
-        static compare(a: PolyResidueIdentifier, b: PolyResidueIdentifier): number;
-        static compareResidue(a: PolyResidueIdentifier, index: number, bAsymId: string[], bSeqNumber: number[], bInsCode: string[]): number;
+        static compare(a: PolyResidueIdentifier, b: PolyResidueIdentifier): 0 | 1 | -1;
+        static compareResidue(a: PolyResidueIdentifier, index: number, bAsymId: string[], bSeqNumber: number[], bInsCode: string[]): 0 | 1 | -1;
     }
     const enum SecondaryStructureType {
         None = 0,
@@ -11863,7 +11963,12 @@ declare namespace LiteMol.Visualization {
         function fromHsv(h: number, s: number, v: number): Color;
         function random(): Color;
         function fromHex(v: number): Color;
+        /**
+         * Parse color in formats #rgb and #rrggbb
+         */
+        function fromHexString(s: string): Color;
         function interpolate(a: Color, b: Color, t: number, target: Color): void;
+        function isColor(c: any): c is Color;
     }
     interface Theme {
         colors: Map<string, Color>;
@@ -16110,7 +16215,7 @@ declare namespace LiteMol.Bootstrap.Entity {
         constructor(context: Context);
     }
     namespace Cache.Keys {
-        const QueryContext: string;
+        const QueryContext = "queryContext";
     }
 }
 declare namespace LiteMol.Bootstrap.Entity.Transformer.Basic {
@@ -16227,6 +16332,12 @@ declare namespace LiteMol.Bootstrap.Entity.Transformer.Data {
         description?: string;
     }
     const ParseJson: Tree.Transformer<Entity.Data.String, Entity.Data.Json, ParseJsonParams>;
+    interface FromDataParams {
+        id?: string;
+        description?: string;
+        data?: string | ArrayBuffer;
+    }
+    const FromData: Tree.Transformer<Root, Entity.Data.String | Entity.Data.Binary, FromDataParams>;
 }
 declare namespace LiteMol.Bootstrap.Entity.Transformer.Density {
     interface ParseDataParams {

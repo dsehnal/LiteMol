@@ -1,4 +1,7 @@
-﻿# 1.1.4
+﻿# 1.2.0
+* Added SimpleController.
+
+# 1.1.4
 * Improved color picker.
 
 # 1.1.3

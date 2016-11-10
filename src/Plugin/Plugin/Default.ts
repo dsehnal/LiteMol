@@ -21,9 +21,8 @@ namespace LiteMol.Plugin {
     
     import LayoutRegion = Bootstrap.Components.LayoutRegion;
         
-    export function createDefault(target: HTMLElement) {
-        
-        let spec: Specification = {
+    export function getDefaultSpecification(): Specification {
+        return {
             settings: {
                 'molecule.model.defaultQuery': `residues({ name: 'ALA' })`,
                 'molecule.model.defaultAssemblyName': '1', 
@@ -72,9 +71,7 @@ namespace LiteMol.Plugin {
                 
                 Bootstrap.Behaviour.Molecule.HighlightElementInfo,
                 Bootstrap.Behaviour.Molecule.DistanceToLastClickedElement,
-                Bootstrap.Behaviour.Molecule.ShowInteractionOnSelect(5),
-                                
-                Bootstrap.Behaviour.GoogleAnalytics('UA-77062725-1')
+                Bootstrap.Behaviour.Molecule.ShowInteractionOnSelect(5)
             ],            
             components: [
                 Components.Visualization.HighlightInfo(LayoutRegion.Main, true),               
@@ -93,10 +90,6 @@ namespace LiteMol.Plugin {
                 region: LayoutRegion.Left,
                 view: Views.Entity.Tree
             }
-        }
-
-        let plugin = new Instance(spec, target);
-        plugin.context.logger.message(`LiteMol Viewer ${VERSION.number}`);
-        return plugin;
+        };
     }
 }

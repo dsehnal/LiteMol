@@ -1,4 +1,7 @@
-﻿# 1.1.5
+﻿# 1.1.6
+* Added Data.FromData transformer.
+
+# 1.1.5
 * Bugfix in CreateSelectInteraction command.
 
 # 1.1.4

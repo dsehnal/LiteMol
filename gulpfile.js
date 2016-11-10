@@ -56,6 +56,7 @@ function ViewerAndExamples() {
       buildts('./examples/CustomControls'),
       buildts('./examples/CustomDensity'),
       buildts('./examples/SplitSurface'),
+      buildts('./examples/SimpleController'),
       buildts('./examples/BinaryCIFInspect'),
    ]);    
 }

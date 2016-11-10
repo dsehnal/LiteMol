@@ -118,6 +118,21 @@ namespace LiteMol.Bootstrap.Entity.Transformer.Data {
                 ctx.resolve(Entity.Data.Json.create(t, { label: t.params.id ? t.params.id : 'JSON Data', description: t.params.description, data }));
             });
         }).setReportTime(true);
-    }
-    );
+    });
+
+    export interface FromDataParams { id?: string, description?: string, data?: string | ArrayBuffer }
+    export const FromData = Tree.Transformer.create<Entity.Root, Entity.Data.String | Entity.Data.Binary, FromDataParams>({
+        id: 'data-from-data',
+        name: 'From Data',
+        description: 'Creates a data entity from string or binary data',
+        from: [Entity.Root],
+        to: [Entity.Data.String, Entity.Data.Binary],
+        defaultParams: () => ({})
+    }, (ctx, a, t) => {
+        let data = t.params.data!;
+        let e = data instanceof ArrayBuffer 
+            ? Entity.Data.Binary.create(<any>t, { label: t.params.id ? t.params.id : "Binary Data", description: t.params.description, data }) 
+            : Entity.Data.String.create(<any>t, { label: t.params.id ? t.params.id : "String Data", description: t.params.description, data });
+        return Task.resolve<Entity.Data.String | Entity.Data.Binary>(`From Data`, 'Silent', e);
+    });
 }

@@ -35,7 +35,7 @@ namespace LiteMol.Core.Structure.Query {
         export function parse(query: string): Query {                
             if (typeof window === 'undefined') throw 'parse can only be called from a browser.';
                     
-            (0, eval)(`with (LiteMol.Core.Structure.Query) { window.__LiteMol_query = ${query}; }`);
+            (function() {} (), eval)(`with (LiteMol.Core.Structure.Query) { window.__LiteMol_query = ${query}; }`);
             let q: Builder = (window as any).__LiteMol_query;
             (window as any).__LiteMol_query = void 0;
             return (q as any).compile();

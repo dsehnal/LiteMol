@@ -56,6 +56,7 @@ Examples
 
 Examples are located in the folder `LiteMol.Viewer/Examples`.
 
+  - `SimpleController` ([view live](https://webchemdev.ncbr.muni.cz/LiteMol/Examples/SimpleController)) - Shows a simple way to create and instance of the plugin and load a molecule.
   - `Commands` ([view live](https://webchemdev.ncbr.muni.cz/LiteMol/Examples/Commands)) - Shows how to control the plugin programmatically, how to consume plugin interactions, focus on certain elements in a molecule, etc.
   - `CustomControls` ([view live](https://webchemdev.ncbr.muni.cz/LiteMol/Examples/CustomControls)) - Shows how to construct a custom control scheme for the plugin.
   - `CustomDensity` ([view live](https://webchemdev.ncbr.muni.cz/LiteMol/Examples/CustomDensity)) - Shows how to download a PDB file, parse it, download density data and allow user interaction with them.
@@ -156,15 +157,51 @@ FAQ
 How do I include LiteMol in my page?
 ------------
 
-You can include the plugin as shown in the `src/Viewer` folder.
-For more advanced use cases, please refer to `examples`.
+You can include the plugin as shown in the `src/Viewer` folder. For a simple use case,
+please check the `SimpleController` examples. For further examples, please refer to `examples` directory.
 
 Alternatively, you can use the Angular LiteMol wrapper from the [PDB Component Library](https://www.ebi.ac.uk/pdbe/pdb-component-library/doc.html#a_LiteMol).
+
+What are the simplest steps to load a molecule in LiteMol?
+------------
+
+- Start by downloading the code:
+
+      git clone https://github.com/dsehnal/LiteMol.git
+
+- From ``dist`` folder, copy the folders ``css``, ``fonts``, and
+the file ``LiteMol-plugin.js``.
+
+- Include the CSS and JavaScript in your page:
+
+    ```html
+    <link rel="stylesheet" href="css/LiteMol-plugin.css" type="text/css" />
+    <script src="js/LiteMol-plugin.js"></script>
+    ``` 
+
+- Create a target for the plugin:
+
+    ```html
+    <div id="litemol" style="width: 640px; height: 480px; margin-top: 200px"></div>
+    ```
+
+- Create the plugin instance and load a molecule:
+
+    ```JavaScript
+    var plugin = Plugin.create({ target: '#litemol' });
+    plugin.loadMolecule({
+        id: '1tqn',
+        url: `https://www.ebi.ac.uk/pdbe/static/entry/1tqn_updated.cif`,
+    });
+    ```
+
+Please check the [SimpleController example](examples/SimpleController) for more information.
 
 What external dependencies do I need to include LiteMol?
 ------------
 
 LiteMol does not require any external dependencies.
+
 
 How do I change the color scheme of the plugin?
 ------------

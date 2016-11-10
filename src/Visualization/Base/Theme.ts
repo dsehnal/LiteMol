@@ -96,11 +96,29 @@ namespace LiteMol.Visualization {
             return { r: ((v >> 16) & 0xFF) / 255.0, g: ((v >> 8) & 0xFF) / 255.0, b: (v & 0xFF) / 255.0 }
         }      
 
+        /**
+         * Parse color in formats #rgb and #rrggbb
+         */
+        export function fromHexString(s: string): Color {
+            if (s[0] !== '#') return fromHex(0);
+            if (s.length === 4) { // #rgb
+                return fromHexString(`#${s[1]}${s[1]}${s[2]}${s[2]}${s[3]}${s[3]}`);
+            } else if (s.length === 7) { // #rrggbb
+                return fromHex(parseInt(s.substr(1), 16));
+            }
+
+            return fromHex(0);
+        }
+
         export function interpolate(a: Color, b: Color, t: number, target: Color) {
             target.r = a.r + (b.r - a.r) * t;
             target.g = a.g + (b.g - a.g) * t;
             target.b = a.b + (b.b - a.b) * t;
         } 
+
+        export function isColor(c: any): c is Color {
+            return c.r !== void 0 && c.g !== void 0 && c.b !== void 0;
+        }
         
     }
     

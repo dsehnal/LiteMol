@@ -47,7 +47,7 @@ var LiteMol;
                     description: 'Download a molecule from PDBe.',
                     defaultId: '1cbs',
                     specificFormat: LiteMol.Core.Formats.Molecule.SupportedFormats.mmCIF,
-                    urlTemplate: function (id) { return ("https://www.ebi.ac.uk/pdbe/static/entry/" + id.toLowerCase() + "_updated.cif"); }
+                    urlTemplate: function (id) { return "https://www.ebi.ac.uk/pdbe/static/entry/" + id.toLowerCase() + "_updated.cif"; }
                 });
                 Data.DownloadBinaryCIFFromCoordinateServer = Bootstrap.Tree.Transformer.action({
                     id: 'molecule-download-bcif-from-coordinate-server',
@@ -402,12 +402,13 @@ var LiteMol;
         var CoordianteStreamingCustomView = (function (_super) {
             __extends(CoordianteStreamingCustomView, _super);
             function CoordianteStreamingCustomView() {
-                _super.apply(this, arguments);
+                var _this = _super.apply(this, arguments) || this;
                 // this is for demonstration only, for dynamic options, store them in the transform params or in the underlying entity props.
-                this.servers = [
+                _this.servers = [
                     { name: 'PDBe', url: 'https://wwwdev.ebi.ac.uk/pdbe/coordinates/' },
                     { name: 'WebChem', url: 'https://webchemdev.ncbr.muni.cz/CoordinateServer/' }
                 ];
+                return _this;
             }
             CoordianteStreamingCustomView.prototype.renderControls = function () {
                 var _this = this;
@@ -418,9 +419,9 @@ var LiteMol;
                 var currentServer = this.servers.filter(function (s) { return s.url === params.server; })[0];
                 // to update the params, you can use "this.updateParams" or "this.autoUpdateParams". Auto update params will work only on "updateable transforms"
                 // and will work similarly to how visuals are updated. If autoUpdateParams is not used, the user has to click "Update" buttom manually.                                    
-                return React.createElement("div", null, 
-                    React.createElement(Controls.OptionsGroup, {options: this.servers, caption: function (s) { return s.name; }, current: currentServer, onChange: function (o) { return _this.updateParams({ server: o.url }); }, label: 'Server'}), 
-                    React.createElement(Controls.TextBoxGroup, {value: params.id, onChange: function (v) { return _this.updateParams({ id: v }); }, label: 'Id', onEnter: function (e) { return _this.applyEnter(e); }, placeholder: 'PDB id...'}));
+                return React.createElement("div", null,
+                    React.createElement(Controls.OptionsGroup, { options: this.servers, caption: function (s) { return s.name; }, current: currentServer, onChange: function (o) { return _this.updateParams({ server: o.url }); }, label: 'Server' }),
+                    React.createElement(Controls.TextBoxGroup, { value: params.id, onChange: function (v) { return _this.updateParams({ id: v }); }, label: 'Id', onEnter: function (e) { return _this.applyEnter(e); }, placeholder: 'PDB id...' }));
             };
             return CoordianteStreamingCustomView;
         }(LiteMol.Plugin.Views.Transform.ControllerBase));
@@ -496,11 +497,11 @@ var LiteMolPluginInstance;
     var interactivityTarget = document.getElementById('interactions');
     function showInteraction(type, i) {
         if (!i) {
-            interactivityTarget.innerHTML = (type + ": nothing<br/>") + interactivityTarget.innerHTML;
+            interactivityTarget.innerHTML = type + ": nothing<br/>" + interactivityTarget.innerHTML;
             return;
         }
         // you have access to atoms, residues, chains, entities in the info object.
-        interactivityTarget.innerHTML = (type + ": " + i.residues[0].authName + " " + i.residues[0].chain.authAsymId + " " + i.residues[0].authSeqNumber + "<br/>") + interactivityTarget.innerHTML;
+        interactivityTarget.innerHTML = type + ": " + i.residues[0].authName + " " + i.residues[0].chain.authAsymId + " " + i.residues[0].authSeqNumber + "<br/>" + interactivityTarget.innerHTML;
     }
     // this applies the transforms we will build later
     // it results a promise-like object that you can "then/catch".

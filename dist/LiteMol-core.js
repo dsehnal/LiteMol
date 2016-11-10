@@ -11101,7 +11101,6 @@ var LiteMol;
             return Computation;
         }());
         Core.Computation = Computation;
-        var Computation;
         (function (Computation) {
             function create(computation) {
                 return new Computation(computation);
@@ -11757,17 +11756,34 @@ var LiteMol;
             "use strict";
             var FormatInfo;
             (function (FormatInfo) {
+                function is(o) {
+                    return o.name && o.parse;
+                }
+                FormatInfo.is = is;
+                function fromShortcut(all, name) {
+                    name = name.toLowerCase().trim();
+                    for (var _i = 0, all_1 = all; _i < all_1.length; _i++) {
+                        var f = all_1[_i];
+                        for (var _a = 0, _b = f.shortcuts; _a < _b.length; _a++) {
+                            var s = _b[_a];
+                            if (s.toLowerCase() === name)
+                                return f;
+                        }
+                    }
+                    return void 0;
+                }
+                FormatInfo.fromShortcut = fromShortcut;
                 function formatRegExp(info) {
-                    return new RegExp(info.extensions.map(function (e) { return ("(\\" + e + ")"); }).join('|') + '(\\.gz){0,1}$', 'i');
+                    return new RegExp(info.extensions.map(function (e) { return "(\\" + e + ")"; }).join('|') + '(\\.gz){0,1}$', 'i');
                 }
                 FormatInfo.formatRegExp = formatRegExp;
                 function formatFileFilters(all) {
-                    return all.map(function (info) { return info.extensions.map(function (e) { return (e + "," + e + ".gz"); }).join(','); }).join(',');
+                    return all.map(function (info) { return info.extensions.map(function (e) { return e + "," + e + ".gz"; }).join(','); }).join(',');
                 }
                 FormatInfo.formatFileFilters = formatFileFilters;
                 function getFormat(filename, all) {
-                    for (var _i = 0, all_1 = all; _i < all_1.length; _i++) {
-                        var f = all_1[_i];
+                    for (var _i = 0, all_2 = all; _i < all_2.length; _i++) {
+                        var f = all_2[_i];
                         if (formatRegExp(f).test(filename))
                             return f;
                     }
@@ -12413,7 +12429,8 @@ var LiteMol;
                             [la, lb * Math.cos(ac), lc * Math.cos(ab), 0.0],
                             [0.0, lb * Math.sin(ac), lc * (Math.cos(aa) - Math.cos(ab) * Math.cos(ac)) / Math.sin(ac), 0.0],
                             [0.0, 0.0, v / (la * lb * Math.sin(ac)), 0.0],
-                            [0.0, 0.0, 0.0, 1.0]]);
+                            [0.0, 0.0, 0.0, 1.0]
+                        ]);
                         var toFracComputed = Core.Geometry.LinearAlgebra.Matrix4.identity();
                         Core.Geometry.LinearAlgebra.Matrix4.invert(toFracComputed, fromFrac);
                         if (_atom_sites) {
@@ -12604,17 +12621,17 @@ var LiteMol;
                             //56 - 66       LString        Space group       
                             //67 - 70       Integer        Z value           
                             var data = [
-                                ("_cell.entry_id           '" + id + "'"),
-                                ("_cell.length_a           " + this.record.substr(6, 9).trim()),
-                                ("_cell.length_b           " + this.record.substr(15, 9).trim()),
-                                ("_cell.length_c           " + this.record.substr(24, 9).trim()),
-                                ("_cell.angle_alpha        " + this.record.substr(33, 7).trim()),
-                                ("_cell.angle_beta         " + this.record.substr(40, 7).trim()),
-                                ("_cell.angle_gamma        " + this.record.substr(48, 7).trim()),
-                                ("_cell.Z_PDB              " + this.record.substr(66, 4).trim()),
+                                "_cell.entry_id           '" + id + "'",
+                                "_cell.length_a           " + this.record.substr(6, 9).trim(),
+                                "_cell.length_b           " + this.record.substr(15, 9).trim(),
+                                "_cell.length_c           " + this.record.substr(24, 9).trim(),
+                                "_cell.angle_alpha        " + this.record.substr(33, 7).trim(),
+                                "_cell.angle_beta         " + this.record.substr(40, 7).trim(),
+                                "_cell.angle_gamma        " + this.record.substr(48, 7).trim(),
+                                "_cell.Z_PDB              " + this.record.substr(66, 4).trim(),
                                 "_cell.pdbx_unique_axis   ?",
-                                ("_symmetry.entry_id                         '" + id + "'"),
-                                ("_symmetry.space_group_name_H-M             '" + this.record.substr(55, 11).trim() + "'"),
+                                "_symmetry.entry_id                         '" + id + "'",
+                                "_symmetry.space_group_name_H-M             '" + this.record.substr(55, 11).trim() + "'",
                                 "_symmetry.pdbx_full_space_group_name_H-M   ?",
                                 "_symmetry.cell_setting                     ?",
                                 "_symmetry.Int_Tables_number                ?",
@@ -12779,36 +12796,36 @@ var LiteMol;
                                 this.writeRange(modelToken, cifTokens);
                             }
                         };
-                        ModelData.COLUMNS = [
-                            "_atom_site.group_PDB",
-                            "_atom_site.id",
-                            "_atom_site.type_symbol",
-                            "_atom_site.label_atom_id",
-                            "_atom_site.label_alt_id",
-                            "_atom_site.label_comp_id",
-                            "_atom_site.label_asym_id",
-                            "_atom_site.label_entity_id",
-                            "_atom_site.label_seq_id",
-                            "_atom_site.pdbx_PDB_ins_code",
-                            "_atom_site.Cartn_x",
-                            "_atom_site.Cartn_y",
-                            "_atom_site.Cartn_z",
-                            "_atom_site.occupancy",
-                            "_atom_site.B_iso_or_equiv",
-                            "_atom_site.Cartn_x_esd",
-                            "_atom_site.Cartn_y_esd",
-                            "_atom_site.Cartn_z_esd",
-                            "_atom_site.occupancy_esd",
-                            "_atom_site.B_iso_or_equiv_esd",
-                            "_atom_site.pdbx_formal_charge",
-                            "_atom_site.auth_seq_id",
-                            "_atom_site.auth_comp_id",
-                            "_atom_site.auth_asym_id",
-                            "_atom_site.auth_atom_id",
-                            "_atom_site.pdbx_PDB_model_num"
-                        ];
                         return ModelData;
                     }());
+                    ModelData.COLUMNS = [
+                        "_atom_site.group_PDB",
+                        "_atom_site.id",
+                        "_atom_site.type_symbol",
+                        "_atom_site.label_atom_id",
+                        "_atom_site.label_alt_id",
+                        "_atom_site.label_comp_id",
+                        "_atom_site.label_asym_id",
+                        "_atom_site.label_entity_id",
+                        "_atom_site.label_seq_id",
+                        "_atom_site.pdbx_PDB_ins_code",
+                        "_atom_site.Cartn_x",
+                        "_atom_site.Cartn_y",
+                        "_atom_site.Cartn_z",
+                        "_atom_site.occupancy",
+                        "_atom_site.B_iso_or_equiv",
+                        "_atom_site.Cartn_x_esd",
+                        "_atom_site.Cartn_y_esd",
+                        "_atom_site.Cartn_z_esd",
+                        "_atom_site.occupancy_esd",
+                        "_atom_site.B_iso_or_equiv_esd",
+                        "_atom_site.pdbx_formal_charge",
+                        "_atom_site.auth_seq_id",
+                        "_atom_site.auth_comp_id",
+                        "_atom_site.auth_asym_id",
+                        "_atom_site.auth_atom_id",
+                        "_atom_site.pdbx_PDB_model_num"
+                    ];
                     PDB.ModelData = ModelData;
                     var ModelsData = (function () {
                         function ModelsData(models) {
@@ -13285,7 +13302,10 @@ var LiteMol;
                 var SupportedFormats;
                 (function (SupportedFormats) {
                     SupportedFormats.mmCIF = {
-                        name: 'mmCIF', extensions: ['.cif'], parse: function (data) {
+                        name: 'mmCIF',
+                        shortcuts: ['mmcif', 'cif'],
+                        extensions: ['.cif'],
+                        parse: function (data) {
                             return Core.Computation.create(function (ctx) {
                                 ctx.update('Parsing...');
                                 ctx.schedule(function () {
@@ -13314,7 +13334,11 @@ var LiteMol;
                         }
                     };
                     SupportedFormats.mmBCIF = {
-                        name: 'mmCIF (Binary)', extensions: ['.bcif'], isBinary: true, parse: function (data) {
+                        name: 'mmCIF (Binary)',
+                        shortcuts: ['mmbcif', 'bcif', 'binarycif'],
+                        extensions: ['.bcif'],
+                        isBinary: true,
+                        parse: function (data) {
                             return Core.Computation.create(function (ctx) {
                                 ctx.update('Parsing...');
                                 ctx.schedule(function () {
@@ -13343,7 +13367,10 @@ var LiteMol;
                         }
                     };
                     SupportedFormats.PDB = {
-                        name: 'PDB', extensions: ['.pdb', '.ent'], parse: function (data, options) {
+                        name: 'PDB',
+                        shortcuts: ['pdb', 'ent'],
+                        extensions: ['.pdb', '.ent'],
+                        parse: function (data, options) {
                             return Core.Computation.create(function (ctx) {
                                 ctx.update('Parsing...');
                                 ctx.schedule(function () {
@@ -13372,7 +13399,10 @@ var LiteMol;
                         }
                     };
                     SupportedFormats.SDF = {
-                        name: 'SDF', extensions: ['.sdf', '.mol'], parse: function (data, options) {
+                        name: 'SDF',
+                        shortcuts: ['sdf', 'mol'],
+                        extensions: ['.sdf', '.mol'],
+                        parse: function (data, options) {
                             return Core.Computation.create(function (ctx) {
                                 ctx.update('Parsing...');
                                 ctx.schedule(function () {
@@ -13974,8 +14004,8 @@ var LiteMol;
                 }
                 var SupportedFormats;
                 (function (SupportedFormats) {
-                    SupportedFormats.CCP4 = { name: 'CCP4', extensions: ['.ccp4', '.map'], isBinary: true, parse: function (data) { return parse(data, 'CCP4', function (d) { return Density.CCP4.parse(d); }); } };
-                    SupportedFormats.DSN6 = { name: 'DSN6', extensions: ['.dsn6'], isBinary: true, parse: function (data) { return parse(data, 'DSN6', function (d) { return Density.DSN6.parse(d); }); } };
+                    SupportedFormats.CCP4 = { name: 'CCP4', shortcuts: ['ccp4', 'map'], extensions: ['.ccp4', '.map'], isBinary: true, parse: function (data) { return parse(data, 'CCP4', function (d) { return Density.CCP4.parse(d); }); } };
+                    SupportedFormats.DSN6 = { name: 'DSN6', shortcuts: ['dsn6'], extensions: ['.dsn6'], isBinary: true, parse: function (data) { return parse(data, 'DSN6', function (d) { return Density.DSN6.parse(d); }); } };
                     SupportedFormats.All = [SupportedFormats.CCP4, SupportedFormats.DSN6];
                 })(SupportedFormats = Density.SupportedFormats || (Density.SupportedFormats = {}));
             })(Density = Formats.Density || (Formats.Density = {}));
@@ -17560,7 +17590,7 @@ var LiteMol;
                 function createSymmetryTransform(i, j, k, opIndex, transform) {
                     return {
                         isIdentity: !i && !j && !k && !opIndex,
-                        id: (opIndex + 1) + "_" + (5 + i) + (5 + j) + (5 + k),
+                        id: opIndex + 1 + "_" + (5 + i) + (5 + j) + (5 + k),
                         transform: transform
                     };
                 }
@@ -18300,7 +18330,6 @@ var LiteMol;
                     return Context;
                 }());
                 Query.Context = Context;
-                var Context;
                 (function (Context) {
                     var Mask;
                     (function (Mask) {
@@ -18749,7 +18778,7 @@ var LiteMol;
                     function parse(query) {
                         if (typeof window === 'undefined')
                             throw 'parse can only be called from a browser.';
-                        (0, eval)("with (LiteMol.Core.Structure.Query) { window.__LiteMol_query = " + query + "; }");
+                        (function () { }(), eval)("with (LiteMol.Core.Structure.Query) { window.__LiteMol_query = " + query + "; }");
                         var q = window.__LiteMol_query;
                         window.__LiteMol_query = void 0;
                         return q.compile();
@@ -19323,7 +19352,7 @@ var LiteMol;
                         var _where = Builder.toQuery(where);
                         return function (ctx) {
                             var src = _where(ctx), tree = ctx.tree, radiusCtx = Core.Geometry.SubdivisionTree3D.createContextRadius(tree, radius, false), buffer = radiusCtx.buffer, ret = new Query.HashFragmentSeqBuilder(ctx), x = ctx.structure.atoms.x, y = ctx.structure.atoms.y, z = ctx.structure.atoms.z, residueIndex = ctx.structure.atoms.residueIndex, atomStart = ctx.structure.residues.atomStartIndex, atomEnd = ctx.structure.residues.atomEndIndex, residues = new Set(), treeData = tree.data;
-                            var _loop_1 = function(f) {
+                            var _loop_1 = function (f) {
                                 residues.clear();
                                 for (var _i = 0, _a = f.atomIndices; _i < _a.length; _i++) {
                                     var i = _a[_i];
@@ -19344,8 +19373,8 @@ var LiteMol;
                                 Array.prototype.sort.call(indices, function (a, b) { return a - b; });
                                 ret.add(Query.Fragment.ofArray(ctx, indices[0], indices));
                             };
-                            for (var _c = 0, _d = src.fragments; _c < _d.length; _c++) {
-                                var f = _d[_c];
+                            for (var _i = 0, _a = src.fragments; _i < _a.length; _i++) {
+                                var f = _a[_i];
                                 _loop_1(f);
                             }
                             return ret.getSeq();
@@ -19356,7 +19385,7 @@ var LiteMol;
                         var _where = Builder.toQuery(where);
                         return function (ctx) {
                             var src = _where(ctx), ret = new Query.HashFragmentSeqBuilder(ctx), residueIndex = ctx.structure.atoms.residueIndex, atomStart = ctx.structure.residues.atomStartIndex, atomEnd = ctx.structure.residues.atomEndIndex, residues = new Set();
-                            var _loop_2 = function(f) {
+                            var _loop_2 = function (f) {
                                 residues.clear();
                                 for (var _i = 0, _a = f.atomIndices; _i < _a.length; _i++) {
                                     var i = _a[_i];
@@ -19373,8 +19402,8 @@ var LiteMol;
                                 Array.prototype.sort.call(indices, function (a, b) { return a - b; });
                                 ret.add(Query.Fragment.ofArray(ctx, indices[0], indices));
                             };
-                            for (var _c = 0, _d = src.fragments; _c < _d.length; _c++) {
-                                var f = _d[_c];
+                            for (var _i = 0, _a = src.fragments; _i < _a.length; _i++) {
+                                var f = _a[_i];
                                 _loop_2(f);
                             }
                             return ret.getSeq();

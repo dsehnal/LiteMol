@@ -6,7 +6,10 @@ namespace LiteMol.Core.Formats.Molecule {
 
     export namespace SupportedFormats {
         export const mmCIF: FormatInfo = {
-            name: 'mmCIF', extensions: ['.cif'], parse: (data) => {
+            name: 'mmCIF', 
+            shortcuts: ['mmcif', 'cif'],
+            extensions: ['.cif'], 
+            parse: (data) => {
                 return Computation.create<ParserResult<Structure.Molecule>>(ctx => {
                     ctx.update('Parsing...');
                     ctx.schedule(() => {
@@ -29,7 +32,11 @@ namespace LiteMol.Core.Formats.Molecule {
         };
 
         export const mmBCIF: FormatInfo = {
-            name: 'mmCIF (Binary)', extensions: ['.bcif'], isBinary: true, parse: (data) => {
+            name: 'mmCIF (Binary)',
+            shortcuts: ['mmbcif', 'bcif', 'binarycif'], 
+            extensions: ['.bcif'], 
+            isBinary: true, 
+            parse: (data) => {
                 return Computation.create<ParserResult<Structure.Molecule>>(ctx => {
                     ctx.update('Parsing...');
                     ctx.schedule(() => {
@@ -52,7 +59,10 @@ namespace LiteMol.Core.Formats.Molecule {
         };
 
         export const PDB: FormatInfo = {
-            name: 'PDB', extensions: ['.pdb', '.ent'], parse: (data, options) => {
+            name: 'PDB', 
+            shortcuts: ['pdb', 'ent'],
+            extensions: ['.pdb', '.ent'], 
+            parse: (data, options) => {
                 return Computation.create<ParserResult<Structure.Molecule>>(ctx => {
                     ctx.update('Parsing...');
                     ctx.schedule(() => {
@@ -75,7 +85,10 @@ namespace LiteMol.Core.Formats.Molecule {
         };
 
         export const SDF: FormatInfo = {
-            name: 'SDF', extensions: ['.sdf', '.mol'], parse: (data, options) => {
+            name: 'SDF',
+            shortcuts: ['sdf', 'mol'], 
+            extensions: ['.sdf', '.mol'], 
+            parse: (data, options) => {
                 return Computation.create<ParserResult<Structure.Molecule>>(ctx => {
                     ctx.update('Parsing...');
                     ctx.schedule(() => {
