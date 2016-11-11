@@ -205,7 +205,7 @@ the file ``LiteMol-plugin.js``.
 - Create a target for the plugin:
 
     ```html
-    <div id="litemol" style="width: 640px; height: 480px; margin-top: 200px"></div>
+    <div id="litemol" style="width: 640px; height: 480px; margin-top: 200px; position: relative"></div>
     ```
 
 - Create the plugin instance:
