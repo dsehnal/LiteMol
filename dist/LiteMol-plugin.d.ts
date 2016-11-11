@@ -12584,6 +12584,16 @@ declare namespace LiteMol.Visualization.Molecule.Cartoons.Geometry {
         private static maskSplit(element, mask, target);
         static hasNames(atomIndices: number[], start: number, end: number, name: string[], a: string, b: string, isAmk: boolean): boolean;
         static createMask(model: Core.Structure.MoleculeModel, atomIndices: number[]): boolean[];
+        private static isUnknownSecondaryStructure(model);
+        private static approximateSecondaryStructure(model, parent);
+        private static ZhangHelixDistance;
+        private static ZhangHelixDelta;
+        private static ZhangSheetDistance;
+        private static ZhangSheetDelta;
+        private static ZhangP1;
+        private static ZhangP2;
+        private static zhangSkolnickSStrace(model, trace, parent, elements);
+        private static zhangSkolnickSSresidue(model, trace, i, distances, delta);
         private static throwIfEmpty(ss);
         static buildUnits(model: Core.Structure.MoleculeModel, atomIndices: number[], linearSegmentCount: number): CartoonAsymUnit[];
         private controlPointsBuilder;

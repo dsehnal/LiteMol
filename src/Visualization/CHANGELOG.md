@@ -1,4 +1,7 @@
-﻿# 1.3.2
+﻿# 1.4.0
+* Secondary structure detection for Cartoons.
+
+# 1.3.2
 * Modified to reflect changes in the core.
 
 # 1.3.1

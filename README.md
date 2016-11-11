@@ -150,7 +150,6 @@ These features are planned to be introduced during the first half of 2017.
 * More visual primitives (spheres, cylinders, arrows, etc.)
 * Support for labels in the 3D scene.  
 * Improved internal data representation of molecules.
-* Secondary structure detection.
 * Restructure the code and update the build process to support NPM.
 
 Long term goals
@@ -221,17 +220,15 @@ the file ``LiteMol-plugin.js``.
     plugin.loadMolecule({
         id: '1tqn',
         url: `https://www.ebi.ac.uk/pdbe/static/entry/1tqn_updated.cif`,
+        format: 'cif' // default
     });
     ```
 
-- Load the molecule (PDB format)
+    To load a file in the PDB format, use 
 
     ```JavaScript
-    plugin.loadMolecule({
-        id: '1tqn',
-        url: `http://www.ebi.ac.uk/pdbe/entry-files/download/pdb1tqn.ent`,
-        format: 'pdb',
-    });
+    url: `https://www.ebi.ac.uk/pdbe/entry-files/download/pdb1tqn.ent`,
+    format: 'pdb'
     ```
 
 Please check the [SimpleController example](examples/SimpleController) for more information.

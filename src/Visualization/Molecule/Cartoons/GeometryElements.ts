@@ -179,6 +179,143 @@ namespace LiteMol.Visualization.Molecule.Cartoons.Geometry {
             return <any>ret;
         }
 
+        private static isUnknownSecondaryStructure(model: Core.Structure.MoleculeModel) {
+            let hasSeq = false;
+            for (let e of model.secondaryStructure) {
+                if (e.type === Core.Structure.SecondaryStructureType.Helix
+                    || e.type === Core.Structure.SecondaryStructureType.Sheet
+                    || e.type === Core.Structure.SecondaryStructureType.Turn) {
+                    return false;
+                }
+                if (e.type === Core.Structure.SecondaryStructureType.AminoSeq) {
+                    hasSeq = true;
+                }
+            }
+            return hasSeq;
+        }
+
+        private static approximateSecondaryStructure(model: Core.Structure.MoleculeModel, parent: Core.Structure.SecondaryStructureElement) {
+            if (parent.type !== Core.Structure.SecondaryStructureType.AminoSeq) return [parent];
+
+            let elements: Core.Structure.SecondaryStructureElement[] = [];
+
+            let { name } = model.atoms;
+            let { atomStartIndex, atomEndIndex } = model.residues;
+
+            let trace = new Int32Array(parent.endResidueIndex - parent.startResidueIndex), offset = 0;
+            let isOk = true;
+            for (let i = parent.startResidueIndex, _b = parent.endResidueIndex; i < _b; i++) {
+                let foundCA = false;
+                for (let j = atomStartIndex[i], _c = atomEndIndex[_b]; j < _c; j++) {
+                    if (name[j] === "CA") {
+                        foundCA = true;
+                        trace[offset++] = j;
+                        break;
+                    }
+                }
+                if (!foundCA) {
+                    isOk = false;
+                    break;
+                }
+            }
+            if (!isOk) return [parent];
+
+            CartoonAsymUnit.zhangSkolnickSStrace(model, trace, parent, elements);
+            return elements;
+        }
+
+        private static ZhangHelixDistance = [5.45, 5.18, 6.37];
+        private static ZhangHelixDelta = 2.1;
+        private static ZhangSheetDistance = [6.1, 10.4, 13.0];
+        private static ZhangSheetDelta = 1.42;
+        private static ZhangP1 = new THREE.Vector3(0, 0, 0);
+        private static ZhangP2 = new THREE.Vector3(0, 0, 0);
+
+        private static zhangSkolnickSStrace(
+            model: Core.Structure.MoleculeModel, 
+            trace: Int32Array, 
+            parent: Core.Structure.SecondaryStructureElement,
+            elements: Core.Structure.SecondaryStructureElement[]) {
+
+            let mask = new Int32Array(trace.length);
+            let hasSS = false;
+            let { residueIndex } = model.atoms;
+
+            for (let i = 0, _l = trace.length; i < _l; i++) {
+                if (CartoonAsymUnit.zhangSkolnickSSresidue(model, trace, i, CartoonAsymUnit.ZhangHelixDistance, CartoonAsymUnit.ZhangHelixDelta)) {
+                    mask[i] = Core.Structure.SecondaryStructureType.Helix;
+                    hasSS = true;
+                } else if (CartoonAsymUnit.zhangSkolnickSSresidue(model, trace, i, CartoonAsymUnit.ZhangSheetDistance, CartoonAsymUnit.ZhangSheetDelta)) {
+                    mask[i] = Core.Structure.SecondaryStructureType.Sheet;
+                    hasSS = true;
+                } else {
+                    mask[i] = parent.type;
+                }
+            }
+
+            if (!hasSS) {
+                elements.push(parent);
+                return;
+            }
+
+            // filter 1-length elements
+            for (let i = 0, _l = mask.length; i < _l; i++) { 
+                let m = mask[i];
+                if (m === parent.type) continue; 
+
+                let j = i + 1;
+                while (j < _l && m === mask[j]) {
+                    j++;
+                }
+
+                if (j - i > 1) {
+                    i = j - 1;
+                    continue;
+                }
+                for (let k = i; k < j; k++) mask[k] = parent.type;
+                i = j - 1; 
+            }
+
+            for (let i = 0, _l = mask.length; i < _l; i++) {
+                let m = mask[i];
+
+                let j = i + 1;
+                while (j < _l && m === mask[j]) {
+                    j++;
+                }
+
+                let e = new Core.Structure.SecondaryStructureElement(
+                    <Core.Structure.SecondaryStructureType>m, 
+                    new Core.Structure.PolyResidueIdentifier('', i, null),
+                    new Core.Structure.PolyResidueIdentifier('', j, null));                    
+                e.startResidueIndex = residueIndex[trace[i]];
+                e.endResidueIndex = residueIndex[trace[j - 1]] + 1;
+                elements.push(e);
+
+                i = j - 1;
+            }
+        }
+
+        private static zhangSkolnickSSresidue(model: Core.Structure.MoleculeModel, trace: Int32Array, i: number, distances: number[], delta: number) {
+            let len = trace.length;
+            let { x, y, z } = model.atoms;
+            let u = CartoonAsymUnit.ZhangP1, v = CartoonAsymUnit.ZhangP2;
+            for (let j = Math.max(0, i - 2); j <= i; j++) {
+                for (let k = 2; k < 5; k++) {
+                    if (j + k >= len) {
+                        continue;
+                    }
+                    let a = trace[j], b = trace[j + k];
+                    u.set(x[a], y[a], z[a]);
+                    v.set(x[b], y[b], z[b]);
+                    if (Math.abs(u.distanceTo(v) - distances[k - 2]) > delta) {
+                        return false;
+                    }
+                }
+            }
+            return true;
+        }
+
         private static throwIfEmpty(ss: any[]) {
             if (ss.length === 0) {
                 throw `Cartoons cannot be constructred from this model/selection.`;
@@ -193,8 +330,17 @@ namespace LiteMol.Visualization.Molecule.Cartoons.Geometry {
             let mask = CartoonAsymUnit.createMask(model, atomIndices);
             let ss: Core.Structure.SecondaryStructureElement[] = [];
 
+            let isUnknownSS = CartoonAsymUnit.isUnknownSecondaryStructure(model);
+
             for (let e of model.secondaryStructure) {
-                CartoonAsymUnit.maskSplit(e, mask, ss);
+                if (isUnknownSS) {
+                    let approx = CartoonAsymUnit.approximateSecondaryStructure(model, e);
+                    for (let f of approx) {
+                        CartoonAsymUnit.maskSplit(f, mask, ss);    
+                    }
+                } else {
+                    CartoonAsymUnit.maskSplit(e, mask, ss);
+                }
             }
 
             CartoonAsymUnit.throwIfEmpty(ss);

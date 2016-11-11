@@ -1,3 +1,7 @@
+# 1.1.8
+* Added secondary structure (helices and sheets) approximation for cartoons visualization if not present in the input file.
+* Fixed molecule highlight info to show authAsymId instead of asymId for highlighted residues.
+
 # 1.1.7
 * Support for ?loadFromURL=url and loadFromURLFormat=format query params,
 

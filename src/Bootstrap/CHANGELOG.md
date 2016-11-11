@@ -1,4 +1,7 @@
-﻿# 1.1.6
+﻿# 1.1.7
+* Fixed molecule highlight info to show authAsymId instead of asymId for highlighted residues.  
+
+# 1.1.6
 * Added Data.FromData transformer.
 
 # 1.1.5

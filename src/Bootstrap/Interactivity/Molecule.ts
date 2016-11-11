@@ -133,7 +133,7 @@ namespace LiteMol.Bootstrap.Interactivity.Molecule {
     }
     
     function formatResidue(r: ResidueInfo) {
-        return `<span>${r.authName} ${r.chain.asymId} ${r.authSeqNumber}${r.insCode !== null ? ' i: ' + r.insCode : ''}</span>`;
+        return `<span>${r.authName} ${r.chain.authAsymId} ${r.authSeqNumber}${r.insCode !== null ? ' i: ' + r.insCode : ''}</span>`;
     }
     
     export function formatInfo(info: SelectionInfo | undefined) {

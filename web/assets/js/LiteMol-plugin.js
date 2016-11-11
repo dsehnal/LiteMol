@@ -54753,7 +54753,7 @@ var LiteMol;
 (function (LiteMol) {
     var Visualization;
     (function (Visualization) {
-        Visualization.VERSION = { number: "1.3.2", date: "Oct 14 2016" };
+        Visualization.VERSION = { number: "1.4.0", date: "Nov 11 2016" };
     })(Visualization = LiteMol.Visualization || (LiteMol.Visualization = {}));
 })(LiteMol || (LiteMol = {}));
 var LiteMol;
@@ -58338,6 +58338,118 @@ var LiteMol;
                             }
                             return ret;
                         };
+                        CartoonAsymUnit.isUnknownSecondaryStructure = function (model) {
+                            var hasSeq = false;
+                            for (var _i = 0, _a = model.secondaryStructure; _i < _a.length; _i++) {
+                                var e = _a[_i];
+                                if (e.type === 1 /* Helix */
+                                    || e.type === 3 /* Sheet */
+                                    || e.type === 2 /* Turn */) {
+                                    return false;
+                                }
+                                if (e.type === 4 /* AminoSeq */) {
+                                    hasSeq = true;
+                                }
+                            }
+                            return hasSeq;
+                        };
+                        CartoonAsymUnit.approximateSecondaryStructure = function (model, parent) {
+                            if (parent.type !== 4 /* AminoSeq */)
+                                return [parent];
+                            var elements = [];
+                            var name = model.atoms.name;
+                            var _a = model.residues, atomStartIndex = _a.atomStartIndex, atomEndIndex = _a.atomEndIndex;
+                            var trace = new Int32Array(parent.endResidueIndex - parent.startResidueIndex), offset = 0;
+                            var isOk = true;
+                            for (var i = parent.startResidueIndex, _b = parent.endResidueIndex; i < _b; i++) {
+                                var foundCA = false;
+                                for (var j = atomStartIndex[i], _c = atomEndIndex[_b]; j < _c; j++) {
+                                    if (name[j] === "CA") {
+                                        foundCA = true;
+                                        trace[offset++] = j;
+                                        break;
+                                    }
+                                }
+                                if (!foundCA) {
+                                    isOk = false;
+                                    break;
+                                }
+                            }
+                            if (!isOk)
+                                return [parent];
+                            CartoonAsymUnit.zhangSkolnickSStrace(model, trace, parent, elements);
+                            return elements;
+                        };
+                        CartoonAsymUnit.zhangSkolnickSStrace = function (model, trace, parent, elements) {
+                            var mask = new Int32Array(trace.length);
+                            var hasSS = false;
+                            var residueIndex = model.atoms.residueIndex;
+                            for (var i = 0, _l = trace.length; i < _l; i++) {
+                                if (CartoonAsymUnit.zhangSkolnickSSresidue(model, trace, i, CartoonAsymUnit.ZhangHelixDistance, CartoonAsymUnit.ZhangHelixDelta)) {
+                                    mask[i] = 1 /* Helix */;
+                                    hasSS = true;
+                                }
+                                else if (CartoonAsymUnit.zhangSkolnickSSresidue(model, trace, i, CartoonAsymUnit.ZhangSheetDistance, CartoonAsymUnit.ZhangSheetDelta)) {
+                                    mask[i] = 3 /* Sheet */;
+                                    hasSS = true;
+                                }
+                                else {
+                                    mask[i] = parent.type;
+                                }
+                            }
+                            if (!hasSS) {
+                                elements.push(parent);
+                                return;
+                            }
+                            // filter 1-length elements
+                            for (var i = 0, _l = mask.length; i < _l; i++) {
+                                var m = mask[i];
+                                if (m === parent.type)
+                                    continue;
+                                var j = i + 1;
+                                while (j < _l && m === mask[j]) {
+                                    j++;
+                                }
+                                if (j - i > 1) {
+                                    i = j - 1;
+                                    continue;
+                                }
+                                for (var k = i; k < j; k++)
+                                    mask[k] = parent.type;
+                                i = j - 1;
+                            }
+                            for (var i = 0, _l = mask.length; i < _l; i++) {
+                                var m = mask[i];
+                                var j = i + 1;
+                                while (j < _l && m === mask[j]) {
+                                    j++;
+                                }
+                                var e = new LiteMol.Core.Structure.SecondaryStructureElement(m, new LiteMol.Core.Structure.PolyResidueIdentifier('', i, null), new LiteMol.Core.Structure.PolyResidueIdentifier('', j, null));
+                                e.startResidueIndex = residueIndex[trace[i]];
+                                e.endResidueIndex = residueIndex[trace[j - 1]] + 1;
+                                elements.push(e);
+                                i = j - 1;
+                            }
+                        };
+                        CartoonAsymUnit.zhangSkolnickSSresidue = function (model, trace, i, distances, delta) {
+                            var len = trace.length;
+                            var _a = model.atoms, x = _a.x, y = _a.y, z = _a.z;
+                            var u = CartoonAsymUnit.ZhangP1, v = CartoonAsymUnit.ZhangP2;
+                            for (var j = Math.max(0, i - 2); j <= i; j++) {
+                                for (var k = 2; k < 5; k++) {
+                                    if (j + k >= len) {
+                                        continue;
+                                    }
+                                    var a = trace[j], b = trace[j + k];
+                                    u.set(x[a], y[a], z[a]);
+                                    v.set(x[b], y[b], z[b]);
+                                    if (Math.abs(u.distanceTo(v) - distances[k - 2]) > delta) {
+                                        return false;
+                                    }
+                                }
+                            }
+                            return true;
+                        };
                         CartoonAsymUnit.throwIfEmpty = function (ss) {
                             if (ss.length === 0) {
                                 throw "Cartoons cannot be constructred from this model/selection.";
@@ -58346,17 +58458,27 @@ var LiteMol;
                         CartoonAsymUnit.buildUnits = function (model, atomIndices, linearSegmentCount) {
                             var mask = CartoonAsymUnit.createMask(model, atomIndices);
                             var ss = [];
+                            var isUnknownSS = CartoonAsymUnit.isUnknownSecondaryStructure(model);
                             for (var _i = 0, _a = model.secondaryStructure; _i < _a.length; _i++) {
                                 var e = _a[_i];
-                                CartoonAsymUnit.maskSplit(e, mask, ss);
+                                if (isUnknownSS) {
+                                    var approx = CartoonAsymUnit.approximateSecondaryStructure(model, e);
+                                    for (var _d = 0, approx_1 = approx; _d < approx_1.length; _d++) {
+                                        var f = approx_1[_d];
+                                        CartoonAsymUnit.maskSplit(f, mask, ss);
+                                    }
+                                }
+                                else {
+                                    CartoonAsymUnit.maskSplit(e, mask, ss);
+                                }
                             }
                             CartoonAsymUnit.throwIfEmpty(ss);
                             var previous = ss[0], asymId = model.residues.asymId, authSeqNumber = model.residues.authSeqNumber, currentElements = [], units = [], none = 0 /* None */;
                             if (previous.type === none) {
                                 previous = null;
                             }
-                            for (var _c = 0, ss_1 = ss; _c < ss_1.length; _c++) {
-                                var e = ss_1[_c];
+                            for (var _e = 0, ss_1 = ss; _e < ss_1.length; _e++) {
+                                var e = ss_1[_e];
                                 if (e.type === none) {
                                     if (currentElements.length > 0) {
                                         units.push(new CartoonAsymUnit(model, currentElements, linearSegmentCount));
@@ -58413,8 +58535,8 @@ var LiteMol;
                                 }
                             }
                             this.residueIndex = new Int32Array(this.residueCount);
-                            for (var _c = 0, _d = this.elements; _c < _d.length; _c++) {
-                                var e = _d[_c];
+                            for (var _d = 0, _e = this.elements; _d < _e.length; _d++) {
+                                var e = _e[_d];
                                 for (i = e.startResidueIndex; i < e.endResidueIndex; i++) {
                                     this.residueIndex[offset++] = i;
                                 }
@@ -58583,6 +58705,12 @@ var LiteMol;
                         };
                         return CartoonAsymUnit;
                     }());
+                    CartoonAsymUnit.ZhangHelixDistance = [5.45, 5.18, 6.37];
+                    CartoonAsymUnit.ZhangHelixDelta = 2.1;
+                    CartoonAsymUnit.ZhangSheetDistance = [6.1, 10.4, 13.0];
+                    CartoonAsymUnit.ZhangSheetDelta = 1.42;
+                    CartoonAsymUnit.ZhangP1 = new Visualization.THREE.Vector3(0, 0, 0);
+                    CartoonAsymUnit.ZhangP2 = new Visualization.THREE.Vector3(0, 0, 0);
                     Geometry.CartoonAsymUnit = CartoonAsymUnit;
                     var CartoonsGeometryParams = (function () {
                         function CartoonsGeometryParams() {
@@ -64469,7 +64597,7 @@ var LiteMol;
 (function (LiteMol) {
     var Bootstrap;
     (function (Bootstrap) {
-        Bootstrap.VERSION = { number: "1.1.6", date: "Nov 10 2016" };
+        Bootstrap.VERSION = { number: "1.1.7", date: "Nov 11 2016" };
     })(Bootstrap = LiteMol.Bootstrap || (LiteMol.Bootstrap = {}));
 })(LiteMol || (LiteMol = {}));
 /*
@@ -66680,7 +66808,7 @@ var LiteMol;
                     return "<span>" + a.name + " " + a.elementSymbol + " " + a.id + formatAtomExtra(a) + "</span>";
                 }
                 function formatResidue(r) {
-                    return "<span>" + r.authName + " " + r.chain.asymId + " " + r.authSeqNumber + (r.insCode !== null ? ' i: ' + r.insCode : '') + "</span>";
+                    return "<span>" + r.authName + " " + r.chain.authAsymId + " " + r.authSeqNumber + (r.insCode !== null ? ' i: ' + r.insCode : '') + "</span>";
                 }
                 function formatInfo(info) {
                     if (!info || !info.atoms.length)
