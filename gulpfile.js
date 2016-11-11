@@ -10,7 +10,11 @@ var gulp = require('gulp'),
         unique: require('gulp-unique-files'),
         sass: require('gulp-sass'),
         uglify: require('gulp-uglify'),
-        tsc: require('typescript')
+        tsc: require('typescript'),
+        tar: require('gulp-tar'),
+        gzip: require('gulp-gzip'),
+        tar: require('gulp-tar'),
+        gzip: require('gulp-gzip')
     };
 
 function build(name) {
@@ -105,8 +109,18 @@ function WebVersions() {
         .pipe(gulp.dest('./web'));
 }
 
+function Tarball() {
+    console.log('Creating Tarbal');
+    var tarball = gulp.src(['./dist/*.js', './dist/css/*.css', './dist/fonts/*'], { base: './dist' } )
+        .pipe(plugins.tar('LiteMol.tar'))
+        .pipe(plugins.gzip())
+        .pipe(gulp.dest('./dist'));
+
+    return tarball;
+}
+
 gulp.task('Clean-min', [], function () {
-    return gulp.src(['./dist/*.min.js', './dist/css/*.min.css']).pipe(plugins.clean());
+    return gulp.src(['./dist/*.tar.gz', './dist/*.min.js', './dist/css/*.min.css']).pipe(plugins.clean());
 })
 
 gulp.task('CSS', [], function () { return CSS(false); });
@@ -122,6 +136,7 @@ gulp.task('Web', ['Web-assets', 'Web-base'], WebVersions);
 gulp.task('Web-inline', ['ViewerAndExamples-inline', 'CSS', 'Web-assets', 'Web-base-inline'], WebVersions);
 
 gulp.task('Dist-min', [], Uglify);
+gulp.task('Dist-tarball', ['Dist-min'], Tarball);
 
 gulp.task('default', [
     'Clean-min',

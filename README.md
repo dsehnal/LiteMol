@@ -192,8 +192,10 @@ What are the simplest steps to load a molecule in LiteMol?
     git clone https://github.com/dsehnal/LiteMol.git
     ```
 
+    or download the [latest distribution as a tarball](https://raw.githubusercontent.com/dsehnal/LiteMol/master/dist/LiteMol.tar.gz).
+
 - From ``dist`` folder, copy the folders ``css``, ``fonts``, and
-the file ``LiteMol-plugin.js``.
+the file ``LiteMol-plugin.js`` (or ``LiteMol-plugin.min.js`` for production).
 
 - Include the CSS and JavaScript in your page:
 
@@ -201,6 +203,11 @@ the file ``LiteMol-plugin.js``.
     <link rel="stylesheet" href="css/LiteMol-plugin.css" type="text/css" />
     <script src="js/LiteMol-plugin.js"></script>
     ``` 
+
+    You can include ``css/LiteMol-plugin-light.css`` or ``css/LiteMol-plugin-blue.css`` for different
+    color schemes.
+
+    For production, include ``LiteMol-plugin.min.js`` and ``css/LiteMol-plugin.min.css`` instead. 
 
 - Create a target for the plugin:
 
@@ -214,7 +221,7 @@ the file ``LiteMol-plugin.js``.
     var plugin = LiteMol.Plugin.create({ target: '#litemol' });
     ```
     
-- Load the molecule (mmCIF format):
+- Load the molecule:
 
     ```JavaScript
     plugin.loadMolecule({
@@ -230,6 +237,9 @@ the file ``LiteMol-plugin.js``.
     url: `https://www.ebi.ac.uk/pdbe/entry-files/download/pdb1tqn.ent`,
     format: 'pdb'
     ```
+
+    If you decide to use a different URL and it does not work, make sure that the server
+    in question supports [cross-origin requests](https://en.wikipedia.org/wiki/Cross-Origin_Resource_Sharing).
 
 Please check the [SimpleController example](examples/SimpleController) for more information.
 
