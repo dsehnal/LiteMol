@@ -1,4 +1,7 @@
-﻿# 1.2.0
+﻿# 1.2.1
+* Added lm- prefix to CSS classes btn, icon and a few others to avoid name collisions.
+
+# 1.2.0
 * Added SimpleController.
 
 # 1.1.4

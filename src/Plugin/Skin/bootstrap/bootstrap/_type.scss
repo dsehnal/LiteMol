@@ -158,20 +158,20 @@ ol {
 
 // List options
 
-// [converter] extracted from `.list-unstyled` for libsass compatibility
-@mixin list-unstyled {
+// [converter] extracted from `.lm-list-unstyled` for libsass compatibility
+@mixin lm-list-unstyled {
   padding-left: 0;
   list-style: none;
 }
-// [converter] extracted as `@mixin list-unstyled` for libsass compatibility
-.list-unstyled {
-  @include list-unstyled;
+// [converter] extracted as `@mixin lm-list-unstyled` for libsass compatibility
+.lm-list-unstyled {
+  @include lm-list-unstyled;
 }
 
 
 // Inline turns list items into inline-block
 .list-inline {
-  @include list-unstyled;
+  @include lm-list-unstyled;
   margin-left: -5px;
 
   > li {

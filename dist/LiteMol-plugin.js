@@ -74802,7 +74802,7 @@ var LiteMol;
 (function (LiteMol) {
     var Plugin;
     (function (Plugin) {
-        Plugin.VERSION = { number: "1.2.0", date: "Nov 10 2016" };
+        Plugin.VERSION = { number: "1.2.1", date: "Nov 12 2016" };
     })(Plugin = LiteMol.Plugin || (LiteMol.Plugin = {}));
 })(LiteMol || (LiteMol = {}));
 /*
@@ -76085,7 +76085,7 @@ var LiteMol;
                         var count = entries.count();
                         return Plugin.React.createElement("div", { className: 'lm-log-wrap' },
                             Plugin.React.createElement("div", { className: 'lm-log', ref: 'log' },
-                                Plugin.React.createElement("ul", { className: 'list-unstyled' }, entries.map(function (entry, i, arr) {
+                                Plugin.React.createElement("ul", { className: 'lm-list-unstyled' }, entries.map(function (entry, i, arr) {
                                     var msg;
                                     var e = entry;
                                     switch (e.type) {

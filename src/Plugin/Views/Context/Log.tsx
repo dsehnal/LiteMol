@@ -30,7 +30,7 @@ namespace LiteMol.Plugin.Views.Context {
 
             return <div className='lm-log-wrap'>
                 <div className='lm-log' ref='log'>
-                    <ul className='list-unstyled'>
+                    <ul className='lm-list-unstyled'>
                         {entries.map((entry, i, arr) => {
 
                             let msg: any;

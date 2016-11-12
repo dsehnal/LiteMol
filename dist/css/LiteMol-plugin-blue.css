@@ -411,7 +411,7 @@
     .lm-plugin ol ul,
     .lm-plugin ol ol {
       margin-bottom: 0; }
-  .lm-plugin .list-unstyled {
+  .lm-plugin .lm-list-unstyled {
     padding-left: 0;
     list-style: none; }
   .lm-plugin .list-inline {
