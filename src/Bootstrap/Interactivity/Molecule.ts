@@ -135,26 +135,33 @@ namespace LiteMol.Bootstrap.Interactivity.Molecule {
     function formatResidue(r: ResidueInfo) {
         return `<span>${r.authName} ${r.chain.authAsymId} ${r.authSeqNumber}${r.insCode !== null ? ' i: ' + r.insCode : ''}</span>`;
     }
+
+    function formatMolecule(info: SelectionInfo) {
+        if (info.modelId === '1') {
+            return `<span><small>[${info.moleculeId}]</small></span>`;
+        }
+        return `<span><small>[${info.moleculeId}:${info.modelId}]</small></span>`;
+    }
     
     export function formatInfo(info: SelectionInfo | undefined) {
         if (!info || !info.atoms.length) return ``;
         if (info.atoms.length === 1) {
-            return `<span>${formatAtom(info.atoms[0])} on <b><small>${formatResidue(info.residues[0])}</small></b></span>`;
+            return `<span>${formatAtom(info.atoms[0])} on <b><small>${formatResidue(info.residues[0])}</small></b> ${formatMolecule(info)}</span>`;
         } else if (info.residues.length === 1) {
-            return `<span><b>${formatResidue(info.residues[0])}</b></span>`;
+            return `<span><b>${formatResidue(info.residues[0])}</b> ${formatMolecule(info)}</span>`;
         } else {
-            return `<span><small>${info.atoms.length} atoms on</small> <b>${info.residues.length} residues</b></span>`;
+            return `<span><small>${info.atoms.length} atoms on</small> <b>${info.residues.length} residues</b> ${formatMolecule(info)}</span>`;
         }
     }
-    
+
     export function formatInfoShort(info: SelectionInfo | undefined) {
         if (!info || !info.atoms.length) return ``;
         if (info.atoms.length === 1) {
-            return `<span><b>${formatAtomShort(info.atoms[0])}<b></span>`;
+            return `<span><b>${formatAtomShort(info.atoms[0])}<b> ${formatMolecule(info)}</span>`;
         } else if (info.residues.length === 1) {
-            return `<span><b>${formatResidue(info.residues[0])}</b></span>`;
+            return `<span><b>${formatResidue(info.residues[0])}</b> ${formatMolecule(info)}</span>`;
         } else {
-            return `<span><b>${info.residues.length} residues</b></span>`;
+            return `<span><b>${info.residues.length} residues</b> ${formatMolecule(info)}</span>`;
         }
     }
     
