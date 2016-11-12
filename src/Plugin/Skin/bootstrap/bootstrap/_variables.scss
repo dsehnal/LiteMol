@@ -147,38 +147,38 @@ $table-border-color:            #ddd !default;
 //
 //## For each of Bootstrap's buttons, define text, background and border color.
 
-$btn-font-weight:                normal !default;
+$lm-btn-font-weight:                normal !default;
 
-$btn-default-color:              #333 !default;
-$btn-default-bg:                 #fff !default;
-$btn-default-border:             #ccc !default;
+$lm-btn-default-color:              #333 !default;
+$lm-btn-default-bg:                 #fff !default;
+$lm-btn-default-border:             #ccc !default;
 
-$btn-primary-color:              #fff !default;
-$btn-primary-bg:                 $brand-primary !default;
-$btn-primary-border:             darken($btn-primary-bg, 5%) !default;
+$lm-btn-primary-color:              #fff !default;
+$lm-btn-primary-bg:                 $brand-primary !default;
+$lm-btn-primary-border:             darken($lm-btn-primary-bg, 5%) !default;
 
-$btn-success-color:              #fff !default;
-$btn-success-bg:                 $brand-success !default;
-$btn-success-border:             darken($btn-success-bg, 5%) !default;
+$lm-btn-success-color:              #fff !default;
+$lm-btn-success-bg:                 $brand-success !default;
+$lm-btn-success-border:             darken($lm-btn-success-bg, 5%) !default;
 
-$btn-info-color:                 #fff !default;
-$btn-info-bg:                    $brand-info !default;
-$btn-info-border:                darken($btn-info-bg, 5%) !default;
+$lm-btn-info-color:                 #fff !default;
+$lm-btn-info-bg:                    $brand-info !default;
+$lm-btn-info-border:                darken($lm-btn-info-bg, 5%) !default;
 
-$btn-warning-color:              #fff !default;
-$btn-warning-bg:                 $brand-warning !default;
-$btn-warning-border:             darken($btn-warning-bg, 5%) !default;
+$lm-btn-warning-color:              #fff !default;
+$lm-btn-warning-bg:                 $brand-warning !default;
+$lm-btn-warning-border:             darken($lm-btn-warning-bg, 5%) !default;
 
-$btn-danger-color:               #fff !default;
-$btn-danger-bg:                  $brand-danger !default;
-$btn-danger-border:              darken($btn-danger-bg, 5%) !default;
+$lm-btn-danger-color:               #fff !default;
+$lm-btn-danger-bg:                  $brand-danger !default;
+$lm-btn-danger-border:              darken($lm-btn-danger-bg, 5%) !default;
 
-$btn-link-disabled-color:        $gray-light !default;
+$lm-btn-link-disabled-color:        $gray-light !default;
 
 // Allows for customizing button radius independently from global border radius
-$btn-border-radius-base:         $border-radius-base !default;
-$btn-border-radius-large:        $border-radius-large !default;
-$btn-border-radius-small:        $border-radius-small !default;
+$lm-btn-border-radius-base:         $border-radius-base !default;
+$lm-btn-border-radius-large:        $border-radius-large !default;
+$lm-btn-border-radius-small:        $border-radius-small !default;
 
 
 //== Forms

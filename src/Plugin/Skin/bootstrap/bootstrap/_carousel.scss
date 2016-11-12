@@ -226,7 +226,7 @@
   color: $carousel-caption-color;
   text-align: center;
   text-shadow: $carousel-text-shadow;
-  & .btn {
+  & .lm-btn {
     text-shadow: none; // No shadow for button elements in carousel-caption
   }
 }

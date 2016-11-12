@@ -340,13 +340,13 @@
 //
 // Vertically center a button within a navbar (when *not* in a form).
 
-.navbar-btn {
+.navbar-lm-btn {
   @include navbar-vertical-align($input-height-base);
 
-  &.btn-sm {
+  &.lm-btn-sm {
     @include navbar-vertical-align($input-height-small);
   }
-  &.btn-xs {
+  &.lm-btn-xs {
     @include navbar-vertical-align(22);
   }
 }
@@ -510,7 +510,7 @@
     }
   }
 
-  .btn-link {
+  .lm-btn-link {
     color: $navbar-default-link-color;
     &:hover,
     &:focus {
@@ -645,7 +645,7 @@
     }
   }
 
-  .btn-link {
+  .lm-btn-link {
     color: $navbar-inverse-link-color;
     &:hover,
     &:focus {

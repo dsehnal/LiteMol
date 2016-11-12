@@ -17,12 +17,12 @@
 // --------------------------------------------------
 
 // Common styles
-.btn-default,
-.btn-primary,
-.btn-success,
-.btn-info,
-.btn-warning,
-.btn-danger {
+.lm-btn-default,
+.lm-btn-primary,
+.lm-btn-success,
+.lm-btn-info,
+.lm-btn-warning,
+.lm-btn-danger {
   text-shadow: 0 -1px 0 rgba(0,0,0,.2);
   $shadow: inset 0 1px 0 rgba(255,255,255,.15), 0 1px 1px rgba(0,0,0,.075);
   @include box-shadow($shadow);
@@ -45,22 +45,22 @@
 }
 
 // Mixin for generating new styles
-@mixin btn-styles($btn-color: #555) {
-  @include gradient-vertical($start-color: $btn-color, $end-color: darken($btn-color, 12%));
+@mixin lm-btn-styles($lm-btn-color: #555) {
+  @include gradient-vertical($start-color: $lm-btn-color, $end-color: darken($lm-btn-color, 12%));
   @include reset-filter; // Disable gradients for IE9 because filter bleeds through rounded corners; see https://github.com/twbs/bootstrap/issues/10620
   background-repeat: repeat-x;
-  border-color: darken($btn-color, 14%);
+  border-color: darken($lm-btn-color, 14%);
 
   &:hover,
   &:focus  {
-    background-color: darken($btn-color, 12%);
+    background-color: darken($lm-btn-color, 12%);
     background-position: 0 -15px;
   }
 
   &:active,
   &.active {
-    background-color: darken($btn-color, 12%);
-    border-color: darken($btn-color, 14%);
+    background-color: darken($lm-btn-color, 12%);
+    border-color: darken($lm-btn-color, 14%);
   }
 
   &.disabled,
@@ -72,14 +72,14 @@
     &.focus,
     &:active,
     &.active {
-      background-color: darken($btn-color, 12%);
+      background-color: darken($lm-btn-color, 12%);
       background-image: none;
     }
   }
 }
 
 // Common styles
-.btn {
+.lm-btn {
   // Remove the gradient for the pressed/active state
   &:active,
   &.active {
@@ -88,12 +88,12 @@
 }
 
 // Apply the mixin to the buttons
-.btn-default { @include btn-styles($btn-default-bg); text-shadow: 0 1px 0 #fff; border-color: #ccc; }
-.btn-primary { @include btn-styles($btn-primary-bg); }
-.btn-success { @include btn-styles($btn-success-bg); }
-.btn-info    { @include btn-styles($btn-info-bg); }
-.btn-warning { @include btn-styles($btn-warning-bg); }
-.btn-danger  { @include btn-styles($btn-danger-bg); }
+.lm-btn-default { @include lm-btn-styles($lm-btn-default-bg); text-shadow: 0 1px 0 #fff; border-color: #ccc; }
+.lm-btn-primary { @include lm-btn-styles($lm-btn-primary-bg); }
+.lm-btn-success { @include lm-btn-styles($lm-btn-success-bg); }
+.lm-btn-info    { @include lm-btn-styles($lm-btn-info-bg); }
+.lm-btn-warning { @include lm-btn-styles($lm-btn-warning-bg); }
+.lm-btn-danger  { @include lm-btn-styles($lm-btn-danger-bg); }
 
 
 //

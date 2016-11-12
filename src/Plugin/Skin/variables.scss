@@ -45,21 +45,21 @@ $border-color: color-increase-contrast($default-background, 15%);
 $form-control-background: color-lower-contrast($default-background, 2.5%); 
 
 // buttons
-$btn-link-font-color: $font-color;
-$btn-link-toggle-on-font-color: $font-color;
-$btn-link-toggle-off-font-color: color-lower-contrast($font-color, 33%);
+$lm-btn-link-font-color: $font-color;
+$lm-btn-link-toggle-on-font-color: $font-color;
+$lm-btn-link-toggle-off-font-color: color-lower-contrast($font-color, 33%);
 
 // used for "actions" -- i.e. + in selection
-$btn-remove-font-color: $font-color;
+$lm-btn-remove-font-color: $font-color;
 
-$btn-action-background: $form-control-background;
+$lm-btn-action-background: $form-control-background;
 
 // update selection etc
-//!! $btn-commit-on-font-color: $entity-current-font-color;
-$btn-commit-on-hover-font-color: color-lower-contrast($btn-commit-on-font-color, 20%); //!!Change
-$btn-commit-on-background: color-lower-contrast($default-background, 2%);
-$btn-commit-off-background:  color-lower-contrast($default-background, 4%); //$control-background;
-$btn-commit-off-font-color: $font-color;
+//!! $lm-btn-commit-on-font-color: $entity-current-font-color;
+$lm-btn-commit-on-hover-font-color: color-lower-contrast($lm-btn-commit-on-font-color, 20%); //!!Change
+$lm-btn-commit-on-background: color-lower-contrast($default-background, 2%);
+$lm-btn-commit-off-background:  color-lower-contrast($default-background, 4%); //$control-background;
+$lm-btn-commit-off-font-color: $font-color;
 
 // log
 $log-font-color: color-lower-contrast($font-color, 5%);

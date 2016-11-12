@@ -34,7 +34,7 @@ namespace LiteMol.Plugin.Views.Transform.Molecule {
             let state = this.controller.latestState;        
             let extensions = LiteMol.Core.Formats.FormatInfo.formatFileFilters(LiteMol.Core.Formats.Molecule.SupportedFormats.All);    
             return <div>
-                <div className='btn btn-block btn-action lm-loader-btn-file' style={{marginTop: '1px'}}>
+                <div className='lm-btn lm-btn-block lm-btn-action lm-loader-lm-btn-file' style={{marginTop: '1px'}}>
                      {params.file ? params.file.name : 'Select a file...'} <input disabled={state.isBusy} type='file' accept={extensions} onChange={ evt => this.updateParams({ file: (evt.target as any).files[0] }) } multiple={false} />
                 </div>
             </div>

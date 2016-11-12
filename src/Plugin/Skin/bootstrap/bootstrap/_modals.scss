@@ -107,16 +107,16 @@
   @include clearfix; // clear it in case folks use .pull-* classes on buttons
 
   // Properly space out buttons
-  .btn + .btn {
+  .lm-btn + .lm-btn {
     margin-left: 5px;
     margin-bottom: 0; // account for input[type="submit"] which gets the bottom margin like all other inputs
   }
   // but override that for button groups
-  .btn-group .btn + .btn {
+  .lm-btn-group .lm-btn + .lm-btn {
     margin-left: -1px;
   }
   // and override it for block buttons as well
-  .btn-block + .btn-block {
+  .lm-btn-block + .lm-btn-block {
     margin-left: 0;
   }
 }

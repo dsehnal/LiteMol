@@ -6,7 +6,7 @@
     bottom: 0;
     background: black;
     
-    .btn-link {
+    .lm-btn-link {
         background: rgba(0,0,0,0.2);
     }
     
@@ -47,15 +47,15 @@
         margin-left: $control-spacing;
     }    
     
-    .btn-link, .btn-link-toggle-on {
+    .lm-btn-link, .lm-btn-link-toggle-on {
         color: #eee;
     }
     
-    .btn-link-toggle-off {
-        color: $btn-link-toggle-off-font-color;
+    .lm-btn-link-toggle-off {
+        color: $lm-btn-link-toggle-off-font-color;
     }
     
-    .btn-link:hover {
+    .lm-btn-link:hover {
         color: $hover-font-color;
     }
 }

@@ -24,13 +24,13 @@
   }
 
   // Quick fix for badges in buttons
-  .btn & {
+  .lm-btn & {
     position: relative;
     top: -1px;
   }
 
-  .btn-xs &,
-  .btn-group-xs > .btn & {
+  .lm-btn-xs &,
+  .lm-btn-group-xs > .lm-btn & {
     top: 0;
     padding: 1px 5px;
   }

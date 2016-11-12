@@ -598,27 +598,27 @@
     .lm-plugin input[type="datetime-local"].form-control, .lm-plugin .lm-control-row input[type="datetime-local"][type=text],
     .lm-plugin input[type="month"].form-control, .lm-plugin .lm-control-row input[type="month"][type=text] {
       line-height: 34px; }
-    .lm-plugin input[type="date"].input-sm, .lm-plugin .input-group-sm > input[type="date"].form-control, .lm-plugin .lm-control-row .input-group-sm > input[type="date"][type=text], .lm-plugin .input-group-sm > input[type="date"].input-group-addon, .lm-plugin .input-group-sm > .input-group-btn > input[type="date"].btn,
+    .lm-plugin input[type="date"].input-sm, .lm-plugin .input-group-sm > input[type="date"].form-control, .lm-plugin .lm-control-row .input-group-sm > input[type="date"][type=text], .lm-plugin .input-group-sm > input[type="date"].input-group-addon, .lm-plugin .input-group-sm > .input-group-lm-btn > input[type="date"].lm-btn,
     .input-group-sm .lm-plugin input[type="date"],
-    .lm-plugin input[type="time"].input-sm, .lm-plugin .input-group-sm > input[type="time"].form-control, .lm-plugin .lm-control-row .input-group-sm > input[type="time"][type=text], .lm-plugin .input-group-sm > input[type="time"].input-group-addon, .lm-plugin .input-group-sm > .input-group-btn > input[type="time"].btn,
+    .lm-plugin input[type="time"].input-sm, .lm-plugin .input-group-sm > input[type="time"].form-control, .lm-plugin .lm-control-row .input-group-sm > input[type="time"][type=text], .lm-plugin .input-group-sm > input[type="time"].input-group-addon, .lm-plugin .input-group-sm > .input-group-lm-btn > input[type="time"].lm-btn,
     .input-group-sm
     .lm-plugin input[type="time"],
-    .lm-plugin input[type="datetime-local"].input-sm, .lm-plugin .input-group-sm > input[type="datetime-local"].form-control, .lm-plugin .lm-control-row .input-group-sm > input[type="datetime-local"][type=text], .lm-plugin .input-group-sm > input[type="datetime-local"].input-group-addon, .lm-plugin .input-group-sm > .input-group-btn > input[type="datetime-local"].btn,
+    .lm-plugin input[type="datetime-local"].input-sm, .lm-plugin .input-group-sm > input[type="datetime-local"].form-control, .lm-plugin .lm-control-row .input-group-sm > input[type="datetime-local"][type=text], .lm-plugin .input-group-sm > input[type="datetime-local"].input-group-addon, .lm-plugin .input-group-sm > .input-group-lm-btn > input[type="datetime-local"].lm-btn,
     .input-group-sm
     .lm-plugin input[type="datetime-local"],
-    .lm-plugin input[type="month"].input-sm, .lm-plugin .input-group-sm > input[type="month"].form-control, .lm-plugin .lm-control-row .input-group-sm > input[type="month"][type=text], .lm-plugin .input-group-sm > input[type="month"].input-group-addon, .lm-plugin .input-group-sm > .input-group-btn > input[type="month"].btn,
+    .lm-plugin input[type="month"].input-sm, .lm-plugin .input-group-sm > input[type="month"].form-control, .lm-plugin .lm-control-row .input-group-sm > input[type="month"][type=text], .lm-plugin .input-group-sm > input[type="month"].input-group-addon, .lm-plugin .input-group-sm > .input-group-lm-btn > input[type="month"].lm-btn,
     .input-group-sm
     .lm-plugin input[type="month"] {
       line-height: 30px; }
-    .lm-plugin input[type="date"].input-lg, .lm-plugin .input-group-lg > input[type="date"].form-control, .lm-plugin .lm-control-row .input-group-lg > input[type="date"][type=text], .lm-plugin .input-group-lg > input[type="date"].input-group-addon, .lm-plugin .input-group-lg > .input-group-btn > input[type="date"].btn,
+    .lm-plugin input[type="date"].input-lg, .lm-plugin .input-group-lg > input[type="date"].form-control, .lm-plugin .lm-control-row .input-group-lg > input[type="date"][type=text], .lm-plugin .input-group-lg > input[type="date"].input-group-addon, .lm-plugin .input-group-lg > .input-group-lm-btn > input[type="date"].lm-btn,
     .input-group-lg .lm-plugin input[type="date"],
-    .lm-plugin input[type="time"].input-lg, .lm-plugin .input-group-lg > input[type="time"].form-control, .lm-plugin .lm-control-row .input-group-lg > input[type="time"][type=text], .lm-plugin .input-group-lg > input[type="time"].input-group-addon, .lm-plugin .input-group-lg > .input-group-btn > input[type="time"].btn,
+    .lm-plugin input[type="time"].input-lg, .lm-plugin .input-group-lg > input[type="time"].form-control, .lm-plugin .lm-control-row .input-group-lg > input[type="time"][type=text], .lm-plugin .input-group-lg > input[type="time"].input-group-addon, .lm-plugin .input-group-lg > .input-group-lm-btn > input[type="time"].lm-btn,
     .input-group-lg
     .lm-plugin input[type="time"],
-    .lm-plugin input[type="datetime-local"].input-lg, .lm-plugin .input-group-lg > input[type="datetime-local"].form-control, .lm-plugin .lm-control-row .input-group-lg > input[type="datetime-local"][type=text], .lm-plugin .input-group-lg > input[type="datetime-local"].input-group-addon, .lm-plugin .input-group-lg > .input-group-btn > input[type="datetime-local"].btn,
+    .lm-plugin input[type="datetime-local"].input-lg, .lm-plugin .input-group-lg > input[type="datetime-local"].form-control, .lm-plugin .lm-control-row .input-group-lg > input[type="datetime-local"][type=text], .lm-plugin .input-group-lg > input[type="datetime-local"].input-group-addon, .lm-plugin .input-group-lg > .input-group-lm-btn > input[type="datetime-local"].lm-btn,
     .input-group-lg
     .lm-plugin input[type="datetime-local"],
-    .lm-plugin input[type="month"].input-lg, .lm-plugin .input-group-lg > input[type="month"].form-control, .lm-plugin .lm-control-row .input-group-lg > input[type="month"][type=text], .lm-plugin .input-group-lg > input[type="month"].input-group-addon, .lm-plugin .input-group-lg > .input-group-btn > input[type="month"].btn,
+    .lm-plugin input[type="month"].input-lg, .lm-plugin .input-group-lg > input[type="month"].form-control, .lm-plugin .lm-control-row .input-group-lg > input[type="month"][type=text], .lm-plugin .input-group-lg > input[type="month"].input-group-addon, .lm-plugin .input-group-lg > .input-group-lm-btn > input[type="month"].lm-btn,
     .input-group-lg
     .lm-plugin input[type="month"] {
       line-height: 46px; } }
@@ -684,20 +684,20 @@
     padding-bottom: 7px;
     margin-bottom: 0;
     min-height: 34px; }
-    .lm-plugin .form-control-static.input-lg, .lm-plugin .input-group-lg > .form-control-static.form-control, .lm-plugin .lm-control-row .input-group-lg > select.form-control-static, .lm-plugin .lm-control-row .input-group-lg > button.form-control-static, .lm-plugin .lm-control-row .input-group-lg > input.form-control-static[type=text], .lm-plugin .input-group-lg > .form-control-static.input-group-addon, .lm-plugin .input-group-lg > .input-group-btn > .form-control-static.btn, .lm-plugin .lm-control-row .input-group-lg > .input-group-btn > button.form-control-static, .lm-plugin .form-control-static.input-sm, .lm-plugin .input-group-sm > .form-control-static.form-control, .lm-plugin .lm-control-row .input-group-sm > select.form-control-static, .lm-plugin .lm-control-row .input-group-sm > button.form-control-static, .lm-plugin .lm-control-row .input-group-sm > input.form-control-static[type=text], .lm-plugin .input-group-sm > .form-control-static.input-group-addon, .lm-plugin .input-group-sm > .input-group-btn > .form-control-static.btn, .lm-plugin .lm-control-row .input-group-sm > .input-group-btn > button.form-control-static {
+    .lm-plugin .form-control-static.input-lg, .lm-plugin .input-group-lg > .form-control-static.form-control, .lm-plugin .lm-control-row .input-group-lg > select.form-control-static, .lm-plugin .lm-control-row .input-group-lg > button.form-control-static, .lm-plugin .lm-control-row .input-group-lg > input.form-control-static[type=text], .lm-plugin .input-group-lg > .form-control-static.input-group-addon, .lm-plugin .input-group-lg > .input-group-lm-btn > .form-control-static.lm-btn, .lm-plugin .lm-control-row .input-group-lg > .input-group-lm-btn > button.form-control-static, .lm-plugin .form-control-static.input-sm, .lm-plugin .input-group-sm > .form-control-static.form-control, .lm-plugin .lm-control-row .input-group-sm > select.form-control-static, .lm-plugin .lm-control-row .input-group-sm > button.form-control-static, .lm-plugin .lm-control-row .input-group-sm > input.form-control-static[type=text], .lm-plugin .input-group-sm > .form-control-static.input-group-addon, .lm-plugin .input-group-sm > .input-group-lm-btn > .form-control-static.lm-btn, .lm-plugin .lm-control-row .input-group-sm > .input-group-lm-btn > button.form-control-static {
       padding-left: 0;
       padding-right: 0; }
-  .lm-plugin .input-sm, .lm-plugin .input-group-sm > .form-control, .lm-plugin .lm-control-row .input-group-sm > select, .lm-plugin .lm-control-row .input-group-sm > button, .lm-plugin .lm-control-row .input-group-sm > input[type=text], .lm-plugin .input-group-sm > .input-group-addon, .lm-plugin .input-group-sm > .input-group-btn > .btn, .lm-plugin .lm-control-row .input-group-sm > .input-group-btn > button {
+  .lm-plugin .input-sm, .lm-plugin .input-group-sm > .form-control, .lm-plugin .lm-control-row .input-group-sm > select, .lm-plugin .lm-control-row .input-group-sm > button, .lm-plugin .lm-control-row .input-group-sm > input[type=text], .lm-plugin .input-group-sm > .input-group-addon, .lm-plugin .input-group-sm > .input-group-lm-btn > .lm-btn, .lm-plugin .lm-control-row .input-group-sm > .input-group-lm-btn > button {
     height: 30px;
     padding: 5px 10px;
     font-size: 12px;
     line-height: 1.5;
     border-radius: 0; }
-  .lm-plugin select.input-sm, .lm-plugin .input-group-sm > select.form-control, .lm-plugin .lm-control-row .input-group-sm > select, .lm-plugin .input-group-sm > select.input-group-addon, .lm-plugin .input-group-sm > .input-group-btn > select.btn {
+  .lm-plugin select.input-sm, .lm-plugin .input-group-sm > select.form-control, .lm-plugin .lm-control-row .input-group-sm > select, .lm-plugin .input-group-sm > select.input-group-addon, .lm-plugin .input-group-sm > .input-group-lm-btn > select.lm-btn {
     height: 30px;
     line-height: 30px; }
-  .lm-plugin textarea.input-sm, .lm-plugin .input-group-sm > textarea.form-control, .lm-plugin .input-group-sm > textarea.input-group-addon, .lm-plugin .input-group-sm > .input-group-btn > textarea.btn,
-  .lm-plugin select[multiple].input-sm, .lm-plugin .input-group-sm > select[multiple].form-control, .lm-plugin .lm-control-row .input-group-sm > select[multiple], .lm-plugin .input-group-sm > select[multiple].input-group-addon, .lm-plugin .input-group-sm > .input-group-btn > select[multiple].btn {
+  .lm-plugin textarea.input-sm, .lm-plugin .input-group-sm > textarea.form-control, .lm-plugin .input-group-sm > textarea.input-group-addon, .lm-plugin .input-group-sm > .input-group-lm-btn > textarea.lm-btn,
+  .lm-plugin select[multiple].input-sm, .lm-plugin .input-group-sm > select[multiple].form-control, .lm-plugin .lm-control-row .input-group-sm > select[multiple], .lm-plugin .input-group-sm > select[multiple].input-group-addon, .lm-plugin .input-group-sm > .input-group-lm-btn > select[multiple].lm-btn {
     height: auto; }
   .lm-plugin .form-group-sm .form-control, .lm-plugin .form-group-sm .lm-control-row select, .lm-plugin .lm-control-row .form-group-sm select, .lm-plugin .form-group-sm .lm-control-row button, .lm-plugin .lm-control-row .form-group-sm button, .lm-plugin .form-group-sm .lm-control-row input[type=text], .lm-plugin .lm-control-row .form-group-sm input[type=text] {
     height: 30px;
@@ -717,17 +717,17 @@
     padding: 6px 10px;
     font-size: 12px;
     line-height: 1.5; }
-  .lm-plugin .input-lg, .lm-plugin .input-group-lg > .form-control, .lm-plugin .lm-control-row .input-group-lg > select, .lm-plugin .lm-control-row .input-group-lg > button, .lm-plugin .lm-control-row .input-group-lg > input[type=text], .lm-plugin .input-group-lg > .input-group-addon, .lm-plugin .input-group-lg > .input-group-btn > .btn, .lm-plugin .lm-control-row .input-group-lg > .input-group-btn > button {
+  .lm-plugin .input-lg, .lm-plugin .input-group-lg > .form-control, .lm-plugin .lm-control-row .input-group-lg > select, .lm-plugin .lm-control-row .input-group-lg > button, .lm-plugin .lm-control-row .input-group-lg > input[type=text], .lm-plugin .input-group-lg > .input-group-addon, .lm-plugin .input-group-lg > .input-group-lm-btn > .lm-btn, .lm-plugin .lm-control-row .input-group-lg > .input-group-lm-btn > button {
     height: 46px;
     padding: 10px 16px;
     font-size: 18px;
     line-height: 1.33333;
     border-radius: 0; }
-  .lm-plugin select.input-lg, .lm-plugin .input-group-lg > select.form-control, .lm-plugin .lm-control-row .input-group-lg > select, .lm-plugin .input-group-lg > select.input-group-addon, .lm-plugin .input-group-lg > .input-group-btn > select.btn {
+  .lm-plugin select.input-lg, .lm-plugin .input-group-lg > select.form-control, .lm-plugin .lm-control-row .input-group-lg > select, .lm-plugin .input-group-lg > select.input-group-addon, .lm-plugin .input-group-lg > .input-group-lm-btn > select.lm-btn {
     height: 46px;
     line-height: 46px; }
-  .lm-plugin textarea.input-lg, .lm-plugin .input-group-lg > textarea.form-control, .lm-plugin .input-group-lg > textarea.input-group-addon, .lm-plugin .input-group-lg > .input-group-btn > textarea.btn,
-  .lm-plugin select[multiple].input-lg, .lm-plugin .input-group-lg > select[multiple].form-control, .lm-plugin .lm-control-row .input-group-lg > select[multiple], .lm-plugin .input-group-lg > select[multiple].input-group-addon, .lm-plugin .input-group-lg > .input-group-btn > select[multiple].btn {
+  .lm-plugin textarea.input-lg, .lm-plugin .input-group-lg > textarea.form-control, .lm-plugin .input-group-lg > textarea.input-group-addon, .lm-plugin .input-group-lg > .input-group-lm-btn > textarea.lm-btn,
+  .lm-plugin select[multiple].input-lg, .lm-plugin .input-group-lg > select[multiple].form-control, .lm-plugin .lm-control-row .input-group-lg > select[multiple], .lm-plugin .input-group-lg > select[multiple].input-group-addon, .lm-plugin .input-group-lg > .input-group-lm-btn > select[multiple].lm-btn {
     height: auto; }
   .lm-plugin .form-group-lg .form-control, .lm-plugin .form-group-lg .lm-control-row select, .lm-plugin .lm-control-row .form-group-lg select, .lm-plugin .form-group-lg .lm-control-row button, .lm-plugin .lm-control-row .form-group-lg button, .lm-plugin .form-group-lg .lm-control-row input[type=text], .lm-plugin .lm-control-row .form-group-lg input[type=text] {
     height: 46px;
@@ -762,13 +762,13 @@
     line-height: 34px;
     text-align: center;
     pointer-events: none; }
-  .lm-plugin .input-lg + .form-control-feedback, .lm-plugin .input-group-lg > .form-control + .form-control-feedback, .lm-plugin .lm-control-row .input-group-lg > select + .form-control-feedback, .lm-plugin .lm-control-row .input-group-lg > button + .form-control-feedback, .lm-plugin .lm-control-row .input-group-lg > input[type=text] + .form-control-feedback, .lm-plugin .input-group-lg > .input-group-addon + .form-control-feedback, .lm-plugin .input-group-lg > .input-group-btn > .btn + .form-control-feedback, .lm-plugin .lm-control-row .input-group-lg > .input-group-btn > button + .form-control-feedback,
+  .lm-plugin .input-lg + .form-control-feedback, .lm-plugin .input-group-lg > .form-control + .form-control-feedback, .lm-plugin .lm-control-row .input-group-lg > select + .form-control-feedback, .lm-plugin .lm-control-row .input-group-lg > button + .form-control-feedback, .lm-plugin .lm-control-row .input-group-lg > input[type=text] + .form-control-feedback, .lm-plugin .input-group-lg > .input-group-addon + .form-control-feedback, .lm-plugin .input-group-lg > .input-group-lm-btn > .lm-btn + .form-control-feedback, .lm-plugin .lm-control-row .input-group-lg > .input-group-lm-btn > button + .form-control-feedback,
   .lm-plugin .input-group-lg + .form-control-feedback,
   .lm-plugin .form-group-lg .form-control + .form-control-feedback, .lm-plugin .form-group-lg .lm-control-row select + .form-control-feedback, .lm-plugin .lm-control-row .form-group-lg select + .form-control-feedback, .lm-plugin .form-group-lg .lm-control-row button + .form-control-feedback, .lm-plugin .lm-control-row .form-group-lg button + .form-control-feedback, .lm-plugin .form-group-lg .lm-control-row input[type=text] + .form-control-feedback, .lm-plugin .lm-control-row .form-group-lg input[type=text] + .form-control-feedback {
     width: 46px;
     height: 46px;
     line-height: 46px; }
-  .lm-plugin .input-sm + .form-control-feedback, .lm-plugin .input-group-sm > .form-control + .form-control-feedback, .lm-plugin .lm-control-row .input-group-sm > select + .form-control-feedback, .lm-plugin .lm-control-row .input-group-sm > button + .form-control-feedback, .lm-plugin .lm-control-row .input-group-sm > input[type=text] + .form-control-feedback, .lm-plugin .input-group-sm > .input-group-addon + .form-control-feedback, .lm-plugin .input-group-sm > .input-group-btn > .btn + .form-control-feedback, .lm-plugin .lm-control-row .input-group-sm > .input-group-btn > button + .form-control-feedback,
+  .lm-plugin .input-sm + .form-control-feedback, .lm-plugin .input-group-sm > .form-control + .form-control-feedback, .lm-plugin .lm-control-row .input-group-sm > select + .form-control-feedback, .lm-plugin .lm-control-row .input-group-sm > button + .form-control-feedback, .lm-plugin .lm-control-row .input-group-sm > input[type=text] + .form-control-feedback, .lm-plugin .input-group-sm > .input-group-addon + .form-control-feedback, .lm-plugin .input-group-sm > .input-group-lm-btn > .lm-btn + .form-control-feedback, .lm-plugin .lm-control-row .input-group-sm > .input-group-lm-btn > button + .form-control-feedback,
   .lm-plugin .input-group-sm + .form-control-feedback,
   .lm-plugin .form-group-sm .form-control + .form-control-feedback, .lm-plugin .form-group-sm .lm-control-row select + .form-control-feedback, .lm-plugin .lm-control-row .form-group-sm select + .form-control-feedback, .lm-plugin .form-group-sm .lm-control-row button + .form-control-feedback, .lm-plugin .lm-control-row .form-group-sm button + .form-control-feedback, .lm-plugin .form-group-sm .lm-control-row input[type=text] + .form-control-feedback, .lm-plugin .lm-control-row .form-group-sm input[type=text] + .form-control-feedback {
     width: 30px;
@@ -873,7 +873,7 @@
       display: inline-table;
       vertical-align: middle; }
       .lm-plugin .form-inline .input-group .input-group-addon,
-      .lm-plugin .form-inline .input-group .input-group-btn,
+      .lm-plugin .form-inline .input-group .input-group-lm-btn,
       .lm-plugin .form-inline .input-group .form-control, .lm-plugin .form-inline .input-group .lm-control-row select, .lm-plugin .lm-control-row .form-inline .input-group select, .lm-plugin .form-inline .input-group .lm-control-row button, .lm-plugin .lm-control-row .form-inline .input-group button, .lm-plugin .form-inline .input-group .lm-control-row input[type=text], .lm-plugin .lm-control-row .form-inline .input-group input[type=text] {
         width: auto; }
     .lm-plugin .form-inline .input-group > .form-control, .lm-plugin .form-inline .lm-control-row .input-group > select, .lm-plugin .lm-control-row .form-inline .input-group > select, .lm-plugin .form-inline .lm-control-row .input-group > button, .lm-plugin .lm-control-row .form-inline .input-group > button, .lm-plugin .form-inline .lm-control-row .input-group > input[type=text], .lm-plugin .lm-control-row .form-inline .input-group > input[type=text] {
@@ -929,7 +929,7 @@
     .lm-plugin .form-horizontal .form-group-sm .control-label {
       padding-top: 6px;
       font-size: 12px; } }
-  .lm-plugin .btn, .lm-plugin .lm-control-row button {
+  .lm-plugin .lm-btn, .lm-plugin .lm-control-row button {
     display: inline-block;
     margin-bottom: 0;
     font-weight: normal;
@@ -948,427 +948,427 @@
     -moz-user-select: none;
     -ms-user-select: none;
     user-select: none; }
-    .lm-plugin .btn:focus, .lm-plugin .lm-control-row button:focus, .lm-plugin .btn.focus, .lm-plugin .lm-control-row button.focus, .lm-plugin .btn:active:focus, .lm-plugin .lm-control-row button:active:focus, .lm-plugin .btn:active.focus, .lm-plugin .lm-control-row button:active.focus, .lm-plugin .btn.active:focus, .lm-plugin .lm-control-row button.active:focus, .lm-plugin .btn.active.focus, .lm-plugin .lm-control-row button.active.focus {
+    .lm-plugin .lm-btn:focus, .lm-plugin .lm-control-row button:focus, .lm-plugin .lm-btn.focus, .lm-plugin .lm-control-row button.focus, .lm-plugin .lm-btn:active:focus, .lm-plugin .lm-control-row button:active:focus, .lm-plugin .lm-btn:active.focus, .lm-plugin .lm-control-row button:active.focus, .lm-plugin .lm-btn.active:focus, .lm-plugin .lm-control-row button.active:focus, .lm-plugin .lm-btn.active.focus, .lm-plugin .lm-control-row button.active.focus {
       outline: thin dotted;
       outline: 5px auto -webkit-focus-ring-color;
       outline-offset: -2px; }
-    .lm-plugin .btn:hover, .lm-plugin .lm-control-row button:hover, .lm-plugin .btn:focus, .lm-plugin .lm-control-row button:focus, .lm-plugin .btn.focus, .lm-plugin .lm-control-row button.focus {
+    .lm-plugin .lm-btn:hover, .lm-plugin .lm-control-row button:hover, .lm-plugin .lm-btn:focus, .lm-plugin .lm-control-row button:focus, .lm-plugin .lm-btn.focus, .lm-plugin .lm-control-row button.focus {
       color: #333;
       text-decoration: none; }
-    .lm-plugin .btn:active, .lm-plugin .lm-control-row button:active, .lm-plugin .btn.active, .lm-plugin .lm-control-row button.active {
+    .lm-plugin .lm-btn:active, .lm-plugin .lm-control-row button:active, .lm-plugin .lm-btn.active, .lm-plugin .lm-control-row button.active {
       outline: 0;
       background-image: none;
       -webkit-box-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125);
       box-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125); }
-    .lm-plugin .btn.disabled, .lm-plugin .lm-control-row button.disabled, .lm-plugin .btn[disabled], .lm-plugin .lm-control-row button[disabled],
-    fieldset[disabled] .lm-plugin .btn,
+    .lm-plugin .lm-btn.disabled, .lm-plugin .lm-control-row button.disabled, .lm-plugin .lm-btn[disabled], .lm-plugin .lm-control-row button[disabled],
+    fieldset[disabled] .lm-plugin .lm-btn,
     fieldset[disabled] .lm-plugin .lm-control-row button {
       cursor: not-allowed;
       opacity: 0.65;
       filter: alpha(opacity=65);
       -webkit-box-shadow: none;
       box-shadow: none; }
-  .lm-plugin a.btn.disabled,
-  fieldset[disabled] .lm-plugin a.btn {
+  .lm-plugin a.lm-btn.disabled,
+  fieldset[disabled] .lm-plugin a.lm-btn {
     pointer-events: none; }
-  .lm-plugin .btn-default {
+  .lm-plugin .lm-btn-default {
     color: #333;
     background-color: #fff;
     border-color: #ccc; }
-    .lm-plugin .btn-default:focus, .lm-plugin .btn-default.focus {
+    .lm-plugin .lm-btn-default:focus, .lm-plugin .lm-btn-default.focus {
       color: #333;
       background-color: #e6e6e6;
       border-color: #8c8c8c; }
-    .lm-plugin .btn-default:hover {
+    .lm-plugin .lm-btn-default:hover {
       color: #333;
       background-color: #e6e6e6;
       border-color: #adadad; }
-    .lm-plugin .btn-default:active, .lm-plugin .btn-default.active,
-    .open > .lm-plugin .btn-default.dropdown-toggle {
+    .lm-plugin .lm-btn-default:active, .lm-plugin .lm-btn-default.active,
+    .open > .lm-plugin .lm-btn-default.dropdown-toggle {
       color: #333;
       background-color: #e6e6e6;
       border-color: #adadad; }
-      .lm-plugin .btn-default:active:hover, .lm-plugin .btn-default:active:focus, .lm-plugin .btn-default:active.focus, .lm-plugin .btn-default.active:hover, .lm-plugin .btn-default.active:focus, .lm-plugin .btn-default.active.focus,
-      .open > .lm-plugin .btn-default.dropdown-toggle:hover,
-      .open > .lm-plugin .btn-default.dropdown-toggle:focus,
-      .open > .lm-plugin .btn-default.dropdown-toggle.focus {
+      .lm-plugin .lm-btn-default:active:hover, .lm-plugin .lm-btn-default:active:focus, .lm-plugin .lm-btn-default:active.focus, .lm-plugin .lm-btn-default.active:hover, .lm-plugin .lm-btn-default.active:focus, .lm-plugin .lm-btn-default.active.focus,
+      .open > .lm-plugin .lm-btn-default.dropdown-toggle:hover,
+      .open > .lm-plugin .lm-btn-default.dropdown-toggle:focus,
+      .open > .lm-plugin .lm-btn-default.dropdown-toggle.focus {
         color: #333;
         background-color: #d4d4d4;
         border-color: #8c8c8c; }
-    .lm-plugin .btn-default:active, .lm-plugin .btn-default.active,
-    .open > .lm-plugin .btn-default.dropdown-toggle {
+    .lm-plugin .lm-btn-default:active, .lm-plugin .lm-btn-default.active,
+    .open > .lm-plugin .lm-btn-default.dropdown-toggle {
       background-image: none; }
-    .lm-plugin .btn-default.disabled:hover, .lm-plugin .btn-default.disabled:focus, .lm-plugin .btn-default.disabled.focus, .lm-plugin .btn-default[disabled]:hover, .lm-plugin .btn-default[disabled]:focus, .lm-plugin .btn-default[disabled].focus,
-    fieldset[disabled] .lm-plugin .btn-default:hover,
-    fieldset[disabled] .lm-plugin .btn-default:focus,
-    fieldset[disabled] .lm-plugin .btn-default.focus {
+    .lm-plugin .lm-btn-default.disabled:hover, .lm-plugin .lm-btn-default.disabled:focus, .lm-plugin .lm-btn-default.disabled.focus, .lm-plugin .lm-btn-default[disabled]:hover, .lm-plugin .lm-btn-default[disabled]:focus, .lm-plugin .lm-btn-default[disabled].focus,
+    fieldset[disabled] .lm-plugin .lm-btn-default:hover,
+    fieldset[disabled] .lm-plugin .lm-btn-default:focus,
+    fieldset[disabled] .lm-plugin .lm-btn-default.focus {
       background-color: #fff;
       border-color: #ccc; }
-    .lm-plugin .btn-default .badge {
+    .lm-plugin .lm-btn-default .badge {
       color: #fff;
       background-color: #333; }
-  .lm-plugin .btn-primary {
+  .lm-plugin .lm-btn-primary {
     color: #fff;
     background-color: #337ab7;
     border-color: #2e6da4; }
-    .lm-plugin .btn-primary:focus, .lm-plugin .btn-primary.focus {
+    .lm-plugin .lm-btn-primary:focus, .lm-plugin .lm-btn-primary.focus {
       color: #fff;
       background-color: #286090;
       border-color: #122b40; }
-    .lm-plugin .btn-primary:hover {
+    .lm-plugin .lm-btn-primary:hover {
       color: #fff;
       background-color: #286090;
       border-color: #204d74; }
-    .lm-plugin .btn-primary:active, .lm-plugin .btn-primary.active,
-    .open > .lm-plugin .btn-primary.dropdown-toggle {
+    .lm-plugin .lm-btn-primary:active, .lm-plugin .lm-btn-primary.active,
+    .open > .lm-plugin .lm-btn-primary.dropdown-toggle {
       color: #fff;
       background-color: #286090;
       border-color: #204d74; }
-      .lm-plugin .btn-primary:active:hover, .lm-plugin .btn-primary:active:focus, .lm-plugin .btn-primary:active.focus, .lm-plugin .btn-primary.active:hover, .lm-plugin .btn-primary.active:focus, .lm-plugin .btn-primary.active.focus,
-      .open > .lm-plugin .btn-primary.dropdown-toggle:hover,
-      .open > .lm-plugin .btn-primary.dropdown-toggle:focus,
-      .open > .lm-plugin .btn-primary.dropdown-toggle.focus {
+      .lm-plugin .lm-btn-primary:active:hover, .lm-plugin .lm-btn-primary:active:focus, .lm-plugin .lm-btn-primary:active.focus, .lm-plugin .lm-btn-primary.active:hover, .lm-plugin .lm-btn-primary.active:focus, .lm-plugin .lm-btn-primary.active.focus,
+      .open > .lm-plugin .lm-btn-primary.dropdown-toggle:hover,
+      .open > .lm-plugin .lm-btn-primary.dropdown-toggle:focus,
+      .open > .lm-plugin .lm-btn-primary.dropdown-toggle.focus {
         color: #fff;
         background-color: #204d74;
         border-color: #122b40; }
-    .lm-plugin .btn-primary:active, .lm-plugin .btn-primary.active,
-    .open > .lm-plugin .btn-primary.dropdown-toggle {
+    .lm-plugin .lm-btn-primary:active, .lm-plugin .lm-btn-primary.active,
+    .open > .lm-plugin .lm-btn-primary.dropdown-toggle {
       background-image: none; }
-    .lm-plugin .btn-primary.disabled:hover, .lm-plugin .btn-primary.disabled:focus, .lm-plugin .btn-primary.disabled.focus, .lm-plugin .btn-primary[disabled]:hover, .lm-plugin .btn-primary[disabled]:focus, .lm-plugin .btn-primary[disabled].focus,
-    fieldset[disabled] .lm-plugin .btn-primary:hover,
-    fieldset[disabled] .lm-plugin .btn-primary:focus,
-    fieldset[disabled] .lm-plugin .btn-primary.focus {
+    .lm-plugin .lm-btn-primary.disabled:hover, .lm-plugin .lm-btn-primary.disabled:focus, .lm-plugin .lm-btn-primary.disabled.focus, .lm-plugin .lm-btn-primary[disabled]:hover, .lm-plugin .lm-btn-primary[disabled]:focus, .lm-plugin .lm-btn-primary[disabled].focus,
+    fieldset[disabled] .lm-plugin .lm-btn-primary:hover,
+    fieldset[disabled] .lm-plugin .lm-btn-primary:focus,
+    fieldset[disabled] .lm-plugin .lm-btn-primary.focus {
       background-color: #337ab7;
       border-color: #2e6da4; }
-    .lm-plugin .btn-primary .badge {
+    .lm-plugin .lm-btn-primary .badge {
       color: #337ab7;
       background-color: #fff; }
-  .lm-plugin .btn-success {
+  .lm-plugin .lm-btn-success {
     color: #fff;
     background-color: #5cb85c;
     border-color: #4cae4c; }
-    .lm-plugin .btn-success:focus, .lm-plugin .btn-success.focus {
+    .lm-plugin .lm-btn-success:focus, .lm-plugin .lm-btn-success.focus {
       color: #fff;
       background-color: #449d44;
       border-color: #255625; }
-    .lm-plugin .btn-success:hover {
+    .lm-plugin .lm-btn-success:hover {
       color: #fff;
       background-color: #449d44;
       border-color: #398439; }
-    .lm-plugin .btn-success:active, .lm-plugin .btn-success.active,
-    .open > .lm-plugin .btn-success.dropdown-toggle {
+    .lm-plugin .lm-btn-success:active, .lm-plugin .lm-btn-success.active,
+    .open > .lm-plugin .lm-btn-success.dropdown-toggle {
       color: #fff;
       background-color: #449d44;
       border-color: #398439; }
-      .lm-plugin .btn-success:active:hover, .lm-plugin .btn-success:active:focus, .lm-plugin .btn-success:active.focus, .lm-plugin .btn-success.active:hover, .lm-plugin .btn-success.active:focus, .lm-plugin .btn-success.active.focus,
-      .open > .lm-plugin .btn-success.dropdown-toggle:hover,
-      .open > .lm-plugin .btn-success.dropdown-toggle:focus,
-      .open > .lm-plugin .btn-success.dropdown-toggle.focus {
+      .lm-plugin .lm-btn-success:active:hover, .lm-plugin .lm-btn-success:active:focus, .lm-plugin .lm-btn-success:active.focus, .lm-plugin .lm-btn-success.active:hover, .lm-plugin .lm-btn-success.active:focus, .lm-plugin .lm-btn-success.active.focus,
+      .open > .lm-plugin .lm-btn-success.dropdown-toggle:hover,
+      .open > .lm-plugin .lm-btn-success.dropdown-toggle:focus,
+      .open > .lm-plugin .lm-btn-success.dropdown-toggle.focus {
         color: #fff;
         background-color: #398439;
         border-color: #255625; }
-    .lm-plugin .btn-success:active, .lm-plugin .btn-success.active,
-    .open > .lm-plugin .btn-success.dropdown-toggle {
+    .lm-plugin .lm-btn-success:active, .lm-plugin .lm-btn-success.active,
+    .open > .lm-plugin .lm-btn-success.dropdown-toggle {
       background-image: none; }
-    .lm-plugin .btn-success.disabled:hover, .lm-plugin .btn-success.disabled:focus, .lm-plugin .btn-success.disabled.focus, .lm-plugin .btn-success[disabled]:hover, .lm-plugin .btn-success[disabled]:focus, .lm-plugin .btn-success[disabled].focus,
-    fieldset[disabled] .lm-plugin .btn-success:hover,
-    fieldset[disabled] .lm-plugin .btn-success:focus,
-    fieldset[disabled] .lm-plugin .btn-success.focus {
+    .lm-plugin .lm-btn-success.disabled:hover, .lm-plugin .lm-btn-success.disabled:focus, .lm-plugin .lm-btn-success.disabled.focus, .lm-plugin .lm-btn-success[disabled]:hover, .lm-plugin .lm-btn-success[disabled]:focus, .lm-plugin .lm-btn-success[disabled].focus,
+    fieldset[disabled] .lm-plugin .lm-btn-success:hover,
+    fieldset[disabled] .lm-plugin .lm-btn-success:focus,
+    fieldset[disabled] .lm-plugin .lm-btn-success.focus {
       background-color: #5cb85c;
       border-color: #4cae4c; }
-    .lm-plugin .btn-success .badge {
+    .lm-plugin .lm-btn-success .badge {
       color: #5cb85c;
       background-color: #fff; }
-  .lm-plugin .btn-info {
+  .lm-plugin .lm-btn-info {
     color: #fff;
     background-color: #5bc0de;
     border-color: #46b8da; }
-    .lm-plugin .btn-info:focus, .lm-plugin .btn-info.focus {
+    .lm-plugin .lm-btn-info:focus, .lm-plugin .lm-btn-info.focus {
       color: #fff;
       background-color: #31b0d5;
       border-color: #1b6d85; }
-    .lm-plugin .btn-info:hover {
+    .lm-plugin .lm-btn-info:hover {
       color: #fff;
       background-color: #31b0d5;
       border-color: #269abc; }
-    .lm-plugin .btn-info:active, .lm-plugin .btn-info.active,
-    .open > .lm-plugin .btn-info.dropdown-toggle {
+    .lm-plugin .lm-btn-info:active, .lm-plugin .lm-btn-info.active,
+    .open > .lm-plugin .lm-btn-info.dropdown-toggle {
       color: #fff;
       background-color: #31b0d5;
       border-color: #269abc; }
-      .lm-plugin .btn-info:active:hover, .lm-plugin .btn-info:active:focus, .lm-plugin .btn-info:active.focus, .lm-plugin .btn-info.active:hover, .lm-plugin .btn-info.active:focus, .lm-plugin .btn-info.active.focus,
-      .open > .lm-plugin .btn-info.dropdown-toggle:hover,
-      .open > .lm-plugin .btn-info.dropdown-toggle:focus,
-      .open > .lm-plugin .btn-info.dropdown-toggle.focus {
+      .lm-plugin .lm-btn-info:active:hover, .lm-plugin .lm-btn-info:active:focus, .lm-plugin .lm-btn-info:active.focus, .lm-plugin .lm-btn-info.active:hover, .lm-plugin .lm-btn-info.active:focus, .lm-plugin .lm-btn-info.active.focus,
+      .open > .lm-plugin .lm-btn-info.dropdown-toggle:hover,
+      .open > .lm-plugin .lm-btn-info.dropdown-toggle:focus,
+      .open > .lm-plugin .lm-btn-info.dropdown-toggle.focus {
         color: #fff;
         background-color: #269abc;
         border-color: #1b6d85; }
-    .lm-plugin .btn-info:active, .lm-plugin .btn-info.active,
-    .open > .lm-plugin .btn-info.dropdown-toggle {
+    .lm-plugin .lm-btn-info:active, .lm-plugin .lm-btn-info.active,
+    .open > .lm-plugin .lm-btn-info.dropdown-toggle {
       background-image: none; }
-    .lm-plugin .btn-info.disabled:hover, .lm-plugin .btn-info.disabled:focus, .lm-plugin .btn-info.disabled.focus, .lm-plugin .btn-info[disabled]:hover, .lm-plugin .btn-info[disabled]:focus, .lm-plugin .btn-info[disabled].focus,
-    fieldset[disabled] .lm-plugin .btn-info:hover,
-    fieldset[disabled] .lm-plugin .btn-info:focus,
-    fieldset[disabled] .lm-plugin .btn-info.focus {
+    .lm-plugin .lm-btn-info.disabled:hover, .lm-plugin .lm-btn-info.disabled:focus, .lm-plugin .lm-btn-info.disabled.focus, .lm-plugin .lm-btn-info[disabled]:hover, .lm-plugin .lm-btn-info[disabled]:focus, .lm-plugin .lm-btn-info[disabled].focus,
+    fieldset[disabled] .lm-plugin .lm-btn-info:hover,
+    fieldset[disabled] .lm-plugin .lm-btn-info:focus,
+    fieldset[disabled] .lm-plugin .lm-btn-info.focus {
       background-color: #5bc0de;
       border-color: #46b8da; }
-    .lm-plugin .btn-info .badge {
+    .lm-plugin .lm-btn-info .badge {
       color: #5bc0de;
       background-color: #fff; }
-  .lm-plugin .btn-warning {
+  .lm-plugin .lm-btn-warning {
     color: #fff;
     background-color: #f0ad4e;
     border-color: #eea236; }
-    .lm-plugin .btn-warning:focus, .lm-plugin .btn-warning.focus {
+    .lm-plugin .lm-btn-warning:focus, .lm-plugin .lm-btn-warning.focus {
       color: #fff;
       background-color: #ec971f;
       border-color: #985f0d; }
-    .lm-plugin .btn-warning:hover {
+    .lm-plugin .lm-btn-warning:hover {
       color: #fff;
       background-color: #ec971f;
       border-color: #d58512; }
-    .lm-plugin .btn-warning:active, .lm-plugin .btn-warning.active,
-    .open > .lm-plugin .btn-warning.dropdown-toggle {
+    .lm-plugin .lm-btn-warning:active, .lm-plugin .lm-btn-warning.active,
+    .open > .lm-plugin .lm-btn-warning.dropdown-toggle {
       color: #fff;
       background-color: #ec971f;
       border-color: #d58512; }
-      .lm-plugin .btn-warning:active:hover, .lm-plugin .btn-warning:active:focus, .lm-plugin .btn-warning:active.focus, .lm-plugin .btn-warning.active:hover, .lm-plugin .btn-warning.active:focus, .lm-plugin .btn-warning.active.focus,
-      .open > .lm-plugin .btn-warning.dropdown-toggle:hover,
-      .open > .lm-plugin .btn-warning.dropdown-toggle:focus,
-      .open > .lm-plugin .btn-warning.dropdown-toggle.focus {
+      .lm-plugin .lm-btn-warning:active:hover, .lm-plugin .lm-btn-warning:active:focus, .lm-plugin .lm-btn-warning:active.focus, .lm-plugin .lm-btn-warning.active:hover, .lm-plugin .lm-btn-warning.active:focus, .lm-plugin .lm-btn-warning.active.focus,
+      .open > .lm-plugin .lm-btn-warning.dropdown-toggle:hover,
+      .open > .lm-plugin .lm-btn-warning.dropdown-toggle:focus,
+      .open > .lm-plugin .lm-btn-warning.dropdown-toggle.focus {
         color: #fff;
         background-color: #d58512;
         border-color: #985f0d; }
-    .lm-plugin .btn-warning:active, .lm-plugin .btn-warning.active,
-    .open > .lm-plugin .btn-warning.dropdown-toggle {
+    .lm-plugin .lm-btn-warning:active, .lm-plugin .lm-btn-warning.active,
+    .open > .lm-plugin .lm-btn-warning.dropdown-toggle {
       background-image: none; }
-    .lm-plugin .btn-warning.disabled:hover, .lm-plugin .btn-warning.disabled:focus, .lm-plugin .btn-warning.disabled.focus, .lm-plugin .btn-warning[disabled]:hover, .lm-plugin .btn-warning[disabled]:focus, .lm-plugin .btn-warning[disabled].focus,
-    fieldset[disabled] .lm-plugin .btn-warning:hover,
-    fieldset[disabled] .lm-plugin .btn-warning:focus,
-    fieldset[disabled] .lm-plugin .btn-warning.focus {
+    .lm-plugin .lm-btn-warning.disabled:hover, .lm-plugin .lm-btn-warning.disabled:focus, .lm-plugin .lm-btn-warning.disabled.focus, .lm-plugin .lm-btn-warning[disabled]:hover, .lm-plugin .lm-btn-warning[disabled]:focus, .lm-plugin .lm-btn-warning[disabled].focus,
+    fieldset[disabled] .lm-plugin .lm-btn-warning:hover,
+    fieldset[disabled] .lm-plugin .lm-btn-warning:focus,
+    fieldset[disabled] .lm-plugin .lm-btn-warning.focus {
       background-color: #f0ad4e;
       border-color: #eea236; }
-    .lm-plugin .btn-warning .badge {
+    .lm-plugin .lm-btn-warning .badge {
       color: #f0ad4e;
       background-color: #fff; }
-  .lm-plugin .btn-danger {
+  .lm-plugin .lm-btn-danger {
     color: #fff;
     background-color: #d9534f;
     border-color: #d43f3a; }
-    .lm-plugin .btn-danger:focus, .lm-plugin .btn-danger.focus {
+    .lm-plugin .lm-btn-danger:focus, .lm-plugin .lm-btn-danger.focus {
       color: #fff;
       background-color: #c9302c;
       border-color: #761c19; }
-    .lm-plugin .btn-danger:hover {
+    .lm-plugin .lm-btn-danger:hover {
       color: #fff;
       background-color: #c9302c;
       border-color: #ac2925; }
-    .lm-plugin .btn-danger:active, .lm-plugin .btn-danger.active,
-    .open > .lm-plugin .btn-danger.dropdown-toggle {
+    .lm-plugin .lm-btn-danger:active, .lm-plugin .lm-btn-danger.active,
+    .open > .lm-plugin .lm-btn-danger.dropdown-toggle {
       color: #fff;
       background-color: #c9302c;
       border-color: #ac2925; }
-      .lm-plugin .btn-danger:active:hover, .lm-plugin .btn-danger:active:focus, .lm-plugin .btn-danger:active.focus, .lm-plugin .btn-danger.active:hover, .lm-plugin .btn-danger.active:focus, .lm-plugin .btn-danger.active.focus,
-      .open > .lm-plugin .btn-danger.dropdown-toggle:hover,
-      .open > .lm-plugin .btn-danger.dropdown-toggle:focus,
-      .open > .lm-plugin .btn-danger.dropdown-toggle.focus {
+      .lm-plugin .lm-btn-danger:active:hover, .lm-plugin .lm-btn-danger:active:focus, .lm-plugin .lm-btn-danger:active.focus, .lm-plugin .lm-btn-danger.active:hover, .lm-plugin .lm-btn-danger.active:focus, .lm-plugin .lm-btn-danger.active.focus,
+      .open > .lm-plugin .lm-btn-danger.dropdown-toggle:hover,
+      .open > .lm-plugin .lm-btn-danger.dropdown-toggle:focus,
+      .open > .lm-plugin .lm-btn-danger.dropdown-toggle.focus {
         color: #fff;
         background-color: #ac2925;
         border-color: #761c19; }
-    .lm-plugin .btn-danger:active, .lm-plugin .btn-danger.active,
-    .open > .lm-plugin .btn-danger.dropdown-toggle {
+    .lm-plugin .lm-btn-danger:active, .lm-plugin .lm-btn-danger.active,
+    .open > .lm-plugin .lm-btn-danger.dropdown-toggle {
       background-image: none; }
-    .lm-plugin .btn-danger.disabled:hover, .lm-plugin .btn-danger.disabled:focus, .lm-plugin .btn-danger.disabled.focus, .lm-plugin .btn-danger[disabled]:hover, .lm-plugin .btn-danger[disabled]:focus, .lm-plugin .btn-danger[disabled].focus,
-    fieldset[disabled] .lm-plugin .btn-danger:hover,
-    fieldset[disabled] .lm-plugin .btn-danger:focus,
-    fieldset[disabled] .lm-plugin .btn-danger.focus {
+    .lm-plugin .lm-btn-danger.disabled:hover, .lm-plugin .lm-btn-danger.disabled:focus, .lm-plugin .lm-btn-danger.disabled.focus, .lm-plugin .lm-btn-danger[disabled]:hover, .lm-plugin .lm-btn-danger[disabled]:focus, .lm-plugin .lm-btn-danger[disabled].focus,
+    fieldset[disabled] .lm-plugin .lm-btn-danger:hover,
+    fieldset[disabled] .lm-plugin .lm-btn-danger:focus,
+    fieldset[disabled] .lm-plugin .lm-btn-danger.focus {
       background-color: #d9534f;
       border-color: #d43f3a; }
-    .lm-plugin .btn-danger .badge {
+    .lm-plugin .lm-btn-danger .badge {
       color: #d9534f;
       background-color: #fff; }
-  .lm-plugin .btn-link {
+  .lm-plugin .lm-btn-link {
     color: #337ab7;
     font-weight: normal;
     border-radius: 0; }
-    .lm-plugin .btn-link, .lm-plugin .btn-link:active, .lm-plugin .btn-link.active, .lm-plugin .btn-link[disabled],
-    fieldset[disabled] .lm-plugin .btn-link {
+    .lm-plugin .lm-btn-link, .lm-plugin .lm-btn-link:active, .lm-plugin .lm-btn-link.active, .lm-plugin .lm-btn-link[disabled],
+    fieldset[disabled] .lm-plugin .lm-btn-link {
       background-color: transparent;
       -webkit-box-shadow: none;
       box-shadow: none; }
-    .lm-plugin .btn-link, .lm-plugin .btn-link:hover, .lm-plugin .btn-link:focus, .lm-plugin .btn-link:active {
+    .lm-plugin .lm-btn-link, .lm-plugin .lm-btn-link:hover, .lm-plugin .lm-btn-link:focus, .lm-plugin .lm-btn-link:active {
       border-color: transparent; }
-    .lm-plugin .btn-link:hover, .lm-plugin .btn-link:focus {
+    .lm-plugin .lm-btn-link:hover, .lm-plugin .lm-btn-link:focus {
       color: #23527c;
       text-decoration: underline;
       background-color: transparent; }
-    .lm-plugin .btn-link[disabled]:hover, .lm-plugin .btn-link[disabled]:focus,
-    fieldset[disabled] .lm-plugin .btn-link:hover,
-    fieldset[disabled] .lm-plugin .btn-link:focus {
+    .lm-plugin .lm-btn-link[disabled]:hover, .lm-plugin .lm-btn-link[disabled]:focus,
+    fieldset[disabled] .lm-plugin .lm-btn-link:hover,
+    fieldset[disabled] .lm-plugin .lm-btn-link:focus {
       color: #777777;
       text-decoration: none; }
-  .lm-plugin .btn-lg, .lm-plugin .btn-group-lg > .btn, .lm-plugin .lm-control-row .btn-group-lg > button {
+  .lm-plugin .lm-btn-lg, .lm-plugin .lm-btn-group-lg > .lm-btn, .lm-plugin .lm-control-row .lm-btn-group-lg > button {
     padding: 10px 16px;
     font-size: 18px;
     line-height: 1.33333;
     border-radius: 0; }
-  .lm-plugin .btn-sm, .lm-plugin .btn-group-sm > .btn, .lm-plugin .lm-control-row .btn-group-sm > button {
+  .lm-plugin .lm-btn-sm, .lm-plugin .lm-btn-group-sm > .lm-btn, .lm-plugin .lm-control-row .lm-btn-group-sm > button {
     padding: 5px 10px;
     font-size: 12px;
     line-height: 1.5;
     border-radius: 0; }
-  .lm-plugin .btn-xs, .lm-plugin .btn-group-xs > .btn, .lm-plugin .lm-control-row .btn-group-xs > button {
+  .lm-plugin .lm-btn-xs, .lm-plugin .lm-btn-group-xs > .lm-btn, .lm-plugin .lm-control-row .lm-btn-group-xs > button {
     padding: 1px 5px;
     font-size: 12px;
     line-height: 1.5;
     border-radius: 0; }
-  .lm-plugin .btn-block, .lm-plugin .lm-control-row button {
+  .lm-plugin .lm-btn-block, .lm-plugin .lm-control-row button {
     display: block;
     width: 100%; }
-  .lm-plugin .btn-block + .btn-block, .lm-plugin .lm-control-row button + .btn-block, .lm-plugin .lm-control-row .btn-block + button, .lm-plugin .lm-control-row button + button {
+  .lm-plugin .lm-btn-block + .lm-btn-block, .lm-plugin .lm-control-row button + .lm-btn-block, .lm-plugin .lm-control-row .lm-btn-block + button, .lm-plugin .lm-control-row button + button {
     margin-top: 5px; }
-  .lm-plugin input[type="submit"].btn-block,
-  .lm-plugin input[type="reset"].btn-block,
-  .lm-plugin input[type="button"].btn-block {
+  .lm-plugin input[type="submit"].lm-btn-block,
+  .lm-plugin input[type="reset"].lm-btn-block,
+  .lm-plugin input[type="button"].lm-btn-block {
     width: 100%; }
-  .lm-plugin .btn-group,
-  .lm-plugin .btn-group-vertical {
+  .lm-plugin .lm-btn-group,
+  .lm-plugin .lm-btn-group-vertical {
     position: relative;
     display: inline-block;
     vertical-align: middle; }
-    .lm-plugin .btn-group > .btn, .lm-plugin .lm-control-row .btn-group > button,
-    .lm-plugin .btn-group-vertical > .btn, .lm-plugin .lm-control-row .btn-group-vertical > button {
+    .lm-plugin .lm-btn-group > .lm-btn, .lm-plugin .lm-control-row .lm-btn-group > button,
+    .lm-plugin .lm-btn-group-vertical > .lm-btn, .lm-plugin .lm-control-row .lm-btn-group-vertical > button {
       position: relative;
       float: left; }
-      .lm-plugin .btn-group > .btn:hover, .lm-plugin .lm-control-row .btn-group > button:hover, .lm-plugin .btn-group > .btn:focus, .lm-plugin .lm-control-row .btn-group > button:focus, .lm-plugin .btn-group > .btn:active, .lm-plugin .lm-control-row .btn-group > button:active, .lm-plugin .btn-group > .btn.active, .lm-plugin .lm-control-row .btn-group > button.active,
-      .lm-plugin .btn-group-vertical > .btn:hover, .lm-plugin .lm-control-row .btn-group-vertical > button:hover,
-      .lm-plugin .btn-group-vertical > .btn:focus, .lm-plugin .lm-control-row .btn-group-vertical > button:focus,
-      .lm-plugin .btn-group-vertical > .btn:active, .lm-plugin .lm-control-row .btn-group-vertical > button:active,
-      .lm-plugin .btn-group-vertical > .btn.active, .lm-plugin .lm-control-row .btn-group-vertical > button.active {
+      .lm-plugin .lm-btn-group > .lm-btn:hover, .lm-plugin .lm-control-row .lm-btn-group > button:hover, .lm-plugin .lm-btn-group > .lm-btn:focus, .lm-plugin .lm-control-row .lm-btn-group > button:focus, .lm-plugin .lm-btn-group > .lm-btn:active, .lm-plugin .lm-control-row .lm-btn-group > button:active, .lm-plugin .lm-btn-group > .lm-btn.active, .lm-plugin .lm-control-row .lm-btn-group > button.active,
+      .lm-plugin .lm-btn-group-vertical > .lm-btn:hover, .lm-plugin .lm-control-row .lm-btn-group-vertical > button:hover,
+      .lm-plugin .lm-btn-group-vertical > .lm-btn:focus, .lm-plugin .lm-control-row .lm-btn-group-vertical > button:focus,
+      .lm-plugin .lm-btn-group-vertical > .lm-btn:active, .lm-plugin .lm-control-row .lm-btn-group-vertical > button:active,
+      .lm-plugin .lm-btn-group-vertical > .lm-btn.active, .lm-plugin .lm-control-row .lm-btn-group-vertical > button.active {
         z-index: 2; }
-  .lm-plugin .btn-group .btn + .btn, .lm-plugin .btn-group .lm-control-row button + .btn, .lm-plugin .lm-control-row .btn-group button + .btn, .lm-plugin .btn-group .lm-control-row .btn + button, .lm-plugin .lm-control-row .btn-group .btn + button, .lm-plugin .btn-group .lm-control-row button + button, .lm-plugin .lm-control-row .btn-group button + button,
-  .lm-plugin .btn-group .btn + .btn-group, .lm-plugin .btn-group .lm-control-row button + .btn-group, .lm-plugin .lm-control-row .btn-group button + .btn-group,
-  .lm-plugin .btn-group .btn-group + .btn, .lm-plugin .btn-group .lm-control-row .btn-group + button, .lm-plugin .lm-control-row .btn-group .btn-group + button,
-  .lm-plugin .btn-group .btn-group + .btn-group {
+  .lm-plugin .lm-btn-group .lm-btn + .lm-btn, .lm-plugin .lm-btn-group .lm-control-row button + .lm-btn, .lm-plugin .lm-control-row .lm-btn-group button + .lm-btn, .lm-plugin .lm-btn-group .lm-control-row .lm-btn + button, .lm-plugin .lm-control-row .lm-btn-group .lm-btn + button, .lm-plugin .lm-btn-group .lm-control-row button + button, .lm-plugin .lm-control-row .lm-btn-group button + button,
+  .lm-plugin .lm-btn-group .lm-btn + .lm-btn-group, .lm-plugin .lm-btn-group .lm-control-row button + .lm-btn-group, .lm-plugin .lm-control-row .lm-btn-group button + .lm-btn-group,
+  .lm-plugin .lm-btn-group .lm-btn-group + .lm-btn, .lm-plugin .lm-btn-group .lm-control-row .lm-btn-group + button, .lm-plugin .lm-control-row .lm-btn-group .lm-btn-group + button,
+  .lm-plugin .lm-btn-group .lm-btn-group + .lm-btn-group {
     margin-left: -1px; }
-  .lm-plugin .btn-toolbar {
+  .lm-plugin .lm-btn-toolbar {
     margin-left: -5px; }
-    .lm-plugin .btn-toolbar:before, .lm-plugin .btn-toolbar:after {
+    .lm-plugin .lm-btn-toolbar:before, .lm-plugin .lm-btn-toolbar:after {
       content: " ";
       display: table; }
-    .lm-plugin .btn-toolbar:after {
+    .lm-plugin .lm-btn-toolbar:after {
       clear: both; }
-    .lm-plugin .btn-toolbar .btn, .lm-plugin .btn-toolbar .lm-control-row button, .lm-plugin .lm-control-row .btn-toolbar button,
-    .lm-plugin .btn-toolbar .btn-group,
-    .lm-plugin .btn-toolbar .input-group {
+    .lm-plugin .lm-btn-toolbar .lm-btn, .lm-plugin .lm-btn-toolbar .lm-control-row button, .lm-plugin .lm-control-row .lm-btn-toolbar button,
+    .lm-plugin .lm-btn-toolbar .lm-btn-group,
+    .lm-plugin .lm-btn-toolbar .input-group {
       float: left; }
-    .lm-plugin .btn-toolbar > .btn, .lm-plugin .lm-control-row .btn-toolbar > button,
-    .lm-plugin .btn-toolbar > .btn-group,
-    .lm-plugin .btn-toolbar > .input-group {
+    .lm-plugin .lm-btn-toolbar > .lm-btn, .lm-plugin .lm-control-row .lm-btn-toolbar > button,
+    .lm-plugin .lm-btn-toolbar > .lm-btn-group,
+    .lm-plugin .lm-btn-toolbar > .input-group {
       margin-left: 5px; }
-  .lm-plugin .btn-group > .btn:not(:first-child):not(:last-child):not(.dropdown-toggle), .lm-plugin .lm-control-row .btn-group > button:not(:first-child):not(:last-child):not(.dropdown-toggle) {
+  .lm-plugin .lm-btn-group > .lm-btn:not(:first-child):not(:last-child):not(.dropdown-toggle), .lm-plugin .lm-control-row .lm-btn-group > button:not(:first-child):not(:last-child):not(.dropdown-toggle) {
     border-radius: 0; }
-  .lm-plugin .btn-group > .btn:first-child, .lm-plugin .lm-control-row .btn-group > button:first-child {
+  .lm-plugin .lm-btn-group > .lm-btn:first-child, .lm-plugin .lm-control-row .lm-btn-group > button:first-child {
     margin-left: 0; }
-    .lm-plugin .btn-group > .btn:first-child:not(:last-child):not(.dropdown-toggle), .lm-plugin .lm-control-row .btn-group > button:first-child:not(:last-child):not(.dropdown-toggle) {
+    .lm-plugin .lm-btn-group > .lm-btn:first-child:not(:last-child):not(.dropdown-toggle), .lm-plugin .lm-control-row .lm-btn-group > button:first-child:not(:last-child):not(.dropdown-toggle) {
       border-bottom-right-radius: 0;
       border-top-right-radius: 0; }
-  .lm-plugin .btn-group > .btn:last-child:not(:first-child), .lm-plugin .lm-control-row .btn-group > button:last-child:not(:first-child),
-  .lm-plugin .btn-group > .dropdown-toggle:not(:first-child) {
+  .lm-plugin .lm-btn-group > .lm-btn:last-child:not(:first-child), .lm-plugin .lm-control-row .lm-btn-group > button:last-child:not(:first-child),
+  .lm-plugin .lm-btn-group > .dropdown-toggle:not(:first-child) {
     border-bottom-left-radius: 0;
     border-top-left-radius: 0; }
-  .lm-plugin .btn-group > .btn-group {
+  .lm-plugin .lm-btn-group > .lm-btn-group {
     float: left; }
-  .lm-plugin .btn-group > .btn-group:not(:first-child):not(:last-child) > .btn, .lm-plugin .lm-control-row .btn-group > .btn-group:not(:first-child):not(:last-child) > button {
+  .lm-plugin .lm-btn-group > .lm-btn-group:not(:first-child):not(:last-child) > .lm-btn, .lm-plugin .lm-control-row .lm-btn-group > .lm-btn-group:not(:first-child):not(:last-child) > button {
     border-radius: 0; }
-  .lm-plugin .btn-group > .btn-group:first-child:not(:last-child) > .btn:last-child, .lm-plugin .lm-control-row .btn-group > .btn-group:first-child:not(:last-child) > button:last-child,
-  .lm-plugin .btn-group > .btn-group:first-child:not(:last-child) > .dropdown-toggle {
+  .lm-plugin .lm-btn-group > .lm-btn-group:first-child:not(:last-child) > .lm-btn:last-child, .lm-plugin .lm-control-row .lm-btn-group > .lm-btn-group:first-child:not(:last-child) > button:last-child,
+  .lm-plugin .lm-btn-group > .lm-btn-group:first-child:not(:last-child) > .dropdown-toggle {
     border-bottom-right-radius: 0;
     border-top-right-radius: 0; }
-  .lm-plugin .btn-group > .btn-group:last-child:not(:first-child) > .btn:first-child, .lm-plugin .lm-control-row .btn-group > .btn-group:last-child:not(:first-child) > button:first-child {
+  .lm-plugin .lm-btn-group > .lm-btn-group:last-child:not(:first-child) > .lm-btn:first-child, .lm-plugin .lm-control-row .lm-btn-group > .lm-btn-group:last-child:not(:first-child) > button:first-child {
     border-bottom-left-radius: 0;
     border-top-left-radius: 0; }
-  .lm-plugin .btn-group .dropdown-toggle:active,
-  .lm-plugin .btn-group.open .dropdown-toggle {
+  .lm-plugin .lm-btn-group .dropdown-toggle:active,
+  .lm-plugin .lm-btn-group.open .dropdown-toggle {
     outline: 0; }
-  .lm-plugin .btn-group > .btn + .dropdown-toggle, .lm-plugin .lm-control-row .btn-group > button + .dropdown-toggle {
+  .lm-plugin .lm-btn-group > .lm-btn + .dropdown-toggle, .lm-plugin .lm-control-row .lm-btn-group > button + .dropdown-toggle {
     padding-left: 8px;
     padding-right: 8px; }
-  .lm-plugin .btn-group > .btn-lg + .dropdown-toggle, .lm-plugin .btn-group-lg.btn-group > .btn + .dropdown-toggle, .lm-plugin .lm-control-row .btn-group-lg.btn-group > button + .dropdown-toggle {
+  .lm-plugin .lm-btn-group > .lm-btn-lg + .dropdown-toggle, .lm-plugin .lm-btn-group-lg.lm-btn-group > .lm-btn + .dropdown-toggle, .lm-plugin .lm-control-row .lm-btn-group-lg.lm-btn-group > button + .dropdown-toggle {
     padding-left: 12px;
     padding-right: 12px; }
-  .lm-plugin .btn-group.open .dropdown-toggle {
+  .lm-plugin .lm-btn-group.open .dropdown-toggle {
     -webkit-box-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125);
     box-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125); }
-    .lm-plugin .btn-group.open .dropdown-toggle.btn-link {
+    .lm-plugin .lm-btn-group.open .dropdown-toggle.lm-btn-link {
       -webkit-box-shadow: none;
       box-shadow: none; }
-  .lm-plugin .btn .caret, .lm-plugin .lm-control-row button .caret {
+  .lm-plugin .lm-btn .caret, .lm-plugin .lm-control-row button .caret {
     margin-left: 0; }
-  .lm-plugin .btn-lg .caret, .lm-plugin .btn-group-lg > .btn .caret, .lm-plugin .lm-control-row .btn-group-lg > button .caret {
+  .lm-plugin .lm-btn-lg .caret, .lm-plugin .lm-btn-group-lg > .lm-btn .caret, .lm-plugin .lm-control-row .lm-btn-group-lg > button .caret {
     border-width: 5px 5px 0;
     border-bottom-width: 0; }
-  .lm-plugin .dropup .btn-lg .caret, .lm-plugin .dropup .btn-group-lg > .btn .caret, .lm-plugin .dropup .lm-control-row .btn-group-lg > button .caret, .lm-plugin .lm-control-row .dropup .btn-group-lg > button .caret {
+  .lm-plugin .dropup .lm-btn-lg .caret, .lm-plugin .dropup .lm-btn-group-lg > .lm-btn .caret, .lm-plugin .dropup .lm-control-row .lm-btn-group-lg > button .caret, .lm-plugin .lm-control-row .dropup .lm-btn-group-lg > button .caret {
     border-width: 0 5px 5px; }
-  .lm-plugin .btn-group-vertical > .btn, .lm-plugin .lm-control-row .btn-group-vertical > button,
-  .lm-plugin .btn-group-vertical > .btn-group,
-  .lm-plugin .btn-group-vertical > .btn-group > .btn, .lm-plugin .lm-control-row .btn-group-vertical > .btn-group > button {
+  .lm-plugin .lm-btn-group-vertical > .lm-btn, .lm-plugin .lm-control-row .lm-btn-group-vertical > button,
+  .lm-plugin .lm-btn-group-vertical > .lm-btn-group,
+  .lm-plugin .lm-btn-group-vertical > .lm-btn-group > .lm-btn, .lm-plugin .lm-control-row .lm-btn-group-vertical > .lm-btn-group > button {
     display: block;
     float: none;
     width: 100%;
     max-width: 100%; }
-  .lm-plugin .btn-group-vertical > .btn-group:before, .lm-plugin .btn-group-vertical > .btn-group:after {
+  .lm-plugin .lm-btn-group-vertical > .lm-btn-group:before, .lm-plugin .lm-btn-group-vertical > .lm-btn-group:after {
     content: " ";
     display: table; }
-  .lm-plugin .btn-group-vertical > .btn-group:after {
+  .lm-plugin .lm-btn-group-vertical > .lm-btn-group:after {
     clear: both; }
-  .lm-plugin .btn-group-vertical > .btn-group > .btn, .lm-plugin .lm-control-row .btn-group-vertical > .btn-group > button {
+  .lm-plugin .lm-btn-group-vertical > .lm-btn-group > .lm-btn, .lm-plugin .lm-control-row .lm-btn-group-vertical > .lm-btn-group > button {
     float: none; }
-  .lm-plugin .btn-group-vertical > .btn + .btn, .lm-plugin .lm-control-row .btn-group-vertical > button + .btn, .lm-plugin .lm-control-row .btn-group-vertical > .btn + button, .lm-plugin .lm-control-row .btn-group-vertical > button + button,
-  .lm-plugin .btn-group-vertical > .btn + .btn-group, .lm-plugin .lm-control-row .btn-group-vertical > button + .btn-group,
-  .lm-plugin .btn-group-vertical > .btn-group + .btn, .lm-plugin .lm-control-row .btn-group-vertical > .btn-group + button,
-  .lm-plugin .btn-group-vertical > .btn-group + .btn-group {
+  .lm-plugin .lm-btn-group-vertical > .lm-btn + .lm-btn, .lm-plugin .lm-control-row .lm-btn-group-vertical > button + .lm-btn, .lm-plugin .lm-control-row .lm-btn-group-vertical > .lm-btn + button, .lm-plugin .lm-control-row .lm-btn-group-vertical > button + button,
+  .lm-plugin .lm-btn-group-vertical > .lm-btn + .lm-btn-group, .lm-plugin .lm-control-row .lm-btn-group-vertical > button + .lm-btn-group,
+  .lm-plugin .lm-btn-group-vertical > .lm-btn-group + .lm-btn, .lm-plugin .lm-control-row .lm-btn-group-vertical > .lm-btn-group + button,
+  .lm-plugin .lm-btn-group-vertical > .lm-btn-group + .lm-btn-group {
     margin-top: -1px;
     margin-left: 0; }
-  .lm-plugin .btn-group-vertical > .btn:not(:first-child):not(:last-child), .lm-plugin .lm-control-row .btn-group-vertical > button:not(:first-child):not(:last-child) {
+  .lm-plugin .lm-btn-group-vertical > .lm-btn:not(:first-child):not(:last-child), .lm-plugin .lm-control-row .lm-btn-group-vertical > button:not(:first-child):not(:last-child) {
     border-radius: 0; }
-  .lm-plugin .btn-group-vertical > .btn:first-child:not(:last-child), .lm-plugin .lm-control-row .btn-group-vertical > button:first-child:not(:last-child) {
+  .lm-plugin .lm-btn-group-vertical > .lm-btn:first-child:not(:last-child), .lm-plugin .lm-control-row .lm-btn-group-vertical > button:first-child:not(:last-child) {
     border-top-right-radius: 0;
     border-top-left-radius: 0;
     border-bottom-right-radius: 0;
     border-bottom-left-radius: 0; }
-  .lm-plugin .btn-group-vertical > .btn:last-child:not(:first-child), .lm-plugin .lm-control-row .btn-group-vertical > button:last-child:not(:first-child) {
+  .lm-plugin .lm-btn-group-vertical > .lm-btn:last-child:not(:first-child), .lm-plugin .lm-control-row .lm-btn-group-vertical > button:last-child:not(:first-child) {
     border-top-right-radius: 0;
     border-top-left-radius: 0;
     border-bottom-right-radius: 0;
     border-bottom-left-radius: 0; }
-  .lm-plugin .btn-group-vertical > .btn-group:not(:first-child):not(:last-child) > .btn, .lm-plugin .lm-control-row .btn-group-vertical > .btn-group:not(:first-child):not(:last-child) > button {
+  .lm-plugin .lm-btn-group-vertical > .lm-btn-group:not(:first-child):not(:last-child) > .lm-btn, .lm-plugin .lm-control-row .lm-btn-group-vertical > .lm-btn-group:not(:first-child):not(:last-child) > button {
     border-radius: 0; }
-  .lm-plugin .btn-group-vertical > .btn-group:first-child:not(:last-child) > .btn:last-child, .lm-plugin .lm-control-row .btn-group-vertical > .btn-group:first-child:not(:last-child) > button:last-child,
-  .lm-plugin .btn-group-vertical > .btn-group:first-child:not(:last-child) > .dropdown-toggle {
+  .lm-plugin .lm-btn-group-vertical > .lm-btn-group:first-child:not(:last-child) > .lm-btn:last-child, .lm-plugin .lm-control-row .lm-btn-group-vertical > .lm-btn-group:first-child:not(:last-child) > button:last-child,
+  .lm-plugin .lm-btn-group-vertical > .lm-btn-group:first-child:not(:last-child) > .dropdown-toggle {
     border-bottom-right-radius: 0;
     border-bottom-left-radius: 0; }
-  .lm-plugin .btn-group-vertical > .btn-group:last-child:not(:first-child) > .btn:first-child, .lm-plugin .lm-control-row .btn-group-vertical > .btn-group:last-child:not(:first-child) > button:first-child {
+  .lm-plugin .lm-btn-group-vertical > .lm-btn-group:last-child:not(:first-child) > .lm-btn:first-child, .lm-plugin .lm-control-row .lm-btn-group-vertical > .lm-btn-group:last-child:not(:first-child) > button:first-child {
     border-top-right-radius: 0;
     border-top-left-radius: 0; }
-  .lm-plugin .btn-group-justified {
+  .lm-plugin .lm-btn-group-justified {
     display: table;
     width: 100%;
     table-layout: fixed;
     border-collapse: separate; }
-    .lm-plugin .btn-group-justified > .btn, .lm-plugin .lm-control-row .btn-group-justified > button,
-    .lm-plugin .btn-group-justified > .btn-group {
+    .lm-plugin .lm-btn-group-justified > .lm-btn, .lm-plugin .lm-control-row .lm-btn-group-justified > button,
+    .lm-plugin .lm-btn-group-justified > .lm-btn-group {
       float: none;
       display: table-cell;
       width: 1%; }
-    .lm-plugin .btn-group-justified > .btn-group .btn, .lm-plugin .btn-group-justified > .btn-group .lm-control-row button, .lm-plugin .lm-control-row .btn-group-justified > .btn-group button {
+    .lm-plugin .lm-btn-group-justified > .lm-btn-group .lm-btn, .lm-plugin .lm-btn-group-justified > .lm-btn-group .lm-control-row button, .lm-plugin .lm-control-row .lm-btn-group-justified > .lm-btn-group button {
       width: 100%; }
-    .lm-plugin .btn-group-justified > .btn-group .dropdown-menu {
+    .lm-plugin .lm-btn-group-justified > .lm-btn-group .dropdown-menu {
       left: auto; }
-  .lm-plugin [data-toggle="buttons"] > .btn input[type="radio"], .lm-plugin .lm-control-row [data-toggle="buttons"] > button input[type="radio"],
-  .lm-plugin [data-toggle="buttons"] > .btn input[type="checkbox"], .lm-plugin .lm-control-row [data-toggle="buttons"] > button input[type="checkbox"],
-  .lm-plugin [data-toggle="buttons"] > .btn-group > .btn input[type="radio"], .lm-plugin .lm-control-row [data-toggle="buttons"] > .btn-group > button input[type="radio"],
-  .lm-plugin [data-toggle="buttons"] > .btn-group > .btn input[type="checkbox"], .lm-plugin .lm-control-row [data-toggle="buttons"] > .btn-group > button input[type="checkbox"] {
+  .lm-plugin [data-toggle="buttons"] > .lm-btn input[type="radio"], .lm-plugin .lm-control-row [data-toggle="buttons"] > button input[type="radio"],
+  .lm-plugin [data-toggle="buttons"] > .lm-btn input[type="checkbox"], .lm-plugin .lm-control-row [data-toggle="buttons"] > button input[type="checkbox"],
+  .lm-plugin [data-toggle="buttons"] > .lm-btn-group > .lm-btn input[type="radio"], .lm-plugin .lm-control-row [data-toggle="buttons"] > .lm-btn-group > button input[type="radio"],
+  .lm-plugin [data-toggle="buttons"] > .lm-btn-group > .lm-btn input[type="checkbox"], .lm-plugin .lm-control-row [data-toggle="buttons"] > .lm-btn-group > button input[type="checkbox"] {
     position: absolute;
     clip: rect(0, 0, 0, 0);
     pointer-events: none; }
@@ -1389,15 +1389,15 @@
       .lm-plugin .input-group .form-control:focus, .lm-plugin .input-group .lm-control-row select:focus, .lm-plugin .lm-control-row .input-group select:focus, .lm-plugin .input-group .lm-control-row button:focus, .lm-plugin .lm-control-row .input-group button:focus, .lm-plugin .input-group .lm-control-row input[type=text]:focus, .lm-plugin .lm-control-row .input-group input[type=text]:focus {
         z-index: 3; }
   .lm-plugin .input-group-addon,
-  .lm-plugin .input-group-btn,
+  .lm-plugin .input-group-lm-btn,
   .lm-plugin .input-group .form-control, .lm-plugin .input-group .lm-control-row select, .lm-plugin .lm-control-row .input-group select, .lm-plugin .input-group .lm-control-row button, .lm-plugin .lm-control-row .input-group button, .lm-plugin .input-group .lm-control-row input[type=text], .lm-plugin .lm-control-row .input-group input[type=text] {
     display: table-cell; }
     .lm-plugin .input-group-addon:not(:first-child):not(:last-child),
-    .lm-plugin .input-group-btn:not(:first-child):not(:last-child),
+    .lm-plugin .input-group-lm-btn:not(:first-child):not(:last-child),
     .lm-plugin .input-group .form-control:not(:first-child):not(:last-child), .lm-plugin .input-group .lm-control-row select:not(:first-child):not(:last-child), .lm-plugin .lm-control-row .input-group select:not(:first-child):not(:last-child), .lm-plugin .input-group .lm-control-row button:not(:first-child):not(:last-child), .lm-plugin .lm-control-row .input-group button:not(:first-child):not(:last-child), .lm-plugin .input-group .lm-control-row input[type=text]:not(:first-child):not(:last-child), .lm-plugin .lm-control-row .input-group input[type=text]:not(:first-child):not(:last-child) {
       border-radius: 0; }
   .lm-plugin .input-group-addon,
-  .lm-plugin .input-group-btn {
+  .lm-plugin .input-group-lm-btn {
     width: 1%;
     white-space: nowrap;
     vertical-align: middle; }
@@ -1411,11 +1411,11 @@
     background-color: #eeeeee;
     border: 1px solid #ccc;
     border-radius: 0; }
-    .lm-plugin .input-group-addon.input-sm, .lm-plugin .lm-control-row .input-group-sm > select.input-group-addon, .lm-plugin .lm-control-row .input-group-sm > button.input-group-addon, .lm-plugin .lm-control-row .input-group-sm > input.input-group-addon[type=text], .lm-plugin .input-group-sm > .input-group-addon, .lm-plugin .input-group-sm > .input-group-btn > .input-group-addon.btn, .lm-plugin .lm-control-row .input-group-sm > .input-group-btn > button.input-group-addon {
+    .lm-plugin .input-group-addon.input-sm, .lm-plugin .lm-control-row .input-group-sm > select.input-group-addon, .lm-plugin .lm-control-row .input-group-sm > button.input-group-addon, .lm-plugin .lm-control-row .input-group-sm > input.input-group-addon[type=text], .lm-plugin .input-group-sm > .input-group-addon, .lm-plugin .input-group-sm > .input-group-lm-btn > .input-group-addon.lm-btn, .lm-plugin .lm-control-row .input-group-sm > .input-group-lm-btn > button.input-group-addon {
       padding: 5px 10px;
       font-size: 12px;
       border-radius: 0; }
-    .lm-plugin .input-group-addon.input-lg, .lm-plugin .lm-control-row .input-group-lg > select.input-group-addon, .lm-plugin .lm-control-row .input-group-lg > button.input-group-addon, .lm-plugin .lm-control-row .input-group-lg > input.input-group-addon[type=text], .lm-plugin .input-group-lg > .input-group-addon, .lm-plugin .input-group-lg > .input-group-btn > .input-group-addon.btn, .lm-plugin .lm-control-row .input-group-lg > .input-group-btn > button.input-group-addon {
+    .lm-plugin .input-group-addon.input-lg, .lm-plugin .lm-control-row .input-group-lg > select.input-group-addon, .lm-plugin .lm-control-row .input-group-lg > button.input-group-addon, .lm-plugin .lm-control-row .input-group-lg > input.input-group-addon[type=text], .lm-plugin .input-group-lg > .input-group-addon, .lm-plugin .input-group-lg > .input-group-lm-btn > .input-group-addon.lm-btn, .lm-plugin .lm-control-row .input-group-lg > .input-group-lm-btn > button.input-group-addon {
       padding: 10px 16px;
       font-size: 18px;
       border-radius: 0; }
@@ -1424,41 +1424,41 @@
       margin-top: 0; }
   .lm-plugin .input-group .form-control:first-child, .lm-plugin .input-group .lm-control-row select:first-child, .lm-plugin .lm-control-row .input-group select:first-child, .lm-plugin .input-group .lm-control-row button:first-child, .lm-plugin .lm-control-row .input-group button:first-child, .lm-plugin .input-group .lm-control-row input[type=text]:first-child, .lm-plugin .lm-control-row .input-group input[type=text]:first-child,
   .lm-plugin .input-group-addon:first-child,
-  .lm-plugin .input-group-btn:first-child > .btn, .lm-plugin .lm-control-row .input-group-btn:first-child > button,
-  .lm-plugin .input-group-btn:first-child > .btn-group > .btn, .lm-plugin .lm-control-row .input-group-btn:first-child > .btn-group > button,
-  .lm-plugin .input-group-btn:first-child > .dropdown-toggle,
-  .lm-plugin .input-group-btn:last-child > .btn:not(:last-child):not(.dropdown-toggle), .lm-plugin .lm-control-row .input-group-btn:last-child > button:not(:last-child):not(.dropdown-toggle),
-  .lm-plugin .input-group-btn:last-child > .btn-group:not(:last-child) > .btn, .lm-plugin .lm-control-row .input-group-btn:last-child > .btn-group:not(:last-child) > button {
+  .lm-plugin .input-group-lm-btn:first-child > .lm-btn, .lm-plugin .lm-control-row .input-group-lm-btn:first-child > button,
+  .lm-plugin .input-group-lm-btn:first-child > .lm-btn-group > .lm-btn, .lm-plugin .lm-control-row .input-group-lm-btn:first-child > .lm-btn-group > button,
+  .lm-plugin .input-group-lm-btn:first-child > .dropdown-toggle,
+  .lm-plugin .input-group-lm-btn:last-child > .lm-btn:not(:last-child):not(.dropdown-toggle), .lm-plugin .lm-control-row .input-group-lm-btn:last-child > button:not(:last-child):not(.dropdown-toggle),
+  .lm-plugin .input-group-lm-btn:last-child > .lm-btn-group:not(:last-child) > .lm-btn, .lm-plugin .lm-control-row .input-group-lm-btn:last-child > .lm-btn-group:not(:last-child) > button {
     border-bottom-right-radius: 0;
     border-top-right-radius: 0; }
   .lm-plugin .input-group-addon:first-child {
     border-right: 0; }
   .lm-plugin .input-group .form-control:last-child, .lm-plugin .input-group .lm-control-row select:last-child, .lm-plugin .lm-control-row .input-group select:last-child, .lm-plugin .input-group .lm-control-row button:last-child, .lm-plugin .lm-control-row .input-group button:last-child, .lm-plugin .input-group .lm-control-row input[type=text]:last-child, .lm-plugin .lm-control-row .input-group input[type=text]:last-child,
   .lm-plugin .input-group-addon:last-child,
-  .lm-plugin .input-group-btn:last-child > .btn, .lm-plugin .lm-control-row .input-group-btn:last-child > button,
-  .lm-plugin .input-group-btn:last-child > .btn-group > .btn, .lm-plugin .lm-control-row .input-group-btn:last-child > .btn-group > button,
-  .lm-plugin .input-group-btn:last-child > .dropdown-toggle,
-  .lm-plugin .input-group-btn:first-child > .btn:not(:first-child), .lm-plugin .lm-control-row .input-group-btn:first-child > button:not(:first-child),
-  .lm-plugin .input-group-btn:first-child > .btn-group:not(:first-child) > .btn, .lm-plugin .lm-control-row .input-group-btn:first-child > .btn-group:not(:first-child) > button {
+  .lm-plugin .input-group-lm-btn:last-child > .lm-btn, .lm-plugin .lm-control-row .input-group-lm-btn:last-child > button,
+  .lm-plugin .input-group-lm-btn:last-child > .lm-btn-group > .lm-btn, .lm-plugin .lm-control-row .input-group-lm-btn:last-child > .lm-btn-group > button,
+  .lm-plugin .input-group-lm-btn:last-child > .dropdown-toggle,
+  .lm-plugin .input-group-lm-btn:first-child > .lm-btn:not(:first-child), .lm-plugin .lm-control-row .input-group-lm-btn:first-child > button:not(:first-child),
+  .lm-plugin .input-group-lm-btn:first-child > .lm-btn-group:not(:first-child) > .lm-btn, .lm-plugin .lm-control-row .input-group-lm-btn:first-child > .lm-btn-group:not(:first-child) > button {
     border-bottom-left-radius: 0;
     border-top-left-radius: 0; }
   .lm-plugin .input-group-addon:last-child {
     border-left: 0; }
-  .lm-plugin .input-group-btn {
+  .lm-plugin .input-group-lm-btn {
     position: relative;
     font-size: 0;
     white-space: nowrap; }
-    .lm-plugin .input-group-btn > .btn, .lm-plugin .lm-control-row .input-group-btn > button {
+    .lm-plugin .input-group-lm-btn > .lm-btn, .lm-plugin .lm-control-row .input-group-lm-btn > button {
       position: relative; }
-      .lm-plugin .input-group-btn > .btn + .btn, .lm-plugin .lm-control-row .input-group-btn > button + .btn, .lm-plugin .lm-control-row .input-group-btn > .btn + button, .lm-plugin .lm-control-row .input-group-btn > button + button {
+      .lm-plugin .input-group-lm-btn > .lm-btn + .lm-btn, .lm-plugin .lm-control-row .input-group-lm-btn > button + .lm-btn, .lm-plugin .lm-control-row .input-group-lm-btn > .lm-btn + button, .lm-plugin .lm-control-row .input-group-lm-btn > button + button {
         margin-left: -1px; }
-      .lm-plugin .input-group-btn > .btn:hover, .lm-plugin .lm-control-row .input-group-btn > button:hover, .lm-plugin .input-group-btn > .btn:focus, .lm-plugin .lm-control-row .input-group-btn > button:focus, .lm-plugin .input-group-btn > .btn:active, .lm-plugin .lm-control-row .input-group-btn > button:active {
+      .lm-plugin .input-group-lm-btn > .lm-btn:hover, .lm-plugin .lm-control-row .input-group-lm-btn > button:hover, .lm-plugin .input-group-lm-btn > .lm-btn:focus, .lm-plugin .lm-control-row .input-group-lm-btn > button:focus, .lm-plugin .input-group-lm-btn > .lm-btn:active, .lm-plugin .lm-control-row .input-group-lm-btn > button:active {
         z-index: 2; }
-    .lm-plugin .input-group-btn:first-child > .btn, .lm-plugin .lm-control-row .input-group-btn:first-child > button,
-    .lm-plugin .input-group-btn:first-child > .btn-group {
+    .lm-plugin .input-group-lm-btn:first-child > .lm-btn, .lm-plugin .lm-control-row .input-group-lm-btn:first-child > button,
+    .lm-plugin .input-group-lm-btn:first-child > .lm-btn-group {
       margin-right: -1px; }
-    .lm-plugin .input-group-btn:last-child > .btn, .lm-plugin .lm-control-row .input-group-btn:last-child > button,
-    .lm-plugin .input-group-btn:last-child > .btn-group {
+    .lm-plugin .input-group-lm-btn:last-child > .lm-btn, .lm-plugin .lm-control-row .input-group-lm-btn:last-child > button,
+    .lm-plugin .input-group-lm-btn:last-child > .lm-btn-group {
       z-index: 2;
       margin-left: -1px; }
   .lm-plugin .label {
@@ -1474,7 +1474,7 @@
     border-radius: .25em; }
     .lm-plugin .label:empty {
       display: none; }
-    .btn .lm-plugin .label, .lm-plugin .lm-control-row button .lm-plugin .label {
+    .lm-btn .lm-plugin .label, .lm-plugin .lm-control-row button .lm-plugin .label {
       position: relative;
       top: -1px; }
   .lm-plugin a.label:hover, .lm-plugin a.label:focus {
@@ -1520,12 +1520,12 @@
     border-radius: 10px; }
     .lm-plugin .badge:empty {
       display: none; }
-    .btn .lm-plugin .badge, .lm-plugin .lm-control-row button .lm-plugin .badge {
+    .lm-btn .lm-plugin .badge, .lm-plugin .lm-control-row button .lm-plugin .badge {
       position: relative;
       top: -1px; }
-    .btn-xs .lm-plugin .badge, .lm-plugin .btn-group-xs > .btn .lm-plugin .badge, .lm-plugin .lm-control-row .btn-group-xs > button .lm-plugin .badge,
-    .btn-group-xs > .btn .lm-plugin .badge, .lm-plugin .lm-control-row
-    .btn-group-xs > button .lm-plugin .badge {
+    .lm-btn-xs .lm-plugin .badge, .lm-plugin .lm-btn-group-xs > .lm-btn .lm-plugin .badge, .lm-plugin .lm-control-row .lm-btn-group-xs > button .lm-plugin .badge,
+    .lm-btn-group-xs > .lm-btn .lm-plugin .badge, .lm-plugin .lm-control-row
+    .lm-btn-group-xs > button .lm-plugin .badge {
       top: 0;
       padding: 1px 5px; }
     .list-group-item.active > .lm-plugin .badge,
@@ -1829,75 +1829,75 @@
   .lm-plugin ::-webkit-scrollbar-thumb {
     border-radius: 0;
     background-color: #2a3a4b; }
-  .lm-plugin .btn, .lm-plugin .lm-control-row button {
+  .lm-plugin .lm-btn, .lm-plugin .lm-control-row button {
     padding: 0 10px;
     line-height: 32px;
     border: none;
     -moz-box-sizing: border-box;
     box-sizing: border-box; }
-  .lm-plugin .btn, .lm-plugin .lm-control-row button, .lm-plugin .btn:active, .lm-plugin .lm-control-row button:active, .lm-plugin .btn-link:focus, .lm-plugin .btn:hover, .lm-plugin .lm-control-row button:hover {
+  .lm-plugin .lm-btn, .lm-plugin .lm-control-row button, .lm-plugin .lm-btn:active, .lm-plugin .lm-control-row button:active, .lm-plugin .lm-btn-link:focus, .lm-plugin .lm-btn:hover, .lm-plugin .lm-control-row button:hover {
     outline: none !important; }
-  .lm-plugin .btn-icon {
+  .lm-plugin .lm-btn-icon {
     height: 32px;
     width: 32px;
     line-height: 32px;
     padding: 0;
     text-align: center; }
-  .lm-plugin .btn-link .icon {
+  .lm-plugin .lm-btn-link .icon {
     font-size: 100%; }
-  .lm-plugin .btn-link, .lm-plugin .btn-link:active, .lm-plugin .btn-link:focus {
+  .lm-plugin .lm-btn-link, .lm-plugin .lm-btn-link:active, .lm-plugin .lm-btn-link:focus {
     color: #EDF1F2;
     text-decoration: none; }
-  .lm-plugin .btn-link:hover {
+  .lm-plugin .lm-btn-link:hover {
     color: #3B9AD9;
     text-decoration: none; }
-  .lm-plugin .btn-link-toggle-on {
+  .lm-plugin .lm-btn-link-toggle-on {
     color: #EDF1F2; }
-  .lm-plugin .btn-link-toggle-off, .lm-plugin .btn-link-toggle-off:active, .lm-plugin .btn-link-toggle-off:focus {
+  .lm-plugin .lm-btn-link-toggle-off, .lm-plugin .lm-btn-link-toggle-off:active, .lm-plugin .lm-btn-link-toggle-off:focus {
     color: #8ba5ab; }
-  .lm-plugin .btn-link-toggle-off:hover, .lm-plugin .btn-link-toggle-on:hover {
+  .lm-plugin .lm-btn-link-toggle-off:hover, .lm-plugin .lm-btn-link-toggle-on:hover {
     color: #3B9AD9; }
-  .lm-plugin .btn-remove, .lm-plugin .btn-remove:active, .lm-plugin .btn-remove:focus {
+  .lm-plugin .lm-btn-remove, .lm-plugin .lm-btn-remove:active, .lm-plugin .lm-btn-remove:focus {
     color: #EDF1F2;
     background: #BF3A31; }
-  .lm-plugin .btn-remove:hover {
+  .lm-plugin .lm-btn-remove:hover {
     color: #3B9AD9;
     background: #b5372e; }
-  .lm-plugin .btn-remove[disabled], .lm-plugin .btn-remove[disabled]:hover,
-  .lm-plugin .btn-remove[disabled]:active, .lm-plugin .btn-remove[disabled]:focus {
+  .lm-plugin .lm-btn-remove[disabled], .lm-plugin .lm-btn-remove[disabled]:hover,
+  .lm-plugin .lm-btn-remove[disabled]:active, .lm-plugin .lm-btn-remove[disabled]:focus {
     color: #eaeff0; }
-  .lm-plugin .btn-action, .lm-plugin .btn-action:active, .lm-plugin .btn-action:focus {
+  .lm-plugin .lm-btn-action, .lm-plugin .lm-btn-action:active, .lm-plugin .lm-btn-action:focus {
     color: #EDF1F2;
     background: #283848; }
-  .lm-plugin .btn-action:hover {
+  .lm-plugin .lm-btn-action:hover {
     color: #3B9AD9;
     background: #243140; }
-  .lm-plugin .btn-action[disabled], .lm-plugin .btn-action[disabled]:hover,
-  .lm-plugin .btn-action[disabled]:active, .lm-plugin .btn-action[disabled]:focus {
+  .lm-plugin .lm-btn-action[disabled], .lm-plugin .lm-btn-action[disabled]:hover,
+  .lm-plugin .lm-btn-action[disabled]:active, .lm-plugin .lm-btn-action[disabled]:focus {
     color: #eaeff0; }
-  .lm-plugin .btn-commit-on, .lm-plugin .btn-commit-on:active, .lm-plugin .btn-commit-on:focus {
+  .lm-plugin .lm-btn-commit-on, .lm-plugin .lm-btn-commit-on:active, .lm-plugin .lm-btn-commit-on:focus {
     color: #ffffff;
     background: #293949; }
-  .lm-plugin .btn-commit-on:hover {
+  .lm-plugin .lm-btn-commit-on:hover {
     color: #3B9AD9;
     background: #253341; }
-  .lm-plugin .btn-commit-on[disabled], .lm-plugin .btn-commit-on[disabled]:hover,
-  .lm-plugin .btn-commit-on[disabled]:active, .lm-plugin .btn-commit-on[disabled]:focus {
+  .lm-plugin .lm-btn-commit-on[disabled], .lm-plugin .lm-btn-commit-on[disabled]:hover,
+  .lm-plugin .lm-btn-commit-on[disabled]:active, .lm-plugin .lm-btn-commit-on[disabled]:focus {
     color: #fcfcfc; }
-  .lm-plugin .btn-commit-off, .lm-plugin .btn-commit-off:active, .lm-plugin .btn-commit-off:focus {
+  .lm-plugin .lm-btn-commit-off, .lm-plugin .lm-btn-commit-off:active, .lm-plugin .lm-btn-commit-off:focus {
     color: #EDF1F2;
     background: #263443; }
-  .lm-plugin .btn-commit-off:hover {
+  .lm-plugin .lm-btn-commit-off:hover {
     color: #3B9AD9;
     background: #212e3b; }
-  .lm-plugin .btn-commit-off[disabled], .lm-plugin .btn-commit-off[disabled]:hover,
-  .lm-plugin .btn-commit-off[disabled]:active, .lm-plugin .btn-commit-off[disabled]:focus {
+  .lm-plugin .lm-btn-commit-off[disabled], .lm-plugin .lm-btn-commit-off[disabled]:hover,
+  .lm-plugin .lm-btn-commit-off[disabled]:active, .lm-plugin .lm-btn-commit-off[disabled]:focus {
     color: #eaeff0; }
-  .lm-plugin .btn-remove:hover {
+  .lm-plugin .lm-btn-remove:hover {
     color: #ffffff; }
-  .lm-plugin .btn-commit-on:hover {
+  .lm-plugin .lm-btn-commit-on:hover {
     color: #cccccc; }
-  .lm-plugin .btn-action {
+  .lm-plugin .lm-btn-action {
     height: 32px;
     line-height: 32px; }
   .lm-plugin .form-control, .lm-plugin .lm-control-row select, .lm-plugin .lm-control-row button, .lm-plugin .lm-control-row input[type=text] {
@@ -1924,7 +1924,7 @@
       border: none;
       outline-offset: 0;
       outline: none; }
-  .lm-plugin .btn-commit {
+  .lm-plugin .lm-btn-commit {
     text-align: right;
     padding-top: 0;
     padding-bottom: 0;
@@ -1933,7 +1933,7 @@
     line-height: 32px;
     border: none;
     overflow: hidden; }
-    .lm-plugin .btn-commit .icon {
+    .lm-plugin .lm-btn-commit .icon {
       display: block-inline;
       line-height: 32px;
       margin-right: 10px;
@@ -2069,7 +2069,7 @@
     margin-right: 6px; }
   .lm-plugin .lm-empty-control {
     display: none; }
-  .lm-plugin .lm-control .btn-block, .lm-plugin .lm-control .lm-control-row button, .lm-plugin .lm-control-row .lm-control button {
+  .lm-plugin .lm-control .lm-btn-block, .lm-plugin .lm-control .lm-control-row button, .lm-plugin .lm-control-row .lm-control button {
     margin-bottom: 0px;
     margin-top: 0px; }
   .lm-plugin .lm-row-text > div {
@@ -2204,10 +2204,10 @@
       height: 100%; }
       .lm-plugin .lm-no-webgl > div b {
         font-size: 120%; }
-  .lm-plugin .lm-loader-btn-file {
+  .lm-plugin .lm-loader-lm-btn-file {
     position: relative;
     overflow: hidden; }
-  .lm-plugin .lm-loader-btn-file input[type=file] {
+  .lm-plugin .lm-loader-lm-btn-file input[type=file] {
     position: absolute;
     top: 0;
     right: 0;
@@ -2623,7 +2623,7 @@
     right: 0;
     bottom: 0;
     background: black; }
-    .lm-plugin .lm-viewport .btn-link {
+    .lm-plugin .lm-viewport .lm-btn-link {
       background: rgba(0, 0, 0, 0.2); }
   .lm-plugin .lm-viewport-expanded {
     position: fixed;
@@ -2649,11 +2649,11 @@
       width: 32px; }
     .lm-plugin .lm-viewport-controls-buttons > button:last-child {
       margin-left: 10px; }
-    .lm-plugin .lm-viewport-controls-buttons .btn-link, .lm-plugin .lm-viewport-controls-buttons .btn-link-toggle-on {
+    .lm-plugin .lm-viewport-controls-buttons .lm-btn-link, .lm-plugin .lm-viewport-controls-buttons .lm-btn-link-toggle-on {
       color: #eee; }
-    .lm-plugin .lm-viewport-controls-buttons .btn-link-toggle-off {
+    .lm-plugin .lm-viewport-controls-buttons .lm-btn-link-toggle-off {
       color: #8ba5ab; }
-    .lm-plugin .lm-viewport-controls-buttons .btn-link:hover {
+    .lm-plugin .lm-viewport-controls-buttons .lm-btn-link:hover {
       color: #3B9AD9; }
   .lm-plugin .lm-viewport-controls-scene-options {
     width: 290px;

@@ -1,4 +1,4 @@
-.btn {
+.lm-btn {
     padding: 0 $control-spacing;
     line-height: $row-height;
     border: none;
@@ -10,11 +10,11 @@
     }
 }
 
-.btn, .btn:active, .btn-link:focus, .btn:hover {
+.lm-btn, .lm-btn:active, .lm-btn-link:focus, .lm-btn:hover {
     outline: none !important;
 }
 
-.btn-icon {
+.lm-btn-icon {
     height: $row-height;
     width: $row-height;
     line-height: $row-height;
@@ -22,63 +22,63 @@
     text-align: center;
 }
 
-.btn-link {
+.lm-btn-link {
     .icon {
         font-size: 100%;
     }
 }
 
-.btn-link, .btn-link:active, .btn-link:focus {
-    color: $btn-link-font-color;
+.lm-btn-link, .lm-btn-link:active, .lm-btn-link:focus {
+    color: $lm-btn-link-font-color;
     text-decoration: none;   
 }
 
-.btn-link:hover {
+.lm-btn-link:hover {
     color: $hover-font-color;
     text-decoration: none;
 }
 
-.btn-link-toggle-on {
-    color: $btn-link-toggle-on-font-color;
+.lm-btn-link-toggle-on {
+    color: $lm-btn-link-toggle-on-font-color;
 }
 
-.btn-link-toggle-off, .btn-link-toggle-off:active, .btn-link-toggle-off:focus {
-    color: $btn-link-toggle-off-font-color;
+.lm-btn-link-toggle-off, .lm-btn-link-toggle-off:active, .lm-btn-link-toggle-off:focus {
+    color: $lm-btn-link-toggle-off-font-color;
 }
 
-.btn-link-toggle-off:hover,  .btn-link-toggle-on:hover {
+.lm-btn-link-toggle-off:hover,  .lm-btn-link-toggle-on:hover {
     color: $hover-font-color;
 }
 
-@mixin btn($name, $font, $bg) {
-    .btn-#{$name}, .btn-#{$name}:active, .btn-#{$name}:focus {
+@mixin lm-btn($name, $font, $bg) {
+    .lm-btn-#{$name}, .lm-btn-#{$name}:active, .lm-btn-#{$name}:focus {
         color: $font;
         background: $bg;
     }    
-    .btn-#{$name}:hover {
+    .lm-btn-#{$name}:hover {
         color: $hover-font-color;
         background: color-lower-contrast($bg, 2.5%);
     }
     
-    .btn-#{$name}[disabled], .btn-#{$name}[disabled]:hover, 
-    .btn-#{$name}[disabled]:active, .btn-#{$name}[disabled]:focus {
+    .lm-btn-#{$name}[disabled], .lm-btn-#{$name}[disabled]:hover, 
+    .lm-btn-#{$name}[disabled]:active, .lm-btn-#{$name}[disabled]:focus {
         color: color-lower-contrast($font, 1%);
     }
 }
 
-@include btn('remove', $btn-remove-font-color, $btn-remove-background);
-@include btn('action', $font-color, $btn-action-background);
-@include btn('commit-on', $btn-commit-on-font-color, $btn-commit-on-background);
-@include btn('commit-off', $btn-commit-off-font-color, $btn-commit-off-background);
+@include lm-btn('remove', $lm-btn-remove-font-color, $lm-btn-remove-background);
+@include lm-btn('action', $font-color, $lm-btn-action-background);
+@include lm-btn('commit-on', $lm-btn-commit-on-font-color, $lm-btn-commit-on-background);
+@include lm-btn('commit-off', $lm-btn-commit-off-font-color, $lm-btn-commit-off-background);
 
-.btn-remove:hover {
-    color: $btn-remove-hover-font-color;
+.lm-btn-remove:hover {
+    color: $lm-btn-remove-hover-font-color;
 }
-.btn-commit-on:hover {
-	color: $btn-commit-on-hover-font-color;
+.lm-btn-commit-on:hover {
+	color: $lm-btn-commit-on-hover-font-color;
 }
 
-.btn-action {
+.lm-btn-action {
     height: $row-height;
     line-height: $row-height;
 }
@@ -113,7 +113,7 @@
     }
 }
 
-.btn-commit {        
+.lm-btn-commit {        
     text-align: right;
     padding-top: 0;
     padding-bottom: 0;

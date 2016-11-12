@@ -21,8 +21,8 @@
     }
     
     button {
-        @extend .btn;
-        @extend .btn-block;
+        @extend .lm-btn;
+        @extend .lm-btn-block;
     }
     
     > div:nth-child(2) {
@@ -184,7 +184,7 @@
     display: none;
 }
 
-.lm-control .btn-block {
+.lm-control .lm-btn-block {
     margin-bottom: 0px;
     margin-top: 0px;
 }

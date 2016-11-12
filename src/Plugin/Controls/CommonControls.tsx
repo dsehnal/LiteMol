@@ -37,13 +37,13 @@ namespace LiteMol.Plugin.Controls {
 
             let props = this.props;
 
-            let className = 'btn';
-            if (props.size && props.size !== 'normal') className += ' btn-' + props.size;
-            if (props.asBlock) className += ' btn-block';
+            let className = 'lm-btn';
+            if (props.size && props.size !== 'normal') className += ' lm-btn-' + props.size;
+            if (props.asBlock) className += ' lm-btn-block';
 
-            if (props.disabled) className += ' btn-' + (props.disabledStyle || props.style || 'default');
-            else if (props.active) className += ' btn-' + (props.activeStyle || props.style || 'default');
-            else className += ' btn-' + (props.style || 'default');
+            if (props.disabled) className += ' lm-btn-' + (props.disabledStyle || props.style || 'default');
+            else if (props.active) className += ' lm-btn-' + (props.activeStyle || props.style || 'default');
+            else className += ' lm-btn-' + (props.style || 'default');
 
             if (props.customClass) className += ' ' + props.customClass;
 
@@ -110,7 +110,7 @@ namespace LiteMol.Plugin.Controls {
         off?: string,
         title?: string
     }) => <div style={{ marginTop: '1px' }}><button onClick={e => { props.action(); (e.target as HTMLElement).blur(); }}
-            className={'btn btn-block btn-commit btn-commit-' + (props.isOn ? 'on' : 'off')}
+            className={'lm-btn lm-btn-block lm-btn-commit lm-btn-commit-' + (props.isOn ? 'on' : 'off')}
             disabled={!props.isOn} title={props.title}>
             <span className={ `icon icon-${props.isOn ? 'ok' : 'cross'}` }></span>
             {props.isOn ? <b>{props.on}</b> : (props.off ? props.off : props.on) }

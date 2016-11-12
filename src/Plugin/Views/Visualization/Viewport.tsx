@@ -32,7 +32,7 @@ namespace LiteMol.Plugin.Views.Visualization {
                     <Controls.Button 
                         style='link'
                         active={this.state.showSceneOptions}
-                        customClass={'btn-link-toggle-' + (this.state.showSceneOptions ? 'on' : 'off')}
+                        customClass={'lm-btn-link-toggle-' + (this.state.showSceneOptions ? 'on' : 'off')}
                         icon='settings' 
                         onClick={(e) => this.setState({ showSceneOptions: !this.state.showSceneOptions }) } title='Scene Options' />                      
                     <Controls.Button 
@@ -42,11 +42,11 @@ namespace LiteMol.Plugin.Views.Visualization {
                         title='Screenshot' />                
                     <Controls.Button   onClick={() => { layoutController.update({ hideControls: controlsShown }); this.forceUpdate(); } }
                         icon='tools' title={controlsShown ? 'Hide Controls' : 'Show Controls'} active={controlsShown } 
-                        customClass={'btn-link-toggle-' + (controlsShown  ? 'on' : 'off')}
+                        customClass={'lm-btn-link-toggle-' + (controlsShown  ? 'on' : 'off')}
                         style='link' />
                     <Controls.Button   onClick={() => layoutController.update({ isExpanded: !layoutState.isExpanded  }) }
                         icon='expand-layout' title={layoutState.isExpanded ? 'Collapse' : 'Expand'} active={layoutState.isExpanded } 
-                        customClass={'btn-link-toggle-' + (layoutState.isExpanded  ? 'on' : 'off')}
+                        customClass={'lm-btn-link-toggle-' + (layoutState.isExpanded  ? 'on' : 'off')}
                         style='link' />
                     <Controls.Button 
                         style='link' 

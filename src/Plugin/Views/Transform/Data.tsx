@@ -23,7 +23,7 @@ namespace LiteMol.Plugin.Views.Transform.Data {
             let state = this.controller.latestState;            
             return <div>
                 <Controls.OptionsGroup options={Bootstrap.Entity.Data.Types} caption={s => s} current={params.type} onChange={(o) => this.updateParams({ type: o }) } label='Type' />
-                <div className='btn btn-block btn-action lm-loader-btn-file' style={{marginTop: '1px'}}>
+                <div className='lm-btn lm-btn-block lm-btn-action lm-loader-lm-btn-file' style={{marginTop: '1px'}}>
                      {params.file ? params.file.name : 'Select a file...'} <input disabled={state.isBusy} type='file' onChange={ evt => this.updateParams({ file: (evt.target as any).files[0] }) } multiple={false} />
                 </div>
             </div>

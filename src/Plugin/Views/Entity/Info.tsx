@@ -7,7 +7,7 @@ namespace LiteMol.Plugin.Views.Entity {
     
     export const Remove = (props: {entity: Bootstrap.Entity.Any, onRemove: () => void }) => <Controls.Button
             onClick={() => { Bootstrap.Command.Tree.RemoveNode.dispatch(props.entity.tree!.context, props.entity); props.onRemove.call(null) } } 
-            style='link' icon='remove' customClass='lm-remove-entity btn-icon' />
+            style='link' icon='remove' customClass='lm-remove-entity lm-btn-icon' />
     
     export class Badge extends React.Component<{ type: Bootstrap.Entity.TypeInfo }, {}> { 
         

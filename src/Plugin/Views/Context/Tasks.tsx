@@ -12,7 +12,7 @@ namespace LiteMol.Plugin.Views.Context {
             return <div className='lm-task-state'>
                 <div>
                     { info.abort ? <Controls.Button onClick={() => info.abort!.call(null) } style='remove' 
-                        icon='abort' title='Abort' customClass='btn-icon'
+                        icon='abort' title='Abort' customClass='lm-btn-icon'
                     /> : void 0 }
                     <div>
                         {info.name}: {info.message}

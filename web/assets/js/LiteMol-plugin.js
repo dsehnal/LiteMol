@@ -74852,17 +74852,17 @@ var LiteMol;
                 }
                 Button.prototype.render = function () {
                     var props = this.props;
-                    var className = 'btn';
+                    var className = 'lm-btn';
                     if (props.size && props.size !== 'normal')
-                        className += ' btn-' + props.size;
+                        className += ' lm-btn-' + props.size;
                     if (props.asBlock)
-                        className += ' btn-block';
+                        className += ' lm-btn-block';
                     if (props.disabled)
-                        className += ' btn-' + (props.disabledStyle || props.style || 'default');
+                        className += ' lm-btn-' + (props.disabledStyle || props.style || 'default');
                     else if (props.active)
-                        className += ' btn-' + (props.activeStyle || props.style || 'default');
+                        className += ' lm-btn-' + (props.activeStyle || props.style || 'default');
                     else
-                        className += ' btn-' + (props.style || 'default');
+                        className += ' lm-btn-' + (props.style || 'default');
                     if (props.customClass)
                         className += ' ' + props.customClass;
                     var icon = void 0;
@@ -74900,7 +74900,7 @@ var LiteMol;
             }
             Controls.TextBoxGroup = TextBoxGroup;
             Controls.CommitButton = function (props) { return Plugin.React.createElement("div", { style: { marginTop: '1px' } },
-                Plugin.React.createElement("button", { onClick: function (e) { props.action(); e.target.blur(); }, className: 'btn btn-block btn-commit btn-commit-' + (props.isOn ? 'on' : 'off'), disabled: !props.isOn, title: props.title },
+                Plugin.React.createElement("button", { onClick: function (e) { props.action(); e.target.blur(); }, className: 'lm-btn lm-btn-block lm-btn-commit lm-btn-commit-' + (props.isOn ? 'on' : 'off'), disabled: !props.isOn, title: props.title },
                     Plugin.React.createElement("span", { className: "icon icon-" + (props.isOn ? 'ok' : 'cross') }),
                     props.isOn ? Plugin.React.createElement("b", null, props.on) : (props.off ? props.off : props.on))); };
             // <Controls.Button onClick={() => props.action() }
@@ -75610,7 +75610,7 @@ var LiteMol;
                             var state = this.controller.latestState;
                             return Plugin.React.createElement("div", null,
                                 Plugin.React.createElement(Plugin.Controls.OptionsGroup, { options: LiteMol.Bootstrap.Entity.Data.Types, caption: function (s) { return s; }, current: params.type, onChange: function (o) { return _this.updateParams({ type: o }); }, label: 'Type' }),
-                                Plugin.React.createElement("div", { className: 'btn btn-block btn-action lm-loader-btn-file', style: { marginTop: '1px' } },
+                                Plugin.React.createElement("div", { className: 'lm-btn lm-btn-block lm-btn-action lm-loader-lm-btn-file', style: { marginTop: '1px' } },
                                     params.file ? params.file.name : 'Select a file...',
                                     " ",
                                     Plugin.React.createElement("input", { disabled: state.isBusy, type: 'file', onChange: function (evt) { return _this.updateParams({ file: evt.target.files[0] }); }, multiple: false })));
@@ -75705,7 +75705,7 @@ var LiteMol;
                             var state = this.controller.latestState;
                             var extensions = LiteMol.Core.Formats.FormatInfo.formatFileFilters(LiteMol.Core.Formats.Molecule.SupportedFormats.All);
                             return Plugin.React.createElement("div", null,
-                                Plugin.React.createElement("div", { className: 'btn btn-block btn-action lm-loader-btn-file', style: { marginTop: '1px' } },
+                                Plugin.React.createElement("div", { className: 'lm-btn lm-btn-block lm-btn-action lm-loader-lm-btn-file', style: { marginTop: '1px' } },
                                     params.file ? params.file.name : 'Select a file...',
                                     " ",
                                     Plugin.React.createElement("input", { disabled: state.isBusy, type: 'file', accept: extensions, onChange: function (evt) { return _this.updateParams({ file: evt.target.files[0] }); }, multiple: false })));
@@ -76146,7 +76146,7 @@ var LiteMol;
                         var info = this.props.info;
                         return Plugin.React.createElement("div", { className: 'lm-task-state' },
                             Plugin.React.createElement("div", null,
-                                info.abort ? Plugin.React.createElement(Plugin.Controls.Button, { onClick: function () { return info.abort.call(null); }, style: 'remove', icon: 'abort', title: 'Abort', customClass: 'btn-icon' }) : void 0,
+                                info.abort ? Plugin.React.createElement(Plugin.Controls.Button, { onClick: function () { return info.abort.call(null); }, style: 'remove', icon: 'abort', title: 'Abort', customClass: 'lm-btn-icon' }) : void 0,
                                 Plugin.React.createElement("div", null,
                                     info.name,
                                     ": ",
@@ -76452,7 +76452,7 @@ var LiteMol;
             var Entity;
             (function (Entity) {
                 "use strict";
-                Entity.Remove = function (props) { return Plugin.React.createElement(Plugin.Controls.Button, { onClick: function () { LiteMol.Bootstrap.Command.Tree.RemoveNode.dispatch(props.entity.tree.context, props.entity); props.onRemove.call(null); }, style: 'link', icon: 'remove', customClass: 'lm-remove-entity btn-icon' }); };
+                Entity.Remove = function (props) { return Plugin.React.createElement(Plugin.Controls.Button, { onClick: function () { LiteMol.Bootstrap.Command.Tree.RemoveNode.dispatch(props.entity.tree.context, props.entity); props.onRemove.call(null); }, style: 'link', icon: 'remove', customClass: 'lm-remove-entity lm-btn-icon' }); };
                 var Badge = (function (_super) {
                     __extends(Badge, _super);
                     function Badge() {
@@ -76618,10 +76618,10 @@ var LiteMol;
                         var controlsShown = !layoutState.hideControls;
                         return Plugin.React.createElement("div", { className: 'lm-viewport-controls', onMouseLeave: function () { return _this.setState({ showSceneOptions: false }); } },
                             Plugin.React.createElement("div", { className: 'lm-viewport-controls-buttons' },
-                                Plugin.React.createElement(Plugin.Controls.Button, { style: 'link', active: this.state.showSceneOptions, customClass: 'btn-link-toggle-' + (this.state.showSceneOptions ? 'on' : 'off'), icon: 'settings', onClick: function (e) { return _this.setState({ showSceneOptions: !_this.state.showSceneOptions }); }, title: 'Scene Options' }),
+                                Plugin.React.createElement(Plugin.Controls.Button, { style: 'link', active: this.state.showSceneOptions, customClass: 'lm-btn-link-toggle-' + (this.state.showSceneOptions ? 'on' : 'off'), icon: 'settings', onClick: function (e) { return _this.setState({ showSceneOptions: !_this.state.showSceneOptions }); }, title: 'Scene Options' }),
                                 Plugin.React.createElement(Plugin.Controls.Button, { style: 'link', icon: 'screenshot', onClick: function (e) { window.open(_this.controller.scene.scene.screenshotAsDataURL(), '_blank'); }, title: 'Screenshot' }),
-                                Plugin.React.createElement(Plugin.Controls.Button, { onClick: function () { layoutController.update({ hideControls: controlsShown }); _this.forceUpdate(); }, icon: 'tools', title: controlsShown ? 'Hide Controls' : 'Show Controls', active: controlsShown, customClass: 'btn-link-toggle-' + (controlsShown ? 'on' : 'off'), style: 'link' }),
-                                Plugin.React.createElement(Plugin.Controls.Button, { onClick: function () { return layoutController.update({ isExpanded: !layoutState.isExpanded }); }, icon: 'expand-layout', title: layoutState.isExpanded ? 'Collapse' : 'Expand', active: layoutState.isExpanded, customClass: 'btn-link-toggle-' + (layoutState.isExpanded ? 'on' : 'off'), style: 'link' }),
+                                Plugin.React.createElement(Plugin.Controls.Button, { onClick: function () { layoutController.update({ hideControls: controlsShown }); _this.forceUpdate(); }, icon: 'tools', title: controlsShown ? 'Hide Controls' : 'Show Controls', active: controlsShown, customClass: 'lm-btn-link-toggle-' + (controlsShown ? 'on' : 'off'), style: 'link' }),
+                                Plugin.React.createElement(Plugin.Controls.Button, { onClick: function () { return layoutController.update({ isExpanded: !layoutState.isExpanded }); }, icon: 'expand-layout', title: layoutState.isExpanded ? 'Collapse' : 'Expand', active: layoutState.isExpanded, customClass: 'lm-btn-link-toggle-' + (layoutState.isExpanded ? 'on' : 'off'), style: 'link' }),
                                 Plugin.React.createElement(Plugin.Controls.Button, { style: 'link', icon: 'reset-scene', onClick: function (e) { return LiteMol.Bootstrap.Command.Visual.ResetScene.dispatch(_this.controller.context, void 0); }, title: 'Reset scene' })),
                             options);
                     };
