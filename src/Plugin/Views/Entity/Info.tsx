@@ -92,7 +92,7 @@ namespace LiteMol.Plugin.Views.Entity {
         export const General = () =>
             <div className='lm-entity-splash-general'>
                 <div />
-                <span className='icon icon-info'/>
+                <span className='lm-icon lm-icon-info'/>
                 The application operates on an entity tree structure that can be manipulated using the controls on the panel to the right.  
             </div>     
             

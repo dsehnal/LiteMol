@@ -37,7 +37,7 @@
             background: color-lower-contrast($default-background, 4%);   
             //text-align: right!important;
             
-            .icon {
+            .lm-icon {
                 display: inline-block;
                 margin-right: $control-spacing; 
                 width: $row-height;
@@ -58,7 +58,7 @@
         background: color-lower-contrast($default-background, 4%);
         //margin-right: $row-height;
         
-        > .icon {
+        > .lm-icon {
             display: block;
             width: $row-height;
             height: $row-height;
@@ -86,7 +86,7 @@
             text-align: left;
             //border-bottom: 1px solid color-lower-contrast($default-background, 4%);
             
-            > .icon {
+            > .lm-icon {
                 position: absolute;
                 width: $row-height;
                 height: $row-height;
@@ -101,7 +101,7 @@
             
         &:hover {
             color: $hover-font-color;
-            > .icon {
+            > .lm-icon {
                 color: $hover-font-color;
             }
             .lm-panel-description-content {

@@ -74868,9 +74868,9 @@ var LiteMol;
                     var icon = void 0;
                     if (props.icon) {
                         if (props.active && props.activeIcon)
-                            icon = Plugin.React.createElement("span", { className: "icon icon-" + props.activeIcon });
+                            icon = Plugin.React.createElement("span", { className: "lm-icon lm-icon-" + props.activeIcon });
                         else
-                            icon = Plugin.React.createElement("span", { className: "icon icon-" + props.icon });
+                            icon = Plugin.React.createElement("span", { className: "lm-icon lm-icon-" + props.icon });
                     }
                     //onTouchEnd={(e) => { (e.target as HTMLElement).blur() } }
                     return Plugin.React.createElement("button", { title: props.title, className: className, style: props.customStyle, disabled: props.disabled, onClick: function (e) { props.onClick.call(null, e); e.target.blur(); } },
@@ -74901,7 +74901,7 @@ var LiteMol;
             Controls.TextBoxGroup = TextBoxGroup;
             Controls.CommitButton = function (props) { return Plugin.React.createElement("div", { style: { marginTop: '1px' } },
                 Plugin.React.createElement("button", { onClick: function (e) { props.action(); e.target.blur(); }, className: 'lm-btn lm-btn-block lm-btn-commit lm-btn-commit-' + (props.isOn ? 'on' : 'off'), disabled: !props.isOn, title: props.title },
-                    Plugin.React.createElement("span", { className: "icon icon-" + (props.isOn ? 'ok' : 'cross') }),
+                    Plugin.React.createElement("span", { className: "lm-icon lm-icon-" + (props.isOn ? 'ok' : 'cross') }),
                     props.isOn ? Plugin.React.createElement("b", null, props.on) : (props.off ? props.off : props.on))); };
             // <Controls.Button onClick={() => props.action() }
             //         style={props.isOn ? 'success' : 'default' } asBlock={true} disabled={!props.isOn} icon={props.isOn ? 'ok' : 'cross'} 
@@ -74912,7 +74912,7 @@ var LiteMol;
                 Plugin.React.createElement("span", null, props.label),
                 Plugin.React.createElement("div", null,
                     Plugin.React.createElement("button", { onClick: function (e) { props.onChange.call(null, !props.value); e.target.blur(); } },
-                        Plugin.React.createElement("span", { className: "icon icon-" + (props.value ? 'ok' : 'off') }),
+                        Plugin.React.createElement("span", { className: "lm-icon lm-icon-" + (props.value ? 'ok' : 'off') }),
                         " ",
                         props.value ? 'On' : 'Off'))); };
             Controls.ControlGroupExpander = function (props) {
@@ -74995,9 +74995,9 @@ var LiteMol;
                     var title = this.props.title ? this.props.title : this.props.header;
                     var icon = exp ? 'collapse' : 'expand';
                     var desc = Plugin.React.createElement("div", { className: 'lm-panel-description', onClick: function () { return _this.props.onExpand.call(null, !_this.props.isExpanded); } },
-                        Plugin.React.createElement("span", { className: 'icon icon-info' }),
+                        Plugin.React.createElement("span", { className: 'lm-icon lm-icon-info' }),
                         Plugin.React.createElement("div", { className: 'lm-panel-description-content' },
-                            Plugin.React.createElement("span", { className: 'icon icon-info' }),
+                            Plugin.React.createElement("span", { className: 'lm-icon lm-icon-info' }),
                             this.props.description));
                     return Plugin.React.createElement("div", { className: 'lm-panel-header' },
                         desc,
@@ -76543,7 +76543,7 @@ var LiteMol;
                     SplashInfo.General = function () {
                         return Plugin.React.createElement("div", { className: 'lm-entity-splash-general' },
                             Plugin.React.createElement("div", null),
-                            Plugin.React.createElement("span", { className: 'icon icon-info' }),
+                            Plugin.React.createElement("span", { className: 'lm-icon lm-icon-info' }),
                             "The application operates on an entity tree structure that can be manipulated using the controls on the panel to the right.");
                     };
                     var ClassInfo = (function (_super) {

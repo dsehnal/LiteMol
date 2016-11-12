@@ -50,8 +50,8 @@ namespace LiteMol.Plugin.Controls {
             let icon: any = void 0;
             
             if (props.icon) {
-                if (props.active && props.activeIcon) icon = <span className={ `icon icon-${props.activeIcon}` }></span>
-                else icon = <span className={ `icon icon-${props.icon}` }></span>
+                if (props.active && props.activeIcon) icon = <span className={ `lm-icon lm-icon-${props.activeIcon}` }></span>
+                else icon = <span className={ `lm-icon lm-icon-${props.icon}` }></span>
             }
             //onTouchEnd={(e) => { (e.target as HTMLElement).blur() } }
 
@@ -112,7 +112,7 @@ namespace LiteMol.Plugin.Controls {
     }) => <div style={{ marginTop: '1px' }}><button onClick={e => { props.action(); (e.target as HTMLElement).blur(); }}
             className={'lm-btn lm-btn-block lm-btn-commit lm-btn-commit-' + (props.isOn ? 'on' : 'off')}
             disabled={!props.isOn} title={props.title}>
-            <span className={ `icon icon-${props.isOn ? 'ok' : 'cross'}` }></span>
+            <span className={ `lm-icon lm-icon-${props.isOn ? 'ok' : 'cross'}` }></span>
             {props.isOn ? <b>{props.on}</b> : (props.off ? props.off : props.on) }
         </button></div> ;
     
@@ -132,7 +132,7 @@ namespace LiteMol.Plugin.Controls {
             <span>{props.label}</span>
             <div>
                 <button onClick={e => { props.onChange.call(null, !props.value); (e.target as HTMLElement).blur(); }}>
-                        <span className={ `icon icon-${props.value ? 'ok' : 'off'}` }></span> {props.value ? 'On' : 'Off'}
+                        <span className={ `lm-icon lm-icon-${props.value ? 'ok' : 'off'}` }></span> {props.value ? 'On' : 'Off'}
                 </button>
             </div>
         </div>

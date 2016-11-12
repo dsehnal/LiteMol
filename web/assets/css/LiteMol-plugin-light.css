@@ -1542,7 +1542,7 @@
     color: #fff;
     text-decoration: none;
     cursor: pointer; }
-  .lm-plugin [class^="icon-"]:before, .lm-plugin [class*=" icon-"]:before {
+  .lm-plugin [class^="lm-icon-"]:before, .lm-plugin [class*=" lm-icon-"]:before {
     font-family: "fontello";
     font-style: normal;
     font-weight: normal;
@@ -1568,51 +1568,51 @@
     -moz-osx-font-smoothing: grayscale;
     /* Uncomment for 3D effect */
     /* text-shadow: 1px 1px 1px rgba(127, 127, 127, 0.3); */ }
-  .lm-plugin .icon-expand-layout:before {
+  .lm-plugin .lm-icon-expand-layout:before {
     content: "\e84a"; }
-  .lm-plugin .icon-plus:before {
+  .lm-plugin .lm-icon-plus:before {
     content: "\e816"; }
-  .lm-plugin .icon-minus:before {
+  .lm-plugin .lm-icon-minus:before {
     content: "\e819"; }
-  .lm-plugin .icon-reset-scene:before {
+  .lm-plugin .lm-icon-reset-scene:before {
     content: "\e891"; }
-  .lm-plugin .icon-ok:before {
+  .lm-plugin .lm-icon-ok:before {
     content: "\e812"; }
-  .lm-plugin .icon-cross:before {
+  .lm-plugin .lm-icon-cross:before {
     content: "\e868"; }
-  .lm-plugin .icon-off:before {
+  .lm-plugin .lm-icon-off:before {
     content: "\e813"; }
-  .lm-plugin .icon-expand:before {
+  .lm-plugin .lm-icon-expand:before {
     content: "\e885"; }
-  .lm-plugin .icon-collapse:before {
+  .lm-plugin .lm-icon-collapse:before {
     content: "\e883"; }
-  .lm-plugin .icon-visual-visibility:before {
+  .lm-plugin .lm-icon-visual-visibility:before {
     content: "\e826"; }
-  .lm-plugin .icon-abort:before {
+  .lm-plugin .lm-icon-abort:before {
     content: "\e814"; }
-  .lm-plugin .icon-focus-on-visual:before {
+  .lm-plugin .lm-icon-focus-on-visual:before {
     content: "\e8a3"; }
-  .lm-plugin .icon-settings:before {
+  .lm-plugin .lm-icon-settings:before {
     content: "\e855"; }
-  .lm-plugin .icon-tools:before {
+  .lm-plugin .lm-icon-tools:before {
     content: "\e856"; }
-  .lm-plugin .icon-log:before {
+  .lm-plugin .lm-icon-log:before {
     content: "\e8a5"; }
-  .lm-plugin .icon-remove:before {
+  .lm-plugin .lm-icon-remove:before {
     content: "\e847"; }
-  .lm-plugin .icon-help:before {
+  .lm-plugin .lm-icon-help:before {
     content: '\e81c'; }
-  .lm-plugin .icon-info:before {
+  .lm-plugin .lm-icon-info:before {
     content: '\e81e'; }
-  .lm-plugin .icon-left-open-big:before {
+  .lm-plugin .lm-icon-left-open-big:before {
     content: '\e87c'; }
-  .lm-plugin .icon-right-open-big:before {
+  .lm-plugin .lm-icon-right-open-big:before {
     content: '\e87d'; }
-  .lm-plugin .icon-left-open:before {
+  .lm-plugin .lm-icon-left-open:before {
     content: '\e874'; }
-  .lm-plugin .icon-right-open:before {
+  .lm-plugin .lm-icon-right-open:before {
     content: '\e875'; }
-  .lm-plugin .icon-screenshot:before {
+  .lm-plugin .lm-icon-screenshot:before {
     content: "\e80f"; }
   .lm-plugin .lm-layout-expanded, .lm-plugin .lm-layout-standard {
     left: 0;
@@ -1843,7 +1843,7 @@
     line-height: 32px;
     padding: 0;
     text-align: center; }
-  .lm-plugin .lm-btn-link .icon {
+  .lm-plugin .lm-btn-link .lm-icon {
     font-size: 100%; }
   .lm-plugin .lm-btn-link, .lm-plugin .lm-btn-link:active, .lm-plugin .lm-btn-link:focus {
     color: #332b1f;
@@ -1933,7 +1933,7 @@
     line-height: 32px;
     border: none;
     overflow: hidden; }
-    .lm-plugin .lm-btn-commit .icon {
+    .lm-plugin .lm-btn-commit .lm-icon {
       display: block-inline;
       line-height: 32px;
       margin-right: 10px;
@@ -1981,7 +1981,7 @@
       bottom: 0; }
   .lm-plugin .lm-control-group {
     position: relative; }
-  .lm-plugin .lm-toggle-button .icon {
+  .lm-plugin .lm-toggle-button .lm-icon {
     display: inline-block;
     margin-right: 6px; }
   .lm-plugin .lm-toggle-button > div > button:hover {
@@ -2055,7 +2055,7 @@
     top: 0;
     width: 120px;
     text-align: left; }
-    .lm-plugin .lm-conrol-group-expander .icon {
+    .lm-plugin .lm-conrol-group-expander .lm-icon {
       line-height: 29px;
       width: 31px;
       text-align: center;
@@ -2098,7 +2098,7 @@
         font-weight: bold;
         padding-left: 0;
         background: #f6f5f3; }
-        .lm-plugin .lm-panel-header .lm-panel-expander-wrapper button .icon {
+        .lm-plugin .lm-panel-header .lm-panel-expander-wrapper button .lm-icon {
           display: inline-block;
           margin-right: 10px;
           width: 32px;
@@ -2110,7 +2110,7 @@
       float: right;
       width: 64px;
       background: #f6f5f3; }
-      .lm-plugin .lm-panel-header .lm-panel-description > .icon {
+      .lm-plugin .lm-panel-header .lm-panel-description > .lm-icon {
         display: block;
         width: 32px;
         height: 32px;
@@ -2142,7 +2142,7 @@
         z-index: 1000000;
         padding: 5px 10px 5px 42px;
         text-align: left; }
-        .lm-plugin .lm-panel-header .lm-panel-description .lm-panel-description-content > .icon {
+        .lm-plugin .lm-panel-header .lm-panel-description .lm-panel-description-content > .lm-icon {
           position: absolute;
           width: 32px;
           height: 32px;
@@ -2154,7 +2154,7 @@
           left: 0; }
       .lm-plugin .lm-panel-header .lm-panel-description:hover {
         color: #ae5d04; }
-        .lm-plugin .lm-panel-header .lm-panel-description:hover > .icon {
+        .lm-plugin .lm-panel-header .lm-panel-description:hover > .lm-icon {
           color: #ae5d04; }
         .lm-plugin .lm-panel-header .lm-panel-description:hover .lm-panel-description-content {
           display: block; }
@@ -2456,7 +2456,7 @@
     position: relative;
     background: #f6f5f3;
     margin-bottom: 10px; }
-    .lm-plugin .lm-entity-splash .lm-entity-splash-general .icon {
+    .lm-plugin .lm-entity-splash .lm-entity-splash-general .lm-icon {
       display: block;
       width: 32px;
       height: 32px;

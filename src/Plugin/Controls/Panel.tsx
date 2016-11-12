@@ -22,9 +22,9 @@ namespace LiteMol.Plugin.Controls {
             let icon = exp ? 'collapse' : 'expand';
             
             let desc = <div className='lm-panel-description' onClick={() => this.props.onExpand.call(null, !this.props.isExpanded) }>
-                    <span className='icon icon-info' />
+                    <span className='lm-icon lm-icon-info' />
                     <div className='lm-panel-description-content'>
-                        <span className='icon icon-info' />
+                        <span className='lm-icon lm-icon-info' />
                         {this.props.description}
                     </div>                    
                 </div>

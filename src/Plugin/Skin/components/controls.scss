@@ -40,7 +40,7 @@
 }
 
 .lm-toggle-button {    
-    .icon {
+    .lm-icon {
         display: inline-block;
         margin-right: 6px;
     }
@@ -161,7 +161,7 @@
     width: $control-label-width + $control-spacing;
     text-align: left;
     
-    .icon {
+    .lm-icon {
         line-height: $row-height - 3;
         width: $row-height - 1;
         text-align: center;
