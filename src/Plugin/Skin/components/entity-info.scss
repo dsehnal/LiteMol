@@ -174,7 +174,7 @@
         //@include non-selectable;
         padding: $info-vertical-padding $control-spacing $info-vertical-padding ($row-height + $control-spacing + $row-height - $entity-subtree-offset);
         margin-top: 1px;
-        background: $default-background; // color-increase-contrast($form-control-background, 20%);
+        background: $default-background; // color-increase-contrast($lm-form-control-background, 20%);
         //font-size: 90%;
         //border-bottom-left-radius: $entity-subtree-offset;
     }

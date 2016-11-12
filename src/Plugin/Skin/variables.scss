@@ -42,7 +42,7 @@ $entity-color-Group:     color-lower-contrast(#e67e22, 5%);
 
 $control-background: color-increase-contrast($default-background, 6.5%);
 $border-color: color-increase-contrast($default-background, 15%);  
-$form-control-background: color-lower-contrast($default-background, 2.5%); 
+$lm-form-control-background: color-lower-contrast($default-background, 2.5%); 
 
 // buttons
 $lm-btn-link-font-color: $font-color;
@@ -52,7 +52,7 @@ $lm-btn-link-toggle-off-font-color: color-lower-contrast($font-color, 33%);
 // used for "actions" -- i.e. + in selection
 $lm-btn-remove-font-color: $font-color;
 
-$lm-btn-action-background: $form-control-background;
+$lm-btn-action-background: $lm-form-control-background;
 
 // update selection etc
 //!! $lm-btn-commit-on-font-color: $entity-current-font-color;

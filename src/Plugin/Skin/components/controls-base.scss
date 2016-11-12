@@ -83,9 +83,9 @@
     line-height: $row-height;
 }
 
-.form-control {    
+.lm-form-control {    
     width: 100%;
-    background: $form-control-background;
+    background: $lm-form-control-background;
     color: $font-color;
     border: none !important;
     padding: 0 $control-spacing;   
@@ -98,15 +98,15 @@
     
     &:hover {
         color: $hover-font-color;
-        background-color: color-increase-contrast($form-control-background, 5%);
+        background-color: color-increase-contrast($lm-form-control-background, 5%);
         border: none;
         outline-offset: -1px;
-        outline: 1px solid color-increase-contrast($form-control-background, 20%);    
+        outline: 1px solid color-increase-contrast($lm-form-control-background, 20%);    
     }
     
     &:active, &:focus {
         color: $font-color;
-        background-color: $form-control-background;
+        background-color: $lm-form-control-background;
         border: none;
         outline-offset: 0;
         outline: none;    
@@ -133,16 +133,16 @@
     } 
 }
 
-select.form-control { 
+select.lm-form-control { 
     background: none;
-    background-color: $form-control-background;
+    background-color: $lm-form-control-background;
     background-size: 8px 12px;
     background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAUCAMAAACzvE1FAAAADFBMVEUzMzMzMzMzMzMzMzMKAG/3AAAAA3RSTlMAf4C/aSLHAAAAPElEQVR42q3NMQ4AIAgEQTn//2cLdRKppSGzBYwzVXvznNWs8C58CiussPJj8h6NwgorrKRdTvuV9v16Afn0AYFOB7aYAAAAAElFTkSuQmCC);
     background-repeat: no-repeat;
     background-position: right $control-spacing top (($row-height - 12px) / 2);    
 }
 
-select.form-control:-moz-focusring {
+select.lm-form-control:-moz-focusring {
     color: transparent;
     text-shadow: 0 0 0 $font-color;
 }

@@ -27,7 +27,7 @@ namespace LiteMol.Plugin.Controls {
             let idx = this.props.options.indexOf(this.props.current);
             if (idx < 0) idx = 0;
 
-            return <select title={this.props.title} value={idx.toString() } className='form-control'
+            return <select title={this.props.title} value={idx.toString() } className='lm-form-control'
                 onChange={e => {
                     this.current = this.get(+(e.target as HTMLInputElement).value);
                     this.props.onChange(this.current);

@@ -79,7 +79,7 @@
             position: absolute;
             left: 0;
             width: 100%;
-            background: color-increase-contrast($form-control-background, 20%);
+            background: color-increase-contrast($lm-form-control-background, 20%);
             min-height: $row-height;
             z-index: 1000000;
             padding: $info-vertical-padding  $control-spacing $info-vertical-padding ($row-height + $control-spacing);

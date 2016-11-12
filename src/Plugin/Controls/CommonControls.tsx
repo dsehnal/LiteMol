@@ -74,7 +74,7 @@ namespace LiteMol.Plugin.Controls {
         onKeyPress?: (e: React.KeyboardEvent) => void,
         onBlur?: (e: React.FormEvent) => void,
         placeholder?: string
-    }) => <input type='text' className='form-control' placeholder={props.placeholder} value={props.value} defaultValue={props.defaultValue}
+    }) => <input type='text' className='lm-form-control' placeholder={props.placeholder} value={props.value} defaultValue={props.defaultValue}
             onBlur={e => { if (props.onBlur) props.onBlur.call(null, e) } }
             onChange={e => props.onChange.call(null, (e.target as HTMLInputElement).value)} onKeyPress={props.onKeyPress} />;
     

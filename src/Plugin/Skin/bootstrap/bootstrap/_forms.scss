@@ -91,7 +91,7 @@ output {
 
 // Common form controls
 //
-// Shared size and type resets for form controls. Apply `.form-control` to any
+// Shared size and type resets for form controls. Apply `.lm-form-control` to any
 // of the following form controls:
 //
 // select
@@ -111,7 +111,7 @@ output {
 // input[type="tel"]
 // input[type="color"]
 
-.form-control {
+.lm-form-control {
   display: block;
   width: 100%;
   height: $input-height-base; // Make inputs at least the height of their button counterpart (base line-height + padding + border)
@@ -127,7 +127,7 @@ output {
   //@include transition(border-color ease-in-out .15s, box-shadow ease-in-out .15s);
 
   // Customize the `:focus` state to imitate native WebKit styles.
-  @include form-control-focus;
+  @include lm-form-control-focus;
 
   // Placeholder
   @include placeholder;
@@ -155,11 +155,11 @@ output {
     cursor: $cursor-disabled;
   }
 
-  // [converter] extracted textarea& to textarea.form-control
+  // [converter] extracted textarea& to textarea.lm-form-control
 }
 
 // Reset height for `textarea`s
-textarea.form-control {
+textarea.lm-form-control {
   height: auto;
 }
 
@@ -167,8 +167,8 @@ textarea.form-control {
 // Search inputs in iOS
 //
 // This overrides the extra rounded corners on search inputs in iOS so that our
-// `.form-control` class can properly style them. Note that this cannot simply
-// be added to `.form-control` as it's not specific enough. For details, see
+// `.lm-form-control` class can properly style them. Note that this cannot simply
+// be added to `.lm-form-control` as it's not specific enough. For details, see
 // https://github.com/twbs/bootstrap/issues/11586.
 
 input[type="search"] {
@@ -190,7 +190,7 @@ input[type="search"] {
   input[type="time"],
   input[type="datetime-local"],
   input[type="month"] {
-    &.form-control {
+    &.lm-form-control {
       line-height: $input-height-base;
     }
 
@@ -304,7 +304,7 @@ input[type="checkbox"] {
 // Apply class to a `p` element to make any string of text align with labels in
 // a horizontal form layout.
 
-.form-control-static {
+.lm-form-control-static {
   // Size it appropriately next to real form controls
   padding-top: ($padding-base-vertical + 1);
   padding-bottom: ($padding-base-vertical + 1);
@@ -322,30 +322,30 @@ input[type="checkbox"] {
 
 // Form control sizing
 //
-// Build on `.form-control` with modifier classes to decrease or increase the
+// Build on `.lm-form-control` with modifier classes to decrease or increase the
 // height and font-size of form controls.
 //
-// The `.form-group-* form-control` variations are sadly duplicated to avoid the
+// The `.form-group-* lm-form-control` variations are sadly duplicated to avoid the
 // issue documented in https://github.com/twbs/bootstrap/issues/15074.
 
 @include input-size('.input-sm', $input-height-small, $padding-small-vertical, $padding-small-horizontal, $font-size-small, $line-height-small, $input-border-radius-small);
 .form-group-sm {
-  .form-control {
+  .lm-form-control {
     height: $input-height-small;
     padding: $padding-small-vertical $padding-small-horizontal;
     font-size: $font-size-small;
     line-height: $line-height-small;
     border-radius: $input-border-radius-small;
   }
-  select.form-control {
+  select.lm-form-control {
     height: $input-height-small;
     line-height: $input-height-small;
   }
-  textarea.form-control,
-  select[multiple].form-control {
+  textarea.lm-form-control,
+  select[multiple].lm-form-control {
     height: auto;
   }
-  .form-control-static {
+  .lm-form-control-static {
     height: $input-height-small;
     min-height: ($line-height-computed + $font-size-small);
     padding: ($padding-small-vertical + 1) $padding-small-horizontal;
@@ -356,22 +356,22 @@ input[type="checkbox"] {
 
 @include input-size('.input-lg', $input-height-large, $padding-large-vertical, $padding-large-horizontal, $font-size-large, $line-height-large, $input-border-radius-large);
 .form-group-lg {
-  .form-control {
+  .lm-form-control {
     height: $input-height-large;
     padding: $padding-large-vertical $padding-large-horizontal;
     font-size: $font-size-large;
     line-height: $line-height-large;
     border-radius: $input-border-radius-large;
   }
-  select.form-control {
+  select.lm-form-control {
     height: $input-height-large;
     line-height: $input-height-large;
   }
-  textarea.form-control,
-  select[multiple].form-control {
+  textarea.lm-form-control,
+  select[multiple].lm-form-control {
     height: auto;
   }
-  .form-control-static {
+  .lm-form-control-static {
     height: $input-height-large;
     min-height: ($line-height-computed + $font-size-large);
     padding: ($padding-large-vertical + 1) $padding-large-horizontal;
@@ -390,12 +390,12 @@ input[type="checkbox"] {
   position: relative;
 
   // Ensure icons don't overlap text
-  .form-control {
+  .lm-form-control {
     padding-right: ($input-height-base * 1.25);
   }
 }
 // Feedback icon (requires .glyphicon classes)
-.form-control-feedback {
+.lm-form-control-feedback {
   position: absolute;
   top: 0;
   right: 0;
@@ -407,16 +407,16 @@ input[type="checkbox"] {
   text-align: center;
   pointer-events: none;
 }
-.input-lg + .form-control-feedback,
-.input-group-lg + .form-control-feedback,
-.form-group-lg .form-control + .form-control-feedback {
+.input-lg + .lm-form-control-feedback,
+.input-group-lg + .lm-form-control-feedback,
+.form-group-lg .lm-form-control + .lm-form-control-feedback {
   width: $input-height-large;
   height: $input-height-large;
   line-height: $input-height-large;
 }
-.input-sm + .form-control-feedback,
-.input-group-sm + .form-control-feedback,
-.form-group-sm .form-control + .form-control-feedback {
+.input-sm + .lm-form-control-feedback,
+.input-group-sm + .lm-form-control-feedback,
+.form-group-sm .lm-form-control + .lm-form-control-feedback {
   width: $input-height-small;
   height: $input-height-small;
   line-height: $input-height-small;
@@ -424,22 +424,22 @@ input[type="checkbox"] {
 
 // Feedback states
 .has-success {
-  @include form-control-validation($state-success-text, $state-success-text, $state-success-bg);
+  @include lm-form-control-validation($state-success-text, $state-success-text, $state-success-bg);
 }
 .has-warning {
-  @include form-control-validation($state-warning-text, $state-warning-text, $state-warning-bg);
+  @include lm-form-control-validation($state-warning-text, $state-warning-text, $state-warning-bg);
 }
 .has-error {
-  @include form-control-validation($state-danger-text, $state-danger-text, $state-danger-bg);
+  @include lm-form-control-validation($state-danger-text, $state-danger-text, $state-danger-bg);
 }
 
 // Reposition feedback icon if input has visible label above
 .has-feedback label {
 
-  & ~ .form-control-feedback {
+  & ~ .lm-form-control-feedback {
     top: ($line-height-computed + 5); // Height of the `label` and its margin
   }
-  &.sr-only ~ .form-control-feedback {
+  &.sr-only ~ .lm-form-control-feedback {
     top: 0;
   }
 }
@@ -482,14 +482,14 @@ input[type="checkbox"] {
     }
 
     // In navbar-form, allow folks to *not* use `.form-group`
-    .form-control {
+    .lm-form-control {
       display: inline-block;
       width: auto; // Prevent labels from stacking above inputs in `.form-group`
       vertical-align: middle;
     }
 
     // Make static controls behave like regular ones
-    .form-control-static {
+    .lm-form-control-static {
       display: inline-block;
     }
 
@@ -499,13 +499,13 @@ input[type="checkbox"] {
 
       .input-group-addon,
       .input-group-lm-btn,
-      .form-control {
+      .lm-form-control {
         width: auto;
       }
     }
 
     // Input groups need that 100% width though
-    .input-group > .form-control {
+    .input-group > .lm-form-control {
       width: 100%;
     }
 
@@ -534,7 +534,7 @@ input[type="checkbox"] {
     }
 
     // Re-override the feedback icon.
-    .has-feedback .form-control-feedback {
+    .has-feedback .lm-form-control-feedback {
       top: 0;
     }
   }
@@ -590,7 +590,7 @@ input[type="checkbox"] {
   //
   // Reposition the icon because it's now within a grid column and columns have
   // `position: relative;` on them. Also accounts for the grid gutter padding.
-  .has-feedback .form-control-feedback {
+  .has-feedback .lm-form-control-feedback {
     right: floor(($grid-gutter-width / 2));
   }
 

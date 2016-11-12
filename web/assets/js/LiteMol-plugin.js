@@ -74880,7 +74880,7 @@ var LiteMol;
                 return Button;
             }(Pure));
             Controls.Button = Button;
-            Controls.TextBox = function (props) { return Plugin.React.createElement("input", { type: 'text', className: 'form-control', placeholder: props.placeholder, value: props.value, defaultValue: props.defaultValue, onBlur: function (e) { if (props.onBlur)
+            Controls.TextBox = function (props) { return Plugin.React.createElement("input", { type: 'text', className: 'lm-form-control', placeholder: props.placeholder, value: props.value, defaultValue: props.defaultValue, onBlur: function (e) { if (props.onBlur)
                     props.onBlur.call(null, e); }, onChange: function (e) { return props.onChange.call(null, e.target.value); }, onKeyPress: props.onKeyPress }); };
             function isEnter(e) {
                 if ((e.keyCode === 13 || e.charCode === 13)) {
@@ -74953,7 +74953,7 @@ var LiteMol;
                     var idx = this.props.options.indexOf(this.props.current);
                     if (idx < 0)
                         idx = 0;
-                    return Plugin.React.createElement("select", { title: this.props.title, value: idx.toString(), className: 'form-control', onChange: function (e) {
+                    return Plugin.React.createElement("select", { title: this.props.title, value: idx.toString(), className: 'lm-form-control', onChange: function (e) {
                             _this.current = _this.get(+e.target.value);
                             _this.props.onChange(_this.current);
                         } }, this.props.options.map(function (o, i) {
