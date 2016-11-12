@@ -1,4 +1,8 @@
-﻿# 2.4.8
+﻿# 2.4.9
+* Updated sequence query to support "auth_asym_id".
+* Added MoleculeModel.withTransformedXYZ function.
+
+# 2.4.8
 * Updated CIFTools.
 
 # 2.4.7

@@ -2772,7 +2772,7 @@ declare namespace LiteMol.Core.Structure.Query {
     function chainsFromIndices(indices: number[]): Builder;
     function residuesFromIndices(indices: number[]): Builder;
     function atomsFromIndices(indices: number[]): Builder;
-    function sequence(entityId: string, asymId: string, startId: ResidueIdSchema, endId: ResidueIdSchema): Builder;
+    function sequence(entityId: string, asymId: string | AsymIdSchema, startId: ResidueIdSchema, endId: ResidueIdSchema): Builder;
     function hetGroups(): Builder;
     function nonHetPolymer(): Builder;
     function polymerTrace(...atomNames: string[]): Builder;
@@ -2817,7 +2817,7 @@ declare namespace LiteMol.Core.Structure.Query {
             atomStartIndex: number[];
             atomEndIndex: number[];
         } & Structure.DataTable): Query;
-        function compileSequence(seqEntityId: string, seqAsymId: string, start: ResidueIdSchema, end: ResidueIdSchema): Query;
+        function compileSequence(seqEntityId: string, seqAsymId: string | AsymIdSchema, start: ResidueIdSchema, end: ResidueIdSchema): Query;
         function compileHetGroups(): Query;
         function compileNonHetPolymer(): Query;
         function compileAtomsInBox(min: {

@@ -11053,7 +11053,7 @@ var LiteMol;
 (function (LiteMol) {
     var Core;
     (function (Core) {
-        Core.VERSION = { number: "2.4.8", date: "Oct 25 2016" };
+        Core.VERSION = { number: "2.4.9", date: "Nov 12 2016" };
     })(Core = LiteMol.Core || (LiteMol.Core = {}));
 })(LiteMol || (LiteMol = {}));
 /*
@@ -19069,11 +19069,15 @@ var LiteMol;
                     function compileSequence(seqEntityId, seqAsymId, start, end) {
                         return function (ctx) {
                             var residues = ctx.structure.residues, chains = ctx.structure.chains, seqNumber = residues.seqNumber, insCode = residues.insCode, chainIndex = residues.chainIndex, atomStartIndex = residues.atomStartIndex, atomEndIndex = residues.atomEndIndex, entityId = chains.entityId, asymId = chains.asymId, count = chains.count, residueStartIndex = chains.residueStartIndex, residueEndIndex = chains.residueEndIndex, fragments = new Query.FragmentSeqBuilder(ctx);
-                            var parent = ctx.structure.parent, sourceChainIndex = ctx.structure.chains.sourceChainIndex, parentAsymId = parent ? parent.chains.asymId : undefined, isComputed = parent && sourceChainIndex;
+                            var parent = ctx.structure.parent, sourceChainIndex = ctx.structure.chains.sourceChainIndex, isComputed = parent && sourceChainIndex;
+                            var targetAsymId = typeof seqAsymId === 'string' ? { asymId: seqAsymId } : seqAsymId;
+                            var optTargetAsymId = new OptimizedId(targetAsymId, isComputed ? parent.chains : ctx.structure.chains);
+                            //optAsymId.isSatisfied();
                             for (var cI = 0; cI < count; cI++) {
-                                var aId = isComputed ? parentAsymId[sourceChainIndex[cI]] : asymId[cI];
-                                if (entityId[cI] !== seqEntityId || aId !== seqAsymId)
+                                if (entityId[cI] !== seqEntityId
+                                    || !optTargetAsymId.isSatisfied(isComputed ? sourceChainIndex[cI] : cI)) {
                                     continue;
+                                }
                                 var i = residueStartIndex[cI], last = residueEndIndex[cI], startIndex = -1, endIndex = -1;
                                 for (; i < last; i++) {
                                     if (seqNumber[i] >= start.seqNumber) {

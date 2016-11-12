@@ -70,7 +70,7 @@ namespace LiteMol.Core.Structure.Query {
     export function residuesFromIndices(indices: number[]) { return Builder.build(() => Compiler.compileFromIndices(false, indices, m => m.residues)); }
     export function atomsFromIndices(indices: number[]) { return Builder.build(() => Compiler.compileAtomIndices(indices)); }
 
-    export function sequence(entityId: string, asymId: string, startId: ResidueIdSchema, endId: ResidueIdSchema) { return Builder.build(() => Compiler.compileSequence(entityId, asymId, startId, endId)); }
+    export function sequence(entityId: string, asymId: string | AsymIdSchema, startId: ResidueIdSchema, endId: ResidueIdSchema) { return Builder.build(() => Compiler.compileSequence(entityId, asymId, startId, endId)); }
     export function hetGroups() { return Builder.build(() => Compiler.compileHetGroups()); }
     export function nonHetPolymer() { return Builder.build(() => Compiler.compileNonHetPolymer()); }
     export function polymerTrace(...atomNames: string[]) { return Builder.build(() => Compiler.compilePolymerNames(atomNames, false)); }
@@ -256,7 +256,7 @@ namespace LiteMol.Core.Structure.Query {
             };
         }
         
-        export function compileSequence(seqEntityId: string, seqAsymId: string, start: ResidueIdSchema, end: ResidueIdSchema): Query {
+        export function compileSequence(seqEntityId: string, seqAsymId: string | AsymIdSchema, start: ResidueIdSchema, end: ResidueIdSchema): Query {
             
             return (ctx: Context) => {
                 let residues = ctx.structure.residues,
@@ -266,14 +266,20 @@ namespace LiteMol.Core.Structure.Query {
                     fragments = new FragmentSeqBuilder(ctx);
                
                 let parent = ctx.structure.parent, 
-                    { sourceChainIndex } = ctx.structure.chains,
-                    parentAsymId = parent ? parent.chains.asymId : undefined,                    
+                    { sourceChainIndex } = ctx.structure.chains,                    
                     isComputed = parent && sourceChainIndex;
+
+                let targetAsymId: AsymIdSchema = typeof seqAsymId === 'string' ? { asymId: seqAsymId } : seqAsymId;
+                let optTargetAsymId = new OptimizedId(targetAsymId, isComputed ? parent!.chains : ctx.structure.chains);
+
+                //optAsymId.isSatisfied();
                 
-                for (let cI = 0; cI < count; cI++) {                    
-                    let aId = isComputed ? parentAsymId![sourceChainIndex![cI]] : asymId[cI];
-                    if (entityId[cI] !== seqEntityId || aId !== seqAsymId) continue;
-                    
+                for (let cI = 0; cI < count; cI++) {
+                    if (entityId[cI] !== seqEntityId 
+                        || !optTargetAsymId.isSatisfied(isComputed ? sourceChainIndex![cI] : cI)) {
+                        continue;
+                    }
+
                     let i = residueStartIndex[cI], last = residueEndIndex[cI], startIndex = -1, endIndex = -1;                    
                     for (; i < last; i++) {
 
