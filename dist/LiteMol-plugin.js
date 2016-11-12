@@ -15778,43 +15778,23 @@ var LiteMol;
             }());
             Structure.DataTableColumnDescriptor = DataTableColumnDescriptor;
             var DataTable = (function () {
-                function DataTable(count, source) {
+                function DataTable(count, srcColumns, srcData) {
                     this.count = count;
                     this.indices = new Int32Array(count);
                     this.columns = [];
                     for (var i = 0; i < count; i++) {
                         this.indices[i] = i;
                     }
-                    if (source) {
-                        for (var _i = 0, _a = source.columns; _i < _a.length; _i++) {
-                            var col = _a[_i];
-                            var data = source[col.name];
-                            if (Core.Utils.ChunkedArray.is(data)) {
-                                data = Core.Utils.ChunkedArray.compact(data);
-                            }
-                            Object.defineProperty(this, col.name, { enumerable: true, configurable: false, writable: false, value: data });
-                            this.columns[this.columns.length] = col;
+                    for (var _i = 0, srcColumns_1 = srcColumns; _i < srcColumns_1.length; _i++) {
+                        var col = srcColumns_1[_i];
+                        var data = srcData[col.name];
+                        if (Core.Utils.ChunkedArray.is(data)) {
+                            data = Core.Utils.ChunkedArray.compact(data);
                         }
+                        Object.defineProperty(this, col.name, { enumerable: true, configurable: false, writable: false, value: data });
+                        this.columns[this.columns.length] = col;
                     }
                 }
-                DataTable.prototype.clone = function () {
-                    var b = new DataTableBuilder(this.count), cols = [];
-                    for (var _i = 0, _a = this.columns; _i < _a.length; _i++) {
-                        var c = _a[_i];
-                        cols[cols.length] = {
-                            src: this[c.name],
-                            trg: b.addColumn(c.name, c.creator)
-                        };
-                    }
-                    for (var _c = 0, cols_1 = cols; _c < cols_1.length; _c++) {
-                        var c = cols_1[_c];
-                        var s = c.src, t = c.trg;
-                        for (var i = 0, m = this.count; i < m; i++) {
-                            t[i] = s[i];
-                        }
-                    }
-                    return b.seal();
-                };
                 DataTable.prototype.getBuilder = function (count) {
                     var b = new DataTableBuilder(count);
                     for (var _i = 0, _a = this.columns; _i < _a.length; _i++) {
@@ -15850,7 +15830,7 @@ var LiteMol;
                  * use internal class instead of dictionary representation.
                  */
                 DataTableBuilder.prototype.seal = function () {
-                    return new DataTable(this.count, this);
+                    return new DataTable(this.count, this.columns, this);
                 };
                 return DataTableBuilder;
             }());
@@ -16185,6 +16165,52 @@ var LiteMol;
                 return Molecule;
             }());
             Structure.Molecule = Molecule;
+            (function (MoleculeModel) {
+                function cloneAtomsXYZ(model) {
+                    var data = {};
+                    var atoms = model.atoms;
+                    for (var _i = 0, _a = atoms.columns; _i < _a.length; _i++) {
+                        var c = _a[_i];
+                        if (c.name === 'x' || c.name === 'y' || c.name === 'z') {
+                            data[c.name] = c.creator(atoms.count);
+                        }
+                        else {
+                            data[c.name] = atoms[c.name];
+                        }
+                    }
+                    return new DataTable(atoms.count, atoms.columns, data);
+                }
+                function withTransformedXYZ(model, ctx, transform) {
+                    var _a = model.atoms, x = _a.x, y = _a.y, z = _a.z;
+                    var tAtoms = cloneAtomsXYZ(model);
+                    var tX = tAtoms.x, tY = tAtoms.y, tZ = tAtoms.z;
+                    var t = { x: 0.0, y: 0.0, z: 0.0 };
+                    for (var i = 0, _l = model.atoms.count; i < _l; i++) {
+                        transform(ctx, x[i], y[i], z[i], t);
+                        tX[i] = t.x;
+                        tY[i] = t.y;
+                        tZ[i] = t.z;
+                    }
+                    return new MoleculeModel({
+                        id: model.id,
+                        modelId: model.modelId,
+                        atoms: tAtoms,
+                        residues: model.residues,
+                        chains: model.chains,
+                        entities: model.entities,
+                        covalentBonds: model.covalentBonds,
+                        nonCovalentbonds: model.nonCovalentbonds,
+                        componentBonds: model.componentBonds,
+                        secondaryStructure: model.secondaryStructure,
+                        symmetryInfo: model.symmetryInfo,
+                        assemblyInfo: model.assemblyInfo,
+                        parent: model.parent,
+                        source: model.source,
+                        operators: model.operators
+                    });
+                }
+                MoleculeModel.withTransformedXYZ = withTransformedXYZ;
+            })(MoleculeModel = Structure.MoleculeModel || (Structure.MoleculeModel = {}));
         })(Structure = Core.Structure || (Core.Structure = {}));
     })(Core = LiteMol.Core || (LiteMol.Core = {}));
 })(LiteMol || (LiteMol = {}));
@@ -18021,8 +18047,8 @@ var LiteMol;
                             atomResidue[atomOffset] = residueOffset;
                             atomChain[atomOffset] = chainOffset;
                             atomEntity[atomOffset] = entityOffset;
-                            for (var _b = 0, cols_2 = cols; _b < cols_2.length; _b++) {
-                                var c = cols_2[_b];
+                            for (var _b = 0, cols_1 = cols; _b < cols_1.length; _b++) {
+                                var c = cols_1[_b];
                                 c.target[atomOffset] = c.src[aI];
                             }
                             atomOffset++;
@@ -68228,6 +68254,36 @@ var LiteMol;
                                     label: 'Symmetry',
                                     model: symm,
                                     description: symm.atoms.count + " atom" + (symm.atoms.count !== 1 ? 's' : '') + ", " + t.params.type + " " + Bootstrap.Utils.round(radius, 1) + " \u212B"
+                                }));
+                            });
+                        });
+                    });
+                    Molecule.ModelTransform3D = Bootstrap.Tree.Transformer.create({
+                        id: 'molecule-model-transform3d',
+                        name: 'Transform 3D',
+                        description: 'Transform 3D coordinates of a model using a 4x4 matrix.',
+                        from: [Entity.Molecule.Model],
+                        to: [Entity.Molecule.Model],
+                        validateParams: function (p) { return !p || !p.transform || p.transform.length !== 16 ? ['Specify a 4x4 transform matrix.'] : void 0; },
+                        defaultParams: function (ctx, e) { return ({ transform: LiteMol.Core.Geometry.LinearAlgebra.Matrix4.identity() }); },
+                        isUpdatable: true
+                    }, function (ctx, a, t) {
+                        return Bootstrap.Task.create("Transform 3D (" + a.props.label + ")", 'Normal', function (ctx) {
+                            ctx.update('Transforming...');
+                            ctx.schedule(function () {
+                                var m = a.props.model;
+                                var tCtx = { t: t.params.transform, v: { x: 0, y: 0, z: 0 } };
+                                var transformed = LiteMol.Core.Structure.MoleculeModel.withTransformedXYZ(m, tCtx, function (ctx, x, y, z, out) {
+                                    var v = ctx.v;
+                                    v.x = x;
+                                    v.y = y;
+                                    v.z = z;
+                                    LiteMol.Core.Geometry.LinearAlgebra.Matrix4.transformVector3(out, v, ctx.t);
+                                });
+                                ctx.resolve(Entity.Molecule.Model.create(t, {
+                                    label: a.props.label,
+                                    description: t.params.description ? t.params.description : 'Transformed',
+                                    model: transformed
                                 }));
                             });
                         });

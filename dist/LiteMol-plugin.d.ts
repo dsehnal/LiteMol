@@ -5377,10 +5377,11 @@ declare namespace LiteMol.Core.Structure {
         count: number;
         indices: number[];
         columns: DataTableColumnDescriptor[];
-        clone(): DataTable;
         getBuilder(count: number): DataTableBuilder;
         getRawData(): any[][];
-        constructor(count: number, source: DataTableBuilder);
+        constructor(count: number, srcColumns: DataTableColumnDescriptor[], srcData: {
+            [name: string]: any;
+        });
     }
     class DataTableBuilder {
         count: number;
@@ -5693,6 +5694,9 @@ declare namespace LiteMol.Core.Structure {
         id: string;
         models: MoleculeModel[];
         constructor(id: string, models: MoleculeModel[]);
+    }
+    namespace MoleculeModel {
+        function withTransformedXYZ<T>(model: MoleculeModel, ctx: T, transform: (ctx: T, x: number, y: number, z: number, out: Geometry.LinearAlgebra.ObjectVec3) => void): MoleculeModel;
     }
 }
 declare namespace LiteMol.Core.Structure {
@@ -16297,6 +16301,16 @@ declare namespace LiteMol.Bootstrap.Entity.Transformer.Molecule {
         radius?: number;
     }
     const CreateSymmetryMates: Tree.Transformer<Entity.Molecule.Model, Entity.Molecule.Model, CreateSymmetryMatesParams>;
+    interface ModelTransform3DParams {
+        /**
+         * a 4x4 matrix stored as 1D array in column major order.
+         * (Use Core.Geometry.LinearAlgebra.Matrix4.empty & setValue(m, row, column, value)
+         *  if you are not sure).
+         */
+        transform?: number[];
+        description?: string;
+    }
+    const ModelTransform3D: Tree.Transformer<Entity.Molecule.Model, Entity.Molecule.Model, ModelTransform3DParams>;
     interface CreateVisualParams {
         style?: Visualization.Molecule.Style<any>;
     }

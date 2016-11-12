@@ -20,27 +20,6 @@ namespace LiteMol.Core.Structure {
         indices: number[];
         columns: DataTableColumnDescriptor[];
 
-        clone() {
-            let b = new DataTableBuilder(this.count),
-                cols: { src: any[]; trg: any[] }[] = [];
-
-            for (let c of this.columns) {
-                cols[cols.length] = {
-                    src: (<any>this)[c.name],
-                    trg: b.addColumn(c.name, c.creator)
-                };
-            }
-
-            for (let c of cols) {
-                let s = c.src, t = c.trg;
-                for (let i = 0, m = this.count; i < m; i++) {
-                    t[i] = s[i];
-                }
-            }
-
-            return b.seal();
-        }
-
         getBuilder(count: number) {
             let b = new DataTableBuilder(count);
             for (let c of this.columns) {
@@ -53,7 +32,7 @@ namespace LiteMol.Core.Structure {
             return this.columns.map(c => (<any>this)[c.name]);
         }
 
-        constructor(count: number, source: DataTableBuilder) {
+        constructor(count: number, srcColumns: DataTableColumnDescriptor[], srcData: { [name: string]: any }) {
             this.count = count;
             this.indices = <any>new Int32Array(count);
             this.columns = [];
@@ -62,16 +41,14 @@ namespace LiteMol.Core.Structure {
                 this.indices[i] = i;
             }
 
-            if (source) {
-                for (let col of source.columns) {
+            for (let col of srcColumns) {
 
-                    let data = (<any>source)[col.name];
-                    if (Utils.ChunkedArray.is(data)) {
-                        data = Utils.ChunkedArray.compact(data);
-                    }
-                    Object.defineProperty(this, col.name, { enumerable: true, configurable: false, writable: false, value: data });
-                    this.columns[this.columns.length] = col;
+                let data = srcData[col.name];
+                if (Utils.ChunkedArray.is(data)) {
+                    data = Utils.ChunkedArray.compact(data);
                 }
+                Object.defineProperty(this, col.name, { enumerable: true, configurable: false, writable: false, value: data });
+                this.columns[this.columns.length] = col;
             }
         }
     }
@@ -97,7 +74,7 @@ namespace LiteMol.Core.Structure {
          * use internal class instead of dictionary representation.
          */
         seal<TTable extends DataTable>(): TTable {
-            return <TTable>new DataTable(this.count, this);
+            return <TTable>new DataTable(this.count, this.columns, this);
         }
 
         constructor(count: number) {
@@ -530,5 +507,60 @@ namespace LiteMol.Core.Structure {
             public id: string,
             public models: MoleculeModel[]) {
         }
+    }
+
+    export namespace MoleculeModel {
+
+        function cloneAtomsXYZ(model: MoleculeModel): DefaultAtomTableSchema {
+
+            let data: { [name: string]: any } = { };
+            let atoms = model.atoms;
+
+            for (let c of atoms.columns) {
+                if (c.name === 'x' || c.name === 'y' || c.name === 'z') {
+                    data[c.name] = c.creator(atoms.count);
+                } else {
+                    data[c.name] = (<any>atoms)[c.name];
+                }
+            }
+
+            return <DefaultAtomTableSchema>new DataTable(atoms.count, atoms.columns, data);
+        }
+
+        export function withTransformedXYZ<T>(
+            model: MoleculeModel, ctx: T, 
+            transform: (ctx: T, x: number, y: number, z: number, out: Geometry.LinearAlgebra.ObjectVec3) => void) {
+
+            let {x,y,z} = model.atoms;
+            let tAtoms = cloneAtomsXYZ(model);
+            let {x:tX, y:tY, z:tZ} = tAtoms;
+            let t = { x: 0.0, y: 0.0, z: 0.0 };
+
+            for (let i = 0, _l = model.atoms.count; i < _l; i++) {
+                transform(ctx, x[i], y[i], z[i], t);
+                tX[i] = t.x;
+                tY[i] = t.y;
+                tZ[i] = t.z;
+            }
+
+            return new MoleculeModel({
+                id: model.id,
+                modelId: model.modelId,
+                atoms: tAtoms,
+                residues: model.residues,
+                chains: model.chains,
+                entities: model.entities,
+                covalentBonds: model.covalentBonds,
+                nonCovalentbonds: model.nonCovalentbonds,
+                componentBonds: model.componentBonds,
+                secondaryStructure: model.secondaryStructure,
+                symmetryInfo: model.symmetryInfo,
+                assemblyInfo: model.assemblyInfo,
+                parent: model.parent,
+                source: model.source,
+                operators: model.operators
+            });
+        }
+
     }
 }

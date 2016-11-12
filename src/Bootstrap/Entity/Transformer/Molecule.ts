@@ -244,8 +244,7 @@ namespace LiteMol.Bootstrap.Entity.Transformer.Molecule {
                 }));
             });
         });
-    }
-    );
+    });
 
     export interface CreateSymmetryMatesParams {
         type?: 'Mates' | 'Interaction',
@@ -279,8 +278,47 @@ namespace LiteMol.Bootstrap.Entity.Transformer.Molecule {
                 }));
             });
         });
+    });
+
+    export interface ModelTransform3DParams {        
+        /**
+         * a 4x4 matrix stored as 1D array in column major order.
+         * (Use Core.Geometry.LinearAlgebra.Matrix4.empty & setValue(m, row, column, value)
+         *  if you are not sure).
+         */
+        transform?: number[],
+        description?: string
     }
-    );
+
+    export const ModelTransform3D = Tree.Transformer.create<Entity.Molecule.Model, Entity.Molecule.Model, ModelTransform3DParams>({
+        id: 'molecule-model-transform3d',
+        name: 'Transform 3D',
+        description: 'Transform 3D coordinates of a model using a 4x4 matrix.',
+        from: [Entity.Molecule.Model],
+        to: [Entity.Molecule.Model],
+        validateParams: p => !p || !p.transform || p.transform.length !== 16 ? ['Specify a 4x4 transform matrix.'] : void 0,
+        defaultParams: (ctx, e) => ({ transform: Core.Geometry.LinearAlgebra.Matrix4.identity() }),
+        isUpdatable: true
+    }, (ctx, a, t) => {
+        return Task.create<Entity.Molecule.Model>(`Transform 3D (${a.props.label})`, 'Normal', ctx => {
+            ctx.update('Transforming...');
+            ctx.schedule(() => {
+                let m = a.props.model;
+                let tCtx = { t: t.params.transform!, v: { x: 0, y: 0, z: 0 } };
+                let transformed = Core.Structure.MoleculeModel.withTransformedXYZ(m, tCtx, (ctx, x, y, z, out) => {
+                    let v = ctx.v;
+                    v.x = x; v.y = y; v.z = z;
+                    Core.Geometry.LinearAlgebra.Matrix4.transformVector3(out, v, ctx.t);
+                });
+
+                ctx.resolve(Entity.Molecule.Model.create(t, {
+                    label: a.props.label,
+                    description: t.params.description ? t.params.description : 'Transformed',
+                    model: transformed
+                }));
+            });
+        });
+    });
 
     export interface CreateVisualParams {
         style?: Visualization.Molecule.Style<any>
