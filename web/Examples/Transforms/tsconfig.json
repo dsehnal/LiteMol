@@ -1,0 +1,28 @@
+{
+  "compileOnSave": false,
+  "compilerOptions": {
+    "noImplicitAny": true,
+    "noEmitOnError": true,
+    "removeComments": false,
+    "sourceMap": false,
+    "declaration": false,
+    "strictNullChecks": true,
+    "noImplicitThis": true,
+    "lib": [ "es5", "es2015.collection", "dom", "es2015.promise" ],
+    "target": "es5",
+    "jsx": "react",
+    "out": "LiteMol-example.js"
+  },
+  "files": [
+    "../../dist/LiteMol-plugin.d.ts",
+
+    "src/Comparison/Evd.ts",
+    "src/Comparison/PositionTable.ts",
+    "src/Comparison/RmsdTransform.ts",
+    "src/Comparison/RmsdTransformByIndices.ts",
+
+    "src/Spec.ts",
+    "src/Process.ts",           
+    "src/App.ts"
+  ]
+}

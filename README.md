@@ -64,6 +64,7 @@ Examples are located in the folder `examples`.
   - `CustomDensity` ([view live](https://webchemdev.ncbr.muni.cz/LiteMol/Examples/CustomDensity)) - Shows how to download a PDB file, parse it, download density data and allow user interaction with them.
   - `SplitSurface` ([view live](https://webchemdev.ncbr.muni.cz/LiteMol/Examples/SplitSurface)) - Shows how to create two complementary selections and display a surface for each of them.
   - `BinaryCIFInspect` ([view live](https://webchemdev.ncbr.muni.cz/LiteMol/Examples/BinaryCIFInspect)) - A simple app that enables a comparison of data inside CIF and BinaryCIF. Also shows how to use the LiteMol.Core code directly without including/instancing the plugin.
+  - `Transforms` ([view live](https://webchemdev.ncbr.muni.cz/LiteMol/Examples/Transforms)) - This is a more complicated example that shows how to download multiple structures, apply a superposition algorithm, transform using a 4x4, and visualize them.
 
 To run the examples locally, simply open the corresponding ``index.html`` from the ``web/Examples`` directory in your
 favourite web browser (this is because the paths to the LiteMol CSS and JS are set up so that they can be shared
@@ -226,7 +227,7 @@ the file ``LiteMol-plugin.js`` (or ``LiteMol-plugin.min.js`` for production).
     ```JavaScript
     plugin.loadMolecule({
         id: '1tqn',
-        url: `https://www.ebi.ac.uk/pdbe/static/entry/1tqn_updated.cif`,
+        url: 'https://www.ebi.ac.uk/pdbe/static/entry/1tqn_updated.cif',
         format: 'cif' // default
     });
     ```
@@ -234,7 +235,7 @@ the file ``LiteMol-plugin.js`` (or ``LiteMol-plugin.min.js`` for production).
     To load a file in the PDB format, use 
 
     ```JavaScript
-    url: `https://www.ebi.ac.uk/pdbe/entry-files/download/pdb1tqn.ent`,
+    url: 'https://www.ebi.ac.uk/pdbe/entry-files/download/pdb1tqn.ent',
     format: 'pdb'
     ```
 

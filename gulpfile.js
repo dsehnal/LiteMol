@@ -62,6 +62,7 @@ function ViewerAndExamples() {
       buildts('./examples/SplitSurface'),
       buildts('./examples/SimpleController'),
       buildts('./examples/BinaryCIFInspect'),
+      buildts('./examples/Transforms'),
    ]);    
 }
 

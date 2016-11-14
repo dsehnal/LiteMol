@@ -298,7 +298,7 @@ namespace LiteMol.Bootstrap.Entity.Transformer.Molecule {
         to: [Entity.Molecule.Model],
         validateParams: p => !p || !p.transform || p.transform.length !== 16 ? ['Specify a 4x4 transform matrix.'] : void 0,
         defaultParams: (ctx, e) => ({ transform: Core.Geometry.LinearAlgebra.Matrix4.identity() }),
-        isUpdatable: true
+        isUpdatable: false
     }, (ctx, a, t) => {
         return Task.create<Entity.Molecule.Model>(`Transform 3D (${a.props.label})`, 'Normal', ctx => {
             ctx.update('Transforming...');

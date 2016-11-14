@@ -68266,7 +68266,7 @@ var LiteMol;
                         to: [Entity.Molecule.Model],
                         validateParams: function (p) { return !p || !p.transform || p.transform.length !== 16 ? ['Specify a 4x4 transform matrix.'] : void 0; },
                         defaultParams: function (ctx, e) { return ({ transform: LiteMol.Core.Geometry.LinearAlgebra.Matrix4.identity() }); },
-                        isUpdatable: true
+                        isUpdatable: false
                     }, function (ctx, a, t) {
                         return Bootstrap.Task.create("Transform 3D (" + a.props.label + ")", 'Normal', function (ctx) {
                             ctx.update('Transforming...');
