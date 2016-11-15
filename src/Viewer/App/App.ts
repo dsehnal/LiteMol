@@ -9,20 +9,23 @@ namespace LiteMol.Viewer {
         return decodeURIComponent(((window.location.search || '').match(r) || [])[1] || ''); 
     }
 
-    let plugin = new Plugin.Instance(PluginSpec, document.getElementById('app')!);
+    let plugin = Plugin.create({ 
+        customSpecification: PluginSpec, 
+        target: document.getElementById('app')!, 
+        layoutState: { isExpanded: true } 
+    });
     plugin.context.logger.message(`LiteMol Viewer ${VERSION.number}`);  
-    LiteMol.Bootstrap.Command.Layout.SetState.dispatch(plugin.context, { isExpanded: true });
 
     let theme = getParam('theme', '[a-z]+').toLowerCase(); 
     if (theme === 'light') {
-        LiteMol.Bootstrap.Command.Layout.SetViewportOptions.dispatch(plugin.context, { clearColor: Visualization.Color.fromRgb(255, 255, 255) });
+        plugin.setViewportBackground('#fff');
     }
 
     (function () {
         let pdbId = getParam('loadFromPDB', '[a-z0-9]+').toLowerCase().trim();
         if (pdbId.length === 4) {
-            let t = Bootstrap.Tree.Transform.build().add(plugin.context.tree.root, PDBe.Data.DownloadMolecule, { id: pdbId });
-            Bootstrap.Tree.Transform.apply(plugin.context, t).run(plugin.context);
+            let t = plugin.createTransform().add(plugin.root, PDBe.Data.DownloadMolecule, { id: pdbId });
+            plugin.applyTransform(t);
             return;
         }
 
@@ -34,8 +37,8 @@ namespace LiteMol.Viewer {
                 case 'sdf': format = Core.Formats.Molecule.SupportedFormats.SDF; break;
                 case 'mmbcif': format = Core.Formats.Molecule.SupportedFormats.mmBCIF; break;
             }
-            let t = Bootstrap.Tree.Transform.build().add(plugin.context.tree.root, DataSources.DownloadMolecule, { id: downloadUrl, format });
-            Bootstrap.Tree.Transform.apply(plugin.context, t).run(plugin.context);
+            let t = plugin.createTransform().add(plugin.root, DataSources.DownloadMolecule, { id: downloadUrl, format });
+            plugin.applyTransform(t);
         }
     })();
 }

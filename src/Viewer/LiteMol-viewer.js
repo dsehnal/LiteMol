@@ -830,18 +830,21 @@ var LiteMol;
             var r = new RegExp(name + "=(" + regex + ")[&]?", 'i');
             return decodeURIComponent(((window.location.search || '').match(r) || [])[1] || '');
         }
-        var plugin = new LiteMol.Plugin.Instance(Viewer.PluginSpec, document.getElementById('app'));
+        var plugin = LiteMol.Plugin.create({
+            customSpecification: Viewer.PluginSpec,
+            target: document.getElementById('app'),
+            layoutState: { isExpanded: true }
+        });
         plugin.context.logger.message("LiteMol Viewer " + Viewer.VERSION.number);
-        LiteMol.Bootstrap.Command.Layout.SetState.dispatch(plugin.context, { isExpanded: true });
         var theme = getParam('theme', '[a-z]+').toLowerCase();
         if (theme === 'light') {
-            LiteMol.Bootstrap.Command.Layout.SetViewportOptions.dispatch(plugin.context, { clearColor: LiteMol.Visualization.Color.fromRgb(255, 255, 255) });
+            plugin.setViewportBackground('#fff');
         }
         (function () {
             var pdbId = getParam('loadFromPDB', '[a-z0-9]+').toLowerCase().trim();
             if (pdbId.length === 4) {
-                var t = LiteMol.Bootstrap.Tree.Transform.build().add(plugin.context.tree.root, Viewer.PDBe.Data.DownloadMolecule, { id: pdbId });
-                LiteMol.Bootstrap.Tree.Transform.apply(plugin.context, t).run(plugin.context);
+                var t = plugin.createTransform().add(plugin.root, Viewer.PDBe.Data.DownloadMolecule, { id: pdbId });
+                plugin.applyTransform(t);
                 return;
             }
             var downloadUrl = getParam('loadFromURL', '[^&]+').trim();
@@ -858,8 +861,8 @@ var LiteMol;
                         format = LiteMol.Core.Formats.Molecule.SupportedFormats.mmBCIF;
                         break;
                 }
-                var t = LiteMol.Bootstrap.Tree.Transform.build().add(plugin.context.tree.root, Viewer.DataSources.DownloadMolecule, { id: downloadUrl, format: format });
-                LiteMol.Bootstrap.Tree.Transform.apply(plugin.context, t).run(plugin.context);
+                var t = plugin.createTransform().add(plugin.root, Viewer.DataSources.DownloadMolecule, { id: downloadUrl, format: format });
+                plugin.applyTransform(t);
             }
         })();
     })(Viewer = LiteMol.Viewer || (LiteMol.Viewer = {}));
