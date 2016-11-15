@@ -77132,6 +77132,16 @@ var LiteMol;
                     .then(Transformer.Molecule.CreateModel, { modelIndex: 0 }, { isBinding: false, ref: source.modelRef });
                 return this.applyTransform(data);
             };
+            /**
+             * Destroys the the plugin instance.
+             * The controller becomes unusable as a result.
+             */
+            Controller.prototype.destroy = function () {
+                if (!this._instance)
+                    return;
+                this._instance.destroy();
+                this._instance = void 0;
+            };
             return Controller;
         }());
         Plugin.Controller = Controller;

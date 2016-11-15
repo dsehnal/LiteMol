@@ -506,7 +506,7 @@ var LiteMolPluginInstance;
     // this applies the transforms we will build later
     // it results a promise-like object that you can "then/catch".
     function applyTransforms(actions) {
-        return Tree.Transform.apply(plugin.context, actions).run(plugin.context);
+        return plugin.applyTransform(actions);
     }
     function selectNodes(what) {
         return plugin.context.select(what);
@@ -521,7 +521,6 @@ var LiteMolPluginInstance;
         // it will not work on IE <= 10 (no way around this, no WebGL in IE10)
         // also needs ES6 Map and Set -- so check browser compatibility for that, you can try a polyfill using modernizr or something 
         plugin = create(document.getElementById('app'));
-        Command.Layout.SetState.dispatch(plugin.context, { hideControls: true });
         var select = Event.Molecule.ModelSelect.getStream(plugin.context).subscribe(function (e) { return showInteraction('select', e.data); });
         // to stop listening, select.dispose();
         var highlight = Event.Molecule.ModelHighlight.getStream(plugin.context).subscribe(function (e) { return showInteraction('highlight', e.data); });
@@ -741,7 +740,7 @@ var LiteMolPluginInstance;
         Bootstrap.Command.Entity.Highlight.dispatch(plugin.context, { entities: plugin.context.select('model-visual-0' /* indexed from 0 */), isOn: false });
     });
     function create(target) {
-        var spec = {
+        var customSpecification = {
             settings: {
                 // currently these are all the 'global' settings available 
                 'molecule.model.defaultQuery': "residues({ name: 'ALA' })",
@@ -828,7 +827,7 @@ var LiteMolPluginInstance;
                 view: Views.Entity.Tree
             }
         };
-        var plugin = new Plugin.Instance(spec, target);
+        var plugin = Plugin.create({ target: target, customSpecification: customSpecification, layoutState: { hideControls: true } });
         plugin.context.logger.message("LiteMol Viewer " + Plugin.VERSION.number);
         return plugin;
     }

@@ -166,6 +166,16 @@ namespace LiteMol.Plugin {
             return this.applyTransform(data);
         }
 
+        /**
+         * Destroys the the plugin instance.
+         * The controller becomes unusable as a result.
+         */
+        destroy() {
+            if (!this._instance) return;
+            this._instance.destroy();
+            this._instance = <any>void 0;
+        }
+
         constructor(options: PluginControllerOptions) {
             const spec = options.customSpecification ? options.customSpecification : getDefaultSpecification();
 

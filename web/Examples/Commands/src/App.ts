@@ -74,7 +74,7 @@ namespace LiteMolPluginInstance {
     
     let moleculeId = '1cbs';
     
-    let plugin: Plugin.Instance;
+    let plugin: Plugin.Controller;
     let interactivityTarget = document.getElementById('interactions')!;
     function showInteraction(type: string, i: Bootstrap.Interactivity.Molecule.SelectionInfo | undefined) {
         if (!i) { // can be undefined meaning "empty interaction"
@@ -89,7 +89,7 @@ namespace LiteMolPluginInstance {
     // this applies the transforms we will build later
     // it results a promise-like object that you can "then/catch".
     function applyTransforms(actions: Tree.Transform.Source) {
-        return Tree.Transform.apply(plugin.context, actions).run(plugin.context);
+        return plugin.applyTransform(actions);
     }
     
     function selectNodes(what: Tree.Selector<Bootstrap.Entity.Any>) {
@@ -108,7 +108,6 @@ namespace LiteMolPluginInstance {
         // it will not work on IE <= 10 (no way around this, no WebGL in IE10)
         // also needs ES6 Map and Set -- so check browser compatibility for that, you can try a polyfill using modernizr or something 
         plugin = create(document.getElementById('app')!);
-        Command.Layout.SetState.dispatch(plugin.context, { hideControls: true })
                 
         let select = Event.Molecule.ModelSelect.getStream(plugin.context).subscribe(e => showInteraction('select', e.data));
         // to stop listening, select.dispose();
@@ -385,7 +384,7 @@ namespace LiteMolPluginInstance {
              
     export function create(target: HTMLElement) {
         
-        let spec: Plugin.Specification = {
+        let customSpecification: Plugin.Specification = {
             settings: {
                 // currently these are all the 'global' settings available 
                 'molecule.model.defaultQuery': `residues({ name: 'ALA' })`,
@@ -491,7 +490,7 @@ namespace LiteMolPluginInstance {
             }
         }
 
-        let plugin = new Plugin.Instance(spec, target);
+        let plugin = Plugin.create({ target, customSpecification, layoutState: { hideControls: true } });
         plugin.context.logger.message(`LiteMol Viewer ${Plugin.VERSION.number}`);
         return plugin;
     }

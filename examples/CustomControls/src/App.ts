@@ -12,7 +12,7 @@ namespace LiteMol.Custom {
                
     export function create(target: HTMLElement) {
         
-        let spec: Plugin.Specification = {
+        let customSpecification: Plugin.Specification = {
             settings: {
                 // currently these are all the 'global' settings available 
                 'molecule.model.defaultQuery': `residues({ name: 'ALA' })`,
@@ -113,7 +113,7 @@ namespace LiteMol.Custom {
             tree: void 0 // { region: LayoutRegion.Left, view: Views.Entity.Tree }
         };
 
-        let plugin = new Plugin.Instance(spec, target);
+        let plugin = Plugin.create({ target, customSpecification, layoutState: { isExpanded: true } });
         plugin.context.logger.message(`LiteMol Plugin ${Plugin.VERSION.number}`);
         return plugin;
     }
@@ -123,16 +123,14 @@ namespace LiteMol.Custom {
     let id = '1grm';
     let plugin = create(document.getElementById('app')!);
 
-    LiteMol.Bootstrap.Command.Layout.SetState.dispatch(plugin.context, { isExpanded: true });
-
-    let action = Bootstrap.Tree.Transform.build();
+    let action = plugin.createTransform();
     
     action.add(plugin.context.tree.root, <Bootstrap.Tree.Transformer.To<Bootstrap.Entity.Data.String>>Transformer.Data.Download, { url: `https://www.ebi.ac.uk/pdbe/static/entry/${id}_updated.cif`, type: 'String', id })
         .then(Transformer.Data.ParseCif, { id }, { isBinding: true })
         .then(Transformer.Molecule.CreateFromMmCif, { blockIndex: 0 }, { ref: 'molecule' })
         .then(CreateRepresentation, { });
 
-     Bootstrap.Tree.Transform.apply(plugin.context, action).run(plugin.context).then(() => {
+     plugin.applyTransform(action).then(() => {
          console.log(plugin.context.select('molecule'));
      });        
 }

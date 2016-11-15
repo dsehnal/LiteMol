@@ -3190,6 +3190,11 @@ declare namespace LiteMol.Plugin {
          * Default format is mmCIF.
          */
         loadMolecule(source: ControllerLoadMoleculeInfo): Bootstrap.Task.Running<{}>;
+        /**
+         * Destroys the the plugin instance.
+         * The controller becomes unusable as a result.
+         */
+        destroy(): void;
         constructor(options: PluginControllerOptions);
     }
     function create(options: PluginControllerOptions): Controller;

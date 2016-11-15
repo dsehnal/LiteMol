@@ -12,7 +12,7 @@ var LiteMol;
         var Transformer = Bootstrap.Entity.Transformer;
         var LayoutRegion = Bootstrap.Components.LayoutRegion;
         function create(target) {
-            var spec = {
+            var customSpecification = {
                 settings: {},
                 transforms: [],
                 behaviours: [
@@ -49,17 +49,13 @@ var LiteMol;
                 layoutView: Views.Layout,
                 tree: { region: LayoutRegion.Left, view: Views.Entity.Tree }
             };
-            var plugin = new Plugin.Instance(spec, target);
+            var plugin = Plugin.create({ target: target, customSpecification: customSpecification, layoutState: { hideControls: true } });
             plugin.context.logger.message("LiteMol " + Plugin.VERSION.number);
             return plugin;
         }
         Surface.create = create;
         var id = '1cbs';
         var plugin = create(document.getElementById('app'));
-        LiteMol.Bootstrap.Command.Layout.SetState.dispatch(plugin.context, {
-            // isExpanded: true,
-            hideControls: true
-        });
         /**
          * Selection of a specific set of atoms...
          */
@@ -84,7 +80,7 @@ var LiteMol;
             theme: { template: Bootstrap.Visualization.Molecule.Default.UniformThemeTemplate, colors: complementColors, transparency: { alpha: 1.0 } }
         };
         // Represent an action to perform on the app state.
-        var action = Bootstrap.Tree.Transform.build();
+        var action = plugin.createTransform();
         // This loads the model from PDBe
         var modelAction = action.add(plugin.context.tree.root, Transformer.Data.Download, { url: "https://www.ebi.ac.uk/pdbe/static/entry/" + id + "_updated.cif", type: 'String', id: id })
             .then(Transformer.Data.ParseCif, { id: id }, { isBinding: true })
@@ -98,7 +94,7 @@ var LiteMol;
             .then(Transformer.Molecule.CreateSelectionFromQuery, { query: selectionQ, name: 'Selection', silent: true }, {});
         sel.then(Transformer.Molecule.CreateVisual, { style: Bootstrap.Visualization.Molecule.Default.ForType.get('BallsAndSticks') }, { isHidden: true });
         sel.then(Transformer.Molecule.CreateVisual, { style: selectionStyle }, { isHidden: true });
-        var loadTask = Bootstrap.Tree.Transform.apply(plugin.context, action).run(plugin.context);
+        var loadTask = plugin.applyTransform(action);
         // to access the model after it was loaded...
         loadTask.then(function () {
             var model = plugin.context.select('model')[0];

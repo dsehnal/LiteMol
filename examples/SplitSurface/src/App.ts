@@ -13,7 +13,7 @@ namespace LiteMol.Surface {
                
     export function create(target: HTMLElement) {
         
-        let spec: Plugin.Specification = {
+        const customSpecification: Plugin.Specification = {
             settings: { },
             transforms: [],
             behaviours: [
@@ -59,18 +59,13 @@ namespace LiteMol.Surface {
             tree: { region: LayoutRegion.Left, view: Views.Entity.Tree }
         };
 
-        let plugin = new Plugin.Instance(spec, target);
+        let plugin = Plugin.create({ target, customSpecification, layoutState: { hideControls: true } });
         plugin.context.logger.message(`LiteMol ${Plugin.VERSION.number}`);
         return plugin;
     }
         
     let id = '1cbs';
     let plugin = create(document.getElementById('app')!);
-
-    LiteMol.Bootstrap.Command.Layout.SetState.dispatch(plugin.context, { 
-        // isExpanded: true,
-        hideControls: true 
-    });
 
     /**
      * Selection of a specific set of atoms...
@@ -98,7 +93,7 @@ namespace LiteMol.Surface {
     }; 
     
     // Represent an action to perform on the app state.
-    let action = Bootstrap.Tree.Transform.build();
+    let action = plugin.createTransform();
 
     // This loads the model from PDBe
     let modelAction = action.add(plugin.context.tree.root, <Bootstrap.Tree.Transformer.To<Bootstrap.Entity.Data.String>>Transformer.Data.Download, { url: `https://www.ebi.ac.uk/pdbe/static/entry/${id}_updated.cif`, type: 'String', id })
@@ -117,7 +112,7 @@ namespace LiteMol.Surface {
     sel.then(<any>Transformer.Molecule.CreateVisual, { style: Bootstrap.Visualization.Molecule.Default.ForType.get('BallsAndSticks') }, { isHidden: true })
     sel.then(<any>Transformer.Molecule.CreateVisual, { style: selectionStyle }, { isHidden: true });
 
-    let loadTask = Bootstrap.Tree.Transform.apply(plugin.context, action).run(plugin.context);
+    let loadTask = plugin.applyTransform(action);
 
     // to access the model after it was loaded...
     loadTask.then(() => {

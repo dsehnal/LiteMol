@@ -12,7 +12,7 @@ namespace LiteMol.Custom {
                
     export function create(target: HTMLElement) {
         
-        let spec: Plugin.Specification = {
+        const customSpecification: Plugin.Specification = {
             settings: {
                 'density.defaultVisualBehaviourRadius': 5
             },
@@ -68,7 +68,7 @@ namespace LiteMol.Custom {
             tree: void 0 //{ region: LayoutRegion.Left, view: Views.Entity.Tree }
         };
 
-        let plugin = new Plugin.Instance(spec, target);
+        let plugin = Plugin.create({ target, customSpecification, layoutState: { isExpanded: true } });
         plugin.context.logger.message(`LiteMol Plugin ${Plugin.VERSION.number}`);
         return plugin;
     }
@@ -78,9 +78,7 @@ namespace LiteMol.Custom {
     let id = '1cbs';
     let plugin = create(document.getElementById('app')!);
 
-    LiteMol.Bootstrap.Command.Layout.SetState.dispatch(plugin.context, { isExpanded: true });
-
-    let action = Bootstrap.Tree.Transform.build();    
+    let action = plugin.createTransform();    
     action.add(plugin.context.tree.root, DownloadAndCreate, { id });
-    Bootstrap.Tree.Transform.apply(plugin.context, action).run(plugin.context);        
+    plugin.applyTransform(action);        
 }
