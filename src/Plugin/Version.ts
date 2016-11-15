@@ -3,5 +3,5 @@
  */
 
 namespace LiteMol.Plugin {
-    export var VERSION = { number: "1.2.1", date: "Nov 12 2016" };
+    export var VERSION = { number: "1.2.2", date: "Nov 15 2016" };
 } 

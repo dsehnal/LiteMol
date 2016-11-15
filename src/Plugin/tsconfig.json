@@ -59,7 +59,7 @@
     "Plugin/Components.ts",
     "Plugin/Plugin.ts",
     "Plugin/Default.ts",   
-    "Plugin/SimpleController.ts",   
+    "Plugin/Controller.ts",   
 
     "Module.ts"
   ]

@@ -5,7 +5,7 @@
 namespace LiteMol.Plugin {
     "use strict";
 
-    export interface SimplePluginOptions {
+    export interface PluginControllerOptions {
         /**
          * query selector or HTMLElement
          */
@@ -43,7 +43,7 @@ namespace LiteMol.Plugin {
         analyticsId?: string,
     }
 
-    export interface SimplePluginLoadMoleculeInfo {
+    export interface ControllerLoadMoleculeInfo {
         id?: string,
         moleculeRef?: string,
         modelRef?: string,
@@ -57,7 +57,7 @@ namespace LiteMol.Plugin {
     import Entity = Bootstrap.Entity;
     import Transformer = Entity.Transformer;
 
-    export class SimpleController {
+    export class Controller {
         private _instance: Instance;
 
         get instance() { return this._instance; }
@@ -133,7 +133,7 @@ namespace LiteMol.Plugin {
          * 
          * Default format is mmCIF.
          */
-        loadMolecule(source: SimplePluginLoadMoleculeInfo) {
+        loadMolecule(source: ControllerLoadMoleculeInfo) {
             let action = this.createTransform();
 
             if (!source.url && !source.data) {
@@ -166,7 +166,7 @@ namespace LiteMol.Plugin {
             return this.applyTransform(data);
         }
 
-        constructor(options: SimplePluginOptions) {
+        constructor(options: PluginControllerOptions) {
             const spec = options.customSpecification ? options.customSpecification : getDefaultSpecification();
 
             if (!options.customSpecification) {
@@ -196,7 +196,7 @@ namespace LiteMol.Plugin {
         }
     }
 
-    export function create(options: SimplePluginOptions) {
-        return new SimpleController(options);
+    export function create(options: PluginControllerOptions) {
+        return new Controller(options);
     }
 }

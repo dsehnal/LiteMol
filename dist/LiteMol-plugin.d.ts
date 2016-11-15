@@ -3098,7 +3098,7 @@ declare namespace LiteMol.Plugin {
     function getDefaultSpecification(): Specification;
 }
 declare namespace LiteMol.Plugin {
-    interface SimplePluginOptions {
+    interface PluginControllerOptions {
         /**
          * query selector or HTMLElement
          */
@@ -3130,7 +3130,7 @@ declare namespace LiteMol.Plugin {
          */
         analyticsId?: string;
     }
-    interface SimplePluginLoadMoleculeInfo {
+    interface ControllerLoadMoleculeInfo {
         id?: string;
         moleculeRef?: string;
         modelRef?: string;
@@ -3141,7 +3141,7 @@ declare namespace LiteMol.Plugin {
         onError?: (e: any) => void;
     }
     import Entity = Bootstrap.Entity;
-    class SimpleController {
+    class Controller {
         private _instance;
         readonly instance: Instance;
         readonly context: Context;
@@ -3189,10 +3189,10 @@ declare namespace LiteMol.Plugin {
          *
          * Default format is mmCIF.
          */
-        loadMolecule(source: SimplePluginLoadMoleculeInfo): Bootstrap.Task.Running<{}>;
-        constructor(options: SimplePluginOptions);
+        loadMolecule(source: ControllerLoadMoleculeInfo): Bootstrap.Task.Running<{}>;
+        constructor(options: PluginControllerOptions);
     }
-    function create(options: SimplePluginOptions): SimpleController;
+    function create(options: PluginControllerOptions): Controller;
 }
 declare module 'LiteMol-plugin' {
     import __Plugin = LiteMol.Plugin;

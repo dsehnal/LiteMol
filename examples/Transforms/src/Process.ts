@@ -6,7 +6,7 @@ namespace LiteMol.Example.Transforms {
 
     import Transformer = Bootstrap.Entity.Transformer;
 
-    export function fetch(plugin: Plugin.SimpleController, ids: string[], createVisuals = false): Promise<{}> {
+    export function fetch(plugin: Plugin.Controller, ids: string[], createVisuals = false): Promise<{}> {
         return new Promise(async (res, rej) => {
             
             let ts = ids
@@ -63,7 +63,7 @@ namespace LiteMol.Example.Transforms {
         id: string
     }
 
-    export function getSuperpositionData(plugin: Plugin.SimpleController): SuperpositionEntry[] {
+    export function getSuperpositionData(plugin: Plugin.Controller): SuperpositionEntry[] {
         // selects all the Models that were downloaded
         let models = plugin.context.select(Bootstrap.Tree.Selection.subtree(plugin.root).ofType(Bootstrap.Entity.Molecule.Model)) as Bootstrap.Entity.Molecule.Model[];
         
@@ -93,7 +93,7 @@ namespace LiteMol.Example.Transforms {
         return xs;
     }
 
-    export function applyTransforms(plugin: Plugin.SimpleController, data: SuperpositionEntry[], superposition: Comparison.Structure.RmsdTransformByIndicesResult) {
+    export function applyTransforms(plugin: Plugin.Controller, data: SuperpositionEntry[], superposition: Comparison.Structure.RmsdTransformByIndicesResult) {
 
         // create the model for the first molecule.
         let first = plugin.createTransform();

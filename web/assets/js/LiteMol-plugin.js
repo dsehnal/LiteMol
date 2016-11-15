@@ -74858,7 +74858,7 @@ var LiteMol;
 (function (LiteMol) {
     var Plugin;
     (function (Plugin) {
-        Plugin.VERSION = { number: "1.2.1", date: "Nov 12 2016" };
+        Plugin.VERSION = { number: "1.2.2", date: "Nov 15 2016" };
     })(Plugin = LiteMol.Plugin || (LiteMol.Plugin = {}));
 })(LiteMol || (LiteMol = {}));
 /*
@@ -77004,8 +77004,8 @@ var LiteMol;
         "use strict";
         var Entity = LiteMol.Bootstrap.Entity;
         var Transformer = Entity.Transformer;
-        var SimpleController = (function () {
-            function SimpleController(options) {
+        var Controller = (function () {
+            function Controller(options) {
                 var spec = options.customSpecification ? options.customSpecification : Plugin.getDefaultSpecification();
                 if (!options.customSpecification) {
                     spec.behaviours.push(LiteMol.Bootstrap.Behaviour.GoogleAnalytics(options.analyticsId ? options.analyticsId : 'UA-77062725-1'));
@@ -77028,17 +77028,17 @@ var LiteMol;
                     this.setLayoutState(options.layoutState);
                 }
             }
-            Object.defineProperty(SimpleController.prototype, "instance", {
+            Object.defineProperty(Controller.prototype, "instance", {
                 get: function () { return this._instance; },
                 enumerable: true,
                 configurable: true
             });
-            Object.defineProperty(SimpleController.prototype, "context", {
+            Object.defineProperty(Controller.prototype, "context", {
                 get: function () { return this._instance.context; },
                 enumerable: true,
                 configurable: true
             });
-            Object.defineProperty(SimpleController.prototype, "root", {
+            Object.defineProperty(Controller.prototype, "root", {
                 get: function () { return this._instance.context.tree.root; },
                 enumerable: true,
                 configurable: true
@@ -77046,7 +77046,7 @@ var LiteMol;
             /**
              * execute a command with the specified params.
              */
-            SimpleController.prototype.command = function (cmd, params) {
+            Controller.prototype.command = function (cmd, params) {
                 cmd.dispatch(this.context, params);
             };
             /**
@@ -77057,26 +77057,26 @@ var LiteMol;
              * ...
              * sub.dispose(); // to stop listening
              */
-            SimpleController.prototype.subscribe = function (event, onEvent) {
+            Controller.prototype.subscribe = function (event, onEvent) {
                 return event.getStream(this.context).subscribe(onEvent);
             };
             /**
              * Create a transform builder.
              */
-            SimpleController.prototype.createTransform = function () {
+            Controller.prototype.createTransform = function () {
                 return LiteMol.Bootstrap.Tree.Transform.build();
             };
             /**
              * Applies a state trasnform.
              */
-            SimpleController.prototype.applyTransform = function (transform) {
+            Controller.prototype.applyTransform = function (transform) {
                 var ctx = this.context;
                 return LiteMol.Bootstrap.Tree.Transform.apply(ctx, transform).run(ctx);
             };
             /**
              * Remove all entities.
              */
-            SimpleController.prototype.clear = function () {
+            Controller.prototype.clear = function () {
                 this.command(LiteMol.Bootstrap.Command.Tree.RemoveNode, this.root);
             };
             /**
@@ -77085,7 +77085,7 @@ var LiteMol;
              * HEX color in format '#rgb' or '#rrggbb'
              * or Visualization.Color instance.
              */
-            SimpleController.prototype.setViewportBackground = function (color) {
+            Controller.prototype.setViewportBackground = function (color) {
                 if (LiteMol.Visualization.Color.isColor(color)) {
                     this.command(LiteMol.Bootstrap.Command.Layout.SetViewportOptions, { clearColor: color });
                 }
@@ -77098,7 +77098,7 @@ var LiteMol;
              *
              * Expanded, show/hide controls, etc..
              */
-            SimpleController.prototype.setLayoutState = function (state) {
+            Controller.prototype.setLayoutState = function (state) {
                 this.command(LiteMol.Bootstrap.Command.Layout.SetState, state);
             };
             /**
@@ -77106,7 +77106,7 @@ var LiteMol;
              *
              * Default format is mmCIF.
              */
-            SimpleController.prototype.loadMolecule = function (source) {
+            Controller.prototype.loadMolecule = function (source) {
                 var action = this.createTransform();
                 if (!source.url && !source.data) {
                     throw new Error('Please specify either url or data');
@@ -77132,11 +77132,11 @@ var LiteMol;
                     .then(Transformer.Molecule.CreateModel, { modelIndex: 0 }, { isBinding: false, ref: source.modelRef });
                 return this.applyTransform(data);
             };
-            return SimpleController;
+            return Controller;
         }());
-        Plugin.SimpleController = SimpleController;
+        Plugin.Controller = Controller;
         function create(options) {
-            return new SimpleController(options);
+            return new Controller(options);
         }
         Plugin.create = create;
     })(Plugin = LiteMol.Plugin || (LiteMol.Plugin = {}));
