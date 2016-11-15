@@ -3,7 +3,7 @@
  */
 var CIFTools;
 (function (CIFTools) {
-    CIFTools.VERSION = { number: "1.0.1", date: "Oct 24 2016" };
+    CIFTools.VERSION = { number: "1.0.3", date: "Nov 15 2016" };
 })(CIFTools || (CIFTools = {}));
 /*
  * Copyright (c) 2016 David Sehnal, licensed under MIT License, See LICENSE file for more info.
@@ -1428,21 +1428,21 @@ var CIFTools;
                 return;
             }
             var escape = false, escapeCharStart = '\'', escapeCharEnd = '\' ';
-            var whitespace = false;
+            var hasWhitespace = false;
             var hasSingle = false;
             var hasDouble = false;
             for (var i = 0, _l = val.length - 1; i < _l; i++) {
                 var c = val.charCodeAt(i);
                 switch (c) {
                     case 9:
-                        whitespace = true;
+                        hasWhitespace = true;
                         break; // \t
                     case 10:
                         StringWriter.writeSafe(writer, '\n;' + val);
                         StringWriter.writeSafe(writer, '\n; ');
                         return;
                     case 32:
-                        whitespace = true;
+                        hasWhitespace = true;
                         break; // ' '
                     case 34:
                         if (hasSingle) {
@@ -1468,7 +1468,8 @@ var CIFTools;
                         break;
                 }
             }
-            if (!escape && (val.charCodeAt(0) === 59 /* ; */ || whitespace)) {
+            var fst = val.charCodeAt(0);
+            if (!escape && (fst === 35 /* # */ || fst === 59 /* ; */ || hasWhitespace)) {
                 escapeCharStart = '\'';
                 escapeCharEnd = '\' ';
                 escape = true;
@@ -1531,6 +1532,10 @@ var CIFTools;
     (function (Binary) {
         var MessagePack;
         (function (MessagePack) {
+            /*
+             * Adapted from https://github.com/rcsb/mmtf-javascript
+             * by Alexander Rose <alexander.rose@weirdbyte.de>, MIT License, Copyright (c) 2016
+             */
             /**
              * decode all key-value pairs of a map into an object
              * @param  {Integer} length - number of key-value pairs
@@ -2529,7 +2534,6 @@ var CIFTools;
             return Encoder;
         }());
         Binary.Encoder = Encoder;
-        var Encoder;
         (function (Encoder) {
             function by(f) {
                 return new Encoder([f]);

@@ -3596,7 +3596,7 @@ declare namespace CIFTools.Text {
     }
 }
 declare namespace CIFTools.Text {
-    function parse(data: string): ParserError | ParserSuccess<CIFTools.File>;
+    function parse(data: string): ParserResult<CIFTools.File>;
 }
 declare namespace CIFTools.Text {
     class Writer<Context> implements CIFTools.Writer<Context> {
@@ -3718,7 +3718,7 @@ declare namespace CIFTools.Binary {
     }
 }
 declare namespace CIFTools.Binary {
-    const VERSION: string;
+    const VERSION = "0.2.0";
     type Encoding = Encoding.ByteArray | Encoding.FixedPoint | Encoding.RunLength | Encoding.Delta | Encoding.IntegerPacking | Encoding.StringArray;
     interface EncodedFile {
         version: string;
