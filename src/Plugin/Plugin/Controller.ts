@@ -161,7 +161,8 @@ namespace LiteMol.Plugin {
             
             data
                 .then(Transformer.Molecule.CreateFromData, { format, customId: source.id }, { isBinding: true, ref: source.moleculeRef })
-                .then(Transformer.Molecule.CreateModel, { modelIndex: 0 }, { isBinding: false, ref: source.modelRef });
+                .then(Transformer.Molecule.CreateModel, { modelIndex: 0 }, { isBinding: false, ref: source.modelRef })
+                .then(Transformer.Molecule.CreateMacromoleculeVisual, { polymer: true, het: true, water: true });
 
             return this.applyTransform(data);
         }

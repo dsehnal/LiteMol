@@ -1,4 +1,7 @@
-﻿# 1.2.2
+﻿# 1.2.3
+* Removed Bootstrap.Behaviour.CreateVisualWhenModelIsAdded from the default plugin spec.
+
+# 1.2.2
 * Renamed SimpleController to Controller.
 
 # 1.2.1

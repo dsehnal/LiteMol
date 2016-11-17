@@ -64,8 +64,7 @@ namespace LiteMol.Plugin {
             ],
             behaviours: [
                 Bootstrap.Behaviour.SetEntityToCurrentWhenAdded,
-                Bootstrap.Behaviour.FocusCameraOnSelect,
-                Bootstrap.Behaviour.CreateVisualWhenModelIsAdded,
+                Bootstrap.Behaviour.FocusCameraOnSelect,                
                 Bootstrap.Behaviour.ApplySelectionToVisual,
                 Bootstrap.Behaviour.ApplyInteractivitySelection,
                 

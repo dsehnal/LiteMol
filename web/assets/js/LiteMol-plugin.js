@@ -74862,7 +74862,7 @@ var LiteMol;
 (function (LiteMol) {
     var Plugin;
     (function (Plugin) {
-        Plugin.VERSION = { number: "1.2.2", date: "Nov 15 2016" };
+        Plugin.VERSION = { number: "1.2.3", date: "Nov 17 2016" };
     })(Plugin = LiteMol.Plugin || (LiteMol.Plugin = {}));
 })(LiteMol || (LiteMol = {}));
 /*
@@ -76969,7 +76969,6 @@ var LiteMol;
                 behaviours: [
                     LiteMol.Bootstrap.Behaviour.SetEntityToCurrentWhenAdded,
                     LiteMol.Bootstrap.Behaviour.FocusCameraOnSelect,
-                    LiteMol.Bootstrap.Behaviour.CreateVisualWhenModelIsAdded,
                     LiteMol.Bootstrap.Behaviour.ApplySelectionToVisual,
                     LiteMol.Bootstrap.Behaviour.ApplyInteractivitySelection,
                     LiteMol.Bootstrap.Behaviour.Molecule.HighlightElementInfo,
@@ -77133,7 +77132,8 @@ var LiteMol;
                     : action.add(this.root, Transformer.Data.Download, { url: source.url, type: format.isBinary ? 'Binary' : 'String', id: source.id });
                 data
                     .then(Transformer.Molecule.CreateFromData, { format: format, customId: source.id }, { isBinding: true, ref: source.moleculeRef })
-                    .then(Transformer.Molecule.CreateModel, { modelIndex: 0 }, { isBinding: false, ref: source.modelRef });
+                    .then(Transformer.Molecule.CreateModel, { modelIndex: 0 }, { isBinding: false, ref: source.modelRef })
+                    .then(Transformer.Molecule.CreateMacromoleculeVisual, { polymer: true, het: true, water: true });
                 return this.applyTransform(data);
             };
             /**
