@@ -165,10 +165,9 @@ namespace LiteMolPluginInstance {
             theme: { template: Visualization.Molecule.Default.UniformThemeTemplate, colors: Visualization.Molecule.Default.UniformThemeTemplate.colors!.set('Uniform', { r: 0.4, g: 0.4, b: 0.4 }), transparency: { alpha: 0.75 } }
         }   
         
-         let ligandQ = Query.residues({ name: 'REA' }); // here you will fill in the whole info 
-         let ambQ =  Query.residues({ name: 'REA' }).ambientResidues(5); // adjust the radius
-                
-        
+        let ligandQ = Query.residues({ name: 'REA' }); // here you will fill in the whole info 
+        let ambQ =  Query.residues({ name: 'REA' }).ambientResidues(5); // adjust the radius
+
         let id = '1cbs:REA'
         let url = `https://webchemdev.ncbr.muni.cz/CoordinateServer/1cbs/ligandInteraction?name=REA`; // here you will fill in the full server etc ...
         let action = Transform.build()

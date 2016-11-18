@@ -1,4 +1,7 @@
-﻿# 1.1.7
+﻿# 1.1.8
+* Added the ability to decompress Gzip from binary ajax response.
+
+# 1.1.7
 * Fixed molecule highlight info to show authAsymId instead of asymId for highlighted residues.  
 
 # 1.1.6

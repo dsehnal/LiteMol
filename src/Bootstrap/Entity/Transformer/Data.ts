@@ -6,11 +6,17 @@
 namespace LiteMol.Bootstrap.Entity.Transformer.Data {
     "use strict";
 
+    export enum DownloadCompression {
+        None,
+        Gzip
+    }
+
     export interface DownloadParams {
         id?: string;
         description?: string;
         type?: Entity.Data.Type;
         url?: string;
+        responseCompression?: Utils.DataCompressionMethod;
     }
 
     export const Download = Tree.Transformer.create<Entity.Root, Entity.Data.String | Entity.Data.Binary, DownloadParams>({
@@ -20,16 +26,15 @@ namespace LiteMol.Bootstrap.Entity.Transformer.Data {
         from: [Entity.Root],
         to: [Entity.Data.String, Entity.Data.Binary],
         validateParams: p => !p.url || !p.url.trim().length ? ['Enter URL'] : !p.type ? ['Specify type'] : void 0,
-        defaultParams: () => ({ id: '', description: '', type: 'String', url: '' })
+        defaultParams: () => ({ id: '', description: '', type: 'String', url: '', responseCompression: Utils.DataCompressionMethod.None })
     }, (ctx, a, t) => {
         let params = t.params;
-        return Utils.ajaxGet(params.url!, params.type!).setReportTime(true)
+        return Utils.ajaxGet({ url: params.url!, type: params.type!, compression: params.responseCompression }).setReportTime(true)
             .map<Entity.Data.String | Entity.Data.Binary>('ToEntity', 'Child', data => {
                 if (params.type === 'String') return Entity.Data.String.create(<any>t, { label: params.id ? params.id : params.url!, description: params.description, data: data as string });
                 else return Entity.Data.Binary.create(<any>t, { label: params.id ? params.id : params.url!, description: params.description, data: data as ArrayBuffer });
             });
     });
-
 
     export interface OpenFileParams {
         description?: string;
@@ -55,7 +60,6 @@ namespace LiteMol.Bootstrap.Entity.Transformer.Data {
             });
     });
 
-
     export interface ParseCifParams { id?: string, description?: string }
     export const ParseCif = Tree.Transformer.create<Entity.Data.String, Entity.Data.CifDictionary, ParseCifParams>({
         id: 'data-parse-cif',
@@ -76,8 +80,7 @@ namespace LiteMol.Bootstrap.Entity.Transformer.Data {
                 ctx.resolve(Entity.Data.CifDictionary.create(t, { label: t.params.id ? t.params.id : 'CIF Dictionary', description: t.params.description, dictionary: d.result! }));
             });
         }).setReportTime(true);
-    }
-    );
+    });
 
     export interface ParseBinaryCifParams { id?: string, description?: string }
     export const ParseBinaryCif = Tree.Transformer.create<Entity.Data.Binary, Entity.Data.CifDictionary, ParseBinaryCifParams>({

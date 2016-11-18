@@ -8,5 +8,6 @@ namespace LiteMol.Bootstrap {
     
     export import Immutable = __LiteMolImmutable;  
     export import Rx = Core.Rx;
-    export import Promise = Core.Promise;    
+    export import Promise = Core.Promise;
+    export import Zlib = LiteMolZlib;    
 }

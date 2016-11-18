@@ -15301,14 +15301,24 @@ declare namespace LiteMol.Bootstrap {
     export import Immutable = __LiteMolImmutable;
     export import Rx = Core.Rx;
     export import Promise = Core.Promise;
+    export import Zlib = LiteMolZlib;
 }
 declare namespace LiteMol.Bootstrap.Utils {
+    enum DataCompressionMethod {
+        None = 0,
+        Gzip = 1,
+    }
+    interface AjaxGetParams {
+        url: string;
+        type: Entity.Data.Type;
+        compression?: DataCompressionMethod;
+    }
     function readStringFromFile(file: File): Task<string>;
     function readArrayBufferFromFile(file: File): Task<ArrayBuffer>;
     function readFromFile(file: File, type: Entity.Data.Type): Task<string | ArrayBuffer>;
     function ajaxGetString(url: string): Task<string>;
     function ajaxGetArrayBuffer(url: string): Task<ArrayBuffer>;
-    function ajaxGet(url: string, type: Entity.Data.Type): Task<string | ArrayBuffer>;
+    function ajaxGet(params: AjaxGetParams): Task<string | ArrayBuffer>;
 }
 declare namespace LiteMol.Bootstrap.Utils.Query {
     function parseAuthResidueId(ids: string, separator?: string): Core.Structure.Query;
@@ -16332,11 +16342,16 @@ declare namespace LiteMol.Bootstrap.Entity.Transformer.Molecule {
     const CreateMacromoleculeVisual: Tree.Transformer<Entity.Molecule.Model, Action, CreateMacromoleculeVisualParams>;
 }
 declare namespace LiteMol.Bootstrap.Entity.Transformer.Data {
+    enum DownloadCompression {
+        None = 0,
+        Gzip = 1,
+    }
     interface DownloadParams {
         id?: string;
         description?: string;
         type?: Entity.Data.Type;
         url?: string;
+        responseCompression?: Utils.DataCompressionMethod;
     }
     const Download: Tree.Transformer<Root, Entity.Data.String | Entity.Data.Binary, DownloadParams>;
     interface OpenFileParams {

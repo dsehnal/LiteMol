@@ -64631,7 +64631,7 @@ var LiteMol;
 (function (LiteMol) {
     var Bootstrap;
     (function (Bootstrap) {
-        Bootstrap.VERSION = { number: "1.1.7", date: "Nov 11 2016" };
+        Bootstrap.VERSION = { number: "1.1.8", date: "Nov 18 2016" };
     })(Bootstrap = LiteMol.Bootstrap || (LiteMol.Bootstrap = {}));
 })(LiteMol || (LiteMol = {}));
 /*
@@ -64645,6 +64645,7 @@ var LiteMol;
         Bootstrap.Immutable = __LiteMolImmutable;
         Bootstrap.Rx = LiteMol.Core.Rx;
         Bootstrap.Promise = LiteMol.Core.Promise;
+        Bootstrap.Zlib = LiteMolZlib;
     })(Bootstrap = LiteMol.Bootstrap || (LiteMol.Bootstrap = {}));
 })(LiteMol || (LiteMol = {}));
 /*
@@ -64657,6 +64658,11 @@ var LiteMol;
         var Utils;
         (function (Utils) {
             "use strict";
+            (function (DataCompressionMethod) {
+                DataCompressionMethod[DataCompressionMethod["None"] = 0] = "None";
+                DataCompressionMethod[DataCompressionMethod["Gzip"] = 1] = "Gzip";
+            })(Utils.DataCompressionMethod || (Utils.DataCompressionMethod = {}));
+            var DataCompressionMethod = Utils.DataCompressionMethod;
             function readStringFromFile(file) {
                 return readFromFileInternal(file, false);
             }
@@ -64670,15 +64676,15 @@ var LiteMol;
             }
             Utils.readFromFile = readFromFile;
             function ajaxGetString(url) {
-                return ajaxGetInternal(url, false);
+                return ajaxGetInternal(url, false, false);
             }
             Utils.ajaxGetString = ajaxGetString;
             function ajaxGetArrayBuffer(url) {
-                return ajaxGetInternal(url, true);
+                return ajaxGetInternal(url, true, false);
             }
             Utils.ajaxGetArrayBuffer = ajaxGetArrayBuffer;
-            function ajaxGet(url, type) {
-                return ajaxGetInternal(url, type === 'Binary');
+            function ajaxGet(params) {
+                return ajaxGetInternal(params.url, params.type === 'Binary', params.compression === DataCompressionMethod.Gzip);
             }
             Utils.ajaxGet = ajaxGet;
             var __chars = function () {
@@ -64782,24 +64788,45 @@ var LiteMol;
             }());
             RequestPool.pool = [];
             RequestPool.poolSize = 15;
-            function processAjax(ctx, asArrayBuffer, e) {
+            function processAjax(ctx, asArrayBuffer, decompressGzip, e) {
                 var req = e.target;
                 if (req.status >= 200 && req.status < 400) {
-                    if (asArrayBuffer)
-                        ctx.resolve(e.target.response);
-                    else
-                        ctx.resolve(e.target.responseText);
+                    if (asArrayBuffer) {
+                        var buff_1 = e.target.response;
+                        RequestPool.deposit(e.target);
+                        if (decompressGzip) {
+                            ctx.update('Decompressing...');
+                            ctx.schedule(function () {
+                                var gzip = new LiteMolZlib.Gunzip(new Uint8Array(buff_1));
+                                var data = gzip.decompress();
+                                ctx.resolve(data.buffer);
+                            });
+                        }
+                        else {
+                            ctx.resolve(buff_1);
+                        }
+                    }
+                    else {
+                        var text = e.target.responseText;
+                        RequestPool.deposit(e.target);
+                        ctx.resolve(text);
+                    }
                 }
                 else {
-                    ctx.reject(req.statusText);
+                    var status_1 = req.statusText;
+                    RequestPool.deposit(e.target);
+                    ctx.reject(status_1);
                 }
-                RequestPool.deposit(e.target);
             }
-            function ajaxGetInternal(url, asArrayBuffer) {
+            function ajaxGetInternal(url, asArrayBuffer, decompressGzip) {
                 return Bootstrap.Task.fromComputation('Download', 'Background', LiteMol.Core.Computation.create(function (ctx) {
+                    if (!asArrayBuffer && decompressGzip) {
+                        ctx.reject('Decompress is only available when downloading binary data.');
+                        return;
+                    }
                     var xhttp = RequestPool.get();
                     ctx.update('Waiting for server...', function () { return xhttp.abort(); });
-                    handleProgress(ctx, 'Downloading...', xhttp, asArrayBuffer, function (e) { return processAjax(ctx, asArrayBuffer, e); });
+                    handleProgress(ctx, 'Downloading...', xhttp, asArrayBuffer, function (e) { return processAjax(ctx, asArrayBuffer, decompressGzip, e); });
                     xhttp.open('get', url, true);
                     xhttp.responseType = asArrayBuffer ? "arraybuffer" : "text";
                     xhttp.send();
@@ -68375,6 +68402,11 @@ var LiteMol;
                 var Data;
                 (function (Data) {
                     "use strict";
+                    (function (DownloadCompression) {
+                        DownloadCompression[DownloadCompression["None"] = 0] = "None";
+                        DownloadCompression[DownloadCompression["Gzip"] = 1] = "Gzip";
+                    })(Data.DownloadCompression || (Data.DownloadCompression = {}));
+                    var DownloadCompression = Data.DownloadCompression;
                     Data.Download = Bootstrap.Tree.Transformer.create({
                         id: 'data-download',
                         name: 'Download Data',
@@ -68382,10 +68414,10 @@ var LiteMol;
                         from: [Entity.Root],
                         to: [Entity.Data.String, Entity.Data.Binary],
                         validateParams: function (p) { return !p.url || !p.url.trim().length ? ['Enter URL'] : !p.type ? ['Specify type'] : void 0; },
-                        defaultParams: function () { return ({ id: '', description: '', type: 'String', url: '' }); }
+                        defaultParams: function () { return ({ id: '', description: '', type: 'String', url: '', responseCompression: Bootstrap.Utils.DataCompressionMethod.None }); }
                     }, function (ctx, a, t) {
                         var params = t.params;
-                        return Bootstrap.Utils.ajaxGet(params.url, params.type).setReportTime(true)
+                        return Bootstrap.Utils.ajaxGet({ url: params.url, type: params.type, compression: params.responseCompression }).setReportTime(true)
                             .map('ToEntity', 'Child', function (data) {
                             if (params.type === 'String')
                                 return Entity.Data.String.create(t, { label: params.id ? params.id : params.url, description: params.description, data: data });
@@ -75654,6 +75686,7 @@ var LiteMol;
                             var params = this.params;
                             return Plugin.React.createElement("div", null,
                                 Plugin.React.createElement(Plugin.Controls.OptionsGroup, { options: LiteMol.Bootstrap.Entity.Data.Types, caption: function (s) { return s; }, current: params.type, onChange: function (o) { return _this.updateParams({ type: o }); }, label: 'Type' }),
+                                Plugin.React.createElement(Plugin.Controls.OptionsGroup, { options: ['None', 'Gzip'], caption: function (s) { return s; }, current: params.responseCompression === LiteMol.Bootstrap.Utils.DataCompressionMethod.Gzip ? 'Gzip' : 'None', onChange: function (o) { return _this.updateParams({ responseCompression: o === 'None' ? LiteMol.Bootstrap.Utils.DataCompressionMethod.None : LiteMol.Bootstrap.Utils.DataCompressionMethod.Gzip }); }, label: 'Compression', title: 'Specify the compression of the data. Usually only appliable if you downloading "raw" files.' }),
                                 Plugin.React.createElement(Plugin.Controls.TextBoxGroup, { value: params.url, onChange: function (v) { return _this.updateParams({ url: v }); }, label: 'URL', onEnter: function (e) { return _this.applyEnter(e); }, placeholder: 'Enter URL...' }));
                         };
                         return Download;

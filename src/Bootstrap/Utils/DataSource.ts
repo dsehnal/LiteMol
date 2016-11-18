@@ -5,6 +5,17 @@
 namespace LiteMol.Bootstrap.Utils {
     "use strict";
 
+    export enum DataCompressionMethod {
+        None,
+        Gzip
+    }
+
+    export interface AjaxGetParams {
+        url: string,
+        type: Entity.Data.Type,
+        compression?: DataCompressionMethod
+    }
+
     export function readStringFromFile(file: File) {
         return <Task<string>>readFromFileInternal(file, false);
     }
@@ -18,15 +29,15 @@ namespace LiteMol.Bootstrap.Utils {
     }
         
     export function ajaxGetString(url: string) {
-        return <Task<string>>ajaxGetInternal(url, false);
+        return <Task<string>>ajaxGetInternal(url, false, false);
     }
 
     export function ajaxGetArrayBuffer(url: string) {
-        return <Task<ArrayBuffer>>ajaxGetInternal(url, true);
+        return <Task<ArrayBuffer>>ajaxGetInternal(url, true, false);
     }
     
-    export function ajaxGet(url: string, type: Entity.Data.Type) {
-        return <Task<string | ArrayBuffer>>ajaxGetInternal(url, type === 'Binary');
+    export function ajaxGet(params: AjaxGetParams) {
+        return <Task<string | ArrayBuffer>>ajaxGetInternal(params.url, params.type === 'Binary', params.compression === DataCompressionMethod.Gzip);
     }
 
     const __chars = function () {
@@ -138,25 +149,48 @@ namespace LiteMol.Bootstrap.Utils {
         }
     }
     
-    function processAjax(ctx: Context, asArrayBuffer: boolean, e: any) {
+    function processAjax(ctx: Context, asArrayBuffer: boolean, decompressGzip: boolean, e: any) {
         let req = (e.target as XMLHttpRequest);
         if (req.status >= 200 && req.status < 400) {
-            if (asArrayBuffer) ctx.resolve(e.target.response);
-            else ctx.resolve(e.target.responseText);
-        } else {        
-            ctx.reject(req.statusText);            
+            if (asArrayBuffer) {
+                let buff = e.target.response;
+                RequestPool.deposit(e.target);
+
+                if (decompressGzip) {
+                    ctx.update('Decompressing...');
+                    ctx.schedule(() => {
+                        let gzip = new LiteMolZlib.Gunzip(new Uint8Array(buff));
+                        let data = gzip.decompress();
+                        ctx.resolve(data.buffer);
+                    });
+                } else {
+                    ctx.resolve(buff);
+                }
+            }
+            else  {
+                let text = e.target.responseText;
+                RequestPool.deposit(e.target);
+                ctx.resolve(text);
+            }
+        } else {
+            let status = req.statusText;        
+            RequestPool.deposit(e.target);
+            ctx.reject(status);            
         }
-        RequestPool.deposit(e.target);
     }
     
-    function ajaxGetInternal(url: string, asArrayBuffer: boolean): Task<string | ArrayBuffer>  {
+    function ajaxGetInternal(url: string, asArrayBuffer: boolean, decompressGzip: boolean): Task<string | ArrayBuffer>  {
         
         return Task.fromComputation('Download', 'Background', Core.Computation.create(ctx => {
+            if (!asArrayBuffer && decompressGzip) {
+                ctx.reject('Decompress is only available when downloading binary data.');
+                return;
+            }
                         
             let xhttp = RequestPool.get();
             ctx.update('Waiting for server...', () => xhttp.abort());
                    
-            handleProgress(ctx, 'Downloading...', xhttp, asArrayBuffer, (e: any) => processAjax(ctx, asArrayBuffer, e));
+            handleProgress(ctx, 'Downloading...', xhttp, asArrayBuffer, (e: any) => processAjax(ctx, asArrayBuffer, decompressGzip, e));
                        
             xhttp.open('get', url, true);
             xhttp.responseType = asArrayBuffer ? "arraybuffer" : "text";
