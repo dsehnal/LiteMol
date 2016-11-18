@@ -512,7 +512,7 @@ declare namespace CIFTools.Binary {
     }
 }
 declare namespace CIFTools.Binary {
-    const VERSION = "0.2.0";
+    var VERSION: string;
     type Encoding = Encoding.ByteArray | Encoding.FixedPoint | Encoding.RunLength | Encoding.Delta | Encoding.IntegerPacking | Encoding.StringArray;
     interface EncodedFile {
         version: string;
