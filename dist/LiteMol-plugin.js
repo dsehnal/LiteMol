@@ -68407,13 +68407,17 @@ var LiteMol;
                         DownloadCompression[DownloadCompression["Gzip"] = 1] = "Gzip";
                     })(Data.DownloadCompression || (Data.DownloadCompression = {}));
                     var DownloadCompression = Data.DownloadCompression;
+                    function hasResponseCompression(responseCompression) {
+                        var c = responseCompression === void 0 ? Bootstrap.Utils.DataCompressionMethod.None : responseCompression;
+                        return c !== Bootstrap.Utils.DataCompressionMethod.None;
+                    }
                     Data.Download = Bootstrap.Tree.Transformer.create({
                         id: 'data-download',
                         name: 'Download Data',
                         description: 'Downloads a string or binary data from the given URL (if the host server supports cross domain requests).',
                         from: [Entity.Root],
                         to: [Entity.Data.String, Entity.Data.Binary],
-                        validateParams: function (p) { return !p.url || !p.url.trim().length ? ['Enter URL'] : !p.type ? ['Specify type'] : void 0; },
+                        validateParams: function (p) { return !p.url || !p.url.trim().length ? ['Enter URL'] : !p.type ? ['Specify type'] : (p.type === 'String' && hasResponseCompression(p.responseCompression)) ? ['Decompression is only available for Binary data.'] : void 0; },
                         defaultParams: function () { return ({ id: '', description: '', type: 'String', url: '', responseCompression: Bootstrap.Utils.DataCompressionMethod.None }); }
                     }, function (ctx, a, t) {
                         var params = t.params;
@@ -75684,9 +75688,12 @@ var LiteMol;
                         Download.prototype.renderControls = function () {
                             var _this = this;
                             var params = this.params;
+                            var compression;
                             return Plugin.React.createElement("div", null,
-                                Plugin.React.createElement(Plugin.Controls.OptionsGroup, { options: LiteMol.Bootstrap.Entity.Data.Types, caption: function (s) { return s; }, current: params.type, onChange: function (o) { return _this.updateParams({ type: o }); }, label: 'Type' }),
-                                Plugin.React.createElement(Plugin.Controls.OptionsGroup, { options: ['None', 'Gzip'], caption: function (s) { return s; }, current: params.responseCompression === LiteMol.Bootstrap.Utils.DataCompressionMethod.Gzip ? 'Gzip' : 'None', onChange: function (o) { return _this.updateParams({ responseCompression: o === 'None' ? LiteMol.Bootstrap.Utils.DataCompressionMethod.None : LiteMol.Bootstrap.Utils.DataCompressionMethod.Gzip }); }, label: 'Compression', title: 'Specify the compression of the data. Usually only appliable if you downloading "raw" files.' }),
+                                Plugin.React.createElement(Plugin.Controls.OptionsGroup, { options: LiteMol.Bootstrap.Entity.Data.Types, caption: function (s) { return s; }, current: params.type, onChange: function (o) { return _this.updateParams({ type: o, responseCompression: LiteMol.Bootstrap.Utils.DataCompressionMethod.None }); }, label: 'Type' }),
+                                params.type === 'Binary'
+                                    ? Plugin.React.createElement(Plugin.Controls.OptionsGroup, { options: ['None', 'Gzip'], caption: function (s) { return s; }, current: params.responseCompression === LiteMol.Bootstrap.Utils.DataCompressionMethod.Gzip ? 'Gzip' : 'None', onChange: function (o) { return _this.updateParams({ responseCompression: o === 'None' ? LiteMol.Bootstrap.Utils.DataCompressionMethod.None : LiteMol.Bootstrap.Utils.DataCompressionMethod.Gzip }); }, label: 'Compression', title: 'Specify the compression of the data. Usually only appliable if you downloading "raw" files.' })
+                                    : void 0,
                                 Plugin.React.createElement(Plugin.Controls.TextBoxGroup, { value: params.url, onChange: function (v) { return _this.updateParams({ url: v }); }, label: 'URL', onEnter: function (e) { return _this.applyEnter(e); }, placeholder: 'Enter URL...' }));
                         };
                         return Download;

@@ -19,13 +19,17 @@ namespace LiteMol.Bootstrap.Entity.Transformer.Data {
         responseCompression?: Utils.DataCompressionMethod;
     }
 
+    function hasResponseCompression(responseCompression?: Utils.DataCompressionMethod) {
+        let c = responseCompression === void 0 ? Utils.DataCompressionMethod.None : responseCompression;
+        return c !== Utils.DataCompressionMethod.None;
+    }
     export const Download = Tree.Transformer.create<Entity.Root, Entity.Data.String | Entity.Data.Binary, DownloadParams>({
         id: 'data-download',
         name: 'Download Data',
         description: 'Downloads a string or binary data from the given URL (if the host server supports cross domain requests).',
         from: [Entity.Root],
         to: [Entity.Data.String, Entity.Data.Binary],
-        validateParams: p => !p.url || !p.url.trim().length ? ['Enter URL'] : !p.type ? ['Specify type'] : void 0,
+        validateParams: p => !p.url || !p.url.trim().length ? ['Enter URL'] : !p.type ? ['Specify type'] : (p.type === 'String' && hasResponseCompression(p.responseCompression)) ? ['Decompression is only available for Binary data.'] : void 0,
         defaultParams: () => ({ id: '', description: '', type: 'String', url: '', responseCompression: Utils.DataCompressionMethod.None })
     }, (ctx, a, t) => {
         let params = t.params;

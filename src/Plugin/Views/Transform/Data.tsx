@@ -10,15 +10,20 @@ namespace LiteMol.Plugin.Views.Transform.Data {
     export class Download extends Transform.ControllerBase<Bootstrap.Components.Transform.Controller<Transformer.Data.DownloadParams>, Transformer.Data.DownloadParams> {        
         protected renderControls() {            
             let params = this.params;
+
+            let compression 
+
             return <div>
-                <Controls.OptionsGroup options={Bootstrap.Entity.Data.Types} caption={s => s} current={params.type} onChange={(o) => this.updateParams({ type: o }) } label='Type' />
-                <Controls.OptionsGroup 
+                <Controls.OptionsGroup options={Bootstrap.Entity.Data.Types} caption={s => s} current={params.type} onChange={(o) => this.updateParams({ type: o, responseCompression: Bootstrap.Utils.DataCompressionMethod.None }) } label='Type' />
+                { params.type === 'Binary' 
+                    ? <Controls.OptionsGroup 
                         options={['None', 'Gzip']} 
                         caption={s => s} 
                         current={params.responseCompression === Bootstrap.Utils.DataCompressionMethod.Gzip ? 'Gzip' : 'None'} 
                         onChange={(o) => this.updateParams({ responseCompression: o === 'None' ? Bootstrap.Utils.DataCompressionMethod.None : Bootstrap.Utils.DataCompressionMethod.Gzip }) } 
                         label='Compression' 
                         title='Specify the compression of the data. Usually only appliable if you downloading "raw" files.' />
+                    : void 0 }
                 <Controls.TextBoxGroup value={params.url!} onChange={(v) => this.updateParams({ url: v })} label='URL' onEnter={e => this.applyEnter(e) } placeholder='Enter URL...' />
             </div>
         }        
