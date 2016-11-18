@@ -16013,17 +16013,23 @@ declare namespace LiteMol.Bootstrap.Visualization.Density {
     function create(parent: Entity.Density.Data, transform: Tree.Transform<Entity.Density.Data, Entity.Density.Visual, any>, style: Style): Task<Entity.Density.Visual>;
 }
 declare namespace LiteMol.Bootstrap.Visualization.Density {
+    enum IsoValueType {
+        Sigma = 0,
+        Absolute = 1,
+    }
     interface Params {
         bottomLeft?: number[];
         topRight?: number[];
-        isoSigma?: number;
+        isoValueType?: IsoValueType;
+        isoValue?: number;
         smoothing?: number;
         isWireframe?: boolean;
     }
     type Style = Visualization.Style<{}, Params>;
     namespace Style {
         function create(params: {
-            isoSigma: number;
+            isoValue: number;
+            isoValueType: IsoValueType;
             color: LiteMol.Visualization.Color;
             isWireframe?: boolean;
             transparency?: LiteMol.Visualization.Theme.Transparency;

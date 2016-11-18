@@ -75,7 +75,8 @@ namespace LiteMol.Viewer.PDBe.Data {
                 isoSigmaMax: 0,                    
                 radius: 5,
                 style: Visualization.Density.Style.create({
-                    isoSigma: -3,
+                    isoValue: -3,
+                    isoValueType: Bootstrap.Visualization.Density.IsoValueType.Sigma,
                     color: LiteMol.Visualization.Color.fromHex(0xBB3333), // can also use fromRgb(0-255 ranges), fromHsl, fromHsv; found in Visualization/Base/Theme.ts
                     isWireframe: true,
                     transparency: { alpha: 1.0 }
@@ -89,7 +90,8 @@ namespace LiteMol.Viewer.PDBe.Data {
                 isoSigmaMax: 5,                    
                 radius: 5,
                 style: Visualization.Density.Style.create({
-                    isoSigma: 3,
+                    isoValue: 3,
+                    isoValueType: Bootstrap.Visualization.Density.IsoValueType.Sigma,
                     color: LiteMol.Visualization.Color.fromHex(0x33BB33), 
                     isWireframe: true,
                     transparency: { alpha: 1.0 }
@@ -105,7 +107,8 @@ namespace LiteMol.Viewer.PDBe.Data {
                 isoSigmaMax: 2,                    
                 radius: 5,
                 style: Visualization.Density.Style.create({
-                    isoSigma: 1.5,
+                    isoValue: 1.5,
+                    isoValueType: Bootstrap.Visualization.Density.IsoValueType.Sigma,
                     color: LiteMol.Visualization.Color.fromHex(0x3362B2), 
                     isWireframe: false,
                     transparency: { alpha: 0.45 }

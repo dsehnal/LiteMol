@@ -67622,7 +67622,10 @@ var LiteMol;
                             ctx.reject({ warn: true, message: 'Empty box.' });
                             return;
                         }
-                        var isoValue = data.valuesInfo.mean + data.valuesInfo.sigma * params.isoSigma;
+                        var isSigma = params.isoValueType === void 0 || params.isoValueType === Density.IsoValueType.Sigma;
+                        var isoValue = isSigma
+                            ? data.valuesInfo.mean + data.valuesInfo.sigma * params.isoValue
+                            : params.isoValue;
                         var surface = Geom.MarchingCubes.compute({
                             isoLevel: isoValue,
                             scalarField: data.data,
@@ -67638,7 +67641,7 @@ var LiteMol;
                                 var surface = LiteMol.Visualization.Surface.Model.create(source, { surface: s, theme: theme, parameters: { isWireframe: style.params.isWireframe } }).run();
                                 surface.progress.subscribe(function (p) { return ctx.update("Density Surface (" + source.props.label + "): " + Bootstrap.Utils.formatProgress(p), p.requestAbort); });
                                 surface.result.then(function (model) {
-                                    var label = "Surface, " + Bootstrap.Utils.round(params.isoSigma, 2) + " \u03C3";
+                                    var label = "Surface, " + Bootstrap.Utils.round(params.isoValue, 2) + (isSigma ? ' \u03C3' : '');
                                     var visual = Bootstrap.Entity.Density.Visual.create(transform, { label: label, model: model, style: style, isSelectable: !style.isNotSelectable });
                                     ctx.resolve(visual);
                                 }).catch(ctx.reject);
@@ -67663,13 +67666,18 @@ var LiteMol;
             var Density;
             (function (Density) {
                 "use strict";
+                (function (IsoValueType) {
+                    IsoValueType[IsoValueType["Sigma"] = 0] = "Sigma";
+                    IsoValueType[IsoValueType["Absolute"] = 1] = "Absolute";
+                })(Density.IsoValueType || (Density.IsoValueType = {}));
+                var IsoValueType = Density.IsoValueType;
                 var Style;
                 (function (Style) {
                     function create(params) {
                         var colors = Default.Theme.colors.set('Uniform', params.color);
                         return {
                             type: {},
-                            params: { isoSigma: params.isoSigma, smoothing: 1, isWireframe: !!params.isWireframe },
+                            params: { isoValue: params.isoValue, isoValueType: params.isoValueType, smoothing: 1, isWireframe: !!params.isWireframe },
                             theme: { template: Default.Theme, colors: colors, transparency: params.transparency ? params.transparency : Default.Transparency, interactive: false }
                         };
                     }
@@ -67678,7 +67686,8 @@ var LiteMol;
                 var Default;
                 (function (Default) {
                     Default.Params = {
-                        isoSigma: 0,
+                        isoValue: 0,
+                        isoValueType: IsoValueType.Sigma,
                         smoothing: 1,
                         isWireframe: false
                     };
@@ -68618,7 +68627,8 @@ var LiteMol;
                             style: params.style,
                             radius: params.radius
                         });
-                        return Bootstrap.Task.resolve('Behaviour', 'Background', Entity.Density.InteractiveSurface.create(t, { label: (t.params.id ? t.params.id : 'Interactive') + ", " + Bootstrap.Utils.round(t.params.style.params.isoSigma, 2) + " \u03C3", behaviour: b }));
+                        var isSigma = params.style.params.isoValueType === void 0 || params.style.params.isoValueType === Bootstrap.Visualization.Density.IsoValueType.Sigma;
+                        return Bootstrap.Task.resolve('Behaviour', 'Background', Entity.Density.InteractiveSurface.create(t, { label: (params.id ? t.params.id : 'Interactive') + ", " + Bootstrap.Utils.round(params.style.params.isoValue, 2) + (isSigma ? ' \u03C3' : ''), behaviour: b }));
                     });
                 })(Density = Transformer.Density || (Transformer.Density = {}));
             })(Transformer = Entity.Transformer || (Entity.Transformer = {}));
@@ -74898,7 +74908,7 @@ var LiteMol;
 (function (LiteMol) {
     var Plugin;
     (function (Plugin) {
-        Plugin.VERSION = { number: "1.2.3", date: "Nov 17 2016" };
+        Plugin.VERSION = { number: "1.2.4", date: "Nov 18 2016" };
     })(Plugin = LiteMol.Plugin || (LiteMol.Plugin = {}));
 })(LiteMol || (LiteMol = {}));
 /*
@@ -76018,7 +76028,25 @@ var LiteMol;
                 var Density;
                 (function (Density) {
                     "use strict";
-                    var IsoValue = function (props) { return Plugin.React.createElement(Plugin.Controls.Slider, __assign({ label: 'Iso Value (\u03C3)' }, props, { step: 0.001 })); };
+                    var IsoValue = function (props) {
+                        return Plugin.React.createElement(Plugin.Controls.ExpandableGroup, { select: Plugin.React.createElement(Plugin.Controls.Slider, { label: props.isSigma ? 'Iso Value (\u03C3)' : 'Iso Value', onChange: props.onChangeValue, min: props.min, max: props.max, value: props.value, step: 0.001 }), expander: Plugin.React.createElement(Plugin.Controls.ControlGroupExpander, { isExpanded: props.controller.latestState.showIsoValueType, onChange: function (e) { return props.controller.setState({ showIsoValueType: e }); } }), options: [Plugin.React.createElement(Plugin.Controls.Toggle, { onChange: function (v) { return props.onChangeType(v ? LiteMol.Bootstrap.Visualization.Density.IsoValueType.Sigma : LiteMol.Bootstrap.Visualization.Density.IsoValueType.Absolute); }, value: props.isSigma, label: 'Relative (\u03C3)' })], isExpanded: props.controller.latestState.showIsoValueType });
+                    };
+                    function isoValueAbsoluteToSigma(data, value, min, max) {
+                        var ret = (value - data.valuesInfo.mean) / data.valuesInfo.sigma;
+                        if (ret > max)
+                            return max;
+                        if (ret < min)
+                            return min;
+                        return ret;
+                    }
+                    function isoValueSigmaToAbsolute(data, value) {
+                        var ret = data.valuesInfo.mean + value * data.valuesInfo.sigma;
+                        if (ret > data.valuesInfo.max)
+                            return data.valuesInfo.max;
+                        if (ret < data.valuesInfo.min)
+                            return data.valuesInfo.min;
+                        return ret;
+                    }
                     var ParseData = (function (_super) {
                         __extends(ParseData, _super);
                         function ParseData() {
@@ -76055,7 +76083,17 @@ var LiteMol;
                             var _this = this;
                             var data = LiteMol.Bootstrap.Tree.Node.findClosestNodeOfType(this.transformSourceEntity, [LiteMol.Bootstrap.Entity.Density.Data]);
                             var params = this.params.style.params;
-                            return Plugin.React.createElement(IsoValue, { onChange: function (v) { return _this.controller.updateStyleParams({ isoSigma: v }); }, min: -5, max: 5, value: params.isoSigma });
+                            var isSigma = params.isoValueType !== LiteMol.Bootstrap.Visualization.Density.IsoValueType.Absolute;
+                            return Plugin.React.createElement(IsoValue, { controller: this.controller, onChangeValue: function (v) { return _this.controller.updateStyleParams({ isoValue: v }); }, onChangeType: function (v) {
+                                    if (v === params.isoValueType)
+                                        return;
+                                    if (v === LiteMol.Bootstrap.Visualization.Density.IsoValueType.Absolute) {
+                                        _this.controller.updateStyleParams({ isoValue: isoValueSigmaToAbsolute(data.props.data, params.isoValue), isoValueType: v });
+                                    }
+                                    else {
+                                        _this.controller.updateStyleParams({ isoValue: isoValueAbsoluteToSigma(data.props.data, params.isoValue, -5, 5), isoValueType: v });
+                                    }
+                                }, min: isSigma ? -5 : data.props.data.valuesInfo.min, max: isSigma ? 5 : data.props.data.valuesInfo.max, isSigma: params.isoValueType !== LiteMol.Bootstrap.Visualization.Density.IsoValueType.Absolute, value: params.isoValue });
                             // let options = [
                             //     <Controls.Slider label='Smoothing' onChange={v => this.controller.updateStyleParams({ smoothing: v  })} 
                             //         min={0} max={10} step={1} value={params.smoothing} title='Number of laplacian smoothing itrations.' />
@@ -76101,8 +76139,20 @@ var LiteMol;
                         CreateVisualBehaviour.prototype.surface = function () {
                             var _this = this;
                             var data = LiteMol.Bootstrap.Tree.Node.findClosestNodeOfType(this.transformSourceEntity, [LiteMol.Bootstrap.Entity.Density.Data]);
-                            var visualParams = this.params.style.params;
-                            return Plugin.React.createElement(IsoValue, { onChange: function (v) { return _this.controller.updateStyleParams({ isoSigma: v }); }, min: this.params.isoSigmaMin, max: this.params.isoSigmaMax, value: visualParams.isoSigma });
+                            var params = this.params;
+                            var visualParams = params.style.params;
+                            var isSigma = visualParams.isoValueType !== LiteMol.Bootstrap.Visualization.Density.IsoValueType.Absolute;
+                            return Plugin.React.createElement(IsoValue, { controller: this.controller, onChangeValue: function (v) { return _this.controller.updateStyleParams({ isoValue: v }); }, onChangeType: function (v) {
+                                    if (v === visualParams.isoValueType)
+                                        return;
+                                    if (v === LiteMol.Bootstrap.Visualization.Density.IsoValueType.Absolute) {
+                                        _this.controller.updateStyleParams({ isoValue: isoValueSigmaToAbsolute(data.props.data, visualParams.isoValue), isoValueType: v });
+                                    }
+                                    else {
+                                        _this.controller.updateStyleParams({ isoValue: isoValueAbsoluteToSigma(data.props.data, visualParams.isoValue, _this.params.isoSigmaMin, params.isoSigmaMax), isoValueType: v });
+                                    }
+                                }, min: isSigma ? params.isoSigmaMin : data.props.data.valuesInfo.min, max: isSigma ? params.isoSigmaMax : data.props.data.valuesInfo.max, isSigma: visualParams.isoValueType !== LiteMol.Bootstrap.Visualization.Density.IsoValueType.Absolute, value: visualParams.isoValue });
+                            //<IsoValue onChange={v => this.controller.updateStyleParams({ isoSigma: v  })} min={this.params.isoSigmaMin!} max={this.params.isoSigmaMax!} value={visualParams.isoSigma!} />
                             // let options = [
                             //     <Controls.Slider label='Smoothing' onChange={v => this.controller.updateStyleParams({ smoothing: v  })} 
                             //         min={0} max={10} step={1} value={visualParams.smoothing} title='Number of laplacian smoothing itrations.' />

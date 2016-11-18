@@ -80,7 +80,10 @@ namespace LiteMol.Bootstrap.Visualization.Density {
                 return;
             }
             
-            let isoValue = data.valuesInfo.mean + data.valuesInfo.sigma * params.isoSigma;
+            let isSigma = params.isoValueType === void 0 || params.isoValueType === IsoValueType.Sigma;
+            let isoValue = isSigma 
+                ? data.valuesInfo.mean + data.valuesInfo.sigma * params.isoValue
+                : params.isoValue!;
             
             let surface = Geom.MarchingCubes.compute({
                 isoLevel: isoValue,
@@ -101,7 +104,7 @@ namespace LiteMol.Bootstrap.Visualization.Density {
                     let surface = LiteMol.Visualization.Surface.Model.create(source, { surface: s, theme, parameters: { isWireframe: style.params!.isWireframe } }).run();                    
                     surface.progress.subscribe(p => ctx.update(`Density Surface (${source.props.label}): ${Utils.formatProgress(p)}`, p.requestAbort));
                     surface.result.then(model => {                                                            
-                        let label = `Surface, ${Utils.round(params.isoSigma!, 2)} \u03C3`;                    
+                        let label = `Surface, ${Utils.round(params.isoValue!, 2)}${isSigma ? ' \u03C3' : ''}`;                    
                         let visual = Entity.Density.Visual.create(transform, { label, model, style, isSelectable: !style.isNotSelectable });
                         ctx.resolve(visual);
                     }).catch(ctx.reject);

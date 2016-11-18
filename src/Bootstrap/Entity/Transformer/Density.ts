@@ -109,8 +109,9 @@ namespace LiteMol.Bootstrap.Entity.Transformer.Density {
         let b = new Bootstrap.Behaviour.Density.ShowElectronDensityAroundSelection(ctx, {
             style: params.style!,
             radius: params.radius!
-        })
-        return Task.resolve('Behaviour', 'Background', Entity.Density.InteractiveSurface.create(t, { label: `${t.params.id ? t.params.id : 'Interactive'}, ${Utils.round(t.params.style!.params!.isoSigma!, 2)} \u03C3`, behaviour: b }));
+        });
+        let isSigma = params.style!.params!.isoValueType === void 0 || params.style!.params!.isoValueType === Visualization.Density.IsoValueType.Sigma;
+        return Task.resolve('Behaviour', 'Background', Entity.Density.InteractiveSurface.create(t, { label: `${params.id ? t.params.id : 'Interactive'}, ${Utils.round(params.style!.params!.isoValue!, 2)}${isSigma ? ' \u03C3' : ''}`, behaviour: b }));
     }
     );
 }

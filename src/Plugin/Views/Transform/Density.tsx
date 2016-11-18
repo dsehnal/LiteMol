@@ -7,7 +7,27 @@ namespace LiteMol.Plugin.Views.Transform.Density {
     
     import Transformer = Bootstrap.Entity.Transformer
     
-    const IsoValue = (props: { onChange: (v: number)=> void, min: number, max: number, value: number }) => <Controls.Slider label='Iso Value (\u03C3)' {...props} step={0.001}  /> 
+    const IsoValue = (props: { controller: Bootstrap.Components.Transform.Controller<any>, onChangeValue: (v: number)=> void, onChangeType: (v: Bootstrap.Visualization.Density.IsoValueType)=> void, min: number, max: number, value: number, isSigma: boolean }) => 
+        <Controls.ExpandableGroup
+            select={<Controls.Slider label={props.isSigma ? 'Iso Value (\u03C3)' : 'Iso Value'} onChange={props.onChangeValue} min={props.min} max={props.max} value={props.value} step={0.001}  />}
+            expander={<Controls.ControlGroupExpander isExpanded={(props.controller.latestState as any).showIsoValueType} onChange={e => props.controller.setState({ showIsoValueType: e } as any)}  />}
+            options={[<Controls.Toggle onChange={v => props.onChangeType(v ? Bootstrap.Visualization.Density.IsoValueType.Sigma : Bootstrap.Visualization.Density.IsoValueType.Absolute) } value={props.isSigma} label='Relative (\u03C3)' />]}
+            isExpanded={(props.controller.latestState as any).showIsoValueType}
+            /> 
+
+    function isoValueAbsoluteToSigma(data: Core.Formats.Density.Data, value: number, min: number, max: number) {
+        let ret = (value - data.valuesInfo.mean) / data.valuesInfo.sigma;
+        if (ret > max) return max;
+        if (ret < min) return min;
+        return ret;
+    }
+
+    function isoValueSigmaToAbsolute(data: Core.Formats.Density.Data, value: number) {
+        let ret = data.valuesInfo.mean + value * data.valuesInfo.sigma;
+        if (ret > data.valuesInfo.max) return data.valuesInfo.max;
+        if (ret < data.valuesInfo.min) return data.valuesInfo.min;
+        return ret;
+    }
     
     export class ParseData extends Transform.ControllerBase<Bootstrap.Components.Transform.Controller<Transformer.Density.ParseDataParams>, Transformer.Density.ParseDataParams> {        
         protected renderControls() {            
@@ -40,7 +60,22 @@ namespace LiteMol.Plugin.Views.Transform.Density {
         private surface() {           
             let data = Bootstrap.Tree.Node.findClosestNodeOfType(this.transformSourceEntity, [Bootstrap.Entity.Density.Data]) as Bootstrap.Entity.Density.Data;           
             let params = this.params.style!.params as Bootstrap.Visualization.Density.Params;
-            return <IsoValue onChange={v => this.controller.updateStyleParams({ isoSigma: v  })} min={-5} max={5} value={params.isoSigma!} />
+            let isSigma = params.isoValueType !== Bootstrap.Visualization.Density.IsoValueType.Absolute;
+
+            return <IsoValue 
+                controller={this.controller}
+                onChangeValue={v => this.controller.updateStyleParams({ isoValue: v  })}
+                onChangeType={v => {
+                    if (v === params.isoValueType) return;
+                    if (v === Bootstrap.Visualization.Density.IsoValueType.Absolute) {
+                        this.controller.updateStyleParams({ isoValue: isoValueSigmaToAbsolute(data.props.data, params.isoValue!), isoValueType: v }); 
+                    } else {
+                        this.controller.updateStyleParams({ isoValue: isoValueAbsoluteToSigma(data.props.data, params.isoValue!, -5, 5), isoValueType: v });
+                    }
+                }}
+                min={isSigma ? -5 : data.props.data.valuesInfo.min} max={isSigma ? 5 : data.props.data.valuesInfo.max} 
+                isSigma={params.isoValueType !== Bootstrap.Visualization.Density.IsoValueType.Absolute}
+                value={params.isoValue!} />;
             
             // let options = [
             //     <Controls.Slider label='Smoothing' onChange={v => this.controller.updateStyleParams({ smoothing: v  })} 
@@ -94,10 +129,29 @@ namespace LiteMol.Plugin.Views.Transform.Density {
     export class CreateVisualBehaviour extends Transform.ControllerBase<Bootstrap.Components.Transform.DensityVisual, Transformer.Density.CreateVisualBehaviourParams> {        
         
         private surface() {           
-            let data = Bootstrap.Tree.Node.findClosestNodeOfType(this.transformSourceEntity, [Bootstrap.Entity.Density.Data]) as Bootstrap.Entity.Density.Data;           
-            let visualParams = this.params.style!.params as Bootstrap.Visualization.Density.Params;
-                      
-            return <IsoValue onChange={v => this.controller.updateStyleParams({ isoSigma: v  })} min={this.params.isoSigmaMin!} max={this.params.isoSigmaMax!} value={visualParams.isoSigma!} />
+            let data = Bootstrap.Tree.Node.findClosestNodeOfType(this.transformSourceEntity, [Bootstrap.Entity.Density.Data]) as Bootstrap.Entity.Density.Data;
+            let params = this.params;           
+            let visualParams = params.style!.params as Bootstrap.Visualization.Density.Params;
+            let isSigma = visualParams.isoValueType !== Bootstrap.Visualization.Density.IsoValueType.Absolute;
+
+
+            return <IsoValue 
+                controller={this.controller}
+                onChangeValue={v => this.controller.updateStyleParams({ isoValue: v  })}
+                onChangeType={v => {
+                    if (v === visualParams.isoValueType) return;
+                    if (v === Bootstrap.Visualization.Density.IsoValueType.Absolute) {
+                        this.controller.updateStyleParams({ isoValue: isoValueSigmaToAbsolute(data.props.data, visualParams.isoValue!), isoValueType: v }); 
+                    } else {
+                        this.controller.updateStyleParams({ isoValue: isoValueAbsoluteToSigma(data.props.data, visualParams.isoValue!, this.params.isoSigmaMin!, params.isoSigmaMax!), isoValueType: v });
+                    }
+                }}
+                min={isSigma ? params.isoSigmaMin! : data.props.data.valuesInfo.min} max={isSigma ? params.isoSigmaMax! : data.props.data.valuesInfo.max} 
+                isSigma={visualParams.isoValueType !== Bootstrap.Visualization.Density.IsoValueType.Absolute}
+                value={visualParams.isoValue!} />; 
+            
+            
+            //<IsoValue onChange={v => this.controller.updateStyleParams({ isoSigma: v  })} min={this.params.isoSigmaMin!} max={this.params.isoSigmaMax!} value={visualParams.isoSigma!} />
             
             // let options = [
             //     <Controls.Slider label='Smoothing' onChange={v => this.controller.updateStyleParams({ smoothing: v  })} 

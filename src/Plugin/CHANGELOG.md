@@ -1,4 +1,8 @@
-﻿# 1.2.3
+﻿# 1.2.4
+* UI support for specifying absolute iso values for density data.
+* UI support for manually decompressing binary AJAX responses.
+
+# 1.2.3
 * Removed Bootstrap.Behaviour.CreateVisualWhenModelIsAdded from the default plugin spec.
 
 # 1.2.2

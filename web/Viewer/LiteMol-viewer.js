@@ -7,7 +7,7 @@ var LiteMol;
 (function (LiteMol) {
     var Viewer;
     (function (Viewer) {
-        Viewer.VERSION = { number: "1.1.8", date: "Nov 11 2016" };
+        Viewer.VERSION = { number: "1.1.9", date: "Nov 18 2016" };
     })(Viewer = LiteMol.Viewer || (LiteMol.Viewer = {}));
 })(LiteMol || (LiteMol = {}));
 /*
@@ -96,7 +96,8 @@ var LiteMol;
                         isoSigmaMax: 0,
                         radius: 5,
                         style: Visualization.Density.Style.create({
-                            isoSigma: -3,
+                            isoValue: -3,
+                            isoValueType: Bootstrap.Visualization.Density.IsoValueType.Sigma,
                             color: LiteMol.Visualization.Color.fromHex(0xBB3333),
                             isWireframe: true,
                             transparency: { alpha: 1.0 }
@@ -109,7 +110,8 @@ var LiteMol;
                         isoSigmaMax: 5,
                         radius: 5,
                         style: Visualization.Density.Style.create({
-                            isoSigma: 3,
+                            isoValue: 3,
+                            isoValueType: Bootstrap.Visualization.Density.IsoValueType.Sigma,
                             color: LiteMol.Visualization.Color.fromHex(0x33BB33),
                             isWireframe: true,
                             transparency: { alpha: 1.0 }
@@ -124,7 +126,8 @@ var LiteMol;
                         isoSigmaMax: 2,
                         radius: 5,
                         style: Visualization.Density.Style.create({
-                            isoSigma: 1.5,
+                            isoValue: 1.5,
+                            isoValueType: Bootstrap.Visualization.Density.IsoValueType.Sigma,
                             color: LiteMol.Visualization.Color.fromHex(0x3362B2),
                             isWireframe: false,
                             transparency: { alpha: 0.45 }

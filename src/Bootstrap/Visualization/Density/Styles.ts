@@ -5,10 +5,16 @@
 namespace LiteMol.Bootstrap.Visualization.Density {
     "use strict";
 
+    export enum IsoValueType {
+        Sigma,
+        Absolute
+    }
+
     export interface Params {
         bottomLeft?: number[],
         topRight?: number[],
-        isoSigma?: number,
+        isoValueType?: IsoValueType, 
+        isoValue?: number,
         smoothing?: number,
         isWireframe?: boolean
     }
@@ -17,14 +23,15 @@ namespace LiteMol.Bootstrap.Visualization.Density {
     
     export namespace Style {    
         export function create(params: { 
-            isoSigma: number, 
+            isoValue: number,
+            isoValueType: IsoValueType, 
             color: LiteMol.Visualization.Color, 
             isWireframe?: boolean, 
             transparency?: LiteMol.Visualization.Theme.Transparency}): Style  {
             let colors = Default.Theme.colors!.set('Uniform', params.color);
             return { 
                 type: {}, 
-                params: { isoSigma: params.isoSigma, smoothing: 1, isWireframe: !!params.isWireframe }, 
+                params: { isoValue: params.isoValue, isoValueType: params.isoValueType, smoothing: 1, isWireframe: !!params.isWireframe }, 
                 theme: { template: Default.Theme, colors, transparency: params.transparency ? params.transparency : Default.Transparency, interactive: false }
             }; 
         }
@@ -33,7 +40,8 @@ namespace LiteMol.Bootstrap.Visualization.Density {
     export namespace Default {      
         
         export const Params: Params = {
-            isoSigma: 0,
+            isoValue: 0,
+            isoValueType: IsoValueType.Sigma,
             smoothing: 1,
             isWireframe: false
         }; 

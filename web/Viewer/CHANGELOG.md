@@ -1,3 +1,7 @@
+# 1.1.9
+* Ability to manually decompress binary AJAX responses.
+* Support for specifying absolute iso values for density data.
+
 # 1.1.8
 * Added secondary structure (helices and sheets) approximation for cartoons visualization if not present in the input file.
 * Fixed molecule highlight info to show authAsymId instead of asymId for highlighted residues.

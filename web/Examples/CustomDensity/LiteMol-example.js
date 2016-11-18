@@ -36,7 +36,8 @@ var LiteMol;
                 isoSigmaMax: 2,
                 radius: 5,
                 style: Bootstrap.Visualization.Density.Style.create({
-                    isoSigma: 1.5,
+                    isoValue: 1.5,
+                    isoValueType: Bootstrap.Visualization.Density.IsoValueType.Sigma,
                     color: LiteMol.Visualization.Color.fromHex(0x3362B2),
                     isWireframe: true,
                     transparency: { alpha: 0.75 }

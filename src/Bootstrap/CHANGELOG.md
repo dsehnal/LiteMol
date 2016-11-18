@@ -1,5 +1,6 @@
 ﻿# 1.1.8
 * Added the ability to decompress Gzip from binary ajax response.
+* Support for specifying absolute iso values for density data. (BREAKING CHANGE: Instead of isoSigma, isoValue and isoValueType properties are now used).
 
 # 1.1.7
 * Fixed molecule highlight info to show authAsymId instead of asymId for highlighted residues.  
