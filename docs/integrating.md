@@ -15,7 +15,11 @@ To start using LiteMol, you need to:
 
 * Get the source code:
 
-        git clone https://github.com/dsehnal/LiteMol
+    ```
+    git clone https://github.com/dsehnal/LiteMol
+    ```
+
+    or download the [latest distribution as a tarball](https://raw.githubusercontent.com/dsehnal/LiteMol/master/dist/LiteMol.tar.gz).
 
 * From the ``dist`` directory, get
   - ``dist/LiteMol-plugin.js`` (alternatively, you can [minify the code](#minifying-the-source-code-and-css) using your tool of choice or using the LiteMol build system)
@@ -24,7 +28,7 @@ To start using LiteMol, you need to:
 
   The ``css`` and ``fonts`` folders must retain the their structure, i.e. keep the css file in ``css`` folder and the font files in the ``fonts`` folder at the same level.
 
-* [Create a plugin spec and instance](#creating-plugin-spec-and-instance) in a file ``litemol.js``.
+* [Create a plugin instance](#creating-plugin-instance) in a file ``litemol.js``.
 
 * Include LiteMol to your page
 
@@ -38,10 +42,42 @@ To start using LiteMol, you need to:
   <script src="js/litemol.js"></script>
   ```
 
-Creating Plugin Spec and Instance
----------------------------------
+Creating Plugin Instance
+------------------------
 
-LiteMol Plugin requires a *spec* that specifies what components and functionality to use. 
+To create an instance of the plugin, use the ``LiteMol.Plugin.create`` function:
+
+```TypeScript
+let plugin = LiteMol.Plugin.create({ 
+    target: document.getElementById('litemol'),
+    viewportBackground: '#ffffff',
+    layoutState: { hideControls: true } // you can also include isExpanded: true
+});
+plugin.context.logger.message(`Hello LiteMol`);
+```
+
+To load a molecule at app startup, create a state *transform*:
+
+```TypeScript
+import Transformer = LiteMol.Bootstrap.Entity.Transformer
+
+let id = '1cbs';
+let action = plugin.createTransform();
+    
+action.add(plugin.root, Transformer.Data.Download, 
+        { url: `https://www.ebi.ac.uk/pdbe/static/entry/${id}_updated.cif`, type: 'String', id })
+    .then(Transformer.Data.ParseCif, { id }, { isBinding: true })
+    .then(Transformer.Molecule.CreateFromMmCif, { blockIndex: 0 })
+    .then(Transformer.Molecule.CreateModel, { modelIndex: 0 })
+    .then(Transformer.Molecule.CreateMacromoleculeVisual, { polymer: true, het: true, water: false });
+
+plugin.applyTransform(action);
+```
+
+Customizing the Plugin Specification
+------------------------------------
+
+LiteMol Plugin can include a *specification* that specifies what components and functionality to use. 
 
 For example, this is a reduced version of the spec used by the ``Viewer`` app:
 
@@ -89,32 +125,13 @@ const PluginSpec: Plugin.Specification = {
 } 
 ```
 
-After customizing the spec, you can create the instance of the plugin:
+To use a custom specification, create the plugin with the ``customSpecification`` option:
 
 ```TypeScript
-let plugin = new Plugin.Instance(PluginSpec, document.getElementById('litemol')!);
-plugin.context.logger.message(`Hello LiteMol`);
-```
-
-To load a molecule at app startup, create a state *transform*:
-
-```TypeScript
-let id = '1cbs';
-let action = Bootstrap.Tree.Transform.build();
-    
-action.add(
-        plugin.context.tree.root, 
-        Transformer.Data.Download, 
-        { url: `https://www.ebi.ac.uk/pdbe/static/entry/${id}_updated.cif`, type: 'String', id })
-    .then(Transformer.Data.ParseCif, { id }, { isBinding: true })
-    .then(Transformer.Molecule.CreateFromMmCif, { blockIndex: 0 })
-    .then(Transformer.Molecule.CreateModel, { modelIndex: 0 })
-
-    // this step is only needed if you don't include the 
-    // Bootstrap.Behaviour.CreateVisualWhenModelIsAdded behavior 
-    .then(Transformer.Molecule.CreateMacromoleculeVisual, { polymer: true, het: true, water: false });
-
-Bootstrap.Tree.Transform.apply(plugin.context, action).run(plugin.context);
+let plugin = LiteMol.Plugin.create({ 
+    customSpecification: PluginSpec, 
+    ...
+});
 ```
 
 Minifying the Source Code and CSS

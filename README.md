@@ -34,37 +34,41 @@ This repository provides the source code for the LiteMol molecular visualizer.
 Several examples of usage are also provided. It is recommended to use [TypeScript](https://www.typescriptlang.org/) for building apps based 
 on LiteMol (or any other non-trivial JavaScript app for that matter), because you will get code completion and type checking.
 
-If you are interested in using LiteMol for simple visualization and do not need any special functionality, we suggest that you use the [PDB Component Library](https://www.ebi.ac.uk/pdbe/pdb-component-library/doc.html#a_LiteMol).
-
-An initial walkthrough for how to go about including LiteMol in your web pages can be found in the [FAQ section](#what-are-the-simplest-steps-to-load-a-molecule-in-litemol) and in the [SimpleController](examples/SimpleController) example.
-
-A list of steps for integrating LiteMol is available [here](docs/integrating.md). For basic information about extending LiteMol see the [extending](docs/extending.md) document.
-
-For feature overview and usage of the ``Viewer`` app please refer to our [wiki](https://webchem.ncbr.muni.cz/Wiki/LiteMol:UserManual).
+- An initial walkthrough for how to go about including LiteMol in your web pages can be found in the [FAQ section](#what-are-the-simplest-steps-to-load-a-molecule-in-litemol) and in the [SimpleController](examples/SimpleController) example.
+- Auto-generated source code documentation is available [here](https://webchemdev.ncbr.muni.cz/LiteMol/SourceDocs/).
+- If you are interested in using LiteMol for simple visualization and do not need any special functionality, you can use the [PDB Component Library](https://www.ebi.ac.uk/pdbe/pdb-component-library/doc.html#a_LiteMol) that provides an Angular wrapper for LiteMol.
+- A walkthrough for integrating LiteMol is available [here](docs/integrating.md). 
+- For basic information about extending LiteMol see the [extending](docs/extending.md) document.
+- For feature overview and usage of the ``Viewer`` app please refer to our [wiki](https://webchem.ncbr.muni.cz/Wiki/LiteMol:UserManual).
 
 Project Structure Overview
 ========
 
-The code is structured into several parts:
+The code is structured into four modules:
 
   - `Core` - parsing, basic data representation
   - `Visualization` - wrapper around WebGL + geometry
   - `Bootstrap` - higher level wrapper around Core and Visualization
   - `Plugin` - React based UI
-  - `Viewer` - Host for plugin + example usage of the plugin
+
+Additionally, the [LiteMol Viewer](https://webchemdev.ncbr.muni.cz/LiteMol/Viewer/) application is available:
+
+  - `Viewer` - Host for plugin, integration with the PDBe services (electron density, validation, etc.) and CoordinateServer
+
+Auto-generated source code documentation is available [here](https://webchemdev.ncbr.muni.cz/LiteMol/SourceDocs/).
   
 Examples
 --------
 
 Examples are located in the folder `examples`.
 
-  - `SimpleController` ([view live](https://webchemdev.ncbr.muni.cz/LiteMol/Examples/SimpleController)) - Shows a simple way to create and instance of the plugin and load a molecule.
-  - `Commands` ([view live](https://webchemdev.ncbr.muni.cz/LiteMol/Examples/Commands)) - Shows how to control the plugin programmatically, how to consume plugin interactions, focus on certain elements in a molecule, etc.
-  - `CustomControls` ([view live](https://webchemdev.ncbr.muni.cz/LiteMol/Examples/CustomControls)) - Shows how to construct a custom control scheme for the plugin.
-  - `CustomDensity` ([view live](https://webchemdev.ncbr.muni.cz/LiteMol/Examples/CustomDensity)) - Shows how to download a PDB file, parse it, download density data and allow user interaction with them.
-  - `SplitSurface` ([view live](https://webchemdev.ncbr.muni.cz/LiteMol/Examples/SplitSurface)) - Shows how to create two complementary selections and display a surface for each of them.
-  - `BinaryCIFInspect` ([view live](https://webchemdev.ncbr.muni.cz/LiteMol/Examples/BinaryCIFInspect)) - A simple app that enables a comparison of data inside CIF and BinaryCIF. Also shows how to use the LiteMol.Core code directly without including/instancing the plugin.
-  - `Transforms` ([view live](https://webchemdev.ncbr.muni.cz/LiteMol/Examples/Transforms)) - This is a more complicated example that shows how to download multiple structures, apply a superposition algorithm, transform using a 4x4, and visualize them.
+  - `SimpleController` [ [source](https://github.com/dsehnal/LiteMol/tree/master/examples/SimpleController) | [view live](https://webchemdev.ncbr.muni.cz/LiteMol/Examples/SimpleController) ] - Shows a simple way to create and instance of the plugin and load a molecule.
+  - `Commands` [ [source](https://github.com/dsehnal/LiteMol/tree/master/examples/Commands) | [view live](https://webchemdev.ncbr.muni.cz/LiteMol/Examples/Commands) ] - Shows how to control the plugin programmatically, how to consume plugin interactions, focus on certain elements in a molecule, etc.
+  - `CustomControls` [ [source](https://github.com/dsehnal/LiteMol/tree/master/examples/CustomControls) | [view live](https://webchemdev.ncbr.muni.cz/LiteMol/Examples/CustomControls) ] - Shows how to construct a custom control scheme for the plugin.
+  - `CustomDensity` [ [source](https://github.com/dsehnal/LiteMol/tree/master/examples/CustomDensity) | [view live](https://webchemdev.ncbr.muni.cz/LiteMol/Examples/CustomDensity) ] - Shows how to download a PDB file, parse it, download density data and allow user interaction with them.
+  - `SplitSurface` [ [source](https://github.com/dsehnal/LiteMol/tree/master/examples/SplitSurface) | [view live](https://webchemdev.ncbr.muni.cz/LiteMol/Examples/SplitSurface) ] - Shows how to create two complementary selections and display a surface for each of them.
+  - `BinaryCIFInspect` [ [source](https://github.com/dsehnal/LiteMol/tree/master/examples/BinaryCIFInspect) | [view live](https://webchemdev.ncbr.muni.cz/LiteMol/Examples/BinaryCIFInspect) ] - A simple app that enables a comparison of data inside CIF and BinaryCIF. Also shows how to use the LiteMol.Core code directly without including/instancing the plugin.
+  - `Transforms` [ [source](https://github.com/dsehnal/LiteMol/tree/master/examples/Transforms) | [view live](https://webchemdev.ncbr.muni.cz/LiteMol/Examples/Transforms) ] - This is a more complicated example that shows how to download multiple structures, apply a superposition algorithm, transform using a 4x4, and visualize them.
 
 To run the examples locally, simply open the corresponding ``index.html`` from the ``web/Examples`` directory in your
 favourite web browser (this is because the paths to the LiteMol CSS and JS are set up so that they can be shared
@@ -118,7 +122,7 @@ This project is licensed under the Apache 2.0 license. See the `LICENSE` file fo
 Support
 =======
 
-If you have any questions, do not hesitate to email the author, use the GitHub forum, 
+If you have any questions or feature requests, do not hesitate to email the author, use the GitHub forum, 
 or the LiteMol [mailing list](https://listserver.ebi.ac.uk/mailman/listinfo/litemol).
 
 Contributing

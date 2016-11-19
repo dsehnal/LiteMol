@@ -13,8 +13,7 @@ var gulp = require('gulp'),
         tsc: require('typescript'),
         tar: require('gulp-tar'),
         gzip: require('gulp-gzip'),
-        tar: require('gulp-tar'),
-        gzip: require('gulp-gzip')
+        typedoc: require('gulp-typedoc')
     };
 
 function build(name) {
@@ -99,7 +98,7 @@ function WebAssets() {
     ]);
 }
 
-// this "randomizes" the ?lmversion=X in script and css links to prevent caching of old scripts in the browser
+// this 'randomizes' the ?lmversion=X in script and css links to prevent caching of old scripts in the browser
 var versionStamp = (+new Date()).toString();
 function WebVersions() {
     return gulp.src(['./web/**/*.html'])
@@ -122,7 +121,38 @@ function Tarball() {
 
 gulp.task('Clean-min', [], function () {
     return gulp.src(['./dist/*.tar.gz', './dist/*.min.js', './dist/css/*.min.css']).pipe(plugins.clean());
+});
+
+gulp.task('Docs-clean', function() {
+    return gulp.src(['./generated_docs/**/*', './generated_docs/**/*']).pipe(plugins.clean());
 })
+
+gulp.task('Docs-generate', ['Docs-clean'], function() {
+    return gulp
+        .src(['./src/**/*.ts', './src/**/*.tsx', '!./src/**/Module.ts'])
+        .pipe(plugins.typedoc({
+            module: 'commonjs',
+            target: 'es5',
+            out: './generated_docs/',
+            name: 'LiteMol',
+            mode: 'file',
+            jsx: 'react',
+            readme: 'none',
+            ignoreCompilerErrors: true
+        }));
+    ;
+});
+
+gulp.task('Docs-pack', ['Docs-generate'], function() {
+    return gulp
+        .src(['./generated_docs/**/*', './generated_docs/**/*'], { base: './generated_docs' })
+        .pipe(plugins.tar('docs.tar'))
+        .pipe(plugins.gzip())
+        .pipe(gulp.dest('./generated_docs'));
+    ;
+});
+
+gulp.task('Docs', ['Docs-pack'], function() { });
 
 gulp.task('CSS', [], function () { return CSS(false); });
 gulp.task('CSS-min', [], function () { return CSS(true); });
