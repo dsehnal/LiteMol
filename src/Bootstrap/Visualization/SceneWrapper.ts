@@ -10,6 +10,10 @@ namespace LiteMol.Bootstrap.Visualization {
     export class DisplayList {
         private entries = new Map<number, Visual>(); 
         private originalThemes = new Map<number, LiteMol.Visualization.Theme>();        
+
+        isEmpty() {
+            return !this.entries.size;
+        }
         
         add(v: Visual): boolean {
             if (this.entries.has(v.id) || !v.props.model) return false;

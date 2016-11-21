@@ -2972,6 +2972,7 @@ declare namespace LiteMol.Plugin.Views.Visualization {
         componentWillUnmount(): void;
         renderMissing(): JSX.Element;
         private handleLogo();
+        private getShowLogo();
         render(): JSX.Element;
     }
 }
@@ -15882,6 +15883,7 @@ declare namespace LiteMol.Bootstrap.Visualization {
         private scene;
         private entries;
         private originalThemes;
+        isEmpty(): boolean;
         add(v: Visual): boolean;
         remove(v: Visual): boolean;
         get(id: number): Visual | undefined;

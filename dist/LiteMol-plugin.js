@@ -66965,6 +66965,9 @@ var LiteMol;
                     Bootstrap.Command.Molecule.Highlight.getStream(context).subscribe(function (e) { return _this.highlightMoleculeModel(e.data); });
                     Bootstrap.Command.Visual.ResetTheme.getStream(context).subscribe(function (e) { return _this.resetThemesAndHighlight(e.data && e.data.selection); });
                 }
+                DisplayList.prototype.isEmpty = function () {
+                    return !this.entries.size;
+                };
                 DisplayList.prototype.add = function (v) {
                     if (this.entries.has(v.id) || !v.props.model)
                         return false;
@@ -76836,16 +76839,22 @@ var LiteMol;
                         var visualCount = 0;
                         this.subscribe(LiteMol.Bootstrap.Event.Tree.NodeAdded.getStream(this.controller.context), function (e) {
                             if (LiteMol.Bootstrap.Entity.isClass(e.data, LiteMol.Bootstrap.Entity.VisualClass)) {
-                                visualCount++;
-                                _this.setState({ showLogo: !visualCount });
+                                setTimeout(function () { return _this.setState({ showLogo: _this.getShowLogo() }); }, 0);
                             }
                         });
                         this.subscribe(LiteMol.Bootstrap.Event.Tree.NodeRemoved.getStream(this.controller.context), function (e) {
                             if (LiteMol.Bootstrap.Entity.isClass(e.data, LiteMol.Bootstrap.Entity.VisualClass)) {
-                                visualCount--;
-                                _this.setState({ showLogo: !visualCount });
+                                setTimeout(function () { return _this.setState({ showLogo: _this.getShowLogo() }); }, 0);
                             }
                         });
+                    };
+                    Viewport.prototype.getShowLogo = function () {
+                        try {
+                            return this.controller.context.viewport.scene.models.isEmpty();
+                        }
+                        catch (e) {
+                            return true;
+                        }
                     };
                     Viewport.prototype.render = function () {
                         if (this.state.noWebGl)

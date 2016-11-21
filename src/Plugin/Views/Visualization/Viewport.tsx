@@ -115,17 +115,23 @@ namespace LiteMol.Plugin.Views.Visualization {
             let visualCount = 0;    
             this.subscribe(Bootstrap.Event.Tree.NodeAdded.getStream(this.controller.context), e => {
                 if (Bootstrap.Entity.isClass(e.data, Bootstrap.Entity.VisualClass)) {
-                    visualCount++;
-                    this.setState({ showLogo: !visualCount });
+                    setTimeout(() => this.setState({ showLogo: this.getShowLogo() }), 0);
                 } 
             });
             
             this.subscribe(Bootstrap.Event.Tree.NodeRemoved.getStream(this.controller.context), e => {
                 if (Bootstrap.Entity.isClass(e.data, Bootstrap.Entity.VisualClass)) {
-                    visualCount--;
-                    this.setState({ showLogo: !visualCount });
+                    setTimeout(() => this.setState({ showLogo: this.getShowLogo() }), 0);
                 } 
             });
+        }
+
+        private getShowLogo() {
+            try {
+                return this.controller.context.viewport.scene.models.isEmpty(); 
+            } catch(e) {
+                return true;
+            }
         }
         
         render() {            
