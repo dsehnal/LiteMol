@@ -20,7 +20,7 @@ namespace LiteMol.SimpleControllerExample {
     
     let id = '1tqn';
     plugin.loadMolecule({
-        id,
+        id: id,
         format: 'cif', // or pdb, sdf, binarycif/bcif
         url: `https://www.ebi.ac.uk/pdbe/static/entry/${id.toLowerCase()}_updated.cif`,
         // instead of url, it is possible to use
