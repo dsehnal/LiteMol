@@ -1,3 +1,8 @@
+# 1.1.10
+* Changed how visual interactivity works.
+  - Repeatedly clicking on any element clears the selection.
+  - Clicking on dynamically created "ambient" residues now shifts the selection.
+
 # 1.1.9
 * Ability to manually decompress binary AJAX responses.
 * Support for specifying absolute iso values for density data.

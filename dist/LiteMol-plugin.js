@@ -66561,11 +66561,11 @@ var LiteMol;
                 Info.selection = selection;
             })(Info = Interactivity.Info || (Interactivity.Info = {}));
             function isEmpty(info) {
-                return info.kind === 0 /* Empty */;
+                return info.kind === 0 /* Empty */ || !info.source.tree;
             }
             Interactivity.isEmpty = isEmpty;
             function isSelection(info) {
-                return info.kind === 1 /* Selection */;
+                return info.kind === 1 /* Selection */ && !!info.source.tree;
             }
             Interactivity.isSelection = isSelection;
             function interactivityInfoEqual(a, b) {
@@ -66704,7 +66704,7 @@ var LiteMol;
                 }
                 Molecule.transformMoleculeAtomIndices = transformMoleculeAtomIndices;
                 function transformInteraction(info) {
-                    if (info.kind === 0 /* Empty */)
+                    if (Interactivity.isEmpty(info))
                         return void 0;
                     var modelOrSelection = Bootstrap.Utils.Molecule.findModelOrSelection(info.source);
                     if (!modelOrSelection)
@@ -66772,7 +66772,7 @@ var LiteMol;
                 }
                 Molecule.formatInfoShort = formatInfoShort;
                 function isMoleculeModelInteractivity(info) {
-                    if (info.kind === 0 /* Empty */)
+                    if (Interactivity.isEmpty(info))
                         return false;
                     var modelOrSelection = Bootstrap.Utils.Molecule.findModelOrSelection(info.source);
                     if (!modelOrSelection)
@@ -68780,17 +68780,17 @@ var LiteMol;
                     var _this = this;
                     var latestClick = Bootstrap.Interactivity.Info.empty;
                     Bootstrap.Event.Tree.NodeRemoved.getStream(this.context).subscribe(function (e) {
-                        if ((latestClick.kind !== 0 /* Empty */) && latestClick.source === e.data) {
+                        if (Bootstrap.Interactivity.isSelection(latestClick) && latestClick.source === e.data) {
                             latestClick = Bootstrap.Interactivity.Info.empty;
                             Bootstrap.Event.Visual.VisualSelectElement.dispatch(_this.context, latestClick);
                         }
                     });
                     Bootstrap.Event.Visual.VisualSelectElement.getStream(this.context).subscribe(function (e) {
                         latestClick = e.data;
-                        _this.subjects.click.onNext(e.data);
-                        if (latestClick.kind === 1 /* Selection */ && Bootstrap.Entity.isVisual(latestClick.source) && !latestClick.source.props.isSelectable)
+                        _this.subjects.click.onNext(latestClick);
+                        if (Bootstrap.Interactivity.isSelection(latestClick) && Bootstrap.Entity.isVisual(latestClick.source) && !latestClick.source.props.isSelectable)
                             return;
-                        _this.subjects.select.onNext(e.data);
+                        _this.subjects.select.onNext(latestClick);
                     });
                     Bootstrap.Event.Entity.CurrentChanged.getStream(this.context).subscribe(function (e) { return _this.subjects.currentEntity.onNext(e.data); });
                 };
@@ -68858,7 +68858,7 @@ var LiteMol;
                         latestModel = void 0;
                         latestIndices = void 0;
                     }
-                    if (info.kind === 0 /* Empty */ || !Bootstrap.Entity.isVisual(info.source))
+                    if (Bootstrap.Interactivity.isEmpty(info) || !Bootstrap.Entity.isVisual(info.source))
                         return;
                     latestModel = info.source.props.model;
                     latestIndices = info.elements;
@@ -68927,6 +68927,7 @@ var LiteMol;
                 function ShowInteractionOnSelect(radius) {
                     return function (context) {
                         var lastRef = void 0;
+                        var ambRef = void 0;
                         var ligandStyle = {
                             type: 'BallsAndSticks',
                             computeOnBackground: true,
@@ -68941,11 +68942,30 @@ var LiteMol;
                             theme: { template: Bootstrap.Visualization.Molecule.Default.UniformThemeTemplate, colors: Bootstrap.Visualization.Molecule.Default.UniformThemeTemplate.colors.set('Uniform', { r: 0.4, g: 0.4, b: 0.4 }), transparency: { alpha: 0.75 } },
                             isNotSelectable: true
                         };
-                        context.behaviours.select.subscribe(function (info) {
+                        function clean() {
                             if (lastRef) {
                                 Bootstrap.Command.Tree.RemoveNode.dispatch(context, lastRef);
                                 lastRef = void 0;
+                                ambRef = void 0;
                             }
+                        }
+                        context.behaviours.click.subscribe(function (info) {
+                            if (Bootstrap.Interactivity.isEmpty(info)) {
+                                clean();
+                                return;
+                            }
+                            if (info.source.ref === ambRef) {
+                                var model = Bootstrap.Utils.Molecule.findModel(info.source);
+                                if (!model)
+                                    return;
+                                var query = Query.atomsFromIndices(info.elements);
+                                setTimeout(Bootstrap.Command.Molecule.CreateSelectInteraction.dispatch(context, { entity: model, query: query }), 0);
+                                return;
+                            }
+                            var isSelectable = Bootstrap.Entity.isVisual(info.source) ? info.source.props.isSelectable : true;
+                            if (!isSelectable)
+                                return;
+                            clean();
                             if (Bootstrap.Interactivity.isEmpty(info) || !Bootstrap.Utils.Molecule.findModelOrSelection(info.source))
                                 return;
                             var ligandQ = Query.atomsFromIndices(info.elements).wholeResidues();
@@ -68953,12 +68973,32 @@ var LiteMol;
                             var ref = Bootstrap.Utils.generateUUID();
                             var action = Bootstrap.Tree.Transform.build().add(info.source, Transforms.Basic.CreateGroup, { label: 'Interaction' }, { ref: ref, isHidden: true });
                             lastRef = ref;
+                            ambRef = Bootstrap.Utils.generateUUID();
                             action.then(Transforms.Molecule.CreateSelectionFromQuery, { query: ambQ, name: 'Ambience', silent: true, inFullContext: true }, { isBinding: true })
-                                .then(Transforms.Molecule.CreateVisual, { style: ambStyle });
+                                .then(Transforms.Molecule.CreateVisual, { style: ambStyle }, { ref: ambRef });
                             action.then(Transforms.Molecule.CreateSelectionFromQuery, { query: ligandQ, name: 'Ligand', silent: true, inFullContext: true }, { isBinding: true })
                                 .then(Transforms.Molecule.CreateVisual, { style: ligandStyle });
                             Bootstrap.Tree.Transform.apply(context, action).run(context);
                         });
+                        // context.behaviours.select.subscribe(info => {
+                        //     if (lastRef) {
+                        //         Command.Tree.RemoveNode.dispatch(context, lastRef);
+                        //         lastRef = void 0;
+                        //         ambRef = void 0;
+                        //     }                
+                        //     if (Interactivity.isEmpty(info) || !Utils.Molecule.findModelOrSelection(info.source)) return;
+                        //     let ligandQ = Query.atomsFromIndices(info.elements).wholeResidues();
+                        //     let ambQ = Query.atomsFromIndices(info.elements).wholeResidues().ambientResidues(radius);
+                        //     let ref = Utils.generateUUID();
+                        //     let action = Tree.Transform.build().add(info.source, Transforms.Basic.CreateGroup, { label: 'Interaction' }, { ref, isHidden: true });
+                        //     lastRef = ref;
+                        //     ambRef = Utils.generateUUID();
+                        //     action.then(Transforms.Molecule.CreateSelectionFromQuery, { query: ambQ, name: 'Ambience', silent: true, inFullContext: true }, { isBinding: true })
+                        //         .then(<Bootstrap.Tree.Transformer.To<Entity.Molecule.Visual>>Transforms.Molecule.CreateVisual, { style: ambStyle }, { ref: ambRef });
+                        //     action.then(Transforms.Molecule.CreateSelectionFromQuery, { query: ligandQ, name: 'Ligand', silent: true, inFullContext: true }, { isBinding: true })
+                        //         .then(<Bootstrap.Tree.Transformer.To<Entity.Molecule.Visual>>Transforms.Molecule.CreateVisual, { style: ligandStyle });
+                        //     Tree.Transform.apply(context, action).run(context);
+                        // });        
                     };
                 }
                 Molecule.ShowInteractionOnSelect = ShowInteractionOnSelect;
@@ -74948,7 +74988,7 @@ var LiteMol;
 (function (LiteMol) {
     var Plugin;
     (function (Plugin) {
-        Plugin.VERSION = { number: "1.2.4", date: "Nov 18 2016" };
+        Plugin.VERSION = { number: "1.2.5", date: "Nov 22 2016" };
     })(Plugin = LiteMol.Plugin || (LiteMol.Plugin = {}));
 })(LiteMol || (LiteMol = {}));
 /*
@@ -77107,6 +77147,7 @@ var LiteMol;
                     LiteMol.Bootstrap.Behaviour.FocusCameraOnSelect,
                     LiteMol.Bootstrap.Behaviour.ApplySelectionToVisual,
                     LiteMol.Bootstrap.Behaviour.ApplyInteractivitySelection,
+                    LiteMol.Bootstrap.Behaviour.UnselectElementOnRepeatedClick,
                     LiteMol.Bootstrap.Behaviour.Molecule.HighlightElementInfo,
                     LiteMol.Bootstrap.Behaviour.Molecule.DistanceToLastClickedElement,
                     LiteMol.Bootstrap.Behaviour.Molecule.ShowInteractionOnSelect(5)

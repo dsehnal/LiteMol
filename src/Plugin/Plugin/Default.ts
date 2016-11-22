@@ -67,6 +67,7 @@ namespace LiteMol.Plugin {
                 Bootstrap.Behaviour.FocusCameraOnSelect,                
                 Bootstrap.Behaviour.ApplySelectionToVisual,
                 Bootstrap.Behaviour.ApplyInteractivitySelection,
+                Bootstrap.Behaviour.UnselectElementOnRepeatedClick,
                 
                 Bootstrap.Behaviour.Molecule.HighlightElementInfo,
                 Bootstrap.Behaviour.Molecule.DistanceToLastClickedElement,

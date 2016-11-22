@@ -22,7 +22,7 @@ namespace LiteMol.Bootstrap.Behaviour {
             let latestClick: Interactivity.Info = Interactivity.Info.empty;
             
             Event.Tree.NodeRemoved.getStream(this.context).subscribe(e => {            
-                if ((latestClick.kind !== Interactivity.Info.Kind.Empty) && latestClick.source === e.data) {
+                if (Interactivity.isSelection(latestClick) && latestClick.source === e.data) {
                     latestClick = Interactivity.Info.empty;    
                     Event.Visual.VisualSelectElement.dispatch(this.context, latestClick);            
                 }
@@ -30,9 +30,9 @@ namespace LiteMol.Bootstrap.Behaviour {
                                     
             Event.Visual.VisualSelectElement.getStream(this.context).subscribe(e => {
                 latestClick = e.data;
-                this.subjects.click.onNext(e.data);                            
-                if (latestClick.kind === Interactivity.Info.Kind.Selection && Entity.isVisual(latestClick.source) && !latestClick.source.props.isSelectable) return;
-                this.subjects.select.onNext(e.data)
+                this.subjects.click.onNext(latestClick);                            
+                if (Interactivity.isSelection(latestClick) && Entity.isVisual(latestClick.source) && !latestClick.source.props.isSelectable) return;
+                this.subjects.select.onNext(latestClick)
             });  
             
             Event.Entity.CurrentChanged.getStream(this.context).subscribe(e => this.subjects.currentEntity.onNext(e.data));

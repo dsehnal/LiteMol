@@ -24,7 +24,7 @@ namespace LiteMol.Bootstrap.Utils.Molecule {
     }
  
     export function findQueryContext(entity: Entity.Any) {        
-        let source = Tree.Node.findClosestNodeOfType(entity, __modelOrSelection) as (Entity.Molecule.Model | Entity.Molecule.Selection)        
+        let source = Tree.Node.findClosestNodeOfType(entity, __modelOrSelection) as (Entity.Molecule.Model | Entity.Molecule.Selection)
         
         if (Entity.isMoleculeModel(source)) {
             return source.props.model.queryContext;

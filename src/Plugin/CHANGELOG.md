@@ -1,4 +1,7 @@
-﻿# 1.2.4
+﻿# 1.2.5
+* Updated default pluing spec with Bootstrap.Behaviour.UnselectElementOnRepeatedClick.
+
+# 1.2.4
 * UI support for specifying absolute iso values for density data.
 * UI support for manually decompressing binary AJAX responses.
 

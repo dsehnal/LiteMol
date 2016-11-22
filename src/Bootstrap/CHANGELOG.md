@@ -1,5 +1,6 @@
 ﻿# 1.2.0
-* Change how visual interactivity works.
+* Changed how visual interactivity works.
+* Modified how ShowInteractionOnSelect behavior works (clicking an ambient residue now moves the selection).
 * BREAKING CHANGE: Command.Molecule.CreateSelectInteraction now takes the parameters { entity, query } instead of { visual, query }.
 
 # 1.1.8

@@ -104,7 +104,7 @@ namespace LiteMol.Bootstrap.Interactivity.Molecule {
     }   
     
     export function transformInteraction(info: Interactivity.Info): SelectionInfo | undefined {
-        if (info.kind === Info.Kind.Empty) return void 0;
+        if (isEmpty(info)) return void 0;
         
         let modelOrSelection = Utils.Molecule.findModelOrSelection(info.source);
         if (!modelOrSelection) return void 0;
@@ -169,7 +169,7 @@ namespace LiteMol.Bootstrap.Interactivity.Molecule {
     }
     
     export function isMoleculeModelInteractivity(info: Info): info is Info.Selection {
-        if (info.kind === Info.Kind.Empty) return false;        
+        if (Interactivity.isEmpty(info)) return false;        
         let modelOrSelection = Utils.Molecule.findModelOrSelection(info.source);
         if (!modelOrSelection) return false;
         return true;

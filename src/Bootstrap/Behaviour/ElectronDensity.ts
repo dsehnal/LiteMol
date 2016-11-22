@@ -43,7 +43,7 @@ namespace LiteMol.Bootstrap.Behaviour.Density {
                 elems = Utils.Molecule.getResidueIndices(m, info.elements![0]);
             }                         
             let box = Utils.Molecule.getBox(m, elems!, this.params.radius);   
-            
+
             let style = Utils.shallowClone(this.params.style);
             style.params = Utils.shallowClone(style.params);
             style.params!.bottomLeft = box.bottomLeft;
@@ -80,7 +80,4 @@ namespace LiteMol.Bootstrap.Behaviour.Density {
         constructor(public context: Context, public params: ShowElectronDensityAroundSelectionParams) {            
         }
     }
-    
-    
-    
 }

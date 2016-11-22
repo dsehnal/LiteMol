@@ -15771,15 +15771,15 @@ declare namespace LiteMol.Bootstrap.Tree.Transform {
 declare namespace LiteMol.Bootstrap.Interactivity {
     type Info = Info.Empty | Info.Selection;
     namespace Info {
-        const enum Kind {
+        const enum __Kind {
             Empty = 0,
             Selection = 1,
         }
         interface Empty {
-            kind: Kind.Empty;
+            kind: __Kind.Empty;
         }
         interface Selection {
-            kind: Kind.Selection;
+            kind: __Kind.Selection;
             source: Entity.Any;
             elements: number[];
         }

@@ -9,29 +9,29 @@ namespace LiteMol.Bootstrap.Interactivity {
     export type Info = Info.Empty | Info.Selection
 
     export namespace Info {
-        export const enum Kind { Empty, Selection }
-        export interface Empty { kind: Kind.Empty }
-        export interface Selection { kind: Kind.Selection, source: Entity.Any, elements: number[] }
+        export const enum __Kind { Empty, Selection }
+        export interface Empty { kind: __Kind.Empty }
+        export interface Selection { kind: __Kind.Selection, source: Entity.Any, elements: number[] }
 
-        export const empty: Empty = { kind: Kind.Empty };
+        export const empty: Empty = { kind: __Kind.Empty };
         export function selection(source: Entity.Any, elements: number[]): Selection {
-            return { kind: Kind.Selection, source, elements };
+            return { kind: __Kind.Selection, source, elements };
         }     
     }
     
     export function isEmpty(info: Info): info is Info.Empty {
-        return info.kind === Info.Kind.Empty;
+        return info.kind === Info.__Kind.Empty || !info.source.tree;
     }
 
     export function isSelection(info: Info): info is Info.Selection {
-        return info.kind === Info.Kind.Selection;
+        return info.kind === Info.__Kind.Selection && !!info.source.tree;
     }
 
     export function interactivityInfoEqual(a: Info, b: Info) {
         if (!a && !b) return true;
         if (!a || !b) return false;
         if (a.kind !== b.kind) return false;
-        if (a.kind === Info.Kind.Empty) return true;
+        if (a.kind === Info.__Kind.Empty) return true;
         if (a.source !== (b as Info.Selection).source) return false;
         
         let x = (a as Info.Selection).elements, y = (b as Info.Selection).elements;

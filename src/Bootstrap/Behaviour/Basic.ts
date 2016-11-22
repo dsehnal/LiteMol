@@ -60,7 +60,7 @@ namespace LiteMol.Bootstrap.Behaviour {
                  latestModel = void 0;
                  latestIndices = void 0;
              }          
-             if (info.kind === Interactivity.Info.Kind.Empty || !Entity.isVisual(info.source)) return;
+             if (Interactivity.isEmpty(info) || !Entity.isVisual(info.source)) return;
              
              latestModel = info.source.props.model;
              latestIndices = info.elements;

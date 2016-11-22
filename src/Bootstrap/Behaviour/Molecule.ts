@@ -12,6 +12,7 @@ namespace LiteMol.Bootstrap.Behaviour.Molecule {
         
         return (context: Context) => {
             let lastRef: string | undefined = void 0;
+            let ambRef: string | undefined = void 0;
             
             let ligandStyle: Visualization.Molecule.Style<Visualization.Molecule.BallsAndSticksParams> = {
                 type: 'BallsAndSticks',
@@ -27,32 +28,82 @@ namespace LiteMol.Bootstrap.Behaviour.Molecule {
                 params: { useVDW: false, atomRadius: 0.15, bondRadius: 0.07, detail: 'Automatic' },
                 theme: { template: Visualization.Molecule.Default.UniformThemeTemplate, colors: Visualization.Molecule.Default.UniformThemeTemplate.colors!.set('Uniform', { r: 0.4, g: 0.4, b: 0.4 }), transparency: { alpha: 0.75 } },
                 isNotSelectable: true
-            }             
-            
-            context.behaviours.select.subscribe(info => {
+            }
+
+            function clean() {
                 if (lastRef) {
                     Command.Tree.RemoveNode.dispatch(context, lastRef);
                     lastRef = void 0;
+                    ambRef = void 0;
+                }    
+            }
+
+            context.behaviours.click.subscribe(info => {
+                if (Interactivity.isEmpty(info)) {
+                    clean(); 
+                    return;
                 }
+
                 
-                
+                if (info.source.ref === ambRef) {
+                    let model = Utils.Molecule.findModel(info.source);
+                    if (!model) return;
+
+                    let query = Query.atomsFromIndices(info.elements);
+                    setTimeout(Command.Molecule.CreateSelectInteraction.dispatch(context, { entity: model, query }), 0);
+                    return;
+                }
+
+                let isSelectable = Entity.isVisual(info.source) ? info.source.props.isSelectable : true;
+                if (!isSelectable) return;
+
+                clean();
+
                 if (Interactivity.isEmpty(info) || !Utils.Molecule.findModelOrSelection(info.source)) return;
                 
-                let ligandQ = Query.atomsFromIndices(info.elements!).wholeResidues();
-                let ambQ = Query.atomsFromIndices(info.elements!).wholeResidues().ambientResidues(radius);
+                let ligandQ = Query.atomsFromIndices(info.elements).wholeResidues();
+                let ambQ = Query.atomsFromIndices(info.elements).wholeResidues().ambientResidues(radius);
                 
                 let ref = Utils.generateUUID();
                 let action = Tree.Transform.build().add(info.source, Transforms.Basic.CreateGroup, { label: 'Interaction' }, { ref, isHidden: true });
                 lastRef = ref;
+
+                ambRef = Utils.generateUUID();
                 
                 action.then(Transforms.Molecule.CreateSelectionFromQuery, { query: ambQ, name: 'Ambience', silent: true, inFullContext: true }, { isBinding: true })
-                    .then(<Bootstrap.Tree.Transformer.To<Entity.Molecule.Visual>>Transforms.Molecule.CreateVisual, { style: ambStyle });
+                    .then(<Bootstrap.Tree.Transformer.To<Entity.Molecule.Visual>>Transforms.Molecule.CreateVisual, { style: ambStyle }, { ref: ambRef });
                 action.then(Transforms.Molecule.CreateSelectionFromQuery, { query: ligandQ, name: 'Ligand', silent: true, inFullContext: true }, { isBinding: true })
                     .then(<Bootstrap.Tree.Transformer.To<Entity.Molecule.Visual>>Transforms.Molecule.CreateVisual, { style: ligandStyle });
                     
-                Tree.Transform.apply(context, action).run(context);
+                Tree.Transform.apply(context, action).run(context);                
+            });          
+            
+            // context.behaviours.select.subscribe(info => {
+            //     if (lastRef) {
+            //         Command.Tree.RemoveNode.dispatch(context, lastRef);
+            //         lastRef = void 0;
+            //         ambRef = void 0;
+            //     }                
                 
-            });        
+            //     if (Interactivity.isEmpty(info) || !Utils.Molecule.findModelOrSelection(info.source)) return;
+                
+            //     let ligandQ = Query.atomsFromIndices(info.elements).wholeResidues();
+            //     let ambQ = Query.atomsFromIndices(info.elements).wholeResidues().ambientResidues(radius);
+                
+            //     let ref = Utils.generateUUID();
+            //     let action = Tree.Transform.build().add(info.source, Transforms.Basic.CreateGroup, { label: 'Interaction' }, { ref, isHidden: true });
+            //     lastRef = ref;
+
+            //     ambRef = Utils.generateUUID();
+                
+            //     action.then(Transforms.Molecule.CreateSelectionFromQuery, { query: ambQ, name: 'Ambience', silent: true, inFullContext: true }, { isBinding: true })
+            //         .then(<Bootstrap.Tree.Transformer.To<Entity.Molecule.Visual>>Transforms.Molecule.CreateVisual, { style: ambStyle }, { ref: ambRef });
+            //     action.then(Transforms.Molecule.CreateSelectionFromQuery, { query: ligandQ, name: 'Ligand', silent: true, inFullContext: true }, { isBinding: true })
+            //         .then(<Bootstrap.Tree.Transformer.To<Entity.Molecule.Visual>>Transforms.Molecule.CreateVisual, { style: ligandStyle });
+                    
+            //     Tree.Transform.apply(context, action).run(context);
+                
+            // });        
         }
     }
     
