@@ -71,9 +71,9 @@ namespace LiteMol.Bootstrap.Behaviour.Molecule {
                 ambRef = Utils.generateUUID();
                 
                 action.then(Transforms.Molecule.CreateSelectionFromQuery, { query: ambQ, name: 'Ambience', silent: true, inFullContext: true }, { isBinding: true })
-                    .then(<Bootstrap.Tree.Transformer.To<Entity.Molecule.Visual>>Transforms.Molecule.CreateVisual, { style: ambStyle }, { ref: ambRef });
+                    .then(Transforms.Molecule.CreateVisual, { style: ambStyle }, { ref: ambRef });
                 action.then(Transforms.Molecule.CreateSelectionFromQuery, { query: ligandQ, name: 'Ligand', silent: true, inFullContext: true }, { isBinding: true })
-                    .then(<Bootstrap.Tree.Transformer.To<Entity.Molecule.Visual>>Transforms.Molecule.CreateVisual, { style: ligandStyle });
+                    .then(Transforms.Molecule.CreateVisual, { style: ligandStyle });
                     
                 Tree.Transform.apply(context, action).run(context);                
             });          

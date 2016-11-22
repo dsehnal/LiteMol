@@ -69,7 +69,7 @@ namespace LiteMol.Bootstrap.Entity.Transformer.Molecule.CoordinateStreaming {
         return Task.create<Entity.Action>('Macromolecule', 'Normal', ctx => {
 
             let action = Tree.Transform.build()
-                .add(a, <Tree.Transformer.To<Entity.Data.Binary>>Data.Download, { url: Bootstrap.Behaviour.Molecule.CoordinateStreaming.getBaseUrl(t.params.id!, t.params.server!), type: 'Binary', id: t.params.id })
+                .add(a, Data.Download, { url: Bootstrap.Behaviour.Molecule.CoordinateStreaming.getBaseUrl(t.params.id!, t.params.server!), type: 'Binary', id: t.params.id })
                 .then(Data.ParseBinaryCif, { id: t.params.id }, { isBinding: true })
                 .then(Molecule.CreateFromMmCif, { blockIndex: 0 }, { isBinding: true })
                 .then(Molecule.CreateModel, { modelIndex: 0 }, { isBinding: false })

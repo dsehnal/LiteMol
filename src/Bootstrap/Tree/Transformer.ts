@@ -19,7 +19,6 @@ namespace LiteMol.Bootstrap.Tree {
     export namespace Transformer {
         
         export type Any = Transformer<Node, Node, any>
-        export type To<T extends Node> = Transformer<Node, T, any>
                 
         export interface Info<A extends Node, B extends Node, P> {
             id: string,

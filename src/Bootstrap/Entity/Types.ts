@@ -23,8 +23,7 @@ namespace LiteMol.Bootstrap.Entity {
         return e && e.type.info.typeClass === VisualClass;
     } 
             
-    /* Base */
-    
+    /* Base */    
     
     export const RootTransform = Tree.Transform.create<Root, Root, {}>({}, {}, <any>void 0);
         
@@ -44,16 +43,11 @@ namespace LiteMol.Bootstrap.Entity {
     export namespace Behaviour { 
         export interface Props<T extends Bootstrap.Behaviour.Dynamic> extends CommonProps { behaviour: T }            
         export interface Any extends Entity<Any, Type<any, Any, Props<Bootstrap.Behaviour.Dynamic>>, Props<Bootstrap.Behaviour.Dynamic>> { }
-          
-        // export interface Behaviour extends Entity<Behaviour, BehaviourType, BehaviourProps> { } 
-        // export interface BehaviourType extends Type<BehaviourType, Behaviour, BehaviourProps> { }
-        // export const Behaviour = create<Behaviour, BehaviourType, BehaviourProps>({ name: 'Behaviour', typeClass: 'Behaviour', shortName: 'B', description: 'Represents a dynamic behaviour of the program.' });
     }
     
     /* Data */
     
-    export namespace Data {
-    
+    export namespace Data {    
         export type Type = 'String' | 'Binary'        
         export const Types:Type[] = ['String', 'Binary']
         export interface Props<T> extends CommonProps { data: T }
@@ -93,8 +87,7 @@ namespace LiteMol.Bootstrap.Entity {
     
     /* Molecule */
     
-    export namespace Molecule {                
-        
+    export namespace Molecule {                        
         export interface MoleculeProps extends CommonProps { molecule: Core.Structure.Molecule }
         export interface Molecule extends Entity<Molecule, MoleculeType, MoleculeProps> { }         
         export interface MoleculeType extends Entity.Type<MoleculeType, Molecule, MoleculeProps> { }     
@@ -125,8 +118,7 @@ namespace LiteMol.Bootstrap.Entity {
     
     /* Density */
     
-    export namespace Density {
-        
+    export namespace Density {        
         export interface DataProps extends CommonProps { data: Core.Formats.Density.Data }
         export interface Data extends Entity<Data, DataType, DataProps> { }         
         export interface DataType extends Entity.Type<DataType, Data, DataProps> { }     

@@ -128,7 +128,7 @@ namespace LiteMol.Custom {
 
     let action = plugin.createTransform();
     
-    action.add(plugin.context.tree.root, <Bootstrap.Tree.Transformer.To<Bootstrap.Entity.Data.String>>Transformer.Data.Download, { url: `https://www.ebi.ac.uk/pdbe/static/entry/${id}_updated.cif`, type: 'String', id })
+    action.add(plugin.context.tree.root, Transformer.Data.Download, { url: `https://www.ebi.ac.uk/pdbe/static/entry/${id}_updated.cif`, type: 'String', id })
         .then(Transformer.Data.ParseCif, { id }, { isBinding: true })
         .then(Transformer.Molecule.CreateFromMmCif, { blockIndex: 0 }, { ref: 'molecule' })
         .then(CreateRepresentation, { });

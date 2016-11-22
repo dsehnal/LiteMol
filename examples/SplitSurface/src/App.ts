@@ -99,21 +99,21 @@ namespace LiteMol.Surface {
     let action = plugin.createTransform();
 
     // This loads the model from PDBe
-    let modelAction = action.add(plugin.context.tree.root, <Bootstrap.Tree.Transformer.To<Bootstrap.Entity.Data.String>>Transformer.Data.Download, { url: `https://www.ebi.ac.uk/pdbe/static/entry/${id}_updated.cif`, type: 'String', id })
+    let modelAction = action.add(plugin.context.tree.root, Transformer.Data.Download, { url: `https://www.ebi.ac.uk/pdbe/static/entry/${id}_updated.cif`, type: 'String', id })
         .then(Transformer.Data.ParseCif, { id }, { isBinding: true })
         .then(Transformer.Molecule.CreateFromMmCif, { blockIndex: 0 }, { isBinding: true })
         .then(Transformer.Molecule.CreateModel, { modelIndex: 0 }, { isBinding: false, ref: 'model' });
 
     // Create a selection on the model and then create a visual for it...
     modelAction
-        .then(<Bootstrap.Tree.Transformer.To<Bootstrap.Entity.Molecule.Selection>>Transformer.Molecule.CreateSelectionFromQuery, { query: complementQ, name: 'Complement', silent: true }, { })
-        .then(<any>Transformer.Molecule.CreateVisual, { style: complementStyle }, { isHidden: true });
+        .then(Transformer.Molecule.CreateSelectionFromQuery, { query: complementQ, name: 'Complement', silent: true }, { })
+        .then(Transformer.Molecule.CreateVisual, { style: complementStyle }, { isHidden: true });
 
     let sel = modelAction
-        .then(<Bootstrap.Tree.Transformer.To<Bootstrap.Entity.Molecule.Selection>>Transformer.Molecule.CreateSelectionFromQuery, { query: selectionQ, name: 'Selection', silent: true }, { })
+        .then(Transformer.Molecule.CreateSelectionFromQuery, { query: selectionQ, name: 'Selection', silent: true }, { })
     
-    sel.then(<any>Transformer.Molecule.CreateVisual, { style: Bootstrap.Visualization.Molecule.Default.ForType.get('BallsAndSticks') }, { isHidden: true })
-    sel.then(<any>Transformer.Molecule.CreateVisual, { style: selectionStyle }, { isHidden: true });
+    sel.then(Transformer.Molecule.CreateVisual, { style: Bootstrap.Visualization.Molecule.Default.ForType.get('BallsAndSticks') }, { isHidden: true })
+    sel.then(Transformer.Molecule.CreateVisual, { style: selectionStyle }, { isHidden: true });
 
     let loadTask = plugin.applyTransform(action);
 

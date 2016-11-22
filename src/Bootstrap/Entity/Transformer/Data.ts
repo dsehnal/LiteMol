@@ -14,9 +14,15 @@ namespace LiteMol.Bootstrap.Entity.Transformer.Data {
     export interface DownloadParams {
         id?: string;
         description?: string;
-        type?: Entity.Data.Type;
+        type?: string;
         url?: string;
         responseCompression?: Utils.DataCompressionMethod;
+    }
+
+    function getDataType(type?: string): Entity.Data.Type {
+        if (type === void 0 || type === null) return 'String';
+        if (type.toLowerCase() === 'binary') return 'Binary';
+        return 'String';
     }
 
     function hasResponseCompression(responseCompression?: Utils.DataCompressionMethod) {
@@ -33,7 +39,7 @@ namespace LiteMol.Bootstrap.Entity.Transformer.Data {
         defaultParams: () => ({ id: '', description: '', type: 'String', url: '', responseCompression: Utils.DataCompressionMethod.None })
     }, (ctx, a, t) => {
         let params = t.params;
-        return Utils.ajaxGet({ url: params.url!, type: params.type!, compression: params.responseCompression }).setReportTime(true)
+        return Utils.ajaxGet({ url: params.url!, type: getDataType(params.type), compression: params.responseCompression }).setReportTime(true)
             .map<Entity.Data.String | Entity.Data.Binary>('ToEntity', 'Child', data => {
                 if (params.type === 'String') return Entity.Data.String.create(<any>t, { label: params.id ? params.id : params.url!, description: params.description, data: data as string });
                 else return Entity.Data.Binary.create(<any>t, { label: params.id ? params.id : params.url!, description: params.description, data: data as ArrayBuffer });
@@ -44,7 +50,7 @@ namespace LiteMol.Bootstrap.Entity.Transformer.Data {
         description?: string;
         id?: string;
         file?: File;
-        type?: Entity.Data.Type;
+        type?: string;
     }
 
     export const OpenFile = Tree.Transformer.create<Entity.Root, Entity.Data.String | Entity.Data.Binary, OpenFileParams>({
@@ -57,7 +63,7 @@ namespace LiteMol.Bootstrap.Entity.Transformer.Data {
         defaultParams: () => ({ type: 'String', file: void 0 })
     }, (ctx, a, t) => {
         let params = t.params;
-        return Utils.readFromFile(params.file!, params.type!).setReportTime(true)
+        return Utils.readFromFile(params.file!, getDataType(params.type)).setReportTime(true)
             .map<Entity.Data.String | Entity.Data.Binary>('ToEntity', 'Child', data => {
                 if (params.type === 'String') return Entity.Data.String.create(<any>t, { label: params.id ? params.id : params.file!.name, description: params.description, data: data as string });
                 else return Entity.Data.Binary.create(<any>t, { label: params.id ? params.id : params.file!.name, description: params.description, data: data as ArrayBuffer });

@@ -209,7 +209,7 @@ namespace LiteMol.Viewer.PDBe.Validation {
     }, (context, a, t) => {        
         let id = a.props.molecule.id.trim().toLocaleLowerCase();                    
         let action = Bootstrap.Tree.Transform.build()
-            .add(a, <Bootstrap.Tree.Transformer.To<Entity.Data.String>>Transformer.Data.Download, { url: `https://www.ebi.ac.uk/pdbe/api/validation/residuewise_outlier_summary/entry/${id}`, type: 'String', id, description: 'Validation Data' })
+            .add(a, Transformer.Data.Download, { url: `https://www.ebi.ac.uk/pdbe/api/validation/residuewise_outlier_summary/entry/${id}`, type: 'String', id, description: 'Validation Data' })
             .then(Create, { id }, { isBinding: true });
 
         return action;

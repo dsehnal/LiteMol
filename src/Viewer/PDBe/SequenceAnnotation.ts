@@ -290,7 +290,7 @@ namespace LiteMol.Viewer.PDBe.SequenceAnnotation {
     }, (context, a, t) => {        
         let id = a.props.molecule.id.trim().toLocaleLowerCase();                    
         return Bootstrap.Tree.Transform.build()
-            .add(a, <Bootstrap.Tree.Transformer.To<Entity.Data.String>>Transformer.Data.Download, { url: `https://www.ebi.ac.uk/pdbe/api/mappings/${id}`, type: 'String', id, description: 'Annotation Data' })
+            .add(a, Transformer.Data.Download, { url: `https://www.ebi.ac.uk/pdbe/api/mappings/${id}`, type: 'String', id, description: 'Annotation Data' })
             .then(Parse, { }, { isBinding: true })
             .then(Build, { }, { isBinding: true });
     });

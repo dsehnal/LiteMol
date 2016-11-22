@@ -21,7 +21,7 @@ namespace LiteMol.Bootstrap.Entity.Transformer.Molecule {
         }, (context, a, t) => {
             let format = params.specificFormat ? params.specificFormat : t.params.format!;
             return Tree.Transform.build()
-                .add(a, <Tree.Transformer.To<Entity.Data.String | Entity.Data.Binary>>Data.Download, { url: params.urlTemplate(t.params.id!.trim()), type: format.isBinary ? 'Binary' : 'String', id: t.params.id, description: params.name })
+                .add(a, Data.Download, { url: params.urlTemplate(t.params.id!.trim()), type: format.isBinary ? 'Binary' : 'String', id: t.params.id, description: params.name })
                 .then(CreateFromData, { format: params.specificFormat ? params.specificFormat : t.params.format }, { isBinding: true })
                 .then(Molecule.CreateModel, { modelIndex: 0 }, { isBinding: false })
         })
@@ -41,7 +41,7 @@ namespace LiteMol.Bootstrap.Entity.Transformer.Molecule {
     }, (context, a, t) => {
         let format = LiteMol.Core.Formats.FormatInfo.getFormat(t.params.file!.name, LiteMol.Core.Formats.Molecule.SupportedFormats.All) !;
         return Tree.Transform.build()
-            .add(a, <Tree.Transformer.To<Entity.Data.String | Entity.Data.Binary>>Data.OpenFile, { file: t.params.file, type: format.isBinary ? 'Binary' : 'String' })
+            .add(a, Data.OpenFile, { file: t.params.file, type: format.isBinary ? 'Binary' : 'String' })
             .then(CreateFromData, { format }, { isBinding: true })
             .then(Molecule.CreateModel, { modelIndex: 0 }, { isBinding: false })
     })
@@ -383,12 +383,12 @@ namespace LiteMol.Bootstrap.Entity.Transformer.Molecule {
 
             if (t.params.polymer) {
                 let polymer = g.then(CreateSelectionFromQuery, { query: Core.Structure.Query.nonHetPolymer(), name: 'Polymer', silent: true }, { isBinding: true })
-                polymer.then(<any>CreateVisual, { style: Visualization.Molecule.Default.ForType.get('Cartoons') }, { ref: t.params.polymerRef });
+                polymer.then(CreateVisual, { style: Visualization.Molecule.Default.ForType.get('Cartoons') }, { ref: t.params.polymerRef });
             }
 
             if (t.params.het) {
                 let het = g.then(CreateSelectionFromQuery, { query: Core.Structure.Query.hetGroups(), name: 'HET', silent: true }, { isBinding: true })
-                het.then(<any>CreateVisual, { style: Visualization.Molecule.Default.ForType.get('BallsAndSticks') }, { ref: t.params.hetRef });
+                het.then(CreateVisual, { style: Visualization.Molecule.Default.ForType.get('BallsAndSticks') }, { ref: t.params.hetRef });
             }
 
             if (t.params.water) {
@@ -400,7 +400,7 @@ namespace LiteMol.Bootstrap.Entity.Transformer.Molecule {
                 }
 
                 let water = g.then(CreateSelectionFromQuery, { query: Core.Structure.Query.entities({ type: 'water' }), name: 'Water', silent: true }, { isBinding: true })
-                water.then(<any>CreateVisual, { style }, { ref: t.params.waterRef });
+                water.then(CreateVisual, { style }, { ref: t.params.waterRef });
             }
 
             Tree.Transform.apply(context, g).run(context)

@@ -1,4 +1,7 @@
-﻿# 1.2.0
+﻿# 1.2.1
+* Transform builder no longer requires verbose type annotations that were sometimes required.
+
+# 1.2.0
 * Changed how visual interactivity works.
 * Modified how ShowInteractionOnSelect behavior works (clicking an ambient residue now moves the selection).
 * BREAKING CHANGE: Command.Molecule.CreateSelectInteraction now takes the parameters { entity, query } instead of { visual, query }.

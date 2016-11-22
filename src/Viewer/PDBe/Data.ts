@@ -43,7 +43,7 @@ namespace LiteMol.Viewer.PDBe.Data {
         let url = `${t.params.serverUrl}${t.params.serverUrl![t.params.serverUrl!.length - 1] === '/' ? '' : '/'}${id}/${query}?encoding=bcif&lowPrecisionCoords=${t.params.lowPrecisionCoords ? '1' : '2'}`;
 
         return Bootstrap.Tree.Transform.build()
-            .add(a, <Bootstrap.Tree.Transformer.To<Entity.Data.String | Entity.Data.Binary>>Entity.Transformer.Data.Download, { url, type: 'Binary', id })
+            .add(a, Entity.Transformer.Data.Download, { url, type: 'Binary', id })
             .then(Entity.Transformer.Molecule.CreateFromData, { format: LiteMol.Core.Formats.Molecule.SupportedFormats.mmBCIF }, { isBinding: true })
             .then(Entity.Transformer.Molecule.CreateModel, { modelIndex: 0 }, { isBinding: false })
     });
@@ -65,7 +65,7 @@ namespace LiteMol.Viewer.PDBe.Data {
         let group = action.add(a, Transformer.Basic.CreateGroup, { label: id, description: 'Density' }, { ref: t.props.ref })
             
         let diff = group
-            .then(<Bootstrap.Tree.Transformer.To<Entity.Data.Binary | Entity.Data.String>>Transformer.Data.Download, { url: `https://www.ebi.ac.uk/pdbe/coordinates/files/${id}_diff.ccp4`, type: 'Binary', id: t.params.id, description: 'Fo-Fc' })
+            .then(Transformer.Data.Download, { url: `https://www.ebi.ac.uk/pdbe/coordinates/files/${id}_diff.ccp4`, type: 'Binary', id: t.params.id, description: 'Fo-Fc' })
             .then(Transformer.Density.ParseData, { format: LiteMol.Core.Formats.Density.SupportedFormats.CCP4, id: 'Fo-Fc', normalize: false }, { isBinding: true });
             
         diff
@@ -99,7 +99,7 @@ namespace LiteMol.Viewer.PDBe.Data {
             });            
         
         let base = group
-            .then(<Bootstrap.Tree.Transformer.To<Entity.Data.Binary | Entity.Data.String>>Transformer.Data.Download, { url: `https://www.ebi.ac.uk/pdbe/coordinates/files/${id}.ccp4`, type: 'Binary', id: t.params.id, description: '2Fo-Fc' })
+            .then(Transformer.Data.Download, { url: `https://www.ebi.ac.uk/pdbe/coordinates/files/${id}.ccp4`, type: 'Binary', id: t.params.id, description: '2Fo-Fc' })
             .then(Transformer.Density.ParseData, { format: LiteMol.Core.Formats.Density.SupportedFormats.CCP4, id: '2Fo-Fc', normalize: false }, { isBinding: true })
             .then(Transformer.Density.CreateVisualBehaviour, {  
                 id: '2Fo-Fc',

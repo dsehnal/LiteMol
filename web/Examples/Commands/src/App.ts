@@ -137,7 +137,7 @@ namespace LiteMolPluginInstance {
         let id = moleculeId;        
         // this builds the transforms needed to create a molecule
         let action = Transform.build()
-            .add(plugin.context.tree.root, <Tree.Transformer.To<Entity.Data.String>>Transformer.Data.Download, { url: `https://www.ebi.ac.uk/pdbe/static/entry/${id}_updated.cif`, type: 'String', id })
+            .add(plugin.context.tree.root, Transformer.Data.Download, { url: `https://www.ebi.ac.uk/pdbe/static/entry/${id}_updated.cif`, type: 'String', id })
             .then(Transformer.Data.ParseCif, { id }, { isBinding: true })
             .then(Transformer.Molecule.CreateFromMmCif, { blockIndex: 0 }, { isBinding: true })
             .then(Transformer.Molecule.CreateModel, { modelIndex: 0 }, { isBinding: false, ref: 'model' })
@@ -171,15 +171,15 @@ namespace LiteMolPluginInstance {
         let id = '1cbs:REA'
         let url = `https://webchemdev.ncbr.muni.cz/CoordinateServer/1cbs/ligandInteraction?name=REA`; // here you will fill in the full server etc ...
         let action = Transform.build()
-            .add(plugin.context.tree.root, <Tree.Transformer.To<Entity.Data.String>>Transformer.Data.Download, { url, type: 'String', id })
+            .add(plugin.context.tree.root, Transformer.Data.Download, { url, type: 'String', id })
             .then(Transformer.Data.ParseCif, { id }, { isBinding: true })
             .then(Transformer.Molecule.CreateFromMmCif, { blockIndex: 0 }, { isBinding: true })
             .then(Transformer.Molecule.CreateModel, { modelIndex: 0 }, { isBinding: false, ref: 'ligand-model' });
             
-        action.then(<Bootstrap.Tree.Transformer.To<Entity.Molecule.Selection>>Transformer.Molecule.CreateSelectionFromQuery, { query: ambQ, name: 'Ambience' }, { isBinding: true })
-            .then(<Bootstrap.Tree.Transformer.To<Entity.Molecule.Visual>>Transformer.Molecule.CreateVisual, { style: ambStyle });
-        action.then(<Bootstrap.Tree.Transformer.To<Entity.Molecule.Selection>>Transformer.Molecule.CreateSelectionFromQuery, { query: ligandQ, name: 'Ligand' }, { isBinding: true })
-            .then(<Bootstrap.Tree.Transformer.To<Entity.Molecule.Visual>>Transformer.Molecule.CreateVisual, { style: ligandStyle }, { ref: 'ligand-visual' });   
+        action.then(Transformer.Molecule.CreateSelectionFromQuery, { query: ambQ, name: 'Ambience' }, { isBinding: true })
+            .then(Transformer.Molecule.CreateVisual, { style: ambStyle });
+        action.then(Transformer.Molecule.CreateSelectionFromQuery, { query: ligandQ, name: 'Ligand' }, { isBinding: true })
+            .then(Transformer.Molecule.CreateVisual, { style: ligandStyle }, { ref: 'ligand-visual' });   
             
         applyTransforms(action)
             .then(() => {
@@ -221,9 +221,9 @@ namespace LiteMolPluginInstance {
         let query = Query.sequence('1', 'A', { seqNumber: 10 }, { seqNumber: 25 });
         let theme = createSelectionTheme(CoreVis.Color.fromHex(0x123456));
         let action = Transform.build()
-            .add(visual, <Bootstrap.Tree.Transformer.To<Entity.Molecule.Selection>>Transformer.Molecule.CreateSelectionFromQuery, { query, name: 'My name' }, { ref: 'sequence-selection' })
+            .add(visual, Transformer.Molecule.CreateSelectionFromQuery, { query, name: 'My name' }, { ref: 'sequence-selection' })
             // here you can create a custom style using code similar to what's in 'Load Ligand'
-            .then(<Bootstrap.Tree.Transformer.To<Entity.Molecule.Visual>>Transformer.Molecule.CreateVisual, { style: Visualization.Molecule.Default.ForType.get('BallsAndSticks') });
+            .then(Transformer.Molecule.CreateVisual, { style: Visualization.Molecule.Default.ForType.get('BallsAndSticks') });
             
         applyTransforms(action).then(() => {                
             Command.Visual.UpdateBasicTheme.dispatch(plugin.context, { visual, theme });
@@ -294,8 +294,8 @@ namespace LiteMolPluginInstance {
         //let query = AQ.query(AQ.sidechain);
         let query = AQ.query(AQ.equal(AQ.residueName, AQ.value('ALA')));
         let action = Transform.build()
-            .add(model, <Bootstrap.Tree.Transformer.To<Entity.Molecule.Selection>>Transformer.Molecule.CreateSelectionFromQuery, { query, name: 'Alg. query' }, { ref: 'alg-selection' })
-            .then(<Bootstrap.Tree.Transformer.To<Entity.Molecule.Visual>>Transformer.Molecule.CreateVisual, { style: Visualization.Molecule.Default.ForType.get('BallsAndSticks') });
+            .add(model, Transformer.Molecule.CreateSelectionFromQuery, { query, name: 'Alg. query' }, { ref: 'alg-selection' })
+            .then(Transformer.Molecule.CreateVisual, { style: Visualization.Molecule.Default.ForType.get('BallsAndSticks') });
             
         applyTransforms(action);
     });
@@ -362,7 +362,7 @@ namespace LiteMolPluginInstance {
 
             action
                 .add(molecule, Transformer.Molecule.CreateModel, { modelIndex: i }, { isBinding: false, ref: 'model-' + i })
-                .then(<any>Transformer.Molecule.CreateVisual, { style }, { ref: 'model-visual-' + i });
+                .then(Transformer.Molecule.CreateVisual, { style }, { ref: 'model-visual-' + i });
         }
         
         applyTransforms(action);

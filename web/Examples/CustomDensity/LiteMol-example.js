@@ -26,7 +26,7 @@ var LiteMol;
                 .then(Transformer.Molecule.CreateFromData, { format: LiteMol.Core.Formats.Molecule.SupportedFormats.PDB }, {})
                 .then(Transformer.Molecule.CreateModel, { modelIndex: 0 })
                 .then(Transformer.Molecule.CreateMacromoleculeVisual, { het: true, polymer: true, water: true }, {});
-            //.then(<any>Transformer.Molecule.CreateVisual, { style: Bootstrap.Visualization.Molecule.Default.ForType.get('BallsAndSticks') }, {}) // this can be used insteadf of the CreateMacromoleculeVisual
+            //.then(Transformer.Molecule.CreateVisual, { style: Bootstrap.Visualization.Molecule.Default.ForType.get('BallsAndSticks') }, {}) // this can be used insteadf of the CreateMacromoleculeVisual
             // Download the density and enable the interactive density display
             action.add(a, Transformer.Data.Download, { url: "https://www.ebi.ac.uk/pdbe/coordinates/files/" + id + ".ccp4", type: 'Binary', id: id, description: '2Fo-Fc Density' })
                 .then(Transformer.Density.ParseData, { format: LiteMol.Core.Formats.Density.SupportedFormats.CCP4, id: '2Fo-Fc Density', normalize: false }, { isBinding: true })

@@ -3163,7 +3163,7 @@ declare namespace LiteMol.Plugin {
         /**
          * Create a transform builder.
          */
-        createTransform(): Bootstrap.Tree.Transform.Builder<any, any, any>;
+        createTransform(): Bootstrap.Tree.Transform.Builder;
         /**
          * Applies a state trasnform.
          */
@@ -15700,7 +15700,6 @@ declare namespace LiteMol.Bootstrap.Tree {
     }
     namespace Transformer {
         type Any = Transformer<Node, Node, any>;
-        type To<T extends Node> = Transformer<Node, T, any>;
         interface Info<A extends Node, B extends Node, P> {
             id: string;
             name: string;
@@ -15740,7 +15739,7 @@ declare namespace LiteMol.Bootstrap.Tree {
             selector: Selector<Node>;
             transform: Any;
         }
-        type Source = Instance | Instance[] | Builder.Any;
+        type Source = Instance | Instance[] | Builder;
         function create<A extends Node, B extends Node, P>(params: P, props: Props, transformer: Transformer<A, B, P>): Transform<A, B, P>;
         function updateInstance<A extends Node, B extends Node, P>(ctx: Context, instance: Instance): Task<Node[]>;
         function applyInstance<A extends Node, B extends Node, P>(ctx: Context, instance: Instance): Task<Node[]>;
@@ -15750,22 +15749,21 @@ declare namespace LiteMol.Bootstrap.Tree {
 }
 declare namespace LiteMol.Bootstrap.Tree.Transform {
     import Node = Tree.Node.Any;
-    function build(): Builder<any, any, any>;
-    interface Builder<A extends Node, B extends Node, P> {
-        add<A extends Node, B extends Node, P>(s: Selector<A>, t: Transformer<A, B, P>, params: P, props?: Transform.Props): Builder<A, B, P>;
-        then<C extends Node, Q>(t: Transformer<B, C, Q>, params: Q, props?: Transform.Props): Builder<A, C, Q>;
+    function build(): Builder;
+    interface Builder {
+        add<A extends Node, B extends Node, P>(s: Selector<A>, t: Transformer<A, B, P>, params: P, props?: Transform.Props): Builder;
+        then<C extends Node, Q>(t: Transformer<Node, C, Q>, params: Q, props?: Transform.Props): Builder;
         compile(): Instance[];
     }
     namespace Builder {
-        class Impl<A extends Node, B extends Node, P> implements Builder<A, B, P> {
+        class Impl<A extends Node, B extends Node, P> implements Builder {
             last: Instance | undefined;
             transforms: Instance[];
-            add<A extends Node, B extends Node, P>(s: Selector<A>, t: Transformer<A, B, P>, params: P, props?: Transform.Props): Builder<A, B, P>;
-            then<C extends Node, Q>(t: Transformer<B, C, Q>, params: Q, props?: Transform.Props): Builder<A, C, Q>;
+            add<A extends Node, B extends Node, P>(s: Selector<A>, t: Transformer<A, B, P>, params: P, props?: Transform.Props): Builder;
+            then<C extends Node, Q>(t: Transformer<B, C, Q>, params: Q, props?: Transform.Props): Builder;
             compile(): Instance[];
             constructor(last: Instance | undefined, transforms: Instance[]);
         }
-        type Any = Builder<any, any, any>;
     }
 }
 declare namespace LiteMol.Bootstrap.Interactivity {
@@ -16335,7 +16333,7 @@ declare namespace LiteMol.Bootstrap.Entity.Transformer.Data {
     interface DownloadParams {
         id?: string;
         description?: string;
-        type?: Entity.Data.Type;
+        type?: string;
         url?: string;
         responseCompression?: Utils.DataCompressionMethod;
     }
@@ -16344,7 +16342,7 @@ declare namespace LiteMol.Bootstrap.Entity.Transformer.Data {
         description?: string;
         id?: string;
         file?: File;
-        type?: Entity.Data.Type;
+        type?: string;
     }
     const OpenFile: Tree.Transformer<Root, Entity.Data.String | Entity.Data.Binary, OpenFileParams>;
     interface ParseCifParams {

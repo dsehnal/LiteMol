@@ -64631,7 +64631,7 @@ var LiteMol;
 (function (LiteMol) {
     var Bootstrap;
     (function (Bootstrap) {
-        Bootstrap.VERSION = { number: "1.2.0", date: "Nov 22 2016" };
+        Bootstrap.VERSION = { number: "1.2.1", date: "Nov 22 2016" };
     })(Bootstrap = LiteMol.Bootstrap || (LiteMol.Bootstrap = {}));
 })(LiteMol || (LiteMol = {}));
 /*
@@ -68288,6 +68288,13 @@ var LiteMol;
                         DownloadCompression[DownloadCompression["Gzip"] = 1] = "Gzip";
                     })(Data.DownloadCompression || (Data.DownloadCompression = {}));
                     var DownloadCompression = Data.DownloadCompression;
+                    function getDataType(type) {
+                        if (type === void 0 || type === null)
+                            return 'String';
+                        if (type.toLowerCase() === 'binary')
+                            return 'Binary';
+                        return 'String';
+                    }
                     function hasResponseCompression(responseCompression) {
                         var c = responseCompression === void 0 ? Bootstrap.Utils.DataCompressionMethod.None : responseCompression;
                         return c !== Bootstrap.Utils.DataCompressionMethod.None;
@@ -68302,7 +68309,7 @@ var LiteMol;
                         defaultParams: function () { return ({ id: '', description: '', type: 'String', url: '', responseCompression: Bootstrap.Utils.DataCompressionMethod.None }); }
                     }, function (ctx, a, t) {
                         var params = t.params;
-                        return Bootstrap.Utils.ajaxGet({ url: params.url, type: params.type, compression: params.responseCompression }).setReportTime(true)
+                        return Bootstrap.Utils.ajaxGet({ url: params.url, type: getDataType(params.type), compression: params.responseCompression }).setReportTime(true)
                             .map('ToEntity', 'Child', function (data) {
                             if (params.type === 'String')
                                 return Entity.Data.String.create(t, { label: params.id ? params.id : params.url, description: params.description, data: data });
@@ -68320,7 +68327,7 @@ var LiteMol;
                         defaultParams: function () { return ({ type: 'String', file: void 0 }); }
                     }, function (ctx, a, t) {
                         var params = t.params;
-                        return Bootstrap.Utils.readFromFile(params.file, params.type).setReportTime(true)
+                        return Bootstrap.Utils.readFromFile(params.file, getDataType(params.type)).setReportTime(true)
                             .map('ToEntity', 'Child', function (data) {
                             if (params.type === 'String')
                                 return Entity.Data.String.create(t, { label: params.id ? params.id : params.file.name, description: params.description, data: data });

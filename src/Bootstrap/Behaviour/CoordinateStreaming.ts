@@ -97,7 +97,7 @@ namespace LiteMol.Bootstrap.Behaviour.Molecule {
         
         private create(data: ArrayBuffer, transform: number[] | undefined) {
             let action = Tree.Transform.build().add(this.behaviour, Entity.Transformer.Molecule.CoordinateStreaming.CreateModel, { data, transform }, { ref: this.ref, isHidden: true })
-                    .then(<Bootstrap.Tree.Transformer.To<Entity.Molecule.Visual>>Transforms.Molecule.CreateVisual, { style: this.style });
+                    .then(Transforms.Molecule.CreateVisual, { style: this.style });
             Tree.Transform.apply(this.context, action).run(this.context);
         }
           

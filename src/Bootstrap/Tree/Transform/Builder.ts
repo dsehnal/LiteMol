@@ -8,26 +8,26 @@ namespace LiteMol.Bootstrap.Tree.Transform {
     import Node = Tree.Node.Any;
             
     export function build() {
-        return new Builder.Impl(void 0, []) as Builder.Any;
+        return new Builder.Impl(void 0, []) as Builder;
     }
         
-    export interface Builder<A extends Node, B extends Node, P> {        
-        add<A extends Node, B extends Node, P>(s: Selector<A>, t: Transformer<A, B, P>, params: P, props?: Transform.Props): Builder<A, B, P>        
-        then<C extends Node, Q>(t: Transformer<B, C, Q>, params: Q, props?:Transform.Props): Builder<A, C, Q>
+    export interface Builder {        
+        add<A extends Node, B extends Node, P>(s: Selector<A>, t: Transformer<A, B, P>, params: P, props?: Transform.Props): Builder        
+        then<C extends Node, Q>(t: Transformer<Node, C, Q>, params: Q, props?:Transform.Props): Builder
         compile(): Instance[]
     } 
     
     export namespace Builder {
-        export class Impl<A extends Node, B extends Node, P> implements Builder<A, B, P> {            
+        export class Impl<A extends Node, B extends Node, P> implements Builder {            
                         
-            add<A extends Node, B extends Node, P>(s: Selector<A>, t: Transformer<A, B, P>, params: P, props?: Transform.Props): Builder<A, B, P> {
+            add<A extends Node, B extends Node, P>(s: Selector<A>, t: Transformer<A, B, P>, params: P, props?: Transform.Props): Builder {
                 let i = { selector: s, transform: t.create(params, props) };
                 this.transforms.push(i);
                 this.last = i;
                 return new Impl(i, this.transforms);
             }
             
-            then<C extends Node, Q>(t: Transformer<B, C, Q>, params: Q, props?:Transform.Props): Builder<A, C, Q> {                
+            then<C extends Node, Q>(t: Transformer<B, C, Q>, params: Q, props?:Transform.Props): Builder {                
                 if (!this.last) throw `Cannot 'then' on an empty builder`;                
                 let transform = t.create(params, props);
                 let i = <Instance>{ selector: this.last.transform.props.ref, transform };
@@ -41,9 +41,6 @@ namespace LiteMol.Bootstrap.Tree.Transform {
             
             constructor(public last: Instance | undefined, public transforms: Instance[]) {                
             }
-        }  
-        
-        export type Any = Builder<any, any, any>
-        
+        }          
     }       
 }

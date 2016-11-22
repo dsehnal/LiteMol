@@ -155,9 +155,7 @@ namespace LiteMol.Plugin {
 
             let data = source.data 
                 ? action.add(this.root, Entity.Transformer.Data.FromData, { data: source.data, id: source.id })
-                : action.add(this.root, 
-                    <Bootstrap.Tree.Transformer.To<Entity.Data.String | Entity.Data.Binary>>Transformer.Data.Download, 
-                    { url: source.url, type: format.isBinary ? 'Binary' : 'String', id: source.id });
+                : action.add(this.root, Transformer.Data.Download, { url: source.url, type: format.isBinary ? 'Binary' : 'String', id: source.id });
             
             data
                 .then(Transformer.Molecule.CreateFromData, { format, customId: source.id }, { isBinding: true, ref: source.moleculeRef })

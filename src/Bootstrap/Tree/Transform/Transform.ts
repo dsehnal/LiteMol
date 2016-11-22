@@ -31,7 +31,7 @@ namespace LiteMol.Bootstrap.Tree {
         }
         
         
-        export type Source = Instance | Instance[] | Builder.Any;       
+        export type Source = Instance | Instance[] | Builder;       
         
         class TransformImpl<A extends Node, B extends Node, P> implements Transform<A, B, P> {
             
@@ -129,7 +129,7 @@ namespace LiteMol.Bootstrap.Tree {
             return !!arg.selector;
         }
         
-        function isBuilder(arg: any): arg is Builder.Any {
+        function isBuilder(arg: any): arg is Builder {
             return !!arg.compile;
         }
         
