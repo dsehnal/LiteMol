@@ -6,16 +6,15 @@
 namespace LiteMol.Bootstrap {
     "use strict";
     
-    function createMoleculeModelSelectInteraction(context: Context, what: { visual: Bootstrap.Entity.Molecule.Visual, query: Core.Structure.Query.Source }) {
-        if (!Entity.isVisual(what.visual)) {
-            console.warn('Select: Trying to create a selection event on a non-molecule model visual entity, ignoring...');
+    function createMoleculeModelSelectInteraction(context: Context, what: { entity: Bootstrap.Entity.Any, query: Core.Structure.Query.Source }) {
+        if (!Utils.Molecule.findModelOrSelection(what.entity)) {
+            console.warn('Select: Trying to create a selection event on a non-molecule related entity, ignoring...');
             return;
         }        
-        let q = Utils.Molecule.getModelAndIndicesFromQuery(what.visual, what.query);
+        let q = Utils.Molecule.getModelAndIndicesFromQuery(what.entity, what.query);
         if (!q || !q.indices.length) return;
         
-        let entity = Tree.Node.findClosestNodeOfType(what.visual, [Entity.Molecule.Model, Entity.Molecule.Selection]);
-        Event.Visual.VisualSelectElement.dispatch(context, { entity, visual: what.visual, elements: q.indices });
+        Event.Visual.VisualSelectElement.dispatch(context, Interactivity.Info.selection(what.entity, q.indices));
     }
  
     export function initEventsAndCommands(context: Context) {

@@ -571,6 +571,8 @@ var LiteMol;
                     Bootstrap.Behaviour.ApplyInteractivitySelection,
                     // this shows what atom/residue is the pointer currently over
                     Bootstrap.Behaviour.Molecule.HighlightElementInfo,
+                    // when the same element is clicked twice in a row, the selection is emptied
+                    Bootstrap.Behaviour.UnselectElementOnRepeatedClick,
                     // distance to the last "clicked" element
                     Bootstrap.Behaviour.Molecule.DistanceToLastClickedElement,
                     // this tracks what is downloaded and some basic actions. Does not send any private data etc. Source in Bootstrap/Behaviour/Analytics 

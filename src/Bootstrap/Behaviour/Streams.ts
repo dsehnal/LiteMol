@@ -9,8 +9,8 @@ namespace LiteMol.Bootstrap.Behaviour {
     export class Streams {
         
         private subjects = {
-            select: new Rx.BehaviorSubject<Interactivity.Info>({}),
-            click: new Rx.BehaviorSubject<Interactivity.Info>({}),
+            select: new Rx.BehaviorSubject<Interactivity.Info>(Interactivity.Info.empty),
+            click: new Rx.BehaviorSubject<Interactivity.Info>(Interactivity.Info.empty),
             currentEntity: new Rx.BehaviorSubject<Entity.Any | undefined>(void 0)
         }
         
@@ -19,20 +19,19 @@ namespace LiteMol.Bootstrap.Behaviour {
         currentEntity = this.subjects.currentEntity as Rx.Observable<Entity.Any | undefined>;
         
         private init() {            
-            let emptyClick = {};
-            let latestClick: Interactivity.Info = emptyClick;
+            let latestClick: Interactivity.Info = Interactivity.Info.empty;
             
             Event.Tree.NodeRemoved.getStream(this.context).subscribe(e => {            
-                if ((latestClick !== emptyClick) && (latestClick.entity === e.data || latestClick.visual === e.data)) {
-                    latestClick = emptyClick;    
-                    Event.Visual.VisualSelectElement.dispatch(this.context, {});            
+                if ((latestClick.kind !== Interactivity.Info.Kind.Empty) && latestClick.source === e.data) {
+                    latestClick = Interactivity.Info.empty;    
+                    Event.Visual.VisualSelectElement.dispatch(this.context, latestClick);            
                 }
             }); 
                                     
             Event.Visual.VisualSelectElement.getStream(this.context).subscribe(e => {
-                latestClick = e.data.entity ? e.data : emptyClick;
+                latestClick = e.data;
                 this.subjects.click.onNext(e.data);                            
-                if (e.data.visual && !e.data.visual.props.isSelectable) return;
+                if (latestClick.kind === Interactivity.Info.Kind.Selection && Entity.isVisual(latestClick.source) && !latestClick.source.props.isSelectable) return;
                 this.subjects.select.onNext(e.data)
             });  
             

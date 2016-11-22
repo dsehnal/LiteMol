@@ -137,7 +137,7 @@ namespace LiteMol.Bootstrap.Visualization {
         
         private resetScene() {
             if (this._destroyed) return;            
-            Event.Visual.VisualSelectElement.dispatch(this.context, { });
+            Event.Visual.VisualSelectElement.dispatch(this.context, Interactivity.Info.empty);
             this.models.resetThemesAndHighlight();
             this.scene.camera.reset();            
         }
@@ -158,10 +158,10 @@ namespace LiteMol.Bootstrap.Visualization {
         private handleEvent(e: any, event: Event.Type<Interactivity.Info>) {
             let data = <LiteMol.Visualization.Selection.Info>e.data;
 
-            if (data && data.model) {
-                event.dispatch(this.context, { entity: data.model.entity, visual: data.model.tag, elements: data.elements });
+            if (data && data.model && data.elements) {
+                event.dispatch(this.context, Interactivity.Info.selection(data.model.tag, data.elements));
             } else {
-                event.dispatch(this.context, { });
+                event.dispatch(this.context, Interactivity.Info.empty);
             }
         }
         

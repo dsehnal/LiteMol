@@ -583,7 +583,7 @@ var LiteMolPluginInstance;
         applyTransforms(action)
             .then(function () {
             // we select the ligand to display the density around it if it's loaded
-            Command.Molecule.CreateSelectInteraction.dispatch(plugin.context, { visual: selectNodes('ligand-visual')[0], query: Query.everything() });
+            Command.Molecule.CreateSelectInteraction.dispatch(plugin.context, { entity: selectNodes('ligand-visual')[0], query: Query.everything() });
         });
         //.catch(e => reportError(e));
     });
@@ -799,6 +799,8 @@ var LiteMolPluginInstance;
                 Bootstrap.Behaviour.ApplyInteractivitySelection,
                 // this shows what atom/residue is the pointer currently over
                 Bootstrap.Behaviour.Molecule.HighlightElementInfo,
+                // when the same element is clicked twice in a row, the selection is emptied
+                Bootstrap.Behaviour.UnselectElementOnRepeatedClick,
                 // distance to the last "clicked" element
                 Bootstrap.Behaviour.Molecule.DistanceToLastClickedElement,
                 // when somethinh is selected, this will create an "overlay visual" of the selected residue and show every other residue within 5ang

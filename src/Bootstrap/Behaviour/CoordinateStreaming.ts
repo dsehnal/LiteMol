@@ -30,14 +30,9 @@ namespace LiteMol.Bootstrap.Behaviour.Molecule {
             Command.Tree.RemoveNode.dispatch(this.context, this.ref);
         }
                 
-        private isApplicable(info: Interactivity.Info) {
-            if (!Interactivity.Molecule.isMoleculeModelInteractivity(info)) return;
-            let e = info.entity!;
-            while (e.parent !== e) {
-                if (e === this.target) return true;
-                e = e.parent;
-            }
-            return false;
+        private isApplicable(info: Interactivity.Info): info is Interactivity.Info.Selection {
+            if (!Interactivity.Molecule.isMoleculeModelInteractivity(info)) return false;
+            return Tree.Node.hasAncestor(info.source, this.target!);
         }
            
         private style: Visualization.Molecule.Style<Visualization.Molecule.BallsAndSticksParams> = {
@@ -54,7 +49,7 @@ namespace LiteMol.Bootstrap.Behaviour.Molecule {
                 return;
             }
             
-            let model = Utils.Molecule.findModel(info.entity!)!.props.model;
+            let model = Utils.Molecule.findModel(info.source)!.props.model;
             
             let i = model.atoms.residueIndex[info.elements![0]];
             let rs = model.residues;

@@ -38,6 +38,9 @@ namespace LiteMol.Custom {
                 // distance to the last "clicked" element
                 Bootstrap.Behaviour.Molecule.DistanceToLastClickedElement,
 
+                // when the same element is clicked twice in a row, the selection is emptied
+                Bootstrap.Behaviour.UnselectElementOnRepeatedClick,
+
                 // when somethinh is selected, this will create an "overlay visual" of the selected residue and show every other residue within 5ang
                 // you will not want to use this for the ligand pages, where you create the same thing this does at startup
                 Bootstrap.Behaviour.Molecule.ShowInteractionOnSelect(5),

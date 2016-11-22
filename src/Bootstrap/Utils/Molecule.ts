@@ -7,17 +7,24 @@ namespace LiteMol.Bootstrap.Utils.Molecule {
     
     import Structure = LiteMol.Core.Structure;
     import Geometry = LiteMol.Core.Geometry;
-     
+    
+    const __model = [Entity.Molecule.Model];
     export function findModel(entity: Entity.Any): Entity.Molecule.Model | undefined  {
-        return Tree.Node.findClosestNodeOfType(entity, [Entity.Molecule.Model]) as Entity.Molecule.Model; 
+        return Tree.Node.findClosestNodeOfType(entity, __model) as Entity.Molecule.Model; 
+    }
+
+    const __modelOrSelection = [Entity.Molecule.Model, Entity.Molecule.Selection];
+    export function findModelOrSelection(entity: Entity.Any): Entity.Molecule.Model | Entity.Molecule.Selection | undefined  {
+        return Tree.Node.findClosestNodeOfType(entity, __modelOrSelection) as (Entity.Molecule.Model | Entity.Molecule.Selection | undefined); 
     }
     
+    const __molecule = [Entity.Molecule.Molecule];
     export function findMolecule(entity: Entity.Any): Entity.Molecule.Molecule | undefined  {
-        return Tree.Node.findClosestNodeOfType(entity, [Entity.Molecule.Molecule]) as Entity.Molecule.Molecule; 
+        return Tree.Node.findClosestNodeOfType(entity, __molecule) as Entity.Molecule.Molecule; 
     }
  
     export function findQueryContext(entity: Entity.Any) {        
-        let source = Tree.Node.findClosestNodeOfType(entity, [Entity.Molecule.Model, Entity.Molecule.Selection]) as (Entity.Molecule.Model | Entity.Molecule.Selection)        
+        let source = Tree.Node.findClosestNodeOfType(entity, __modelOrSelection) as (Entity.Molecule.Model | Entity.Molecule.Selection)        
         
         if (Entity.isMoleculeModel(source)) {
             return source.props.model.queryContext;

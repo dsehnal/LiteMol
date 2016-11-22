@@ -35,13 +35,14 @@ namespace LiteMol.Bootstrap.Behaviour.Molecule {
                     lastRef = void 0;
                 }
                 
-                if (!info.entity || !info.visual) return;
+                
+                if (Interactivity.isEmpty(info) || !Utils.Molecule.findModelOrSelection(info.source)) return;
                 
                 let ligandQ = Query.atomsFromIndices(info.elements!).wholeResidues();
                 let ambQ = Query.atomsFromIndices(info.elements!).wholeResidues().ambientResidues(radius);
                 
                 let ref = Utils.generateUUID();
-                let action = Tree.Transform.build().add(info.visual, Transforms.Basic.CreateGroup, { label: 'Interaction' }, { ref, isHidden: true });
+                let action = Tree.Transform.build().add(info.source, Transforms.Basic.CreateGroup, { label: 'Interaction' }, { ref, isHidden: true });
                 lastRef = ref;
                 
                 action.then(Transforms.Molecule.CreateSelectionFromQuery, { query: ambQ, name: 'Ambience', silent: true, inFullContext: true }, { isBinding: true })
@@ -57,29 +58,28 @@ namespace LiteMol.Bootstrap.Behaviour.Molecule {
     
     export function HighlightElementInfo(context: Context) {        
         context.highlight.addProvider(info => {
-            if (!info.entity || !(Tree.Node.is(info.entity, Entity.Molecule.Model) || Tree.Node.is(info.entity, Entity.Molecule.Selection))) return undefined;       
+            if (!Interactivity.Molecule.isMoleculeModelInteractivity(info)) return void 0;       
             let data = Interactivity.Molecule.transformInteraction(info);
             return Interactivity.Molecule.formatInfo(data);
         });        
     }
     
     export function DistanceToLastClickedElement(context: Context) {
-        let lastInfo: Interactivity.Info | undefined = void 0;
+        let lastInfo: Interactivity.Info = Interactivity.Info.empty;
         let lastSel: string | undefined = void 0;      
         let lastModel: Core.Structure.MoleculeModel | undefined = void 0;  
-        context.behaviours.click.subscribe(info => {
-              
-            if (!info.entity || !(Tree.Node.is(info.entity, Entity.Molecule.Model) || Tree.Node.is(info.entity, Entity.Molecule.Selection)) || !info.elements || !info.elements.length) {
-                lastInfo = undefined;
-                lastModel = undefined;
-                lastSel = undefined;
+        context.behaviours.click.subscribe(info => {              
+            if (!Interactivity.Molecule.isMoleculeModelInteractivity(info)) {
+                lastInfo = Interactivity.Info.empty;
+                lastModel = void 0;
+                lastSel = void 0;
             } else {
                 lastInfo = info;
-                let m = Utils.Molecule.findModel(info.entity);
+                let m = Utils.Molecule.findModel(info.source);
                 if (!m) {
-                    lastInfo = undefined;
-                    lastModel = undefined;
-                    lastSel = undefined;
+                    lastInfo = Interactivity.Info.empty;
+                    lastModel = void 0;
+                    lastSel = void 0;
                 } else {
                     lastModel = m.props.model;
                     lastSel = Interactivity.Molecule.formatInfoShort(Interactivity.Molecule.transformInteraction(info));
@@ -88,14 +88,14 @@ namespace LiteMol.Bootstrap.Behaviour.Molecule {
         });
         
         context.highlight.addProvider(info => {
-            if (!info.entity || !(Tree.Node.is(info.entity, Entity.Molecule.Model) || Tree.Node.is(info.entity, Entity.Molecule.Selection)) || !info.elements || !info.elements.length) return undefined;    
-            if (!lastInfo) return undefined;
+            if (!Interactivity.Molecule.isMoleculeModelInteractivity(info)) return void 0;
+            if (Interactivity.isEmpty(lastInfo)) return void 0;
             
-            let m = Utils.Molecule.findModel(info.entity);
-            if (!m) return undefined;
+            let m = Utils.Molecule.findModel(info.source);
+            if (!m) return void 0;
             
-            let dist = Utils.Molecule.getDistanceSet(lastModel!, lastInfo.elements!, m.props.model, info.elements);
-            if (dist < 0.0001) return undefined;
+            let dist = Utils.Molecule.getDistanceSet(lastModel!, lastInfo.elements, m.props.model, info.elements);
+            if (dist < 0.0001) return void 0;
             return `<span><b>${Utils.round(dist, 2)} \u212B</b> from <b>${lastSel}</b></span>`;
         });  
         

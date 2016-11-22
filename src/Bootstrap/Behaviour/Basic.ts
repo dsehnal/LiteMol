@@ -59,23 +59,26 @@ namespace LiteMol.Bootstrap.Behaviour {
                  latestModel.applySelection(latestIndices!,  LiteMol.Visualization.Selection.Action.RemoveSelect);
                  latestModel = void 0;
                  latestIndices = void 0;
-             }                    
-             if (!info.entity || !info.visual) return;
+             }          
+             if (info.kind === Interactivity.Info.Kind.Empty || !Entity.isVisual(info.source)) return;
              
-             latestModel = info.visual.props.model;
+             latestModel = info.source.props.model;
              latestIndices = info.elements;
              latestModel.applySelection(latestIndices!,  LiteMol.Visualization.Selection.Action.Select);                          
         });           
     }
 
     export function UnselectElementOnRepeatedClick(context: Context) {
-        let latest: Interactivity.Info | null = null;
-        Event.Visual.VisualSelectElement.getStream(context).subscribe(e => {            
-            if (e.data.visual && !e.data.visual.props.isSelectable) return;
+        let latest: Interactivity.Info = Interactivity.Info.empty;
+        Event.Visual.VisualSelectElement.getStream(context).subscribe(e => {    
+            if (Interactivity.isEmpty(e.data) || Interactivity.isEmpty(latest)) {
+                latest = e.data;
+                return;
+            } 
 
-            if (latest && latest.entity && Interactivity.interactivityInfoEqual(e.data, latest)) {
-                latest = null;
-                Event.Visual.VisualSelectElement.dispatch(context, {});
+            if ((Tree.Node.hasAncestor(latest.source, e.data.source) || Tree.Node.hasAncestor(e.data.source, latest.source)) && Interactivity.interactivitySelectionElementsEqual(e.data, latest)) {
+                latest = Interactivity.Info.empty;
+                setTimeout(() => Event.Visual.VisualSelectElement.dispatch(context, Interactivity.Info.empty), 0);
             } else {
                 latest = e.data;
             }
@@ -83,10 +86,12 @@ namespace LiteMol.Bootstrap.Behaviour {
     }
     
     const center = { x: 0, y: 0, z: 0 };
-    function update(context: Context, info: Interactivity.Info) {
-        if (!info.entity || !(Tree.Node.is(info.entity, Entity.Molecule.Model) || Tree.Node.is(info.entity, Entity.Molecule.Selection))) return;            
-        let model = (Tree.Node.findClosestNodeOfType(info.entity, [Entity.Molecule.Model]) as Entity.Molecule.Model).props.model;
+    function updateCamera(context: Context, info: Interactivity.Info) {
+        if (!Interactivity.Molecule.isMoleculeModelInteractivity(info)) return;            
+
+        let model = Utils.Molecule.findModel(info.source)!.props.model;
         if (!model) return;
+
         let elems = info.elements;
         if (info.elements!.length === 1) {
             elems = Utils.Molecule.getResidueIndices(model, info.elements![0]);
@@ -102,6 +107,6 @@ namespace LiteMol.Bootstrap.Behaviour {
     }
 
     export function FocusCameraOnSelect(context: Context) {
-        context.behaviours.click.subscribe(e => update(context, e));
+        context.behaviours.click.subscribe(e => updateCamera(context, e));
     }
 }

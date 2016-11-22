@@ -50,6 +50,7 @@ namespace LiteMol.Bootstrap.Tree {
         }     
         
         export function hasAncestor(e: Any, a: Any) {
+            if (!a) return false;
             while (true) {
                 if (e === a) return true;                
                 e = e.parent;

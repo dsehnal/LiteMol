@@ -33,7 +33,7 @@ namespace LiteMol.Bootstrap.Command {
         export const FocusQuery = create<{ model: Bootstrap.Entity.Molecule.Model, query: Core.Structure.Query.Source }>('bs.cmd.Molecule.FocusQuery', Lane.Slow);
         export const Highlight = create<{ model: Bootstrap.Entity.Molecule.Model, query: Core.Structure.Query.Source, isOn: boolean }>('bs.cmd.Molecule.Highlight', Lane.Slow);
         
-        export const CreateSelectInteraction = create<{ visual: Bootstrap.Entity.Molecule.Visual, query: Core.Structure.Query.Source }>('bs.cmd.Molecule.CreateSelectInteraction', Lane.Slow);
+        export const CreateSelectInteraction = create<{ entity: Bootstrap.Entity.Any, query: Core.Structure.Query.Source }>('bs.cmd.Molecule.CreateSelectInteraction', Lane.Slow);
     }
         
     export namespace Visual {

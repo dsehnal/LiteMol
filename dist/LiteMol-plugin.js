@@ -64631,7 +64631,7 @@ var LiteMol;
 (function (LiteMol) {
     var Bootstrap;
     (function (Bootstrap) {
-        Bootstrap.VERSION = { number: "1.1.8", date: "Nov 18 2016" };
+        Bootstrap.VERSION = { number: "1.2.0", date: "Nov 22 2016" };
     })(Bootstrap = LiteMol.Bootstrap || (LiteMol.Bootstrap = {}));
 })(LiteMol || (LiteMol = {}));
 /*
@@ -65272,174 +65272,6 @@ var LiteMol;
                 return ret;
             }
             Utils.merge = _shallowMerge;
-        })(Utils = Bootstrap.Utils || (Bootstrap.Utils = {}));
-    })(Bootstrap = LiteMol.Bootstrap || (LiteMol.Bootstrap = {}));
-})(LiteMol || (LiteMol = {}));
-/*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
- */
-var LiteMol;
-(function (LiteMol) {
-    var Bootstrap;
-    (function (Bootstrap) {
-        var Utils;
-        (function (Utils) {
-            var Molecule;
-            (function (Molecule) {
-                "use strict";
-                function findModel(entity) {
-                    return Bootstrap.Tree.Node.findClosestNodeOfType(entity, [Bootstrap.Entity.Molecule.Model]);
-                }
-                Molecule.findModel = findModel;
-                function findMolecule(entity) {
-                    return Bootstrap.Tree.Node.findClosestNodeOfType(entity, [Bootstrap.Entity.Molecule.Molecule]);
-                }
-                Molecule.findMolecule = findMolecule;
-                function findQueryContext(entity) {
-                    var source = Bootstrap.Tree.Node.findClosestNodeOfType(entity, [Bootstrap.Entity.Molecule.Model, Bootstrap.Entity.Molecule.Selection]);
-                    if (Bootstrap.Entity.isMoleculeModel(source)) {
-                        return source.props.model.queryContext;
-                    }
-                    else {
-                        var cache = source.tree.context.entityCache;
-                        var ctx = cache.get(source, Bootstrap.Entity.Cache.Keys.QueryContext);
-                        if (ctx)
-                            return ctx;
-                        ctx = LiteMol.Core.Structure.Query.Context.ofAtomIndices(findModel(source).props.model, source.props.indices);
-                        return cache.set(source, Bootstrap.Entity.Cache.Keys.QueryContext, ctx);
-                    }
-                }
-                Molecule.findQueryContext = findQueryContext;
-                function getDistance(mA, startAtomIndexA, endAtomIndexA, mB, startAtomIndexB, endAtomIndexB) {
-                    var _a = mA.atoms, x = _a.x, y = _a.y, z = _a.z;
-                    var bX = mB.atoms.x, bY = mB.atoms.y, bZ = mB.atoms.z;
-                    var d = Number.POSITIVE_INFINITY;
-                    for (var i = startAtomIndexA; i < endAtomIndexA; i++) {
-                        for (var j = startAtomIndexB; j < endAtomIndexB; j++) {
-                            var dx = x[i] - bX[j], dy = y[i] - bY[j], dz = z[i] - bZ[j];
-                            d = Math.min(d, dx * dx + dy * dy + dz * dz);
-                        }
-                    }
-                    return Math.sqrt(d);
-                }
-                Molecule.getDistance = getDistance;
-                function getDistanceSet(mA, setA, mB, setB) {
-                    var _a = mA.atoms, x = _a.x, y = _a.y, z = _a.z;
-                    var bX = mB.atoms.x, bY = mB.atoms.y, bZ = mB.atoms.z;
-                    var d = Number.POSITIVE_INFINITY;
-                    for (var _i = 0, setA_1 = setA; _i < setA_1.length; _i++) {
-                        var i = setA_1[_i];
-                        for (var _c = 0, setB_1 = setB; _c < setB_1.length; _c++) {
-                            var j = setB_1[_c];
-                            var dx = x[i] - bX[j], dy = y[i] - bY[j], dz = z[i] - bZ[j];
-                            d = Math.min(d, dx * dx + dy * dy + dz * dz);
-                        }
-                    }
-                    return Math.sqrt(d);
-                }
-                Molecule.getDistanceSet = getDistanceSet;
-                function getModelAndIndicesFromQuery(m, query) {
-                    var model = findModel(m);
-                    if (!model) {
-                        console.warn('Could not find a model for query selection.');
-                        return void 0;
-                    }
-                    var queryContext = findQueryContext(m);
-                    try {
-                        var q = LiteMol.Core.Structure.Query.Builder.toQuery(query);
-                        return { model: model, indices: q(queryContext).unionAtomIndices(), queryContext: queryContext };
-                    }
-                    catch (e) {
-                        console.error('Query Execution', e);
-                        return void 0;
-                    }
-                }
-                Molecule.getModelAndIndicesFromQuery = getModelAndIndicesFromQuery;
-                function getResidueIndices(m, atom) {
-                    var rI = m.atoms.residueIndex;
-                    var idx = [];
-                    for (var i = m.residues.atomStartIndex[rI[atom]], _b = m.residues.atomEndIndex[rI[atom]]; i < _b; i++) {
-                        idx.push(i);
-                    }
-                    return idx;
-                }
-                Molecule.getResidueIndices = getResidueIndices;
-                function getBox(molecule, atomIndices, delta) {
-                    var atoms = molecule.atoms, atomCount = atoms.count, cCount = 0, x = atoms.x, y = atoms.y, z = atoms.z, min = [Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE], max = [-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE];
-                    for (var _i = 0, atomIndices_1 = atomIndices; _i < atomIndices_1.length; _i++) {
-                        var i = atomIndices_1[_i];
-                        min[0] = Math.min(x[i], min[0]);
-                        min[1] = Math.min(y[i], min[1]);
-                        min[2] = Math.min(z[i], min[2]);
-                        max[0] = Math.max(x[i], max[0]);
-                        max[1] = Math.max(y[i], max[1]);
-                        max[2] = Math.max(z[i], max[2]);
-                    }
-                    min[0] = min[0] - delta;
-                    min[1] = min[1] - delta;
-                    min[2] = min[2] - delta;
-                    max[0] = max[0] + delta;
-                    max[1] = max[1] + delta;
-                    max[2] = max[2] + delta;
-                    return {
-                        bottomLeft: min,
-                        topRight: max
-                    };
-                }
-                Molecule.getBox = getBox;
-                var CentroidHelper = (function () {
-                    function CentroidHelper(model) {
-                        this.model = model;
-                        this.center = { x: 0, y: 0, z: 0 };
-                        this.radiusSquared = 0;
-                        this.count = 0;
-                        this.x = model.atoms.x;
-                        this.y = model.atoms.y;
-                        this.z = model.atoms.z;
-                    }
-                    CentroidHelper.prototype.addAtom = function (i) {
-                        this.count++;
-                        this.center.x += this.x[i];
-                        this.center.y += this.y[i];
-                        this.center.z += this.z[i];
-                    };
-                    CentroidHelper.prototype.finishedAdding = function () {
-                        this.center.x /= this.count;
-                        this.center.y /= this.count;
-                        this.center.z /= this.count;
-                    };
-                    CentroidHelper.prototype.radiusVisit = function (i) {
-                        var dx = this.center.x - this.x[i], dy = this.center.y - this.y[i], dz = this.center.z - this.z[i];
-                        this.radiusSquared = Math.max(this.radiusSquared, dx * dx + dy * dy + dz * dz);
-                    };
-                    return CentroidHelper;
-                }());
-                Molecule.CentroidHelper = CentroidHelper;
-                function getCentroidAndRadius(m, indices, into) {
-                    into.x = 0;
-                    into.y = 0;
-                    into.z = 0;
-                    var _a = m.atoms, x = _a.x, y = _a.y, z = _a.z;
-                    for (var _i = 0, indices_1 = indices; _i < indices_1.length; _i++) {
-                        var i = indices_1[_i];
-                        into.x += x[i];
-                        into.y += y[i];
-                        into.z += z[i];
-                    }
-                    var c = indices.length;
-                    into.x /= c;
-                    into.y /= c;
-                    into.z /= c;
-                    var radius = 0;
-                    for (var _c = 0, indices_2 = indices; _c < indices_2.length; _c++) {
-                        var i = indices_2[_c];
-                        var dx = into.x - x[i], dy = into.y - y[i], dz = into.z - z[i];
-                        radius = Math.max(radius, dx * dx + dy * dy + dz * dz);
-                    }
-                    return Math.sqrt(radius);
-                }
-                Molecule.getCentroidAndRadius = getCentroidAndRadius;
-            })(Molecule = Utils.Molecule || (Utils.Molecule = {}));
         })(Utils = Bootstrap.Utils || (Bootstrap.Utils = {}));
     })(Bootstrap = LiteMol.Bootstrap || (LiteMol.Bootstrap = {}));
 })(LiteMol || (LiteMol = {}));
@@ -66130,6 +65962,8 @@ var LiteMol;
                 }
                 Node.is = is;
                 function hasAncestor(e, a) {
+                    if (!a)
+                        return false;
                     while (true) {
                         if (e === a)
                             return true;
@@ -66718,18 +66552,36 @@ var LiteMol;
         var Interactivity;
         (function (Interactivity) {
             "use strict";
+            var Info;
+            (function (Info) {
+                Info.empty = { kind: 0 /* Empty */ };
+                function selection(source, elements) {
+                    return { kind: 1 /* Selection */, source: source, elements: elements };
+                }
+                Info.selection = selection;
+            })(Info = Interactivity.Info || (Interactivity.Info = {}));
+            function isEmpty(info) {
+                return info.kind === 0 /* Empty */;
+            }
+            Interactivity.isEmpty = isEmpty;
+            function isSelection(info) {
+                return info.kind === 1 /* Selection */;
+            }
+            Interactivity.isSelection = isSelection;
             function interactivityInfoEqual(a, b) {
                 if (!a && !b)
                     return true;
                 if (!a || !b)
                     return false;
-                if (a.visual !== b.visual || a.entity !== b.entity)
+                if (a.kind !== b.kind)
                     return false;
-                if (!a.elements && !b.elements)
+                if (a.kind === 0 /* Empty */)
                     return true;
-                if (!a.elements || !b.elements || a.elements.length !== b.elements.length)
+                if (a.source !== b.source)
                     return false;
                 var x = a.elements, y = b.elements;
+                if (x.length !== y.length)
+                    return false;
                 for (var i = 0, _l = x.length; i < _l; i++) {
                     if (x[i] !== y[i])
                         return false;
@@ -66737,6 +66589,17 @@ var LiteMol;
                 return true;
             }
             Interactivity.interactivityInfoEqual = interactivityInfoEqual;
+            function interactivitySelectionElementsEqual(a, b) {
+                var x = a.elements, y = b.elements;
+                if (x.length !== y.length)
+                    return false;
+                for (var i = 0, _l = x.length; i < _l; i++) {
+                    if (x[i] !== y[i])
+                        return false;
+                }
+                return true;
+            }
+            Interactivity.interactivitySelectionElementsEqual = interactivitySelectionElementsEqual;
         })(Interactivity = Bootstrap.Interactivity || (Bootstrap.Interactivity = {}));
     })(Bootstrap = LiteMol.Bootstrap || (LiteMol.Bootstrap = {}));
 })(LiteMol || (LiteMol = {}));
@@ -66841,10 +66704,13 @@ var LiteMol;
                 }
                 Molecule.transformMoleculeAtomIndices = transformMoleculeAtomIndices;
                 function transformInteraction(info) {
-                    if (!info.entity || !(Bootstrap.Tree.Node.is(info.entity, Bootstrap.Entity.Molecule.Model) || Bootstrap.Tree.Node.is(info.entity, Bootstrap.Entity.Molecule.Selection)))
+                    if (info.kind === 0 /* Empty */)
                         return void 0;
-                    var context = Bootstrap.Utils.Molecule.findQueryContext(info.entity);
-                    var model = Bootstrap.Utils.Molecule.findModel(info.entity);
+                    var modelOrSelection = Bootstrap.Utils.Molecule.findModelOrSelection(info.source);
+                    if (!modelOrSelection)
+                        return void 0;
+                    var context = Bootstrap.Utils.Molecule.findQueryContext(modelOrSelection);
+                    var model = Bootstrap.Utils.Molecule.findModel(modelOrSelection);
                     if (!context || !model)
                         return void 0;
                     return transformMoleculeAtomIndices(model, context, info.elements);
@@ -66906,7 +66772,10 @@ var LiteMol;
                 }
                 Molecule.formatInfoShort = formatInfoShort;
                 function isMoleculeModelInteractivity(info) {
-                    if (!info.entity || !(Bootstrap.Tree.Node.is(info.entity, Bootstrap.Entity.Molecule.Model) || Bootstrap.Tree.Node.is(info.entity, Bootstrap.Entity.Molecule.Selection)))
+                    if (info.kind === 0 /* Empty */)
+                        return false;
+                    var modelOrSelection = Bootstrap.Utils.Molecule.findModelOrSelection(info.source);
+                    if (!modelOrSelection)
                         return false;
                     return true;
                 }
@@ -67089,7 +66958,7 @@ var LiteMol;
                 SceneWrapper.prototype.resetScene = function () {
                     if (this._destroyed)
                         return;
-                    Bootstrap.Event.Visual.VisualSelectElement.dispatch(this.context, {});
+                    Bootstrap.Event.Visual.VisualSelectElement.dispatch(this.context, Bootstrap.Interactivity.Info.empty);
                     this.models.resetThemesAndHighlight();
                     this.scene.camera.reset();
                 };
@@ -67110,11 +66979,11 @@ var LiteMol;
                 };
                 SceneWrapper.prototype.handleEvent = function (e, event) {
                     var data = e.data;
-                    if (data && data.model) {
-                        event.dispatch(this.context, { entity: data.model.entity, visual: data.model.tag, elements: data.elements });
+                    if (data && data.model && data.elements) {
+                        event.dispatch(this.context, Bootstrap.Interactivity.Info.selection(data.model.tag, data.elements));
                     }
                     else {
-                        event.dispatch(this.context, {});
+                        event.dispatch(this.context, Bootstrap.Interactivity.Info.empty);
                     }
                 };
                 SceneWrapper.prototype.focusMoleculeModelSelection = function (sel) {
@@ -68716,6 +68585,181 @@ var LiteMol;
 (function (LiteMol) {
     var Bootstrap;
     (function (Bootstrap) {
+        var Utils;
+        (function (Utils) {
+            var Molecule;
+            (function (Molecule) {
+                "use strict";
+                var __model = [Bootstrap.Entity.Molecule.Model];
+                function findModel(entity) {
+                    return Bootstrap.Tree.Node.findClosestNodeOfType(entity, __model);
+                }
+                Molecule.findModel = findModel;
+                var __modelOrSelection = [Bootstrap.Entity.Molecule.Model, Bootstrap.Entity.Molecule.Selection];
+                function findModelOrSelection(entity) {
+                    return Bootstrap.Tree.Node.findClosestNodeOfType(entity, __modelOrSelection);
+                }
+                Molecule.findModelOrSelection = findModelOrSelection;
+                var __molecule = [Bootstrap.Entity.Molecule.Molecule];
+                function findMolecule(entity) {
+                    return Bootstrap.Tree.Node.findClosestNodeOfType(entity, __molecule);
+                }
+                Molecule.findMolecule = findMolecule;
+                function findQueryContext(entity) {
+                    var source = Bootstrap.Tree.Node.findClosestNodeOfType(entity, __modelOrSelection);
+                    if (Bootstrap.Entity.isMoleculeModel(source)) {
+                        return source.props.model.queryContext;
+                    }
+                    else {
+                        var cache = source.tree.context.entityCache;
+                        var ctx = cache.get(source, Bootstrap.Entity.Cache.Keys.QueryContext);
+                        if (ctx)
+                            return ctx;
+                        ctx = LiteMol.Core.Structure.Query.Context.ofAtomIndices(findModel(source).props.model, source.props.indices);
+                        return cache.set(source, Bootstrap.Entity.Cache.Keys.QueryContext, ctx);
+                    }
+                }
+                Molecule.findQueryContext = findQueryContext;
+                function getDistance(mA, startAtomIndexA, endAtomIndexA, mB, startAtomIndexB, endAtomIndexB) {
+                    var _a = mA.atoms, x = _a.x, y = _a.y, z = _a.z;
+                    var bX = mB.atoms.x, bY = mB.atoms.y, bZ = mB.atoms.z;
+                    var d = Number.POSITIVE_INFINITY;
+                    for (var i = startAtomIndexA; i < endAtomIndexA; i++) {
+                        for (var j = startAtomIndexB; j < endAtomIndexB; j++) {
+                            var dx = x[i] - bX[j], dy = y[i] - bY[j], dz = z[i] - bZ[j];
+                            d = Math.min(d, dx * dx + dy * dy + dz * dz);
+                        }
+                    }
+                    return Math.sqrt(d);
+                }
+                Molecule.getDistance = getDistance;
+                function getDistanceSet(mA, setA, mB, setB) {
+                    var _a = mA.atoms, x = _a.x, y = _a.y, z = _a.z;
+                    var bX = mB.atoms.x, bY = mB.atoms.y, bZ = mB.atoms.z;
+                    var d = Number.POSITIVE_INFINITY;
+                    for (var _i = 0, setA_1 = setA; _i < setA_1.length; _i++) {
+                        var i = setA_1[_i];
+                        for (var _c = 0, setB_1 = setB; _c < setB_1.length; _c++) {
+                            var j = setB_1[_c];
+                            var dx = x[i] - bX[j], dy = y[i] - bY[j], dz = z[i] - bZ[j];
+                            d = Math.min(d, dx * dx + dy * dy + dz * dz);
+                        }
+                    }
+                    return Math.sqrt(d);
+                }
+                Molecule.getDistanceSet = getDistanceSet;
+                function getModelAndIndicesFromQuery(m, query) {
+                    var model = findModel(m);
+                    if (!model) {
+                        console.warn('Could not find a model for query selection.');
+                        return void 0;
+                    }
+                    var queryContext = findQueryContext(m);
+                    try {
+                        var q = LiteMol.Core.Structure.Query.Builder.toQuery(query);
+                        return { model: model, indices: q(queryContext).unionAtomIndices(), queryContext: queryContext };
+                    }
+                    catch (e) {
+                        console.error('Query Execution', e);
+                        return void 0;
+                    }
+                }
+                Molecule.getModelAndIndicesFromQuery = getModelAndIndicesFromQuery;
+                function getResidueIndices(m, atom) {
+                    var rI = m.atoms.residueIndex;
+                    var idx = [];
+                    for (var i = m.residues.atomStartIndex[rI[atom]], _b = m.residues.atomEndIndex[rI[atom]]; i < _b; i++) {
+                        idx.push(i);
+                    }
+                    return idx;
+                }
+                Molecule.getResidueIndices = getResidueIndices;
+                function getBox(molecule, atomIndices, delta) {
+                    var atoms = molecule.atoms, atomCount = atoms.count, cCount = 0, x = atoms.x, y = atoms.y, z = atoms.z, min = [Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE], max = [-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE];
+                    for (var _i = 0, atomIndices_1 = atomIndices; _i < atomIndices_1.length; _i++) {
+                        var i = atomIndices_1[_i];
+                        min[0] = Math.min(x[i], min[0]);
+                        min[1] = Math.min(y[i], min[1]);
+                        min[2] = Math.min(z[i], min[2]);
+                        max[0] = Math.max(x[i], max[0]);
+                        max[1] = Math.max(y[i], max[1]);
+                        max[2] = Math.max(z[i], max[2]);
+                    }
+                    min[0] = min[0] - delta;
+                    min[1] = min[1] - delta;
+                    min[2] = min[2] - delta;
+                    max[0] = max[0] + delta;
+                    max[1] = max[1] + delta;
+                    max[2] = max[2] + delta;
+                    return {
+                        bottomLeft: min,
+                        topRight: max
+                    };
+                }
+                Molecule.getBox = getBox;
+                var CentroidHelper = (function () {
+                    function CentroidHelper(model) {
+                        this.model = model;
+                        this.center = { x: 0, y: 0, z: 0 };
+                        this.radiusSquared = 0;
+                        this.count = 0;
+                        this.x = model.atoms.x;
+                        this.y = model.atoms.y;
+                        this.z = model.atoms.z;
+                    }
+                    CentroidHelper.prototype.addAtom = function (i) {
+                        this.count++;
+                        this.center.x += this.x[i];
+                        this.center.y += this.y[i];
+                        this.center.z += this.z[i];
+                    };
+                    CentroidHelper.prototype.finishedAdding = function () {
+                        this.center.x /= this.count;
+                        this.center.y /= this.count;
+                        this.center.z /= this.count;
+                    };
+                    CentroidHelper.prototype.radiusVisit = function (i) {
+                        var dx = this.center.x - this.x[i], dy = this.center.y - this.y[i], dz = this.center.z - this.z[i];
+                        this.radiusSquared = Math.max(this.radiusSquared, dx * dx + dy * dy + dz * dz);
+                    };
+                    return CentroidHelper;
+                }());
+                Molecule.CentroidHelper = CentroidHelper;
+                function getCentroidAndRadius(m, indices, into) {
+                    into.x = 0;
+                    into.y = 0;
+                    into.z = 0;
+                    var _a = m.atoms, x = _a.x, y = _a.y, z = _a.z;
+                    for (var _i = 0, indices_1 = indices; _i < indices_1.length; _i++) {
+                        var i = indices_1[_i];
+                        into.x += x[i];
+                        into.y += y[i];
+                        into.z += z[i];
+                    }
+                    var c = indices.length;
+                    into.x /= c;
+                    into.y /= c;
+                    into.z /= c;
+                    var radius = 0;
+                    for (var _c = 0, indices_2 = indices; _c < indices_2.length; _c++) {
+                        var i = indices_2[_c];
+                        var dx = into.x - x[i], dy = into.y - y[i], dz = into.z - z[i];
+                        radius = Math.max(radius, dx * dx + dy * dy + dz * dz);
+                    }
+                    return Math.sqrt(radius);
+                }
+                Molecule.getCentroidAndRadius = getCentroidAndRadius;
+            })(Molecule = Utils.Molecule || (Utils.Molecule = {}));
+        })(Utils = Bootstrap.Utils || (Bootstrap.Utils = {}));
+    })(Bootstrap = LiteMol.Bootstrap || (LiteMol.Bootstrap = {}));
+})(LiteMol || (LiteMol = {}));
+/*
+ * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ */
+var LiteMol;
+(function (LiteMol) {
+    var Bootstrap;
+    (function (Bootstrap) {
         var Behaviour;
         (function (Behaviour) {
             "use strict";
@@ -68723,8 +68767,8 @@ var LiteMol;
                 function Streams(context) {
                     this.context = context;
                     this.subjects = {
-                        select: new Bootstrap.Rx.BehaviorSubject({}),
-                        click: new Bootstrap.Rx.BehaviorSubject({}),
+                        select: new Bootstrap.Rx.BehaviorSubject(Bootstrap.Interactivity.Info.empty),
+                        click: new Bootstrap.Rx.BehaviorSubject(Bootstrap.Interactivity.Info.empty),
                         currentEntity: new Bootstrap.Rx.BehaviorSubject(void 0)
                     };
                     this.select = this.subjects.select.distinctUntilChanged(function (i) { return i; }, Bootstrap.Interactivity.interactivityInfoEqual);
@@ -68734,18 +68778,17 @@ var LiteMol;
                 }
                 Streams.prototype.init = function () {
                     var _this = this;
-                    var emptyClick = {};
-                    var latestClick = emptyClick;
+                    var latestClick = Bootstrap.Interactivity.Info.empty;
                     Bootstrap.Event.Tree.NodeRemoved.getStream(this.context).subscribe(function (e) {
-                        if ((latestClick !== emptyClick) && (latestClick.entity === e.data || latestClick.visual === e.data)) {
-                            latestClick = emptyClick;
-                            Bootstrap.Event.Visual.VisualSelectElement.dispatch(_this.context, {});
+                        if ((latestClick.kind !== 0 /* Empty */) && latestClick.source === e.data) {
+                            latestClick = Bootstrap.Interactivity.Info.empty;
+                            Bootstrap.Event.Visual.VisualSelectElement.dispatch(_this.context, latestClick);
                         }
                     });
                     Bootstrap.Event.Visual.VisualSelectElement.getStream(this.context).subscribe(function (e) {
-                        latestClick = e.data.entity ? e.data : emptyClick;
+                        latestClick = e.data;
                         _this.subjects.click.onNext(e.data);
-                        if (e.data.visual && !e.data.visual.props.isSelectable)
+                        if (latestClick.kind === 1 /* Selection */ && Bootstrap.Entity.isVisual(latestClick.source) && !latestClick.source.props.isSelectable)
                             return;
                         _this.subjects.select.onNext(e.data);
                     });
@@ -68815,22 +68858,24 @@ var LiteMol;
                         latestModel = void 0;
                         latestIndices = void 0;
                     }
-                    if (!info.entity || !info.visual)
+                    if (info.kind === 0 /* Empty */ || !Bootstrap.Entity.isVisual(info.source))
                         return;
-                    latestModel = info.visual.props.model;
+                    latestModel = info.source.props.model;
                     latestIndices = info.elements;
                     latestModel.applySelection(latestIndices, 1 /* Select */);
                 });
             }
             Behaviour.ApplyInteractivitySelection = ApplyInteractivitySelection;
             function UnselectElementOnRepeatedClick(context) {
-                var latest = null;
+                var latest = Bootstrap.Interactivity.Info.empty;
                 Bootstrap.Event.Visual.VisualSelectElement.getStream(context).subscribe(function (e) {
-                    if (e.data.visual && !e.data.visual.props.isSelectable)
+                    if (Bootstrap.Interactivity.isEmpty(e.data) || Bootstrap.Interactivity.isEmpty(latest)) {
+                        latest = e.data;
                         return;
-                    if (latest && latest.entity && Bootstrap.Interactivity.interactivityInfoEqual(e.data, latest)) {
-                        latest = null;
-                        Bootstrap.Event.Visual.VisualSelectElement.dispatch(context, {});
+                    }
+                    if ((Bootstrap.Tree.Node.hasAncestor(latest.source, e.data.source) || Bootstrap.Tree.Node.hasAncestor(e.data.source, latest.source)) && Bootstrap.Interactivity.interactivitySelectionElementsEqual(e.data, latest)) {
+                        latest = Bootstrap.Interactivity.Info.empty;
+                        setTimeout(function () { return Bootstrap.Event.Visual.VisualSelectElement.dispatch(context, Bootstrap.Interactivity.Info.empty); }, 0);
                     }
                     else {
                         latest = e.data;
@@ -68839,10 +68884,10 @@ var LiteMol;
             }
             Behaviour.UnselectElementOnRepeatedClick = UnselectElementOnRepeatedClick;
             var center = { x: 0, y: 0, z: 0 };
-            function update(context, info) {
-                if (!info.entity || !(Bootstrap.Tree.Node.is(info.entity, Bootstrap.Entity.Molecule.Model) || Bootstrap.Tree.Node.is(info.entity, Bootstrap.Entity.Molecule.Selection)))
+            function updateCamera(context, info) {
+                if (!Bootstrap.Interactivity.Molecule.isMoleculeModelInteractivity(info))
                     return;
-                var model = Bootstrap.Tree.Node.findClosestNodeOfType(info.entity, [Bootstrap.Entity.Molecule.Model]).props.model;
+                var model = Bootstrap.Utils.Molecule.findModel(info.source).props.model;
                 if (!model)
                     return;
                 var elems = info.elements;
@@ -68859,7 +68904,7 @@ var LiteMol;
                 context.scene.camera.focusOnPoint(center, Math.max(radius, 7));
             }
             function FocusCameraOnSelect(context) {
-                context.behaviours.click.subscribe(function (e) { return update(context, e); });
+                context.behaviours.click.subscribe(function (e) { return updateCamera(context, e); });
             }
             Behaviour.FocusCameraOnSelect = FocusCameraOnSelect;
         })(Behaviour = Bootstrap.Behaviour || (Bootstrap.Behaviour = {}));
@@ -68901,12 +68946,12 @@ var LiteMol;
                                 Bootstrap.Command.Tree.RemoveNode.dispatch(context, lastRef);
                                 lastRef = void 0;
                             }
-                            if (!info.entity || !info.visual)
+                            if (Bootstrap.Interactivity.isEmpty(info) || !Bootstrap.Utils.Molecule.findModelOrSelection(info.source))
                                 return;
                             var ligandQ = Query.atomsFromIndices(info.elements).wholeResidues();
                             var ambQ = Query.atomsFromIndices(info.elements).wholeResidues().ambientResidues(radius);
                             var ref = Bootstrap.Utils.generateUUID();
-                            var action = Bootstrap.Tree.Transform.build().add(info.visual, Transforms.Basic.CreateGroup, { label: 'Interaction' }, { ref: ref, isHidden: true });
+                            var action = Bootstrap.Tree.Transform.build().add(info.source, Transforms.Basic.CreateGroup, { label: 'Interaction' }, { ref: ref, isHidden: true });
                             lastRef = ref;
                             action.then(Transforms.Molecule.CreateSelectionFromQuery, { query: ambQ, name: 'Ambience', silent: true, inFullContext: true }, { isBinding: true })
                                 .then(Transforms.Molecule.CreateVisual, { style: ambStyle });
@@ -68919,30 +68964,30 @@ var LiteMol;
                 Molecule.ShowInteractionOnSelect = ShowInteractionOnSelect;
                 function HighlightElementInfo(context) {
                     context.highlight.addProvider(function (info) {
-                        if (!info.entity || !(Bootstrap.Tree.Node.is(info.entity, Bootstrap.Entity.Molecule.Model) || Bootstrap.Tree.Node.is(info.entity, Bootstrap.Entity.Molecule.Selection)))
-                            return undefined;
+                        if (!Bootstrap.Interactivity.Molecule.isMoleculeModelInteractivity(info))
+                            return void 0;
                         var data = Bootstrap.Interactivity.Molecule.transformInteraction(info);
                         return Bootstrap.Interactivity.Molecule.formatInfo(data);
                     });
                 }
                 Molecule.HighlightElementInfo = HighlightElementInfo;
                 function DistanceToLastClickedElement(context) {
-                    var lastInfo = void 0;
+                    var lastInfo = Bootstrap.Interactivity.Info.empty;
                     var lastSel = void 0;
                     var lastModel = void 0;
                     context.behaviours.click.subscribe(function (info) {
-                        if (!info.entity || !(Bootstrap.Tree.Node.is(info.entity, Bootstrap.Entity.Molecule.Model) || Bootstrap.Tree.Node.is(info.entity, Bootstrap.Entity.Molecule.Selection)) || !info.elements || !info.elements.length) {
-                            lastInfo = undefined;
-                            lastModel = undefined;
-                            lastSel = undefined;
+                        if (!Bootstrap.Interactivity.Molecule.isMoleculeModelInteractivity(info)) {
+                            lastInfo = Bootstrap.Interactivity.Info.empty;
+                            lastModel = void 0;
+                            lastSel = void 0;
                         }
                         else {
                             lastInfo = info;
-                            var m = Bootstrap.Utils.Molecule.findModel(info.entity);
+                            var m = Bootstrap.Utils.Molecule.findModel(info.source);
                             if (!m) {
-                                lastInfo = undefined;
-                                lastModel = undefined;
-                                lastSel = undefined;
+                                lastInfo = Bootstrap.Interactivity.Info.empty;
+                                lastModel = void 0;
+                                lastSel = void 0;
                             }
                             else {
                                 lastModel = m.props.model;
@@ -68951,16 +68996,16 @@ var LiteMol;
                         }
                     });
                     context.highlight.addProvider(function (info) {
-                        if (!info.entity || !(Bootstrap.Tree.Node.is(info.entity, Bootstrap.Entity.Molecule.Model) || Bootstrap.Tree.Node.is(info.entity, Bootstrap.Entity.Molecule.Selection)) || !info.elements || !info.elements.length)
-                            return undefined;
-                        if (!lastInfo)
-                            return undefined;
-                        var m = Bootstrap.Utils.Molecule.findModel(info.entity);
+                        if (!Bootstrap.Interactivity.Molecule.isMoleculeModelInteractivity(info))
+                            return void 0;
+                        if (Bootstrap.Interactivity.isEmpty(lastInfo))
+                            return void 0;
+                        var m = Bootstrap.Utils.Molecule.findModel(info.source);
                         if (!m)
-                            return undefined;
+                            return void 0;
                         var dist = Bootstrap.Utils.Molecule.getDistanceSet(lastModel, lastInfo.elements, m.props.model, info.elements);
                         if (dist < 0.0001)
-                            return undefined;
+                            return void 0;
                         return "<span><b>" + Bootstrap.Utils.round(dist, 2) + " \u212B</b> from <b>" + lastSel + "</b></span>";
                     });
                 }
@@ -69003,8 +69048,7 @@ var LiteMol;
                             this.remove();
                             return;
                         }
-                        var model = Bootstrap.Utils.Molecule.findModel(info.entity);
-                        var center = { x: 0, y: 0, z: 0 };
+                        var model = Bootstrap.Utils.Molecule.findModel(info.source);
                         var elems = info.elements;
                         var m = model.props.model;
                         if (info.elements.length === 1) {
@@ -69093,14 +69137,8 @@ var LiteMol;
                     };
                     CoordinateStreaming.prototype.isApplicable = function (info) {
                         if (!Bootstrap.Interactivity.Molecule.isMoleculeModelInteractivity(info))
-                            return;
-                        var e = info.entity;
-                        while (e.parent !== e) {
-                            if (e === this.target)
-                                return true;
-                            e = e.parent;
-                        }
-                        return false;
+                            return false;
+                        return Bootstrap.Tree.Node.hasAncestor(info.source, this.target);
                     };
                     CoordinateStreaming.prototype.update = function (info) {
                         var _this = this;
@@ -69108,7 +69146,7 @@ var LiteMol;
                         if (!this.isApplicable(info)) {
                             return;
                         }
-                        var model = Bootstrap.Utils.Molecule.findModel(info.entity).props.model;
+                        var model = Bootstrap.Utils.Molecule.findModel(info.source).props.model;
                         var i = model.atoms.residueIndex[info.elements[0]];
                         var rs = model.residues;
                         var authAsymId = rs.authAsymId[i];
@@ -70142,7 +70180,7 @@ var LiteMol;
                 this.dispatcher = new Bootstrap.Service.Dispatcher();
                 this.logger = new Bootstrap.Service.Logger(this);
                 this.performance = new LiteMol.Core.Utils.PerformanceMonitor();
-                this.scene = void 0; // injected by the Viewpoer component.        
+                this.scene = void 0; // injected by the Viewport component.        
                 this.tree = Bootstrap.Tree.create(this, Bootstrap.Entity.Root.create(Bootstrap.Entity.RootTransform, { label: 'Root Entity' }));
                 this.currentEntity = void 0;
                 this.transforms = new Bootstrap.TransformManager(this);
@@ -70186,15 +70224,14 @@ var LiteMol;
     (function (Bootstrap) {
         "use strict";
         function createMoleculeModelSelectInteraction(context, what) {
-            if (!Bootstrap.Entity.isVisual(what.visual)) {
-                console.warn('Select: Trying to create a selection event on a non-molecule model visual entity, ignoring...');
+            if (!Bootstrap.Utils.Molecule.findModelOrSelection(what.entity)) {
+                console.warn('Select: Trying to create a selection event on a non-molecule related entity, ignoring...');
                 return;
             }
-            var q = Bootstrap.Utils.Molecule.getModelAndIndicesFromQuery(what.visual, what.query);
+            var q = Bootstrap.Utils.Molecule.getModelAndIndicesFromQuery(what.entity, what.query);
             if (!q || !q.indices.length)
                 return;
-            var entity = Bootstrap.Tree.Node.findClosestNodeOfType(what.visual, [Bootstrap.Entity.Molecule.Model, Bootstrap.Entity.Molecule.Selection]);
-            Bootstrap.Event.Visual.VisualSelectElement.dispatch(context, { entity: entity, visual: what.visual, elements: q.indices });
+            Bootstrap.Event.Visual.VisualSelectElement.dispatch(context, Bootstrap.Interactivity.Info.selection(what.entity, q.indices));
         }
         function initEventsAndCommands(context) {
             Bootstrap.Command.Entity.SetCurrent.getStream(context).subscribe(function (e) { return Bootstrap.Entity.setCurrent(e.data); });

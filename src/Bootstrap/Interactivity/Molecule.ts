@@ -57,8 +57,7 @@ namespace LiteMol.Bootstrap.Interactivity.Molecule {
         atoms: AtomInfo[];
         residues: ResidueInfo[];
         chains: ChainInfo[];
-        entities: EntityInfo[];
-        
+        entities: EntityInfo[];        
     }
     
     export function transformMoleculeAtomIndices(model: Entity.Molecule.Model, context: Core.Structure.Query.Context, indices: number[]): SelectionInfo {
@@ -105,9 +104,13 @@ namespace LiteMol.Bootstrap.Interactivity.Molecule {
     }   
     
     export function transformInteraction(info: Interactivity.Info): SelectionInfo | undefined {
-        if (!info.entity || !(Tree.Node.is(info.entity, Entity.Molecule.Model) || Tree.Node.is(info.entity, Entity.Molecule.Selection))) return void 0;
-        let context = Utils.Molecule.findQueryContext(info.entity);
-        let model = Utils.Molecule.findModel(info.entity);
+        if (info.kind === Info.Kind.Empty) return void 0;
+        
+        let modelOrSelection = Utils.Molecule.findModelOrSelection(info.source);
+        if (!modelOrSelection) return void 0;
+
+        let context = Utils.Molecule.findQueryContext(modelOrSelection);
+        let model = Utils.Molecule.findModel(modelOrSelection);
         if (!context || !model) return void 0;
         return transformMoleculeAtomIndices(model, context, info.elements!);
     }
@@ -165,8 +168,10 @@ namespace LiteMol.Bootstrap.Interactivity.Molecule {
         }
     }
     
-    export function isMoleculeModelInteractivity(info: Info) {
-        if (!info.entity || !(Tree.Node.is(info.entity, Entity.Molecule.Model) || Tree.Node.is(info.entity, Entity.Molecule.Selection))) return false;
+    export function isMoleculeModelInteractivity(info: Info): info is Info.Selection {
+        if (info.kind === Info.Kind.Empty) return false;        
+        let modelOrSelection = Utils.Molecule.findModelOrSelection(info.source);
+        if (!modelOrSelection) return false;
         return true;
     }
 }

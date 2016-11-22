@@ -44,6 +44,9 @@ namespace LiteMol.Example.Transforms {
             
             // this shows what atom/residue is the pointer currently over
             Bootstrap.Behaviour.Molecule.HighlightElementInfo,
+
+            // when the same element is clicked twice in a row, the selection is emptied
+            Bootstrap.Behaviour.UnselectElementOnRepeatedClick,
             
             // distance to the last "clicked" element
             Bootstrap.Behaviour.Molecule.DistanceToLastClickedElement,

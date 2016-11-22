@@ -184,7 +184,7 @@ namespace LiteMolPluginInstance {
         applyTransforms(action)
             .then(() => {
                 // we select the ligand to display the density around it if it's loaded
-                Command.Molecule.CreateSelectInteraction.dispatch(plugin.context, { visual: <any>selectNodes('ligand-visual')[0], query: Query.everything() })
+                Command.Molecule.CreateSelectInteraction.dispatch(plugin.context, { entity: selectNodes('ligand-visual')[0], query: Query.everything() })
             });
             //.catch(e => reportError(e));
     });
@@ -454,6 +454,9 @@ namespace LiteMolPluginInstance {
                 
                 // this shows what atom/residue is the pointer currently over
                 Bootstrap.Behaviour.Molecule.HighlightElementInfo,
+
+                // when the same element is clicked twice in a row, the selection is emptied
+                Bootstrap.Behaviour.UnselectElementOnRepeatedClick,
                 
                 // distance to the last "clicked" element
                 Bootstrap.Behaviour.Molecule.DistanceToLastClickedElement,

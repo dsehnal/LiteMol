@@ -15368,43 +15368,6 @@ declare namespace LiteMol.Bootstrap.Utils {
     const assign: (<T>(o: T, ...from: any[]) => T);
     const merge: (<T>(source: T, ...rest: T[]) => T);
 }
-declare namespace LiteMol.Bootstrap.Utils.Molecule {
-    import Structure = LiteMol.Core.Structure;
-    import Geometry = LiteMol.Core.Geometry;
-    function findModel(entity: Entity.Any): Entity.Molecule.Model | undefined;
-    function findMolecule(entity: Entity.Any): Entity.Molecule.Molecule | undefined;
-    function findQueryContext(entity: Entity.Any): Structure.Query.Context;
-    function getDistance(mA: Structure.MoleculeModel, startAtomIndexA: number, endAtomIndexA: number, mB: Structure.MoleculeModel, startAtomIndexB: number, endAtomIndexB: number): number;
-    function getDistanceSet(mA: Structure.MoleculeModel, setA: number[], mB: Structure.MoleculeModel, setB: number[]): number;
-    function getModelAndIndicesFromQuery(m: Entity.Any, query: Core.Structure.Query.Source): {
-        model: Entity.Molecule.Model;
-        indices: number[];
-        queryContext: Core.Structure.Query.Context;
-    } | undefined;
-    function getResidueIndices(m: Core.Structure.MoleculeModel, atom: number): number[];
-    function getBox(molecule: Core.Structure.MoleculeModel, atomIndices: number[], delta: number): {
-        bottomLeft: number[];
-        topRight: number[];
-    };
-    class CentroidHelper {
-        private model;
-        center: {
-            x: number;
-            y: number;
-            z: number;
-        };
-        radiusSquared: number;
-        count: number;
-        private x;
-        private y;
-        private z;
-        addAtom(i: number): void;
-        finishedAdding(): void;
-        radiusVisit(i: number): void;
-        constructor(model: LiteMol.Core.Structure.MoleculeModel);
-    }
-    function getCentroidAndRadius(m: Structure.MoleculeModel, indices: number[], into: Geometry.LinearAlgebra.ObjectVec3): number;
-}
 declare namespace LiteMol.Bootstrap.Service {
     class Dispatcher {
         LOG_DISPATCH_STREAM: boolean;
@@ -15612,7 +15575,7 @@ declare namespace LiteMol.Bootstrap.Command {
             isOn: boolean;
         }>;
         const CreateSelectInteraction: Event.Type<{
-            visual: Bootstrap.Entity.Molecule.Visual;
+            entity: Bootstrap.Entity.Any;
             query: Core.Structure.Query.Source;
         }>;
     }
@@ -15806,12 +15769,27 @@ declare namespace LiteMol.Bootstrap.Tree.Transform {
     }
 }
 declare namespace LiteMol.Bootstrap.Interactivity {
-    interface Info {
-        entity?: Entity.Any;
-        visual?: Entity.Visual.Any;
-        elements?: number[];
+    type Info = Info.Empty | Info.Selection;
+    namespace Info {
+        const enum Kind {
+            Empty = 0,
+            Selection = 1,
+        }
+        interface Empty {
+            kind: Kind.Empty;
+        }
+        interface Selection {
+            kind: Kind.Selection;
+            source: Entity.Any;
+            elements: number[];
+        }
+        const empty: Empty;
+        function selection(source: Entity.Any, elements: number[]): Selection;
     }
+    function isEmpty(info: Info): info is Info.Empty;
+    function isSelection(info: Info): info is Info.Selection;
     function interactivityInfoEqual(a: Info, b: Info): boolean;
+    function interactivitySelectionElementsEqual(a: Info.Selection, b: Info.Selection): boolean;
 }
 declare namespace LiteMol.Bootstrap.Interactivity {
     type HighlightEntry = string;
@@ -15874,7 +15852,7 @@ declare namespace LiteMol.Bootstrap.Interactivity.Molecule {
     function transformInteraction(info: Interactivity.Info): SelectionInfo | undefined;
     function formatInfo(info: SelectionInfo | undefined): string;
     function formatInfoShort(info: SelectionInfo | undefined): string;
-    function isMoleculeModelInteractivity(info: Info): boolean;
+    function isMoleculeModelInteractivity(info: Info): info is Info.Selection;
 }
 declare namespace LiteMol.Bootstrap.Visualization {
     import Visual = Entity.Visual.Any;
@@ -16428,6 +16406,44 @@ declare namespace LiteMol.Bootstrap.Entity.Transformer.Molecule.CoordinateStream
         radius?: number;
     }
     const InitStreaming: Tree.Transformer<Root, Action, InitStreamingParams>;
+}
+declare namespace LiteMol.Bootstrap.Utils.Molecule {
+    import Structure = LiteMol.Core.Structure;
+    import Geometry = LiteMol.Core.Geometry;
+    function findModel(entity: Entity.Any): Entity.Molecule.Model | undefined;
+    function findModelOrSelection(entity: Entity.Any): Entity.Molecule.Model | Entity.Molecule.Selection | undefined;
+    function findMolecule(entity: Entity.Any): Entity.Molecule.Molecule | undefined;
+    function findQueryContext(entity: Entity.Any): Structure.Query.Context;
+    function getDistance(mA: Structure.MoleculeModel, startAtomIndexA: number, endAtomIndexA: number, mB: Structure.MoleculeModel, startAtomIndexB: number, endAtomIndexB: number): number;
+    function getDistanceSet(mA: Structure.MoleculeModel, setA: number[], mB: Structure.MoleculeModel, setB: number[]): number;
+    function getModelAndIndicesFromQuery(m: Entity.Any, query: Core.Structure.Query.Source): {
+        model: Entity.Molecule.Model;
+        indices: number[];
+        queryContext: Core.Structure.Query.Context;
+    } | undefined;
+    function getResidueIndices(m: Core.Structure.MoleculeModel, atom: number): number[];
+    function getBox(molecule: Core.Structure.MoleculeModel, atomIndices: number[], delta: number): {
+        bottomLeft: number[];
+        topRight: number[];
+    };
+    class CentroidHelper {
+        private model;
+        center: {
+            x: number;
+            y: number;
+            z: number;
+        };
+        radiusSquared: number;
+        count: number;
+        private x;
+        private y;
+        private z;
+        addAtom(i: number): void;
+        finishedAdding(): void;
+        radiusVisit(i: number): void;
+        constructor(model: LiteMol.Core.Structure.MoleculeModel);
+    }
+    function getCentroidAndRadius(m: Structure.MoleculeModel, indices: number[], into: Geometry.LinearAlgebra.ObjectVec3): number;
 }
 declare namespace LiteMol.Bootstrap.Behaviour {
     class Streams {

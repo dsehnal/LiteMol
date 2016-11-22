@@ -1,4 +1,8 @@
-﻿# 1.1.8
+﻿# 1.2.0
+* Change how visual interactivity works.
+* BREAKING CHANGE: Command.Molecule.CreateSelectInteraction now takes the parameters { entity, query } instead of { visual, query }.
+
+# 1.1.8
 * Added the ability to decompress Gzip from binary ajax response.
 * Support for specifying absolute iso values for density data. (BREAKING CHANGE: Instead of isoSigma, isoValue and isoValueType properties are now used).
 
