@@ -7,7 +7,7 @@ var LiteMol;
 (function (LiteMol) {
     var Viewer;
     (function (Viewer) {
-        Viewer.VERSION = { number: "1.1.10", date: "Nov 22 2016" };
+        Viewer.VERSION = { number: "1.1.11", date: "Nov 23 2016" };
     })(Viewer = LiteMol.Viewer || (LiteMol.Viewer = {}));
 })(LiteMol || (LiteMol = {}));
 /*
@@ -100,6 +100,7 @@ var LiteMol;
                             isoValueType: Bootstrap.Visualization.Density.IsoValueType.Sigma,
                             color: LiteMol.Visualization.Color.fromHex(0xBB3333),
                             isWireframe: true,
+                            disableFog: true,
                             transparency: { alpha: 1.0 }
                         })
                     });
@@ -114,6 +115,7 @@ var LiteMol;
                             isoValueType: Bootstrap.Visualization.Density.IsoValueType.Sigma,
                             color: LiteMol.Visualization.Color.fromHex(0x33BB33),
                             isWireframe: true,
+                            disableFog: true,
                             transparency: { alpha: 1.0 }
                         })
                     });
@@ -130,11 +132,12 @@ var LiteMol;
                             isoValueType: Bootstrap.Visualization.Density.IsoValueType.Sigma,
                             color: LiteMol.Visualization.Color.fromHex(0x3362B2),
                             isWireframe: false,
+                            disableFog: true,
                             transparency: { alpha: 0.45 }
                         })
                     });
                     return action;
-                }, "Electron density loaded, click on a residue or atom to display it.");
+                }, "Electron density loaded, click on a residue or an atom to view the data.");
             })(Data = PDBe.Data || (PDBe.Data = {}));
         })(PDBe = Viewer.PDBe || (Viewer.PDBe = {}));
     })(Viewer = LiteMol.Viewer || (LiteMol.Viewer = {}));

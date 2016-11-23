@@ -126,6 +126,7 @@ namespace LiteMol.Visualization {
         colors: Map<string, Color>;
         transparency: Theme.Transparency;
         interactive: boolean;
+        disableFog: boolean;
         setElementColor(index: number, target: Color): void;
     }
     
@@ -135,6 +136,7 @@ namespace LiteMol.Visualization {
             colors?: Map<string, Color>;
             transparency?: Theme.Transparency;
             interactive?: boolean;
+            disableFog?: boolean;
         }
                 
         export interface Transparency { alpha?: number; writeDepth?: boolean }
@@ -166,7 +168,7 @@ namespace LiteMol.Visualization {
         
         export function createUniform(props: Props = {}): Theme {
             
-            let { colors = new Map<string, Color>(), transparency = Default.Transparency, interactive = true } = props;
+            let { colors = new Map<string, Color>(), transparency = Default.Transparency, interactive = true, disableFog = false } = props;
             
             let uniform = colors.get('Uniform');
             if (!uniform) {
@@ -178,6 +180,7 @@ namespace LiteMol.Visualization {
                 colors,
                 transparency,
                 interactive,
+                disableFog,
                 setElementColor(index: number, target: Color) {
                     Color.copy(uniform!, target);
                 }
@@ -185,7 +188,7 @@ namespace LiteMol.Visualization {
         }
         
         export function createMapping(mapping: ElementMapping, props: Props = {}): Theme {
-            let { colors = new Map<string, Color>(), transparency = Default.Transparency, interactive = true } = props;
+            let { colors = new Map<string, Color>(), transparency = Default.Transparency, interactive = true, disableFog = false } = props;
             
             //let prop = mapping.getProperty;
             // let set = mapping.setColor;
@@ -193,6 +196,7 @@ namespace LiteMol.Visualization {
                 colors,
                 transparency: transparency ? transparency : Default.Transparency,
                 interactive,
+                disableFog,
                 setElementColor(index: number, target: Color) {
                     mapping.setColor(mapping.getProperty(index), target);
                 }

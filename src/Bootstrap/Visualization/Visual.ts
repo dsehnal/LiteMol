@@ -48,7 +48,8 @@ namespace LiteMol.Bootstrap.Visualization {
             template?: Template,
             colors?: Immutable.Map<string, LiteMol.Visualization.Color>,
             transparency?: TransparencyDescription,
-            interactive?: boolean
+            interactive?: boolean,
+            disableFog?: boolean
         }
         
         export interface Props {
@@ -77,7 +78,8 @@ namespace LiteMol.Bootstrap.Visualization {
             return {
                 colors,
                 transparency: theme.transparency,
-                interactive: theme.interactive
+                interactive: theme.interactive,
+                disableFog: theme.disableFog
             };
         }
     }

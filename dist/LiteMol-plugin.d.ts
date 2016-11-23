@@ -11996,6 +11996,7 @@ declare namespace LiteMol.Visualization {
         colors: Map<string, Color>;
         transparency: Theme.Transparency;
         interactive: boolean;
+        disableFog: boolean;
         setElementColor(index: number, target: Color): void;
     }
     namespace Theme {
@@ -12003,6 +12004,7 @@ declare namespace LiteMol.Visualization {
             colors?: Map<string, Color>;
             transparency?: Theme.Transparency;
             interactive?: boolean;
+            disableFog?: boolean;
         }
         interface Transparency {
             alpha?: number;
@@ -12044,7 +12046,7 @@ declare namespace LiteMol.Visualization {
         private static compareVectorAndColor(v, c);
         static updateMaterial(material: THREE.ShaderMaterial | THREE.MeshPhongMaterial, theme: Theme, object: THREE.Object3D): void;
         private static updateHighlightColor(material, theme);
-        private static updateTransparency(material, theme, object);
+        private static updateTransparencyAndFog(material, theme, object);
         static getMeshMaterial(shading?: THREE.Shading, isWireframe?: boolean): THREE.ShaderMaterial;
         static getPhongVertexColorMaterial(): THREE.MeshPhongMaterial;
         static getDefaultHighlightMaterial(): THREE.MeshPhongMaterial;
@@ -15949,6 +15951,7 @@ declare namespace LiteMol.Bootstrap.Visualization {
             colors?: Immutable.Map<string, LiteMol.Visualization.Color>;
             transparency?: TransparencyDescription;
             interactive?: boolean;
+            disableFog?: boolean;
         }
         interface Props {
             colors?: {
@@ -16042,6 +16045,7 @@ declare namespace LiteMol.Bootstrap.Visualization.Density {
             isoValueType: IsoValueType;
             color: LiteMol.Visualization.Color;
             isWireframe?: boolean;
+            disableFog?: boolean;
             transparency?: LiteMol.Visualization.Theme.Transparency;
         }): Style;
     }

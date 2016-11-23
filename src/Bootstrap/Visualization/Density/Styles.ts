@@ -27,12 +27,13 @@ namespace LiteMol.Bootstrap.Visualization.Density {
             isoValueType: IsoValueType, 
             color: LiteMol.Visualization.Color, 
             isWireframe?: boolean, 
+            disableFog?: boolean,
             transparency?: LiteMol.Visualization.Theme.Transparency}): Style  {
             let colors = Default.Theme.colors!.set('Uniform', params.color);
             return { 
                 type: {}, 
                 params: { isoValue: params.isoValue, isoValueType: params.isoValueType, smoothing: 1, isWireframe: !!params.isWireframe }, 
-                theme: { template: Default.Theme, colors, transparency: params.transparency ? params.transparency : Default.Transparency, interactive: false }
+                theme: { template: Default.Theme, colors, transparency: params.transparency ? params.transparency : Default.Transparency, interactive: false, disableFog: !!params.disableFog }
             }; 
         }
     }
@@ -63,8 +64,6 @@ namespace LiteMol.Bootstrap.Visualization.Density {
         ];         
         export const Transparency: LiteMol.Visualization.Theme.Transparency = { alpha: 1.0, writeDepth: false };        
         export const Theme = Themes[0];
-        export const Style: Style = { type: {}, params: Params, theme: { template: Theme, colors: Theme.colors, transparency: Transparency, interactive: false } } 
-        
-    }
-    
+        export const Style: Style = { type: {}, params: Params, theme: { template: Theme, colors: Theme.colors, transparency: Transparency, interactive: false, disableFog: false } }         
+    }    
 }

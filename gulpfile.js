@@ -119,8 +119,12 @@ function Tarball() {
     return tarball;
 }
 
-gulp.task('Clean-min', [], function () {
-    return gulp.src(['./dist/*.tar.gz', './dist/*.min.js', './dist/css/*.min.css']).pipe(plugins.clean());
+gulp.task('Clean', [], function () {
+    return gulp.src([
+        './dist/*.tar.gz', './dist/*.min.js', './dist/css/*.min.css', 
+        './examples/**/LiteMol-example.js', './src/Viewer/LiteMol-viewer.js',
+        '.web/Examples/**/LiteMol-example.js', './web/Viewer/LiteMol-viewer.js'])
+        .pipe(plugins.clean());
 });
 
 gulp.task('Docs-clean', function() {
@@ -161,7 +165,7 @@ gulp.task('ViewerAndExamples-inline', ['Plugin'], ViewerAndExamples)
 
 gulp.task('Web-assets', [], WebAssets)
 gulp.task('Web-base', [], Web);
-gulp.task('Web-base-inline', ['Plugin'], Web);
+gulp.task('Web-base-inline', ['Plugin', 'ViewerAndExamples-inline'], Web);
 
 gulp.task('Web', ['Web-assets', 'Web-base'], WebVersions);
 gulp.task('Web-inline', ['ViewerAndExamples-inline', 'CSS', 'Web-assets', 'Web-base-inline'], WebVersions);
@@ -170,7 +174,7 @@ gulp.task('Dist-min', [], Uglify);
 gulp.task('Dist-tarball', ['Dist-min'], Tarball);
 
 gulp.task('default', [
-    'Clean-min',
+    'Clean',
     build('Core'), 
     build('Visualization'),
     build('Bootstrap'),

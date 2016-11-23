@@ -18,7 +18,7 @@ namespace LiteMol.Bootstrap.Behaviour.Molecule {
                 type: 'BallsAndSticks',
                 computeOnBackground: true,
                 params: { useVDW: true, vdwScaling: 0.25, bondRadius: 0.13, detail: 'Automatic' },
-                theme: { template: Visualization.Molecule.Default.ElementSymbolThemeTemplate, colors: Visualization.Molecule.Default.ElementSymbolThemeTemplate.colors!.set('Bond', { r:1, g: 0, b: 0 }), transparency: { alpha: 0.4 } },
+                theme: { template: Visualization.Molecule.Default.ElementSymbolThemeTemplate, colors: Visualization.Molecule.Default.ElementSymbolThemeTemplate.colors!.set('Bond', { r:1, g: 0, b: 0 }), transparency: { alpha: 0.4 }, disableFog: true },
                 isNotSelectable: true
             } 
                 
@@ -26,7 +26,7 @@ namespace LiteMol.Bootstrap.Behaviour.Molecule {
                 type: 'BallsAndSticks',
                 computeOnBackground: true,
                 params: { useVDW: false, atomRadius: 0.15, bondRadius: 0.07, detail: 'Automatic' },
-                theme: { template: Visualization.Molecule.Default.UniformThemeTemplate, colors: Visualization.Molecule.Default.UniformThemeTemplate.colors!.set('Uniform', { r: 0.4, g: 0.4, b: 0.4 }), transparency: { alpha: 0.75 } },
+                theme: { template: Visualization.Molecule.Default.UniformThemeTemplate, colors: Visualization.Molecule.Default.UniformThemeTemplate.colors!.set('Uniform', { r: 0.4, g: 0.4, b: 0.4 }), transparency: { alpha: 0.75 }, disableFog: true },
                 isNotSelectable: true
             }
 
@@ -76,34 +76,7 @@ namespace LiteMol.Bootstrap.Behaviour.Molecule {
                     .then(Transforms.Molecule.CreateVisual, { style: ligandStyle });
                     
                 Tree.Transform.apply(context, action).run(context);                
-            });          
-            
-            // context.behaviours.select.subscribe(info => {
-            //     if (lastRef) {
-            //         Command.Tree.RemoveNode.dispatch(context, lastRef);
-            //         lastRef = void 0;
-            //         ambRef = void 0;
-            //     }                
-                
-            //     if (Interactivity.isEmpty(info) || !Utils.Molecule.findModelOrSelection(info.source)) return;
-                
-            //     let ligandQ = Query.atomsFromIndices(info.elements).wholeResidues();
-            //     let ambQ = Query.atomsFromIndices(info.elements).wholeResidues().ambientResidues(radius);
-                
-            //     let ref = Utils.generateUUID();
-            //     let action = Tree.Transform.build().add(info.source, Transforms.Basic.CreateGroup, { label: 'Interaction' }, { ref, isHidden: true });
-            //     lastRef = ref;
-
-            //     ambRef = Utils.generateUUID();
-                
-            //     action.then(Transforms.Molecule.CreateSelectionFromQuery, { query: ambQ, name: 'Ambience', silent: true, inFullContext: true }, { isBinding: true })
-            //         .then(<Bootstrap.Tree.Transformer.To<Entity.Molecule.Visual>>Transforms.Molecule.CreateVisual, { style: ambStyle }, { ref: ambRef });
-            //     action.then(Transforms.Molecule.CreateSelectionFromQuery, { query: ligandQ, name: 'Ligand', silent: true, inFullContext: true }, { isBinding: true })
-            //         .then(<Bootstrap.Tree.Transformer.To<Entity.Molecule.Visual>>Transforms.Molecule.CreateVisual, { style: ligandStyle });
-                    
-            //     Tree.Transform.apply(context, action).run(context);
-                
-            // });        
+            });               
         }
     }
     

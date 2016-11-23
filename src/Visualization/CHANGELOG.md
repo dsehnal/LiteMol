@@ -1,4 +1,7 @@
-﻿# 1.4.0
+﻿# 1.4.1
+* Added the ability to disable fog on per-visual basis.
+
+# 1.4.0
 * Secondary structure detection for Cartoons.
 
 # 1.3.2

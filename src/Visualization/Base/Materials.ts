@@ -186,7 +186,7 @@ namespace LiteMol.Visualization {
         
         static updateMaterial(material: THREE.ShaderMaterial | THREE.MeshPhongMaterial, theme: Theme, object: THREE.Object3D) {            
             let changed = false;
-            if (MaterialsHelper.updateTransparency(material, theme, object)) changed = true;
+            if (MaterialsHelper.updateTransparencyAndFog(material, theme, object)) changed = true;
             if (material instanceof THREE.ShaderMaterial && MaterialsHelper.updateHighlightColor(material, theme)) changed = true;                                 
             if (changed) material.needsUpdate = true;            
         }
@@ -210,7 +210,7 @@ namespace LiteMol.Visualization {
             return changed;            
         }
 
-        private static updateTransparency(material: THREE.Material, 
+        private static updateTransparencyAndFog(material: THREE.Material, 
             theme: Theme, object: THREE.Object3D): boolean {
            
             let transparency = theme.transparency;    
@@ -242,6 +242,11 @@ namespace LiteMol.Visualization {
                 
                 if (material.opacity !== opacity) {
                     material.opacity = opacity;
+                    changed = true;
+                }
+
+                if (material.fog !== !theme.disableFog) {
+                    material.fog = !theme.disableFog;
                     changed = true;
                 }
                 

@@ -54787,7 +54787,7 @@ var LiteMol;
 (function (LiteMol) {
     var Visualization;
     (function (Visualization) {
-        Visualization.VERSION = { number: "1.4.0", date: "Nov 11 2016" };
+        Visualization.VERSION = { number: "1.4.1", date: "Nov 23 2016" };
     })(Visualization = LiteMol.Visualization || (LiteMol.Visualization = {}));
 })(LiteMol || (LiteMol = {}));
 var LiteMol;
@@ -55019,7 +55019,7 @@ var LiteMol;
             Theme.getColor = getColor;
             function createUniform(props) {
                 if (props === void 0) { props = {}; }
-                var _a = props.colors, colors = _a === void 0 ? new Map() : _a, _b = props.transparency, transparency = _b === void 0 ? Default.Transparency : _b, _c = props.interactive, interactive = _c === void 0 ? true : _c;
+                var _a = props.colors, colors = _a === void 0 ? new Map() : _a, _b = props.transparency, transparency = _b === void 0 ? Default.Transparency : _b, _c = props.interactive, interactive = _c === void 0 ? true : _c, _d = props.disableFog, disableFog = _d === void 0 ? false : _d;
                 var uniform = colors.get('Uniform');
                 if (!uniform) {
                     colors.set('Uniform', Default.UniformColor);
@@ -55029,6 +55029,7 @@ var LiteMol;
                     colors: colors,
                     transparency: transparency,
                     interactive: interactive,
+                    disableFog: disableFog,
                     setElementColor: function (index, target) {
                         Color.copy(uniform, target);
                     }
@@ -55037,13 +55038,14 @@ var LiteMol;
             Theme.createUniform = createUniform;
             function createMapping(mapping, props) {
                 if (props === void 0) { props = {}; }
-                var _a = props.colors, colors = _a === void 0 ? new Map() : _a, _b = props.transparency, transparency = _b === void 0 ? Default.Transparency : _b, _c = props.interactive, interactive = _c === void 0 ? true : _c;
+                var _a = props.colors, colors = _a === void 0 ? new Map() : _a, _b = props.transparency, transparency = _b === void 0 ? Default.Transparency : _b, _c = props.interactive, interactive = _c === void 0 ? true : _c, _d = props.disableFog, disableFog = _d === void 0 ? false : _d;
                 //let prop = mapping.getProperty;
                 // let set = mapping.setColor;
                 return {
                     colors: colors,
                     transparency: transparency ? transparency : Default.Transparency,
                     interactive: interactive,
+                    disableFog: disableFog,
                     setElementColor: function (index, target) {
                         mapping.setColor(mapping.getProperty(index), target);
                     }
@@ -55128,7 +55130,7 @@ var LiteMol;
             };
             MaterialsHelper.updateMaterial = function (material, theme, object) {
                 var changed = false;
-                if (MaterialsHelper.updateTransparency(material, theme, object))
+                if (MaterialsHelper.updateTransparencyAndFog(material, theme, object))
                     changed = true;
                 if (material instanceof Visualization.THREE.ShaderMaterial && MaterialsHelper.updateHighlightColor(material, theme))
                     changed = true;
@@ -55151,7 +55153,7 @@ var LiteMol;
                 }
                 return changed;
             };
-            MaterialsHelper.updateTransparency = function (material, theme, object) {
+            MaterialsHelper.updateTransparencyAndFog = function (material, theme, object) {
                 var transparency = theme.transparency;
                 var opacity = +transparency.alpha;
                 if (isNaN(opacity))
@@ -55176,6 +55178,10 @@ var LiteMol;
                     }
                     if (material.opacity !== opacity) {
                         material.opacity = opacity;
+                        changed = true;
+                    }
+                    if (material.fog !== !theme.disableFog) {
+                        material.fog = !theme.disableFog;
                         changed = true;
                     }
                     if (material instanceof Visualization.THREE.ShaderMaterial) {
@@ -67069,7 +67075,8 @@ var LiteMol;
                     return {
                         colors: colors,
                         transparency: theme.transparency,
-                        interactive: theme.interactive
+                        interactive: theme.interactive,
+                        disableFog: theme.disableFog
                     };
                 }
                 Theme.getProps = getProps;
@@ -67568,7 +67575,7 @@ var LiteMol;
                         return {
                             type: {},
                             params: { isoValue: params.isoValue, isoValueType: params.isoValueType, smoothing: 1, isWireframe: !!params.isWireframe },
-                            theme: { template: Default.Theme, colors: colors, transparency: params.transparency ? params.transparency : Default.Transparency, interactive: false }
+                            theme: { template: Default.Theme, colors: colors, transparency: params.transparency ? params.transparency : Default.Transparency, interactive: false, disableFog: !!params.disableFog }
                         };
                     }
                     Style.create = create;
@@ -67599,7 +67606,7 @@ var LiteMol;
                     ];
                     Default.Transparency = { alpha: 1.0, writeDepth: false };
                     Default.Theme = Default.Themes[0];
-                    Default.Style = { type: {}, params: Default.Params, theme: { template: Default.Theme, colors: Default.Theme.colors, transparency: Default.Transparency, interactive: false } };
+                    Default.Style = { type: {}, params: Default.Params, theme: { template: Default.Theme, colors: Default.Theme.colors, transparency: Default.Transparency, interactive: false, disableFog: false } };
                 })(Default = Density.Default || (Density.Default = {}));
             })(Density = Visualization.Density || (Visualization.Density = {}));
         })(Visualization = Bootstrap.Visualization || (Bootstrap.Visualization = {}));
@@ -68957,14 +68964,14 @@ var LiteMol;
                             type: 'BallsAndSticks',
                             computeOnBackground: true,
                             params: { useVDW: true, vdwScaling: 0.25, bondRadius: 0.13, detail: 'Automatic' },
-                            theme: { template: Bootstrap.Visualization.Molecule.Default.ElementSymbolThemeTemplate, colors: Bootstrap.Visualization.Molecule.Default.ElementSymbolThemeTemplate.colors.set('Bond', { r: 1, g: 0, b: 0 }), transparency: { alpha: 0.4 } },
+                            theme: { template: Bootstrap.Visualization.Molecule.Default.ElementSymbolThemeTemplate, colors: Bootstrap.Visualization.Molecule.Default.ElementSymbolThemeTemplate.colors.set('Bond', { r: 1, g: 0, b: 0 }), transparency: { alpha: 0.4 }, disableFog: true },
                             isNotSelectable: true
                         };
                         var ambStyle = {
                             type: 'BallsAndSticks',
                             computeOnBackground: true,
                             params: { useVDW: false, atomRadius: 0.15, bondRadius: 0.07, detail: 'Automatic' },
-                            theme: { template: Bootstrap.Visualization.Molecule.Default.UniformThemeTemplate, colors: Bootstrap.Visualization.Molecule.Default.UniformThemeTemplate.colors.set('Uniform', { r: 0.4, g: 0.4, b: 0.4 }), transparency: { alpha: 0.75 } },
+                            theme: { template: Bootstrap.Visualization.Molecule.Default.UniformThemeTemplate, colors: Bootstrap.Visualization.Molecule.Default.UniformThemeTemplate.colors.set('Uniform', { r: 0.4, g: 0.4, b: 0.4 }), transparency: { alpha: 0.75 }, disableFog: true },
                             isNotSelectable: true
                         };
                         function clean() {
@@ -69005,25 +69012,6 @@ var LiteMol;
                                 .then(Transforms.Molecule.CreateVisual, { style: ligandStyle });
                             Bootstrap.Tree.Transform.apply(context, action).run(context);
                         });
-                        // context.behaviours.select.subscribe(info => {
-                        //     if (lastRef) {
-                        //         Command.Tree.RemoveNode.dispatch(context, lastRef);
-                        //         lastRef = void 0;
-                        //         ambRef = void 0;
-                        //     }                
-                        //     if (Interactivity.isEmpty(info) || !Utils.Molecule.findModelOrSelection(info.source)) return;
-                        //     let ligandQ = Query.atomsFromIndices(info.elements).wholeResidues();
-                        //     let ambQ = Query.atomsFromIndices(info.elements).wholeResidues().ambientResidues(radius);
-                        //     let ref = Utils.generateUUID();
-                        //     let action = Tree.Transform.build().add(info.source, Transforms.Basic.CreateGroup, { label: 'Interaction' }, { ref, isHidden: true });
-                        //     lastRef = ref;
-                        //     ambRef = Utils.generateUUID();
-                        //     action.then(Transforms.Molecule.CreateSelectionFromQuery, { query: ambQ, name: 'Ambience', silent: true, inFullContext: true }, { isBinding: true })
-                        //         .then(<Bootstrap.Tree.Transformer.To<Entity.Molecule.Visual>>Transforms.Molecule.CreateVisual, { style: ambStyle }, { ref: ambRef });
-                        //     action.then(Transforms.Molecule.CreateSelectionFromQuery, { query: ligandQ, name: 'Ligand', silent: true, inFullContext: true }, { isBinding: true })
-                        //         .then(<Bootstrap.Tree.Transformer.To<Entity.Molecule.Visual>>Transforms.Molecule.CreateVisual, { style: ligandStyle });
-                        //     Tree.Transform.apply(context, action).run(context);
-                        // });        
                     };
                 }
                 Molecule.ShowInteractionOnSelect = ShowInteractionOnSelect;
