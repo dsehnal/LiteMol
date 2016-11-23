@@ -1,3 +1,6 @@
+# 1.1.11
+* Added support for popup messages (toasts).
+
 # 1.1.10
 * Changed how visual interactivity works.
   - Repeatedly clicking on any element clears the selection.

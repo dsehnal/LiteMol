@@ -47,6 +47,7 @@
     // VIEW -> CONTEXT
     "Views/Context/Log.tsx",
     "Views/Context/Tasks.tsx",
+    "Views/Context/Toast.tsx",
     
     // VIEW -> ENTITY
     "Views/Entity/Tree.tsx",

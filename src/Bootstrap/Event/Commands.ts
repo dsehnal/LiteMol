@@ -41,4 +41,9 @@ namespace LiteMol.Bootstrap.Command {
         export const ResetTheme = create<{ selection?: Bootstrap.Tree.Selector<Bootstrap.Entity.Any> } | undefined>('bs.cmd.Visual.ResetTheme', Lane.Slow);
         export const UpdateBasicTheme = create<{ visual: Bootstrap.Entity.Visual.Any, theme: LiteMol.Visualization.Theme }>('bs.cmd.Visual.UpdateBasicTheme', Lane.Slow);
     }    
+
+    export namespace Toast {
+        export const Show = create<Service.Toast>('bs.cmd.Toast.Show', Lane.Slow);
+        export const Hide = create<{ key: string }>('bs.cmd.Toast.Hide', Lane.Slow);
+    }
 }

@@ -1,0 +1,21 @@
+/*
+ * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ */
+
+
+namespace LiteMol.Bootstrap.Service {
+    "use strict";
+
+    export interface Toast {
+        title: string,
+        message: string,
+        /**
+         * Only one message with a given key can be shown.
+         */
+        key?: string,
+        /**
+         * Specify a timeout for the message in milliseconds.
+         */
+        timeoutMs?: number            
+    } 
+}

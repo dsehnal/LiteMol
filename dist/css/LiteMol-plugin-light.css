@@ -2760,6 +2760,38 @@
     top: 33px; }
   .lm-plugin .lm-transformer-wrapper:not(:first-child) .lm-panel-description-content {
     bottom: 33px; }
+  .lm-plugin .lm-toast-container {
+    position: absolute;
+    width: 60%;
+    bottom: 32px;
+    margin-left: auto;
+    margin-right: auto;
+    left: 0;
+    right: 0;
+    z-index: 1001; }
+    .lm-plugin .lm-toast-container .lm-toast-entry {
+      color: #332b1f;
+      background: #e0ddd4;
+      position: relative;
+      padding: 5px 42px 5px 10px;
+      min-height: 32px;
+      margin-top: 10px;
+      border: 1px solid #cec9ba; }
+      .lm-plugin .lm-toast-container .lm-toast-entry .lm-toast-hide {
+        position: absolute;
+        top: 0;
+        right: 0;
+        left: 0;
+        bottom: 0; }
+        .lm-plugin .lm-toast-container .lm-toast-entry .lm-toast-hide .lm-btn-icon {
+          position: absolute;
+          top: 0;
+          right: 0;
+          left: 0;
+          bottom: 0;
+          width: 100%;
+          text-align: right;
+          padding-right: 5px; }
   .lm-plugin .lm-logo {
     position: absolute;
     top: 0;

@@ -27,7 +27,8 @@ namespace LiteMol.Plugin.Components {
     }
         
     export namespace Context {
-        export const Log = create('Context.Log', s => new Bootstrap.Components.Context.Log(s), Views.Context.Log);        
+        export const Log = create('Context.Log', s => new Bootstrap.Components.Context.Log(s), Views.Context.Log);
+        export const Toast = create('Context.Toast', s => new Bootstrap.Components.Context.Toast(s), Views.Context.Toast);        
         export const Overlay = create('Context.Overlay', s => new Bootstrap.Components.Context.TaskWatcher(s, 'Normal'), Views.Context.Overlay);
         export const BackgroundTasks = create('Context.BackgroundTasks', s => new Bootstrap.Components.Context.TaskWatcher(s, 'Background'), Views.Context.BackgroundTasks);
     }

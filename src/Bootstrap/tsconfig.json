@@ -35,6 +35,7 @@
     // SERVICE
     "Service/Dispatcher.ts",                
     "Service/Logger.ts",
+    "Service/Toast.ts",
             
     //  TASK
     "Tasks/Task.ts",    
@@ -101,6 +102,7 @@
     "Components/Transform/Action.ts",
     
     "Components/Context/Log.ts",
+    "Components/Context/Toast.ts",
     "Components/Context/TaskWatcher.ts",
     
     "Components/Visualization/HighlightInfo.ts",

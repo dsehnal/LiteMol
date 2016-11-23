@@ -1,4 +1,7 @@
-﻿# 1.2.5
+﻿# 1.2.6
+* Added support for popup messages (toasts).
+
+# 1.2.5
 * Updated default pluing spec with Bootstrap.Behaviour.UnselectElementOnRepeatedClick.
 
 # 1.2.4

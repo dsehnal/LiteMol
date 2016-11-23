@@ -127,7 +127,7 @@ var LiteMol;
                         })
                     });
                     return action;
-                }, "Electron density loaded, click on a residue or atom to display it.");
+                }, "Electron density loaded, click on a residue or an atom to view the data.");
             })(Data = PDBe.Data || (PDBe.Data = {}));
         })(PDBe = Viewer.PDBe || (Viewer.PDBe = {}));
     })(Viewer = LiteMol.Viewer || (LiteMol.Viewer = {}));
@@ -818,6 +818,7 @@ var LiteMolPluginInstance;
                 Plugin.Components.Transform.View(LayoutRegion.Right),
                 Plugin.Components.Context.Log(LayoutRegion.Bottom, true),
                 Plugin.Components.Context.Overlay(LayoutRegion.Root),
+                Plugin.Components.Context.Toast(LayoutRegion.Main, true),
                 Plugin.Components.Context.BackgroundTasks(LayoutRegion.Main, true)
             ],
             viewport: {

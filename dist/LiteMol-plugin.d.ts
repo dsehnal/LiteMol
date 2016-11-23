@@ -2904,6 +2904,11 @@ declare namespace LiteMol.Plugin.Views.Context {
         render(): JSX.Element;
     }
 }
+declare namespace LiteMol.Plugin.Views.Context {
+    class Toast extends View<Bootstrap.Components.Context.Toast, {}, {}> {
+        render(): JSX.Element;
+    }
+}
 declare namespace LiteMol.Plugin.Views.Entity {
     import BEntity = Bootstrap.Entity;
     const VisibilityControl: (props: {
@@ -2991,6 +2996,13 @@ declare namespace LiteMol.Plugin.Components {
     }
     namespace Context {
         const Log: (t: Bootstrap.Components.LayoutRegion, isStatic?: boolean | undefined) => (ctx: Context) => {
+            key: string;
+            controller: Bootstrap.Components.Component<any>;
+            region: Bootstrap.Components.LayoutRegion;
+            view: React.ComponentClass<any>;
+            isStatic: boolean | undefined;
+        };
+        const Toast: (t: Bootstrap.Components.LayoutRegion, isStatic?: boolean | undefined) => (ctx: Context) => {
             key: string;
             controller: Bootstrap.Components.Component<any>;
             region: Bootstrap.Components.LayoutRegion;
@@ -15413,6 +15425,20 @@ declare namespace LiteMol.Bootstrap.Service {
         }
     }
 }
+declare namespace LiteMol.Bootstrap.Service {
+    interface Toast {
+        title: string;
+        message: string;
+        /**
+         * Only one message with a given key can be shown.
+         */
+        key?: string;
+        /**
+         * Specify a timeout for the message in milliseconds.
+         */
+        timeoutMs?: number;
+    }
+}
 declare namespace LiteMol.Bootstrap {
     let serialTaskId: number;
     class Task<A> {
@@ -15587,6 +15613,12 @@ declare namespace LiteMol.Bootstrap.Command {
         const UpdateBasicTheme: Event.Type<{
             visual: Bootstrap.Entity.Visual.Any;
             theme: LiteMol.Visualization.Theme;
+        }>;
+    }
+    namespace Toast {
+        const Show: Event.Type<Service.Toast>;
+        const Hide: Event.Type<{
+            key: string;
         }>;
     }
 }
@@ -16679,6 +16711,31 @@ declare namespace LiteMol.Bootstrap.Components.Context {
         entries: Immutable.List<Service.Logger.Entry>;
     }> {
         constructor(context: Context);
+    }
+}
+declare namespace LiteMol.Bootstrap.Components.Context {
+    class Toast extends Component<{
+        entries: Immutable.Map<number, Toast.Entry>;
+    }> {
+        private serialNumber;
+        private serialId;
+        private findByKey(key);
+        private show(toast);
+        private timeout(id, delay?);
+        private hideId(id);
+        private hide(e);
+        constructor(context: Context);
+    }
+    namespace Toast {
+        interface Entry {
+            id: number;
+            serialNumber: number;
+            key?: string;
+            title: string;
+            message: string;
+            hide: () => void;
+            timeout?: number;
+        }
     }
 }
 declare namespace LiteMol.Bootstrap.Components.Context {

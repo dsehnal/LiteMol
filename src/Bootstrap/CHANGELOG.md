@@ -1,4 +1,7 @@
-﻿# 1.2.1
+﻿# 1.2.2
+* Added support for popup messages (toasts).
+
+# 1.2.1
 * Transform builder no longer requires verbose type annotations that were sometimes required.
 
 # 1.2.0

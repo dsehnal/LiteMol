@@ -11,6 +11,8 @@ namespace LiteMol.Bootstrap.Behaviour.Density {
         radius: number, 
         defaultTarget?: { bottomLeft: number[], topRight: number[] }
     }
+
+    const ToastKey = 'ShowElectronDensityAroundSelection-toast';
     
     export class ShowElectronDensityAroundSelection implements Dynamic {
         
@@ -35,6 +37,8 @@ namespace LiteMol.Bootstrap.Behaviour.Density {
                 this.remove();
                 return;
             }
+
+            Command.Toast.Hide.dispatch(this.context, { key: ToastKey });
             
             let model = Utils.Molecule.findModel(info.source)!;
             let elems = info.elements;
@@ -66,14 +70,18 @@ namespace LiteMol.Bootstrap.Behaviour.Density {
         
         dispose() {
             this.remove();
+            Command.Toast.Hide.dispatch(this.context, { key: ToastKey });
             for (let o of this.obs) o.dispose();
             this.obs = [];
         }
         
         register(behaviour: Entity.Density.InteractiveSurface) {
             this.behaviour = behaviour;
-            this.obs.push(this.context.behaviours.select.subscribe(e => {
-                this.update(e)
+
+            Command.Toast.Show.dispatch(this.context, { key: ToastKey, title: 'Density', message: 'Click on a residue or an atom to view the data.' });
+
+            this.obs.push(this.context.behaviours.select.subscribe(e => {                
+                this.update(e);
             }));
         }
                 

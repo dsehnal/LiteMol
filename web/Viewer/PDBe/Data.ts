@@ -116,6 +116,6 @@ namespace LiteMol.Viewer.PDBe.Data {
             });
             
         return action;
-    }, "Electron density loaded, click on a residue or atom to display it.");
+    }, "Electron density loaded, click on a residue or an atom to view the data.");
         
 }

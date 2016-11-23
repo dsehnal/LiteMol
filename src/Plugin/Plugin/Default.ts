@@ -79,6 +79,7 @@ namespace LiteMol.Plugin {
                 Components.Transform.View(LayoutRegion.Right),
                 Components.Context.Log(LayoutRegion.Bottom, true),
                 Components.Context.Overlay(LayoutRegion.Root),
+                Components.Context.Toast(LayoutRegion.Main, true),
                 Components.Context.BackgroundTasks(LayoutRegion.Main, true)
             ],
             viewport: {

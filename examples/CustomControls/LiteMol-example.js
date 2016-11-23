@@ -127,7 +127,7 @@ var LiteMol;
                         })
                     });
                     return action;
-                }, "Electron density loaded, click on a residue or atom to display it.");
+                }, "Electron density loaded, click on a residue or an atom to view the data.");
             })(Data = PDBe.Data || (PDBe.Data = {}));
         })(PDBe = Viewer.PDBe || (Viewer.PDBe = {}));
     })(Viewer = LiteMol.Viewer || (LiteMol.Viewer = {}));
@@ -594,6 +594,7 @@ var LiteMol;
                     Plugin.Components.create('WaterControls', function (ctx) { return new Bootstrap.Components.Transform.Updater(ctx, 'water-visual', 'Water Visual'); }, Plugin.Views.Transform.Updater)(LayoutRegion.Right),
                     Plugin.Components.Context.Log(LayoutRegion.Bottom, true),
                     Plugin.Components.Context.Overlay(LayoutRegion.Root),
+                    Plugin.Components.Context.Toast(LayoutRegion.Main, true),
                     Plugin.Components.Context.BackgroundTasks(LayoutRegion.Main, true)
                 ],
                 viewport: {

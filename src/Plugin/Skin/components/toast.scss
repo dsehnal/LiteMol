@@ -1,0 +1,41 @@
+
+.lm-toast-container {
+    position: absolute;
+    width: 60%;
+    bottom: $row-height;
+    margin-left: auto;
+    margin-right: auto;
+    left: 0;
+    right: 0;
+    z-index: 1001;
+    
+    .lm-toast-entry {
+
+        color: $font-color;
+        background: $control-background;
+        position: relative;
+        padding: $info-vertical-padding ($control-spacing + $row-height) $info-vertical-padding $control-spacing;
+        min-height: $row-height;
+        margin-top: $control-spacing;
+        border: 1px solid $border-color;
+
+        .lm-toast-hide {
+            position: absolute;
+            top: 0;
+            right: 0;
+            left: 0;
+            bottom: 0;
+
+            .lm-btn-icon {
+                position: absolute;
+                top: 0;
+                right: 0;
+                left: 0;
+                bottom: 0;
+                width: 100%;
+                text-align: right;
+                padding-right: $control-spacing / 2;
+            }            
+        }
+    }
+}

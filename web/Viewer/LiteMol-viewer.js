@@ -808,6 +808,7 @@ var LiteMol;
                 LiteMol.Plugin.Components.Transform.View(LayoutRegion.Right),
                 LiteMol.Plugin.Components.Context.Log(LayoutRegion.Bottom, true),
                 LiteMol.Plugin.Components.Context.Overlay(LayoutRegion.Root),
+                LiteMol.Plugin.Components.Context.Toast(LayoutRegion.Main, true),
                 LiteMol.Plugin.Components.Context.BackgroundTasks(LayoutRegion.Main, true)
             ],
             viewport: {

@@ -64631,7 +64631,7 @@ var LiteMol;
 (function (LiteMol) {
     var Bootstrap;
     (function (Bootstrap) {
-        Bootstrap.VERSION = { number: "1.2.1", date: "Nov 22 2016" };
+        Bootstrap.VERSION = { number: "1.2.2", date: "Nov 23 2016" };
     })(Bootstrap = LiteMol.Bootstrap || (LiteMol.Bootstrap = {}));
 })(LiteMol || (LiteMol = {}));
 /*
@@ -65388,6 +65388,19 @@ var LiteMol;
 (function (LiteMol) {
     var Bootstrap;
     (function (Bootstrap) {
+        var Service;
+        (function (Service) {
+            "use strict";
+        })(Service = Bootstrap.Service || (Bootstrap.Service = {}));
+    })(Bootstrap = LiteMol.Bootstrap || (LiteMol.Bootstrap = {}));
+})(LiteMol || (LiteMol = {}));
+/*
+ * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ */
+var LiteMol;
+(function (LiteMol) {
+    var Bootstrap;
+    (function (Bootstrap) {
         "use strict";
         Bootstrap.serialTaskId = 0;
         var Task = (function () {
@@ -65785,6 +65798,11 @@ var LiteMol;
                 Visual.ResetTheme = create('bs.cmd.Visual.ResetTheme', Lane.Slow);
                 Visual.UpdateBasicTheme = create('bs.cmd.Visual.UpdateBasicTheme', Lane.Slow);
             })(Visual = Command.Visual || (Command.Visual = {}));
+            var Toast;
+            (function (Toast) {
+                Toast.Show = create('bs.cmd.Toast.Show', Lane.Slow);
+                Toast.Hide = create('bs.cmd.Toast.Hide', Lane.Slow);
+            })(Toast = Command.Toast || (Command.Toast = {}));
         })(Command = Bootstrap.Command || (Bootstrap.Command = {}));
     })(Bootstrap = LiteMol.Bootstrap || (LiteMol.Bootstrap = {}));
 })(LiteMol || (LiteMol = {}));
@@ -69073,6 +69091,7 @@ var LiteMol;
             var Density;
             (function (Density) {
                 "use strict";
+                var ToastKey = 'ShowElectronDensityAroundSelection-toast';
                 var ShowElectronDensityAroundSelection = (function () {
                     function ShowElectronDensityAroundSelection(context, params) {
                         this.context = context;
@@ -69095,6 +69114,7 @@ var LiteMol;
                             this.remove();
                             return;
                         }
+                        Bootstrap.Command.Toast.Hide.dispatch(this.context, { key: ToastKey });
                         var model = Bootstrap.Utils.Molecule.findModel(info.source);
                         var elems = info.elements;
                         var m = model.props.model;
@@ -69121,6 +69141,7 @@ var LiteMol;
                     };
                     ShowElectronDensityAroundSelection.prototype.dispose = function () {
                         this.remove();
+                        Bootstrap.Command.Toast.Hide.dispatch(this.context, { key: ToastKey });
                         for (var _i = 0, _a = this.obs; _i < _a.length; _i++) {
                             var o = _a[_i];
                             o.dispose();
@@ -69130,6 +69151,7 @@ var LiteMol;
                     ShowElectronDensityAroundSelection.prototype.register = function (behaviour) {
                         var _this = this;
                         this.behaviour = behaviour;
+                        Bootstrap.Command.Toast.Show.dispatch(this.context, { key: ToastKey, title: 'Density', message: 'Click on a residue or an atom to view the data.' });
                         this.obs.push(this.context.behaviours.select.subscribe(function (e) {
                             _this.update(e);
                         }));
@@ -70046,6 +70068,90 @@ var LiteMol;
                     return Log;
                 }(Components.Component));
                 Context.Log = Log;
+            })(Context = Components.Context || (Components.Context = {}));
+        })(Components = Bootstrap.Components || (Bootstrap.Components = {}));
+    })(Bootstrap = LiteMol.Bootstrap || (LiteMol.Bootstrap = {}));
+})(LiteMol || (LiteMol = {}));
+/*
+ * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ */
+var LiteMol;
+(function (LiteMol) {
+    var Bootstrap;
+    (function (Bootstrap) {
+        var Components;
+        (function (Components) {
+            var Context;
+            (function (Context) {
+                "use strict";
+                var Toast = (function (_super) {
+                    __extends(Toast, _super);
+                    function Toast(context) {
+                        var _this = _super.call(this, context, { entries: Bootstrap.Immutable.Map() }) || this;
+                        _this.serialNumber = 0;
+                        _this.serialId = 0;
+                        Bootstrap.Command.Toast.Show.getStream(_this.context).subscribe(function (e) { return _this.show(e.data); });
+                        Bootstrap.Command.Toast.Hide.getStream(_this.context).subscribe(function (e) { return _this.hide(_this.findByKey(e.data.key)); });
+                        return _this;
+                    }
+                    Toast.prototype.findByKey = function (key) {
+                        return this.latestState.entries.find(function (e) { return !!e && e.key === key; });
+                    };
+                    Toast.prototype.show = function (toast) {
+                        var _this = this;
+                        var entries = this.latestState.entries;
+                        var e = void 0;
+                        var id = ++this.serialId;
+                        var serialNumber;
+                        if (toast.key && (e = this.findByKey(toast.key))) {
+                            if (e.timeout !== void 0)
+                                clearTimeout(e.timeout);
+                            serialNumber = e.serialNumber;
+                            entries = entries.remove(e.id);
+                        }
+                        else {
+                            serialNumber = ++this.serialNumber;
+                        }
+                        e = {
+                            id: id,
+                            serialNumber: serialNumber,
+                            key: toast.key,
+                            title: toast.title,
+                            message: toast.message,
+                            timeout: this.timeout(id, toast.timeoutMs),
+                            hide: function () { return _this.hideId(id); }
+                        };
+                        entries = entries.set(id, e);
+                        this.setState({ entries: entries });
+                    };
+                    Toast.prototype.timeout = function (id, delay) {
+                        var _this = this;
+                        if (delay === void 0)
+                            return void 0;
+                        if (delay < 0)
+                            delay = 500;
+                        return setTimeout(function () {
+                            var e = _this.latestState.entries.get(id);
+                            e.timeout = void 0;
+                            _this.hide(e);
+                        }, delay);
+                    };
+                    Toast.prototype.hideId = function (id) {
+                        this.hide(this.latestState.entries.get(id));
+                    };
+                    Toast.prototype.hide = function (e) {
+                        if (!e)
+                            return;
+                        if (e.timeout !== void 0)
+                            clearTimeout(e.timeout);
+                        e.hide = void 0;
+                        var entries = this.latestState.entries;
+                        entries = entries.delete(e.id);
+                        this.setState({ entries: entries });
+                    };
+                    return Toast;
+                }(Components.Component));
+                Context.Toast = Toast;
             })(Context = Components.Context || (Components.Context = {}));
         })(Components = Bootstrap.Components || (Bootstrap.Components = {}));
     })(Bootstrap = LiteMol.Bootstrap || (LiteMol.Bootstrap = {}));
@@ -74995,7 +75101,7 @@ var LiteMol;
 (function (LiteMol) {
     var Plugin;
     (function (Plugin) {
-        Plugin.VERSION = { number: "1.2.5", date: "Nov 22 2016" };
+        Plugin.VERSION = { number: "1.2.6", date: "Nov 23 2016" };
     })(Plugin = LiteMol.Plugin || (LiteMol.Plugin = {}));
 })(LiteMol || (LiteMol = {}));
 /*
@@ -76447,6 +76553,62 @@ var LiteMol;
     (function (Plugin) {
         var Views;
         (function (Views) {
+            var Context;
+            (function (Context) {
+                "use strict";
+                var ToastEntry = (function (_super) {
+                    __extends(ToastEntry, _super);
+                    function ToastEntry() {
+                        return _super.apply(this, arguments) || this;
+                    }
+                    ToastEntry.prototype.render = function () {
+                        var entry = this.props.entry;
+                        return Plugin.React.createElement("div", { className: 'lm-toast-entry' },
+                            Plugin.React.createElement("div", { className: 'lm-toast-message' },
+                                Plugin.React.createElement("b", null,
+                                    entry.title,
+                                    ":"),
+                                " ",
+                                entry.message),
+                            Plugin.React.createElement("div", { className: 'lm-toast-hide' },
+                                Plugin.React.createElement(Plugin.Controls.Button, { onClick: function () { return (entry.hide || function () { }).call(null); }, style: 'link', icon: 'abort', title: 'Hide', customClass: 'lm-btn-icon' })));
+                    };
+                    return ToastEntry;
+                }(Plugin.React.Component));
+                var Toast = (function (_super) {
+                    __extends(Toast, _super);
+                    function Toast() {
+                        return _super.apply(this, arguments) || this;
+                    }
+                    Toast.prototype.render = function () {
+                        var state = this.controller.latestState;
+                        if (!state.entries.count())
+                            return Plugin.React.createElement("div", { className: 'lm-empty-control' });
+                        var entries = [];
+                        state.entries.forEach(function (t, k) { return entries.push(t); });
+                        entries.sort(function (x, y) { return x.serialNumber - y.serialNumber; });
+                        var toasts = entries.map(function (e) { return Plugin.React.createElement(ToastEntry, { key: e.serialNumber, entry: e }); });
+                        // toasts.push(<ToastEntry key={0} entry={{ message: 'Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Ut te.', title: 'Test Title' } as any} />);
+                        // toasts.push(<ToastEntry key={1} entry={{ message: 'Lorem ipsum, consectetuer adipiscin te.', title: 'Title' } as any} />);
+                        return Plugin.React.createElement("div", { className: 'lm-toast-container' },
+                            Plugin.React.createElement("div", null, toasts));
+                    };
+                    return Toast;
+                }(Views.View));
+                Context.Toast = Toast;
+            })(Context = Views.Context || (Views.Context = {}));
+        })(Views = Plugin.Views || (Plugin.Views = {}));
+    })(Plugin = LiteMol.Plugin || (LiteMol.Plugin = {}));
+})(LiteMol || (LiteMol = {}));
+/*
+ * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ */
+var LiteMol;
+(function (LiteMol) {
+    var Plugin;
+    (function (Plugin) {
+        var Views;
+        (function (Views) {
             var Entity;
             (function (Entity_1) {
                 "use strict";
@@ -76989,6 +77151,7 @@ var LiteMol;
             var Context;
             (function (Context) {
                 Context.Log = create('Context.Log', function (s) { return new LiteMol.Bootstrap.Components.Context.Log(s); }, Plugin.Views.Context.Log);
+                Context.Toast = create('Context.Toast', function (s) { return new LiteMol.Bootstrap.Components.Context.Toast(s); }, Plugin.Views.Context.Toast);
                 Context.Overlay = create('Context.Overlay', function (s) { return new LiteMol.Bootstrap.Components.Context.TaskWatcher(s, 'Normal'); }, Plugin.Views.Context.Overlay);
                 Context.BackgroundTasks = create('Context.BackgroundTasks', function (s) { return new LiteMol.Bootstrap.Components.Context.TaskWatcher(s, 'Background'); }, Plugin.Views.Context.BackgroundTasks);
             })(Context = Components.Context || (Components.Context = {}));
@@ -77165,6 +77328,7 @@ var LiteMol;
                     Plugin.Components.Transform.View(LayoutRegion.Right),
                     Plugin.Components.Context.Log(LayoutRegion.Bottom, true),
                     Plugin.Components.Context.Overlay(LayoutRegion.Root),
+                    Plugin.Components.Context.Toast(LayoutRegion.Main, true),
                     Plugin.Components.Context.BackgroundTasks(LayoutRegion.Main, true)
                 ],
                 viewport: {

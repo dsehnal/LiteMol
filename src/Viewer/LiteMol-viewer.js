@@ -7,7 +7,7 @@ var LiteMol;
 (function (LiteMol) {
     var Viewer;
     (function (Viewer) {
-        Viewer.VERSION = { number: "1.1.10", date: "Nov 22 2016" };
+        Viewer.VERSION = { number: "1.1.11", date: "Nov 23 2016" };
     })(Viewer = LiteMol.Viewer || (LiteMol.Viewer = {}));
 })(LiteMol || (LiteMol = {}));
 /*
@@ -134,7 +134,7 @@ var LiteMol;
                         })
                     });
                     return action;
-                }, "Electron density loaded, click on a residue or atom to display it.");
+                }, "Electron density loaded, click on a residue or an atom to view the data.");
             })(Data = PDBe.Data || (PDBe.Data = {}));
         })(PDBe = Viewer.PDBe || (Viewer.PDBe = {}));
     })(Viewer = LiteMol.Viewer || (LiteMol.Viewer = {}));
@@ -808,6 +808,7 @@ var LiteMol;
                 LiteMol.Plugin.Components.Transform.View(LayoutRegion.Right),
                 LiteMol.Plugin.Components.Context.Log(LayoutRegion.Bottom, true),
                 LiteMol.Plugin.Components.Context.Overlay(LayoutRegion.Root),
+                LiteMol.Plugin.Components.Context.Toast(LayoutRegion.Main, true),
                 LiteMol.Plugin.Components.Context.BackgroundTasks(LayoutRegion.Main, true)
             ],
             viewport: {
