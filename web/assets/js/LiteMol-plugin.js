@@ -69493,6 +69493,12 @@ var LiteMol;
                 LayoutRegion[LayoutRegion["Root"] = 5] = "Root";
             })(Components.LayoutRegion || (Components.LayoutRegion = {}));
             var LayoutRegion = Components.LayoutRegion;
+            (function (CollapsedControlsLayout) {
+                CollapsedControlsLayout[CollapsedControlsLayout["Outside"] = 0] = "Outside";
+                CollapsedControlsLayout[CollapsedControlsLayout["Landscape"] = 1] = "Landscape";
+                CollapsedControlsLayout[CollapsedControlsLayout["Portrait"] = 2] = "Portrait";
+            })(Components.CollapsedControlsLayout || (Components.CollapsedControlsLayout = {}));
+            var CollapsedControlsLayout = Components.CollapsedControlsLayout;
             var LayoutTarget = (function () {
                 function LayoutTarget(cssClass) {
                     this.cssClass = cssClass;
@@ -69514,6 +69520,8 @@ var LiteMol;
                 function Layout(context, targets, root) {
                     var _this = _super.call(this, context, {
                         isExpanded: false,
+                        collapsedControlsLayout: CollapsedControlsLayout.Outside,
+                        hiddenRegions: [],
                         hiddenComponentKeys: Bootstrap.Immutable.Set()
                     }) || this;
                     _this.targets = targets;
@@ -75638,26 +75646,47 @@ var LiteMol;
                 Layout.prototype.render = function () {
                     var layoutClass = '';
                     var state = this.controller.latestState;
-                    var layoutType = state.isExpanded ? 'lm-layout-expanded' : 'lm-layout-standard';
+                    var layoutType;
+                    if (state.isExpanded) {
+                        layoutType = 'lm-layout-expanded';
+                    }
+                    else {
+                        layoutType = 'lm-layout-standard ';
+                        switch (state.collapsedControlsLayout) {
+                            case LiteMol.Bootstrap.Components.CollapsedControlsLayout.Outside:
+                                layoutType += 'lm-layout-standard-outside';
+                                break;
+                            case LiteMol.Bootstrap.Components.CollapsedControlsLayout.Landscape:
+                                layoutType += 'lm-layout-standard-landscape';
+                                break;
+                            case LiteMol.Bootstrap.Components.CollapsedControlsLayout.Portrait:
+                                layoutType += 'lm-layout-standard-portrait';
+                                break;
+                            default:
+                                layoutType += 'lm-layout-standard-outside';
+                                break;
+                        }
+                    }
                     var targets = this.controller.targets;
                     var regions = [this.renderTarget(targets[LayoutRegion.Main])];
+                    var hiddenRegions = state.hiddenRegions || [];
                     var region = targets[LayoutRegion.Top];
-                    if (state.hideControls || !region.components.length)
+                    if (state.hideControls || !region.components.length || hiddenRegions.indexOf(LayoutRegion.Top) >= 0)
                         layoutClass += ' lm-layout-hide-top';
                     else
                         regions.push(this.renderTarget(region));
                     region = targets[LayoutRegion.Right];
-                    if (state.hideControls || !region.components.length)
+                    if (state.hideControls || !region.components.length || hiddenRegions.indexOf(LayoutRegion.Right) >= 0)
                         layoutClass += ' lm-layout-hide-right';
                     else
                         regions.push(this.renderTarget(region));
                     region = targets[LayoutRegion.Bottom];
-                    if (state.hideControls || !region.components.length)
+                    if (state.hideControls || !region.components.length || hiddenRegions.indexOf(LayoutRegion.Bottom) >= 0)
                         layoutClass += ' lm-layout-hide-bottom';
                     else
                         regions.push(this.renderTarget(region));
                     region = targets[LayoutRegion.Left];
-                    if (state.hideControls || !region.components.length)
+                    if (state.hideControls || !region.components.length || hiddenRegions.indexOf(LayoutRegion.Left) >= 0)
                         layoutClass += ' lm-layout-hide-left';
                     else
                         regions.push(this.renderTarget(region));

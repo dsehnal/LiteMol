@@ -16604,6 +16604,11 @@ declare namespace LiteMol.Bootstrap.Components {
         Left = 4,
         Root = 5,
     }
+    enum CollapsedControlsLayout {
+        Outside = 0,
+        Landscape = 1,
+        Portrait = 2,
+    }
     class LayoutTarget {
         cssClass: string;
         components: ComponentInfo[];
@@ -16613,6 +16618,8 @@ declare namespace LiteMol.Bootstrap.Components {
     interface LayoutState {
         isExpanded?: boolean;
         hideControls?: boolean;
+        collapsedControlsLayout?: CollapsedControlsLayout;
+        hiddenRegions?: LayoutRegion[];
         hiddenComponentKeys?: Immutable.Set<string>;
     }
     class Layout extends Component<LayoutState> {

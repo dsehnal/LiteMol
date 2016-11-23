@@ -30,33 +30,45 @@ namespace LiteMol.Plugin.Views {
 
             let layoutClass = '';
             
-            
             let state = this.controller.latestState;
-            let layoutType= state.isExpanded ? 'lm-layout-expanded' : 'lm-layout-standard';
+            let layoutType: string;
+
+            if (state.isExpanded) {
+                layoutType = 'lm-layout-expanded';
+            } else {
+                layoutType = 'lm-layout-standard ';
+                switch (state.collapsedControlsLayout) {
+                    case Bootstrap.Components.CollapsedControlsLayout.Outside: layoutType += 'lm-layout-standard-outside'; break;
+                    case Bootstrap.Components.CollapsedControlsLayout.Landscape: layoutType += 'lm-layout-standard-landscape'; break;
+                    case Bootstrap.Components.CollapsedControlsLayout.Portrait: layoutType += 'lm-layout-standard-portrait'; break;
+                    default: layoutType += 'lm-layout-standard-outside'; break;
+                }
+            }
             
             let targets = this.controller.targets;
             let regions = [this.renderTarget(targets[LayoutRegion.Main])];
+
+            let hiddenRegions = state.hiddenRegions || [];
             
-            let region = targets[LayoutRegion.Top];
-                        
-            if (state.hideControls || !region.components.length) layoutClass += ' lm-layout-hide-top';
+            let region = targets[LayoutRegion.Top];                        
+            if (state.hideControls || !region.components.length || hiddenRegions.indexOf(LayoutRegion.Top) >= 0) layoutClass += ' lm-layout-hide-top';
             else regions.push(this.renderTarget(region));
             
             region = targets[LayoutRegion.Right];
-            if (state.hideControls || !region.components.length) layoutClass += ' lm-layout-hide-right';
+            if (state.hideControls || !region.components.length || hiddenRegions.indexOf(LayoutRegion.Right) >= 0) layoutClass += ' lm-layout-hide-right';
             else regions.push(this.renderTarget(region));
             
             region = targets[LayoutRegion.Bottom];
-            if (state.hideControls || !region.components.length) layoutClass += ' lm-layout-hide-bottom';
+            if (state.hideControls || !region.components.length || hiddenRegions.indexOf(LayoutRegion.Bottom) >= 0) layoutClass += ' lm-layout-hide-bottom';
             else regions.push(this.renderTarget(region));
                         
             region = targets[LayoutRegion.Left];
-            if (state.hideControls || !region.components.length) layoutClass += ' lm-layout-hide-left';
+            if (state.hideControls || !region.components.length || hiddenRegions.indexOf(LayoutRegion.Left) >= 0) layoutClass += ' lm-layout-hide-left';
             else regions.push(this.renderTarget(region));
             
             let root = targets[LayoutRegion.Root]
                 .components.map(c => <c.view controller={c.controller} />);
-                        
+      
             return <div className='lm-plugin'>
                 <div className={'lm-plugin-content ' + layoutType}>
                     <div className={layoutClass}>
@@ -66,6 +78,5 @@ namespace LiteMol.Plugin.Views {
                 </div>
             </div>;
         }
-
     }
 }

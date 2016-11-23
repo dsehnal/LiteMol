@@ -15,6 +15,12 @@ namespace LiteMol.Bootstrap.Components {
         Root     = 5
     }
 
+    export enum CollapsedControlsLayout {
+        Outside   = 0,
+        Landscape = 1,
+        Portrait  = 2
+    }
+
     export class LayoutTarget {
         components: ComponentInfo[] = [];
         constructor(public cssClass: string) {
@@ -32,6 +38,9 @@ namespace LiteMol.Bootstrap.Components {
     export interface LayoutState {
         isExpanded?: boolean;
         hideControls?: boolean;
+
+        collapsedControlsLayout?: CollapsedControlsLayout;
+        hiddenRegions?: LayoutRegion[];
 
         hiddenComponentKeys?: Immutable.Set<string>;
     }
@@ -186,6 +195,8 @@ namespace LiteMol.Bootstrap.Components {
         constructor(context: Context, public targets: LayoutTarget[], private root: HTMLElement) {
             super(context, {
                 isExpanded: false,
+                collapsedControlsLayout: CollapsedControlsLayout.Outside,
+                hiddenRegions: [],
                 hiddenComponentKeys: Bootstrap.Immutable.Set<string>()
             });
             

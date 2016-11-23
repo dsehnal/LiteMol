@@ -543,6 +543,29 @@ var LiteMolPluginInstance;
     addButton('Expand', function () { return Command.Layout.SetState.dispatch(plugin.context, { isExpanded: true }); });
     addButton('Set Background', function () { return Command.Layout.SetViewportOptions.dispatch(plugin.context, { clearColor: CoreVis.Color.fromRgb(255, 255, 255) }); });
     addSeparator();
+    addButton('Collapsed Controls: Portrait', function () {
+        var container = document.getElementById('app');
+        container.className = 'app-portrait';
+        plugin.command(Command.Layout.SetState, { collapsedControlsLayout: Bootstrap.Components.CollapsedControlsLayout.Portrait, hideControls: false });
+    });
+    addButton('Collapsed Controls: Landscape', function () {
+        var container = document.getElementById('app');
+        container.className = 'app-landscape';
+        plugin.command(Command.Layout.SetState, { collapsedControlsLayout: Bootstrap.Components.CollapsedControlsLayout.Landscape, hideControls: false });
+    });
+    addButton('Collapsed Controls: Outside (Default)', function () {
+        var container = document.getElementById('app');
+        container.className = 'app-default';
+        plugin.command(Command.Layout.SetState, { collapsedControlsLayout: Bootstrap.Components.CollapsedControlsLayout.Outside, hideControls: false });
+    });
+    addSeparator();
+    addButton('Control Regions: Hide Left and Bottom', function () {
+        plugin.command(Command.Layout.SetState, { hiddenRegions: [Bootstrap.Components.LayoutRegion.Left, Bootstrap.Components.LayoutRegion.Bottom], hideControls: false });
+    });
+    addButton('Control Regions: Show All', function () {
+        plugin.command(Command.Layout.SetState, { hiddenRegions: [], hideControls: false });
+    });
+    addSeparator();
     addHeader('Basics');
     addButton('Load Molecule', function () {
         var id = moleculeId;
@@ -837,7 +860,7 @@ var LiteMolPluginInstance;
             }
         };
         var plugin = Plugin.create({ target: target, customSpecification: customSpecification, layoutState: { hideControls: true } });
-        plugin.context.logger.message("LiteMol Viewer " + Plugin.VERSION.number);
+        plugin.context.logger.message("LiteMol Plugin Commands Example " + Plugin.VERSION.number);
         return plugin;
     }
     LiteMolPluginInstance.create = create;

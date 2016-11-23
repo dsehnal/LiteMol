@@ -1,20 +1,29 @@
 ﻿
 @import 'layout/common';
 
-.lm-layout-standard {
+.lm-layout-standard-outside {
     position: absolute;
-    
-    @import 'layout/standard';
+    @import 'layout/controls-outside';    
+}
+
+.lm-layout-standard-landscape {
+    position: absolute;
+    @import 'layout/controls-landscape';    
+}
+
+.lm-layout-standard-portrait {
+    position: absolute;
+    @import 'layout/controls-portrait';    
 }
 
 .lm-layout-expanded {    
     position: fixed;
         
     @media (orientation:landscape) {
-        @import 'layout/expanded-landscape';
+        @import 'layout/controls-landscape';
     };     
     
     @media (orientation:portrait) {
-        @import 'layout/expanded-portrait';
+        @import 'layout/controls-portrait';
     }  ;
 }

@@ -16,6 +16,10 @@
         }
 
         #app {
+            background: blue;
+        }
+
+        .app-default {
             position: absolute;
             margin-top: 100px;
             margin-bottom: 360px;
@@ -24,7 +28,22 @@
             height: 480px;
             left: 270px;
             top: 10px;
-            background: blue;
+        }
+
+        .app-landscape {
+            position: fixed;            
+            left: 270px;
+            right: 40px;
+            top: 40px;
+            bottom: 40px;
+        }
+
+        .app-portrait {
+            position: fixed;            
+            width: 50%;
+            right: 0;
+            top: 0;
+            bottom: 0;
         }
         
         #actions {
@@ -87,7 +106,7 @@
     <div id='interactions'>
     </div>
     
-    <div id="app"></div>
+    <div id="app" class="app-default"></div>
     <script src="LiteMol-example.js?lmversion=10"></script>
 </body>
 </html>

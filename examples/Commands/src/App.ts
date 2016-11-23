@@ -128,6 +128,29 @@ namespace LiteMolPluginInstance {
     addButton('Hide Controls', () => Command.Layout.SetState.dispatch(plugin.context, { hideControls: true }));
     addButton('Expand', () => Command.Layout.SetState.dispatch(plugin.context, { isExpanded: true }));
     addButton('Set Background', () => Command.Layout.SetViewportOptions.dispatch(plugin.context, { clearColor: CoreVis.Color.fromRgb(255, 255, 255) }));
+    addSeparator();
+    addButton('Collapsed Controls: Portrait', () => {
+        let container = document.getElementById('app')! as HTMLElement;
+        container.className = 'app-portrait';
+        plugin.command(Command.Layout.SetState, { collapsedControlsLayout: Bootstrap.Components.CollapsedControlsLayout.Portrait, hideControls: false });
+    });
+    addButton('Collapsed Controls: Landscape', () => {
+        let container = document.getElementById('app')! as HTMLElement;
+        container.className = 'app-landscape';
+        plugin.command(Command.Layout.SetState, { collapsedControlsLayout: Bootstrap.Components.CollapsedControlsLayout.Landscape, hideControls: false });
+    });
+    addButton('Collapsed Controls: Outside (Default)', () => {
+        let container = document.getElementById('app')! as HTMLElement;
+        container.className = 'app-default';
+        plugin.command(Command.Layout.SetState, { collapsedControlsLayout: Bootstrap.Components.CollapsedControlsLayout.Outside, hideControls: false });
+    });
+    addSeparator();
+    addButton('Control Regions: Hide Left and Bottom', () => {
+        plugin.command(Command.Layout.SetState, { hiddenRegions: [Bootstrap.Components.LayoutRegion.Left, Bootstrap.Components.LayoutRegion.Bottom], hideControls: false });
+    });
+    addButton('Control Regions: Show All', () => {
+        plugin.command(Command.Layout.SetState, { hiddenRegions: [], hideControls: false });
+    });
     
     addSeparator();
     addHeader('Basics');
@@ -381,8 +404,7 @@ namespace LiteMolPluginInstance {
         Bootstrap.Command.Entity.Highlight.dispatch(plugin.context, { entities: plugin.context.select('model-visual-0' /* indexed from 0 */), isOn: false });
     });
              
-    export function create(target: HTMLElement) {
-        
+    export function create(target: HTMLElement) {        
         let customSpecification: Plugin.Specification = {
             settings: {
                 // currently these are all the 'global' settings available 
@@ -494,7 +516,7 @@ namespace LiteMolPluginInstance {
         }
 
         let plugin = Plugin.create({ target, customSpecification, layoutState: { hideControls: true } });
-        plugin.context.logger.message(`LiteMol Viewer ${Plugin.VERSION.number}`);
+        plugin.context.logger.message(`LiteMol Plugin Commands Example ${Plugin.VERSION.number}`);
         return plugin;
     }
     
