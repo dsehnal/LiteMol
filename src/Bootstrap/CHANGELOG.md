@@ -3,6 +3,7 @@
 * Added the option to disable fog on per visual basis.
 * Fog no longer affects selected residue, ambience, and dynamic density data.
 * Ability to better control layout regions.
+* Persistent state for transformer contollers.
 
 # 1.2.1
 * Transform builder no longer requires verbose type annotations that were sometimes required.

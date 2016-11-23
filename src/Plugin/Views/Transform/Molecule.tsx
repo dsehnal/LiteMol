@@ -196,21 +196,22 @@ namespace LiteMol.Plugin.Views.Transform.Molecule {
             }
                        
             let desc = (key: Bootstrap.Visualization.Molecule.Type) => Bootstrap.Visualization.Molecule.TypeDescriptions[key];
-            let showTypeOptions =  (this.controller.latestState as any).showTypeOptions;
-            let showThemeOptions =  (this.controller.latestState as any).showThemeOptions;
+           
+            let showTypeOptions = this.getPersistentState('showTypeOptions', false);
+            let showThemeOptions = this.getPersistentState('showThemeOptions', false);
                        
             return <div>
                 <Controls.ExpandableGroup
                     select={<Controls.OptionsGroup options={Bootstrap.Visualization.Molecule.Types} caption={k => desc(k).label} current={params.style!.type}
                         onChange={(o) => this.controller.updateTemplate(o, Bootstrap.Visualization.Molecule.Default.ForType) } label='Type' />}
-                    expander={<Controls.ControlGroupExpander isExpanded={showTypeOptions} onChange={e => this.controller.setState({ showTypeOptions: e } as any)}  />}
+                    expander={<Controls.ControlGroupExpander isExpanded={showTypeOptions} onChange={e => this.setPersistentState('showTypeOptions', e) }  />}
                     options={controls}
                     isExpanded={showTypeOptions} />
                 
                 <Controls.ExpandableGroup       
                     select={<Controls.OptionsGroup options={Bootstrap.Visualization.Molecule.Default.Themes} caption={(k: Bootstrap.Visualization.Theme.Template) => k.name} current={params.style!.theme!.template}
                         onChange={(o) => this.controller.updateThemeDefinition(o) } label='Coloring' />}
-                    expander={<Controls.ControlGroupExpander isExpanded={showThemeOptions} onChange={e => this.controller.setState({ showThemeOptions: e } as any)}  />}
+                    expander={<Controls.ControlGroupExpander isExpanded={showThemeOptions} onChange={e => this.setPersistentState('showThemeOptions', e) }  />}
                     options={this.createColors()}
                     isExpanded={showThemeOptions} />
                 

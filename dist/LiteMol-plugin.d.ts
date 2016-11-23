@@ -2785,6 +2785,8 @@ declare namespace LiteMol.Plugin.Views.Transform {
         readonly params: P;
         updateParams(p: P): void;
         autoUpdateParams(p: P): void;
+        getPersistentState<T>(prop: string, defaultValue: T): any;
+        setPersistentState<T>(prop: string, value: T): void;
         readonly transformSourceEntity: Bootstrap.Entity.Any;
         readonly isUpdate: boolean;
         readonly canApply: boolean;
@@ -16641,7 +16643,6 @@ declare namespace LiteMol.Bootstrap.Components.Transform {
         canApply?: boolean;
         isBusy?: boolean;
         parametersAutoUpdating?: boolean;
-        isExpanded?: boolean;
     }
     class Controller<P> extends Component<ControllerParams<P>> {
         transformer: Tree.Transformer.Any;
@@ -16658,7 +16659,6 @@ declare namespace LiteMol.Bootstrap.Components.Transform {
         readonly isUpdate: boolean;
         apply(): void;
         setParams(params: P): void;
-        setExpanded(isExpanded: boolean): void;
         constructor(context: Context, transformer: Tree.Transformer.Any, entity: Entity.Any);
     }
 }
@@ -16832,11 +16832,18 @@ declare namespace LiteMol.Bootstrap {
         private byId;
         private bySourceType;
         private byTargetType;
+        private persistentState;
         private addType(e, t, to);
         getController(t: Transformer, e: Entity.Any): Components.Transform.Controller<any> | undefined;
         getBySourceType(t: Entity.AnyType): Tree.Transformer<Tree.Node.Any, Tree.Node.Any, any>[];
         getByTargetType(t: Entity.AnyType): Tree.Transformer<Tree.Node.Any, Tree.Node.Any, any>[];
         add(t: Transformer): void;
+        hasPersistentState(t: Transformer, prop: string): boolean;
+        getPersistentState<T>(t: Transformer, prop: string, defaultValue: T): any;
+        /**
+         * returns whether the value changed or not
+         */
+        setPersistentState<T>(t: Transformer, prop: string, value: T): boolean;
         constructor(context: Context);
     }
 }

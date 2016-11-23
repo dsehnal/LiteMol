@@ -69664,7 +69664,7 @@ var LiteMol;
                 var Controller = (function (_super) {
                     __extends(Controller, _super);
                     function Controller(context, transformer, entity) {
-                        var _this = _super.call(this, context, { params: transformer.info.defaultParams(context, entity), isDirty: false, isExpanded: true }) || this;
+                        var _this = _super.call(this, context, { params: transformer.info.defaultParams(context, entity), isDirty: false }) || this;
                         _this.transformer = transformer;
                         _this.entity = entity;
                         _this.updateTimeout = new Bootstrap.Rx.Subject();
@@ -69735,9 +69735,6 @@ var LiteMol;
                         this._reset();
                         this.anchorParams = params;
                         this.updateParams(params);
-                    };
-                    Controller.prototype.setExpanded = function (isExpanded) {
-                        this.setState({ isExpanded: isExpanded });
                     };
                     return Controller;
                 }(Components.Component));
@@ -70435,6 +70432,7 @@ var LiteMol;
                 this.byId = new Map();
                 this.bySourceType = new Map();
                 this.byTargetType = new Map();
+                this.persistentState = new Map();
                 Bootstrap.Event.Tree.NodeRemoved.getStream(context).subscribe(function (e) {
                     _this.controllerCache.delete(e.data.id);
                 });
@@ -70466,7 +70464,12 @@ var LiteMol;
                     c = new Bootstrap.Components.Transform.Controller(this.context, t, e);
                 var info = this.context.plugin && this.context.plugin.getTransformerInfo(t);
                 if (info && info.initiallyCollapsed) {
-                    c.setExpanded(false);
+                    if (!this.hasPersistentState(t, 'isExpanded'))
+                        this.setPersistentState(t, 'isExpanded', false);
+                }
+                else {
+                    if (!this.hasPersistentState(t, 'isExpanded'))
+                        this.setPersistentState(t, 'isExpanded', true);
                 }
                 if (e.transform.transformer === t) {
                     c.setParams(e.transform.params);
@@ -70493,6 +70496,31 @@ var LiteMol;
                     var x = _c[_b];
                     this.addType(x, t, this.byTargetType);
                 }
+            };
+            TransformManager.prototype.hasPersistentState = function (t, prop) {
+                var ps = this.persistentState.get(t.info.id);
+                if (!ps || !ps.has(prop))
+                    return false;
+                return true;
+            };
+            TransformManager.prototype.getPersistentState = function (t, prop, defaultValue) {
+                var ps = this.persistentState.get(t.info.id);
+                if (!ps || !ps.has(prop))
+                    return defaultValue;
+                return ps.get(prop);
+            };
+            /**
+             * returns whether the value changed or not
+             */
+            TransformManager.prototype.setPersistentState = function (t, prop, value) {
+                var ps = this.persistentState.get(t.info.id);
+                if (!ps) {
+                    ps = new Map();
+                    this.persistentState.set(t.info.id, ps);
+                }
+                var old = ps.get(prop);
+                ps.set(prop, value);
+                return old !== value;
             };
             return TransformManager;
         }());
@@ -75734,10 +75762,15 @@ var LiteMol;
                     ControllerBase.prototype.autoUpdateParams = function (p) {
                         this.controller.autoUpdateParams(p);
                     };
+                    ControllerBase.prototype.getPersistentState = function (prop, defaultValue) {
+                        return this.controller.context.transforms.getPersistentState(this.controller.transformer, prop, defaultValue);
+                    };
+                    ControllerBase.prototype.setPersistentState = function (prop, value) {
+                        if (this.controller.context.transforms.setPersistentState(this.controller.transformer, prop, value)) {
+                            this.forceUpdate();
+                        }
+                    };
                     Object.defineProperty(ControllerBase.prototype, "transformSourceEntity", {
-                        //  get entity() {
-                        //      return this.controller.entity;
-                        //  }
                         get: function () {
                             return this.isUpdate ? this.controller.entity.parent : this.controller.entity;
                         },
@@ -75783,8 +75816,9 @@ var LiteMol;
                         var header = this.props.customHeader
                             ? this.props.customHeader
                             : (isUpdate ? 'Update ' : '') + t.name;
+                        var isExpanded = this.getPersistentState('isExpanded', true);
                         return Plugin.React.createElement("div", { className: 'lm-transformer-wrapper' },
-                            Plugin.React.createElement(Plugin.Controls.Panel, { header: header, badge: this.props.hideBadge ? void 0 : Plugin.React.createElement(Views.Entity.Badge, { type: t.to[0].info }), className: 'lm-control lm-transformer lm-panel-' + t.to[0].info.typeClass, key: t.id, title: t.description, isExpanded: state.isExpanded, onExpand: function (e) { _this.controller.setState({ isExpanded: e }); }, description: this.controller.transformer.info.description },
+                            Plugin.React.createElement(Plugin.Controls.Panel, { header: header, badge: this.props.hideBadge ? void 0 : Plugin.React.createElement(Views.Entity.Badge, { type: t.to[0].info }), className: 'lm-control lm-transformer lm-panel-' + t.to[0].info.typeClass, key: t.id, title: t.description, isExpanded: isExpanded, onExpand: function (e) { _this.setPersistentState('isExpanded', e); }, description: this.controller.transformer.info.description },
                                 this.renderControls(),
                                 showCommit ? commit : void 0,
                                 this.props.showVisibilityIcon ? Plugin.React.createElement(Views.Entity.VisibilityControl, { entity: this.controller.entity }) : void 0));
@@ -76210,11 +76244,11 @@ var LiteMol;
                                     break;
                             }
                             var desc = function (key) { return LiteMol.Bootstrap.Visualization.Molecule.TypeDescriptions[key]; };
-                            var showTypeOptions = this.controller.latestState.showTypeOptions;
-                            var showThemeOptions = this.controller.latestState.showThemeOptions;
+                            var showTypeOptions = this.getPersistentState('showTypeOptions', false);
+                            var showThemeOptions = this.getPersistentState('showThemeOptions', false);
                             return Plugin.React.createElement("div", null,
-                                Plugin.React.createElement(Plugin.Controls.ExpandableGroup, { select: Plugin.React.createElement(Plugin.Controls.OptionsGroup, { options: LiteMol.Bootstrap.Visualization.Molecule.Types, caption: function (k) { return desc(k).label; }, current: params.style.type, onChange: function (o) { return _this.controller.updateTemplate(o, LiteMol.Bootstrap.Visualization.Molecule.Default.ForType); }, label: 'Type' }), expander: Plugin.React.createElement(Plugin.Controls.ControlGroupExpander, { isExpanded: showTypeOptions, onChange: function (e) { return _this.controller.setState({ showTypeOptions: e }); } }), options: controls, isExpanded: showTypeOptions }),
-                                Plugin.React.createElement(Plugin.Controls.ExpandableGroup, { select: Plugin.React.createElement(Plugin.Controls.OptionsGroup, { options: LiteMol.Bootstrap.Visualization.Molecule.Default.Themes, caption: function (k) { return k.name; }, current: params.style.theme.template, onChange: function (o) { return _this.controller.updateThemeDefinition(o); }, label: 'Coloring' }), expander: Plugin.React.createElement(Plugin.Controls.ControlGroupExpander, { isExpanded: showThemeOptions, onChange: function (e) { return _this.controller.setState({ showThemeOptions: e }); } }), options: this.createColors(), isExpanded: showThemeOptions }));
+                                Plugin.React.createElement(Plugin.Controls.ExpandableGroup, { select: Plugin.React.createElement(Plugin.Controls.OptionsGroup, { options: LiteMol.Bootstrap.Visualization.Molecule.Types, caption: function (k) { return desc(k).label; }, current: params.style.type, onChange: function (o) { return _this.controller.updateTemplate(o, LiteMol.Bootstrap.Visualization.Molecule.Default.ForType); }, label: 'Type' }), expander: Plugin.React.createElement(Plugin.Controls.ControlGroupExpander, { isExpanded: showTypeOptions, onChange: function (e) { return _this.setPersistentState('showTypeOptions', e); } }), options: controls, isExpanded: showTypeOptions }),
+                                Plugin.React.createElement(Plugin.Controls.ExpandableGroup, { select: Plugin.React.createElement(Plugin.Controls.OptionsGroup, { options: LiteMol.Bootstrap.Visualization.Molecule.Default.Themes, caption: function (k) { return k.name; }, current: params.style.theme.template, onChange: function (o) { return _this.controller.updateThemeDefinition(o); }, label: 'Coloring' }), expander: Plugin.React.createElement(Plugin.Controls.ControlGroupExpander, { isExpanded: showThemeOptions, onChange: function (e) { return _this.setPersistentState('showThemeOptions', e); } }), options: this.createColors(), isExpanded: showThemeOptions }));
                         };
                         return CreateVisual;
                     }(Transform.ControllerBase));
@@ -76239,7 +76273,7 @@ var LiteMol;
                 (function (Density) {
                     "use strict";
                     var IsoValue = function (props) {
-                        return Plugin.React.createElement(Plugin.Controls.ExpandableGroup, { select: Plugin.React.createElement(Plugin.Controls.Slider, { label: props.isSigma ? 'Iso Value (\u03C3)' : 'Iso Value', onChange: props.onChangeValue, min: props.min, max: props.max, value: props.value, step: 0.001 }), expander: Plugin.React.createElement(Plugin.Controls.ControlGroupExpander, { isExpanded: props.controller.latestState.showIsoValueType, onChange: function (e) { return props.controller.setState({ showIsoValueType: e }); } }), options: [Plugin.React.createElement(Plugin.Controls.Toggle, { onChange: function (v) { return props.onChangeType(v ? LiteMol.Bootstrap.Visualization.Density.IsoValueType.Sigma : LiteMol.Bootstrap.Visualization.Density.IsoValueType.Absolute); }, value: props.isSigma, label: 'Relative (\u03C3)' })], isExpanded: props.controller.latestState.showIsoValueType });
+                        return Plugin.React.createElement(Plugin.Controls.ExpandableGroup, { select: Plugin.React.createElement(Plugin.Controls.Slider, { label: props.isSigma ? 'Iso Value (\u03C3)' : 'Iso Value', onChange: props.onChangeValue, min: props.min, max: props.max, value: props.value, step: 0.001 }), expander: Plugin.React.createElement(Plugin.Controls.ControlGroupExpander, { isExpanded: props.view.getPersistentState('showIsoValueType', false), onChange: function (e) { return props.view.setPersistentState('showIsoValueType', e); } }), options: [Plugin.React.createElement(Plugin.Controls.Toggle, { onChange: function (v) { return props.onChangeType(v ? LiteMol.Bootstrap.Visualization.Density.IsoValueType.Sigma : LiteMol.Bootstrap.Visualization.Density.IsoValueType.Absolute); }, value: props.isSigma, label: 'Relative (\u03C3)' })], isExpanded: props.view.getPersistentState('showIsoValueType', false) });
                     };
                     function isoValueAbsoluteToSigma(data, value, min, max) {
                         var ret = (value - data.valuesInfo.mean) / data.valuesInfo.sigma;
@@ -76294,7 +76328,7 @@ var LiteMol;
                             var data = LiteMol.Bootstrap.Tree.Node.findClosestNodeOfType(this.transformSourceEntity, [LiteMol.Bootstrap.Entity.Density.Data]);
                             var params = this.params.style.params;
                             var isSigma = params.isoValueType !== LiteMol.Bootstrap.Visualization.Density.IsoValueType.Absolute;
-                            return Plugin.React.createElement(IsoValue, { controller: this.controller, onChangeValue: function (v) { return _this.controller.updateStyleParams({ isoValue: v }); }, onChangeType: function (v) {
+                            return Plugin.React.createElement(IsoValue, { view: this, onChangeValue: function (v) { return _this.controller.updateStyleParams({ isoValue: v }); }, onChangeType: function (v) {
                                     if (v === params.isoValueType)
                                         return;
                                     if (v === LiteMol.Bootstrap.Visualization.Density.IsoValueType.Absolute) {
@@ -76304,16 +76338,6 @@ var LiteMol;
                                         _this.controller.updateStyleParams({ isoValue: isoValueAbsoluteToSigma(data.props.data, params.isoValue, -5, 5), isoValueType: v });
                                     }
                                 }, min: isSigma ? -5 : data.props.data.valuesInfo.min, max: isSigma ? 5 : data.props.data.valuesInfo.max, isSigma: params.isoValueType !== LiteMol.Bootstrap.Visualization.Density.IsoValueType.Absolute, value: params.isoValue });
-                            // let options = [
-                            //     <Controls.Slider label='Smoothing' onChange={v => this.controller.updateStyleParams({ smoothing: v  })} 
-                            //         min={0} max={10} step={1} value={params.smoothing} title='Number of laplacian smoothing itrations.' />
-                            // ];
-                            // let showTypeOptions =  (this.controller.latestState as any).showTypeOptions;
-                            // return <Controls.ExpandableGroup
-                            //         select={iso}
-                            //         expander={<Controls.ControlGroupExpander isExpanded={showTypeOptions} onChange={e => this.controller.setState({ showTypeOptions: e } as any)}  />}
-                            //         options={options}
-                            //         isExpanded={showTypeOptions} />;
                         };
                         CreateVisual.prototype.colors = function () {
                             var _this = this;
@@ -76329,8 +76353,8 @@ var LiteMol;
                             var visualParams = this.params.style.params;
                             controls.push(Plugin.React.createElement(Plugin.Controls.Slider, { label: 'Smoothing', onChange: function (v) { return _this.controller.updateStyleParams({ smoothing: v }); }, min: 0, max: 10, step: 1, value: visualParams.smoothing, title: 'Number of laplacian smoothing itrations.' }));
                             controls.push(Plugin.React.createElement(Plugin.Controls.Toggle, { onChange: function (v) { return _this.controller.updateStyleParams({ isWireframe: v }); }, value: params.isWireframe, label: 'Wireframe' }));
-                            var showThemeOptions = this.controller.latestState.showThemeOptions;
-                            return Plugin.React.createElement(Plugin.Controls.ExpandableGroup, { select: uniform, expander: Plugin.React.createElement(Plugin.Controls.ControlGroupExpander, { isExpanded: showThemeOptions, onChange: function (e) { return _this.controller.setState({ showThemeOptions: e }); } }), options: controls, isExpanded: showThemeOptions });
+                            var showThemeOptions = this.getPersistentState('showThemeOptions', false);
+                            return Plugin.React.createElement(Plugin.Controls.ExpandableGroup, { select: uniform, expander: Plugin.React.createElement(Plugin.Controls.ControlGroupExpander, { isExpanded: showThemeOptions, onChange: function (e) { return _this.setPersistentState('showThemeOptions', e); } }), options: controls, isExpanded: showThemeOptions });
                         };
                         CreateVisual.prototype.renderControls = function () {
                             var params = this.params;
@@ -76352,7 +76376,7 @@ var LiteMol;
                             var params = this.params;
                             var visualParams = params.style.params;
                             var isSigma = visualParams.isoValueType !== LiteMol.Bootstrap.Visualization.Density.IsoValueType.Absolute;
-                            return Plugin.React.createElement(IsoValue, { controller: this.controller, onChangeValue: function (v) { return _this.controller.updateStyleParams({ isoValue: v }); }, onChangeType: function (v) {
+                            return Plugin.React.createElement(IsoValue, { view: this, onChangeValue: function (v) { return _this.controller.updateStyleParams({ isoValue: v }); }, onChangeType: function (v) {
                                     if (v === visualParams.isoValueType)
                                         return;
                                     if (v === LiteMol.Bootstrap.Visualization.Density.IsoValueType.Absolute) {
@@ -76362,17 +76386,6 @@ var LiteMol;
                                         _this.controller.updateStyleParams({ isoValue: isoValueAbsoluteToSigma(data.props.data, visualParams.isoValue, _this.params.isoSigmaMin, params.isoSigmaMax), isoValueType: v });
                                     }
                                 }, min: isSigma ? params.isoSigmaMin : data.props.data.valuesInfo.min, max: isSigma ? params.isoSigmaMax : data.props.data.valuesInfo.max, isSigma: visualParams.isoValueType !== LiteMol.Bootstrap.Visualization.Density.IsoValueType.Absolute, value: visualParams.isoValue });
-                            //<IsoValue onChange={v => this.controller.updateStyleParams({ isoSigma: v  })} min={this.params.isoSigmaMin!} max={this.params.isoSigmaMax!} value={visualParams.isoSigma!} />
-                            // let options = [
-                            //     <Controls.Slider label='Smoothing' onChange={v => this.controller.updateStyleParams({ smoothing: v  })} 
-                            //         min={0} max={10} step={1} value={visualParams.smoothing} title='Number of laplacian smoothing itrations.' />
-                            // ];
-                            // let showTypeOptions =  (this.controller.latestState as any).showTypeOptions;
-                            // return <Controls.ExpandableGroup
-                            //         select={iso}
-                            //         expander={<Controls.ControlGroupExpander isExpanded={showTypeOptions} onChange={e => this.controller.setState({ showTypeOptions: e } as any)}  />}
-                            //         options={options}
-                            //         isExpanded={showTypeOptions} />;
                         };
                         CreateVisualBehaviour.prototype.colors = function () {
                             var _this = this;
@@ -76388,10 +76401,8 @@ var LiteMol;
                             var visualParams = this.params.style.params;
                             controls.push(Plugin.React.createElement(Plugin.Controls.Slider, { label: 'Smoothing', onChange: function (v) { return _this.controller.updateStyleParams({ smoothing: v }); }, min: 0, max: 10, step: 1, value: visualParams.smoothing, title: 'Number of laplacian smoothing itrations.' }));
                             controls.push(Plugin.React.createElement(Plugin.Controls.Toggle, { onChange: function (v) { return _this.controller.updateStyleParams({ isWireframe: v }); }, value: params.isWireframe, label: 'Wireframe' }));
-                            // controls.push(<Controls.Toggle 
-                            //         onChange={v => this.controller.updateStyleTheme({ wireframe: v }) } value={theme.wireframe} label='Wireframe' />);
-                            var showThemeOptions = this.controller.latestState.showThemeOptions;
-                            return Plugin.React.createElement(Plugin.Controls.ExpandableGroup, { select: uniform, expander: Plugin.React.createElement(Plugin.Controls.ControlGroupExpander, { isExpanded: showThemeOptions, onChange: function (e) { return _this.controller.setState({ showThemeOptions: e }); } }), options: controls, isExpanded: showThemeOptions });
+                            var showThemeOptions = this.getPersistentState('showThemeOptions', false);
+                            return Plugin.React.createElement(Plugin.Controls.ExpandableGroup, { select: uniform, expander: Plugin.React.createElement(Plugin.Controls.ControlGroupExpander, { isExpanded: showThemeOptions, onChange: function (e) { return _this.setPersistentState('showThemeOptions', e); } }), options: controls, isExpanded: showThemeOptions });
                         };
                         CreateVisualBehaviour.prototype.renderControls = function () {
                             var _this = this;

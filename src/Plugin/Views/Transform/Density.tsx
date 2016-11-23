@@ -7,12 +7,12 @@ namespace LiteMol.Plugin.Views.Transform.Density {
     
     import Transformer = Bootstrap.Entity.Transformer
     
-    const IsoValue = (props: { controller: Bootstrap.Components.Transform.Controller<any>, onChangeValue: (v: number)=> void, onChangeType: (v: Bootstrap.Visualization.Density.IsoValueType)=> void, min: number, max: number, value: number, isSigma: boolean }) => 
+    const IsoValue = (props: { view: Transform.ControllerBase<any, any>, onChangeValue: (v: number)=> void, onChangeType: (v: Bootstrap.Visualization.Density.IsoValueType)=> void, min: number, max: number, value: number, isSigma: boolean }) => 
         <Controls.ExpandableGroup
             select={<Controls.Slider label={props.isSigma ? 'Iso Value (\u03C3)' : 'Iso Value'} onChange={props.onChangeValue} min={props.min} max={props.max} value={props.value} step={0.001}  />}
-            expander={<Controls.ControlGroupExpander isExpanded={(props.controller.latestState as any).showIsoValueType} onChange={e => props.controller.setState({ showIsoValueType: e } as any)}  />}
+            expander={<Controls.ControlGroupExpander isExpanded={props.view.getPersistentState('showIsoValueType', false)} onChange={e => props.view.setPersistentState('showIsoValueType', e) }  />}
             options={[<Controls.Toggle onChange={v => props.onChangeType(v ? Bootstrap.Visualization.Density.IsoValueType.Sigma : Bootstrap.Visualization.Density.IsoValueType.Absolute) } value={props.isSigma} label='Relative (\u03C3)' />]}
-            isExpanded={(props.controller.latestState as any).showIsoValueType}
+            isExpanded={ props.view.getPersistentState('showIsoValueType', false) }
             /> 
 
     function isoValueAbsoluteToSigma(data: Core.Formats.Density.Data, value: number, min: number, max: number) {
@@ -63,7 +63,7 @@ namespace LiteMol.Plugin.Views.Transform.Density {
             let isSigma = params.isoValueType !== Bootstrap.Visualization.Density.IsoValueType.Absolute;
 
             return <IsoValue 
-                controller={this.controller}
+                view={this}
                 onChangeValue={v => this.controller.updateStyleParams({ isoValue: v  })}
                 onChangeType={v => {
                     if (v === params.isoValueType) return;
@@ -76,18 +76,6 @@ namespace LiteMol.Plugin.Views.Transform.Density {
                 min={isSigma ? -5 : data.props.data.valuesInfo.min} max={isSigma ? 5 : data.props.data.valuesInfo.max} 
                 isSigma={params.isoValueType !== Bootstrap.Visualization.Density.IsoValueType.Absolute}
                 value={params.isoValue!} />;
-            
-            // let options = [
-            //     <Controls.Slider label='Smoothing' onChange={v => this.controller.updateStyleParams({ smoothing: v  })} 
-            //         min={0} max={10} step={1} value={params.smoothing} title='Number of laplacian smoothing itrations.' />
-            // ];
-            
-            // let showTypeOptions =  (this.controller.latestState as any).showTypeOptions;
-            // return <Controls.ExpandableGroup
-            //         select={iso}
-            //         expander={<Controls.ControlGroupExpander isExpanded={showTypeOptions} onChange={e => this.controller.setState({ showTypeOptions: e } as any)}  />}
-            //         options={options}
-            //         isExpanded={showTypeOptions} />;
         }
         
         private colors() {                      
@@ -107,10 +95,10 @@ namespace LiteMol.Plugin.Views.Transform.Density {
             controls.push(<Controls.Slider label='Smoothing' onChange={v => this.controller.updateStyleParams({ smoothing: v  })}  min={0} max={10} step={1} value={visualParams.smoothing!} title='Number of laplacian smoothing itrations.' />);
             controls.push(<Controls.Toggle onChange={v => this.controller.updateStyleParams({ isWireframe: v }) } value={params.isWireframe!} label='Wireframe' />)
                     
-            let showThemeOptions =  (this.controller.latestState as any).showThemeOptions;
+            let showThemeOptions = this.getPersistentState('showThemeOptions', false);
             return <Controls.ExpandableGroup
                     select={uniform}
-                    expander={<Controls.ControlGroupExpander isExpanded={showThemeOptions} onChange={e => this.controller.setState({ showThemeOptions: e } as any)}  />}
+                    expander={<Controls.ControlGroupExpander isExpanded={showThemeOptions} onChange={e => this.setPersistentState('showThemeOptions', e) }  />}
                     options={controls}
                     isExpanded={showThemeOptions} />;
         }
@@ -134,9 +122,8 @@ namespace LiteMol.Plugin.Views.Transform.Density {
             let visualParams = params.style!.params as Bootstrap.Visualization.Density.Params;
             let isSigma = visualParams.isoValueType !== Bootstrap.Visualization.Density.IsoValueType.Absolute;
 
-
             return <IsoValue 
-                controller={this.controller}
+                view={this}
                 onChangeValue={v => this.controller.updateStyleParams({ isoValue: v  })}
                 onChangeType={v => {
                     if (v === visualParams.isoValueType) return;
@@ -149,21 +136,6 @@ namespace LiteMol.Plugin.Views.Transform.Density {
                 min={isSigma ? params.isoSigmaMin! : data.props.data.valuesInfo.min} max={isSigma ? params.isoSigmaMax! : data.props.data.valuesInfo.max} 
                 isSigma={visualParams.isoValueType !== Bootstrap.Visualization.Density.IsoValueType.Absolute}
                 value={visualParams.isoValue!} />; 
-            
-            
-            //<IsoValue onChange={v => this.controller.updateStyleParams({ isoSigma: v  })} min={this.params.isoSigmaMin!} max={this.params.isoSigmaMax!} value={visualParams.isoSigma!} />
-            
-            // let options = [
-            //     <Controls.Slider label='Smoothing' onChange={v => this.controller.updateStyleParams({ smoothing: v  })} 
-            //         min={0} max={10} step={1} value={visualParams.smoothing} title='Number of laplacian smoothing itrations.' />
-            // ];
-            
-            // let showTypeOptions =  (this.controller.latestState as any).showTypeOptions;
-            // return <Controls.ExpandableGroup
-            //         select={iso}
-            //         expander={<Controls.ControlGroupExpander isExpanded={showTypeOptions} onChange={e => this.controller.setState({ showTypeOptions: e } as any)}  />}
-            //         options={options}
-            //         isExpanded={showTypeOptions} />;
         }
         
         private colors() {          
@@ -182,13 +154,11 @@ namespace LiteMol.Plugin.Views.Transform.Density {
             let visualParams = this.params.style!.params as Bootstrap.Visualization.Density.Params;              
             controls.push(<Controls.Slider label='Smoothing' onChange={v => this.controller.updateStyleParams({ smoothing: v  })}  min={0} max={10} step={1} value={visualParams.smoothing!} title='Number of laplacian smoothing itrations.' />);
             controls.push(<Controls.Toggle onChange={v => this.controller.updateStyleParams({ isWireframe: v }) } value={params.isWireframe!} label='Wireframe' />)
-            // controls.push(<Controls.Toggle 
-            //         onChange={v => this.controller.updateStyleTheme({ wireframe: v }) } value={theme.wireframe} label='Wireframe' />);
                     
-            let showThemeOptions =  (this.controller.latestState as any).showThemeOptions;
+            let showThemeOptions = this.getPersistentState('showThemeOptions', false);
             return <Controls.ExpandableGroup
                     select={uniform}
-                    expander={<Controls.ControlGroupExpander isExpanded={showThemeOptions} onChange={e => this.controller.setState({ showThemeOptions: e } as any)}  />}
+                    expander={<Controls.ControlGroupExpander isExpanded={showThemeOptions} onChange={e => this.setPersistentState('showThemeOptions', e) }  />}
                     options={controls}
                     isExpanded={showThemeOptions} />;
         }

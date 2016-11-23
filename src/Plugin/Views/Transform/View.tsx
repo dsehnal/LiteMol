@@ -4,131 +4,139 @@
 
 namespace LiteMol.Plugin.Views.Transform {
     "use strict";
-     
-    export abstract class ControllerBase<C extends Bootstrap.Components.Transform.Controller<P>, P> extends 
+
+    export abstract class ControllerBase<C extends Bootstrap.Components.Transform.Controller<P>, P> extends
         Views.View<C, {}, {
             customHeader?: string,
             hideBadge?: boolean,
             isAction?: boolean,
             showVisibilityIcon?: boolean
         }> {
-         
-         protected abstract renderControls(): void;
-         
-         get params(): P {
-             return this.controller.latestState.params!;
-         }    
-         
-         updateParams(p: P) {
-             this.controller.updateParams(p);
-         }
-         
-         autoUpdateParams(p: P) {
-             this.controller.autoUpdateParams(p);
-         }
-         
-        //  get entity() {
-        //      return this.controller.entity;
-        //  }
-         
-         get transformSourceEntity() {
-             return this.isUpdate ? this.controller.entity.parent : this.controller.entity;
-         }
 
-         get isUpdate() {
-            return this.controller.isUpdate;   
-         }
-         
-         get canApply() {
+        protected abstract renderControls(): void;
+
+        get params(): P {
+            return this.controller.latestState.params!;
+        }
+
+        updateParams(p: P) {
+            this.controller.updateParams(p);
+        }
+
+        autoUpdateParams(p: P) {
+            this.controller.autoUpdateParams(p);
+        }
+
+        getPersistentState<T>(prop: string, defaultValue: T) {
+            return this.controller.context.transforms.getPersistentState<T>(this.controller.transformer, prop, defaultValue);
+        }
+
+        setPersistentState<T>(prop: string, value: T) {
+            if (this.controller.context.transforms.setPersistentState(this.controller.transformer, prop, value)) {
+                this.forceUpdate();
+            }
+        }
+
+        get transformSourceEntity() {
+            return this.isUpdate ? this.controller.entity.parent : this.controller.entity;
+        }
+
+        get isUpdate() {
+            return this.controller.isUpdate;
+        }
+
+        get canApply() {
             let state = this.controller.latestState;
             let base = state.canApply! && (!this.isUpdate || state.isDirty!) && !state.isBusy;
-            if (base && this.isUpdate && state.parametersAutoUpdating) return false; 
+            if (base && this.isUpdate && state.parametersAutoUpdating) return false;
             return base;
-         }
-         
-         protected applyEnter(e: React.KeyboardEvent) {
-             if (!this.canApply) return;
-             (e.target as HTMLElement).blur();
-             this.controller.apply();
-         }
-         
-         render() {        
-            let ctx = this.controller.context;     
+        }
+
+        protected applyEnter(e: React.KeyboardEvent) {
+            if (!this.canApply) return;
+            (e.target as HTMLElement).blur();
+            this.controller.apply();
+        }
+
+        render() {
+            let ctx = this.controller.context;
             let isUpdate = this.isUpdate;
             let state = this.controller.latestState;
             let issues = state.issues;
-            let hasError = issues && issues.length; 
+            let hasError = issues && issues.length;
             let isBusy = state.isBusy;
             let offMsg = isBusy ? 'Working...' : isUpdate && !hasError ? 'Nothing to update' : (issues ? issues[0] : void 0);
             let t = this.controller.transformer.info;
             let commit = <Controls.CommitButton action={() => this.controller.apply()} isOn={this.canApply} title={issues && issues.length ? issues[0] : this.canApply ? isUpdate ? 'An update will remove all child nodes.' : void 0 : void 0}
-                         on={isUpdate ? 'Update' : this.props.isAction ? 'Apply' : 'Add'} off={offMsg} />
-            
+                on={isUpdate ? 'Update' : this.props.isAction ? 'Apply' : 'Add'} off={offMsg} />
+
             let showCommit = this.canApply || hasError;
-            
-            let header = this.props.customHeader 
+
+            let header = this.props.customHeader
                 ? this.props.customHeader
                 : (isUpdate ? 'Update ' : '') + t.name;
 
-            return <div className='lm-transformer-wrapper'> 
-                <Controls.Panel 
-                    header={header} 
+            let isExpanded = this.getPersistentState('isExpanded', true);
+
+            return <div className='lm-transformer-wrapper'>
+                <Controls.Panel
+                    header={header}
                     badge={this.props.hideBadge ? void 0 : <Entity.Badge type={t.to[0].info} />}
-                    className={'lm-control lm-transformer lm-panel-' + t.to[0].info.typeClass} key={t.id} title={t.description} isExpanded={state.isExpanded!}
-                    onExpand={e => { this.controller.setState({ isExpanded: e }) } } 
+                    className={'lm-control lm-transformer lm-panel-' + t.to[0].info.typeClass} key={t.id} title={t.description} isExpanded={isExpanded}
+                    onExpand={e => { this.setPersistentState('isExpanded', e) } }
                     description={this.controller.transformer.info.description}>
                     {this.renderControls()}
                     {showCommit ? commit : void 0}
-                    {this.props.showVisibilityIcon ? <Entity.VisibilityControl entity={this.controller.entity} /> : void 0 }
+                    {this.props.showVisibilityIcon ? <Entity.VisibilityControl entity={this.controller.entity} /> : void 0}
                 </Controls.Panel>
-            </div>;                                         
-         }
-         
-     }
-     
-     export class Empty extends Transform.ControllerBase<Bootstrap.Components.Transform.Controller<{}>, {}> {        
-        protected renderControls() { 
+            </div>;
+        }
+
+    }
+
+    export class Empty extends Transform.ControllerBase<Bootstrap.Components.Transform.Controller<{}>, {}> {
+        protected renderControls() {
             return <div>
             </div>
-        }        
-     }
-    
-     export class View extends Views.View<Bootstrap.Components.Transform.View, {}, {}> {
-         
-         render() {
-             let ctx = this.controller.context;            
-             
-             let plugin = ctx.plugin as Instance;
-             let state = this.controller.latestState;
-             let transforms = state.transforms!;
-                          
-             let views = transforms.map(t => {
-                 let v = plugin.getTransformerInfo(t.transformer).view; 
-                 return React.createElement(v, { controller: t, key: t.transformer.info.id + '-' + t.entity.id  });
-             });
-             
-             if (state.update) {
-                 let v = plugin.getTransformerInfo(state.update.transformer).view; 
-                 views.push(React.createElement(v, { controller: state.update, key: state.update.transformer.info.id + '-' + state.update.entity.id }));
-             }
-             
-             return <div className='lm-transform-view'>
-                {views}
-             </div>;             
-         }
-                  
-     }    
-     
-    export const TransparencyControl = (props: {
-        onChange: (td: LiteMol.Visualization.Theme.Transparency) => void;        
-        definition: LiteMol.Visualization.Theme.Transparency
-    }) => {       
-        
-        let d = props.definition.alpha!;
-        return <Controls.Slider label='Opacity' onChange={v => props.onChange({ alpha: v, writeDepth: props.definition.writeDepth }) }  
-                min={0} max={1} step={0.01} value={ d } />
+        }
     }
-    
+
+    export class View extends Views.View<Bootstrap.Components.Transform.View, {}, {}> {
+
+        render() {
+            let ctx = this.controller.context;
+
+            let plugin = ctx.plugin as Instance;
+            let state = this.controller.latestState;
+            let transforms = state.transforms!;
+
+            let views = transforms.map(t => {
+                let v = plugin.getTransformerInfo(t.transformer).view;
+                return React.createElement(v, { controller: t, key: t.transformer.info.id + '-' + t.entity.id });
+            });
+
+            if (state.update) {
+                let v = plugin.getTransformerInfo(state.update.transformer).view;
+                views.push(React.createElement(v, { controller: state.update, key: state.update.transformer.info.id + '-' + state.update.entity.id }));
+            }
+
+            return <div className='lm-transform-view'>
+                {views}
+            </div>;
+        }
+
+    }
+
+    export const TransparencyControl = (props: {
+        onChange: (td: LiteMol.Visualization.Theme.Transparency) => void;
+        definition: LiteMol.Visualization.Theme.Transparency
+    }) => {
+
+        let d = props.definition.alpha!;
+        return <Controls.Slider label='Opacity' onChange={v => props.onChange({ alpha: v, writeDepth: props.definition.writeDepth })}
+            min={0} max={1} step={0.01} value={d} />
+    }
+
     export class Updater extends Views.View<Bootstrap.Components.Transform.Updater, {}, {}> {
 
         componentWillMount() {
@@ -145,7 +153,7 @@ namespace LiteMol.Plugin.Views.Transform {
             let c = this.controller.latestState.controller;
             if (!c) return <div className='lm-empty-control' />
 
-            let ctx = this.controller.context;    
+            let ctx = this.controller.context;
             let plugin = ctx.plugin as Instance;
             let v = plugin.getTransformerInfo(c.transformer).view;
 
@@ -154,7 +162,7 @@ namespace LiteMol.Plugin.Views.Transform {
                 return <div className='lm-empty-control' />
             }
 
-            return React.createElement(v, { controller: c, key: c.transformer.info.id + '-' + c.entity.id, customHeader: this.controller.header, hideBadge: true, showVisibilityIcon: true });            
+            return React.createElement(v, { controller: c, key: c.transformer.info.id + '-' + c.entity.id, customHeader: this.controller.header, hideBadge: true, showVisibilityIcon: true });
         }
     }
 
@@ -163,7 +171,7 @@ namespace LiteMol.Plugin.Views.Transform {
             let c = this.controller.latestState.controller;
             if (!c) return <div className='lm-empty-control' />
 
-            let ctx = this.controller.context;    
+            let ctx = this.controller.context;
             let plugin = ctx.plugin as Instance;
             let v = plugin.getTransformerInfo(c.transformer).view;
 
@@ -172,7 +180,7 @@ namespace LiteMol.Plugin.Views.Transform {
                 return <div className='lm-empty-control' />
             }
 
-            return React.createElement(v, { controller: c, key: c.transformer.info.id + '-' + c.entity.id, customHeader: this.controller.header, hideBadge: true, isAction: true });            
+            return React.createElement(v, { controller: c, key: c.transformer.info.id + '-' + c.entity.id, customHeader: this.controller.header, hideBadge: true, isAction: true });
         }
     }
 

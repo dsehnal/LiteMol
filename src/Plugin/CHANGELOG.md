@@ -1,6 +1,7 @@
 ﻿# 1.2.6
 * Added support for popup messages (toasts).
 * Ability to better control layout regions.
+* Persistent state for transformer contollers.
 
 # 1.2.5
 * Updated default pluing spec with Bootstrap.Behaviour.UnselectElementOnRepeatedClick.

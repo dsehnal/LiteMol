@@ -1,6 +1,7 @@
 # 1.1.11
 * Added support for popup messages (toasts).
 * Fog no longer affects selected residue, ambience, and dynamic density data.
+* Expandable transform controls no longer collapse when a value changes. 
 
 # 1.1.10
 * Changed how visual interactivity works.
