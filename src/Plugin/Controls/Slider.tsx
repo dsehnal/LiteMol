@@ -16,6 +16,8 @@ namespace LiteMol.Plugin.Controls {
     }, { value: string }> {
         
         state = { value: '0' }
+
+        private firedValue = NaN;
         
         componentWillMount() {
             this.setState({ value: '' + this.props.value });
@@ -41,7 +43,12 @@ namespace LiteMol.Plugin.Controls {
         private fire() {
             let v = +this.state.value;
             if (isNaN(v)) { v = this.props.value; }
-            if (v !== this.props.value) this.props.onChange.call(null, v);
+            if (v !== this.props.value) {
+                if (this.firedValue !== v) {
+                    this.firedValue = v;
+                    this.props.onChange.call(null, v);
+                }
+            }
         }
                         
         render() {      
@@ -58,8 +65,7 @@ namespace LiteMol.Plugin.Controls {
                                 onInput={(e: React.FormEvent) => {
                                     let s = (e.target as HTMLInputElement).value;
                                     this.setState({ value: s });
-                                } } 
-                                
+                                }}                                
                                 onSelect={e => { this.fire(); (e.target as HTMLInputElement).blur() } }
                                 onBlur={() => this.fire()}
                                 onTouchEnd={() => this.fire()}

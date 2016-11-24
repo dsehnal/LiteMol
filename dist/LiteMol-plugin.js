@@ -68512,7 +68512,6 @@ var LiteMol;
                         var theme = ti.template.provider(parent, Bootstrap.Visualization.Theme.getProps(ti));
                         model.applyTheme(theme);
                         b.props.style.theme = ti;
-                        //Entity.forceUpdate(b);
                         Entity.nodeUpdated(b);
                         return Bootstrap.Task.resolve(t.transformer.info.name, 'Background', Bootstrap.Tree.Node.Null);
                     });
@@ -68523,7 +68522,7 @@ var LiteMol;
                         from: [Entity.Density.Data],
                         to: [Entity.Density.InteractiveSurface],
                         isUpdatable: true,
-                        defaultParams: function (ctx) { return ({ style: Bootstrap.Visualization.Density.Default.Style, radius: ctx.settings.get('density.defaultVisualBehaviourRadius') || 0, isoSigmaMin: -5, isoSigmaMax: 5 }); },
+                        defaultParams: function (ctx) { return ({ style: Bootstrap.Visualization.Density.Default.Style, radius: ctx.settings.get('density.defaultVisualBehaviourRadius') || 0, isoSigmaMin: -5, isoSigmaMax: 5, minRadius: 0, maxRadius: 10 }); },
                         customController: function (ctx, t, e) { return new Bootstrap.Components.Transform.DensityVisual(ctx, t, e); },
                     }, function (ctx, a, t) {
                         var params = t.params;
@@ -75362,6 +75361,7 @@ var LiteMol;
                 function Slider() {
                     var _this = _super.apply(this, arguments) || this;
                     _this.state = { value: '0' };
+                    _this.firedValue = NaN;
                     return _this;
                 }
                 Slider.prototype.componentWillMount = function () {
@@ -75393,8 +75393,12 @@ var LiteMol;
                     if (isNaN(v)) {
                         v = this.props.value;
                     }
-                    if (v !== this.props.value)
-                        this.props.onChange.call(null, v);
+                    if (v !== this.props.value) {
+                        if (this.firedValue !== v) {
+                            this.firedValue = v;
+                            this.props.onChange.call(null, v);
+                        }
+                    }
                 };
                 Slider.prototype.render = function () {
                     var _this = this;
@@ -76394,9 +76398,10 @@ var LiteMol;
                             var colorControls;
                             var uc = theme.colors.get('Uniform');
                             var uniform = Plugin.React.createElement(Plugin.Controls.ToggleColorPicker, { key: 'Uniform', label: 'Color', color: uc, onChange: function (c) { return _this.controller.updateThemeColor('Uniform', c); } });
-                            var controls = theme.colors
-                                .filter(function (c, n) { return n !== 'Uniform'; })
-                                .map(function (c, n) { return Plugin.React.createElement(Plugin.Controls.ToggleColorPicker, { key: n, label: n, color: c, onChange: function (c) { return _this.controller.updateThemeColor(n, c); } }); }).toArray();
+                            var controls = [];
+                            // theme.colors!
+                            //     .filter((c, n) => n !== 'Uniform')
+                            //     .map((c, n) => <Controls.ToggleColorPicker  key={n} label={n!} color={c!} onChange={c => this.controller.updateThemeColor(n!, c) } />).toArray();
                             controls.push(Plugin.React.createElement(Transform.TransparencyControl, { definition: theme.transparency, onChange: function (d) { return _this.controller.updateThemeTransparency(d); } }));
                             var visualParams = this.params.style.params;
                             controls.push(Plugin.React.createElement(Plugin.Controls.Slider, { label: 'Smoothing', onChange: function (v) { return _this.controller.updateStyleParams({ smoothing: v }); }, min: 0, max: 10, step: 1, value: visualParams.smoothing, title: 'Number of laplacian smoothing itrations.' }));
@@ -76410,7 +76415,7 @@ var LiteMol;
                             return Plugin.React.createElement("div", null,
                                 this.surface(),
                                 this.colors(),
-                                Plugin.React.createElement(Plugin.Controls.Slider, { label: 'Radius', onChange: function (v) { return _this.controller.updateRadius(v); }, min: 0, max: 10, step: 0.005, value: params.radius }));
+                                Plugin.React.createElement(Plugin.Controls.Slider, { label: 'Radius', onChange: function (v) { return _this.controller.updateRadius(v); }, min: params.minRadius !== void 0 ? params.minRadius : 0, max: params.maxRadius !== void 0 ? params.maxRadius : 10, step: 0.005, value: params.radius }));
                         };
                         return CreateVisualBehaviour;
                     }(Transform.ControllerBase));

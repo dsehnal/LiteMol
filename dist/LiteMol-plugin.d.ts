@@ -2703,6 +2703,7 @@ declare namespace LiteMol.Plugin.Controls {
         state: {
             value: string;
         };
+        private firedValue;
         componentWillMount(): void;
         componentWillReceiveProps(nextProps: any): void;
         componentDidMount(): void;
@@ -16420,6 +16421,8 @@ declare namespace LiteMol.Bootstrap.Entity.Transformer.Density {
         id?: string;
         isoSigmaMin?: number;
         isoSigmaMax?: number;
+        minRadius?: number;
+        maxRadius?: number;
         radius?: number;
         style?: Visualization.Density.Style;
     }

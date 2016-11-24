@@ -44,8 +44,7 @@ namespace LiteMol.Bootstrap.Entity.Transformer.Density {
                 ctx.resolve(Entity.Density.Data.create(t, { label: t.params.id ? t.params.id : 'Density Data', data, description: t.params.normalize ? 'Normalized' : '' }));
             });
         });
-    }
-    );
+    });
 
     export interface CreateVisualParams {
         style?: Visualization.Density.Style
@@ -80,17 +79,16 @@ namespace LiteMol.Bootstrap.Entity.Transformer.Density {
 
         model.applyTheme(theme);
         b.props.style.theme = ti;
-        //Entity.forceUpdate(b);
         Entity.nodeUpdated(b);
         return Task.resolve(t.transformer.info.name, 'Background', Tree.Node.Null);
-    }
-    );
-
+    });
 
     export interface CreateVisualBehaviourParams {
         id?: string,
         isoSigmaMin?: number;
         isoSigmaMax?: number;
+        minRadius?: number;
+        maxRadius?: number;
         radius?: number,
         style?: Visualization.Density.Style
     }
@@ -102,7 +100,7 @@ namespace LiteMol.Bootstrap.Entity.Transformer.Density {
         from: [Entity.Density.Data],
         to: [Entity.Density.InteractiveSurface],
         isUpdatable: true,
-        defaultParams: ctx => ({ style: Visualization.Density.Default.Style, radius: ctx.settings.get('density.defaultVisualBehaviourRadius') || 0, isoSigmaMin: -5, isoSigmaMax: 5 }),
+        defaultParams: ctx => ({ style: Visualization.Density.Default.Style, radius: ctx.settings.get('density.defaultVisualBehaviourRadius') || 0, isoSigmaMin: -5, isoSigmaMax: 5, minRadius: 0, maxRadius: 10 }),
         customController: (ctx, t, e) => new Components.Transform.DensityVisual(ctx, t, e),
     }, (ctx, a, t) => {
         let params = t.params;
@@ -112,6 +110,5 @@ namespace LiteMol.Bootstrap.Entity.Transformer.Density {
         });
         let isSigma = params.style!.params!.isoValueType === void 0 || params.style!.params!.isoValueType === Visualization.Density.IsoValueType.Sigma;
         return Task.resolve('Behaviour', 'Background', Entity.Density.InteractiveSurface.create(t, { label: `${params.id ? t.params.id : 'Interactive'}, ${Utils.round(params.style!.params!.isoValue!, 2)}${isSigma ? ' \u03C3' : ''}`, behaviour: b }));
-    }
-    );
+    });
 }

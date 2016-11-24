@@ -1,4 +1,7 @@
-﻿# 1.2.2
+﻿# 1.2.3
+* Specify min and maxRadius for density behavior. 
+
+# 1.2.2
 * Added support for popup messages (toasts).
 * Added the option to disable fog on per visual basis.
 * Fog no longer affects selected residue, ambience, and dynamic density data.

@@ -72,7 +72,9 @@ namespace LiteMol.Viewer.PDBe.Data {
             .then(Transformer.Density.CreateVisualBehaviour, {
                 id: 'Fo-Fc(-ve)',  
                 isoSigmaMin: -5,
-                isoSigmaMax: 0,                    
+                isoSigmaMax: 0,    
+                minRadius: 0,
+                maxRadius: 10,                
                 radius: 5,
                 style: Visualization.Density.Style.create({
                     isoValue: -3,
@@ -88,7 +90,9 @@ namespace LiteMol.Viewer.PDBe.Data {
             .then(Transformer.Density.CreateVisualBehaviour, {  
                 id: 'Fo-Fc(+ve)', 
                 isoSigmaMin: 0,
-                isoSigmaMax: 5,                    
+                isoSigmaMax: 5,
+                minRadius: 0,
+                maxRadius: 10,                    
                 radius: 5,
                 style: Visualization.Density.Style.create({
                     isoValue: 3,
@@ -107,6 +111,8 @@ namespace LiteMol.Viewer.PDBe.Data {
                 id: '2Fo-Fc',
                 isoSigmaMin: 0,
                 isoSigmaMax: 2,                    
+                minRadius: 0,
+                maxRadius: 10,
                 radius: 5,
                 style: Visualization.Density.Style.create({
                     isoValue: 1.5,

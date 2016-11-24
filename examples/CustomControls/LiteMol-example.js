@@ -87,6 +87,8 @@ var LiteMol;
                         id: 'Fo-Fc(-ve)',
                         isoSigmaMin: -5,
                         isoSigmaMax: 0,
+                        minRadius: 0,
+                        maxRadius: 10,
                         radius: 5,
                         style: Visualization.Density.Style.create({
                             isoValue: -3,
@@ -102,6 +104,8 @@ var LiteMol;
                         id: 'Fo-Fc(+ve)',
                         isoSigmaMin: 0,
                         isoSigmaMax: 5,
+                        minRadius: 0,
+                        maxRadius: 10,
                         radius: 5,
                         style: Visualization.Density.Style.create({
                             isoValue: 3,
@@ -119,6 +123,8 @@ var LiteMol;
                         id: '2Fo-Fc',
                         isoSigmaMin: 0,
                         isoSigmaMax: 2,
+                        minRadius: 0,
+                        maxRadius: 10,
                         radius: 5,
                         style: Visualization.Density.Style.create({
                             isoValue: 1.5,
