@@ -95,7 +95,6 @@ var LiteMol;
                             isoValueType: Bootstrap.Visualization.Density.IsoValueType.Sigma,
                             color: LiteMol.Visualization.Color.fromHex(0xBB3333),
                             isWireframe: true,
-                            disableFog: true,
                             transparency: { alpha: 1.0 }
                         })
                     });
@@ -112,7 +111,6 @@ var LiteMol;
                             isoValueType: Bootstrap.Visualization.Density.IsoValueType.Sigma,
                             color: LiteMol.Visualization.Color.fromHex(0x33BB33),
                             isWireframe: true,
-                            disableFog: true,
                             transparency: { alpha: 1.0 }
                         })
                     });
@@ -131,7 +129,6 @@ var LiteMol;
                             isoValueType: Bootstrap.Visualization.Density.IsoValueType.Sigma,
                             color: LiteMol.Visualization.Color.fromHex(0x3362B2),
                             isWireframe: false,
-                            disableFog: true,
                             transparency: { alpha: 0.45 }
                         })
                     });

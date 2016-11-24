@@ -39,12 +39,13 @@ namespace LiteMol.Custom {
                 isoSigmaMin: 0,
                 isoSigmaMax: 2,                    
                 radius: 5,
+                minRadius: 0,
+                maxRadius: 10,
                 style: Bootstrap.Visualization.Density.Style.create({
                     isoValue: 1.5,
                     isoValueType: Bootstrap.Visualization.Density.IsoValueType.Sigma,
                     color: LiteMol.Visualization.Color.fromHex(0x3362B2), 
                     isWireframe: true,
-                    disableFog: true,
                     transparency: { alpha: 0.75 }
                 })
             }, { ref: 'density-2fo-fc' }); 

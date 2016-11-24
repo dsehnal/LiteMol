@@ -18,7 +18,7 @@ namespace LiteMol.Bootstrap.Behaviour.Molecule {
                 type: 'BallsAndSticks',
                 computeOnBackground: true,
                 params: { useVDW: true, vdwScaling: 0.25, bondRadius: 0.13, detail: 'Automatic' },
-                theme: { template: Visualization.Molecule.Default.ElementSymbolThemeTemplate, colors: Visualization.Molecule.Default.ElementSymbolThemeTemplate.colors!.set('Bond', { r:1, g: 0, b: 0 }), transparency: { alpha: 0.4 }, disableFog: true },
+                theme: { template: Visualization.Molecule.Default.ElementSymbolThemeTemplate, colors: Visualization.Molecule.Default.ElementSymbolThemeTemplate.colors!.set('Bond', { r:1, g: 0, b: 0 }), transparency: { alpha: 0.4 } },
                 isNotSelectable: true
             } 
                 
@@ -26,7 +26,7 @@ namespace LiteMol.Bootstrap.Behaviour.Molecule {
                 type: 'BallsAndSticks',
                 computeOnBackground: true,
                 params: { useVDW: false, atomRadius: 0.15, bondRadius: 0.07, detail: 'Automatic' },
-                theme: { template: Visualization.Molecule.Default.UniformThemeTemplate, colors: Visualization.Molecule.Default.UniformThemeTemplate.colors!.set('Uniform', { r: 0.4, g: 0.4, b: 0.4 }), transparency: { alpha: 0.75 }, disableFog: true },
+                theme: { template: Visualization.Molecule.Default.UniformThemeTemplate, colors: Visualization.Molecule.Default.UniformThemeTemplate.colors!.set('Uniform', { r: 0.4, g: 0.4, b: 0.4 }), transparency: { alpha: 0.75 } },
                 isNotSelectable: true
             }
 

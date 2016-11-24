@@ -1,4 +1,7 @@
-﻿# 1.4.1
+﻿# 1.4.2
+* Fixed fog shader when interacting with transparent objects.
+
+# 1.4.1
 * Added the ability to disable fog on per-visual basis.
 
 # 1.4.0

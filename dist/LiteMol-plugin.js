@@ -54787,7 +54787,7 @@ var LiteMol;
 (function (LiteMol) {
     var Visualization;
     (function (Visualization) {
-        Visualization.VERSION = { number: "1.4.1", date: "Nov 23 2016" };
+        Visualization.VERSION = { number: "1.4.2", date: "Nov 24 2016" };
     })(Visualization = LiteMol.Visualization || (LiteMol.Visualization = {}));
 })(LiteMol || (LiteMol = {}));
 var LiteMol;
@@ -55355,7 +55355,12 @@ var LiteMol;
                 Visualization.THREE.ShaderChunk["shadowmap_fragment"],
                 Visualization.THREE.ShaderChunk["linear_to_gamma_fragment"],
                 Visualization.THREE.ShaderChunk["fog_fragment"],
+                "#ifdef USE_FOG",
+                "   if (diffuseColor.a > 0.99) { gl_FragColor = vec4( outgoingLight, diffuseColor.a ); }",
+                "   else { gl_FragColor = vec4( outgoingLight, (1.0 - fogFactor) * diffuseColor.a ); }",
+                "#else",
                 "	gl_FragColor = vec4( outgoingLight, diffuseColor.a );",
+                "#endif",
                 "}"
             ].join("\n")
         };
@@ -64637,7 +64642,7 @@ var LiteMol;
 (function (LiteMol) {
     var Bootstrap;
     (function (Bootstrap) {
-        Bootstrap.VERSION = { number: "1.2.2", date: "Nov 23 2016" };
+        Bootstrap.VERSION = { number: "1.2.3", date: "Nov 24 2016" };
     })(Bootstrap = LiteMol.Bootstrap || (LiteMol.Bootstrap = {}));
 })(LiteMol || (LiteMol = {}));
 /*
@@ -68963,14 +68968,14 @@ var LiteMol;
                             type: 'BallsAndSticks',
                             computeOnBackground: true,
                             params: { useVDW: true, vdwScaling: 0.25, bondRadius: 0.13, detail: 'Automatic' },
-                            theme: { template: Bootstrap.Visualization.Molecule.Default.ElementSymbolThemeTemplate, colors: Bootstrap.Visualization.Molecule.Default.ElementSymbolThemeTemplate.colors.set('Bond', { r: 1, g: 0, b: 0 }), transparency: { alpha: 0.4 }, disableFog: true },
+                            theme: { template: Bootstrap.Visualization.Molecule.Default.ElementSymbolThemeTemplate, colors: Bootstrap.Visualization.Molecule.Default.ElementSymbolThemeTemplate.colors.set('Bond', { r: 1, g: 0, b: 0 }), transparency: { alpha: 0.4 } },
                             isNotSelectable: true
                         };
                         var ambStyle = {
                             type: 'BallsAndSticks',
                             computeOnBackground: true,
                             params: { useVDW: false, atomRadius: 0.15, bondRadius: 0.07, detail: 'Automatic' },
-                            theme: { template: Bootstrap.Visualization.Molecule.Default.UniformThemeTemplate, colors: Bootstrap.Visualization.Molecule.Default.UniformThemeTemplate.colors.set('Uniform', { r: 0.4, g: 0.4, b: 0.4 }), transparency: { alpha: 0.75 }, disableFog: true },
+                            theme: { template: Bootstrap.Visualization.Molecule.Default.UniformThemeTemplate, colors: Bootstrap.Visualization.Molecule.Default.UniformThemeTemplate.colors.set('Uniform', { r: 0.4, g: 0.4, b: 0.4 }), transparency: { alpha: 0.75 } },
                             isNotSelectable: true
                         };
                         function clean() {

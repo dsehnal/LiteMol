@@ -172,8 +172,12 @@ namespace LiteMol.Visualization {
 
                 THREE.ShaderChunk["fog_fragment"],
 
+                "#ifdef USE_FOG",
+                "   if (diffuseColor.a > 0.99) { gl_FragColor = vec4( outgoingLight, diffuseColor.a ); }",
+                "   else { gl_FragColor = vec4( outgoingLight, (1.0 - fogFactor) * diffuseColor.a ); }",                
+                "#else",
                 "	gl_FragColor = vec4( outgoingLight, diffuseColor.a );",
-
+                "#endif",
                 "}"
 
             ].join("\n")
