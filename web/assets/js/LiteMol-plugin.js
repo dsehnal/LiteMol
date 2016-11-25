@@ -69143,7 +69143,7 @@ var LiteMol;
                     ShowElectronDensityAroundSelection.prototype.register = function (behaviour) {
                         var _this = this;
                         this.behaviour = behaviour;
-                        Bootstrap.Command.Toast.Show.dispatch(this.context, { key: ToastKey, title: 'Density', message: 'Click on a residue or an atom to view the data.' });
+                        Bootstrap.Command.Toast.Show.dispatch(this.context, { key: ToastKey, title: 'Density', message: 'Click on a residue or an atom to view the data.', timeoutMs: 30 * 1000 });
                         this.obs.push(this.context.behaviours.select.subscribe(function (e) {
                             _this.update(e);
                         }));
@@ -76602,12 +76602,9 @@ var LiteMol;
                     ToastEntry.prototype.render = function () {
                         var entry = this.props.entry;
                         return Plugin.React.createElement("div", { className: 'lm-toast-entry' },
-                            Plugin.React.createElement("div", { className: 'lm-toast-message' },
-                                Plugin.React.createElement("b", null,
-                                    entry.title,
-                                    ":"),
-                                " ",
-                                entry.message),
+                            Plugin.React.createElement("div", { className: 'lm-toast-title' }, entry.title),
+                            Plugin.React.createElement("div", { className: 'lm-toast-message' }, entry.message),
+                            Plugin.React.createElement("div", { className: 'lm-toast-clear' }),
                             Plugin.React.createElement("div", { className: 'lm-toast-hide' },
                                 Plugin.React.createElement(Plugin.Controls.Button, { onClick: function () { return (entry.hide || function () { }).call(null); }, style: 'link', icon: 'abort', title: 'Hide', customClass: 'lm-btn-icon' })));
                     };

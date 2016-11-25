@@ -78,7 +78,7 @@ namespace LiteMol.Bootstrap.Behaviour.Density {
         register(behaviour: Entity.Density.InteractiveSurface) {
             this.behaviour = behaviour;
 
-            Command.Toast.Show.dispatch(this.context, { key: ToastKey, title: 'Density', message: 'Click on a residue or an atom to view the data.' });
+            Command.Toast.Show.dispatch(this.context, { key: ToastKey, title: 'Density', message: 'Click on a residue or an atom to view the data.', timeoutMs: 30 * 1000 });
 
             this.obs.push(this.context.behaviours.select.subscribe(e => {                
                 this.update(e);

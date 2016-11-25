@@ -15,7 +15,7 @@ You can see LiteMol in action [here](https://webchemdev.ncbr.muni.cz/LiteMol/).
 The program is being developed by David Sehnal from the CEITEC/Masaryk University in Brno, Czech Republic
 in collaboration (especially with Mandar Deshpande) with PDBe in Hinxton, Cambridge, UK.
 
-Table of contents
+Table of Contents
 =================
 
 * [Getting Started](#getting-started)

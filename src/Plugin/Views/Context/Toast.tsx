@@ -9,9 +9,13 @@ namespace LiteMol.Plugin.Views.Context {
         render() {
             let entry = this.props.entry;
             return <div className='lm-toast-entry'>
-                <div className='lm-toast-message'>
-                    <b>{entry.title}:</b> {entry.message}
+                <div className='lm-toast-title'>
+                   {entry.title}
                 </div>
+                <div className='lm-toast-message'>
+                   {entry.message}
+                </div>
+                <div className='lm-toast-clear'></div>
                 <div className='lm-toast-hide'>
                     <Controls.Button onClick={() => (entry.hide || function () { }).call(null) } style='link' icon='abort' title='Hide' customClass='lm-btn-icon' />
                 </div>
