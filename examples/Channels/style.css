@@ -1,0 +1,53 @@
+* {
+    box-sizing: border-box;
+}
+
+.plugin {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    right: 400px;
+    left: 0;
+} 
+
+.ui {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    width: 400px;
+    padding: 20px;
+    overflow-y: scroll;
+    background: #ccc;
+}    
+
+h2 {
+    border-bottom: 1px solid #999;
+    margin-bottom: 5px;
+}
+
+h3 {
+    margin-top: 5px;
+    margin-bottom: 5px;
+}
+
+a.section-header {
+    color: #333;
+    text-decoration: none;
+}
+
+a.section-header:hover {
+    color: red;
+}
+
+.show-all {
+    position: absolute;
+    right: 0;
+    top: 0;
+}
+
+body {
+    font-family: "Source Sans Pro", sans-serif;
+    background: white;
+    color: #333;
+}

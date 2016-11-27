@@ -43,9 +43,49 @@ namespace LiteMol.Visualization {
             buffer[offset + 1] = g / 255.0;
             buffer[offset + 2] = b / 255.0;
         }
+
+        static toSurface(source: THREE.Geometry) {
+            let bufferSize = source.vertices.length * 3,
+                vertexBuffer = new Float32Array(bufferSize),
+                normalBuffer = new Float32Array(bufferSize),
+                indexBuffer = new Uint32Array(source.faces.length * 3),
+                normals = Array(source.vertices.length);
+            for (let i = 0; i < source.faces.length; i++) {
+                let f = source.faces[i];
+
+                normals[f.a] = f.vertexNormals[0];
+                normals[f.b] = f.vertexNormals[1];
+                normals[f.c] = f.vertexNormals[2];
+
+                indexBuffer[3 * i] = f.a;
+                indexBuffer[3 * i + 1] = f.b;
+                indexBuffer[3 * i + 2] = f.c;
+            }
+
+            for (let i = 0; i < source.vertices.length; i++) {
+                let v = source.vertices[i];
+
+                vertexBuffer[3 * i] = v.x;
+                vertexBuffer[3 * i + 1] = v.y;
+                vertexBuffer[3 * i + 2] = v.z;
+
+                var n = normals[i];
+                normalBuffer[3 * i] = n.x;
+                normalBuffer[3 * i + 1] = n.y;
+                normalBuffer[3 * i + 2] = n.z;
+            }
+
+            return <Core.Geometry.Surface>{
+                vertices: vertexBuffer,
+                vertexCount: source.vertices.length,
+                triangleIndices: indexBuffer,
+                triangleCount: source.faces.length,
+                normals: normalBuffer 
+            };
+        }
         
         static getIndexedBufferGeometry(source: THREE.Geometry) {
-            var bufferSize = source.vertices.length * 3,
+            let bufferSize = source.vertices.length * 3,
                 vertexBuffer = new Float32Array(bufferSize),
                 normalBuffer = new Float32Array(bufferSize),
                 indexBuffer = new Uint32Array(source.faces.length * 3),

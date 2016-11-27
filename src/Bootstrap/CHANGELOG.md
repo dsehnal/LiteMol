@@ -1,4 +1,8 @@
-﻿# 1.2.3
+﻿# 1.2.4
+* Added Entity.Visual.Surface entity.
+* Updated FocusCameraOnSelect behavior to handle non-molecule objects as well.
+
+# 1.2.3
 * Specify min and maxRadius for density behavior. 
 
 # 1.2.2

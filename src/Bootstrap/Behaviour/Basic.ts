@@ -86,9 +86,7 @@ namespace LiteMol.Bootstrap.Behaviour {
     }
     
     const center = { x: 0, y: 0, z: 0 };
-    function updateCamera(context: Context, info: Interactivity.Info) {
-        if (!Interactivity.Molecule.isMoleculeModelInteractivity(info)) return;            
-
+    function updateCameraModel(context: Context, info: Interactivity.Info.Selection) {       
         let model = Utils.Molecule.findModel(info.source)!.props.model;
         if (!model) return;
 
@@ -106,7 +104,23 @@ namespace LiteMol.Bootstrap.Behaviour {
         context.scene.camera.focusOnPoint(center, Math.max(radius, 7));
     }
 
+    function updateCameraVisual(context: Context, info: Interactivity.Info) {
+        if (Interactivity.isEmpty(info) || info.source.type.info.typeClass !== 'Visual') return;
+        let v = info.source as Entity.Visual.Any;
+        let m = v.props.model;
+        if (!m) return;
+        let bs = m.getBoundingSphereOfSelection(info.elements);
+        if (bs) {
+            context.scene.camera.focusOnPoint(bs.center, Math.max(bs.radius, 7));
+        } else {
+            context.scene.camera.focusOnModel(m);
+        }
+    }
+
     export function FocusCameraOnSelect(context: Context) {
-        context.behaviours.click.subscribe(e => updateCamera(context, e));
+        context.behaviours.click.subscribe(e => {
+            if (Interactivity.Molecule.isMoleculeModelInteractivity(e)) updateCameraModel(context, e);
+            else updateCameraVisual(context, e);
+        });
     }
 }

@@ -93,7 +93,6 @@ namespace LiteMol.Bootstrap.Visualization.Density {
             }).bind(s => Geom.Surface.transform(s, <number[]><any>fromFrac.elements)
                 .bind(s => Geom.Surface.laplacianSmooth(s, params.smoothing))).run();
                  
-                              
             surface.progress.subscribe(p => ctx.update(`Density Surface (${source.props.label}): ${Utils.formatProgress(p)}`, p.requestAbort));
             
             surface.result.then(s => {    

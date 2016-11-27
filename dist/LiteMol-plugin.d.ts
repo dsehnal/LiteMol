@@ -4748,6 +4748,7 @@ declare namespace LiteMol.Core {
     module Computation {
         function create<A>(computation: (ctx: Context<A>) => void): Computation<A>;
         function resolve<A>(a: A): Computation<{}>;
+        function schedule<T>(ctx: Context<any>, f: () => T, afterMs?: number): __Promise.Promise<T>;
         interface ProgressInfo {
             message: string;
             isIndeterminate: boolean;
@@ -5309,9 +5310,11 @@ declare namespace LiteMol.Core.Geometry {
         };
     }
     namespace Surface {
+        function computeNormalsImmediate(surface: Surface): void;
         function computeNormals(surface: Surface): Computation<Surface>;
         function laplacianSmooth(surface: Surface, iterCount?: number): Computation<Surface>;
         function computeBoundingSphere(surface: Surface): Computation<Surface>;
+        function transformImmediate(surface: Surface, t: number[]): void;
         function transform(surface: Surface, t: number[]): Computation<Surface>;
     }
 }
@@ -11965,6 +11968,7 @@ declare namespace LiteMol.Visualization {
             b: number;
         }): void;
         static setPickColor(objectId: number, objectIdWidth: number, elementId: number, buffer: Float32Array, offset: number): void;
+        static toSurface(source: THREE.Geometry): Core.Geometry.Surface;
         static getIndexedBufferGeometry(source: THREE.Geometry): THREE.BufferGeometry;
     }
 }
@@ -12082,6 +12086,10 @@ declare namespace LiteMol.Visualization {
         dispose(): void;
         highlight(isOn: boolean): boolean;
         applySelection(indices: number[], action: Selection.Action): boolean;
+        getBoundingSphereOfSelection(indices: number[]): {
+            radius: number;
+            center: Core.Geometry.LinearAlgebra.ObjectVec3;
+        } | undefined;
         abstract highlightElement(pickId: number, highlight: boolean): boolean;
         abstract getPickElements(pickId: number): number[];
         protected abstract applySelectionInternal(indices: number[], action: Selection.Action): boolean;
@@ -12459,6 +12467,10 @@ declare namespace LiteMol.Visualization.Surface {
         highlightElement(pickId: number, highlight: boolean): boolean;
         protected highlightInternal(isOn: boolean): boolean;
         getPickElements(pickId: number): number[];
+        getBoundingSphereOfSelection(indices: number[]): {
+            radius: number;
+            center: Core.Geometry.LinearAlgebra.ObjectVec3;
+        } | undefined;
         applyThemeInternal(theme: Theme): void;
         protected getPickObjectVisibility(visible: boolean): boolean;
         private createObjects();
@@ -12748,6 +12760,31 @@ declare namespace LiteMol.Visualization.Molecule.Colors {
     };
     const DefaultElementColorMap: Map<string, Color>;
     const DefaultPallete: Color[];
+}
+declare namespace LiteMol.Visualization.Primitive {
+    function createSphereSurface(center: Core.Geometry.LinearAlgebra.ObjectVec3, radius: number, tessalation: number): Core.Geometry.Surface;
+}
+declare namespace LiteMol.Visualization.Primitive {
+    import LA = Core.Geometry.LinearAlgebra;
+    import Surface = Core.Geometry.Surface;
+    type ShapeType = 'Sphere' | 'Surface';
+    type Shape = {
+        type: 'Sphere';
+        center: LA.ObjectVec3;
+        radius: number;
+        id: number;
+        tessalation?: number;
+    } | {
+        type: 'Surface';
+        surface: Surface;
+        id: number;
+    };
+    class Builder {
+        private shapes;
+        add(shape: Shape): this;
+        buildSurface(): Core.Computation<Surface>;
+        static create(): Builder;
+    }
 }
 declare namespace LiteMol.Visualization.Utils {
     class Palette {
@@ -15941,6 +15978,7 @@ declare namespace LiteMol.Bootstrap.Visualization {
             type?: T;
             theme?: Theme.Instance;
         }
+        function create<Type>(style: Style<Type, any>): Style<Type, any>;
     }
     namespace Theme {
         interface Template {
@@ -16191,6 +16229,14 @@ declare namespace LiteMol.Bootstrap.Entity {
         }
         interface Any extends Entity<Any, Type<any, Any, Props<any>>, Props<any>> {
         }
+        interface SurfaceProps extends Entity.Visual.Props<"Surface"> {
+            tag: any;
+        }
+        interface Surface extends Entity<Surface, SurfaceType, SurfaceProps> {
+        }
+        interface SurfaceType extends Entity.Type<SurfaceType, Surface, SurfaceProps> {
+        }
+        const Surface: SurfaceType;
     }
     namespace Molecule {
         interface MoleculeProps extends CommonProps {
@@ -16445,6 +16491,8 @@ declare namespace LiteMol.Bootstrap.Entity.Transformer.Molecule.CoordinateStream
         radius?: number;
     }
     const InitStreaming: Tree.Transformer<Root, Action, InitStreamingParams>;
+}
+declare namespace LiteMol.Bootstrap.Entity.Transformer.Visual {
 }
 declare namespace LiteMol.Bootstrap.Utils.Molecule {
     import Structure = LiteMol.Core.Structure;

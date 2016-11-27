@@ -1526,6 +1526,7 @@ declare namespace LiteMol.Core {
     module Computation {
         function create<A>(computation: (ctx: Context<A>) => void): Computation<A>;
         function resolve<A>(a: A): Computation<{}>;
+        function schedule<T>(ctx: Context<any>, f: () => T, afterMs?: number): __Promise.Promise<T>;
         interface ProgressInfo {
             message: string;
             isIndeterminate: boolean;
@@ -2087,9 +2088,11 @@ declare namespace LiteMol.Core.Geometry {
         };
     }
     namespace Surface {
+        function computeNormalsImmediate(surface: Surface): void;
         function computeNormals(surface: Surface): Computation<Surface>;
         function laplacianSmooth(surface: Surface, iterCount?: number): Computation<Surface>;
         function computeBoundingSphere(surface: Surface): Computation<Surface>;
+        function transformImmediate(surface: Surface, t: number[]): void;
         function transform(surface: Surface, t: number[]): Computation<Surface>;
     }
 }

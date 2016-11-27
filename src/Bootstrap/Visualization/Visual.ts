@@ -15,7 +15,6 @@ namespace LiteMol.Bootstrap.Visualization {
     
     export interface Style<Type, Params> {
         computeOnBackground?: boolean,
-        //hidden?: boolean,
         isNotSelectable?: boolean
         type?: Type,
         theme?: Theme.Instance
@@ -26,12 +25,15 @@ namespace LiteMol.Bootstrap.Visualization {
     
     import TransparencyDescription = LiteMol.Visualization.Theme.Transparency;
     
-    export namespace Style {
-        
+    export namespace Style {        
         export interface Props<T> {
             computeOnBackground?: boolean,
             type?: T,
             theme?: Theme.Instance
+        }
+        
+        export function create<Type>(style: Style<Type, any>) {
+            return style;
         }
     }    
     

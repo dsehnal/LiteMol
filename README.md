@@ -69,6 +69,7 @@ Examples are located in the folder `examples`.
   - `SplitSurface` [ [source](https://github.com/dsehnal/LiteMol/tree/master/examples/SplitSurface) | [view live](https://webchemdev.ncbr.muni.cz/LiteMol/Examples/SplitSurface) ] - Shows how to create two complementary selections and display a surface for each of them.
   - `BinaryCIFInspect` [ [source](https://github.com/dsehnal/LiteMol/tree/master/examples/BinaryCIFInspect) | [view live](https://webchemdev.ncbr.muni.cz/LiteMol/Examples/BinaryCIFInspect) ] - A simple app that enables a comparison of data inside CIF and BinaryCIF. Also shows how to use the LiteMol.Core code directly without including/instancing the plugin.
   - `Transforms` [ [source](https://github.com/dsehnal/LiteMol/tree/master/examples/Transforms) | [view live](https://webchemdev.ncbr.muni.cz/LiteMol/Examples/Transforms) ] - This is a more complicated example that shows how to download multiple structures, apply a superposition algorithm, transform using a 4x4 matrix, and visualize them.
+  - `Channels` [ [source](https://github.com/dsehnal/LiteMol/tree/master/examples/Channels) | [view live](https://webchemdev.ncbr.muni.cz/LiteMol/Examples/Channels) ] - An advanced examples that shows the results produced by the command line version of [MOLE](https://webchem.ncbr.muni.cz/Platform/App/Mole). It shows how to create custom visuals from JSON data and make them interactive, and how to enable interaction from outside the plugin.
 
 To run the examples locally, simply open the corresponding ``index.html`` from the ``web/Examples`` directory in your
 favourite web browser (this is because the paths to the LiteMol CSS and JS are set up so that they can be shared
@@ -152,7 +153,7 @@ These features are planned to be introduced during the first half of 2017.
   * Streamline the process of extension creation.
   * Support for dynamic extension loading.
 * Support for saving and restoring the state of the application.
-* More visual primitives (spheres, cylinders, arrows, etc.)
+* More visual primitives (spheres, cylinders, arrows, etc.). This is partially implemented.
 * Support for labels in the 3D scene.  
 * Improved internal data representation of molecules.
 * Restructure the code and update the build process to support NPM.

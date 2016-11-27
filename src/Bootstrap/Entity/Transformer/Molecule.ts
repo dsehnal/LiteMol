@@ -2,11 +2,8 @@
  * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
 
-
 namespace LiteMol.Bootstrap.Entity.Transformer.Molecule {
     "use strict";
-
-    //export interface ParseCifParams { blockIndex: number }
 
     export interface DownloadMoleculeSourceParams { id?: string, format?: Core.Formats.FormatInfo }
     export function downloadMoleculeSource(params: { sourceId: string, name: string, description: string, urlTemplate: (id: string) => string, defaultId: string, specificFormat?: Core.Formats.FormatInfo, isFullUrl?: boolean }) {

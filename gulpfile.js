@@ -62,6 +62,7 @@ function ViewerAndExamples() {
       buildts('./examples/SimpleController'),
       buildts('./examples/BinaryCIFInspect'),
       buildts('./examples/Transforms'),
+      buildts('./examples/Channels'),
    ]);    
 }
 

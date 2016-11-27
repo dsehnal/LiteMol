@@ -104,6 +104,10 @@ namespace LiteMol.Visualization {
             this.dirty = this.dirty || changed; 
             return changed;
         } 
+
+        getBoundingSphereOfSelection(indices: number[]): { radius: number, center: Core.Geometry.LinearAlgebra.ObjectVec3 } | undefined {
+            return undefined;
+        }
         
         abstract highlightElement(pickId: number, highlight: boolean): boolean;                
         abstract getPickElements(pickId: number): number[];

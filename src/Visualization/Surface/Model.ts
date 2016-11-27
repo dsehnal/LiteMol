@@ -56,6 +56,64 @@ namespace LiteMol.Visualization.Surface {
         getPickElements(pickId: number): number[] {
             return [pickId];
         }
+
+        getBoundingSphereOfSelection(indices: number[]): { radius: number, center: Core.Geometry.LinearAlgebra.ObjectVec3 } | undefined {
+            if (!this.geometry.vertexToElementMap) return { radius: this.radius, center: this.centroid };
+
+            let vs = <number[]>(<any>this.geometry.geometry.attributes).position.array;
+            let center = new THREE.Vector3(), count = 0;
+
+            let map = this.geometry.elementToVertexMap,
+                vertexRanges = map.vertexRanges;
+
+            for (let index of indices) {
+                if (!map.elementMap.has(index)) continue;
+                let indexOffset = map.elementMap.get(index),
+                    rangeStart = map.elementRanges[2 * indexOffset],
+                    rangeEnd = map.elementRanges[2 * indexOffset + 1];
+                if (rangeStart === rangeEnd) continue;                
+                for (let i = rangeStart; i < rangeEnd; i += 2) {
+                    let vStart = vertexRanges[i], vEnd = vertexRanges[i + 1];
+                    for (let j = vStart; j < vEnd; j++) {
+                        center.x += vs[3 * j];
+                        center.y += vs[3 * j + 1];
+                        center.z += vs[3 * j + 2];
+                        count++;
+                    }
+                }
+            }
+
+            if (!count) return void 0;
+
+            center.x = center.x / count;
+            center.y = center.y / count;
+            center.z = center.z / count;
+
+            let t = new THREE.Vector3();
+            let radius = 0; 
+            for (let index of indices) {
+                if (!map.elementMap.has(index)) continue;
+                let indexOffset = map.elementMap.get(index),
+                    rangeStart = map.elementRanges[2 * indexOffset],
+                    rangeEnd = map.elementRanges[2 * indexOffset + 1];
+                if (rangeStart === rangeEnd) continue;                
+                for (let i = rangeStart; i < rangeEnd; i += 2) {
+                    let vStart = vertexRanges[i], vEnd = vertexRanges[i + 1];
+                    for (let j = vStart; j < vEnd; j++) {
+                        t.x = vs[3 * j];
+                        t.y = vs[3 * j + 1];
+                        t.z = vs[3 * j + 2];
+                        radius = Math.max(radius, t.distanceToSquared(center));
+                    }
+                }
+            }
+            radius = Math.sqrt(radius);
+
+            return {
+                radius,
+                center: { x: center.x, y: center.y, z: center.z } 
+            };
+        }
         
         applyThemeInternal(theme: Theme) {
             

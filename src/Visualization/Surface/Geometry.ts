@@ -42,7 +42,7 @@ namespace LiteMol.Visualization.Surface {
         let currentEnd = start + 1;
 
         while (currentStart < end) {
-            while (currentEnd <= end && indices[currentEnd] - indices[currentEnd - 1] < 1.1) currentEnd++;
+            while (currentEnd < end && indices[currentEnd] - indices[currentEnd - 1] < 1.1) currentEnd++;
             map.addVertexRange(indices[currentStart], indices[currentEnd - 1] + 1);
             currentStart = currentEnd;
             currentEnd = currentEnd + 1;
@@ -52,7 +52,7 @@ namespace LiteMol.Visualization.Surface {
     function createVertexMap(ctx: Context) {
         let indices = sortAnnotation(ctx);
         let annotation = ctx.data.annotation!;
-        let count = 0;
+        let count = 1;
         for (let i = 0, _b = indices.length - 1; i < _b; i++) {
             if (annotation[indices[i]] !== annotation[indices[i + 1]]) count++;
         }
@@ -97,6 +97,7 @@ namespace LiteMol.Visualization.Surface {
         ctx.computation.schedule(() => {
             if (ctx.data.annotation) {
                 ctx.geom.elementToVertexMap = createVertexMap(ctx);
+                console.log(ctx.geom.elementToVertexMap);
             } else {
                 ctx.geom.elementToVertexMap = createFullMap(ctx);
             }
@@ -166,7 +167,6 @@ namespace LiteMol.Visualization.Surface {
             vs = ctx.data.vertices,
             ids = ctx.data.annotation!,
             tri = ctx.data.triangleIndices;
-
 
         ctx.pickTris = ChunkedArray.forIndexBuffer(ctx.triCount);
         let pickColorBuffer = ctx.pickColorBuffer!;

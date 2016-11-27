@@ -34,7 +34,6 @@ namespace LiteMol.Example.Transforms {
             
             Bootstrap.Behaviour.SetEntityToCurrentWhenAdded,
             Bootstrap.Behaviour.FocusCameraOnSelect,
-            Bootstrap.Behaviour.UnselectElementOnRepeatedClick,
             
             // this colors the visual when a selection is created on it.
             Bootstrap.Behaviour.ApplySelectionToVisual,

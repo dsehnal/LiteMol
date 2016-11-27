@@ -564,7 +564,6 @@ var LiteMol;
                     // you will find the source of all behaviours in the Bootstrap/Behaviour directory
                     Bootstrap.Behaviour.SetEntityToCurrentWhenAdded,
                     Bootstrap.Behaviour.FocusCameraOnSelect,
-                    Bootstrap.Behaviour.UnselectElementOnRepeatedClick,
                     // this colors the visual when a selection is created on it.
                     Bootstrap.Behaviour.ApplySelectionToVisual,
                     // this colors the visual when it's selected by mouse or touch

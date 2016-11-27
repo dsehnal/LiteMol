@@ -11179,6 +11179,18 @@ var LiteMol;
                 return create(function (ctx) { return ctx.resolve(a); });
             }
             Computation.resolve = resolve;
+            function schedule(ctx, f, afterMs) {
+                if (afterMs === void 0) { afterMs = 0; }
+                return new LiteMol.Core.Promise(function (res) { return ctx.schedule(function () {
+                    try {
+                        res(f());
+                    }
+                    finally {
+                        res(undefined);
+                    }
+                }, afterMs); });
+            }
+            Computation.schedule = schedule;
             var Context = (function () {
                 function Context() {
                     var _this = this;
@@ -14705,38 +14717,45 @@ var LiteMol;
             "use strict";
             var Surface;
             (function (Surface) {
+                function computeNormalsImmediate(surface) {
+                    if (surface.normals)
+                        return;
+                    var normals = new Float32Array(surface.vertices.length), v = surface.vertices, triangles = surface.triangleIndices, len = triangles.length, f, i;
+                    for (i = 0; i < triangles.length; i += 3) {
+                        var a = 3 * triangles[i], b = 3 * triangles[i + 1], c = 3 * triangles[i + 2];
+                        var nx = v[a + 2] * (v[b + 1] - v[c + 1]) + v[b + 2] * v[c + 1] - v[b + 1] * v[c + 2] + v[a + 1] * (-v[b + 2] + v[c + 2]), ny = -(v[b + 2] * v[c]) + v[a + 2] * (-v[b] + v[c]) + v[a] * (v[b + 2] - v[c + 2]) + v[b] * v[c + 2], nz = v[a + 1] * (v[b] - v[c]) + v[b + 1] * v[c] - v[b] * v[c + 1] + v[a] * (-v[b + 1] + v[b + 1]);
+                        normals[a] += nx;
+                        normals[a + 1] += ny;
+                        normals[a + 2] += nz;
+                        normals[b] += nx;
+                        normals[b + 1] += ny;
+                        normals[b + 2] += nz;
+                        normals[c] += nx;
+                        normals[c + 1] += ny;
+                        normals[c + 2] += nz;
+                    }
+                    for (i = 0; i < normals.length; i += 3) {
+                        var nx = normals[i];
+                        var ny = normals[i + 1];
+                        var nz = normals[i + 2];
+                        f = 1.0 / Math.sqrt(nx * nx + ny * ny + nz * nz);
+                        normals[i] *= f;
+                        normals[i + 1] *= f;
+                        normals[i + 2] *= f;
+                    }
+                    surface.normals = normals;
+                }
+                Surface.computeNormalsImmediate = computeNormalsImmediate;
                 function computeNormals(surface) {
                     return Core.Computation.create(function (ctx) {
                         if (surface.normals) {
                             ctx.resolve(surface);
+                            return;
                         }
                         ;
                         ctx.update('Computing normals...');
                         ctx.schedule(function () {
-                            var normals = new Float32Array(surface.vertices.length), v = surface.vertices, triangles = surface.triangleIndices, len = triangles.length, f, i;
-                            for (i = 0; i < triangles.length; i += 3) {
-                                var a = 3 * triangles[i], b = 3 * triangles[i + 1], c = 3 * triangles[i + 2];
-                                var nx = v[a + 2] * (v[b + 1] - v[c + 1]) + v[b + 2] * v[c + 1] - v[b + 1] * v[c + 2] + v[a + 1] * (-v[b + 2] + v[c + 2]), ny = -(v[b + 2] * v[c]) + v[a + 2] * (-v[b] + v[c]) + v[a] * (v[b + 2] - v[c + 2]) + v[b] * v[c + 2], nz = v[a + 1] * (v[b] - v[c]) + v[b + 1] * v[c] - v[b] * v[c + 1] + v[a] * (-v[b + 1] + v[b + 1]);
-                                normals[a] += nx;
-                                normals[a + 1] += ny;
-                                normals[a + 2] += nz;
-                                normals[b] += nx;
-                                normals[b + 1] += ny;
-                                normals[b + 2] += nz;
-                                normals[c] += nx;
-                                normals[c + 1] += ny;
-                                normals[c + 2] += nz;
-                            }
-                            for (i = 0; i < normals.length; i += 3) {
-                                var nx = normals[i];
-                                var ny = normals[i + 1];
-                                var nz = normals[i + 2];
-                                f = 1.0 / Math.sqrt(nx * nx + ny * ny + nz * nz);
-                                normals[i] *= f;
-                                normals[i + 1] *= f;
-                                normals[i + 2] *= f;
-                            }
-                            surface.normals = normals;
+                            computeNormalsImmediate(surface);
                             ctx.resolve(surface);
                         });
                     });
@@ -14840,24 +14859,28 @@ var LiteMol;
                     });
                 }
                 Surface.computeBoundingSphere = computeBoundingSphere;
+                function transformImmediate(surface, t) {
+                    var p = { x: 0.1, y: 0.1, z: 0.1 };
+                    var m = Geometry.LinearAlgebra.Matrix4.transformVector3;
+                    var vertices = surface.vertices;
+                    for (var i = 0, _c = surface.vertices.length; i < _c; i += 3) {
+                        p.x = vertices[i];
+                        p.y = vertices[i + 1];
+                        p.z = vertices[i + 2];
+                        m(p, p, t);
+                        vertices[i] = p.x;
+                        vertices[i + 1] = p.y;
+                        vertices[i + 2] = p.z;
+                    }
+                    surface.normals = void 0;
+                    surface.boundingSphere = void 0;
+                }
+                Surface.transformImmediate = transformImmediate;
                 function transform(surface, t) {
                     return Core.Computation.create(function (ctx) {
                         ctx.update('Updating surface...');
                         ctx.schedule(function () {
-                            var p = { x: 0.1, y: 0.1, z: 0.1 };
-                            var m = Geometry.LinearAlgebra.Matrix4.transformVector3;
-                            var vertices = surface.vertices;
-                            for (var i = 0, _c = surface.vertices.length; i < _c; i += 3) {
-                                p.x = vertices[i];
-                                p.y = vertices[i + 1];
-                                p.z = vertices[i + 2];
-                                m(p, p, t);
-                                vertices[i] = p.x;
-                                vertices[i + 1] = p.y;
-                                vertices[i + 2] = p.z;
-                            }
-                            surface.normals = void 0;
-                            surface.boundingSphere = void 0;
+                            transformImmediate(surface, t);
                             ctx.resolve(surface);
                         });
                     });
@@ -54787,7 +54810,7 @@ var LiteMol;
 (function (LiteMol) {
     var Visualization;
     (function (Visualization) {
-        Visualization.VERSION = { number: "1.4.2", date: "Nov 24 2016" };
+        Visualization.VERSION = { number: "1.5.0", date: "Nov 27 2016" };
     })(Visualization = LiteMol.Visualization || (LiteMol.Visualization = {}));
 })(LiteMol || (LiteMol = {}));
 var LiteMol;
@@ -54830,6 +54853,35 @@ var LiteMol;
                 buffer[offset] = r / 255.0;
                 buffer[offset + 1] = g / 255.0;
                 buffer[offset + 2] = b / 255.0;
+            };
+            GeometryHelper.toSurface = function (source) {
+                var bufferSize = source.vertices.length * 3, vertexBuffer = new Float32Array(bufferSize), normalBuffer = new Float32Array(bufferSize), indexBuffer = new Uint32Array(source.faces.length * 3), normals = Array(source.vertices.length);
+                for (var i = 0; i < source.faces.length; i++) {
+                    var f = source.faces[i];
+                    normals[f.a] = f.vertexNormals[0];
+                    normals[f.b] = f.vertexNormals[1];
+                    normals[f.c] = f.vertexNormals[2];
+                    indexBuffer[3 * i] = f.a;
+                    indexBuffer[3 * i + 1] = f.b;
+                    indexBuffer[3 * i + 2] = f.c;
+                }
+                for (var i = 0; i < source.vertices.length; i++) {
+                    var v = source.vertices[i];
+                    vertexBuffer[3 * i] = v.x;
+                    vertexBuffer[3 * i + 1] = v.y;
+                    vertexBuffer[3 * i + 2] = v.z;
+                    var n = normals[i];
+                    normalBuffer[3 * i] = n.x;
+                    normalBuffer[3 * i + 1] = n.y;
+                    normalBuffer[3 * i + 2] = n.z;
+                }
+                return {
+                    vertices: vertexBuffer,
+                    vertexCount: source.vertices.length,
+                    triangleIndices: indexBuffer,
+                    triangleCount: source.faces.length,
+                    normals: normalBuffer
+                };
             };
             GeometryHelper.getIndexedBufferGeometry = function (source) {
                 var bufferSize = source.vertices.length * 3, vertexBuffer = new Float32Array(bufferSize), normalBuffer = new Float32Array(bufferSize), indexBuffer = new Uint32Array(source.faces.length * 3), normals = Array(source.vertices.length);
@@ -55458,6 +55510,9 @@ var LiteMol;
                 var changed = this.applySelectionInternal(indices, action);
                 this.dirty = this.dirty || changed;
                 return changed;
+            };
+            Model.prototype.getBoundingSphereOfSelection = function (indices) {
+                return undefined;
             };
             Model.prototype.getPickObjectVisibility = function (visible) {
                 return visible && this.theme.interactive;
@@ -56946,7 +57001,7 @@ var LiteMol;
                 var currentStart = start;
                 var currentEnd = start + 1;
                 while (currentStart < end) {
-                    while (currentEnd <= end && indices[currentEnd] - indices[currentEnd - 1] < 1.1)
+                    while (currentEnd < end && indices[currentEnd] - indices[currentEnd - 1] < 1.1)
                         currentEnd++;
                     map.addVertexRange(indices[currentStart], indices[currentEnd - 1] + 1);
                     currentStart = currentEnd;
@@ -56956,7 +57011,7 @@ var LiteMol;
             function createVertexMap(ctx) {
                 var indices = sortAnnotation(ctx);
                 var annotation = ctx.data.annotation;
-                var count = 0;
+                var count = 1;
                 for (var i = 0, _b = indices.length - 1; i < _b; i++) {
                     if (annotation[indices[i]] !== annotation[indices[i + 1]])
                         count++;
@@ -56998,6 +57053,7 @@ var LiteMol;
                 ctx.computation.schedule(function () {
                     if (ctx.data.annotation) {
                         ctx.geom.elementToVertexMap = createVertexMap(ctx);
+                        console.log(ctx.geom.elementToVertexMap);
                     }
                     else {
                         ctx.geom.elementToVertexMap = createFullMap(ctx);
@@ -57251,6 +57307,59 @@ var LiteMol;
                 Model.prototype.getPickElements = function (pickId) {
                     return [pickId];
                 };
+                Model.prototype.getBoundingSphereOfSelection = function (indices) {
+                    if (!this.geometry.vertexToElementMap)
+                        return { radius: this.radius, center: this.centroid };
+                    var vs = this.geometry.geometry.attributes.position.array;
+                    var center = new Visualization.THREE.Vector3(), count = 0;
+                    var map = this.geometry.elementToVertexMap, vertexRanges = map.vertexRanges;
+                    for (var _i = 0, indices_2 = indices; _i < indices_2.length; _i++) {
+                        var index = indices_2[_i];
+                        if (!map.elementMap.has(index))
+                            continue;
+                        var indexOffset = map.elementMap.get(index), rangeStart = map.elementRanges[2 * indexOffset], rangeEnd = map.elementRanges[2 * indexOffset + 1];
+                        if (rangeStart === rangeEnd)
+                            continue;
+                        for (var i = rangeStart; i < rangeEnd; i += 2) {
+                            var vStart = vertexRanges[i], vEnd = vertexRanges[i + 1];
+                            for (var j = vStart; j < vEnd; j++) {
+                                center.x += vs[3 * j];
+                                center.y += vs[3 * j + 1];
+                                center.z += vs[3 * j + 2];
+                                count++;
+                            }
+                        }
+                    }
+                    if (!count)
+                        return void 0;
+                    center.x = center.x / count;
+                    center.y = center.y / count;
+                    center.z = center.z / count;
+                    var t = new Visualization.THREE.Vector3();
+                    var radius = 0;
+                    for (var _a = 0, indices_3 = indices; _a < indices_3.length; _a++) {
+                        var index = indices_3[_a];
+                        if (!map.elementMap.has(index))
+                            continue;
+                        var indexOffset = map.elementMap.get(index), rangeStart = map.elementRanges[2 * indexOffset], rangeEnd = map.elementRanges[2 * indexOffset + 1];
+                        if (rangeStart === rangeEnd)
+                            continue;
+                        for (var i = rangeStart; i < rangeEnd; i += 2) {
+                            var vStart = vertexRanges[i], vEnd = vertexRanges[i + 1];
+                            for (var j = vStart; j < vEnd; j++) {
+                                t.x = vs[3 * j];
+                                t.y = vs[3 * j + 1];
+                                t.z = vs[3 * j + 2];
+                                radius = Math.max(radius, t.distanceToSquared(center));
+                            }
+                        }
+                    }
+                    radius = Math.sqrt(radius);
+                    return {
+                        radius: radius,
+                        center: { x: center.x, y: center.y, z: center.z }
+                    };
+                };
                 Model.prototype.applyThemeInternal = function (theme) {
                     var color = { r: 0, g: 0, b: 0 };
                     Visualization.MaterialsHelper.updateMaterial(this.material, theme, this.object);
@@ -57483,8 +57592,8 @@ var LiteMol;
                     }
                     Model.prototype.applySelectionInternal = function (indices, action) {
                         var buffer = this.ballsAndSticks.vertexStateBuffer, array = buffer.array, map = this.ballsAndSticks.atomVertexMap, vertexRanges = map.vertexRanges, changed = false;
-                        for (var _i = 0, indices_2 = indices; _i < indices_2.length; _i++) {
-                            var index = indices_2[_i];
+                        for (var _i = 0, indices_4 = indices; _i < indices_4.length; _i++) {
+                            var index = indices_4[_i];
                             if (!map.elementMap.has(index))
                                 continue;
                             var indexOffset = map.elementMap.get(index), rangeStart = map.elementRanges[2 * indexOffset], rangeEnd = map.elementRanges[2 * indexOffset + 1];
@@ -59379,6 +59488,145 @@ var LiteMol;
                 })();
             })(Colors = Molecule.Colors || (Molecule.Colors = {}));
         })(Molecule = Visualization.Molecule || (Visualization.Molecule = {}));
+    })(Visualization = LiteMol.Visualization || (LiteMol.Visualization = {}));
+})(LiteMol || (LiteMol = {}));
+/*
+ * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ */
+var LiteMol;
+(function (LiteMol) {
+    var Visualization;
+    (function (Visualization) {
+        var Primitive;
+        (function (Primitive) {
+            "use strict";
+            var LA = LiteMol.Core.Geometry.LinearAlgebra;
+            function createSphereSurface(center, radius, tessalation) {
+                var geom = new Visualization.THREE.IcosahedronGeometry(radius, tessalation);
+                var surface = Visualization.GeometryHelper.toSurface(geom);
+                if (center.x !== 0 || center.y !== 0 || center.z !== 0) {
+                    LiteMol.Core.Geometry.Surface.transformImmediate(surface, LA.Matrix4.fromTranslation(LA.Matrix4.empty(), [center.x, center.y, center.z]));
+                }
+                return surface;
+            }
+            Primitive.createSphereSurface = createSphereSurface;
+        })(Primitive = Visualization.Primitive || (Visualization.Primitive = {}));
+    })(Visualization = LiteMol.Visualization || (LiteMol.Visualization = {}));
+})(LiteMol || (LiteMol = {}));
+/*
+ * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ */
+var LiteMol;
+(function (LiteMol) {
+    var Visualization;
+    (function (Visualization) {
+        var Primitive;
+        (function (Primitive) {
+            'use strict';
+            var Surface = LiteMol.Core.Geometry.Surface;
+            function buildSurface(shapes) {
+                return LiteMol.Core.Computation.create(function (ctx) {
+                    ctx.update('Building surface...');
+                    ctx.schedule(function () {
+                        var uniqueSpheres = new Map();
+                        for (var _i = 0, shapes_1 = shapes; _i < shapes_1.length; _i++) {
+                            var s = shapes_1[_i];
+                            if (s.type !== 'Sphere' || uniqueSpheres.has(s.tessalation || 0))
+                                continue;
+                            var surf = Primitive.createSphereSurface({ x: 0, y: 0, z: 0 }, 1, s.tessalation || 0);
+                            uniqueSpheres.set(s.tessalation || 0, Primitive.createSphereSurface({ x: 0, y: 0, z: 0 }, 1, s.tessalation || 0));
+                        }
+                        var size = { vertexCount: 0, triangleCount: 0 };
+                        for (var _a = 0, shapes_2 = shapes; _a < shapes_2.length; _a++) {
+                            var s = shapes_2[_a];
+                            switch (s.type) {
+                                case 'Sphere':
+                                    var sphere = uniqueSpheres.get(s.tessalation || 0);
+                                    size.vertexCount += sphere.vertexCount;
+                                    size.triangleCount += sphere.triangleCount;
+                                    break;
+                                case 'Surface':
+                                    size.vertexCount += s.surface.vertexCount;
+                                    size.triangleCount += s.surface.triangleCount;
+                                    break;
+                            }
+                        }
+                        var vertices = new Float32Array(size.vertexCount * 3);
+                        var normals = new Float32Array(size.vertexCount * 3);
+                        var triangles = new Uint32Array(size.triangleCount * 3);
+                        var annotation = new Int32Array(size.vertexCount);
+                        var vOffset = 0, nOffset = 0, tOffset = 0, aOffset = 0;
+                        var v = new Visualization.THREE.Vector3();
+                        var transform = new Visualization.THREE.Matrix4();
+                        var vs;
+                        for (var _c = 0, shapes_3 = shapes; _c < shapes_3.length; _c++) {
+                            var s = shapes_3[_c];
+                            var surface = void 0;
+                            var startVOffset = (vOffset / 3) | 0;
+                            switch (s.type) {
+                                case 'Sphere':
+                                    surface = uniqueSpheres.get(s.tessalation || 0);
+                                    vs = surface.vertices;
+                                    for (var i = 0, _b = surface.vertexCount * 3; i < _b; i += 3) {
+                                        v.x = vs[i], v.y = vs[i + 1], v.z = vs[i + 2];
+                                        v.applyMatrix4(transform.makeScale(s.radius, s.radius, s.radius));
+                                        v.applyMatrix4(transform.makeTranslation(s.center.x, s.center.y, s.center.z));
+                                        vertices[vOffset++] = v.x;
+                                        vertices[vOffset++] = v.y;
+                                        vertices[vOffset++] = v.z;
+                                    }
+                                    break;
+                                case 'Surface':
+                                    surface = s.surface;
+                                    Surface.computeNormalsImmediate(surface);
+                                    vs = surface.vertices;
+                                    for (var i = 0, _b = vs.length; i < _b; i++) {
+                                        vertices[vOffset++] = vs[i];
+                                    }
+                                    break;
+                            }
+                            vs = surface.normals;
+                            for (var i = 0, _b = vs.length; i < _b; i++) {
+                                normals[nOffset++] = vs[i];
+                            }
+                            var ts = surface.triangleIndices;
+                            for (var i = 0, _b = ts.length; i < _b; i++) {
+                                triangles[tOffset++] = startVOffset + ts[i];
+                            }
+                            for (var i = 0, _b = surface.vertexCount; i < _b; i++) {
+                                annotation[aOffset++] = s.id;
+                            }
+                        }
+                        var ret = {
+                            vertices: vertices,
+                            vertexCount: size.vertexCount,
+                            triangleIndices: triangles,
+                            triangleCount: size.triangleCount,
+                            normals: normals,
+                            annotation: annotation
+                        };
+                        ctx.resolve(ret);
+                    });
+                });
+            }
+            var Builder = (function () {
+                function Builder() {
+                    this.shapes = [];
+                }
+                Builder.prototype.add = function (shape) {
+                    this.shapes.push(shape);
+                    return this;
+                };
+                Builder.prototype.buildSurface = function () {
+                    return buildSurface(this.shapes);
+                };
+                Builder.create = function () {
+                    return new Builder();
+                };
+                return Builder;
+            }());
+            Primitive.Builder = Builder;
+        })(Primitive = Visualization.Primitive || (Visualization.Primitive = {}));
     })(Visualization = LiteMol.Visualization || (LiteMol.Visualization = {}));
 })(LiteMol || (LiteMol = {}));
 /*
@@ -64642,7 +64890,7 @@ var LiteMol;
 (function (LiteMol) {
     var Bootstrap;
     (function (Bootstrap) {
-        Bootstrap.VERSION = { number: "1.2.3", date: "Nov 24 2016" };
+        Bootstrap.VERSION = { number: "1.2.4", date: "Nov 27 2016" };
     })(Bootstrap = LiteMol.Bootstrap || (LiteMol.Bootstrap = {}));
 })(LiteMol || (LiteMol = {}));
 /*
@@ -67054,6 +67302,13 @@ var LiteMol;
         (function (Visualization) {
             "use strict";
             var visualSerialId = 0;
+            var Style;
+            (function (Style) {
+                function create(style) {
+                    return style;
+                }
+                Style.create = create;
+            })(Style = Visualization.Style || (Visualization.Style = {}));
             var Theme;
             (function (Theme) {
                 function mergeProps(theme, props) {
@@ -67822,6 +68077,11 @@ var LiteMol;
                 Data.CifDictionary = Entity.create({ name: 'Cif Dictionary', typeClass: 'Data', shortName: 'CD', description: 'Represents parsed CIF data.' });
                 Data.Json = Entity.create({ name: 'JSON Data', typeClass: 'Data', shortName: 'JS_D', description: 'Represents JSON data.' });
             })(Data = Entity.Data || (Entity.Data = {}));
+            // /* Visual props */
+            var Visual;
+            (function (Visual) {
+                Visual.Surface = Entity.create({ name: 'Surface Visual', typeClass: 'Visual', shortName: 'V_S', description: 'A surface visual.' }, { isFocusable: true });
+            })(Visual = Entity.Visual || (Entity.Visual = {}));
             /* Molecule */
             var Molecule;
             (function (Molecule_1) {
@@ -68621,6 +68881,25 @@ var LiteMol;
 (function (LiteMol) {
     var Bootstrap;
     (function (Bootstrap) {
+        var Entity;
+        (function (Entity) {
+            var Transformer;
+            (function (Transformer) {
+                var Visual;
+                (function (Visual) {
+                    "use strict";
+                })(Visual = Transformer.Visual || (Transformer.Visual = {}));
+            })(Transformer = Entity.Transformer || (Entity.Transformer = {}));
+        })(Entity = Bootstrap.Entity || (Bootstrap.Entity = {}));
+    })(Bootstrap = LiteMol.Bootstrap || (LiteMol.Bootstrap = {}));
+})(LiteMol || (LiteMol = {}));
+/*
+ * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ */
+var LiteMol;
+(function (LiteMol) {
+    var Bootstrap;
+    (function (Bootstrap) {
         var Utils;
         (function (Utils) {
             var Molecule;
@@ -68920,9 +69199,7 @@ var LiteMol;
             }
             Behaviour.UnselectElementOnRepeatedClick = UnselectElementOnRepeatedClick;
             var center = { x: 0, y: 0, z: 0 };
-            function updateCamera(context, info) {
-                if (!Bootstrap.Interactivity.Molecule.isMoleculeModelInteractivity(info))
-                    return;
+            function updateCameraModel(context, info) {
                 var model = Bootstrap.Utils.Molecule.findModel(info.source).props.model;
                 if (!model)
                     return;
@@ -68939,8 +69216,28 @@ var LiteMol;
                 }
                 context.scene.camera.focusOnPoint(center, Math.max(radius, 7));
             }
+            function updateCameraVisual(context, info) {
+                if (Bootstrap.Interactivity.isEmpty(info) || info.source.type.info.typeClass !== 'Visual')
+                    return;
+                var v = info.source;
+                var m = v.props.model;
+                if (!m)
+                    return;
+                var bs = m.getBoundingSphereOfSelection(info.elements);
+                if (bs) {
+                    context.scene.camera.focusOnPoint(bs.center, Math.max(bs.radius, 7));
+                }
+                else {
+                    context.scene.camera.focusOnModel(m);
+                }
+            }
             function FocusCameraOnSelect(context) {
-                context.behaviours.click.subscribe(function (e) { return updateCamera(context, e); });
+                context.behaviours.click.subscribe(function (e) {
+                    if (Bootstrap.Interactivity.Molecule.isMoleculeModelInteractivity(e))
+                        updateCameraModel(context, e);
+                    else
+                        updateCameraVisual(context, e);
+                });
             }
             Behaviour.FocusCameraOnSelect = FocusCameraOnSelect;
         })(Behaviour = Bootstrap.Behaviour || (Bootstrap.Behaviour = {}));

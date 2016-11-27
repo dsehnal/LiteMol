@@ -46,44 +46,49 @@ namespace LiteMol.Core.Geometry {
     }
     
     export namespace Surface {
+
+        export function computeNormalsImmediate(surface: Surface) {
+            if (surface.normals) return;
+            
+            let normals = new Float32Array(surface.vertices.length),
+                v = surface.vertices, triangles = surface.triangleIndices,
+                len = triangles.length,
+                f: number, i: number;
+            for (i = 0; i < triangles.length; i += 3) {
+                let a = 3 * triangles[i],
+                    b = 3 * triangles[i + 1],
+                    c = 3 * triangles[i + 2];
+                    
+                let nx = v[a + 2] * (v[b + 1] - v[c + 1]) + v[b + 2] * v[c + 1] - v[b + 1] * v[c + 2] + v[a + 1] * (-v[b + 2] + v[c + 2]),
+                    ny = -(v[b + 2] * v[c]) + v[a + 2] * (-v[b] + v[c]) + v[a] * (v[b + 2] - v[c + 2]) + v[b] * v[c + 2],
+                    nz = v[a + 1] * (v[b] - v[c]) + v[b + 1] * v[c] - v[b] * v[c + 1] + v[a] * (-v[b + 1] + v[b + 1]);
+
+                normals[a] += nx; normals[a + 1] += ny; normals[a + 2] += nz;
+                normals[b] += nx; normals[b + 1] += ny; normals[b + 2] += nz;
+                normals[c] += nx; normals[c + 1] += ny; normals[c + 2] += nz;
+            }
+
+            for (i = 0; i < normals.length; i += 3) {
+                let nx = normals[i]; 
+                let ny = normals[i + 1]; 
+                let nz = normals[i + 2];
+                f = 1.0 / Math.sqrt(nx * nx + ny * ny + nz * nz);
+                normals[i] *= f; normals[i + 1] *= f; normals[i + 2] *= f;
+            }
+            surface.normals = normals;
+        }
      
         export function computeNormals(surface: Surface): Computation<Surface> {
             
             return Computation.create<Surface>(ctx => {
                 if (surface.normals) {
                     ctx.resolve(surface);
+                    return;
                 };                
                      
-                ctx.update('Computing normals...'); 
-                               
+                ctx.update('Computing normals...');                                
                 ctx.schedule(() => {
-                    let normals = new Float32Array(surface.vertices.length),
-                        v = surface.vertices, triangles = surface.triangleIndices,
-                        len = triangles.length,
-                        f: number, i: number;
-                    for (i = 0; i < triangles.length; i += 3) {
-                        let a = 3 * triangles[i],
-                            b = 3 * triangles[i + 1],
-                            c = 3 * triangles[i + 2];
-                            
-                        let nx = v[a + 2] * (v[b + 1] - v[c + 1]) + v[b + 2] * v[c + 1] - v[b + 1] * v[c + 2] + v[a + 1] * (-v[b + 2] + v[c + 2]),
-                            ny = -(v[b + 2] * v[c]) + v[a + 2] * (-v[b] + v[c]) + v[a] * (v[b + 2] - v[c + 2]) + v[b] * v[c + 2],
-                            nz = v[a + 1] * (v[b] - v[c]) + v[b + 1] * v[c] - v[b] * v[c + 1] + v[a] * (-v[b + 1] + v[b + 1]);
-
-                        normals[a] += nx; normals[a + 1] += ny; normals[a + 2] += nz;
-                        normals[b] += nx; normals[b + 1] += ny; normals[b + 2] += nz;
-                        normals[c] += nx; normals[c + 1] += ny; normals[c + 2] += nz;
-                    }
-
-                    for (i = 0; i < normals.length; i += 3) {
-                        let nx = normals[i]; 
-                        let ny = normals[i + 1]; 
-                        let nz = normals[i + 2];
-                        f = 1.0 / Math.sqrt(nx * nx + ny * ny + nz * nz);
-                        normals[i] *= f; normals[i + 1] *= f; normals[i + 2] *= f;
-                    }
-                    surface.normals = normals;
-                    
+                    computeNormalsImmediate(surface);                    
                     ctx.resolve(surface);    
                 });
             });        
@@ -205,26 +210,29 @@ namespace LiteMol.Core.Geometry {
                 });
             });
         }
+
+        export function transformImmediate(surface: Surface, t: number[]) {
+            let p = { x: 0.1, y: 0.1, z: 0.1 }                    
+            let m = LinearAlgebra.Matrix4.transformVector3;
+            let vertices = surface.vertices;
+            for (let i = 0, _c = surface.vertices.length; i < _c; i += 3) {
+                p.x = vertices[i];
+                p.y = vertices[i + 1];
+                p.z = vertices[i + 2];
+                m(p, p, t);
+                vertices[i] = p.x;
+                vertices[i + 1] = p.y;
+                vertices[i + 2] = p.z;
+            }                    
+            surface.normals = void 0;
+            surface.boundingSphere = void 0;
+        }
         
-        export function transform(surface: Surface, t: number[]): Computation<Surface> {
-            
+        export function transform(surface: Surface, t: number[]): Computation<Surface> {            
             return Computation.create<Surface>(ctx => {
                 ctx.update('Updating surface...');                
                 ctx.schedule(() => {
-                    let p = { x: 0.1, y: 0.1, z: 0.1 }                    
-                    let m = LinearAlgebra.Matrix4.transformVector3;
-                    let vertices = surface.vertices;
-                    for (let i = 0, _c = surface.vertices.length; i < _c; i += 3) {
-                        p.x = vertices[i];
-                        p.y = vertices[i + 1];
-                        p.z = vertices[i + 2];
-                        m(p, p, t);
-                        vertices[i] = p.x;
-                        vertices[i + 1] = p.y;
-                        vertices[i + 2] = p.z;
-                    }                    
-                    surface.normals = void 0;
-                    surface.boundingSphere = void 0;
+                    transformImmediate(surface, t);
                     ctx.resolve(surface);
                 });
             });

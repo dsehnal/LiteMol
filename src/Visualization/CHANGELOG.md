@@ -1,4 +1,8 @@
-﻿# 1.4.2
+﻿# 1.5.0
+* Support for primitive visuals. So far sphere and arbitrary surface are implemented.
+* Bugfix in surface element map generation.
+
+# 1.4.2
 * Fixed fog shader when interacting with transparent objects.
 
 # 1.4.1

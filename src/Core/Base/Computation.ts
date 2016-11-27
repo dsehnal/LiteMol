@@ -50,6 +50,16 @@ namespace LiteMol.Core {
         export function resolve<A>(a: A) {
             return create(ctx => ctx.resolve(a));
         }
+
+        export function schedule<T>(ctx: Context<any>, f: () => T, afterMs = 0) {
+            return new LiteMol.Core.Promise<T>(res => ctx.schedule(() => {
+                try {
+                    res(f());
+                } finally {
+                    res(undefined);
+                }
+            }, afterMs));
+        } 
                 
         export interface ProgressInfo {
             message: string;
