@@ -22,8 +22,8 @@ Table of Contents
 * [Project Structure Overview](#project-structure-overview)
 * [Building](#building)
 * [License](#license)
-* [Support](#Support)
-* [Contributing](#Contributing)
+* [Support](#support)
+* [Contributing](#contributing)
 * [Roadmap](#roadmap)
 * [FAQ](#faq)
 
@@ -115,6 +115,35 @@ This will create the files `dist/LiteMol-*.min.js` and `dist/css/LiteMol-plugin*
 When embedding the plugin in your pages, do not forget to include the `dist/css` and `dist/fonts` folders with 
 the required style sheets and fonts.
 
+
+### Modifying Examples
+
+To play with just a single example without having to rebuild the entire project, change the paths to `LiteMol-plugin.js` and CSS in the corresponding ``index.html`` file from
+
+```HTML
+<link rel="stylesheet" href="../../assets/css/LiteMol-plugin.css?lmversion=10" type="text/css" />
+<script src="../../assets/js/LiteMol-plugin.js?lmversion=10"></script>
+```
+
+to
+
+```HTML
+<link rel="stylesheet" href="../../dist/css/LiteMol-plugin.css?lmversion=10" type="text/css" />
+<script src="../../dist/LiteMol-plugin.js?lmversion=10"></script>
+```
+
+This is needed because the paths are set up so that they work when the examples are accessed from the ``web`` folder.
+
+Afterwards, you can recompile just the single example from a command line using the ``tsc`` command, provided you have the correct version of [TypeScript](https://www.typescriptlang.org/)
+installed (for the version needed, please check the ``package.json`` in the root directory of LiteMol and look for ``"typescript"``). For example
+
+```
+cd examples/Channels
+tsc
+```
+
+Finally, just open ``index.html`` in a browser or run the ``http-server`` in the example directory as shown above.
+
 License
 =======
 
@@ -125,6 +154,8 @@ Support
 
 If you have any questions or feature requests, do not hesitate to email the author, use the GitHub forum, 
 or the LiteMol [mailing list](https://listserver.ebi.ac.uk/mailman/listinfo/litemol).
+
+Makes sure to check out the [documentation](docs) and [examples](examples).
 
 Contributing
 =======
