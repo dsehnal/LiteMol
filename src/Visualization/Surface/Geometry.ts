@@ -97,7 +97,6 @@ namespace LiteMol.Visualization.Surface {
         ctx.computation.schedule(() => {
             if (ctx.data.annotation) {
                 ctx.geom.elementToVertexMap = createVertexMap(ctx);
-                console.log(ctx.geom.elementToVertexMap);
             } else {
                 ctx.geom.elementToVertexMap = createFullMap(ctx);
             }
