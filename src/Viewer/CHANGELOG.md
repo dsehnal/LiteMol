@@ -1,6 +1,7 @@
 # 1.1.12
 * Help for viewport.
 * Touch slabbing.
+* Basic ValidatorDB support.
 
 # 1.1.11
 * Added support for popup messages (toasts).

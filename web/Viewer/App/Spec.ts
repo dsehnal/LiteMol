@@ -55,13 +55,16 @@ namespace LiteMol.Viewer {
             // Coordinate streaming
             { transformer: Transformer.Molecule.CoordinateStreaming.CreateBehaviour, view: Views.Transform.Empty, initiallyCollapsed: true },
             
-            // Validation report
+            // Validation reports
             { transformer: PDBe.Validation.DownloadAndCreate, view: Views.Transform.Empty },
             { transformer: PDBe.Validation.ApplyTheme, view: Views.Transform.Empty },
+
+            { transformer: ValidatorDB.DownloadAndCreate, view: Views.Transform.Empty },
+            { transformer: ValidatorDB.ApplyTheme, view: Views.Transform.Empty },
             
             // annotations
             { transformer: PDBe.SequenceAnnotation.DownloadAndCreate, view: Views.Transform.Empty, initiallyCollapsed: true },
-            { transformer: PDBe.SequenceAnnotation.CreateSingle, view: PDBe.Views.CreateSequenceAnnotationView, initiallyCollapsed: true }
+            { transformer: PDBe.SequenceAnnotation.CreateSingle, view: PDBe.Views.CreateSequenceAnnotationView, initiallyCollapsed: true },
         ],
         behaviours: [
             // you will find the source of all behaviours in the Bootstrap/Behaviour directory

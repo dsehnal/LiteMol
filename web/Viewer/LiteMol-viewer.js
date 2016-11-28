@@ -39,6 +39,282 @@ var LiteMol;
 (function (LiteMol) {
     var Viewer;
     (function (Viewer) {
+        var ValidatorDB;
+        (function (ValidatorDB) {
+            var Entity = LiteMol.Bootstrap.Entity;
+            var Transformer = LiteMol.Bootstrap.Entity.Transformer;
+            ValidatorDB.Report = Entity.create({ name: 'ValidatorDB Validation Report', typeClass: 'Behaviour', shortName: 'VR', description: 'Represents ValidatorDB validation report.' });
+            var Api;
+            (function (Api) {
+                function getResidueId(id, out) {
+                    var fields = id.split(' ');
+                    out.authSeqNumber = +fields[1];
+                    out.authAsymId = fields[2];
+                }
+                function getAtomId(id) {
+                    return +id.split(' ')[2];
+                }
+                var RedFlags = new Set(['Missing', 'NotAnalyzed']);
+                function isRed(flags) {
+                    for (var _i = 0, flags_1 = flags; _i < flags_1.length; _i++) {
+                        var f = flags_1[_i];
+                        if (RedFlags.has(f))
+                            return true;
+                    }
+                    return false;
+                }
+                function createReport(data) {
+                    var report = new Map();
+                    if (!data.Models)
+                        return report;
+                    var residue = { authSeqNumber: 0, authAsymId: '' };
+                    var emptySet = new Set();
+                    for (var _i = 0, _a = data.Models; _i < _a.length; _i++) {
+                        var model = _a[_i];
+                        for (var _b = 0, _c = model.Entries; _b < _c.length; _b++) {
+                            var entry = _c[_b];
+                            if (!entry.MainResidue)
+                                continue;
+                            getResidueId(entry.MainResidue, residue);
+                            var residueReport = report.get(residue.authAsymId);
+                            if (residueReport === void 0) {
+                                residueReport = new Map();
+                                report.set(residue.authAsymId, residueReport);
+                            }
+                            var flags = [];
+                            if (entry.Flags.indexOf('Missing_Atoms') >= 0)
+                                flags.push('Missing Atoms');
+                            if (entry.Flags.indexOf('Missing_Rings') >= 0)
+                                flags.push('Missing Rings');
+                            if (entry.Flags.indexOf('Missing_Degenerate') >= 0)
+                                flags.push('Degenerate');
+                            if (entry.Flags.indexOf('HasAll_BadChirality') >= 0)
+                                flags.push('Bad Chirality');
+                            if (!flags.length)
+                                flags.push('No Issue');
+                            var chiralityMismatchSet = void 0;
+                            var chiralityMismatches = entry.ChiralityMismatches;
+                            for (var _d = 0, _e = Object.keys(chiralityMismatches); _d < _e.length; _d++) {
+                                var _m = _e[_d];
+                                if (!Object.prototype.hasOwnProperty.call(chiralityMismatches, _m))
+                                    continue;
+                                var a = chiralityMismatches[_m];
+                                if (!chiralityMismatchSet)
+                                    chiralityMismatchSet = new Set();
+                                chiralityMismatchSet.add(getAtomId(a));
+                            }
+                            residueReport.set(residue.authSeqNumber, {
+                                isRed: isRed(entry.Flags),
+                                flags: flags,
+                                chiralityMismatches: chiralityMismatchSet ? chiralityMismatchSet : emptySet
+                            });
+                        }
+                    }
+                    return report;
+                }
+                Api.createReport = createReport;
+            })(Api || (Api = {}));
+            var Interactivity;
+            (function (Interactivity) {
+                var Behaviour = (function () {
+                    function Behaviour(context, report) {
+                        var _this = this;
+                        this.context = context;
+                        this.report = report;
+                        this.provider = function (info) {
+                            try {
+                                return _this.processInfo(info);
+                            }
+                            catch (e) {
+                                console.error('Error showing validation label', e);
+                                return void 0;
+                            }
+                        };
+                    }
+                    Behaviour.prototype.dispose = function () {
+                        this.context.highlight.removeProvider(this.provider);
+                    };
+                    Behaviour.prototype.register = function (behaviour) {
+                        this.context.highlight.addProvider(this.provider);
+                    };
+                    Behaviour.prototype.processInfo = function (info) {
+                        var i = LiteMol.Bootstrap.Interactivity.Molecule.transformInteraction(info);
+                        if (!i || i.residues.length > 1)
+                            return void 0;
+                        var r = this.report;
+                        if (i.atoms.length === 1) {
+                            var a = i.atoms[0];
+                            var chain = r.get(a.residue.chain.authAsymId);
+                            var residue = chain ? chain.get(a.residue.authSeqNumber) : void 0;
+                            var badChirality = residue ? residue.chiralityMismatches.has(a.id) : false;
+                            if (!residue)
+                                return void 0;
+                            return "<div><small>[ValidatorDB]</small> Atom: <b>" + (badChirality ? 'Bad Chirality' : 'OK') + "</b>, Residue: <b>" + residue.flags.join(', ') + "</b></div>";
+                        }
+                        else {
+                            var res = i.residues[0];
+                            var chain = r.get(res.chain.authAsymId);
+                            var residue = chain ? chain.get(res.authSeqNumber) : void 0;
+                            if (!residue)
+                                return void 0;
+                            return "<div><small>[ValidatorDB]</small> Residue: <b>" + residue.flags.join(', ') + "</b></div>";
+                        }
+                    };
+                    return Behaviour;
+                }());
+                Interactivity.Behaviour = Behaviour;
+            })(Interactivity || (Interactivity = {}));
+            var Theme;
+            (function (Theme) {
+                var colorMap = (function () {
+                    var colors = new Map();
+                    colors.set(0, { r: 0.4, g: 0.4, b: 0.4 });
+                    colors.set(1, { r: 0, g: 1, b: 0 });
+                    colors.set(2, { r: 1, g: 0, b: 0 });
+                    return colors;
+                })();
+                var defaultColor = { r: 0.6, g: 0.6, b: 0.6 };
+                var selectionColor = { r: 0, g: 0, b: 1 };
+                var highlightColor = { r: 1, g: 0, b: 1 };
+                function createAtomMapNormal(model, report) {
+                    var map = new Uint8Array(model.atoms.count);
+                    var mId = model.modelId;
+                    var _a = model.residues, authAsymId = _a.authAsymId, authSeqNumber = _a.authSeqNumber, atomStartIndex = _a.atomStartIndex, atomEndIndex = _a.atomEndIndex;
+                    var id = model.atoms.id;
+                    for (var rI = 0, _rI = model.residues.count; rI < _rI; rI++) {
+                        var repC = report.get(authAsymId[rI]);
+                        if (!repC)
+                            continue;
+                        var repR = repC.get(authSeqNumber[rI]);
+                        if (!repR)
+                            continue;
+                        var chiralityMismatches = repR.chiralityMismatches;
+                        for (var aI = atomStartIndex[rI], _aI = atomEndIndex[rI]; aI < _aI; aI++) {
+                            if (repR.isRed)
+                                map[aI] = 2;
+                            else if (chiralityMismatches.has(id[aI]))
+                                map[aI] = 2;
+                            else
+                                map[aI] = 1;
+                        }
+                    }
+                    return map;
+                }
+                function createAtomMapComputed(model, report) {
+                    var parent = model.parent;
+                    var map = new Uint8Array(model.atoms.count);
+                    var mId = model.modelId;
+                    var _a = model.residues, authAsymId = _a.authAsymId, authSeqNumber = _a.authSeqNumber, atomStartIndex = _a.atomStartIndex, atomEndIndex = _a.atomEndIndex, chainIndex = _a.chainIndex;
+                    var sourceChainIndex = model.chains.sourceChainIndex;
+                    var id = model.atoms.id;
+                    for (var rI = 0, _rI = model.residues.count; rI < _rI; rI++) {
+                        var repC = report.get(authAsymId[sourceChainIndex[chainIndex[rI]]]);
+                        if (!repC)
+                            continue;
+                        var repR = repC.get(authSeqNumber[rI]);
+                        if (!repR)
+                            continue;
+                        var chiralityMismatches = repR.chiralityMismatches;
+                        for (var aI = atomStartIndex[rI], _aI = atomEndIndex[rI]; aI < _aI; aI++) {
+                            if (repR.isRed)
+                                map[aI] = 2;
+                            else if (!chiralityMismatches.has(id[aI]))
+                                map[aI] = 2;
+                            else
+                                map[aI] = 1;
+                        }
+                    }
+                    return map;
+                }
+                function create(entity, report) {
+                    var model = entity.props.model;
+                    var map = model.source === LiteMol.Core.Structure.MoleculeModelSource.File
+                        ? createAtomMapNormal(model, report)
+                        : createAtomMapComputed(model, report);
+                    var colors = new Map();
+                    colors.set('Uniform', defaultColor);
+                    colors.set('Selection', selectionColor);
+                    colors.set('Highlight', highlightColor);
+                    var residueIndex = model.atoms.residueIndex;
+                    var mapping = LiteMol.Visualization.Theme.createColorMapMapping(function (i) { return map[i]; }, colorMap, defaultColor);
+                    return LiteMol.Visualization.Theme.createMapping(mapping, { colors: colors, interactive: true, transparency: { alpha: 1.0 } });
+                }
+                Theme.create = create;
+            })(Theme || (Theme = {}));
+            var Create = LiteMol.Bootstrap.Tree.Transformer.create({
+                id: 'validatordb-create',
+                name: 'ValidatorDB Validation',
+                description: 'Create the validation report from a string.',
+                from: [Entity.Data.String],
+                to: [ValidatorDB.Report],
+                defaultParams: function () { return ({}); }
+            }, function (context, a, t) {
+                return LiteMol.Bootstrap.Task.create("ValidatorDB Report (" + t.params.id + ")", 'Normal', function (ctx) {
+                    ctx.update('Parsing...');
+                    ctx.schedule(function () {
+                        var data = JSON.parse(a.props.data);
+                        var report = Api.createReport(data || {});
+                        ctx.resolve(ValidatorDB.Report.create(t, { label: 'ValidatorDB Report', behaviour: new Interactivity.Behaviour(context, report) }));
+                    });
+                }).setReportTime(true);
+            });
+            ValidatorDB.DownloadAndCreate = LiteMol.Bootstrap.Tree.Transformer.action({
+                id: 'validatordb-download-and-create',
+                name: 'ValidatorDB Validation Report',
+                description: 'Download Validation Report from ValidatorDB',
+                from: [Entity.Molecule.Molecule],
+                to: [Entity.Action],
+                defaultParams: function () { return ({}); }
+            }, function (context, a, t) {
+                var id = a.props.molecule.id.trim().toLocaleLowerCase();
+                var action = LiteMol.Bootstrap.Tree.Transform.build()
+                    .add(a, Transformer.Data.Download, { url: "https://webchem.ncbr.muni.cz/Platform/ValidatorDb/Data/" + id + "?source=ByStructure", type: 'String', id: id, description: 'Validation Data' })
+                    .then(Create, { id: id }, { isBinding: true });
+                return action;
+            }, "Validation report loaded. Hovering over residue will now contain validation info. To apply validation coloring, select the 'ValidatorDB Report' entity in the tree and apply it the right panel. " +
+                "Only missing atoms/rings and chirality issues are shown, for more details please visit https://webchem.ncbr.muni.cz/Platform/ValidatorDb/Index.");
+            ValidatorDB.ApplyTheme = LiteMol.Bootstrap.Tree.Transformer.create({
+                id: 'validatordb-apply-theme',
+                name: 'Apply Coloring',
+                description: 'Colors all visuals using the validation report.',
+                from: [ValidatorDB.Report],
+                to: [Entity.Action],
+                defaultParams: function () { return ({}); }
+            }, function (context, a, t) {
+                return LiteMol.Bootstrap.Task.create('Validation Coloring', 'Background', function (ctx) {
+                    var molecule = LiteMol.Bootstrap.Tree.Node.findAncestor(a, LiteMol.Bootstrap.Entity.Molecule.Molecule);
+                    if (!molecule) {
+                        ctx.reject('No suitable parent found.');
+                        return;
+                    }
+                    var themes = new Map();
+                    var visuals = context.select(LiteMol.Bootstrap.Tree.Selection.byValue(molecule).subtree().ofType(LiteMol.Bootstrap.Entity.Molecule.Visual));
+                    for (var _i = 0, visuals_1 = visuals; _i < visuals_1.length; _i++) {
+                        var v = visuals_1[_i];
+                        var model = LiteMol.Bootstrap.Utils.Molecule.findModel(v);
+                        if (!model)
+                            continue;
+                        var theme = themes.get(model.id);
+                        if (!theme) {
+                            theme = Theme.create(model, a.props.behaviour.report);
+                            themes.set(model.id, theme);
+                        }
+                        LiteMol.Bootstrap.Command.Visual.UpdateBasicTheme.dispatch(context, { visual: v, theme: theme });
+                    }
+                    context.logger.message('Validation coloring applied.');
+                    ctx.resolve(LiteMol.Bootstrap.Tree.Node.Null);
+                });
+            });
+        })(ValidatorDB = Viewer.ValidatorDB || (Viewer.ValidatorDB = {}));
+    })(Viewer = LiteMol.Viewer || (LiteMol.Viewer = {}));
+})(LiteMol || (LiteMol = {}));
+/*
+ * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ */
+var LiteMol;
+(function (LiteMol) {
+    var Viewer;
+    (function (Viewer) {
         var PDBe;
         (function (PDBe) {
             var Data;
@@ -380,8 +656,8 @@ var LiteMol;
                         }
                         var themes = new Map();
                         var visuals = context.select(LiteMol.Bootstrap.Tree.Selection.byValue(molecule).subtree().ofType(LiteMol.Bootstrap.Entity.Molecule.Visual));
-                        for (var _i = 0, visuals_1 = visuals; _i < visuals_1.length; _i++) {
-                            var v = visuals_1[_i];
+                        for (var _i = 0, visuals_2 = visuals; _i < visuals_2.length; _i++) {
+                            var v = visuals_2[_i];
                             var model = LiteMol.Bootstrap.Utils.Molecule.findModel(v);
                             if (!model)
                                 continue;
@@ -514,8 +790,8 @@ var LiteMol;
                             if (!molecule)
                                 return;
                             var visuals = this.context.select(LiteMol.Bootstrap.Tree.Selection.byValue(molecule).subtree().ofType(LiteMol.Bootstrap.Entity.Molecule.Visual));
-                            for (var _i = 0, visuals_2 = visuals; _i < visuals_2.length; _i++) {
-                                var v = visuals_2[_i];
+                            for (var _i = 0, visuals_3 = visuals; _i < visuals_3.length; _i++) {
+                                var v = visuals_3[_i];
                                 var model = LiteMol.Bootstrap.Utils.Molecule.findModel(v);
                                 if (!model)
                                     continue;
@@ -780,12 +1056,14 @@ var LiteMol;
                 { transformer: Transformer.Density.CreateVisualBehaviour, view: Views.Transform.Density.CreateVisualBehaviour },
                 // Coordinate streaming
                 { transformer: Transformer.Molecule.CoordinateStreaming.CreateBehaviour, view: Views.Transform.Empty, initiallyCollapsed: true },
-                // Validation report
+                // Validation reports
                 { transformer: Viewer.PDBe.Validation.DownloadAndCreate, view: Views.Transform.Empty },
                 { transformer: Viewer.PDBe.Validation.ApplyTheme, view: Views.Transform.Empty },
+                { transformer: Viewer.ValidatorDB.DownloadAndCreate, view: Views.Transform.Empty },
+                { transformer: Viewer.ValidatorDB.ApplyTheme, view: Views.Transform.Empty },
                 // annotations
                 { transformer: Viewer.PDBe.SequenceAnnotation.DownloadAndCreate, view: Views.Transform.Empty, initiallyCollapsed: true },
-                { transformer: Viewer.PDBe.SequenceAnnotation.CreateSingle, view: Viewer.PDBe.Views.CreateSequenceAnnotationView, initiallyCollapsed: true }
+                { transformer: Viewer.PDBe.SequenceAnnotation.CreateSingle, view: Viewer.PDBe.Views.CreateSequenceAnnotationView, initiallyCollapsed: true },
             ],
             behaviours: [
                 // you will find the source of all behaviours in the Bootstrap/Behaviour directory

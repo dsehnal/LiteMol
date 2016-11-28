@@ -18,6 +18,7 @@
     
     "./Version.ts",
     "./App/DataSources.ts",
+    "./App/ValidatorDB.ts",
     "./PDBe/Data.ts",
     "./PDBe/Validation.ts",
     "./PDBe/SequenceAnnotation.ts",
