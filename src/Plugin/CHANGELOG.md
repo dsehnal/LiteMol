@@ -1,4 +1,8 @@
-﻿# 1.2.6
+﻿# 1.2.7
+* Tweak custom transform UI to make visibility button more visible.
+* Help for viewport controls.
+
+# 1.2.6
 * Added support for popup messages (toasts).
 * Ability to better control layout regions.
 * Persistent state for transformer contollers.

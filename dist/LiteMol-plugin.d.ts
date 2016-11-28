@@ -2645,6 +2645,10 @@ declare namespace LiteMol.Plugin.Controls {
         label: string;
         title?: string | undefined;
     }) => JSX.Element;
+    const HelpBox: (props: {
+        title: string;
+        content: string | JSX.Element;
+    }) => JSX.Element;
 }
 declare namespace LiteMol.Plugin.Controls {
     class OptionsBox extends React.Component<{
@@ -2677,6 +2681,7 @@ declare namespace LiteMol.Plugin.Controls {
         isExpanded: boolean;
         onExpand: (e: boolean) => void;
         description: string;
+        topRightAction?: JSX.Element;
     }, {}> {
         private header();
         render(): JSX.Element;
@@ -2958,10 +2963,13 @@ declare namespace LiteMol.Plugin.Views.Entity {
 declare namespace LiteMol.Plugin.Views.Visualization {
     class ViewportControls extends View<Bootstrap.Components.Visualization.Viewport, {
         showSceneOptions?: boolean;
+        showHelp?: boolean;
     }, {}> {
         state: {
             showSceneOptions: boolean;
+            showHelp: boolean;
         };
+        private help();
         render(): JSX.Element;
     }
     class HighlightInfo extends View<Bootstrap.Components.Visualization.HighlightInfo, {}, {}> {
@@ -12126,11 +12134,32 @@ declare namespace LiteMol.Visualization {
         Perspective = 0,
         Orthographic = 1,
     }
+    class SlabControls {
+        private width;
+        private height;
+        private touchSlabOn;
+        private touchStartPosition;
+        private touchPosition;
+        private radius;
+        private slabWheelRate;
+        private _planeDelta;
+        private subs;
+        readonly planeDelta: LiteMol.Core.Rx.IObservable<number>;
+        updateSize(w: number, h: number): void;
+        updateRadius(r: number): void;
+        destroy(): void;
+        private handleMouseWheel(event);
+        private touchstart(event);
+        private touchend(event);
+        private touchmove(event);
+        constructor(element: HTMLElement);
+    }
     class Camera {
         private scene;
         private domElement;
         private camera;
         private controls;
+        private slabControls;
         fog: THREE.Fog;
         focusPoint: THREE.Vector3;
         focusRadius: number;
@@ -12170,8 +12199,8 @@ declare namespace LiteMol.Visualization {
         readonly object: THREE.Camera;
         private unbindCamera;
         dispose(): void;
-        private handleMouseWheel(event);
-        private computeNearDistance();
+        private planeDeltaUpdate(delta);
+        computeNearDistance(): number;
         cameraUpdated(): void;
         createCamera(): void;
         private setup();

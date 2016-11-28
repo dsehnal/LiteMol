@@ -1,4 +1,7 @@
-﻿# 1.5.0
+﻿# 1.5.1
+* Updated slabbing (now using relative values + touch support).
+
+# 1.5.0
 * Support for primitive visuals. So far sphere and arbitrary surface are implemented.
 * Bugfix in surface element map generation.
 

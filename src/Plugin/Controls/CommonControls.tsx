@@ -152,4 +152,12 @@ namespace LiteMol.Plugin.Controls {
                 {props.value}
             </div>
         </div>
+
+    export const HelpBox = (props: {
+        title: string,
+        content: JSX.Element | string
+    }) => <div className='lm-help-row'>
+            <span>{props.title}</span>
+            <div>{props.content}</div>
+        </div>
 }

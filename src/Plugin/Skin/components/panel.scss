@@ -49,12 +49,23 @@
             }
         }
     }
+
+    .lm-panel-description-standalone {
+        > .lm-icon {
+            margin-left: $row-height;
+        }
+
+        width: 2 * $row-height;
+    }
+
+    .lm-panel-description-with-action {        
+        width: $row-height;
+        margin-right: $row-height;
+    }
         
-    .lm-panel-description {
-        
+    .lm-panel-description {        
         color: $font-color;
         float: right;
-        width: 2 * $row-height;
         background: color-lower-contrast($default-background, 4%);
         //margin-right: $row-height;
         
@@ -68,7 +79,6 @@
             cursor: default;
             background: color-lower-contrast($default-background, 4%);  
             color: color-lower-contrast($font-color, 66%);
-            margin-left: $row-height;
         }
         
         .lm-panel-description-content {
@@ -97,8 +107,8 @@
                 top: 0;
                 left: 0;
             }
-        }       
-            
+        }   
+
         &:hover {
             color: $hover-font-color;
             > .lm-icon {
@@ -107,7 +117,7 @@
             .lm-panel-description-content {
                 display: block;
             }
-        }
+        }    
     }
 }
 
@@ -116,13 +126,7 @@
 }
 
 .lm-panel {
-    margin-bottom: $control-spacing;   
-
-    .lm-entity-tree-entry-toggle-visible {
-        position: absolute;
-        top: 0;
-        right: $row-height;
-    } 
+    margin-bottom: $control-spacing;
 }
 
 .lm-transform-view {

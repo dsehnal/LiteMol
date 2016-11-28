@@ -12,7 +12,8 @@ namespace LiteMol.Plugin.Controls {
         badge?: any,
         isExpanded: boolean,
         onExpand: (e: boolean) => void,
-        description: string
+        description: string,
+        topRightAction?: JSX.Element
     }, {}> {
                 
         private header() {
@@ -21,16 +22,18 @@ namespace LiteMol.Plugin.Controls {
             let title = this.props.title ? this.props.title : this.props.header;
             let icon = exp ? 'collapse' : 'expand';
             
-            let desc = <div className='lm-panel-description' onClick={() => this.props.onExpand.call(null, !this.props.isExpanded) }>
+            let desc = <div className={`lm-panel-description lm-panel-description-${this.props.topRightAction ? 'with-action' : 'standalone'}`} 
+                            onClick={() => this.props.onExpand.call(null, !this.props.isExpanded) }>
+                <span className='lm-icon lm-icon-info' />
+                <div className='lm-panel-description-content'>
                     <span className='lm-icon lm-icon-info' />
-                    <div className='lm-panel-description-content'>
-                        <span className='lm-icon lm-icon-info' />
-                        {this.props.description}
-                    </div>                    
-                </div>
-            
+                    {this.props.description}
+                </div>                    
+            </div>;
+                        
             return <div className='lm-panel-header'>
                 {desc} 
+                {this.props.topRightAction}
                 <div className='lm-panel-expander-wrapper'>
                     <Controls.Button title={title} onClick={() => this.props.onExpand.call(null, !this.props.isExpanded) } icon={icon} 
                         customClass='lm-panel-expander' style='link'>

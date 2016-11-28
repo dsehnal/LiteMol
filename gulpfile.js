@@ -166,6 +166,7 @@ gulp.task('ViewerAndExamples-inline', ['Plugin'], ViewerAndExamples)
 
 gulp.task('Web-assets', [], WebAssets)
 gulp.task('Web-base', [], Web);
+gulp.task('Web-base-plugin-inline', ['Plugin', 'CSS'], Web);
 gulp.task('Web-base-inline', ['Plugin', 'ViewerAndExamples-inline'], Web);
 
 gulp.task('Web', ['Web-assets', 'Web-base'], WebVersions);
@@ -173,6 +174,8 @@ gulp.task('Web-inline', ['ViewerAndExamples-inline', 'CSS', 'Web-assets', 'Web-b
 
 gulp.task('Dist-min', [], Uglify);
 gulp.task('Dist-tarball', ['Dist-min'], Tarball);
+
+gulp.task('Plugin-web', ['Plugin', 'CSS', 'Web-base-plugin-inline'], WebVersions);
 
 gulp.task('default', [
     'Clean',

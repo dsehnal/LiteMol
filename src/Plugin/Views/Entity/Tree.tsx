@@ -23,7 +23,7 @@ namespace LiteMol.Plugin.Views.Entity {
         else { cls = 'partial'; title = 'Show' }
 
         return <Controls.Button title={title} onClick={command} icon='visual-visibility' style='link' 
-                        customClass={'lm-entity-tree-entry-toggle-visible lm-entity-tree-entry-toggle-visible-' + cls } />;  
+                        customClass={`lm-entity-tree-entry-toggle-visible lm-entity-tree-entry-toggle-visible-${cls}` } />;  
     }
 
     class Entity extends ObserverView<{ node: BEntity.Any, tree: Tree }, {}> {

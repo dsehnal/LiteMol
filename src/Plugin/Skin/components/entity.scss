@@ -208,3 +208,18 @@
     }    
 }
 
+.lm-panel {
+    .lm-entity-tree-entry-toggle-visible {
+        position: absolute;
+        top: 0;
+        right: 0;
+        height: $row-height;
+        font-size: 100%;
+
+        background: $default-background; //color-increase-contrast($default-background, 4%);
+    } 
+
+    // .lm-entity-tree-entry-toggle-visible-full {
+    //     background: color-increase-contrast($default-background, 8%);
+    // }
+}

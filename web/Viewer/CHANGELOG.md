@@ -1,3 +1,7 @@
+# 1.1.12
+* Help for viewport.
+* Touch slabbing.
+
 # 1.1.11
 * Added support for popup messages (toasts).
 * Fog no longer affects selected residue, ambience, and dynamic density data.

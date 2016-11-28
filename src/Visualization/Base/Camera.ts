@@ -8,11 +8,121 @@ namespace LiteMol.Visualization {
         Perspective,
         Orthographic
     }
+
+    export class SlabControls {
+
+        private width: number;
+        private height: number;
+
+        private touchSlabOn = false;
+        private touchStartPosition = { x: 0, y: 0 };
+        private touchPosition = { x: 0, y: 0 };
+        private radius: number = 0;
+        private slabWheelRate = 1 / 15;
+        private _planeDelta = new LiteMol.Core.Rx.Subject<number>();
+        private subs: (() => void)[] = [];
+
+        readonly planeDelta: LiteMol.Core.Rx.IObservable<number> = this._planeDelta;
+
+        updateSize(w: number, h: number) { this.width = w; this.height = h; }
+        updateRadius(r: number) { this.radius = r; }
+
+        destroy() {
+            for (let s of this.subs) s();
+            this.subs = [];
+            this._planeDelta.onCompleted();
+        }
+
+        private handleMouseWheel(event: MouseWheelEvent) {
+            //if (!this.options.enableFrontClip) return;
+            if (event.stopPropagation) {
+                event.stopPropagation();
+            }
+            if (event.preventDefault) {
+                event.preventDefault();
+            }
+
+            let delta = 0;
+
+            if (event.wheelDelta) { // WebKit / Opera / Explorer 9
+                delta = event.wheelDelta;
+            } else if (event.detail) { // Firefox
+                delta = - event.detail;
+            }
+            //if (delta < -0.5) delta = -0.5;
+            //else if (delta > 0.5) delta = 0.5;
+
+            let sign = delta < 0 ? -1 : 1;
+            delta = this.radius * this.slabWheelRate * sign;
+            
+            this._planeDelta.onNext(delta);
+        }
+
+        private touchstart(event: TouchEvent) {
+            switch (event.touches.length) {
+                case 3: {
+                    this.touchStartPosition.x = 0;
+                    this.touchStartPosition.y = 0;
+                    for (let i = 0; i < 3; i++) {
+                        this.touchStartPosition.x += event.touches[i].clientX / 3;
+                        this.touchStartPosition.y += event.touches[i].clientY / 3;
+                    }
+                    this.touchSlabOn = true;
+                    break;
+                }
+                default: this.touchSlabOn = false; break;
+            }
+        }
+
+        private touchend(event: TouchEvent) {
+            this.touchSlabOn = false;
+        }
+
+        private touchmove(event: TouchEvent) {
+            if (!this.touchSlabOn) return;
+
+            this.touchPosition.x = 0;
+            this.touchPosition.y = 0;
+            for (let i = 0; i < 3; i++) {
+                this.touchPosition.x += event.touches[i].clientX / 3;
+                this.touchPosition.y += event.touches[i].clientY / 3;
+            }
+
+            let delta = -5 * this.radius * (this.touchPosition.y - this.touchStartPosition.y) / this.height;
+            this.touchStartPosition.x = this.touchPosition.x;
+            this.touchStartPosition.y = this.touchPosition.y;
+            this._planeDelta.onNext(delta);
+        }
+
+        constructor(element: HTMLElement) {
+            let events = {
+                wheel: (e: MouseWheelEvent) => this.handleMouseWheel(e),
+                touchStart: (e: TouchEvent) => this.touchstart(e),
+                touchEnd: (e: TouchEvent) => this.touchend(e),
+                touchMove: (e: TouchEvent) => this.touchmove(e),
+            }
+
+            element.addEventListener('mousewheel', events.wheel);
+            element.addEventListener('DOMMouseScroll', events.wheel); // firefox   
+
+            element.addEventListener('touchstart', events.touchStart, false);
+            element.addEventListener('touchend', events.touchEnd, false);
+            element.addEventListener('touchmove', events.touchMove, false);
+
+            this.subs.push(() => element.removeEventListener('mousewheel', events.wheel));
+            this.subs.push(() => element.removeEventListener('DOMMouseScroll', events.wheel));
+            this.subs.push(() => element.removeEventListener('touchstart', events.touchStart, false));
+            this.subs.push(() => element.removeEventListener('touchend', events.touchEnd, false));
+            this.subs.push(() => element.removeEventListener('touchmove', events.touchMove, false));  
+        }
+    }
     
     export class Camera {
 
         private camera: THREE.PerspectiveCamera | THREE.OrthographicCamera;
         private controls: CameraControls;
+        private slabControls: SlabControls;
+
         
         fog = new THREE.Fog(0x0, 0, 500);
         
@@ -24,6 +134,7 @@ namespace LiteMol.Visualization {
         
         fogEnabled = true;
         fogDelta = 0;
+
         
         static shouldInUpdateInclude(m: Model) {
             return !isNaN(m.centroid.x) && m.getVisibility();
@@ -77,7 +188,8 @@ namespace LiteMol.Visualization {
                 radius = Math.max(radius, center.distanceTo(m.centroid) + m.radius);
             }
             
-            this.focusRadius = radius;          
+            this.focusRadius = radius;    
+            this.slabControls.updateRadius(this.focusRadius);      
         }
         
         private focus() {
@@ -118,6 +230,7 @@ namespace LiteMol.Visualization {
             this.focusPoint.y = center.y;
             this.focusPoint.z = center.z;
             this.focusRadius = radius;
+            this.slabControls.updateRadius(this.focusRadius);
             
             this.nearPlaneDelta = 0;
             this.fogDelta = 0;
@@ -134,6 +247,7 @@ namespace LiteMol.Visualization {
             if (camera instanceof THREE.PerspectiveCamera) {            
                 camera.aspect = w / h;
             }
+            this.slabControls.updateSize(w, h);
             this.camera.updateProjectionMatrix();
             //this.controls.handleResize();
         }
@@ -148,6 +262,10 @@ namespace LiteMol.Visualization {
 
         private unbindCamera: any;
         dispose() {
+            if (this.slabControls) {
+                this.slabControls.destroy();
+                this.slabControls = <any>void 0;
+            }
             if (this.unbindCamera) {
                 this.unbindCamera();
                 this.unbindCamera = void 0;
@@ -158,26 +276,7 @@ namespace LiteMol.Visualization {
             }
         }
         
-        private handleMouseWheel(event: MouseWheelEvent) {
-            //if (!this.options.enableFrontClip) return;
-            if (event.stopPropagation) {
-                event.stopPropagation();
-            }
-            if (event.preventDefault) {
-                event.preventDefault();
-            }
-
-            let delta = 0;
-
-            if (event.wheelDelta) { // WebKit / Opera / Explorer 9
-                delta = event.wheelDelta;
-            } else if (event.detail) { // Firefox
-                delta = - event.detail;
-            }
-
-            if (delta < -0.5) delta = -0.5;
-            else if (delta > 0.5) delta = 0.5;
-            
+        private planeDeltaUpdate(delta: number) {
             let dist = this.computeNearDistance();
             let near = dist + this.nearPlaneDelta + delta;
             if (delta > 0 && near > this.targetDistance) delta = 0;
@@ -188,7 +287,7 @@ namespace LiteMol.Visualization {
             this.cameraUpdated();
         }
         
-        private computeNearDistance() {
+        computeNearDistance() {
             let dist = this.controls.target.distanceTo(this.camera.position);
             if (dist > this.focusRadius) return dist - this.focusRadius;
             return 0;
@@ -258,16 +357,15 @@ namespace LiteMol.Visualization {
             
             this.scene.scene.fog = this.fog;
              
-            let wheelEvent = (e: MouseWheelEvent) => this.handleMouseWheel(e);
-            var cameraUpdated = () => this.cameraUpdated();
+            let cameraUpdated = () => this.cameraUpdated();
+
+            this.slabControls = new SlabControls(this.domElement);
+            let deltaUpdate = this.slabControls.planeDelta.subscribe(delta => this.planeDeltaUpdate(delta));
             
-            this.domElement.addEventListener('mousewheel', wheelEvent);
-            this.domElement.addEventListener('DOMMouseScroll', wheelEvent); // firefox              
             this.controls.events.addEventListener('change', cameraUpdated);
             this.unbindCamera = () => {
                 this.controls.events.removeEventListener('change', cameraUpdated);
-                this.domElement.removeEventListener('mousewheel', wheelEvent);
-                this.domElement.removeEventListener('DOMMouseScroll', wheelEvent);
+                deltaUpdate.dispose();
                 this.observers = [];
             }
 

@@ -84,10 +84,10 @@ namespace LiteMol.Plugin.Views.Transform {
                     badge={this.props.hideBadge ? void 0 : <Entity.Badge type={t.to[0].info} />}
                     className={'lm-control lm-transformer lm-panel-' + t.to[0].info.typeClass} key={t.id} title={t.description} isExpanded={isExpanded}
                     onExpand={e => { this.setPersistentState('isExpanded', e) } }
-                    description={this.controller.transformer.info.description}>
+                    description={this.controller.transformer.info.description}
+                    topRightAction={this.props.showVisibilityIcon ? <Entity.VisibilityControl entity={this.controller.entity} /> : void 0}>
                     {this.renderControls()}
                     {showCommit ? commit : void 0}
-                    {this.props.showVisibilityIcon ? <Entity.VisibilityControl entity={this.controller.entity} /> : void 0}
                 </Controls.Panel>
             </div>;
         }

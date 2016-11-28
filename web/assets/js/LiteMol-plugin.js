@@ -54810,7 +54810,7 @@ var LiteMol;
 (function (LiteMol) {
     var Visualization;
     (function (Visualization) {
-        Visualization.VERSION = { number: "1.5.0", date: "Nov 27 2016" };
+        Visualization.VERSION = { number: "1.5.1", date: "Nov 28 2016" };
     })(Visualization = LiteMol.Visualization || (LiteMol.Visualization = {}));
 })(LiteMol || (LiteMol = {}));
 var LiteMol;
@@ -55636,6 +55636,102 @@ var LiteMol;
             CameraType[CameraType["Orthographic"] = 1] = "Orthographic";
         })(Visualization.CameraType || (Visualization.CameraType = {}));
         var CameraType = Visualization.CameraType;
+        var SlabControls = (function () {
+            function SlabControls(element) {
+                var _this = this;
+                this.touchSlabOn = false;
+                this.touchStartPosition = { x: 0, y: 0 };
+                this.touchPosition = { x: 0, y: 0 };
+                this.radius = 0;
+                this.slabWheelRate = 1 / 15;
+                this._planeDelta = new LiteMol.Core.Rx.Subject();
+                this.subs = [];
+                this.planeDelta = this._planeDelta;
+                var events = {
+                    wheel: function (e) { return _this.handleMouseWheel(e); },
+                    touchStart: function (e) { return _this.touchstart(e); },
+                    touchEnd: function (e) { return _this.touchend(e); },
+                    touchMove: function (e) { return _this.touchmove(e); },
+                };
+                element.addEventListener('mousewheel', events.wheel);
+                element.addEventListener('DOMMouseScroll', events.wheel); // firefox   
+                element.addEventListener('touchstart', events.touchStart, false);
+                element.addEventListener('touchend', events.touchEnd, false);
+                element.addEventListener('touchmove', events.touchMove, false);
+                this.subs.push(function () { return element.removeEventListener('mousewheel', events.wheel); });
+                this.subs.push(function () { return element.removeEventListener('DOMMouseScroll', events.wheel); });
+                this.subs.push(function () { return element.removeEventListener('touchstart', events.touchStart, false); });
+                this.subs.push(function () { return element.removeEventListener('touchend', events.touchEnd, false); });
+                this.subs.push(function () { return element.removeEventListener('touchmove', events.touchMove, false); });
+            }
+            SlabControls.prototype.updateSize = function (w, h) { this.width = w; this.height = h; };
+            SlabControls.prototype.updateRadius = function (r) { this.radius = r; };
+            SlabControls.prototype.destroy = function () {
+                for (var _i = 0, _a = this.subs; _i < _a.length; _i++) {
+                    var s = _a[_i];
+                    s();
+                }
+                this.subs = [];
+                this._planeDelta.onCompleted();
+            };
+            SlabControls.prototype.handleMouseWheel = function (event) {
+                //if (!this.options.enableFrontClip) return;
+                if (event.stopPropagation) {
+                    event.stopPropagation();
+                }
+                if (event.preventDefault) {
+                    event.preventDefault();
+                }
+                var delta = 0;
+                if (event.wheelDelta) {
+                    delta = event.wheelDelta;
+                }
+                else if (event.detail) {
+                    delta = -event.detail;
+                }
+                //if (delta < -0.5) delta = -0.5;
+                //else if (delta > 0.5) delta = 0.5;
+                var sign = delta < 0 ? -1 : 1;
+                delta = this.radius * this.slabWheelRate * sign;
+                this._planeDelta.onNext(delta);
+            };
+            SlabControls.prototype.touchstart = function (event) {
+                switch (event.touches.length) {
+                    case 3: {
+                        this.touchStartPosition.x = 0;
+                        this.touchStartPosition.y = 0;
+                        for (var i = 0; i < 3; i++) {
+                            this.touchStartPosition.x += event.touches[i].clientX / 3;
+                            this.touchStartPosition.y += event.touches[i].clientY / 3;
+                        }
+                        this.touchSlabOn = true;
+                        break;
+                    }
+                    default:
+                        this.touchSlabOn = false;
+                        break;
+                }
+            };
+            SlabControls.prototype.touchend = function (event) {
+                this.touchSlabOn = false;
+            };
+            SlabControls.prototype.touchmove = function (event) {
+                if (!this.touchSlabOn)
+                    return;
+                this.touchPosition.x = 0;
+                this.touchPosition.y = 0;
+                for (var i = 0; i < 3; i++) {
+                    this.touchPosition.x += event.touches[i].clientX / 3;
+                    this.touchPosition.y += event.touches[i].clientY / 3;
+                }
+                var delta = -5 * this.radius * (this.touchPosition.y - this.touchStartPosition.y) / this.height;
+                this.touchStartPosition.x = this.touchPosition.x;
+                this.touchStartPosition.y = this.touchPosition.y;
+                this._planeDelta.onNext(delta);
+            };
+            return SlabControls;
+        }());
+        Visualization.SlabControls = SlabControls;
         var Camera = (function () {
             function Camera(scene, domElement) {
                 this.scene = scene;
@@ -55697,6 +55793,7 @@ var LiteMol;
                     radius = Math.max(radius, center.distanceTo(m.centroid) + m.radius);
                 }
                 this.focusRadius = radius;
+                this.slabControls.updateRadius(this.focusRadius);
             };
             Camera.prototype.focus = function () {
                 this.controls.reset();
@@ -55734,6 +55831,7 @@ var LiteMol;
                 this.focusPoint.y = center.y;
                 this.focusPoint.z = center.z;
                 this.focusRadius = radius;
+                this.slabControls.updateRadius(this.focusRadius);
                 this.nearPlaneDelta = 0;
                 this.fogDelta = 0;
                 this.controls.panAndMoveToDistance(this.focusPoint, radius * 4);
@@ -55746,6 +55844,7 @@ var LiteMol;
                 if (camera instanceof Visualization.THREE.PerspectiveCamera) {
                     camera.aspect = w / h;
                 }
+                this.slabControls.updateSize(w, h);
                 this.camera.updateProjectionMatrix();
                 //this.controls.handleResize();
             };
@@ -55764,6 +55863,10 @@ var LiteMol;
                 configurable: true
             });
             Camera.prototype.dispose = function () {
+                if (this.slabControls) {
+                    this.slabControls.destroy();
+                    this.slabControls = void 0;
+                }
                 if (this.unbindCamera) {
                     this.unbindCamera();
                     this.unbindCamera = void 0;
@@ -55773,25 +55876,7 @@ var LiteMol;
                     this.controls = void 0;
                 }
             };
-            Camera.prototype.handleMouseWheel = function (event) {
-                //if (!this.options.enableFrontClip) return;
-                if (event.stopPropagation) {
-                    event.stopPropagation();
-                }
-                if (event.preventDefault) {
-                    event.preventDefault();
-                }
-                var delta = 0;
-                if (event.wheelDelta) {
-                    delta = event.wheelDelta;
-                }
-                else if (event.detail) {
-                    delta = -event.detail;
-                }
-                if (delta < -0.5)
-                    delta = -0.5;
-                else if (delta > 0.5)
-                    delta = 0.5;
+            Camera.prototype.planeDeltaUpdate = function (delta) {
                 var dist = this.computeNearDistance();
                 var near = dist + this.nearPlaneDelta + delta;
                 if (delta > 0 && near > this.targetDistance)
@@ -55864,15 +55949,13 @@ var LiteMol;
                 var cc = this.scene.options.clearColor;
                 this.fog.color.setRGB(cc.r, cc.g, cc.b);
                 this.scene.scene.fog = this.fog;
-                var wheelEvent = function (e) { return _this.handleMouseWheel(e); };
                 var cameraUpdated = function () { return _this.cameraUpdated(); };
-                this.domElement.addEventListener('mousewheel', wheelEvent);
-                this.domElement.addEventListener('DOMMouseScroll', wheelEvent); // firefox              
+                this.slabControls = new SlabControls(this.domElement);
+                var deltaUpdate = this.slabControls.planeDelta.subscribe(function (delta) { return _this.planeDeltaUpdate(delta); });
                 this.controls.events.addEventListener('change', cameraUpdated);
                 this.unbindCamera = function () {
                     _this.controls.events.removeEventListener('change', cameraUpdated);
-                    _this.domElement.removeEventListener('mousewheel', wheelEvent);
-                    _this.domElement.removeEventListener('DOMMouseScroll', wheelEvent);
+                    deltaUpdate.dispose();
                     _this.observers = [];
                 };
                 this.reset();
@@ -75425,7 +75508,7 @@ var LiteMol;
 (function (LiteMol) {
     var Plugin;
     (function (Plugin) {
-        Plugin.VERSION = { number: "1.2.6", date: "Nov 23 2016" };
+        Plugin.VERSION = { number: "1.2.7", date: "Nov 28 2016" };
     })(Plugin = LiteMol.Plugin || (LiteMol.Plugin = {}));
 })(LiteMol || (LiteMol = {}));
 /*
@@ -75544,6 +75627,9 @@ var LiteMol;
             Controls.RowText = function (props) { return Plugin.React.createElement("div", { className: 'lm-control-row lm-row-text', title: props.title },
                 Plugin.React.createElement("span", null, props.label),
                 Plugin.React.createElement("div", null, props.value)); };
+            Controls.HelpBox = function (props) { return Plugin.React.createElement("div", { className: 'lm-help-row' },
+                Plugin.React.createElement("span", null, props.title),
+                Plugin.React.createElement("div", null, props.content)); };
         })(Controls = Plugin.Controls || (Plugin.Controls = {}));
     })(Plugin = LiteMol.Plugin || (LiteMol.Plugin = {}));
 })(LiteMol || (LiteMol = {}));
@@ -75617,13 +75703,14 @@ var LiteMol;
                     var exp = this.props.isExpanded;
                     var title = this.props.title ? this.props.title : this.props.header;
                     var icon = exp ? 'collapse' : 'expand';
-                    var desc = Plugin.React.createElement("div", { className: 'lm-panel-description', onClick: function () { return _this.props.onExpand.call(null, !_this.props.isExpanded); } },
+                    var desc = Plugin.React.createElement("div", { className: "lm-panel-description lm-panel-description-" + (this.props.topRightAction ? 'with-action' : 'standalone'), onClick: function () { return _this.props.onExpand.call(null, !_this.props.isExpanded); } },
                         Plugin.React.createElement("span", { className: 'lm-icon lm-icon-info' }),
                         Plugin.React.createElement("div", { className: 'lm-panel-description-content' },
                             Plugin.React.createElement("span", { className: 'lm-icon lm-icon-info' }),
                             this.props.description));
                     return Plugin.React.createElement("div", { className: 'lm-panel-header' },
                         desc,
+                        this.props.topRightAction,
                         Plugin.React.createElement("div", { className: 'lm-panel-expander-wrapper' },
                             Plugin.React.createElement(Controls.Button, { title: title, onClick: function () { return _this.props.onExpand.call(null, !_this.props.isExpanded); }, icon: icon, customClass: 'lm-panel-expander', style: 'link' },
                                 this.props.badge,
@@ -76123,10 +76210,9 @@ var LiteMol;
                             : (isUpdate ? 'Update ' : '') + t.name;
                         var isExpanded = this.getPersistentState('isExpanded', true);
                         return Plugin.React.createElement("div", { className: 'lm-transformer-wrapper' },
-                            Plugin.React.createElement(Plugin.Controls.Panel, { header: header, badge: this.props.hideBadge ? void 0 : Plugin.React.createElement(Views.Entity.Badge, { type: t.to[0].info }), className: 'lm-control lm-transformer lm-panel-' + t.to[0].info.typeClass, key: t.id, title: t.description, isExpanded: isExpanded, onExpand: function (e) { _this.setPersistentState('isExpanded', e); }, description: this.controller.transformer.info.description },
+                            Plugin.React.createElement(Plugin.Controls.Panel, { header: header, badge: this.props.hideBadge ? void 0 : Plugin.React.createElement(Views.Entity.Badge, { type: t.to[0].info }), className: 'lm-control lm-transformer lm-panel-' + t.to[0].info.typeClass, key: t.id, title: t.description, isExpanded: isExpanded, onExpand: function (e) { _this.setPersistentState('isExpanded', e); }, description: this.controller.transformer.info.description, topRightAction: this.props.showVisibilityIcon ? Plugin.React.createElement(Views.Entity.VisibilityControl, { entity: this.controller.entity }) : void 0 },
                                 this.renderControls(),
-                                showCommit ? commit : void 0,
-                                this.props.showVisibilityIcon ? Plugin.React.createElement(Views.Entity.VisibilityControl, { entity: this.controller.entity }) : void 0));
+                                showCommit ? commit : void 0));
                     };
                     return ControllerBase;
                 }(Views.View));
@@ -76963,7 +77049,7 @@ var LiteMol;
                         cls = 'partial';
                         title = 'Show';
                     }
-                    return Plugin.React.createElement(Plugin.Controls.Button, { title: title, onClick: command, icon: 'visual-visibility', style: 'link', customClass: 'lm-entity-tree-entry-toggle-visible lm-entity-tree-entry-toggle-visible-' + cls });
+                    return Plugin.React.createElement(Plugin.Controls.Button, { title: title, onClick: command, icon: 'visual-visibility', style: 'link', customClass: "lm-entity-tree-entry-toggle-visible lm-entity-tree-entry-toggle-visible-" + cls });
                 };
                 var Entity = (function (_super) {
                     __extends(Entity, _super);
@@ -77330,9 +77416,24 @@ var LiteMol;
                     __extends(ViewportControls, _super);
                     function ViewportControls() {
                         var _this = _super.apply(this, arguments) || this;
-                        _this.state = { showSceneOptions: false };
+                        _this.state = { showSceneOptions: false, showHelp: false };
                         return _this;
                     }
+                    ViewportControls.prototype.help = function () {
+                        return Plugin.React.createElement("div", { className: 'lm-viewport-controls-scene-options lm-control' },
+                            Plugin.React.createElement(Plugin.Controls.HelpBox, { title: 'Rotate', content: Plugin.React.createElement("div", null,
+                                    Plugin.React.createElement("div", null, "Left button"),
+                                    Plugin.React.createElement("div", null, "One finger touch")) }),
+                            Plugin.React.createElement(Plugin.Controls.HelpBox, { title: 'Zoom', content: Plugin.React.createElement("div", null,
+                                    Plugin.React.createElement("div", null, "Right button"),
+                                    Plugin.React.createElement("div", null, "Pinch")) }),
+                            Plugin.React.createElement(Plugin.Controls.HelpBox, { title: 'Move', content: Plugin.React.createElement("div", null,
+                                    Plugin.React.createElement("div", null, "Middle button"),
+                                    Plugin.React.createElement("div", null, "Two finger touch")) }),
+                            Plugin.React.createElement(Plugin.Controls.HelpBox, { title: 'Slab', content: Plugin.React.createElement("div", null,
+                                    Plugin.React.createElement("div", null, "Mouse wheel"),
+                                    Plugin.React.createElement("div", null, "Three finger touch")) }));
+                    };
                     ViewportControls.prototype.render = function () {
                         var _this = this;
                         var state = this.controller.latestState;
@@ -77345,10 +77446,14 @@ var LiteMol;
                                 Plugin.React.createElement(Plugin.Controls.Slider, { label: 'FOV', min: 30, max: 90, onChange: function (v) { return _this.controller.setState({ cameraFOV: v }); }, value: state.cameraFOV }),
                                 Plugin.React.createElement(Plugin.Controls.ToggleColorPicker, { color: state.clearColor, label: 'Background', position: 'below', onChange: function (c) { return _this.controller.setState({ clearColor: c }); } }));
                         }
+                        else if (this.state.showHelp) {
+                            options = this.help();
+                        }
                         var controlsShown = !layoutState.hideControls;
-                        return Plugin.React.createElement("div", { className: 'lm-viewport-controls', onMouseLeave: function () { return _this.setState({ showSceneOptions: false }); } },
+                        return Plugin.React.createElement("div", { className: 'lm-viewport-controls', onMouseLeave: function () { return _this.setState({ showSceneOptions: false, showHelp: false }); } },
                             Plugin.React.createElement("div", { className: 'lm-viewport-controls-buttons' },
-                                Plugin.React.createElement(Plugin.Controls.Button, { style: 'link', active: this.state.showSceneOptions, customClass: 'lm-btn-link-toggle-' + (this.state.showSceneOptions ? 'on' : 'off'), icon: 'settings', onClick: function (e) { return _this.setState({ showSceneOptions: !_this.state.showSceneOptions }); }, title: 'Scene Options' }),
+                                Plugin.React.createElement(Plugin.Controls.Button, { style: 'link', active: this.state.showHelp, customClass: 'lm-btn-link-toggle-' + (this.state.showHelp ? 'on' : 'off'), icon: 'help-circle', onClick: function (e) { return _this.setState({ showHelp: !_this.state.showHelp, showSceneOptions: false }); }, title: 'Controls Help' }),
+                                Plugin.React.createElement(Plugin.Controls.Button, { style: 'link', active: this.state.showSceneOptions, customClass: 'lm-btn-link-toggle-' + (this.state.showSceneOptions ? 'on' : 'off'), icon: 'settings', onClick: function (e) { return _this.setState({ showSceneOptions: !_this.state.showSceneOptions, showHelp: false }); }, title: 'Scene Options' }),
                                 Plugin.React.createElement(Plugin.Controls.Button, { style: 'link', icon: 'screenshot', onClick: function (e) { window.open(_this.controller.scene.scene.screenshotAsDataURL(), '_blank'); }, title: 'Screenshot' }),
                                 Plugin.React.createElement(Plugin.Controls.Button, { onClick: function () { layoutController.update({ hideControls: controlsShown }); _this.forceUpdate(); }, icon: 'tools', title: controlsShown ? 'Hide Controls' : 'Show Controls', active: controlsShown, customClass: 'lm-btn-link-toggle-' + (controlsShown ? 'on' : 'off'), style: 'link' }),
                                 Plugin.React.createElement(Plugin.Controls.Button, { onClick: function () { return layoutController.update({ isExpanded: !layoutState.isExpanded }); }, icon: 'expand-layout', title: layoutState.isExpanded ? 'Collapse' : 'Expand', active: layoutState.isExpanded, customClass: 'lm-btn-link-toggle-' + (layoutState.isExpanded ? 'on' : 'off'), style: 'link' }),

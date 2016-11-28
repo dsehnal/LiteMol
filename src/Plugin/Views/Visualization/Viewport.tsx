@@ -7,9 +7,18 @@ namespace LiteMol.Plugin.Views.Visualization {
 
     import Vis = LiteMol.Visualization;
     export class ViewportControls extends View<Bootstrap.Components.Visualization.Viewport, 
-        { showSceneOptions?: boolean }, {}> {
+        { showSceneOptions?: boolean, showHelp?: boolean }, {}> {
         
-        state = { showSceneOptions: false };
+        state = { showSceneOptions: false, showHelp: false };
+
+        private help() {
+            return <div className='lm-viewport-controls-scene-options lm-control'>
+                <Controls.HelpBox title='Rotate' content={<div><div>Left button</div><div>One finger touch</div></div>} />
+                <Controls.HelpBox title='Zoom' content={<div><div>Right button</div><div>Pinch</div></div>} />
+                <Controls.HelpBox title='Move' content={<div><div>Middle button</div><div>Two finger touch</div></div>} />
+                <Controls.HelpBox title='Slab' content={<div><div>Mouse wheel</div><div>Three finger touch</div></div>} />
+            </div>
+        }
         
         render() {
             let state = this.controller.latestState;
@@ -24,17 +33,25 @@ namespace LiteMol.Plugin.Views.Visualization {
                     <Controls.Slider label='FOV' min={30} max={90} onChange={v => this.controller.setState({ cameraFOV: v }) } value={state.cameraFOV!} />
                     <Controls.ToggleColorPicker color={state.clearColor!} label='Background' position='below' onChange={c => this.controller.setState({ clearColor: c }) } />
                 </div>;
+            } else if (this.state.showHelp) {
+                options = this.help();
             }
             
             let controlsShown = !layoutState.hideControls;
-            return <div className='lm-viewport-controls' onMouseLeave={() => this.setState({showSceneOptions: false})}>
+            return <div className='lm-viewport-controls' onMouseLeave={() => this.setState({ showSceneOptions: false, showHelp: false })}>
                 <div className='lm-viewport-controls-buttons'>
+                    <Controls.Button 
+                        style='link'
+                        active={this.state.showHelp}
+                        customClass={'lm-btn-link-toggle-' + (this.state.showHelp ? 'on' : 'off')}
+                        icon='help-circle' 
+                        onClick={(e) => this.setState({ showHelp: !this.state.showHelp, showSceneOptions: false }) } title='Controls Help' />     
                     <Controls.Button 
                         style='link'
                         active={this.state.showSceneOptions}
                         customClass={'lm-btn-link-toggle-' + (this.state.showSceneOptions ? 'on' : 'off')}
                         icon='settings' 
-                        onClick={(e) => this.setState({ showSceneOptions: !this.state.showSceneOptions }) } title='Scene Options' />                      
+                        onClick={(e) => this.setState({ showSceneOptions: !this.state.showSceneOptions, showHelp: false }) } title='Scene Options' />                      
                     <Controls.Button 
                         style='link' 
                         icon='screenshot' 

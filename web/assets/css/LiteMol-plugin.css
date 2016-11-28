@@ -1614,6 +1614,10 @@
     content: '\e875'; }
   .lm-plugin .lm-icon-screenshot:before {
     content: "\e80f"; }
+  .lm-plugin .lm-icon-help:before {
+    content: "\e81c"; }
+  .lm-plugin .lm-icon-help-circle:before {
+    content: "\e81d"; }
   .lm-plugin .lm-layout-expanded, .lm-plugin .lm-layout-standard {
     left: 0;
     right: 0;
@@ -2218,10 +2222,16 @@
           text-align: center; }
         .lm-plugin .lm-panel-header .lm-panel-expander-wrapper button:hover {
           background: #090a0c; }
+    .lm-plugin .lm-panel-header .lm-panel-description-standalone {
+      width: 64px; }
+      .lm-plugin .lm-panel-header .lm-panel-description-standalone > .lm-icon {
+        margin-left: 32px; }
+    .lm-plugin .lm-panel-header .lm-panel-description-with-action {
+      width: 32px;
+      margin-right: 32px; }
     .lm-plugin .lm-panel-header .lm-panel-description {
       color: #ccd4e0;
       float: right;
-      width: 64px;
       background: #090a0c; }
       .lm-plugin .lm-panel-header .lm-panel-description > .lm-icon {
         display: block;
@@ -2232,8 +2242,7 @@
         font-size: 70%;
         cursor: default;
         background: #090a0c;
-        color: #232b39;
-        margin-left: 32px; }
+        color: #232b39; }
       .lm-plugin .lm-panel-header .lm-panel-description .lm-panel-description-content {
         -webkit-user-select: none;
         /* Chrome/Safari */
@@ -2275,10 +2284,6 @@
     background: #1f222b; }
   .lm-plugin .lm-panel {
     margin-bottom: 10px; }
-    .lm-plugin .lm-panel .lm-entity-tree-entry-toggle-visible {
-      position: absolute;
-      top: 0;
-      right: 32px; }
   .lm-plugin .lm-transform-view {
     padding-top: 10px; }
   .lm-plugin .lm-description {
@@ -2486,6 +2491,13 @@
   .lm-plugin .lm-entity-tree-root > .lm-entity-tree-children-wrap {
     margin-top: 10px;
     padding-left: 0 !important; }
+  .lm-plugin .lm-panel .lm-entity-tree-entry-toggle-visible {
+    position: absolute;
+    top: 0;
+    right: 0;
+    height: 32px;
+    font-size: 100%;
+    background: #111318; }
   .lm-plugin .lm-layout-hide-right .lm-entity-info {
     display: none; }
   .lm-plugin .lm-entity-info {
@@ -2913,6 +2925,35 @@
           width: 100%;
           text-align: right;
           padding-right: 5px; }
+  .lm-plugin .lm-help-row {
+    position: relative;
+    height: 32px;
+    background: #111318;
+    margin-top: 1px;
+    display: table;
+    width: 100%; }
+    .lm-plugin .lm-help-row > span {
+      width: 120px;
+      text-align: right;
+      padding: 6px 10px;
+      color: #9cacc3;
+      display: table-cell;
+      font-weight: bold;
+      -webkit-user-select: none;
+      /* Chrome/Safari */
+      -moz-user-select: none;
+      /* Firefox */
+      -ms-user-select: none;
+      /* IE10+ */
+      /* Rules below not implemented in browsers yet */
+      -o-user-select: none;
+      user-select: none;
+      cursor: default; }
+    .lm-plugin .lm-help-row > div {
+      background: #0c0d11;
+      position: relative;
+      padding: 6px 10px;
+      display: table-cell; }
   .lm-plugin .lm-logo {
     position: absolute;
     top: 0;

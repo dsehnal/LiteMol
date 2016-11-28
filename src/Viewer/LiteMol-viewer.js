@@ -7,7 +7,7 @@ var LiteMol;
 (function (LiteMol) {
     var Viewer;
     (function (Viewer) {
-        Viewer.VERSION = { number: "1.1.11", date: "Nov 23 2016" };
+        Viewer.VERSION = { number: "1.1.12", date: "Nov 28 2016" };
     })(Viewer = LiteMol.Viewer || (LiteMol.Viewer = {}));
 })(LiteMol || (LiteMol = {}));
 /*
