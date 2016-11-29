@@ -55691,7 +55691,7 @@ var LiteMol;
                 }
                 //if (delta < -0.5) delta = -0.5;
                 //else if (delta > 0.5) delta = 0.5;
-                var sign = delta < 0 ? -1 : 1;
+                var sign = delta < 0 ? 1 : -1;
                 delta = this.radius * this.slabWheelRate * sign;
                 this._planeDelta.onNext(delta);
             };

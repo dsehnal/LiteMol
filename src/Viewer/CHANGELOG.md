@@ -1,6 +1,7 @@
 # 1.1.12
 * Help for viewport.
 * Touch slabbing.
+* Mouse wheel now works similar to PyMOL.
 * Basic ValidatorDB support.
 
 # 1.1.11
