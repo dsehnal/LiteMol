@@ -1,4 +1,7 @@
-﻿# 2.4.9
+﻿# 2.4.10
+* Detection of "single atom" nucleotides.
+
+# 2.4.9
 * Updated sequence query to support "auth_asym_id".
 * Added MoleculeModel.withTransformedXYZ function.
 

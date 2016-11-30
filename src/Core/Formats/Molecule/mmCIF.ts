@@ -372,24 +372,34 @@ namespace LiteMol.Core.Formats.Molecule.mmCIF {
 
         if (aminoAcidNames[residues.name[index]] || entities.entityType[residues.entityIndex[index]] !== Structure.EntityType.Polymer) return false;
 
-        let o5 = false, c3 = false, n3 = false,
+        let o5 = false, c3 = false, n3 = false, p = false,
             names = atoms.name, assigned = 0;
-        for (let i = residues.atomStartIndex[index], max = residues.atomEndIndex[index]; i < max; i++) {
+        
+        let start = residues.atomStartIndex[index], end = residues.atomEndIndex[index];
+
+        // test for single atom instances
+        if (end - start === 1 && !residues.isHet[start] && names[start] === 'P') {
+            return true;
+        }
+
+        for (let i = start; i < end; i++) {
             let n = names[i];
             if (!o5 && n === `O5'`) {
                 o5 = true;
                 assigned++;
-            }
-            else if (!c3 && n === `C3'`) {
+            } else if (!c3 && n === `C3'`) {
                 c3 = true;
                 assigned++;
             } else if (!n3 && n === 'N3') {
                 n3 = true;
                 assigned++;
+            } else if (!p && n === 'P') {
+                p = true;
+                assigned++;
             }
-            if (assigned === 3) break;
+            if (assigned === 4) break;
         }
-        return o5 && c3 && n3;
+        return o5 && c3 && n3 && p;
     }
 
     function analyzeSecondaryStructure(atoms: Structure.DataTable, residues: Structure.DefaultResidueTableSchema, entities: Structure.DefaultEntityTableSchema, start: number, end: number, elements: Structure.SecondaryStructureElement[]) {

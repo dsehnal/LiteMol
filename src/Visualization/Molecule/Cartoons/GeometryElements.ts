@@ -58,25 +58,48 @@ namespace LiteMol.Visualization.Molecule.Cartoons.Geometry {
                     if (aU && aV) break;
                 }
             } else {
-                for (let i = start; i < end; i++) {
-                    if (!aU && name[i] === "O5'") {
-                        ArrayBuilder.add3(this.uPositionsBuilder, arrays.x[i], arrays.y[i], arrays.z[i]);
-                        aU = true;
-                    } else if (!aV && name[i] === "C3'") {
-                        ArrayBuilder.add3(this.vPositionsBuilder, arrays.x[i], arrays.y[i], arrays.z[i]);
-                        aV = true;
+                if (end - start === 1) {
+                    // has to be P atom
+                    ArrayBuilder.add3(this.uPositionsBuilder, arrays.x[start], arrays.y[start], arrays.z[start]);
+                    aU = true;
+                } else {
+                    let pIndex = -1;
+                    for (let i = start; i < end; i++) {
+                        if (!aU && name[i] === "O5'") {
+                            ArrayBuilder.add3(this.uPositionsBuilder, arrays.x[i], arrays.y[i], arrays.z[i]);
+                            aU = true;
+                        } else if (!aV && name[i] === "C3'") {
+                            ArrayBuilder.add3(this.vPositionsBuilder, arrays.x[i], arrays.y[i], arrays.z[i]);
+                            aV = true;
+                        }
+
+                        if (name[i] === "P") {
+                            pIndex = i;
+                        }
+
+                        if (aU && aV) break;
                     }
 
-                    if (aU && aV) break;
+                    if (!aU && !aV && pIndex >= 0) {
+                        ArrayBuilder.add3(this.uPositionsBuilder, arrays.x[pIndex], arrays.y[pIndex], arrays.z[pIndex]);
+                        aU = true;
+                    }
                 }
             }
 
+            let backboneOnly = false;
             if (!aV) {
-                let arr = this.pPositionsBuilder.array, len = arr.length;
+                let arr = this.uPositionsBuilder.array, len = arr.length;
                 ArrayBuilder.add3(this.vPositionsBuilder, arr[len - 3], arr[len - 2], arr[len - 1]);
+                backboneOnly = true;
+            } else if (!aU) {
+                let arr = this.vPositionsBuilder.array, len = arr.length;
+                ArrayBuilder.add3(this.uPositionsBuilder, arr[len - 3], arr[len - 2], arr[len - 1]);
+                backboneOnly = true;
             }
 
             ArrayBuilder.add(this.typeBuilder, sType);
+            return backboneOnly;
         }
 
         finishResidues() {
@@ -139,15 +162,22 @@ namespace LiteMol.Visualization.Molecule.Cartoons.Geometry {
             }
         }
 
-        static hasNames(atomIndices: number[], start: number, end: number, name: string[], a: string, b: string, isAmk: boolean) {
-            let aU = false, aV = false;
+        static isCartoonLike(atomIndices: number[], start: number, end: number, name: string[], a: string, b: string, isAmk: boolean) {
+            let aU = false, aV = false, hasP = false;
             for (let i = start; i < end; i++) {
-                if (!aU && name[atomIndices[i]] === a) {
+                let n = name[atomIndices[i]];
+                if (!aU && n === a) {
                     aU = true;
-                } else if (!aV && name[atomIndices[i]] === b) { aV = true; }
+                } else if (!aV && n === b) { 
+                    aV = true; 
+                }                
                 if (aU && aV) return true;
+                if (n === 'P') {
+                    hasP = true;
+                }
             }
-            return isAmk && aU;
+            if (isAmk) return aU;
+            return hasP;
         }
 
         static createMask(
@@ -168,9 +198,9 @@ namespace LiteMol.Visualization.Molecule.Cartoons.Geometry {
                 let s = ss[ssIndex[residue]].type;
                 if (s === SSTypes.None) continue;
                 if (s === SSTypes.Strand) {
-                    ret[residue] = +CartoonAsymUnit.hasNames(atomIndices, rStart, i, name, "O5'", "C3'", false);
+                    ret[residue] = +CartoonAsymUnit.isCartoonLike(atomIndices, rStart, i, name, "O5'", "C3'", false);
                 } else {
-                    ret[residue] = +CartoonAsymUnit.hasNames(atomIndices, rStart, i, name, "CA", "O", true);
+                    ret[residue] = +CartoonAsymUnit.isCartoonLike(atomIndices, rStart, i, name, "CA", "O", true);
                 }
                 i--;
             }
@@ -205,15 +235,18 @@ namespace LiteMol.Visualization.Molecule.Cartoons.Geometry {
             let trace = new Int32Array(parent.endResidueIndex - parent.startResidueIndex), offset = 0;
             let isOk = true;
             for (let i = parent.startResidueIndex, _b = parent.endResidueIndex; i < _b; i++) {
-                let foundCA = false;
+                let foundCA = false, foundO = false;
                 for (let j = atomStartIndex[i], _c = atomEndIndex[_b]; j < _c; j++) {
-                    if (name[j] === "CA") {
+                    if (name[j] === 'CA') {
+                        if (!foundCA) trace[offset++] = j;
                         foundCA = true;
-                        trace[offset++] = j;
-                        break;
+                    } else if (name[j] === 'O') {
+                        foundO = true;
                     }
+                    
+                    if (foundO && foundCA) break;
                 }
-                if (!foundCA) {
+                if (!foundCA || !foundO) {
                     isOk = false;
                     break;
                 }
@@ -415,6 +448,8 @@ namespace LiteMol.Visualization.Molecule.Cartoons.Geometry {
         residueType: Core.Structure.SecondaryStructureType[] = [];
         residueIndex: Int32Array = new Int32Array(0);
 
+        backboneOnly = false;
+
         constructor(
             private model: Core.Structure.MoleculeModel,
             private elements: Core.Structure.SecondaryStructureElement[],
@@ -462,7 +497,7 @@ namespace LiteMol.Visualization.Molecule.Cartoons.Geometry {
                 this.structureStarts.add(e.startResidueIndex);
                 this.structureEnds.add(e.endResidueIndex - 1);
                 for (i = e.startResidueIndex; i < e.endResidueIndex; i++) {
-                    state.addResidue(i, arrays, e.type);
+                    this.backboneOnly = state.addResidue(i, arrays, e.type);
                     residueType[residueType.length] = e.type;
                 }
             }
@@ -790,7 +825,7 @@ namespace LiteMol.Visualization.Molecule.Cartoons.Geometry {
             state.residueIndex = index;
             let start = unit.structureStarts.has(unit.residueIndex[index]);
             let end = unit.structureEnds.has(unit.residueIndex[index]);
-            if (ctx.isTrace) {
+            if (ctx.isTrace || unit.backboneOnly) {
                 switch (unit.residueType[index]) {
                     case Core.Structure.SecondaryStructureType.Strand:
                         builder.addTube(unit, state, params.strandWidth, params.strandWidth);
@@ -1186,17 +1221,19 @@ namespace LiteMol.Visualization.Molecule.Cartoons.Geometry {
 
         private findN3(index: number, arrays: { startIndex: number[]; endIndex: number[]; x: number[]; y: number[]; z: number[]; name: string[] }, target: THREE.Vector3) {
 
-            let start = arrays.startIndex[index], end = arrays.endIndex[index],
-                name = arrays.name;
+            let start = arrays.startIndex[index], end = arrays.endIndex[index];
+            let name = arrays.name;
+            let found = false;
 
             for (let i = start; i < end; i++) {
                 if (arrays.name[i] === "N3") {
                     target.set(arrays.x[i], arrays.y[i], arrays.z[i]);
+                    found = true;
                     break;
                 }
             }
 
-            return target;
+            return found;
         }
 
         addStrandLine(
@@ -1204,6 +1241,8 @@ namespace LiteMol.Visualization.Molecule.Cartoons.Geometry {
             template: { vertex: number[]; normal: number[]; index: number[]; geometry: THREE.BufferGeometry },
             arrays: { startIndex: number[]; endIndex: number[]; x: number[]; y: number[]; z: number[]; name: string[] },
             residueIndex: number) {
+
+            if (!this.findN3(residueIndex, arrays, this.tempVectors[3])) return;
 
             let p = this.tempVectors[0], n = this.tempVectors[1], i: number,
                 vb = template.vertex,
@@ -1214,7 +1253,7 @@ namespace LiteMol.Visualization.Molecule.Cartoons.Geometry {
                 triangleCount = ib.length,
                 elementOffset = state.residueIndex * element.linearSegmentCount + ((0.5 * element.linearSegmentCount + 1) | 0),
                 elementPoint = this.setVector(element.controlPoints, elementOffset, this.tempVectors[2]),
-                nDir = this.findN3(residueIndex, arrays, this.tempVectors[3]).sub(elementPoint),
+                nDir = this.tempVectors[3].sub(elementPoint),
                 length = nDir.length();
 
             nDir.normalize();

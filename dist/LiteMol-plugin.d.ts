@@ -12641,7 +12641,7 @@ declare namespace LiteMol.Visualization.Molecule.Cartoons.Geometry {
             x: number[];
             y: number[];
             z: number[];
-        }, sType: Core.Structure.SecondaryStructureType): void;
+        }, sType: Core.Structure.SecondaryStructureType): boolean;
         finishResidues(): void;
         addControlPoint(p: THREE.Vector3, d: THREE.Vector3): void;
         finishContols(): void;
@@ -12651,7 +12651,7 @@ declare namespace LiteMol.Visualization.Molecule.Cartoons.Geometry {
         private elements;
         linearSegmentCount: number;
         private static maskSplit(element, mask, target);
-        static hasNames(atomIndices: number[], start: number, end: number, name: string[], a: string, b: string, isAmk: boolean): boolean;
+        static isCartoonLike(atomIndices: number[], start: number, end: number, name: string[], a: string, b: string, isAmk: boolean): boolean;
         static createMask(model: Core.Structure.MoleculeModel, atomIndices: number[]): boolean[];
         private static isUnknownSecondaryStructure(model);
         private static approximateSecondaryStructure(model, parent);
@@ -12679,6 +12679,7 @@ declare namespace LiteMol.Visualization.Molecule.Cartoons.Geometry {
         structureEnds: Set<number>;
         residueType: Core.Structure.SecondaryStructureType[];
         residueIndex: Int32Array;
+        backboneOnly: boolean;
         constructor(model: Core.Structure.MoleculeModel, elements: Core.Structure.SecondaryStructureElement[], linearSegmentCount: number);
         private createControlPoints(state);
         private initPositions(state);

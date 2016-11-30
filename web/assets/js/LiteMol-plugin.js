@@ -11122,7 +11122,7 @@ var LiteMol;
 (function (LiteMol) {
     var Core;
     (function (Core) {
-        Core.VERSION = { number: "2.4.9", date: "Nov 12 2016" };
+        Core.VERSION = { number: "2.4.10", date: "Nov 12 2016" };
     })(Core = LiteMol.Core || (LiteMol.Core = {}));
 })(LiteMol || (LiteMol = {}));
 /*
@@ -12193,8 +12193,13 @@ var LiteMol;
                     function isResidueNucleotide(atoms, residues, entities, index) {
                         if (aminoAcidNames[residues.name[index]] || entities.entityType[residues.entityIndex[index]] !== Core.Structure.EntityType.Polymer)
                             return false;
-                        var o5 = false, c3 = false, n3 = false, names = atoms.name, assigned = 0;
-                        for (var i = residues.atomStartIndex[index], max = residues.atomEndIndex[index]; i < max; i++) {
+                        var o5 = false, c3 = false, n3 = false, p = false, names = atoms.name, assigned = 0;
+                        var start = residues.atomStartIndex[index], end = residues.atomEndIndex[index];
+                        // test for single atom instances
+                        if (end - start === 1 && !residues.isHet[start] && names[start] === 'P') {
+                            return true;
+                        }
+                        for (var i = start; i < end; i++) {
                             var n = names[i];
                             if (!o5 && n === "O5'") {
                                 o5 = true;
@@ -12208,10 +12213,14 @@ var LiteMol;
                                 n3 = true;
                                 assigned++;
                             }
-                            if (assigned === 3)
+                            else if (!p && n === 'P') {
+                                p = true;
+                                assigned++;
+                            }
+                            if (assigned === 4)
                                 break;
                         }
-                        return o5 && c3 && n3;
+                        return o5 && c3 && n3 && p;
                     }
                     function analyzeSecondaryStructure(atoms, residues, entities, start, end, elements) {
                         var asymId = residues.asymId, entityIndex = residues.entityIndex, currentType = 0 /* None */, currentElementStartIndex = start, currentResidueIndex = start, residueCount = end;
@@ -58445,24 +58454,47 @@ var LiteMol;
                                 }
                             }
                             else {
-                                for (var i = start; i < end; i++) {
-                                    if (!aU && name[i] === "O5'") {
-                                        ArrayBuilder.add3(this.uPositionsBuilder, arrays.x[i], arrays.y[i], arrays.z[i]);
+                                if (end - start === 1) {
+                                    // has to be P atom
+                                    ArrayBuilder.add3(this.uPositionsBuilder, arrays.x[start], arrays.y[start], arrays.z[start]);
+                                    aU = true;
+                                }
+                                else {
+                                    var pIndex = -1;
+                                    for (var i = start; i < end; i++) {
+                                        if (!aU && name[i] === "O5'") {
+                                            ArrayBuilder.add3(this.uPositionsBuilder, arrays.x[i], arrays.y[i], arrays.z[i]);
+                                            aU = true;
+                                        }
+                                        else if (!aV && name[i] === "C3'") {
+                                            ArrayBuilder.add3(this.vPositionsBuilder, arrays.x[i], arrays.y[i], arrays.z[i]);
+                                            aV = true;
+                                        }
+                                        if (name[i] === "P") {
+                                            pIndex = i;
+                                        }
+                                        if (aU && aV)
+                                            break;
+                                    }
+                                    if (!aU && !aV && pIndex >= 0) {
+                                        ArrayBuilder.add3(this.uPositionsBuilder, arrays.x[pIndex], arrays.y[pIndex], arrays.z[pIndex]);
                                         aU = true;
                                     }
-                                    else if (!aV && name[i] === "C3'") {
-                                        ArrayBuilder.add3(this.vPositionsBuilder, arrays.x[i], arrays.y[i], arrays.z[i]);
-                                        aV = true;
-                                    }
-                                    if (aU && aV)
-                                        break;
                                 }
                             }
+                            var backboneOnly = false;
                             if (!aV) {
-                                var arr = this.pPositionsBuilder.array, len = arr.length;
+                                var arr = this.uPositionsBuilder.array, len = arr.length;
                                 ArrayBuilder.add3(this.vPositionsBuilder, arr[len - 3], arr[len - 2], arr[len - 1]);
+                                backboneOnly = true;
+                            }
+                            else if (!aU) {
+                                var arr = this.vPositionsBuilder.array, len = arr.length;
+                                ArrayBuilder.add3(this.uPositionsBuilder, arr[len - 3], arr[len - 2], arr[len - 1]);
+                                backboneOnly = true;
                             }
                             ArrayBuilder.add(this.typeBuilder, sType);
+                            return backboneOnly;
                         };
                         CartoonAsymUnitState.prototype.finishResidues = function () {
                             ArrayBuilder.add(this.typeBuilder, 0 /* None */);
@@ -58509,6 +58541,7 @@ var LiteMol;
                             this.structureEnds = new Set();
                             this.residueType = [];
                             this.residueIndex = new Int32Array(0);
+                            this.backboneOnly = false;
                             for (var _i = 0, _a = this.elements; _i < _a.length; _i++) {
                                 var e = _a[_i];
                                 this.residueCount += e.endResidueIndex - e.startResidueIndex;
@@ -58535,19 +58568,25 @@ var LiteMol;
                                 target[target.length] = current;
                             }
                         };
-                        CartoonAsymUnit.hasNames = function (atomIndices, start, end, name, a, b, isAmk) {
-                            var aU = false, aV = false;
+                        CartoonAsymUnit.isCartoonLike = function (atomIndices, start, end, name, a, b, isAmk) {
+                            var aU = false, aV = false, hasP = false;
                             for (var i = start; i < end; i++) {
-                                if (!aU && name[atomIndices[i]] === a) {
+                                var n = name[atomIndices[i]];
+                                if (!aU && n === a) {
                                     aU = true;
                                 }
-                                else if (!aV && name[atomIndices[i]] === b) {
+                                else if (!aV && n === b) {
                                     aV = true;
                                 }
                                 if (aU && aV)
                                     return true;
+                                if (n === 'P') {
+                                    hasP = true;
+                                }
                             }
-                            return isAmk && aU;
+                            if (isAmk)
+                                return aU;
+                            return hasP;
                         };
                         CartoonAsymUnit.createMask = function (model, atomIndices) {
                             var ret = new Uint8Array(model.residues.count);
@@ -58565,10 +58604,10 @@ var LiteMol;
                                 if (s === 0 /* None */)
                                     continue;
                                 if (s === 5 /* Strand */) {
-                                    ret[residue] = +CartoonAsymUnit.hasNames(atomIndices, rStart, i, name, "O5'", "C3'", false);
+                                    ret[residue] = +CartoonAsymUnit.isCartoonLike(atomIndices, rStart, i, name, "O5'", "C3'", false);
                                 }
                                 else {
-                                    ret[residue] = +CartoonAsymUnit.hasNames(atomIndices, rStart, i, name, "CA", "O", true);
+                                    ret[residue] = +CartoonAsymUnit.isCartoonLike(atomIndices, rStart, i, name, "CA", "O", true);
                                 }
                                 i--;
                             }
@@ -58598,15 +58637,20 @@ var LiteMol;
                             var trace = new Int32Array(parent.endResidueIndex - parent.startResidueIndex), offset = 0;
                             var isOk = true;
                             for (var i = parent.startResidueIndex, _b = parent.endResidueIndex; i < _b; i++) {
-                                var foundCA = false;
+                                var foundCA = false, foundO = false;
                                 for (var j = atomStartIndex[i], _c = atomEndIndex[_b]; j < _c; j++) {
-                                    if (name[j] === "CA") {
+                                    if (name[j] === 'CA') {
+                                        if (!foundCA)
+                                            trace[offset++] = j;
                                         foundCA = true;
-                                        trace[offset++] = j;
-                                        break;
                                     }
+                                    else if (name[j] === 'O') {
+                                        foundO = true;
+                                    }
+                                    if (foundO && foundCA)
+                                        break;
                                 }
-                                if (!foundCA) {
+                                if (!foundCA || !foundO) {
                                     isOk = false;
                                     break;
                                 }
@@ -58766,7 +58810,7 @@ var LiteMol;
                                 this.structureStarts.add(e.startResidueIndex);
                                 this.structureEnds.add(e.endResidueIndex - 1);
                                 for (i = e.startResidueIndex; i < e.endResidueIndex; i++) {
-                                    state.addResidue(i, arrays, e.type);
+                                    this.backboneOnly = state.addResidue(i, arrays, e.type);
                                     residueType[residueType.length] = e.type;
                                 }
                             }
@@ -59060,7 +59104,7 @@ var LiteMol;
                             state.residueIndex = index;
                             var start = unit.structureStarts.has(unit.residueIndex[index]);
                             var end = unit.structureEnds.has(unit.residueIndex[index]);
-                            if (ctx.isTrace) {
+                            if (ctx.isTrace || unit.backboneOnly) {
                                 switch (unit.residueType[index]) {
                                     case 5 /* Strand */:
                                         builder.addTube(unit, state, params.strandWidth, params.strandWidth);
@@ -59315,17 +59359,22 @@ var LiteMol;
                             state.addTriangles(addedVerticesCount, addedVerticesCount + 1, addedVerticesCount + 2, addedVerticesCount + 2, addedVerticesCount + 3, addedVerticesCount);
                         };
                         Builder.prototype.findN3 = function (index, arrays, target) {
-                            var start = arrays.startIndex[index], end = arrays.endIndex[index], name = arrays.name;
+                            var start = arrays.startIndex[index], end = arrays.endIndex[index];
+                            var name = arrays.name;
+                            var found = false;
                             for (var i = start; i < end; i++) {
                                 if (arrays.name[i] === "N3") {
                                     target.set(arrays.x[i], arrays.y[i], arrays.z[i]);
+                                    found = true;
                                     break;
                                 }
                             }
-                            return target;
+                            return found;
                         };
                         Builder.prototype.addStrandLine = function (element, state, template, arrays, residueIndex) {
-                            var p = this.tempVectors[0], n = this.tempVectors[1], i, vb = template.vertex, nb = template.normal, ib = template.index, vertexStart = state.verticesDone, vertexCount = vb.length, triangleCount = ib.length, elementOffset = state.residueIndex * element.linearSegmentCount + ((0.5 * element.linearSegmentCount + 1) | 0), elementPoint = this.setVector(element.controlPoints, elementOffset, this.tempVectors[2]), nDir = this.findN3(residueIndex, arrays, this.tempVectors[3]).sub(elementPoint), length = nDir.length();
+                            if (!this.findN3(residueIndex, arrays, this.tempVectors[3]))
+                                return;
+                            var p = this.tempVectors[0], n = this.tempVectors[1], i, vb = template.vertex, nb = template.normal, ib = template.index, vertexStart = state.verticesDone, vertexCount = vb.length, triangleCount = ib.length, elementOffset = state.residueIndex * element.linearSegmentCount + ((0.5 * element.linearSegmentCount + 1) | 0), elementPoint = this.setVector(element.controlPoints, elementOffset, this.tempVectors[2]), nDir = this.tempVectors[3].sub(elementPoint), length = nDir.length();
                             nDir.normalize();
                             state.translationMatrix.makeTranslation(elementPoint.x, elementPoint.y, elementPoint.z);
                             state.scaleMatrix.makeScale(1, 1, length);

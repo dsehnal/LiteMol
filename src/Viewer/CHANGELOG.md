@@ -1,5 +1,6 @@
 # 1.1.13
 * It is now possible to select 'Show: Everything' in the dynamic denisty surface behaviour.
+* Fixed/improved support for CA/P-only models.
 
 # 1.1.12
 * Help for viewport.

@@ -1,4 +1,7 @@
-﻿# 1.5.1
+﻿# 1.5.2
+* Improved support for CA/P-only cartoon (alpha-trace) models.
+
+# 1.5.1
 * Updated slabbing (now using relative values + touch support).
 
 # 1.5.0
