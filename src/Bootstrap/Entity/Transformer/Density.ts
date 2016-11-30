@@ -90,6 +90,7 @@ namespace LiteMol.Bootstrap.Entity.Transformer.Density {
         minRadius?: number;
         maxRadius?: number;
         radius?: number,
+        showFull?: boolean,
         style?: Visualization.Density.Style
     }
 
@@ -100,13 +101,14 @@ namespace LiteMol.Bootstrap.Entity.Transformer.Density {
         from: [Entity.Density.Data],
         to: [Entity.Density.InteractiveSurface],
         isUpdatable: true,
-        defaultParams: ctx => ({ style: Visualization.Density.Default.Style, radius: ctx.settings.get('density.defaultVisualBehaviourRadius') || 0, isoSigmaMin: -5, isoSigmaMax: 5, minRadius: 0, maxRadius: 10 }),
+        defaultParams: ctx => ({ style: Visualization.Density.Default.Style, radius: ctx.settings.get('density.defaultVisualBehaviourRadius') || 0, isoSigmaMin: -5, isoSigmaMax: 5, minRadius: 0, maxRadius: 10, showFull: false }),
         customController: (ctx, t, e) => new Components.Transform.DensityVisual(ctx, t, e),
     }, (ctx, a, t) => {
         let params = t.params;
-        let b = new Bootstrap.Behaviour.Density.ShowElectronDensityAroundSelection(ctx, {
+        let b = new Bootstrap.Behaviour.Density.ShowDynamicDensity(ctx, {
             style: params.style!,
-            radius: params.radius!
+            radius: params.radius!,
+            showFull: params.showFull!
         });
         let isSigma = params.style!.params!.isoValueType === void 0 || params.style!.params!.isoValueType === Visualization.Density.IsoValueType.Sigma;
         return Task.resolve('Behaviour', 'Background', Entity.Density.InteractiveSurface.create(t, { label: `${params.id ? t.params.id : 'Interactive'}, ${Utils.round(params.style!.params!.isoValue!, 2)}${isSigma ? ' \u03C3' : ''}`, behaviour: b }));

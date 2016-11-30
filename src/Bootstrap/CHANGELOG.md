@@ -1,4 +1,7 @@
-﻿# 1.2.4
+﻿# 1.2.5
+* Density behavior updates.
+
+# 1.2.4
 * Added Entity.Visual.Surface entity.
 * Updated FocusCameraOnSelect behavior to handle non-molecule objects as well.
 

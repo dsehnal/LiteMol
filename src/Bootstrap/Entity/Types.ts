@@ -134,7 +134,7 @@ namespace LiteMol.Bootstrap.Entity {
         export interface VisualType extends Entity.Type<VisualType, Visual, VisualProps> { }     
         export const Visual = create<Visual, VisualType, VisualProps>({ name: 'Density Visual', typeClass: 'Visual', shortName: 'V_DD', description: 'A visual of density data.' }, { isFocusable: true });       
         
-        export interface InteractiveSurfaceProps extends Behaviour.Props<Bootstrap.Behaviour.Density.ShowElectronDensityAroundSelection> { }    
+        export interface InteractiveSurfaceProps extends Behaviour.Props<Bootstrap.Behaviour.Density.ShowDynamicDensity> { }    
         export interface InteractiveSurface extends Entity<InteractiveSurface, InteractiveSurfaceType, InteractiveSurfaceProps> { } 
         export interface InteractiveSurfaceType extends Type<InteractiveSurfaceType, InteractiveSurface, InteractiveSurfaceProps> { }
         export const InteractiveSurface = create<InteractiveSurface, InteractiveSurfaceType, InteractiveSurfaceProps>({ name: 'Interactive Surface', typeClass: 'Behaviour', shortName: 'B_IS', description: 'Behaviour that creates an interactive surface when an atom or residue is selected.' }); 

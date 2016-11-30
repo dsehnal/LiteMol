@@ -7,7 +7,7 @@ var LiteMol;
 (function (LiteMol) {
     var Viewer;
     (function (Viewer) {
-        Viewer.VERSION = { number: "1.1.12", date: "Nov 28 2016" };
+        Viewer.VERSION = { number: "1.1.13", date: "Nov 30 2016" };
     })(Viewer = LiteMol.Viewer || (LiteMol.Viewer = {}));
 })(LiteMol || (LiteMol = {}));
 /*
@@ -373,6 +373,7 @@ var LiteMol;
                         minRadius: 0,
                         maxRadius: 10,
                         radius: 5,
+                        showFull: false,
                         style: Visualization.Density.Style.create({
                             isoValue: -3,
                             isoValueType: Bootstrap.Visualization.Density.IsoValueType.Sigma,
@@ -389,6 +390,7 @@ var LiteMol;
                         minRadius: 0,
                         maxRadius: 10,
                         radius: 5,
+                        showFull: false,
                         style: Visualization.Density.Style.create({
                             isoValue: 3,
                             isoValueType: Bootstrap.Visualization.Density.IsoValueType.Sigma,
@@ -407,6 +409,7 @@ var LiteMol;
                         minRadius: 0,
                         maxRadius: 10,
                         radius: 5,
+                        showFull: false,
                         style: Visualization.Density.Style.create({
                             isoValue: 1.5,
                             isoValueType: Bootstrap.Visualization.Density.IsoValueType.Sigma,

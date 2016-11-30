@@ -1,3 +1,3 @@
 namespace LiteMol.Viewer {       
-    export var VERSION = { number: "1.1.12", date: "Nov 28 2016" };
+    export var VERSION = { number: "1.1.13", date: "Nov 30 2016" };
 }   

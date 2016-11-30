@@ -35,6 +35,7 @@ var LiteMol;
                 isoSigmaMin: 0,
                 isoSigmaMax: 2,
                 radius: 5,
+                showFull: false,
                 minRadius: 0,
                 maxRadius: 10,
                 style: Bootstrap.Visualization.Density.Style.create({

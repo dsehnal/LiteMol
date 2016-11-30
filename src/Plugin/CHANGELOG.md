@@ -1,4 +1,7 @@
-﻿# 1.2.7
+﻿# 1.2.8
+* Density behavior UI updates.
+
+# 1.2.7
 * Tweak custom transform UI to make visibility button more visible.
 * Help for viewport controls.
 

@@ -6,15 +6,15 @@
 namespace LiteMol.Bootstrap.Behaviour.Density {
     "use strict";
         
-    export interface ShowElectronDensityAroundSelectionParams {        
+    export interface ShowDynamicDensityParams {        
         style: Visualization.Density.Style,
-        radius: number, 
-        defaultTarget?: { bottomLeft: number[], topRight: number[] }
+        showFull: boolean,
+        radius: number        
     }
 
-    const ToastKey = 'ShowElectronDensityAroundSelection-toast';
+    const ToastKey = '__ShowDynamicDensity-toast';
     
-    export class ShowElectronDensityAroundSelection implements Dynamic {
+    export class ShowDynamicDensity implements Dynamic {
         
         private obs: Rx.IDisposable[] = [];
         private behaviour: Entity.Density.InteractiveSurface;
@@ -33,26 +33,34 @@ namespace LiteMol.Bootstrap.Behaviour.Density {
         }
            
         private update(info: Interactivity.Info ) {            
-            if (!Interactivity.Molecule.isMoleculeModelInteractivity(info)) {
+            if (!this.params.showFull && !Interactivity.Molecule.isMoleculeModelInteractivity(info)) {
                 this.remove();
                 return;
             }
 
             Command.Toast.Hide.dispatch(this.context, { key: ToastKey });
             
-            let model = Utils.Molecule.findModel(info.source)!;
-            let elems = info.elements;
-            let m = model.props.model;
-            if (info.elements!.length === 1) {
-                elems = Utils.Molecule.getResidueIndices(m, info.elements![0]);
-            }                         
-            let box = Utils.Molecule.getBox(m, elems!, this.params.radius);   
-
             let style = Utils.shallowClone(this.params.style);
             style.params = Utils.shallowClone(style.params);
-            style.params!.bottomLeft = box.bottomLeft;
-            style.params!.topRight = box.topRight;
-            style.computeOnBackground = true;
+
+            if (this.params.showFull) {
+                style.params!.bottomLeft = void 0;
+                style.params!.topRight = void 0;
+                style.computeOnBackground = false;
+            } else {
+                let i = info as Interactivity.Info.Selection;
+                let model = Utils.Molecule.findModel(i.source)!;
+                let elems = i.elements;
+                let m = model.props.model;
+                if (i.elements!.length === 1) {
+                    elems = Utils.Molecule.getResidueIndices(m, i.elements![0]);
+                }                         
+                let box = Utils.Molecule.getBox(m, elems!, this.params.radius);   
+
+                style.params!.bottomLeft = box.bottomLeft;
+                style.params!.topRight = box.topRight;
+                style.computeOnBackground = true;
+            }
             
             let task: Task<any>;
             
@@ -78,14 +86,16 @@ namespace LiteMol.Bootstrap.Behaviour.Density {
         register(behaviour: Entity.Density.InteractiveSurface) {
             this.behaviour = behaviour;
 
-            Command.Toast.Show.dispatch(this.context, { key: ToastKey, title: 'Density', message: 'Click on a residue or an atom to view the data.', timeoutMs: 30 * 1000 });
+            if (!this.params.showFull) {
+                Command.Toast.Show.dispatch(this.context, { key: ToastKey, title: 'Density', message: 'Click on a residue or an atom to view the data.', timeoutMs: 30 * 1000 });
+            }
 
             this.obs.push(this.context.behaviours.select.subscribe(e => {                
                 this.update(e);
             }));
         }
                 
-        constructor(public context: Context, public params: ShowElectronDensityAroundSelectionParams) {            
+        constructor(public context: Context, public params: ShowDynamicDensityParams) {            
         }
     }
 }

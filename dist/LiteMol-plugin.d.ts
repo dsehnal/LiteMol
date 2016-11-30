@@ -2893,6 +2893,7 @@ declare namespace LiteMol.Plugin.Views.Transform.Density {
     class CreateVisualBehaviour extends Transform.ControllerBase<Bootstrap.Components.Transform.DensityVisual, Transformer.Density.CreateVisualBehaviourParams> {
         private surface();
         private colors();
+        private show();
         protected renderControls(): JSX.Element;
     }
 }
@@ -16325,7 +16326,7 @@ declare namespace LiteMol.Bootstrap.Entity {
         interface VisualType extends Entity.Type<VisualType, Visual, VisualProps> {
         }
         const Visual: VisualType;
-        interface InteractiveSurfaceProps extends Behaviour.Props<Bootstrap.Behaviour.Density.ShowElectronDensityAroundSelection> {
+        interface InteractiveSurfaceProps extends Behaviour.Props<Bootstrap.Behaviour.Density.ShowDynamicDensity> {
         }
         interface InteractiveSurface extends Entity<InteractiveSurface, InteractiveSurfaceType, InteractiveSurfaceProps> {
         }
@@ -16499,6 +16500,7 @@ declare namespace LiteMol.Bootstrap.Entity.Transformer.Density {
         minRadius?: number;
         maxRadius?: number;
         radius?: number;
+        showFull?: boolean;
         style?: Visualization.Density.Style;
     }
     const CreateVisualBehaviour: Tree.Transformer<Entity.Density.Data, Entity.Density.InteractiveSurface, CreateVisualBehaviourParams>;
@@ -16590,17 +16592,14 @@ declare namespace LiteMol.Bootstrap.Behaviour.Molecule {
     function DistanceToLastClickedElement(context: Context): void;
 }
 declare namespace LiteMol.Bootstrap.Behaviour.Density {
-    interface ShowElectronDensityAroundSelectionParams {
+    interface ShowDynamicDensityParams {
         style: Visualization.Density.Style;
+        showFull: boolean;
         radius: number;
-        defaultTarget?: {
-            bottomLeft: number[];
-            topRight: number[];
-        };
     }
-    class ShowElectronDensityAroundSelection implements Dynamic {
+    class ShowDynamicDensity implements Dynamic {
         context: Context;
-        params: ShowElectronDensityAroundSelectionParams;
+        params: ShowDynamicDensityParams;
         private obs;
         private behaviour;
         private ref;
@@ -16610,7 +16609,7 @@ declare namespace LiteMol.Bootstrap.Behaviour.Density {
         private update(info);
         dispose(): void;
         register(behaviour: Entity.Density.InteractiveSurface): void;
-        constructor(context: Context, params: ShowElectronDensityAroundSelectionParams);
+        constructor(context: Context, params: ShowDynamicDensityParams);
     }
 }
 declare namespace LiteMol.Bootstrap.Behaviour.Molecule {

@@ -88,7 +88,7 @@
     "Behaviour/Streams.ts",    
     "Behaviour/Basic.ts",
     "Behaviour/Molecule.ts",
-    "Behaviour/ElectronDensity.ts",
+    "Behaviour/Density.ts",
     "Behaviour/CoordinateStreaming.ts",
     "Behaviour/Analytics.ts",
     

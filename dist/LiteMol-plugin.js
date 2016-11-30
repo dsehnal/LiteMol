@@ -64972,7 +64972,7 @@ var LiteMol;
 (function (LiteMol) {
     var Bootstrap;
     (function (Bootstrap) {
-        Bootstrap.VERSION = { number: "1.2.4", date: "Nov 27 2016" };
+        Bootstrap.VERSION = { number: "1.2.5", date: "Nov 30 2016" };
     })(Bootstrap = LiteMol.Bootstrap || (LiteMol.Bootstrap = {}));
 })(LiteMol || (LiteMol = {}));
 /*
@@ -68869,13 +68869,14 @@ var LiteMol;
                         from: [Entity.Density.Data],
                         to: [Entity.Density.InteractiveSurface],
                         isUpdatable: true,
-                        defaultParams: function (ctx) { return ({ style: Bootstrap.Visualization.Density.Default.Style, radius: ctx.settings.get('density.defaultVisualBehaviourRadius') || 0, isoSigmaMin: -5, isoSigmaMax: 5, minRadius: 0, maxRadius: 10 }); },
+                        defaultParams: function (ctx) { return ({ style: Bootstrap.Visualization.Density.Default.Style, radius: ctx.settings.get('density.defaultVisualBehaviourRadius') || 0, isoSigmaMin: -5, isoSigmaMax: 5, minRadius: 0, maxRadius: 10, showFull: false }); },
                         customController: function (ctx, t, e) { return new Bootstrap.Components.Transform.DensityVisual(ctx, t, e); },
                     }, function (ctx, a, t) {
                         var params = t.params;
-                        var b = new Bootstrap.Behaviour.Density.ShowElectronDensityAroundSelection(ctx, {
+                        var b = new Bootstrap.Behaviour.Density.ShowDynamicDensity(ctx, {
                             style: params.style,
-                            radius: params.radius
+                            radius: params.radius,
+                            showFull: params.showFull
                         });
                         var isSigma = params.style.params.isoValueType === void 0 || params.style.params.isoValueType === Bootstrap.Visualization.Density.IsoValueType.Sigma;
                         return Bootstrap.Task.resolve('Behaviour', 'Background', Entity.Density.InteractiveSurface.create(t, { label: (params.id ? t.params.id : 'Interactive') + ", " + Bootstrap.Utils.round(params.style.params.isoValue, 2) + (isSigma ? ' \u03C3' : ''), behaviour: b }));
@@ -69462,42 +69463,50 @@ var LiteMol;
             var Density;
             (function (Density) {
                 "use strict";
-                var ToastKey = 'ShowElectronDensityAroundSelection-toast';
-                var ShowElectronDensityAroundSelection = (function () {
-                    function ShowElectronDensityAroundSelection(context, params) {
+                var ToastKey = '__ShowDynamicDensity-toast';
+                var ShowDynamicDensity = (function () {
+                    function ShowDynamicDensity(context, params) {
                         this.context = context;
                         this.params = params;
                         this.obs = [];
                         this.ref = Bootstrap.Utils.generateUUID();
                         this.isBusy = false;
                     }
-                    ShowElectronDensityAroundSelection.prototype.remove = function () {
+                    ShowDynamicDensity.prototype.remove = function () {
                         var v = this.getVisual();
                         if (v) {
                             Bootstrap.Tree.remove(v);
                         }
                     };
-                    ShowElectronDensityAroundSelection.prototype.getVisual = function () {
+                    ShowDynamicDensity.prototype.getVisual = function () {
                         return this.context.select(this.ref)[0];
                     };
-                    ShowElectronDensityAroundSelection.prototype.update = function (info) {
-                        if (!Bootstrap.Interactivity.Molecule.isMoleculeModelInteractivity(info)) {
+                    ShowDynamicDensity.prototype.update = function (info) {
+                        if (!this.params.showFull && !Bootstrap.Interactivity.Molecule.isMoleculeModelInteractivity(info)) {
                             this.remove();
                             return;
                         }
                         Bootstrap.Command.Toast.Hide.dispatch(this.context, { key: ToastKey });
-                        var model = Bootstrap.Utils.Molecule.findModel(info.source);
-                        var elems = info.elements;
-                        var m = model.props.model;
-                        if (info.elements.length === 1) {
-                            elems = Bootstrap.Utils.Molecule.getResidueIndices(m, info.elements[0]);
-                        }
-                        var box = Bootstrap.Utils.Molecule.getBox(m, elems, this.params.radius);
                         var style = Bootstrap.Utils.shallowClone(this.params.style);
                         style.params = Bootstrap.Utils.shallowClone(style.params);
-                        style.params.bottomLeft = box.bottomLeft;
-                        style.params.topRight = box.topRight;
-                        style.computeOnBackground = true;
+                        if (this.params.showFull) {
+                            style.params.bottomLeft = void 0;
+                            style.params.topRight = void 0;
+                            style.computeOnBackground = false;
+                        }
+                        else {
+                            var i = info;
+                            var model = Bootstrap.Utils.Molecule.findModel(i.source);
+                            var elems = i.elements;
+                            var m = model.props.model;
+                            if (i.elements.length === 1) {
+                                elems = Bootstrap.Utils.Molecule.getResidueIndices(m, i.elements[0]);
+                            }
+                            var box = Bootstrap.Utils.Molecule.getBox(m, elems, this.params.radius);
+                            style.params.bottomLeft = box.bottomLeft;
+                            style.params.topRight = box.topRight;
+                            style.computeOnBackground = true;
+                        }
                         var task;
                         var visual = this.getVisual();
                         if (!visual) {
@@ -69510,7 +69519,7 @@ var LiteMol;
                         //this.isBusy = true;
                         task.run(this.context);
                     };
-                    ShowElectronDensityAroundSelection.prototype.dispose = function () {
+                    ShowDynamicDensity.prototype.dispose = function () {
                         this.remove();
                         Bootstrap.Command.Toast.Hide.dispatch(this.context, { key: ToastKey });
                         for (var _i = 0, _a = this.obs; _i < _a.length; _i++) {
@@ -69519,17 +69528,19 @@ var LiteMol;
                         }
                         this.obs = [];
                     };
-                    ShowElectronDensityAroundSelection.prototype.register = function (behaviour) {
+                    ShowDynamicDensity.prototype.register = function (behaviour) {
                         var _this = this;
                         this.behaviour = behaviour;
-                        Bootstrap.Command.Toast.Show.dispatch(this.context, { key: ToastKey, title: 'Density', message: 'Click on a residue or an atom to view the data.', timeoutMs: 30 * 1000 });
+                        if (!this.params.showFull) {
+                            Bootstrap.Command.Toast.Show.dispatch(this.context, { key: ToastKey, title: 'Density', message: 'Click on a residue or an atom to view the data.', timeoutMs: 30 * 1000 });
+                        }
                         this.obs.push(this.context.behaviours.select.subscribe(function (e) {
                             _this.update(e);
                         }));
                     };
-                    return ShowElectronDensityAroundSelection;
+                    return ShowDynamicDensity;
                 }());
-                Density.ShowElectronDensityAroundSelection = ShowElectronDensityAroundSelection;
+                Density.ShowDynamicDensity = ShowDynamicDensity;
             })(Density = Behaviour.Density || (Behaviour.Density = {}));
         })(Behaviour = Bootstrap.Behaviour || (Bootstrap.Behaviour = {}));
     })(Bootstrap = LiteMol.Bootstrap || (LiteMol.Bootstrap = {}));
@@ -75508,7 +75519,7 @@ var LiteMol;
 (function (LiteMol) {
     var Plugin;
     (function (Plugin) {
-        Plugin.VERSION = { number: "1.2.7", date: "Nov 28 2016" };
+        Plugin.VERSION = { number: "1.2.8", date: "Nov 30 2016" };
     })(Plugin = LiteMol.Plugin || (LiteMol.Plugin = {}));
 })(LiteMol || (LiteMol = {}));
 /*
@@ -76737,9 +76748,10 @@ var LiteMol;
                             var colorControls;
                             var uc = theme.colors.get('Uniform');
                             var uniform = Plugin.React.createElement(Plugin.Controls.ToggleColorPicker, { key: 'Uniform', label: 'Color', color: uc, onChange: function (c) { return _this.controller.updateThemeColor('Uniform', c); } });
-                            var controls = theme.colors
-                                .filter(function (c, n) { return n !== 'Uniform'; })
-                                .map(function (c, n) { return Plugin.React.createElement(Plugin.Controls.ToggleColorPicker, { key: n, label: n, color: c, onChange: function (c) { return _this.controller.updateThemeColor(n, c); } }); }).toArray();
+                            var controls = [];
+                            // theme.colors!
+                            //     .filter((c, n) => n !== 'Uniform')
+                            //     .map((c, n) => <Controls.ToggleColorPicker  key={n} label={n!} color={c!} onChange={c => this.controller.updateThemeColor(n!, c) } />).toArray();
                             controls.push(Plugin.React.createElement(Transform.TransparencyControl, { definition: theme.transparency, onChange: function (d) { return _this.controller.updateThemeTransparency(d); } }));
                             var visualParams = this.params.style.params;
                             controls.push(Plugin.React.createElement(Plugin.Controls.Slider, { label: 'Smoothing', onChange: function (v) { return _this.controller.updateStyleParams({ smoothing: v }); }, min: 0, max: 10, step: 1, value: visualParams.smoothing, title: 'Number of laplacian smoothing itrations.' }));
@@ -76796,13 +76808,22 @@ var LiteMol;
                             var showThemeOptions = this.getPersistentState('showThemeOptions', false);
                             return Plugin.React.createElement(Plugin.Controls.ExpandableGroup, { select: uniform, expander: Plugin.React.createElement(Plugin.Controls.ControlGroupExpander, { isExpanded: showThemeOptions, onChange: function (e) { return _this.setPersistentState('showThemeOptions', e); } }), options: controls, isExpanded: showThemeOptions });
                         };
+                        CreateVisualBehaviour.prototype.show = function () {
+                            var _this = this;
+                            var selLabel = 'Around Selection';
+                            var allLabel = 'Everything';
+                            return Plugin.React.createElement(Plugin.Controls.OptionsGroup, { options: [selLabel, allLabel], caption: function (s) { return s; }, current: this.params.showFull ? allLabel : selLabel, onChange: function (o) { return _this.autoUpdateParams({ showFull: o === allLabel }); }, label: 'Show' });
+                        };
                         CreateVisualBehaviour.prototype.renderControls = function () {
                             var _this = this;
                             var params = this.params;
                             return Plugin.React.createElement("div", null,
                                 this.surface(),
                                 this.colors(),
-                                Plugin.React.createElement(Plugin.Controls.Slider, { label: 'Radius', onChange: function (v) { return _this.controller.updateRadius(v); }, min: params.minRadius !== void 0 ? params.minRadius : 0, max: params.maxRadius !== void 0 ? params.maxRadius : 10, step: 0.005, value: params.radius }));
+                                this.show(),
+                                !params.showFull
+                                    ? Plugin.React.createElement(Plugin.Controls.Slider, { label: 'Radius', onChange: function (v) { return _this.controller.updateRadius(v); }, min: params.minRadius !== void 0 ? params.minRadius : 0, max: params.maxRadius !== void 0 ? params.maxRadius : 10, step: 0.005, value: params.radius })
+                                    : void 0);
                         };
                         return CreateVisualBehaviour;
                     }(Transform.ControllerBase));

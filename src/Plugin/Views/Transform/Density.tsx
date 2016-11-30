@@ -86,9 +86,10 @@ namespace LiteMol.Plugin.Views.Transform.Density {
             let uc = theme.colors!.get('Uniform');
             let uniform = <Controls.ToggleColorPicker key={'Uniform'} label='Color' color={uc} onChange={c => this.controller.updateThemeColor('Uniform', c) } />
             
-            let controls = theme.colors!
-                    .filter((c, n) => n !== 'Uniform')
-                    .map((c, n) => <Controls.ToggleColorPicker  key={n} label={n!} color={c!} onChange={c => this.controller.updateThemeColor(n!, c) } />).toArray();
+            let controls: JSX.Element[] = [];
+                // theme.colors!
+                //     .filter((c, n) => n !== 'Uniform')
+                //     .map((c, n) => <Controls.ToggleColorPicker  key={n} label={n!} color={c!} onChange={c => this.controller.updateThemeColor(n!, c) } />).toArray();
                     
             controls.push(<TransparencyControl definition={theme.transparency!} onChange={d => this.controller.updateThemeTransparency(d) } />);
             let visualParams = this.params.style!.params as Bootstrap.Visualization.Density.Params;              
@@ -163,15 +164,30 @@ namespace LiteMol.Plugin.Views.Transform.Density {
                     options={controls}
                     isExpanded={showThemeOptions} />;
         }
+
+        private show() {
+            const selLabel = 'Around Selection';
+            const allLabel = 'Everything';
+
+            return <Controls.OptionsGroup 
+                options={[selLabel, allLabel]} 
+                caption={s => s} 
+                current={this.params.showFull ? allLabel : selLabel }
+                onChange={(o) => this.autoUpdateParams({ showFull: o === allLabel }) } 
+                label='Show' />   
+        }
         
         protected renderControls() {            
             let params = this.params;
             
             return <div>
                 {this.surface()}
-                {this.colors()}                
-                 <Controls.Slider label='Radius' onChange={v => this.controller.updateRadius(v)} 
+                {this.colors()} 
+                {this.show()}
+                {!params.showFull 
+                    ? <Controls.Slider label='Radius' onChange={v => this.controller.updateRadius(v)} 
                     min={params.minRadius !== void 0 ? params.minRadius : 0} max={params.maxRadius !== void 0 ? params.maxRadius : 10} step={0.005} value={params.radius!} />
+                    : void 0 }
             </div>
         }        
     }

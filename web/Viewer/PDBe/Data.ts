@@ -76,6 +76,7 @@ namespace LiteMol.Viewer.PDBe.Data {
                 minRadius: 0,
                 maxRadius: 10,                
                 radius: 5,
+                showFull: false,
                 style: Visualization.Density.Style.create({
                     isoValue: -3,
                     isoValueType: Bootstrap.Visualization.Density.IsoValueType.Sigma,
@@ -93,6 +94,7 @@ namespace LiteMol.Viewer.PDBe.Data {
                 minRadius: 0,
                 maxRadius: 10,                    
                 radius: 5,
+                showFull: false,
                 style: Visualization.Density.Style.create({
                     isoValue: 3,
                     isoValueType: Bootstrap.Visualization.Density.IsoValueType.Sigma,
@@ -112,6 +114,7 @@ namespace LiteMol.Viewer.PDBe.Data {
                 minRadius: 0,
                 maxRadius: 10,
                 radius: 5,
+                showFull: false,
                 style: Visualization.Density.Style.create({
                     isoValue: 1.5,
                     isoValueType: Bootstrap.Visualization.Density.IsoValueType.Sigma,

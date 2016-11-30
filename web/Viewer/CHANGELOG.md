@@ -1,3 +1,6 @@
+# 1.1.13
+* It is now possible to select 'Show: Everything' in the dynamic denisty surface behaviour.
+
 # 1.1.12
 * Help for viewport.
 * Touch slabbing.
