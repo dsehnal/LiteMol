@@ -19,11 +19,11 @@ To start using LiteMol, you need to:
     git clone https://github.com/dsehnal/LiteMol
     ```
 
-    or download the [latest distribution as a tarball](https://raw.githubusercontent.com/dsehnal/LiteMol/master/dist/LiteMol.tar.gz).
+    or [download it as ZIP](https://github.com/dsehnal/LiteMol/archive/master.zip).
 
 * From the ``dist`` directory, get
-  - ``dist/LiteMol-plugin.js`` (alternatively, you can [minify the code](#minifying-the-source-code-and-css) using your tool of choice or using the LiteMol build system)
-  - ``dist/css/LiteMol-plugin.css`` (here you can choose a color theme of your choosing or [create your own](#creating-custom-color-theme))
+  - ``dist/LiteMol-plugin.js`` (or ``dist/LiteMol-plugin.min.js`` for production)
+  - ``dist/css/LiteMol-plugin.css`` (or ``dist/css/LiteMol-plugin.min.css``; here you can choose a color theme of your choosing or [create your own](#creating-custom-color-theme))
   - ``dist/fonts/*`` (this contains the icons used by LiteMol)
 
   The ``css`` and ``fonts`` folders must retain the their structure, i.e. keep the css file in ``css`` folder and the font files in the ``fonts`` folder at the same level.

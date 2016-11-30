@@ -229,7 +229,7 @@ What are the simplest steps to load a molecule in LiteMol?
     git clone https://github.com/dsehnal/LiteMol.git
     ```
 
-    or download the [latest distribution as a tarball](https://raw.githubusercontent.com/dsehnal/LiteMol/master/dist/LiteMol.tar.gz).
+    or [download it as ZIP](https://github.com/dsehnal/LiteMol/archive/master.zip). No building is required, only the `dist` folder in the archive is needed.
 
 - From ``dist`` folder, copy the folders ``css``, ``fonts``, and
 the file ``LiteMol-plugin.js`` (or ``LiteMol-plugin.min.js`` for production).
