@@ -9,7 +9,7 @@ namespace LiteMol.Viewer.ValidatorDB {
     export interface ReportProps extends Entity.Behaviour.Props<Interactivity.Behaviour> {}
     export interface Report extends Entity<Report, ReportType, ReportProps> { }         
     export interface ReportType extends Entity.Type<ReportType, Report, ReportProps> { }   
-    export const Report = Entity.create<Report, ReportType, ReportProps>({ name: 'ValidatorDB Validation Report', typeClass: 'Behaviour', shortName: 'VR', description: 'Represents ValidatorDB validation report.' });
+    export const Report = Entity.create<Report, ReportType, ReportProps>({ name: 'Ligand Validation Report', typeClass: 'Behaviour', shortName: 'VR', description: 'Represents ValidatorDB ligand validation report.' });
     
     namespace Api {     
 
@@ -113,14 +113,14 @@ namespace LiteMol.Viewer.ValidatorDB {
                     let badChirality = residue ? residue.chiralityMismatches.has(a.id) : false;
                     if (!residue) return void 0;
 
-                    return `<div><small>[ValidatorDB]</small> Atom: <b>${badChirality ? 'Bad Chirality' : 'OK'}</b>, Residue: <b>${residue.flags.join(', ')}</b></div>`;
+                    return `<div><small>[Validation]</small> Atom: <b>${badChirality ? 'Bad Chirality' : 'OK'}</b>, Residue: <b>${residue.flags.join(', ')}</b></div>`;
                 } else {
                     let res = i.residues[0];
                     let chain = r.get(res.chain.authAsymId);
                     let residue = chain ? chain.get(res.authSeqNumber) : void 0;
                     if (!residue) return void 0;
 
-                    return `<div><small>[ValidatorDB]</small> Residue: <b>${residue.flags.join(', ')}</b></div>`;
+                    return `<div><small>[Validation]</small> Residue: <b>${residue.flags.join(', ')}</b></div>`;
                 }
             }
             
@@ -218,7 +218,7 @@ namespace LiteMol.Viewer.ValidatorDB {
     
     const Create = Bootstrap.Tree.Transformer.create<Entity.Data.String, Report, { id?: string }>({
             id: 'validatordb-create',
-            name: 'ValidatorDB Validation',
+            name: 'Ligand Validation',
             description: 'Create the validation report from a string.',
             from: [Entity.Data.String],
             to: [Report],
@@ -229,7 +229,7 @@ namespace LiteMol.Viewer.ValidatorDB {
                 ctx.schedule(() => {
                     let data = JSON.parse(a.props.data);
                     let report = Api.createReport(data || {});                    
-                    ctx.resolve(Report.create(t, { label: 'ValidatorDB Report', behaviour: new Interactivity.Behaviour(context, report) }))
+                    ctx.resolve(Report.create(t, { label: 'Ligand Validation Report', behaviour: new Interactivity.Behaviour(context, report) }))
                 });
             }).setReportTime(true);
         }       
@@ -237,7 +237,7 @@ namespace LiteMol.Viewer.ValidatorDB {
         
     export const DownloadAndCreate = Bootstrap.Tree.Transformer.action<Entity.Molecule.Molecule, Entity.Action, { }>({
         id: 'validatordb-download-and-create',
-        name: 'ValidatorDB Validation Report',
+        name: 'Ligand Validation Report',
         description: 'Download Validation Report from ValidatorDB',
         from: [Entity.Molecule.Molecule],
         to: [Entity.Action],
@@ -249,7 +249,7 @@ namespace LiteMol.Viewer.ValidatorDB {
             .then(Create, { id }, { isBinding: true });
 
         return action;
-    }, "Validation report loaded. Hovering over residue will now contain validation info. To apply validation coloring, select the 'ValidatorDB Report' entity in the tree and apply it the right panel. " +
+    }, "Validation report loaded. Hovering over residue will now contain validation info. To apply validation coloring, select the 'Ligand Validation Report' entity in the tree and apply it the right panel. " +
         "Only missing atoms/rings and chirality issues are shown, for more details please visit https://webchem.ncbr.muni.cz/Platform/ValidatorDb/Index.");
     
     export const ApplyTheme = Bootstrap.Tree.Transformer.create<Report, Entity.Action, { }>({
