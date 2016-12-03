@@ -134,22 +134,101 @@ namespace LiteMol.Bootstrap.Tree {
             }, transform);
         }
         
+
+        export interface ActionWithContext<T> {
+            action: Transform.Source, 
+            context: T
+        }
+
+        function rejectAction<T>(
+            actionContext: T,
+            error: any, 
+            context: Context, 
+            task: Task.Context<Entity.Action>,
+            onError?: string | ((ctx: Context, actionCtx: T | undefined, error: any) => void)) {
+            try {
+                task.reject(error);
+            } finally {
+                if (onError) {
+                    if (typeof onError === 'string') {
+                        context.logger.error(onError);
+                    } else {
+                        setTimeout(() => onError.call(null, context, actionContext, error), 0);
+                    }                                    
+                }
+            }
+        }
+
+        function resolveAction<T>(
+            src: ActionWithContext<T>, 
+            context: Context, task: Task.Context<Entity.Action>,
+            onDone?: string | ((ctx: Context, actionCtx: T | undefined) => void), 
+            onError?: string | ((ctx: Context, actionCtx: T | undefined, error: any) => void)) {
+
+            Tree.Transform.apply(context, src.action)
+                .run(context)
+                .then(r => {
+                    try {
+                        task.resolve(Tree.Node.Null)
+                    } finally {
+                        if (onDone) {
+                            if (typeof onDone === 'string') {
+                                context.logger.message(onDone);
+                            } else {
+                                setTimeout(() => onDone.call(null, context, src.context), 0);
+                            }
+                        }
+                    }
+                })
+                .catch(e => {
+                    try {
+                        task.reject(e);
+                    } finally {
+                        if (onError) {
+                            if (typeof onError === 'string') {
+                                context.logger.error(onError);
+                            } else {
+                                setTimeout(() => onError.call(null, context, src.context, e), 0);
+                            }                                    
+                        }
+                    }
+                });
+        }
+
         export function action<A extends Node, B extends Node, P>(
             info: Info<A, B, P>, 
-            builder: (ctx: Context, a: A, t: Transform<A, B, P>) => Transform.Source,
-            doneMessage?: string): Transformer<A, B, P> {
+            builder: (ctx: Context, a: A, t: Transform<A, B, P>) => Transform.Source | Promise<Transform.Source>,
+            onDone?: string, onError?: string): Transformer<A, B, P> {
             return create(info, (context, a, t) => {
                 return Task.create<Entity.Action>(info.name, 'Background', ctx => {
                     let src = builder(context, a, t);
-                    Tree.Transform.apply(context, src)
-                        .run(context)
-                        .then(r => {
-                            if (doneMessage) {
-                                context.logger.message(doneMessage);
-                            }
-                            ctx.resolve(Tree.Node.Null)
-                        })
-                        .catch(ctx.reject);                       
+                    if (Task.isPromise(src)) {
+                        src
+                            .then(s => resolveAction<undefined>({ action: s, context: void 0 }, context, ctx, onDone, onError))
+                            .catch(e => rejectAction<undefined>(void 0, e, context, ctx, onError));
+                    } else {
+                        resolveAction<undefined>({ action: src, context: void 0 }, context, ctx, onDone, onError)
+                    }
+                });
+            }) 
+        }
+
+
+        export function actionWithContext<A extends Node, B extends Node, P, T>(
+            info: Info<A, B, P>, 
+            builder: (ctx: Context, a: A, t: Transform<A, B, P>) => ActionWithContext<T> | Promise<ActionWithContext<T>>,
+            onDone?: (ctx: Context, actionCtx: T | undefined) => void, 
+            onError?: (ctx: Context, actionCtx: T | undefined, error: any) => void): Transformer<A, B, P> {
+            return create(info, (context, a, t) => {
+                return Task.create<Entity.Action>(info.name, 'Background', ctx => {
+                    let src = builder(context, a, t);
+                    if (Task.isPromise(src)) {
+                        src
+                            .then(s => resolveAction<T>(s, context, ctx, onDone, onError))
+                            .catch(e => rejectAction<undefined>(void 0, e, context, ctx, onError));
+                    } else {
+                        resolveAction<T>(src, context, ctx, onDone, onError)
+                    }                       
                 });
             }) 
         }

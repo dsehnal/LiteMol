@@ -175,6 +175,10 @@ namespace LiteMol.Bootstrap {
                 next(0); 
             });
         }
+
+        export function isPromise(t: any): t is Promise<any> {
+            return t.then && t.catch;
+        } 
         
         export class Context<A> {            
             

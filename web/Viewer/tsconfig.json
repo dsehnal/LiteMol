@@ -20,6 +20,7 @@
     "./App/DataSources.ts",
     "./App/ValidatorDB.ts",
     "./PDBe/Data.ts",
+    "./PDBe/Density.ts",
     "./PDBe/Validation.ts",
     "./PDBe/SequenceAnnotation.ts",
     "./PDBe/Views.tsx",

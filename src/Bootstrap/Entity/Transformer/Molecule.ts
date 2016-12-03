@@ -18,7 +18,7 @@ namespace LiteMol.Bootstrap.Entity.Transformer.Molecule {
         }, (context, a, t) => {
             let format = params.specificFormat ? params.specificFormat : t.params.format!;
             return Tree.Transform.build()
-                .add(a, Data.Download, { url: params.urlTemplate(t.params.id!.trim()), type: format.isBinary ? 'Binary' : 'String', id: t.params.id, description: params.name })
+                .add(a, Data.Download, { url: params.urlTemplate(t.params.id!.trim()), type: format.isBinary ? 'Binary' : 'String', id: t.params.id, description: params.name, title: 'Molecule' })
                 .then(CreateFromData, { format: params.specificFormat ? params.specificFormat : t.params.format }, { isBinding: true })
                 .then(Molecule.CreateModel, { modelIndex: 0 }, { isBinding: false })
         })

@@ -19,6 +19,18 @@ namespace LiteMol.Bootstrap.Entity.Transformer.Basic {
     }, (ctx, a, t) => {        
         return Task.resolve('Root', 'Silent', a);
     }); 
+
+    export const Fail = Transformer.create<Entity.Any, Entity.Root, { title: string, message: string }>({
+        id: 'fail',
+        name: 'Fail',
+        description: 'A transform that always fails.',
+        from: [],
+        to: [],
+        validateParams: () => void 0,  
+        defaultParams: () => ({ title: 'Error', message: 'Unknown error.' })
+    }, (ctx, a, t) => {        
+        return Task.reject(t.params.title, 'Background', t.params.message);
+    }); 
     
     export interface CreateGroupParams { label?: string, description?: string, isCollapsed?: boolean }        
     export const CreateGroup = Transformer.create<Entity.Any, Entity.Root, CreateGroupParams>({

@@ -72,6 +72,21 @@ namespace LiteMol.Plugin {
         }
 
         /**
+         * Queries the entity state tree to select a list of entities 
+         * satisfying the selector.
+         * 
+         * Equivalent to plugin.context.select(selector).
+         * 
+         * @example
+         *   selectEntities('model') // select node with ref = 'model'
+         *   selectEntities(entity).subtree()
+         *   selectEntities(Bootstrap.Tree.Selection.byRef('ref').ancestorOfType(Bootstrap.Entity.Molecule.Model))
+         */
+        selectEntities(selector: Bootstrap.Tree.Selector<Bootstrap.Entity.Any>) {
+            return this.context.select(selector);
+        }
+
+        /**
          * Subscribes the specified event and returns
          * a disposable for the event.
          * 
@@ -155,7 +170,7 @@ namespace LiteMol.Plugin {
 
             let data = source.data 
                 ? action.add(this.root, Entity.Transformer.Data.FromData, { data: source.data, id: source.id })
-                : action.add(this.root, Transformer.Data.Download, { url: source.url, type: format.isBinary ? 'Binary' : 'String', id: source.id });
+                : action.add(this.root, Transformer.Data.Download, { url: source.url, type: format.isBinary ? 'Binary' : 'String', id: source.id, title: 'Molecule' });
             
             data
                 .then(Transformer.Molecule.CreateFromData, { format, customId: source.id }, { isBinding: true, ref: source.moleculeRef })

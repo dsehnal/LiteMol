@@ -1,3 +1,6 @@
+# 1.1.14
+* Support for PDBe EMDB density data.
+
 # 1.1.13
 * It is now possible to select 'Show: Everything' in the dynamic denisty surface behaviour.
 * Fixed/improved support for CA/P-only models.

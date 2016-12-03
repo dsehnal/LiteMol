@@ -245,7 +245,7 @@ namespace LiteMol.Viewer.ValidatorDB {
     }, (context, a, t) => {        
         let id = a.props.molecule.id.trim().toLocaleLowerCase();                    
         let action = Bootstrap.Tree.Transform.build()
-            .add(a, Transformer.Data.Download, { url: `https://webchem.ncbr.muni.cz/Platform/ValidatorDb/Data/${id}?source=ByStructure`, type: 'String', id, description: 'Validation Data' })
+            .add(a, Transformer.Data.Download, { url: `https://webchem.ncbr.muni.cz/Platform/ValidatorDb/Data/${id}?source=ByStructure`, type: 'String', id, description: 'Validation Data', title: 'Validation' })
             .then(Create, { id }, { isBinding: true });
 
         return action;

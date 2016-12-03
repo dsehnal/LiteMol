@@ -13,6 +13,7 @@ namespace LiteMol.Bootstrap.Utils {
     export interface AjaxGetParams {
         url: string,
         type: Entity.Data.Type,
+        title?: string,
         compression?: DataCompressionMethod
     }
 
@@ -28,16 +29,16 @@ namespace LiteMol.Bootstrap.Utils {
         return <Task<ArrayBuffer | string>>readFromFileInternal(file, type === 'Binary');
     }
         
-    export function ajaxGetString(url: string) {
-        return <Task<string>>ajaxGetInternal(url, false, false);
+    export function ajaxGetString(url: string, title?: string) {
+        return <Task<string>>ajaxGetInternal(title, url, false, false);
     }
 
-    export function ajaxGetArrayBuffer(url: string) {
-        return <Task<ArrayBuffer>>ajaxGetInternal(url, true, false);
+    export function ajaxGetArrayBuffer(url: string, title?: string) {
+        return <Task<ArrayBuffer>>ajaxGetInternal(title, url, true, false);
     }
     
     export function ajaxGet(params: AjaxGetParams) {
-        return <Task<string | ArrayBuffer>>ajaxGetInternal(params.url, params.type === 'Binary', params.compression === DataCompressionMethod.Gzip);
+        return <Task<string | ArrayBuffer>>ajaxGetInternal(params.title, params.url, params.type === 'Binary', params.compression === DataCompressionMethod.Gzip);
     }
 
     const __chars = function () {
@@ -179,9 +180,9 @@ namespace LiteMol.Bootstrap.Utils {
         }
     }
     
-    function ajaxGetInternal(url: string, asArrayBuffer: boolean, decompressGzip: boolean): Task<string | ArrayBuffer>  {
+    function ajaxGetInternal(title:string|undefined, url: string, asArrayBuffer: boolean, decompressGzip: boolean): Task<string | ArrayBuffer>  {
         
-        return Task.fromComputation('Download', 'Background', Core.Computation.create(ctx => {
+        return Task.fromComputation(title ? title : 'Download', 'Background', Core.Computation.create(ctx => {
             if (!asArrayBuffer && decompressGzip) {
                 ctx.reject('Decompress is only available when downloading binary data.');
                 return;

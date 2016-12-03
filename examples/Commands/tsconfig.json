@@ -18,6 +18,7 @@
     
     "../../src/Viewer/App/DataSources.ts",
     "../../src/Viewer/PDBe/Data.ts",
+    "../../src/Viewer/PDBe/Density.ts",
     "../../src/Viewer/PDBe/Validation.ts",
         
     "./src/CustomTransformView.tsx",    

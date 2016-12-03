@@ -3176,6 +3176,18 @@ declare namespace LiteMol.Plugin {
          */
         command<T>(cmd: Bootstrap.Event.Type<T>, params?: T): void;
         /**
+         * Queries the entity state tree to select a list of entities
+         * satisfying the selector.
+         *
+         * Equivalent to plugin.context.select(selector).
+         *
+         * @example
+         *   selectEntities('model') // select node with ref = 'model'
+         *   selectEntities(entity).subtree()
+         *   selectEntities(Bootstrap.Tree.Selection.byRef('ref').ancestorOfType(Bootstrap.Entity.Molecule.Model))
+         */
+        selectEntities(selector: Bootstrap.Tree.Selector<Bootstrap.Entity.Any>): Entity.Any[];
+        /**
          * Subscribes the specified event and returns
          * a disposable for the event.
          *
@@ -15397,13 +15409,14 @@ declare namespace LiteMol.Bootstrap.Utils {
     interface AjaxGetParams {
         url: string;
         type: Entity.Data.Type;
+        title?: string;
         compression?: DataCompressionMethod;
     }
     function readStringFromFile(file: File): Task<string>;
     function readArrayBufferFromFile(file: File): Task<ArrayBuffer>;
     function readFromFile(file: File, type: Entity.Data.Type): Task<string | ArrayBuffer>;
-    function ajaxGetString(url: string): Task<string>;
-    function ajaxGetArrayBuffer(url: string): Task<ArrayBuffer>;
+    function ajaxGetString(url: string, title?: string): Task<string>;
+    function ajaxGetArrayBuffer(url: string, title?: string): Task<ArrayBuffer>;
     function ajaxGet(params: AjaxGetParams): Task<string | ArrayBuffer>;
 }
 declare namespace LiteMol.Bootstrap.Utils.Query {
@@ -15548,6 +15561,7 @@ declare namespace LiteMol.Bootstrap {
             stateUpdate: () => void;
             action: () => void;
         }[]): Promise<void>;
+        function isPromise(t: any): t is Promise<any>;
         class Context<A> {
             context: Bootstrap.Context;
             task: Task<A>;
@@ -15781,8 +15795,8 @@ declare namespace LiteMol.Bootstrap.Tree {
             }
         }
         function root<T extends Node.Any>(): Helpers.Builder<T>;
-        function byRef<T extends Node.Any>(ref: string): Helpers.Builder<T>;
-        function byValue<T extends Node.Any>(e: Node.Any): Helpers.Builder<Node.Any>;
+        function byRef<T extends Node.Any>(...refs: string[]): Helpers.Builder<T>;
+        function byValue<T extends Node.Any>(...entities: Node.Any[]): Helpers.Builder<Node.Any>;
         function flatMap<T extends Node.Any>(b: Selector<T>, f: (n: T) => NodeSeq<T>): Helpers.Builder<T>;
         function mapEntity<T extends Node.Any>(b: Selector<T>, f: (n: T) => T): Helpers.Builder<T>;
         function unique<T extends Node.Any>(b: Selector<T>): Helpers.Builder<T>;
@@ -15820,7 +15834,12 @@ declare namespace LiteMol.Bootstrap.Tree {
         }
         function create<A extends Node, B extends Node, P>(info: Info<A, B, P>, transform: (ctx: Context, a: A, t: Transform<A, B, P>) => Task<B>, updater?: (ctx: Context, b: B, t: Transform<A, B, P>) => Task<B> | undefined): Transformer<A, B, P>;
         function internal<A extends Node, B extends Node, P>(id: string, from: Tree.Node.TypeOf<A>[], to: Tree.Node.TypeOf<B>[], transform: (ctx: Context, a: A, t: Transform<A, B, P>) => Task<B>): Transformer<Entity.Root, Entity.Root, {}>;
-        function action<A extends Node, B extends Node, P>(info: Info<A, B, P>, builder: (ctx: Context, a: A, t: Transform<A, B, P>) => Transform.Source, doneMessage?: string): Transformer<A, B, P>;
+        interface ActionWithContext<T> {
+            action: Transform.Source;
+            context: T;
+        }
+        function action<A extends Node, B extends Node, P>(info: Info<A, B, P>, builder: (ctx: Context, a: A, t: Transform<A, B, P>) => Transform.Source | Promise<Transform.Source>, onDone?: string, onError?: string): Transformer<A, B, P>;
+        function actionWithContext<A extends Node, B extends Node, P, T>(info: Info<A, B, P>, builder: (ctx: Context, a: A, t: Transform<A, B, P>) => ActionWithContext<T> | Promise<ActionWithContext<T>>, onDone?: (ctx: Context, actionCtx: T | undefined) => void, onError?: (ctx: Context, actionCtx: T | undefined, error: any) => void): Transformer<A, B, P>;
     }
 }
 declare namespace LiteMol.Bootstrap.Tree {
@@ -16350,6 +16369,10 @@ declare namespace LiteMol.Bootstrap.Entity {
 declare namespace LiteMol.Bootstrap.Entity.Transformer.Basic {
     import Transformer = Tree.Transformer;
     const Root: Transformer<Root, Root, {}>;
+    const Fail: Transformer<Any, Root, {
+        title: string;
+        message: string;
+    }>;
     interface CreateGroupParams {
         label?: string;
         description?: string;
@@ -16451,6 +16474,7 @@ declare namespace LiteMol.Bootstrap.Entity.Transformer.Data {
         description?: string;
         type?: string;
         url?: string;
+        title?: string;
         responseCompression?: Utils.DataCompressionMethod;
     }
     const Download: Tree.Transformer<Root, Entity.Data.String | Entity.Data.Binary, DownloadParams>;

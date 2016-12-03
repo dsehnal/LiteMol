@@ -35,4 +35,34 @@ namespace LiteMol.Viewer.PDBe.Views {
             </div>
         }        
     }
+
+    export class DownloadDensityView extends LiteMol.Plugin.Views.Transform.ControllerBase<
+        Bootstrap.Components.Transform.Controller<Data.DownloadDensityParams>,  
+        Data.DownloadDensityParams> {
+
+        private getId() {
+            let id = this.params.id;
+            if (!id) return '';
+            if (typeof id === 'string') return id;
+            return (id as any)[this.params.sourceId!];
+        }
+
+        private updateId(newId: string) {
+            let params = this.params;
+            let id = params.id;
+            if (!id || typeof id === 'string') id = { [params.sourceId!]: newId };
+            else id = Bootstrap.Utils.merge(id, { [params.sourceId!]: newId });
+            this.updateParams({ id }); 
+        }
+        
+        protected renderControls() {            
+            let params = this.params;                                   
+            return <div>
+                <Controls.OptionsGroup 
+                    options={Data.DensitySources} caption={s => (Data.DensitySourceLabels as any)[s]} 
+                    current={params.sourceId} onChange={(o) => this.updateParams({ sourceId: o }) } label='Source' title='Determines where to obtain the data.' />
+                <Controls.TextBoxGroup value={this.getId()} onChange={(v) => this.updateId(v)} label='Id' onEnter={e => this.applyEnter(e) } placeholder='Enter id...' />
+            </div>
+        }        
+    }
 }

@@ -1,4 +1,11 @@
-﻿# 1.2.5
+﻿# 1.2.6
+* Updated Transformer.action to provide option "onError" message and support actions returned as a promise.
+* Updated Tree.Selection.byRef/byValue to accept multiple arguments. 
+* Added Transform.actionWithContext.
+* Added Entity.Transformer.Basic.Fail.
+* Support for title in Data.Download transform.
+
+# 1.2.5
 * Density behavior updates.
 
 # 1.2.4

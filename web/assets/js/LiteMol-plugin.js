@@ -54819,7 +54819,7 @@ var LiteMol;
 (function (LiteMol) {
     var Visualization;
     (function (Visualization) {
-        Visualization.VERSION = { number: "1.5.1", date: "Nov 28 2016" };
+        Visualization.VERSION = { number: "1.5.2", date: "Nov 30 2016" };
     })(Visualization = LiteMol.Visualization || (LiteMol.Visualization = {}));
 })(LiteMol || (LiteMol = {}));
 var LiteMol;
@@ -65021,7 +65021,7 @@ var LiteMol;
 (function (LiteMol) {
     var Bootstrap;
     (function (Bootstrap) {
-        Bootstrap.VERSION = { number: "1.2.5", date: "Nov 30 2016" };
+        Bootstrap.VERSION = { number: "1.2.6", date: "Dec 3 2016" };
     })(Bootstrap = LiteMol.Bootstrap || (LiteMol.Bootstrap = {}));
 })(LiteMol || (LiteMol = {}));
 /*
@@ -65065,16 +65065,16 @@ var LiteMol;
                 return readFromFileInternal(file, type === 'Binary');
             }
             Utils.readFromFile = readFromFile;
-            function ajaxGetString(url) {
-                return ajaxGetInternal(url, false, false);
+            function ajaxGetString(url, title) {
+                return ajaxGetInternal(title, url, false, false);
             }
             Utils.ajaxGetString = ajaxGetString;
-            function ajaxGetArrayBuffer(url) {
-                return ajaxGetInternal(url, true, false);
+            function ajaxGetArrayBuffer(url, title) {
+                return ajaxGetInternal(title, url, true, false);
             }
             Utils.ajaxGetArrayBuffer = ajaxGetArrayBuffer;
             function ajaxGet(params) {
-                return ajaxGetInternal(params.url, params.type === 'Binary', params.compression === DataCompressionMethod.Gzip);
+                return ajaxGetInternal(params.title, params.url, params.type === 'Binary', params.compression === DataCompressionMethod.Gzip);
             }
             Utils.ajaxGet = ajaxGet;
             var __chars = function () {
@@ -65208,8 +65208,8 @@ var LiteMol;
                     ctx.reject(status_1);
                 }
             }
-            function ajaxGetInternal(url, asArrayBuffer, decompressGzip) {
-                return Bootstrap.Task.fromComputation('Download', 'Background', LiteMol.Core.Computation.create(function (ctx) {
+            function ajaxGetInternal(title, url, asArrayBuffer, decompressGzip) {
+                return Bootstrap.Task.fromComputation(title ? title : 'Download', 'Background', LiteMol.Core.Computation.create(function (ctx) {
                     if (!asArrayBuffer && decompressGzip) {
                         ctx.reject('Decompress is only available when downloading binary data.');
                         return;
@@ -65958,6 +65958,10 @@ var LiteMol;
                 });
             }
             Task.split = split;
+            function isPromise(t) {
+                return t.then && t.catch;
+            }
+            Task.isPromise = isPromise;
             var Context = (function () {
                 function Context(context, task, _resolve, _reject) {
                     this.context = context;
@@ -66561,9 +66565,34 @@ var LiteMol;
                 function emptyIfUndefined(e) { return e ? e : []; }
                 function root() { return build(function () { return function (tree) { return [tree.root]; }; }); }
                 Selection.root = root;
-                function byRef(ref) { return build(function () { return function (tree) { return emptyIfUndefined(tree.refs.get(ref)); }; }); }
+                function byRef() {
+                    var refs = [];
+                    for (var _i = 0; _i < arguments.length; _i++) {
+                        refs[_i - 0] = arguments[_i];
+                    }
+                    return build(function () { return function (tree) {
+                        var ret = [];
+                        for (var _i = 0, refs_1 = refs; _i < refs_1.length; _i++) {
+                            var ref = refs_1[_i];
+                            var xs = tree.refs.get(ref);
+                            if (!xs)
+                                continue;
+                            for (var _a = 0, xs_1 = xs; _a < xs_1.length; _a++) {
+                                var x = xs_1[_a];
+                                ret.push(x);
+                            }
+                        }
+                        return ret;
+                    }; });
+                }
                 Selection.byRef = byRef;
-                function byValue(e) { return build(function () { return function (tree) { return [e]; }; }); }
+                function byValue() {
+                    var entities = [];
+                    for (var _i = 0; _i < arguments.length; _i++) {
+                        entities[_i - 0] = arguments[_i];
+                    }
+                    return build(function () { return function (tree) { return entities; }; });
+                }
                 Selection.byValue = byValue;
                 Helpers.registerModifier('flatMap', flatMap);
                 function flatMap(b, f) {
@@ -66737,23 +66766,87 @@ var LiteMol;
                     }, transform);
                 }
                 Transformer.internal = internal;
-                function action(info, builder, doneMessage) {
+                function rejectAction(actionContext, error, context, task, onError) {
+                    try {
+                        task.reject(error);
+                    }
+                    finally {
+                        if (onError) {
+                            if (typeof onError === 'string') {
+                                context.logger.error(onError);
+                            }
+                            else {
+                                setTimeout(function () { return onError.call(null, context, actionContext, error); }, 0);
+                            }
+                        }
+                    }
+                }
+                function resolveAction(src, context, task, onDone, onError) {
+                    Tree.Transform.apply(context, src.action)
+                        .run(context)
+                        .then(function (r) {
+                        try {
+                            task.resolve(Tree.Node.Null);
+                        }
+                        finally {
+                            if (onDone) {
+                                if (typeof onDone === 'string') {
+                                    context.logger.message(onDone);
+                                }
+                                else {
+                                    setTimeout(function () { return onDone.call(null, context, src.context); }, 0);
+                                }
+                            }
+                        }
+                    })
+                        .catch(function (e) {
+                        try {
+                            task.reject(e);
+                        }
+                        finally {
+                            if (onError) {
+                                if (typeof onError === 'string') {
+                                    context.logger.error(onError);
+                                }
+                                else {
+                                    setTimeout(function () { return onError.call(null, context, src.context, e); }, 0);
+                                }
+                            }
+                        }
+                    });
+                }
+                function action(info, builder, onDone, onError) {
                     return create(info, function (context, a, t) {
                         return Bootstrap.Task.create(info.name, 'Background', function (ctx) {
                             var src = builder(context, a, t);
-                            Tree.Transform.apply(context, src)
-                                .run(context)
-                                .then(function (r) {
-                                if (doneMessage) {
-                                    context.logger.message(doneMessage);
-                                }
-                                ctx.resolve(Tree.Node.Null);
-                            })
-                                .catch(ctx.reject);
+                            if (Bootstrap.Task.isPromise(src)) {
+                                src
+                                    .then(function (s) { return resolveAction({ action: s, context: void 0 }, context, ctx, onDone, onError); })
+                                    .catch(function (e) { return rejectAction(void 0, e, context, ctx, onError); });
+                            }
+                            else {
+                                resolveAction({ action: src, context: void 0 }, context, ctx, onDone, onError);
+                            }
                         });
                     });
                 }
                 Transformer.action = action;
+                function actionWithContext(info, builder, onDone, onError) {
+                    return create(info, function (context, a, t) {
+                        return Bootstrap.Task.create(info.name, 'Background', function (ctx) {
+                            var src = builder(context, a, t);
+                            if (Bootstrap.Task.isPromise(src)) {
+                                src
+                                    .then(function (s) { return resolveAction(s, context, ctx, onDone, onError); })
+                                    .catch(function (e) { return rejectAction(void 0, e, context, ctx, onError); });
+                            }
+                            else {
+                                resolveAction(src, context, ctx, onDone, onError);
+                            }
+                        });
+                    });
+                }
+                Transformer.actionWithContext = actionWithContext;
             })(Transformer = Tree.Transformer || (Tree.Transformer = {}));
         })(Tree = Bootstrap.Tree || (Bootstrap.Tree = {}));
     })(Bootstrap = LiteMol.Bootstrap || (LiteMol.Bootstrap = {}));
@@ -68306,6 +68399,17 @@ var LiteMol;
                     }, function (ctx, a, t) {
                         return Bootstrap.Task.resolve('Root', 'Silent', a);
                     });
+                    Basic.Fail = Transformer.create({
+                        id: 'fail',
+                        name: 'Fail',
+                        description: 'A transform that always fails.',
+                        from: [],
+                        to: [],
+                        validateParams: function () { return void 0; },
+                        defaultParams: function () { return ({ title: 'Error', message: 'Unknown error.' }); }
+                    }, function (ctx, a, t) {
+                        return Bootstrap.Task.reject(t.params.title, 'Background', t.params.message);
+                    });
                     Basic.CreateGroup = Transformer.create({
                         id: 'create-group',
                         name: 'Create Group',
@@ -68377,7 +68481,7 @@ var LiteMol;
                         }, function (context, a, t) {
                             var format = params.specificFormat ? params.specificFormat : t.params.format;
                             return Bootstrap.Tree.Transform.build()
-                                .add(a, Transformer.Data.Download, { url: params.urlTemplate(t.params.id.trim()), type: format.isBinary ? 'Binary' : 'String', id: t.params.id, description: params.name })
+                                .add(a, Transformer.Data.Download, { url: params.urlTemplate(t.params.id.trim()), type: format.isBinary ? 'Binary' : 'String', id: t.params.id, description: params.name, title: 'Molecule' })
                                 .then(Molecule.CreateFromData, { format: params.specificFormat ? params.specificFormat : t.params.format }, { isBinding: true })
                                 .then(Molecule.CreateModel, { modelIndex: 0 }, { isBinding: false });
                         });
@@ -68730,7 +68834,7 @@ var LiteMol;
                         defaultParams: function () { return ({ id: '', description: '', type: 'String', url: '', responseCompression: Bootstrap.Utils.DataCompressionMethod.None }); }
                     }, function (ctx, a, t) {
                         var params = t.params;
-                        return Bootstrap.Utils.ajaxGet({ url: params.url, type: getDataType(params.type), compression: params.responseCompression }).setReportTime(true)
+                        return Bootstrap.Utils.ajaxGet({ url: params.url, type: getDataType(params.type), compression: params.responseCompression, title: params.title }).setReportTime(true)
                             .map('ToEntity', 'Child', function (data) {
                             if (params.type === 'String')
                                 return Entity.Data.String.create(t, { label: params.id ? params.id : params.url, description: params.description, data: data });
@@ -77907,6 +78011,20 @@ var LiteMol;
                 cmd.dispatch(this.context, params);
             };
             /**
+             * Queries the entity state tree to select a list of entities
+             * satisfying the selector.
+             *
+             * Equivalent to plugin.context.select(selector).
+             *
+             * @example
+             *   selectEntities('model') // select node with ref = 'model'
+             *   selectEntities(entity).subtree()
+             *   selectEntities(Bootstrap.Tree.Selection.byRef('ref').ancestorOfType(Bootstrap.Entity.Molecule.Model))
+             */
+            Controller.prototype.selectEntities = function (selector) {
+                return this.context.select(selector);
+            };
+            /**
              * Subscribes the specified event and returns
              * a disposable for the event.
              *
@@ -77983,7 +78101,7 @@ var LiteMol;
                 }
                 var data = source.data
                     ? action.add(this.root, Entity.Transformer.Data.FromData, { data: source.data, id: source.id })
-                    : action.add(this.root, Transformer.Data.Download, { url: source.url, type: format.isBinary ? 'Binary' : 'String', id: source.id });
+                    : action.add(this.root, Transformer.Data.Download, { url: source.url, type: format.isBinary ? 'Binary' : 'String', id: source.id, title: 'Molecule' });
                 data
                     .then(Transformer.Molecule.CreateFromData, { format: format, customId: source.id }, { isBinding: true, ref: source.moleculeRef })
                     .then(Transformer.Molecule.CreateModel, { modelIndex: 0 }, { isBinding: false, ref: source.modelRef })

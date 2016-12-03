@@ -7,7 +7,7 @@ var LiteMol;
 (function (LiteMol) {
     var Viewer;
     (function (Viewer) {
-        Viewer.VERSION = { number: "1.1.13", date: "Nov 30 2016" };
+        Viewer.VERSION = { number: "1.1.14", date: "Dec 3 2016" };
     })(Viewer = LiteMol.Viewer || (LiteMol.Viewer = {}));
 })(LiteMol || (LiteMol = {}));
 /*
@@ -43,7 +43,7 @@ var LiteMol;
         (function (ValidatorDB) {
             var Entity = LiteMol.Bootstrap.Entity;
             var Transformer = LiteMol.Bootstrap.Entity.Transformer;
-            ValidatorDB.Report = Entity.create({ name: 'ValidatorDB Validation Report', typeClass: 'Behaviour', shortName: 'VR', description: 'Represents ValidatorDB validation report.' });
+            ValidatorDB.Report = Entity.create({ name: 'Ligand Validation Report', typeClass: 'Behaviour', shortName: 'VR', description: 'Represents ValidatorDB ligand validation report.' });
             var Api;
             (function (Api) {
                 function getResidueId(id, out) {
@@ -149,7 +149,7 @@ var LiteMol;
                             var badChirality = residue ? residue.chiralityMismatches.has(a.id) : false;
                             if (!residue)
                                 return void 0;
-                            return "<div><small>[ValidatorDB]</small> Atom: <b>" + (badChirality ? 'Bad Chirality' : 'OK') + "</b>, Residue: <b>" + residue.flags.join(', ') + "</b></div>";
+                            return "<div><small>[Validation]</small> Atom: <b>" + (badChirality ? 'Bad Chirality' : 'OK') + "</b>, Residue: <b>" + residue.flags.join(', ') + "</b></div>";
                         }
                         else {
                             var res = i.residues[0];
@@ -157,7 +157,7 @@ var LiteMol;
                             var residue = chain ? chain.get(res.authSeqNumber) : void 0;
                             if (!residue)
                                 return void 0;
-                            return "<div><small>[ValidatorDB]</small> Residue: <b>" + residue.flags.join(', ') + "</b></div>";
+                            return "<div><small>[Validation]</small> Residue: <b>" + residue.flags.join(', ') + "</b></div>";
                         }
                     };
                     return Behaviour;
@@ -243,7 +243,7 @@ var LiteMol;
             })(Theme || (Theme = {}));
             var Create = LiteMol.Bootstrap.Tree.Transformer.create({
                 id: 'validatordb-create',
-                name: 'ValidatorDB Validation',
+                name: 'Ligand Validation',
                 description: 'Create the validation report from a string.',
                 from: [Entity.Data.String],
                 to: [ValidatorDB.Report],
@@ -254,13 +254,13 @@ var LiteMol;
                     ctx.schedule(function () {
                         var data = JSON.parse(a.props.data);
                         var report = Api.createReport(data || {});
-                        ctx.resolve(ValidatorDB.Report.create(t, { label: 'ValidatorDB Report', behaviour: new Interactivity.Behaviour(context, report) }));
+                        ctx.resolve(ValidatorDB.Report.create(t, { label: 'Ligand Validation Report', behaviour: new Interactivity.Behaviour(context, report) }));
                     });
                 }).setReportTime(true);
             });
             ValidatorDB.DownloadAndCreate = LiteMol.Bootstrap.Tree.Transformer.action({
                 id: 'validatordb-download-and-create',
-                name: 'ValidatorDB Validation Report',
+                name: 'Ligand Validation Report',
                 description: 'Download Validation Report from ValidatorDB',
                 from: [Entity.Molecule.Molecule],
                 to: [Entity.Action],
@@ -268,10 +268,10 @@ var LiteMol;
             }, function (context, a, t) {
                 var id = a.props.molecule.id.trim().toLocaleLowerCase();
                 var action = LiteMol.Bootstrap.Tree.Transform.build()
-                    .add(a, Transformer.Data.Download, { url: "https://webchem.ncbr.muni.cz/Platform/ValidatorDb/Data/" + id + "?source=ByStructure", type: 'String', id: id, description: 'Validation Data' })
+                    .add(a, Transformer.Data.Download, { url: "https://webchem.ncbr.muni.cz/Platform/ValidatorDb/Data/" + id + "?source=ByStructure", type: 'String', id: id, description: 'Validation Data', title: 'Validation' })
                     .then(Create, { id: id }, { isBinding: true });
                 return action;
-            }, "Validation report loaded. Hovering over residue will now contain validation info. To apply validation coloring, select the 'ValidatorDB Report' entity in the tree and apply it the right panel. " +
+            }, "Validation report loaded. Hovering over residue will now contain validation info. To apply validation coloring, select the 'Ligand Validation Report' entity in the tree and apply it the right panel. " +
                 "Only missing atoms/rings and chirality issues are shown, for more details please visit https://webchem.ncbr.muni.cz/Platform/ValidatorDb/Index.");
             ValidatorDB.ApplyTheme = LiteMol.Bootstrap.Tree.Transformer.create({
                 id: 'validatordb-apply-theme',
@@ -322,7 +322,6 @@ var LiteMol;
                 var Bootstrap = LiteMol.Bootstrap;
                 var Entity = Bootstrap.Entity;
                 var Transformer = Bootstrap.Entity.Transformer;
-                var Visualization = Bootstrap.Visualization;
                 // straigtforward
                 Data.DownloadMolecule = Transformer.Molecule.downloadMoleculeSource({
                     sourceId: 'pdbe-molecule',
@@ -345,26 +344,46 @@ var LiteMol;
                     var id = t.params.id.toLowerCase().trim();
                     var url = "" + t.params.serverUrl + (t.params.serverUrl[t.params.serverUrl.length - 1] === '/' ? '' : '/') + id + "/" + query + "?encoding=bcif&lowPrecisionCoords=" + (t.params.lowPrecisionCoords ? '1' : '2');
                     return Bootstrap.Tree.Transform.build()
-                        .add(a, Entity.Transformer.Data.Download, { url: url, type: 'Binary', id: id })
+                        .add(a, Entity.Transformer.Data.Download, { url: url, type: 'Binary', id: id, title: 'Molecule' })
                         .then(Entity.Transformer.Molecule.CreateFromData, { format: LiteMol.Core.Formats.Molecule.SupportedFormats.mmBCIF }, { isBinding: true })
                         .then(Entity.Transformer.Molecule.CreateModel, { modelIndex: 0 }, { isBinding: false });
                 });
-                // this creates the electron density based on the spec you sent me
-                Data.DownloadDensity = Bootstrap.Tree.Transformer.action({
-                    id: 'pdbe-density-download-data',
-                    name: 'Density Data from PDBe',
-                    description: 'Download density data from PDBe.',
-                    from: [Entity.Root],
-                    to: [Entity.Action],
-                    defaultParams: function () { return ({ id: '1cbs' }); },
-                    validateParams: function (p) { return (!p.id || !p.id.trim().length) ? ['Enter Id'] : void 0; },
-                }, function (context, a, t) {
+            })(Data = PDBe.Data || (PDBe.Data = {}));
+        })(PDBe = Viewer.PDBe || (Viewer.PDBe = {}));
+    })(Viewer = LiteMol.Viewer || (LiteMol.Viewer = {}));
+})(LiteMol || (LiteMol = {}));
+/*
+ * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ */
+var LiteMol;
+(function (LiteMol) {
+    var Viewer;
+    (function (Viewer) {
+        var PDBe;
+        (function (PDBe) {
+            var Data;
+            (function (Data) {
+                var Bootstrap = LiteMol.Bootstrap;
+                var Entity = Bootstrap.Entity;
+                var Transformer = Bootstrap.Entity.Transformer;
+                var Tree = Bootstrap.Tree;
+                var Visualization = Bootstrap.Visualization;
+                Data.DensitySources = ['electron-density', 'emdb-pdbid', 'emdb-id'];
+                Data.DensitySourceLabels = {
+                    'electron-density': 'Electron Density',
+                    'emdb-pdbid': 'EMDB (from PDB ID)',
+                    'emdb-id': 'EMDB'
+                };
+                function doElectron(a, t, id) {
                     var action = Bootstrap.Tree.Transform.build();
-                    var id = t.params.id.trim().toLocaleLowerCase();
-                    var group = action.add(a, Transformer.Basic.CreateGroup, { label: id, description: 'Density' }, { ref: t.props.ref });
+                    id = id.trim().toLocaleLowerCase();
+                    var groupRef = t.props.ref ? t.props.ref : Bootstrap.Utils.generateUUID();
+                    var group = action.add(a, Transformer.Basic.CreateGroup, { label: id, description: 'Density' }, { ref: groupRef });
+                    var diffRef = Bootstrap.Utils.generateUUID();
+                    var mainRef = Bootstrap.Utils.generateUUID();
                     var diff = group
-                        .then(Transformer.Data.Download, { url: "https://www.ebi.ac.uk/pdbe/coordinates/files/" + id + "_diff.ccp4", type: 'Binary', id: t.params.id, description: 'Fo-Fc' })
-                        .then(Transformer.Density.ParseData, { format: LiteMol.Core.Formats.Density.SupportedFormats.CCP4, id: 'Fo-Fc', normalize: false }, { isBinding: true });
+                        .then(Transformer.Data.Download, { url: "https://www.ebi.ac.uk/pdbe/coordinates/files/" + id + "_diff.ccp4", type: 'Binary', id: id, description: 'Fo-Fc', title: 'Density' })
+                        .then(Transformer.Density.ParseData, { format: LiteMol.Core.Formats.Density.SupportedFormats.CCP4, id: 'Fo-Fc', normalize: false }, { isBinding: true, ref: diffRef });
                     diff
                         .then(Transformer.Density.CreateVisualBehaviour, {
                         id: 'Fo-Fc(-ve)',
@@ -400,8 +419,8 @@ var LiteMol;
                         })
                     });
                     var base = group
-                        .then(Transformer.Data.Download, { url: "https://www.ebi.ac.uk/pdbe/coordinates/files/" + id + ".ccp4", type: 'Binary', id: t.params.id, description: '2Fo-Fc' })
-                        .then(Transformer.Density.ParseData, { format: LiteMol.Core.Formats.Density.SupportedFormats.CCP4, id: '2Fo-Fc', normalize: false }, { isBinding: true })
+                        .then(Transformer.Data.Download, { url: "https://www.ebi.ac.uk/pdbe/coordinates/files/" + id + ".ccp4", type: 'Binary', id: id, description: '2Fo-Fc', title: 'Density' })
+                        .then(Transformer.Density.ParseData, { format: LiteMol.Core.Formats.Density.SupportedFormats.CCP4, id: '2Fo-Fc', normalize: false }, { isBinding: true, ref: mainRef })
                         .then(Transformer.Density.CreateVisualBehaviour, {
                         id: '2Fo-Fc',
                         isoSigmaMin: 0,
@@ -415,11 +434,162 @@ var LiteMol;
                             isoValueType: Bootstrap.Visualization.Density.IsoValueType.Sigma,
                             color: LiteMol.Visualization.Color.fromHex(0x3362B2),
                             isWireframe: false,
-                            transparency: { alpha: 0.45 }
+                            transparency: { alpha: 0.4 }
                         })
                     });
-                    return action;
-                }, "Electron density loaded, click on a residue or an atom to view the data.");
+                    return {
+                        action: action,
+                        context: { id: id, refs: [mainRef, diffRef], groupRef: groupRef }
+                    };
+                }
+                function doEmdb(a, t, id, contourLevel) {
+                    var action = Bootstrap.Tree.Transform.build();
+                    var mainRef = Bootstrap.Utils.generateUUID();
+                    var labelId = 'EMD-' + id;
+                    action
+                        .add(a, Transformer.Data.Download, {
+                        url: "http://ftp.ebi.ac.uk/pub/databases/emdb/structures/EMD-" + id + "/map/emd_" + id + ".map.gz",
+                        type: 'Binary',
+                        id: labelId,
+                        description: 'EMDB Density',
+                        responseCompression: Bootstrap.Utils.DataCompressionMethod.Gzip,
+                        title: 'Density'
+                    })
+                        .then(Transformer.Density.ParseData, { format: LiteMol.Core.Formats.Density.SupportedFormats.CCP4, id: labelId, normalize: false }, { isBinding: true, ref: mainRef })
+                        .then(Transformer.Density.CreateVisualBehaviour, {
+                        id: 'Density',
+                        isoSigmaMin: -5,
+                        isoSigmaMax: 5,
+                        minRadius: 0,
+                        maxRadius: 50,
+                        radius: 5,
+                        showFull: false,
+                        style: Visualization.Density.Style.create({
+                            isoValue: contourLevel !== void 0 ? contourLevel : 1.5,
+                            isoValueType: contourLevel !== void 0 ? Bootstrap.Visualization.Density.IsoValueType.Absolute : Bootstrap.Visualization.Density.IsoValueType.Sigma,
+                            color: LiteMol.Visualization.Color.fromHex(0x638F8F),
+                            isWireframe: false,
+                            transparency: { alpha: 0.3 }
+                        })
+                    });
+                    return {
+                        action: action,
+                        context: { id: id, refs: [mainRef] }
+                    };
+                }
+                function fail(a, message) {
+                    return {
+                        action: Bootstrap.Tree.Transform.build()
+                            .add(a, Transformer.Basic.Fail, { title: 'Density', message: message }),
+                        context: void 0
+                    };
+                }
+                function doEmdbPdbId(ctx, a, t, id) {
+                    return new LiteMol.Core.Promise(function (res, rej) {
+                        id = id.trim().toLowerCase();
+                        Bootstrap.Utils.ajaxGetString("https://www.ebi.ac.uk/pdbe/api/pdb/entry/summary/" + id, 'PDB API')
+                            .run(ctx)
+                            .then(function (s) {
+                            try {
+                                var json = JSON.parse(s);
+                                var emdbId = void 0;
+                                var e = json[id];
+                                if (e && e[0] && e[0].related_structures) {
+                                    var emdb = e[0].related_structures.filter(function (s) { return s.resource === 'EMDB'; });
+                                    if (!emdb.length) {
+                                        res(fail(a, "No related EMDB entry found for '" + id + "'."));
+                                        return;
+                                    }
+                                    emdbId = emdb[0].accession.split('-')[1];
+                                }
+                                else {
+                                    res(fail(a, "No related EMDB entry found for '" + id + "'."));
+                                    return;
+                                }
+                                res(doEmdbId(ctx, a, t, emdbId));
+                            }
+                            catch (e) {
+                                res(fail(a, 'PDB API call failed.'));
+                            }
+                        })
+                            .catch(function (e) { return res(fail(a, 'PDB API call failed.')); });
+                    });
+                }
+                function doEmdbId(ctx, a, t, id) {
+                    return new LiteMol.Core.Promise(function (res, rej) {
+                        id = id.trim();
+                        Bootstrap.Utils.ajaxGetString("https://www.ebi.ac.uk/pdbe/api/emdb/entry/map/EMD-" + id, 'EMDB API')
+                            .run(ctx)
+                            .then(function (s) {
+                            try {
+                                var json = JSON.parse(s);
+                                var contour = void 0;
+                                var e = json['EMD-' + id];
+                                if (e && e[0] && e[0].map && e[0].map.contour_level && e[0].map.contour_level.value !== void 0) {
+                                    contour = +e[0].map.contour_level.value;
+                                }
+                                res(doEmdb(a, t, id, contour));
+                            }
+                            catch (e) {
+                                res(fail(a, 'EMDB API call failed.'));
+                            }
+                        })
+                            .catch(function (e) { return res(fail(a, 'EMDB API call failed.')); });
+                    });
+                }
+                // this creates the electron density based on the spec you sent me
+                Data.DownloadDensity = Bootstrap.Tree.Transformer.actionWithContext({
+                    id: 'pdbe-density-download-data',
+                    name: 'Density Data from PDBe',
+                    description: 'Download density data from PDBe.',
+                    from: [Entity.Root],
+                    to: [Entity.Action],
+                    defaultParams: function () { return ({
+                        sourceId: 'electron-density',
+                        id: {
+                            'electron-density': '1cbs',
+                            'emdb-id': '8015',
+                            'emdb-pdbid': '5gag'
+                        }
+                    }); },
+                    validateParams: function (p) {
+                        var source = p.sourceId ? p.sourceId : 'electron-density';
+                        if (!p.id)
+                            return ['Enter Id'];
+                        var id = typeof p.id === 'string' ? p.id : p.id[source];
+                        return !id.trim().length ? ['Enter Id'] : void 0;
+                    }
+                }, function (context, a, t) {
+                    var id;
+                    if (typeof t.params.id === 'string')
+                        id = t.params.id;
+                    else
+                        id = t.params.id[t.params.sourceId];
+                    switch (t.params.sourceId || 'electron-density') {
+                        case 'electron-density': return doElectron(a, t, id);
+                        case 'emdb-id': return doEmdbId(context, a, t, id);
+                        case 'emdb-pdbid': return doEmdbPdbId(context, a, t, id);
+                        default: return fail(a, 'Unknown source.');
+                    }
+                }, function (ctx, actionCtx) {
+                    if (!actionCtx)
+                        return;
+                    var _a = actionCtx, id = _a.id, refs = _a.refs, groupRef = _a.groupRef;
+                    var sel = ctx.select((_b = Tree.Selection).byRef.apply(_b, refs));
+                    if (sel.length === refs.length) {
+                        ctx.logger.message('Density loaded, click on a residue or an atom to view the data.');
+                    }
+                    else if (sel.length > 0) {
+                        ctx.logger.message('Density partially loaded, click on a residue or an atom to view the data.');
+                    }
+                    else {
+                        ctx.logger.error("Density failed to load. The data for the id '" + id + "' does not seem to exist.");
+                        if (groupRef) {
+                            Bootstrap.Command.Tree.RemoveNode.dispatch(ctx, groupRef);
+                        }
+                    }
+                    var _b;
+                });
             })(Data = PDBe.Data || (PDBe.Data = {}));
         })(PDBe = Viewer.PDBe || (Viewer.PDBe = {}));
     })(Viewer = LiteMol.Viewer || (LiteMol.Viewer = {}));
@@ -639,7 +809,7 @@ var LiteMol;
                 }, function (context, a, t) {
                     var id = a.props.molecule.id.trim().toLocaleLowerCase();
                     var action = LiteMol.Bootstrap.Tree.Transform.build()
-                        .add(a, Transformer.Data.Download, { url: "https://www.ebi.ac.uk/pdbe/api/validation/residuewise_outlier_summary/entry/" + id, type: 'String', id: id, description: 'Validation Data' })
+                        .add(a, Transformer.Data.Download, { url: "https://www.ebi.ac.uk/pdbe/api/validation/residuewise_outlier_summary/entry/" + id, type: 'String', id: id, description: 'Validation Data', title: 'Validation' })
                         .then(Create, { id: id }, { isBinding: true });
                     return action;
                 }, "Validation report loaded. Hovering over residue will now contain validation info. To apply validation coloring, select the entity in the tree and apply it the right panel.");
@@ -954,7 +1124,7 @@ var LiteMol;
                 }, function (context, a, t) {
                     var id = a.props.molecule.id.trim().toLocaleLowerCase();
                     return LiteMol.Bootstrap.Tree.Transform.build()
-                        .add(a, Transformer.Data.Download, { url: "https://www.ebi.ac.uk/pdbe/api/mappings/" + id, type: 'String', id: id, description: 'Annotation Data' })
+                        .add(a, Transformer.Data.Download, { url: "https://www.ebi.ac.uk/pdbe/api/mappings/" + id, type: 'String', id: id, description: 'Annotation Data', title: 'Annotation' })
                         .then(Parse, {}, { isBinding: true })
                         .then(Build, {}, { isBinding: true });
                 });
@@ -1006,6 +1176,39 @@ var LiteMol;
                     return DownloadBinaryCIFFromCoordinateServerView;
                 }(LiteMol.Plugin.Views.Transform.ControllerBase));
                 Views.DownloadBinaryCIFFromCoordinateServerView = DownloadBinaryCIFFromCoordinateServerView;
+                var DownloadDensityView = (function (_super) {
+                    __extends(DownloadDensityView, _super);
+                    function DownloadDensityView() {
+                        return _super.apply(this, arguments) || this;
+                    }
+                    DownloadDensityView.prototype.getId = function () {
+                        var id = this.params.id;
+                        if (!id)
+                            return '';
+                        if (typeof id === 'string')
+                            return id;
+                        return id[this.params.sourceId];
+                    };
+                    DownloadDensityView.prototype.updateId = function (newId) {
+                        var params = this.params;
+                        var id = params.id;
+                        if (!id || typeof id === 'string')
+                            id = (_a = {}, _a[params.sourceId] = newId, _a);
+                        else
+                            id = LiteMol.Bootstrap.Utils.merge(id, (_b = {}, _b[params.sourceId] = newId, _b));
+                        this.updateParams({ id: id });
+                        var _a, _b;
+                    };
+                    DownloadDensityView.prototype.renderControls = function () {
+                        var _this = this;
+                        var params = this.params;
+                        return React.createElement("div", null,
+                            React.createElement(Controls.OptionsGroup, { options: PDBe.Data.DensitySources, caption: function (s) { return PDBe.Data.DensitySourceLabels[s]; }, current: params.sourceId, onChange: function (o) { return _this.updateParams({ sourceId: o }); }, label: 'Source', title: 'Determines where to obtain the data.' }),
+                            React.createElement(Controls.TextBoxGroup, { value: this.getId(), onChange: function (v) { return _this.updateId(v); }, label: 'Id', onEnter: function (e) { return _this.applyEnter(e); }, placeholder: 'Enter id...' }));
+                    };
+                    return DownloadDensityView;
+                }(LiteMol.Plugin.Views.Transform.ControllerBase));
+                Views.DownloadDensityView = DownloadDensityView;
             })(Views = PDBe.Views || (PDBe.Views = {}));
         })(PDBe = Viewer.PDBe || (Viewer.PDBe = {}));
     })(Viewer = LiteMol.Viewer || (LiteMol.Viewer = {}));
@@ -1034,7 +1237,7 @@ var LiteMol;
             transforms: [
                 // Root transforms -- things that load data.
                 { transformer: Viewer.PDBe.Data.DownloadMolecule, view: Views.Transform.Data.WithIdField },
-                { transformer: Viewer.PDBe.Data.DownloadDensity, view: Views.Transform.Data.WithIdField },
+                { transformer: Viewer.PDBe.Data.DownloadDensity, view: Viewer.PDBe.Views.DownloadDensityView },
                 { transformer: Viewer.PDBe.Data.DownloadBinaryCIFFromCoordinateServer, view: Viewer.PDBe.Views.DownloadBinaryCIFFromCoordinateServerView, initiallyCollapsed: true },
                 { transformer: Transformer.Molecule.CoordinateStreaming.InitStreaming, view: Views.Transform.Molecule.InitCoordinateStreaming, initiallyCollapsed: true },
                 { transformer: Viewer.DataSources.DownloadMolecule, view: Views.Transform.Molecule.DownloadFromUrl, initiallyCollapsed: true },

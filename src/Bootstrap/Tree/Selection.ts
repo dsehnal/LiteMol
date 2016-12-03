@@ -67,8 +67,17 @@ namespace LiteMol.Bootstrap.Tree {
         function emptyIfUndefined<T extends Node.Any>(e: NodeSeq<T> | undefined) { return e ? e : [] }
 
         export function root<T extends Node.Any>() { return build(() => (tree: Tree<T>) => [tree.root]) }
-        export function byRef<T extends Node.Any>(ref: string) { return build(() => (tree: Tree<T>) => emptyIfUndefined(tree.refs.get(ref))); }
-        export function byValue<T extends Node.Any>(e: Node.Any) { return build(() => (tree: Tree<T>) => [e]); }
+        export function byRef<T extends Node.Any>(...refs: string[]) { return build(() => (tree: Tree<T>) => {
+                let ret: T[] = [];
+                for (let ref of refs) {
+                    let xs = tree.refs.get(ref);
+                    if (!xs) continue;
+                    for (let x of xs) ret.push(x);
+                }
+                return ret;
+            }); 
+        }
+        export function byValue<T extends Node.Any>(...entities: Node.Any[]) { return build(() => (tree: Tree<T>) => entities); }
 
         Helpers.registerModifier('flatMap', flatMap);
         export function flatMap<T extends Node.Any>(b: Selector<T>, f: (n: T) => NodeSeq<T>) { 
