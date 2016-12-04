@@ -93,7 +93,7 @@ var LiteMol;
                 };
                 function doElectron(a, t, id) {
                     var action = Bootstrap.Tree.Transform.build();
-                    id = id.trim().toLocaleLowerCase();
+                    id = id.trim().toLowerCase();
                     var groupRef = t.props.ref ? t.props.ref : Bootstrap.Utils.generateUUID();
                     var group = action.add(a, Transformer.Basic.CreateGroup, { label: id, description: 'Density' }, { ref: groupRef });
                     var diffRef = Bootstrap.Utils.generateUUID();
@@ -303,7 +303,7 @@ var LiteMol;
                         ctx.logger.message('Density partially loaded, click on a residue or an atom to view the data.');
                     }
                     else {
-                        ctx.logger.error("Density failed to load. The data for the id '" + id + "' does not seem to exist.");
+                        ctx.logger.error("Density for ID '" + id + "' failed to load.");
                         if (groupRef) {
                             Bootstrap.Command.Tree.RemoveNode.dispatch(ctx, groupRef);
                         }

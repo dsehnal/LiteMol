@@ -18,7 +18,7 @@ namespace LiteMol.Viewer.ValidatorDB {
                 get(authSeqNumber: number): undefined | {
                     flags: string[],
                     isRed: boolean,
-                    chiralityMismatches: { has(atomId: number): boolean }
+                    chiralityMismatches: { has(atomName: string): boolean }
                 } 
             }
         };
@@ -29,8 +29,8 @@ namespace LiteMol.Viewer.ValidatorDB {
             out.authAsymId = fields[2];
         }
 
-        function getAtomId(id: string) {
-            return +id.split(' ')[2];
+        function getAtomName(id: string) {
+            return id.split(' ')[0];
         }
 
         const RedFlags = new Set<string>(['Missing', 'NotAnalyzed']);
@@ -66,13 +66,13 @@ namespace LiteMol.Viewer.ValidatorDB {
 
                     if (!flags.length) flags.push('No Issue');
 
-                    let chiralityMismatchSet: Set<number> | undefined = void 0;
+                    let chiralityMismatchSet: Set<string> | undefined = void 0;
                     let chiralityMismatches = entry.ChiralityMismatches;
                     for (let _m of Object.keys(chiralityMismatches)) {
                         if (!Object.prototype.hasOwnProperty.call(chiralityMismatches, _m)) continue;
                         let a = chiralityMismatches[_m];
-                        if (!chiralityMismatchSet) chiralityMismatchSet = new Set<number>();
-                        chiralityMismatchSet.add(getAtomId(a));
+                        if (!chiralityMismatchSet) chiralityMismatchSet = new Set<string>();
+                        chiralityMismatchSet.add(getAtomName(a));
                     }
 
                     residueReport.set(residue.authSeqNumber, {
@@ -100,6 +100,13 @@ namespace LiteMol.Viewer.ValidatorDB {
                  this.context.highlight.addProvider(this.provider);
             }
             
+            private getChainId(id: string) {
+                let idx = id.indexOf('-'); 
+                // check if we are in a computed chain.
+                if (idx > 0) return id.substr(0, idx);
+                return id;
+            }
+
             private processInfo(info: Bootstrap.Interactivity.Info): string | undefined {
                 let i = Bootstrap.Interactivity.Molecule.transformInteraction(info);
                 
@@ -108,15 +115,15 @@ namespace LiteMol.Viewer.ValidatorDB {
                 let r = this.report;
                 if (i.atoms.length === 1) {
                     let a = i.atoms[0];
-                    let chain = r.get(a.residue.chain.authAsymId);
+                    let chain = r.get(this.getChainId(a.residue.chain.authAsymId));
                     let residue = chain ? chain.get(a.residue.authSeqNumber) : void 0;
-                    let badChirality = residue ? residue.chiralityMismatches.has(a.id) : false;
+                    let badChirality = residue ? residue.chiralityMismatches.has(a.name) : false;
                     if (!residue) return void 0;
 
                     return `<div><small>[Validation]</small> Atom: <b>${badChirality ? 'Bad Chirality' : 'OK'}</b>, Residue: <b>${residue.flags.join(', ')}</b></div>`;
                 } else {
                     let res = i.residues[0];
-                    let chain = r.get(res.chain.authAsymId);
+                    let chain = r.get(this.getChainId(res.chain.authAsymId));
                     let residue = chain ? chain.get(res.authSeqNumber) : void 0;
                     if (!residue) return void 0;
 
@@ -155,7 +162,7 @@ namespace LiteMol.Viewer.ValidatorDB {
             let map = new Uint8Array(model.atoms.count);            
             let mId = model.modelId;
             let { authAsymId, authSeqNumber, atomStartIndex, atomEndIndex } = model.residues;
-            let { id } = model.atoms;
+            let { authName } = model.atoms;
 
             for (let rI = 0, _rI = model.residues.count; rI < _rI; rI++) {
                 let repC = report.get(authAsymId[rI]);
@@ -165,8 +172,7 @@ namespace LiteMol.Viewer.ValidatorDB {
 
                 let chiralityMismatches = repR.chiralityMismatches;
                 for (let aI = atomStartIndex[rI], _aI = atomEndIndex[rI]; aI < _aI; aI++) {
-                    if (repR.isRed) map[aI] = 2;
-                    else if (chiralityMismatches.has(id[aI])) map[aI] = 2;
+                    if (repR.isRed || chiralityMismatches.has(authName[aI])) map[aI] = 2;
                     else map[aI] = 1;
                 }
             }
@@ -174,15 +180,16 @@ namespace LiteMol.Viewer.ValidatorDB {
             return map;            
         }
         
-        function createAtomMapComputed(model: LiteMol.Core.Structure.MoleculeModel, report: any) {
+        function createAtomMapComputed(model: LiteMol.Core.Structure.MoleculeModel, report: Api.Report) {
             let parent = model.parent!;
             let map = new Uint8Array(model.atoms.count);            
             let mId = model.modelId;
-            let { authAsymId, authSeqNumber, atomStartIndex, atomEndIndex, chainIndex } = model.residues;
+            let { authSeqNumber, atomStartIndex, atomEndIndex, chainIndex } = model.residues;
             let { sourceChainIndex } = model.chains;
-            let { id } = model.atoms;
+            let { authAsymId } = parent.chains;
+            let { authName } = model.atoms;
 
-            for (let rI = 0, _rI = model.residues.count; rI < _rI; rI++) {
+            for (let rI = 0, _rI = model.residues.count; rI < _rI; rI++) {                
                 let repC = report.get(authAsymId[sourceChainIndex![chainIndex[rI]]]);
                 if (!repC) continue;
                 let repR = repC.get(authSeqNumber[rI]);
@@ -190,8 +197,7 @@ namespace LiteMol.Viewer.ValidatorDB {
 
                 let chiralityMismatches = repR.chiralityMismatches;
                 for (let aI = atomStartIndex[rI], _aI = atomEndIndex[rI]; aI < _aI; aI++) {
-                    if (repR.isRed) map[aI] = 2;
-                    else if (!chiralityMismatches.has(id[aI])) map[aI] = 2;
+                    if (repR.isRed || chiralityMismatches.has(authName[aI])) map[aI] = 2;
                     else map[aI] = 1;
                 }
             }

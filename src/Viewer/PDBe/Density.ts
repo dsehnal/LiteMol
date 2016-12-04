@@ -32,7 +32,7 @@ namespace LiteMol.Viewer.PDBe.Data {
 
     function doElectron(a: Entity.Root, t: Transform<Entity.Root, Entity.Action, DownloadDensityParams>, id: string): DensityAction {
         let action = Bootstrap.Tree.Transform.build();
-        id = id.trim().toLocaleLowerCase();
+        id = id.trim().toLowerCase();
         
         let groupRef = t.props.ref ? t.props.ref : Bootstrap.Utils.generateUUID();       
         let group = action.add(a, Transformer.Basic.CreateGroup, { label: id, description: 'Density' }, { ref: groupRef })
@@ -251,7 +251,7 @@ namespace LiteMol.Viewer.PDBe.Data {
         } else if (sel.length > 0) {
             ctx.logger.message('Density partially loaded, click on a residue or an atom to view the data.');
         } else {
-            ctx.logger.error(`Density failed to load. The data for the id '${id}' does not seem to exist.`);
+            ctx.logger.error(`Density for ID '${id}' failed to load.`);
             if (groupRef) {
                 Bootstrap.Command.Tree.RemoveNode.dispatch(ctx, groupRef);
             }

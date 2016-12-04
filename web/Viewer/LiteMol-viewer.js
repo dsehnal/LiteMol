@@ -51,8 +51,8 @@ var LiteMol;
                     out.authSeqNumber = +fields[1];
                     out.authAsymId = fields[2];
                 }
-                function getAtomId(id) {
-                    return +id.split(' ')[2];
+                function getAtomName(id) {
+                    return id.split(' ')[0];
                 }
                 var RedFlags = new Set(['Missing', 'NotAnalyzed']);
                 function isRed(flags) {
@@ -101,7 +101,7 @@ var LiteMol;
                                 var a = chiralityMismatches[_m];
                                 if (!chiralityMismatchSet)
                                     chiralityMismatchSet = new Set();
-                                chiralityMismatchSet.add(getAtomId(a));
+                                chiralityMismatchSet.add(getAtomName(a));
                             }
                             residueReport.set(residue.authSeqNumber, {
                                 isRed: isRed(entry.Flags),
@@ -137,6 +137,13 @@ var LiteMol;
                     Behaviour.prototype.register = function (behaviour) {
                         this.context.highlight.addProvider(this.provider);
                     };
+                    Behaviour.prototype.getChainId = function (id) {
+                        var idx = id.indexOf('-');
+                        // check if we are in a computed chain.
+                        if (idx > 0)
+                            return id.substr(0, idx);
+                        return id;
+                    };
                     Behaviour.prototype.processInfo = function (info) {
                         var i = LiteMol.Bootstrap.Interactivity.Molecule.transformInteraction(info);
                         if (!i || i.residues.length > 1)
@@ -144,16 +151,16 @@ var LiteMol;
                         var r = this.report;
                         if (i.atoms.length === 1) {
                             var a = i.atoms[0];
-                            var chain = r.get(a.residue.chain.authAsymId);
+                            var chain = r.get(this.getChainId(a.residue.chain.authAsymId));
                             var residue = chain ? chain.get(a.residue.authSeqNumber) : void 0;
-                            var badChirality = residue ? residue.chiralityMismatches.has(a.id) : false;
+                            var badChirality = residue ? residue.chiralityMismatches.has(a.name) : false;
                             if (!residue)
                                 return void 0;
                             return "<div><small>[Validation]</small> Atom: <b>" + (badChirality ? 'Bad Chirality' : 'OK') + "</b>, Residue: <b>" + residue.flags.join(', ') + "</b></div>";
                         }
                         else {
                             var res = i.residues[0];
-                            var chain = r.get(res.chain.authAsymId);
+                            var chain = r.get(this.getChainId(res.chain.authAsymId));
                             var residue = chain ? chain.get(res.authSeqNumber) : void 0;
                             if (!residue)
                                 return void 0;
@@ -180,7 +187,7 @@ var LiteMol;
                     var map = new Uint8Array(model.atoms.count);
                     var mId = model.modelId;
                     var _a = model.residues, authAsymId = _a.authAsymId, authSeqNumber = _a.authSeqNumber, atomStartIndex = _a.atomStartIndex, atomEndIndex = _a.atomEndIndex;
-                    var id = model.atoms.id;
+                    var authName = model.atoms.authName;
                     for (var rI = 0, _rI = model.residues.count; rI < _rI; rI++) {
                         var repC = report.get(authAsymId[rI]);
                         if (!repC)
@@ -190,9 +197,7 @@ var LiteMol;
                             continue;
                         var chiralityMismatches = repR.chiralityMismatches;
                         for (var aI = atomStartIndex[rI], _aI = atomEndIndex[rI]; aI < _aI; aI++) {
-                            if (repR.isRed)
-                                map[aI] = 2;
-                            else if (chiralityMismatches.has(id[aI]))
+                            if (repR.isRed || chiralityMismatches.has(authName[aI]))
                                 map[aI] = 2;
                             else
                                 map[aI] = 1;
@@ -204,9 +209,10 @@ var LiteMol;
                     var parent = model.parent;
                     var map = new Uint8Array(model.atoms.count);
                     var mId = model.modelId;
-                    var _a = model.residues, authAsymId = _a.authAsymId, authSeqNumber = _a.authSeqNumber, atomStartIndex = _a.atomStartIndex, atomEndIndex = _a.atomEndIndex, chainIndex = _a.chainIndex;
+                    var _a = model.residues, authSeqNumber = _a.authSeqNumber, atomStartIndex = _a.atomStartIndex, atomEndIndex = _a.atomEndIndex, chainIndex = _a.chainIndex;
                     var sourceChainIndex = model.chains.sourceChainIndex;
-                    var id = model.atoms.id;
+                    var authAsymId = parent.chains.authAsymId;
+                    var authName = model.atoms.authName;
                     for (var rI = 0, _rI = model.residues.count; rI < _rI; rI++) {
                         var repC = report.get(authAsymId[sourceChainIndex[chainIndex[rI]]]);
                         if (!repC)
@@ -216,9 +222,7 @@ var LiteMol;
                             continue;
                         var chiralityMismatches = repR.chiralityMismatches;
                         for (var aI = atomStartIndex[rI], _aI = atomEndIndex[rI]; aI < _aI; aI++) {
-                            if (repR.isRed)
-                                map[aI] = 2;
-                            else if (!chiralityMismatches.has(id[aI]))
+                            if (repR.isRed || chiralityMismatches.has(authName[aI]))
                                 map[aI] = 2;
                             else
                                 map[aI] = 1;
@@ -376,7 +380,7 @@ var LiteMol;
                 };
                 function doElectron(a, t, id) {
                     var action = Bootstrap.Tree.Transform.build();
-                    id = id.trim().toLocaleLowerCase();
+                    id = id.trim().toLowerCase();
                     var groupRef = t.props.ref ? t.props.ref : Bootstrap.Utils.generateUUID();
                     var group = action.add(a, Transformer.Basic.CreateGroup, { label: id, description: 'Density' }, { ref: groupRef });
                     var diffRef = Bootstrap.Utils.generateUUID();
@@ -586,7 +590,7 @@ var LiteMol;
                         ctx.logger.message('Density partially loaded, click on a residue or an atom to view the data.');
                     }
                     else {
-                        ctx.logger.error("Density failed to load. The data for the id '" + id + "' does not seem to exist.");
+                        ctx.logger.error("Density for ID '" + id + "' failed to load.");
                         if (groupRef) {
                             Bootstrap.Command.Tree.RemoveNode.dispatch(ctx, groupRef);
                         }
