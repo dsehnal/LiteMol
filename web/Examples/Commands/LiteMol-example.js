@@ -163,6 +163,9 @@ var LiteMol;
                     var action = Bootstrap.Tree.Transform.build();
                     var mainRef = Bootstrap.Utils.generateUUID();
                     var labelId = 'EMD-' + id;
+                    if (location.protocol === 'https:') {
+                        return fail(a, 'EMDB currently does not work over HTTPS, sorry for the inconvenience.');
+                    }
                     action
                         .add(a, Transformer.Data.Download, {
                         url: "http://ftp.ebi.ac.uk/pub/databases/emdb/structures/EMD-" + id + "/map/emd_" + id + ".map.gz",
@@ -265,7 +268,7 @@ var LiteMol;
                         sourceId: 'electron-density',
                         id: {
                             'electron-density': '1cbs',
-                            'emdb-id': '8015',
+                            'emdb-id': '8003',
                             'emdb-pdbid': '5gag'
                         }
                     }); },
