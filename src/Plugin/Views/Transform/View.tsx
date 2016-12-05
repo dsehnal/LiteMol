@@ -28,11 +28,11 @@ namespace LiteMol.Plugin.Views.Transform {
         }
 
         getPersistentState<T>(prop: string, defaultValue: T) {
-            return this.controller.context.transforms.getPersistentState<T>(this.controller.transformer, prop, defaultValue);
+            return this.controller.context.transforms.getPersistentState<T>(this.controller.transformer, this.transformSourceEntity, prop, defaultValue);
         }
 
         setPersistentState<T>(prop: string, value: T) {
-            if (this.controller.context.transforms.setPersistentState(this.controller.transformer, prop, value)) {
+            if (this.controller.context.transforms.setPersistentState(this.controller.transformer, this.transformSourceEntity, prop, value)) {
                 this.forceUpdate();
             }
         }

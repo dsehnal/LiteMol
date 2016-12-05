@@ -16933,21 +16933,21 @@ declare namespace LiteMol.Bootstrap {
     class TransformManager {
         private context;
         private controllerCache;
+        private state;
         private byId;
         private bySourceType;
         private byTargetType;
-        private persistentState;
         private addType(e, t, to);
         getController(t: Transformer, e: Entity.Any): Components.Transform.Controller<any> | undefined;
         getBySourceType(t: Entity.AnyType): Tree.Transformer<Tree.Node.Any, Tree.Node.Any, any>[];
         getByTargetType(t: Entity.AnyType): Tree.Transformer<Tree.Node.Any, Tree.Node.Any, any>[];
         add(t: Transformer): void;
-        hasPersistentState(t: Transformer, prop: string): boolean;
-        getPersistentState<T>(t: Transformer, prop: string, defaultValue: T): any;
+        hasPersistentState(t: Transformer, e: Entity.Any, prop: string): boolean;
+        getPersistentState<T>(t: Transformer, e: Entity.Any, prop: string, defaultValue: T): any;
         /**
          * returns whether the value changed or not
          */
-        setPersistentState<T>(t: Transformer, prop: string, value: T): boolean;
+        setPersistentState<T>(t: Transformer, e: Entity.Any, prop: string, value: T): boolean;
         constructor(context: Context);
     }
 }

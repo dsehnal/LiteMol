@@ -11,12 +11,11 @@ namespace LiteMol.Bootstrap {
     export class TransformManager {  
             
         private controllerCache = new Map<number, Map<string, Components.Transform.Controller<any>>>();
+        private state = new Map<number, Map<string, any>>();
 
         private byId = new Map<string, Transformer>();
         private bySourceType = new Map<string, Transformer[]>();
         private byTargetType = new Map<string, Transformer[]>();
-
-        private persistentState = new Map<string, Map<string, any>>();
 
         private addType(e: Entity.AnyType, t: Transformer, to: Map<string, Transformer[]>) {
             let xs = to.get(e.id);
@@ -45,9 +44,9 @@ namespace LiteMol.Bootstrap {
 
             let info = this.context.plugin && this.context.plugin.getTransformerInfo(t);
             if (info && info.initiallyCollapsed) {
-                if (!this.hasPersistentState(t, 'isExpanded')) this.setPersistentState(t, 'isExpanded', false);
+                if (!this.hasPersistentState(t, e, 'isExpanded')) this.setPersistentState(t, e, 'isExpanded', false);
             } else {
-                if (!this.hasPersistentState(t, 'isExpanded')) this.setPersistentState(t, 'isExpanded', true);
+                if (!this.hasPersistentState(t, e, 'isExpanded')) this.setPersistentState(t, e, 'isExpanded', true);
             }
 
             if (e.transform.transformer === t) {
@@ -76,14 +75,18 @@ namespace LiteMol.Bootstrap {
             for (let x of t.info.to) this.addType(x as Entity.AnyType, t, this.byTargetType);
         }      
 
-        hasPersistentState(t: Transformer, prop: string) {
-            let ps = this.persistentState.get(t.info.id);
+        hasPersistentState(t: Transformer, e: Entity.Any, prop: string) {
+            let se = this.state.get(e.id);
+            if (!se) return false;
+            let ps = se.get(t.info.id);
             if (!ps || !ps.has(prop)) return false;
             return true;
         }  
             
-        getPersistentState<T>(t: Transformer, prop: string, defaultValue: T) {
-            let ps = this.persistentState.get(t.info.id);
+        getPersistentState<T>(t: Transformer, e: Entity.Any, prop: string, defaultValue: T) {
+            let se = this.state.get(e.id);
+            if (!se) return defaultValue;
+            let ps = se.get(t.info.id);
             if (!ps || !ps.has(prop)) return defaultValue;
             return ps.get(prop);
         }
@@ -91,11 +94,16 @@ namespace LiteMol.Bootstrap {
         /**
          * returns whether the value changed or not
          */
-        setPersistentState<T>(t: Transformer, prop: string, value: T): boolean {
-            let ps = this.persistentState.get(t.info.id);
+        setPersistentState<T>(t: Transformer, e: Entity.Any, prop: string, value: T): boolean {
+            let se = this.state.get(e.id);
+            if (!se) {
+                se = new Map<string, any>();
+                this.state.set(e.id, se);
+            }
+            let ps = se.get(t.info.id);
             if (!ps) {
                 ps = new Map<string, any>();
-                this.persistentState.set(t.info.id, ps);
+                se.set(t.info.id, ps);
             } 
             let old = ps.get(prop);
             ps.set(prop, value);
@@ -105,6 +113,7 @@ namespace LiteMol.Bootstrap {
         constructor(private context: Context) {
             Event.Tree.NodeRemoved.getStream(context).subscribe(e => {
                 this.controllerCache.delete(e.data.id);
+                this.state.delete(e.data.id);
             })
         }   
     }     

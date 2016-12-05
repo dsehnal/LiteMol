@@ -1,4 +1,7 @@
-﻿# 1.2.6
+﻿# 1.2.7
+* Fixed Transform UI state issue.
+
+# 1.2.6
 * Updated Transformer.action to provide option "onError" message and support actions returned as a promise.
 * Updated Tree.Selection.byRef/byValue to accept multiple arguments. 
 * Added Transform.actionWithContext.

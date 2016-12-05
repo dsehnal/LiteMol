@@ -65021,7 +65021,7 @@ var LiteMol;
 (function (LiteMol) {
     var Bootstrap;
     (function (Bootstrap) {
-        Bootstrap.VERSION = { number: "1.2.6", date: "Dec 3 2016" };
+        Bootstrap.VERSION = { number: "1.2.7", date: "Dec 5 2016" };
     })(Bootstrap = LiteMol.Bootstrap || (LiteMol.Bootstrap = {}));
 })(LiteMol || (LiteMol = {}));
 /*
@@ -70976,12 +70976,13 @@ var LiteMol;
                 var _this = this;
                 this.context = context;
                 this.controllerCache = new Map();
+                this.state = new Map();
                 this.byId = new Map();
                 this.bySourceType = new Map();
                 this.byTargetType = new Map();
-                this.persistentState = new Map();
                 Bootstrap.Event.Tree.NodeRemoved.getStream(context).subscribe(function (e) {
                     _this.controllerCache.delete(e.data.id);
+                    _this.state.delete(e.data.id);
                 });
             }
             TransformManager.prototype.addType = function (e, t, to) {
@@ -71011,12 +71012,12 @@ var LiteMol;
                     c = new Bootstrap.Components.Transform.Controller(this.context, t, e);
                 var info = this.context.plugin && this.context.plugin.getTransformerInfo(t);
                 if (info && info.initiallyCollapsed) {
-                    if (!this.hasPersistentState(t, 'isExpanded'))
-                        this.setPersistentState(t, 'isExpanded', false);
+                    if (!this.hasPersistentState(t, e, 'isExpanded'))
+                        this.setPersistentState(t, e, 'isExpanded', false);
                 }
                 else {
-                    if (!this.hasPersistentState(t, 'isExpanded'))
-                        this.setPersistentState(t, 'isExpanded', true);
+                    if (!this.hasPersistentState(t, e, 'isExpanded'))
+                        this.setPersistentState(t, e, 'isExpanded', true);
                 }
                 if (e.transform.transformer === t) {
                     c.setParams(e.transform.params);
@@ -71044,14 +71045,20 @@ var LiteMol;
                     this.addType(x, t, this.byTargetType);
                 }
             };
-            TransformManager.prototype.hasPersistentState = function (t, prop) {
-                var ps = this.persistentState.get(t.info.id);
+            TransformManager.prototype.hasPersistentState = function (t, e, prop) {
+                var se = this.state.get(e.id);
+                if (!se)
+                    return false;
+                var ps = se.get(t.info.id);
                 if (!ps || !ps.has(prop))
                     return false;
                 return true;
             };
-            TransformManager.prototype.getPersistentState = function (t, prop, defaultValue) {
-                var ps = this.persistentState.get(t.info.id);
+            TransformManager.prototype.getPersistentState = function (t, e, prop, defaultValue) {
+                var se = this.state.get(e.id);
+                if (!se)
+                    return defaultValue;
+                var ps = se.get(t.info.id);
                 if (!ps || !ps.has(prop))
                     return defaultValue;
                 return ps.get(prop);
@@ -71059,11 +71066,16 @@ var LiteMol;
             /**
              * returns whether the value changed or not
              */
-            TransformManager.prototype.setPersistentState = function (t, prop, value) {
-                var ps = this.persistentState.get(t.info.id);
+            TransformManager.prototype.setPersistentState = function (t, e, prop, value) {
+                var se = this.state.get(e.id);
+                if (!se) {
+                    se = new Map();
+                    this.state.set(e.id, se);
+                }
+                var ps = se.get(t.info.id);
                 if (!ps) {
                     ps = new Map();
-                    this.persistentState.set(t.info.id, ps);
+                    se.set(t.info.id, ps);
                 }
                 var old = ps.get(prop);
                 ps.set(prop, value);
@@ -76319,10 +76331,10 @@ var LiteMol;
                         this.controller.autoUpdateParams(p);
                     };
                     ControllerBase.prototype.getPersistentState = function (prop, defaultValue) {
-                        return this.controller.context.transforms.getPersistentState(this.controller.transformer, prop, defaultValue);
+                        return this.controller.context.transforms.getPersistentState(this.controller.transformer, this.transformSourceEntity, prop, defaultValue);
                     };
                     ControllerBase.prototype.setPersistentState = function (prop, value) {
-                        if (this.controller.context.transforms.setPersistentState(this.controller.transformer, prop, value)) {
+                        if (this.controller.context.transforms.setPersistentState(this.controller.transformer, this.transformSourceEntity, prop, value)) {
                             this.forceUpdate();
                         }
                     };

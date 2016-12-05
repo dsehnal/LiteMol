@@ -124,7 +124,7 @@ namespace LiteMol.Custom {
     
     // create the instance...
     
-    let id = '1grm';
+    let id = '1tqn';
     let plugin = create(document.getElementById('app')!);
 
     let action = plugin.createTransform();

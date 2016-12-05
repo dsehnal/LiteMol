@@ -548,7 +548,7 @@ var LiteMol;
         }
         Custom.create = create;
         // create the instance...
-        var id = '1grm';
+        var id = '1tqn';
         var plugin = create(document.getElementById('app'));
         var action = plugin.createTransform();
         action.add(plugin.context.tree.root, Transformer.Data.Download, { url: "https://www.ebi.ac.uk/pdbe/static/entry/" + id + "_updated.cif", type: 'String', id: id })
