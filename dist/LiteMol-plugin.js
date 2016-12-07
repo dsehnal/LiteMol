@@ -65021,7 +65021,7 @@ var LiteMol;
 (function (LiteMol) {
     var Bootstrap;
     (function (Bootstrap) {
-        Bootstrap.VERSION = { number: "1.2.7", date: "Dec 5 2016" };
+        Bootstrap.VERSION = { number: "1.2.8", date: "Dec 7 2016" };
     })(Bootstrap = LiteMol.Bootstrap || (LiteMol.Bootstrap = {}));
 })(LiteMol || (LiteMol = {}));
 /*
@@ -70517,7 +70517,7 @@ var LiteMol;
                             return;
                         var l = this.latestState.controller.entity;
                         if (l === e) {
-                            this.setState({});
+                            this.setState({ controller: void 0 });
                         }
                     };
                     Updater.prototype.added = function () {
@@ -70565,7 +70565,7 @@ var LiteMol;
                             return;
                         var l = this.latestState.controller.entity;
                         if (l === e) {
-                            this.setState({});
+                            this.setState({ controller: void 0 });
                         }
                     };
                     Action.prototype.added = function () {

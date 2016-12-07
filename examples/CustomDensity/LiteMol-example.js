@@ -8,27 +8,30 @@ var LiteMol;
         var Bootstrap = LiteMol.Bootstrap;
         var Entity = Bootstrap.Entity;
         var Transformer = Bootstrap.Entity.Transformer;
-        Custom.DownloadAndCreate = Bootstrap.Tree.Transformer.action({
-            id: 'litemol-custom_density_example-download-and-create',
-            name: 'Data',
-            description: 'Download molecule and 2Fo-Fc density.',
+        Custom.DensityLoader = Entity.create({ name: 'Density Loader', typeClass: 'Data', shortName: 'DL', description: 'Represents density loader entity.' });
+        Custom.CreateDensityLoader = Bootstrap.Tree.Transformer.create({
+            id: 'litemol-custom_density_example-create-loader',
+            name: 'Load Density',
+            description: 'Download 2Fo-Fc density.',
             from: [Entity.Root],
-            to: [Entity.Action],
+            to: [Custom.DensityLoader],
             defaultParams: function () { return ({ id: '1cbs' }); },
             validateParams: function (p) { return p.id && p.id.trim().length > 0 ? void 0 : ['Enter Id.']; }
         }, function (context, a, t) {
-            var id = t.params.id.trim().toLowerCase();
-            // Clear the previous data.
-            Bootstrap.Command.Tree.RemoveNode.dispatch(context, context.tree.root);
+            return Bootstrap.Task.resolve('Density', 'Silent', Custom.DensityLoader.create(t, { id: t.params.id, label: 'Density Loader' }));
+        });
+        Custom.DownloadDensity = Bootstrap.Tree.Transformer.actionWithContext({
+            id: 'litemol-custom_density_example-download-density',
+            name: 'Load Density',
+            description: 'Download 2Fo-Fc density.',
+            from: [Custom.DensityLoader],
+            to: [Entity.Action],
+            defaultParams: function () { return ({}); }
+        }, function (context, a, t) {
+            var id = a.props.id;
             var action = Bootstrap.Tree.Transform.build();
-            // Download the PDB file and create it's representation
-            action.add(a, Transformer.Data.Download, { url: "https://www.ebi.ac.uk/pdbe/entry-files/pdb" + id + ".ent", type: 'String', id: id })
-                .then(Transformer.Molecule.CreateFromData, { format: LiteMol.Core.Formats.Molecule.SupportedFormats.PDB }, {})
-                .then(Transformer.Molecule.CreateModel, { modelIndex: 0 })
-                .then(Transformer.Molecule.CreateMacromoleculeVisual, { het: true, polymer: true, water: true }, {});
-            //.then(Transformer.Molecule.CreateVisual, { style: Bootstrap.Visualization.Molecule.Default.ForType.get('BallsAndSticks') }, {}) // this can be used insteadf of the CreateMacromoleculeVisual
             // Download the density and enable the interactive density display
-            action.add(a, Transformer.Data.Download, { url: "https://www.ebi.ac.uk/pdbe/coordinates/files/" + id + ".ccp4", type: 'Binary', id: id, description: '2Fo-Fc Density' })
+            action.add(context.tree.root, Transformer.Data.Download, { url: "https://www.ebi.ac.uk/pdbe/coordinates/files/" + id + ".ccp4", type: 'Binary', id: id, description: '2Fo-Fc Density' })
                 .then(Transformer.Density.ParseData, { format: LiteMol.Core.Formats.Density.SupportedFormats.CCP4, id: '2Fo-Fc Density', normalize: false }, { isBinding: true })
                 .then(Transformer.Density.CreateVisualBehaviour, {
                 id: '2Fo-Fc Density',
@@ -46,6 +49,36 @@ var LiteMol;
                     transparency: { alpha: 0.75 }
                 })
             }, { ref: 'density-2fo-fc' });
+            return {
+                action: action,
+                context: a.ref
+            };
+        }, function (ctx, ref) {
+            if (!ref)
+                return;
+            Bootstrap.Command.Tree.RemoveNode.dispatch(ctx, ref);
+        });
+        Custom.DownloadAndCreate = Bootstrap.Tree.Transformer.action({
+            id: 'litemol-custom_density_example-download-and-create',
+            name: 'Data',
+            description: 'Download molecule and create the option to lazy load density.',
+            from: [Entity.Root],
+            to: [Entity.Action],
+            defaultParams: function () { return ({ id: '1cbs' }); },
+            validateParams: function (p) { return p.id && p.id.trim().length > 0 ? void 0 : ['Enter Id.']; }
+        }, function (context, a, t) {
+            var id = t.params.id.trim().toLowerCase();
+            // Clear the previous data.
+            Bootstrap.Command.Tree.RemoveNode.dispatch(context, context.tree.root);
+            var action = Bootstrap.Tree.Transform.build();
+            // Download the PDB file and create it's representation
+            action.add(a, Transformer.Data.Download, { url: "https://www.ebi.ac.uk/pdbe/entry-files/pdb" + id + ".ent", type: 'String', id: id })
+                .then(Transformer.Molecule.CreateFromData, { format: LiteMol.Core.Formats.Molecule.SupportedFormats.PDB }, {})
+                .then(Transformer.Molecule.CreateModel, { modelIndex: 0 })
+                .then(Transformer.Molecule.CreateMacromoleculeVisual, { het: true, polymer: true, water: true }, {});
+            //.then(Transformer.Molecule.CreateVisual, { style: Bootstrap.Visualization.Molecule.Default.ForType.get('BallsAndSticks') }, {}) // this can be used insteadf of the CreateMacromoleculeVisual
+            // Download the density and enable the interactive density display
+            action.add(a, Custom.CreateDensityLoader, { id: id }, { ref: 'density-downloader' });
             return action;
         });
     })(Custom = LiteMol.Custom || (LiteMol.Custom = {}));
@@ -70,6 +103,7 @@ var LiteMol;
                 transforms: [
                     { transformer: Transformer.Molecule.CreateVisual, view: Views.Transform.Molecule.CreateVisual },
                     { transformer: Transformer.Density.CreateVisualBehaviour, view: Views.Transform.Density.CreateVisualBehaviour },
+                    { transformer: Custom.DownloadDensity, view: Views.Transform.Empty },
                     { transformer: Custom.DownloadAndCreate, view: LiteMol.Plugin.Views.Transform.Data.WithIdField, initiallyCollapsed: false }
                 ],
                 behaviours: [
@@ -97,6 +131,7 @@ var LiteMol;
                     Plugin.Components.Visualization.HighlightInfo(LayoutRegion.Main, true),
                     //Plugin.Components.create('RepresentationControls', ctx => new Bootstrap.Components.Transform.Action(ctx, 'model', CreateRepresentation, 'Source'), Plugin.Views.Transform.Action)(LayoutRegion.Right),
                     Plugin.Components.create('SourceControls', function (ctx) { return new Bootstrap.Components.Transform.Action(ctx, ctx.tree.root, Custom.DownloadAndCreate, 'Source'); }, Plugin.Views.Transform.Action)(LayoutRegion.Right),
+                    Plugin.Components.create('DownloadDensity', function (ctx) { return new Bootstrap.Components.Transform.Action(ctx, 'density-downloader', Custom.DownloadDensity, 'Load 2Fo-Fc Density'); }, Plugin.Views.Transform.Action)(LayoutRegion.Right),
                     Plugin.Components.create('DensityControls', function (ctx) { return new Bootstrap.Components.Transform.Updater(ctx, 'density-2fo-fc', 'Density: 2Fo-Fc'); }, Plugin.Views.Transform.Updater)(LayoutRegion.Right),
                     Plugin.Components.Context.Log(LayoutRegion.Bottom, true),
                     Plugin.Components.Context.Overlay(LayoutRegion.Root),

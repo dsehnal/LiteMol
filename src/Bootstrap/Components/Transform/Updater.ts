@@ -15,7 +15,7 @@ namespace LiteMol.Bootstrap.Components.Transform {
             if (!this.latestState.controller) return;
             let l = this.latestState.controller.entity;
             if (l === e) {
-                this.setState({});
+                this.setState({ controller: void 0 });
             }
         }
 

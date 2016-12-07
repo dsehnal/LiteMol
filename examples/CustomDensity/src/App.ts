@@ -20,6 +20,8 @@ namespace LiteMol.Custom {
                 { transformer: Transformer.Molecule.CreateVisual, view: Views.Transform.Molecule.CreateVisual },
                 { transformer: Transformer.Density.CreateVisualBehaviour, view: Views.Transform.Density.CreateVisualBehaviour },
 
+                { transformer: DownloadDensity, view: Views.Transform.Empty },
+
                 { transformer: DownloadAndCreate, view: LiteMol.Plugin.Views.Transform.Data.WithIdField, initiallyCollapsed: false }
             ],
             behaviours: [
@@ -55,6 +57,7 @@ namespace LiteMol.Custom {
 
                 //Plugin.Components.create('RepresentationControls', ctx => new Bootstrap.Components.Transform.Action(ctx, 'model', CreateRepresentation, 'Source'), Plugin.Views.Transform.Action)(LayoutRegion.Right),
                 Plugin.Components.create('SourceControls', ctx => new Bootstrap.Components.Transform.Action(ctx, ctx.tree.root, DownloadAndCreate, 'Source'), Plugin.Views.Transform.Action)(LayoutRegion.Right),
+                Plugin.Components.create('DownloadDensity', ctx => new Bootstrap.Components.Transform.Action(ctx, 'density-downloader', DownloadDensity, 'Load 2Fo-Fc Density'), Plugin.Views.Transform.Action)(LayoutRegion.Right),
 
                 Plugin.Components.create('DensityControls', ctx => new Bootstrap.Components.Transform.Updater(ctx, 'density-2fo-fc', 'Density: 2Fo-Fc'), Plugin.Views.Transform.Updater)(LayoutRegion.Right),
 

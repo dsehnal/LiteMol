@@ -1,4 +1,7 @@
-﻿# 1.2.7
+﻿# 1.2.8
+* Fixed a bug in Action/Updater controller then the controlled entity was removed. 
+
+# 1.2.7
 * Fixed Transform UI state issue.
 
 # 1.2.6
