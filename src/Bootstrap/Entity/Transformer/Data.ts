@@ -6,16 +6,11 @@
 namespace LiteMol.Bootstrap.Entity.Transformer.Data {
     "use strict";
 
-    export enum DownloadCompression {
-        None,
-        Gzip
-    }
-
     export interface DownloadParams {
         id?: string;
         description?: string;
-        type?: string;
-        url?: string;
+        type: string;
+        url: string;
         title?: string;
         responseCompression?: Utils.DataCompressionMethod;
     }
@@ -50,7 +45,7 @@ namespace LiteMol.Bootstrap.Entity.Transformer.Data {
     export interface OpenFileParams {
         description?: string;
         id?: string;
-        file?: File;
+        file: File | undefined;
         type?: string;
     }
 
@@ -134,14 +129,14 @@ namespace LiteMol.Bootstrap.Entity.Transformer.Data {
         }).setReportTime(true);
     });
 
-    export interface FromDataParams { id?: string, description?: string, data?: string | ArrayBuffer }
+    export interface FromDataParams { id?: string, description?: string, data: string | ArrayBuffer }
     export const FromData = Tree.Transformer.create<Entity.Root, Entity.Data.String | Entity.Data.Binary, FromDataParams>({
         id: 'data-from-data',
         name: 'From Data',
         description: 'Creates a data entity from string or binary data',
         from: [Entity.Root],
         to: [Entity.Data.String, Entity.Data.Binary],
-        defaultParams: () => ({})
+        defaultParams: () => void 0
     }, (ctx, a, t) => {
         let data = t.params.data!;
         let e = data instanceof ArrayBuffer 

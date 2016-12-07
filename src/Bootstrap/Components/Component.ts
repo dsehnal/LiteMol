@@ -15,7 +15,7 @@ namespace LiteMol.Bootstrap.Components {
             return this.context.dispatcher;
         }
                 
-        setState(...states: State[]) {           
+        setState(...states: Partial<State>[]) {           
             let s = Utils.merge(this._latestState, ...states);
             if (s !== this._latestState) {
                 this._latestState = s;

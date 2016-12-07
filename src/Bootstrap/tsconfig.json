@@ -79,7 +79,6 @@
     "Entity/Transformer/Data.ts",
     "Entity/Transformer/Density.ts",
     "Entity/Transformer/CoordinateStreaming.ts",
-    "Entity/Transformer/Visual.ts",
 
     // ENTITY UTILS    
     "Utils/Molecule.ts",

@@ -25,7 +25,7 @@ namespace LiteMol.Bootstrap.Command {
     }
     
     export namespace Layout {
-        export const SetState = LiteMol.Bootstrap.Event.create<Components.LayoutState>('lm.cmd.Layout.SetState', Lane.Slow);
+        export const SetState = LiteMol.Bootstrap.Event.create<Partial<Components.LayoutState>>('lm.cmd.Layout.SetState', Lane.Slow);
         export const SetViewportOptions = create<LiteMol.Visualization.SceneOptions>('bs.cmd.Layout.SetViewportOptions', Lane.Slow);
     }
     

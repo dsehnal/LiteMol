@@ -59,7 +59,7 @@ namespace LiteMol.Plugin.Views.Transform.Density {
         
         private surface() {           
             let data = Bootstrap.Tree.Node.findClosestNodeOfType(this.transformSourceEntity, [Bootstrap.Entity.Density.Data]) as Bootstrap.Entity.Density.Data;           
-            let params = this.params.style!.params as Bootstrap.Visualization.Density.Params;
+            let params = this.params.style.params as Bootstrap.Visualization.Density.Params;
             let isSigma = params.isoValueType !== Bootstrap.Visualization.Density.IsoValueType.Absolute;
 
             return <IsoValue 
@@ -68,9 +68,9 @@ namespace LiteMol.Plugin.Views.Transform.Density {
                 onChangeType={v => {
                     if (v === params.isoValueType) return;
                     if (v === Bootstrap.Visualization.Density.IsoValueType.Absolute) {
-                        this.controller.updateStyleParams({ isoValue: isoValueSigmaToAbsolute(data.props.data, params.isoValue!), isoValueType: v }); 
+                        this.controller.updateStyleParams({ isoValue: isoValueSigmaToAbsolute(data.props.data, params.isoValue), isoValueType: v }); 
                     } else {
-                        this.controller.updateStyleParams({ isoValue: isoValueAbsoluteToSigma(data.props.data, params.isoValue!, -5, 5), isoValueType: v });
+                        this.controller.updateStyleParams({ isoValue: isoValueAbsoluteToSigma(data.props.data, params.isoValue, -5, 5), isoValueType: v });
                     }
                 }}
                 min={isSigma ? -5 : data.props.data.valuesInfo.min} max={isSigma ? 5 : data.props.data.valuesInfo.max} 
@@ -115,12 +115,12 @@ namespace LiteMol.Plugin.Views.Transform.Density {
     }
     
     
-    export class CreateVisualBehaviour extends Transform.ControllerBase<Bootstrap.Components.Transform.DensityVisual, Transformer.Density.CreateVisualBehaviourParams> {        
+    export class CreateVisualBehaviour extends Transform.ControllerBase<Bootstrap.Components.Transform.DensityVisual, Transformer.Density.CreateVisualParams | Transformer.Density.CreateVisualBehaviourParams> {        
         
         private surface() {           
             let data = Bootstrap.Tree.Node.findClosestNodeOfType(this.transformSourceEntity, [Bootstrap.Entity.Density.Data]) as Bootstrap.Entity.Density.Data;
-            let params = this.params;           
-            let visualParams = params.style!.params as Bootstrap.Visualization.Density.Params;
+            let params = this.params as Transformer.Density.CreateVisualBehaviourParams;           
+            let visualParams = params.style.params;
             let isSigma = visualParams.isoValueType !== Bootstrap.Visualization.Density.IsoValueType.Absolute;
 
             return <IsoValue 
@@ -129,9 +129,9 @@ namespace LiteMol.Plugin.Views.Transform.Density {
                 onChangeType={v => {
                     if (v === visualParams.isoValueType) return;
                     if (v === Bootstrap.Visualization.Density.IsoValueType.Absolute) {
-                        this.controller.updateStyleParams({ isoValue: isoValueSigmaToAbsolute(data.props.data, visualParams.isoValue!), isoValueType: v }); 
+                        this.controller.updateStyleParams({ isoValue: isoValueSigmaToAbsolute(data.props.data, visualParams.isoValue), isoValueType: v }); 
                     } else {
-                        this.controller.updateStyleParams({ isoValue: isoValueAbsoluteToSigma(data.props.data, visualParams.isoValue!, this.params.isoSigmaMin!, params.isoSigmaMax!), isoValueType: v });
+                        this.controller.updateStyleParams({ isoValue: isoValueAbsoluteToSigma(data.props.data, visualParams.isoValue, params.isoSigmaMin, params.isoSigmaMax), isoValueType: v });
                     }
                 }}
                 min={isSigma ? params.isoSigmaMin! : data.props.data.valuesInfo.min} max={isSigma ? params.isoSigmaMax! : data.props.data.valuesInfo.max} 
@@ -140,8 +140,8 @@ namespace LiteMol.Plugin.Views.Transform.Density {
         }
         
         private colors() {          
-            let params = this.params.style!.params as Bootstrap.Visualization.Density.Params;                         
-            let theme = this.params.style!.theme!;
+            let params = this.params.style.params;                         
+            let theme = this.params.style.theme;
             let colorControls: any[];
             
             let uc = theme.colors!.get('Uniform');
@@ -168,17 +168,18 @@ namespace LiteMol.Plugin.Views.Transform.Density {
         private show() {
             const selLabel = 'Around Selection';
             const allLabel = 'Everything';
+            let params = this.params as Transformer.Density.CreateVisualBehaviourParams;
 
             return <Controls.OptionsGroup 
                 options={[selLabel, allLabel]} 
                 caption={s => s} 
-                current={this.params.showFull ? allLabel : selLabel }
+                current={params.showFull ? allLabel : selLabel }
                 onChange={(o) => this.autoUpdateParams({ showFull: o === allLabel }) } 
                 label='Show' />   
         }
         
         protected renderControls() {            
-            let params = this.params;
+            let params = this.params as Transformer.Density.CreateVisualBehaviourParams;
             
             return <div>
                 {this.surface()}
@@ -186,7 +187,7 @@ namespace LiteMol.Plugin.Views.Transform.Density {
                 {this.show()}
                 {!params.showFull 
                     ? <Controls.Slider label='Radius' onChange={v => this.controller.updateRadius(v)} 
-                    min={params.minRadius !== void 0 ? params.minRadius : 0} max={params.maxRadius !== void 0 ? params.maxRadius : 10} step={0.005} value={params.radius!} />
+                    min={params.minRadius !== void 0 ? params.minRadius : 0} max={params.maxRadius !== void 0 ? params.maxRadius : 10} step={0.005} value={params.radius} />
                     : void 0 }
             </div>
         }        

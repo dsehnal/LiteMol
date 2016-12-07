@@ -5,7 +5,7 @@
 namespace LiteMol.Bootstrap.Entity.Transformer.Molecule {
     "use strict";
 
-    export interface DownloadMoleculeSourceParams { id?: string, format?: Core.Formats.FormatInfo }
+    export interface DownloadMoleculeSourceParams { id: string, format: Core.Formats.FormatInfo }
     export function downloadMoleculeSource(params: { sourceId: string, name: string, description: string, urlTemplate: (id: string) => string, defaultId: string, specificFormat?: Core.Formats.FormatInfo, isFullUrl?: boolean }) {
         return Tree.Transformer.action<Root, Action, DownloadMoleculeSourceParams>({
             id: 'molecule-download-molecule-' + params.sourceId,
@@ -24,14 +24,14 @@ namespace LiteMol.Bootstrap.Entity.Transformer.Molecule {
         })
     }
 
-    export interface OpenMoleculeFromFileParams { file?: File }
+    export interface OpenMoleculeFromFileParams { file: File | undefined }
     export const OpenMoleculeFromFile = Tree.Transformer.action<Root, Action, OpenMoleculeFromFileParams>({
         id: 'molecule-open-from-file',
         name: 'Molecule from File',
         description: `Open a molecule from a file (${LiteMol.Core.Formats.Molecule.SupportedFormats.All.map(f => f.name).join(', ')}).`,
         from: [Root],
         to: [Action],
-        defaultParams: ctx => ({ format: LiteMol.Core.Formats.Molecule.SupportedFormats.mmCIF }),
+        defaultParams: ctx => ({ file: void 0 }),
         validateParams: p => !p.file ? ['Select a file'] : !LiteMol.Core.Formats.FormatInfo.getFormat(p.file.name, LiteMol.Core.Formats.Molecule.SupportedFormats.All)
             ? [`Select a supported file format (${(<any[]>[]).concat(LiteMol.Core.Formats.Molecule.SupportedFormats.All.map(f => f.extensions)).join(', ')}).`]
             : void 0
@@ -44,7 +44,7 @@ namespace LiteMol.Bootstrap.Entity.Transformer.Molecule {
     })
 
     export interface CreateFromDataParams {
-        format?: Core.Formats.FormatInfo,
+        format: Core.Formats.FormatInfo,
         customId?: string
     }
 
@@ -73,7 +73,7 @@ namespace LiteMol.Bootstrap.Entity.Transformer.Molecule {
     );
 
     export interface CreateFromMmCifParams {
-        blockIndex?: number
+        blockIndex: number
     }
 
     export const CreateFromMmCif = Tree.Transformer.create<Entity.Data.CifDictionary, Entity.Molecule.Molecule, CreateFromMmCifParams>({
@@ -101,7 +101,7 @@ namespace LiteMol.Bootstrap.Entity.Transformer.Molecule {
     );
 
     export interface CreateModelParams {
-        modelIndex?: number
+        modelIndex: number
     }
 
     export const CreateModel = Tree.Transformer.create<Entity.Molecule.Molecule, Entity.Molecule.Model, CreateModelParams>({
@@ -132,7 +132,7 @@ namespace LiteMol.Bootstrap.Entity.Transformer.Molecule {
 
     export interface CreateSelectionParams {
         name?: string,
-        queryString?: string,
+        queryString: string,
         silent?: boolean,
         inFullContext?: boolean
     }
@@ -157,7 +157,7 @@ namespace LiteMol.Bootstrap.Entity.Transformer.Molecule {
     }, (ctx, a, t) => {
         return Task.create<Entity.Molecule.Selection>(`Create Selection (${a.props.label})`, 'Background', ctx => {
             let params = t.params;
-            let query = Core.Structure.Query.Builder.toQuery(params.queryString!);
+            let query = Core.Structure.Query.Builder.toQuery(params.queryString);
             let queryCtx = t.params.inFullContext ? Utils.Molecule.findModel(a) !.props.model.queryContext : Utils.Molecule.findQueryContext(a);
             let indices = query(queryCtx).unionAtomIndices();
             if (!indices.length) {
@@ -170,7 +170,7 @@ namespace LiteMol.Bootstrap.Entity.Transformer.Molecule {
     );
 
     export interface CreateSelectionFromQueryParams {
-        query?: Core.Structure.Query.Source,
+        query: Core.Structure.Query.Source,
         name?: string,
         silent?: boolean,
         inFullContext?: boolean
@@ -182,11 +182,11 @@ namespace LiteMol.Bootstrap.Entity.Transformer.Molecule {
         description: 'Create an atom selection.',
         from: [Entity.Molecule.Model, Entity.Molecule.Visual],
         to: [Entity.Molecule.Selection],
-        defaultParams: ctx => ({}),
+        defaultParams: ctx => void 0,
     }, (ctx, a, t) => {
         return Task.create<Entity.Molecule.Selection>(`Create Selection (${a.props.label})`, 'Background', ctx => {
             let params = t.params;
-            let query = Core.Structure.Query.Builder.toQuery(params.query!);
+            let query = Core.Structure.Query.Builder.toQuery(params.query);
             let queryCtx = t.params.inFullContext ? Utils.Molecule.findModel(a) !.props.model.queryContext : Utils.Molecule.findQueryContext(a);
             let indices = query(queryCtx).unionAtomIndices();
             if (!indices.length) {
@@ -199,7 +199,7 @@ namespace LiteMol.Bootstrap.Entity.Transformer.Molecule {
     );
 
     export interface CreateAssemblyParams {
-        name?: string
+        name: string
     }
 
     export const CreateAssembly = Tree.Transformer.create<Entity.Molecule.Model, Entity.Molecule.Model, CreateAssemblyParams>({
@@ -244,8 +244,8 @@ namespace LiteMol.Bootstrap.Entity.Transformer.Molecule {
     });
 
     export interface CreateSymmetryMatesParams {
-        type?: 'Mates' | 'Interaction',
-        radius?: number
+        type: 'Mates' | 'Interaction',
+        radius: number
     }
 
     export const CreateSymmetryMates = Tree.Transformer.create<Entity.Molecule.Model, Entity.Molecule.Model, CreateSymmetryMatesParams>({
@@ -264,7 +264,7 @@ namespace LiteMol.Bootstrap.Entity.Transformer.Molecule {
                 ctx.reject('Spacegroup info info not available.');
                 return;
             }
-            let radius = Math.max(t.params.radius!, 0);
+            let radius = Math.max(t.params.radius, 0);
             ctx.update('Creating...');
             ctx.schedule(() => {
                 let symm = t.params.type === 'Mates' ? Core.Structure.buildSymmetryMates(a.props.model, radius) : Core.Structure.buildPivotGroupSymmetry(a.props.model, radius);
@@ -283,7 +283,7 @@ namespace LiteMol.Bootstrap.Entity.Transformer.Molecule {
          * (Use Core.Geometry.LinearAlgebra.Matrix4.empty & setValue(m, row, column, value)
          *  if you are not sure).
          */
-        transform?: number[],
+        transform: number[],
         description?: string
     }
 
@@ -318,7 +318,7 @@ namespace LiteMol.Bootstrap.Entity.Transformer.Molecule {
     });
 
     export interface CreateVisualParams {
-        style?: Visualization.Molecule.Style<any>
+        style: Visualization.Molecule.Style<any>
     }
 
     export const CreateVisual = Tree.Transformer.create<Entity.Molecule.Model | Entity.Molecule.Selection, Entity.Molecule.Visual, CreateVisualParams>({
@@ -328,26 +328,26 @@ namespace LiteMol.Bootstrap.Entity.Transformer.Molecule {
         from: [Entity.Molecule.Model, Entity.Molecule.Selection],
         to: [Entity.Molecule.Visual],
         isUpdatable: true,
-        defaultParams: ctx => ({ style: Visualization.Molecule.Default.ForType.get('Cartoons') }),
+        defaultParams: ctx => ({ style: Visualization.Molecule.Default.ForType.get('Cartoons')! }),
         validateParams: p => !p.style ? ['Specify Style'] : void 0,
-        customController: (ctx, t, e) => new Components.Transform.MoleculeVisual(ctx, t, e)
+        customController: (ctx, t, e) => new Components.Transform.MoleculeVisual(ctx, t, e) as Components.Transform.Controller<any>
     }, (ctx, a, t) => {
         let params = t.params;
-        return Visualization.Molecule.create(a, t, params.style!).setReportTime(!t.params.style!.computeOnBackground);
+        return Visualization.Molecule.create(a, t, params.style).setReportTime(!t.params.style!.computeOnBackground);
     }, (ctx, b, t) => {
 
         let oldParams = b.transform.params as CreateVisualParams;
-        if (oldParams.style!.type !== t.params.style!.type || !Utils.deepEqual(oldParams.style!.params, t.params.style!.params)) return void 0;
+        if (oldParams.style.type !== t.params.style.type || !Utils.deepEqual(oldParams.style.params, t.params.style.params)) return void 0;
 
         let model = b.props.model;
         if (!model) return void 0;
         let a = Utils.Molecule.findModel(b.parent);
         if (!a) return void 0;
 
-        let ti = t.params.style!.theme!;
+        let ti = t.params.style.theme!;
         let theme = ti.template!.provider(a, Visualization.Theme.getProps(ti!));
         model.applyTheme(theme);
-        b.props.style = t.params.style!;
+        b.props.style = t.params.style;
         //Entity.forceUpdate(b);
         Entity.nodeUpdated(b);
         return Task.resolve(t.transformer.info.name, 'Background', Tree.Node.Null);

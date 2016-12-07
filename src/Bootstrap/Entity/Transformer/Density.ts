@@ -8,8 +8,8 @@ namespace LiteMol.Bootstrap.Entity.Transformer.Density {
 
     export interface ParseDataParams {
         id?: string,
-        format?: LiteMol.Core.Formats.FormatInfo,
-        normalize?: boolean
+        format: LiteMol.Core.Formats.FormatInfo,
+        normalize: boolean
     }
     export const ParseData = Tree.Transformer.create<Entity.Data.String | Entity.Data.Binary, Entity.Density.Data, ParseDataParams>({
         id: 'density-parse-binary',
@@ -47,7 +47,7 @@ namespace LiteMol.Bootstrap.Entity.Transformer.Density {
     });
 
     export interface CreateVisualParams {
-        style?: Visualization.Density.Style
+        style: Visualization.Density.Style
     }
 
     export const CreateVisual = Tree.Transformer.create<Entity.Density.Data, Entity.Density.Visual, CreateVisualParams>({
@@ -59,7 +59,7 @@ namespace LiteMol.Bootstrap.Entity.Transformer.Density {
         isUpdatable: true,
         defaultParams: () => ({ style: Visualization.Density.Default.Style }),
         validateParams: p => !p.style ? ['Specify Style'] : void 0,
-        customController: (ctx, t, e) => new Components.Transform.DensityVisual(ctx, t, e),
+        customController: (ctx, t, e) => new Components.Transform.DensityVisual(ctx, t, e) as Components.Transform.Controller<any>,
     }, (ctx, a, t) => {
         let params = t.params;
         return Visualization.Density.create(a, t, params.style!).setReportTime(!t.params.style!.computeOnBackground);
@@ -85,13 +85,13 @@ namespace LiteMol.Bootstrap.Entity.Transformer.Density {
 
     export interface CreateVisualBehaviourParams {
         id?: string,
-        isoSigmaMin?: number;
-        isoSigmaMax?: number;
-        minRadius?: number;
-        maxRadius?: number;
-        radius?: number,
-        showFull?: boolean,
-        style?: Visualization.Density.Style
+        isoSigmaMin: number;
+        isoSigmaMax: number;
+        minRadius: number;
+        maxRadius: number;
+        radius: number,
+        showFull: boolean,
+        style: Visualization.Density.Style
     }
 
     export const CreateVisualBehaviour = Tree.Transformer.create<Entity.Density.Data, Entity.Density.InteractiveSurface, CreateVisualBehaviourParams>({
@@ -102,13 +102,13 @@ namespace LiteMol.Bootstrap.Entity.Transformer.Density {
         to: [Entity.Density.InteractiveSurface],
         isUpdatable: true,
         defaultParams: ctx => ({ style: Visualization.Density.Default.Style, radius: ctx.settings.get('density.defaultVisualBehaviourRadius') || 0, isoSigmaMin: -5, isoSigmaMax: 5, minRadius: 0, maxRadius: 10, showFull: false }),
-        customController: (ctx, t, e) => new Components.Transform.DensityVisual(ctx, t, e),
+        customController: (ctx, t, e) => new Components.Transform.DensityVisual(ctx, t, e) as Components.Transform.Controller<any>,
     }, (ctx, a, t) => {
         let params = t.params;
         let b = new Bootstrap.Behaviour.Density.ShowDynamicDensity(ctx, {
-            style: params.style!,
-            radius: params.radius!,
-            showFull: params.showFull!
+            style: params.style,
+            radius: params.radius,
+            showFull: params.showFull
         });
         let isSigma = params.style!.params!.isoValueType === void 0 || params.style!.params!.isoValueType === Visualization.Density.IsoValueType.Sigma;
         return Task.resolve('Behaviour', 'Background', Entity.Density.InteractiveSurface.create(t, { label: `${params.id ? t.params.id : 'Interactive'}, ${Utils.round(params.style!.params!.isoValue!, 2)}${isSigma ? ' \u03C3' : ''}`, behaviour: b }));

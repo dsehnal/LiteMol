@@ -8,25 +8,7 @@ namespace LiteMol.Bootstrap.Components.Transform {
  
     import Transformer = Tree.Transformer.Any
  
-    export class View extends Component<{ update?: Controller<any>, transforms?: Controller<any>[] }> {
-                
-        // private setParams(c: Controller<any>) {
-        //     let prms = c.transformer.info.defaultParams(this.context, this.context.currentEntity);
-        //     c.setParams(prms);
-        // }
-        
-        // private updateParams(t: Transformer) {
-        //     let c = this.context.transforms.getController(t);
-        //     if (!c) return false;
-        //     if (t.info.updateParams) {
-        //         let p = t.info.updateParams(this.context.currentEntity.transform.params, this.context.currentEntity);
-        //         if (p) c.setParams(p);
-        //         else c.setParams(this.context.currentEntity.transform.params); 
-        //     }
-        //     else c.setParams(this.context.currentEntity.transform.params);
-        //     return true;
-        // }
-        
+    export class View extends Component<{ update: Controller<any> | undefined, transforms: Controller<any>[] }> {                        
         private update() {
             if (!this.context.currentEntity) {
                 this.setState({ transforms: [] });
@@ -58,7 +40,6 @@ namespace LiteMol.Bootstrap.Components.Transform {
             
             this.update();
             Event.Entity.CurrentChanged.getStream(context).subscribe(() => this.update());                  
-        }
-        
+        }        
     }   
 }

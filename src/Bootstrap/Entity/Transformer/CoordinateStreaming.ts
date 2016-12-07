@@ -9,8 +9,8 @@ namespace LiteMol.Bootstrap.Entity.Transformer.Molecule.CoordinateStreaming {
 
 
     export interface CreateStreamingBehaviourParams {
-        server?: string,
-        radius?: number
+        server: string,
+        radius: number
     }
 
     export const CreateBehaviour = Tree.Transformer.create<Entity.Molecule.Model, Entity.Molecule.CoordinateStreaming.Behaviour, CreateStreamingBehaviourParams>({
@@ -22,12 +22,11 @@ namespace LiteMol.Bootstrap.Entity.Transformer.Molecule.CoordinateStreaming {
         defaultParams: ctx => ({ server: ctx.settings.get('molecule.coordinateStreaming.defaultServer') || '', radius: ctx.settings.get('molecule.coordinateStreaming.defaultRadius') || 0 }),
     }, (ctx, a, t) => {
         return Task.resolve('Behaviour', 'Background', Entity.Molecule.CoordinateStreaming.Behaviour.create(t, { label: `Coordinate Streaming`, behaviour: new Bootstrap.Behaviour.Molecule.CoordinateStreaming(ctx, t.params.server!, t.params.radius) }));
-    }
-    );
+    });
 
     export interface CreateModelParams {
-        data?: ArrayBuffer,
-        transform?: number[]
+        data: ArrayBuffer,
+        transform: number[]
     }
 
     export const CreateModel = Tree.Transformer.create<Entity.Molecule.CoordinateStreaming.Behaviour, Entity.Molecule.Model, CreateModelParams>({
@@ -36,9 +35,8 @@ namespace LiteMol.Bootstrap.Entity.Transformer.Molecule.CoordinateStreaming {
         description: '',
         from: [Entity.Molecule.CoordinateStreaming.Behaviour],
         to: [Entity.Molecule.Model],
-        defaultParams: () => ({})
+        defaultParams: () => void 0,
     }, (ctx, a, t) => {
-
         return Task.create<Entity.Molecule.Model>('Load', 'Silent', ctx => {
             let cif = Core.Formats.CIF.Binary.parse(t.params.data!);
             if (cif.isError) return;
@@ -47,13 +45,12 @@ namespace LiteMol.Bootstrap.Entity.Transformer.Molecule.CoordinateStreaming {
             if (t.params.transform) Core.Structure.Operator.applyToModelUnsafe(t.params.transform, model);
             ctx.resolve(Entity.Molecule.Model.create(t, { label: 'part', model }));
         });
-    }
-    );
+    });
 
     export interface InitStreamingParams {
-        id?: string,
-        server?: string,
-        radius?: number
+        id: string,
+        server: string,
+        radius: number
     }
 
     export const InitStreaming = Tree.Transformer.create<Entity.Root, Entity.Action, InitStreamingParams>({

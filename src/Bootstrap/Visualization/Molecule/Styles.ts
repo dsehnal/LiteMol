@@ -7,39 +7,38 @@ namespace LiteMol.Bootstrap.Visualization.Molecule {
 
     export type Source = Entity.Molecule.Model | Entity.Molecule.Selection;
 
-    export type Type = 'Cartoons' | 'Calpha' | 'BallsAndSticks' | 'VDWBalls' | 'Surface';
     export type DetailType = 'Automatic' | 'Very Low' | 'Low' | 'Medium' | 'High' | 'Very High';
     
     export type Style<Params> = Visualization.Style<Type, Params>
             
-    export const TypeDescriptions: { [key: string]: TypeDescription } = {
-        'Cartoons': { label: 'Cartoon', shortLabel: 'Cartoon' },
-        'Calpha': { label: 'C-\u03B1 Trace', shortLabel: 'C-\u03B1' },
-        'BallsAndSticks': { label: 'Balls and Sticks', shortLabel: `B'n'S` },
-        'VDWBalls': { label: 'VDW Balls', shortLabel: 'VDW' },
-        'Surface': { label: 'Surface', shortLabel: 'Surface' }
+    export const TypeDescriptions = {
+        'Cartoons': { label: 'Cartoon', shortLabel: 'Cartoon' } as TypeDescription,
+        'Calpha': { label: 'C-\u03B1 Trace', shortLabel: 'C-\u03B1' } as TypeDescription,
+        'BallsAndSticks': { label: 'Balls and Sticks', shortLabel: `B'n'S` } as TypeDescription,
+        'VDWBalls': { label: 'VDW Balls', shortLabel: 'VDW' } as TypeDescription,
+        'Surface': { label: 'Surface', shortLabel: 'Surface' } as TypeDescription
     };
+    export type Type = keyof (typeof TypeDescriptions);
     
     export const Types: Type[] = [ 'Cartoons', 'Calpha', 'BallsAndSticks', 'VDWBalls', 'Surface' ];
     export const DetailTypes: DetailType[] = [ 'Automatic', 'Very Low', 'Low', 'Medium', 'High', 'Very High' ];
     
     export interface DetailParams {
-        detail?: DetailType
+        detail: DetailType
     }
         
     export interface BallsAndSticksParams extends DetailParams {
-        useVDW?: boolean,
+        useVDW: boolean,
         vdwScaling?: number,
         atomRadius?: number,
-        bondRadius?: number,
-        detail?: DetailType
+        bondRadius: number
     }
     
     export interface SurfaceParams {
-        probeRadius?: number,
-        density?: number,
-        smoothing?: number,
-        isWireframe?: boolean
+        probeRadius: number,
+        density: number,
+        smoothing: number,
+        isWireframe: boolean
     }
     
     export namespace Default {

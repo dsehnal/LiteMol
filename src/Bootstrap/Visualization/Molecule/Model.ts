@@ -70,7 +70,7 @@ namespace LiteMol.Bootstrap.Visualization.Molecule {
                     
         if (!atomIndices.length) return void 0;
         
-        let tessalation = getTessalation(style.params!.detail!, atomIndices.length);
+        let tessalation = getTessalation(style.params.detail, atomIndices.length);
                 
         switch (style.type) {
             case 'Cartoons': 
@@ -78,7 +78,7 @@ namespace LiteMol.Bootstrap.Visualization.Molecule {
             case 'Calpha':
                 return MolVis.Cartoons.Model.create(source, { model, atomIndices, theme, queryContext: Utils.Molecule.findQueryContext(source), params: createCartoonParams(tessalation, true) });
             case 'BallsAndSticks': 
-                return Vis.Molecule.BallsAndSticks.Model.create(source, { model, atomIndices, theme, params: createBallsAndSticksParams(tessalation, model, style.params!) });
+                return Vis.Molecule.BallsAndSticks.Model.create(source, { model, atomIndices, theme, params: createBallsAndSticksParams(tessalation, model, style.params as BallsAndSticksParams) });
             case 'VDWBalls':
                 return Vis.Molecule.BallsAndSticks.Model.create(source, { model, atomIndices, theme, params: createVDWBallsParams(tessalation, model) });
             default:

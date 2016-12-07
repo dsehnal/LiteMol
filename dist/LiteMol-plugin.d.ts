@@ -2770,7 +2770,7 @@ declare namespace LiteMol.Plugin.Views {
     abstract class View<Controller extends Bootstrap.Components.Component<any>, State, CustomProps> extends ObserverView<{
         controller: Controller;
     } & CustomProps, State> {
-        protected readonly controller: Controller;
+        protected readonly controller: this['props']['controller'];
         componentWillMount(): void;
     }
 }
@@ -2789,8 +2789,8 @@ declare namespace LiteMol.Plugin.Views.Transform {
     }> {
         protected abstract renderControls(): void;
         readonly params: P;
-        updateParams(p: P): void;
-        autoUpdateParams(p: P): void;
+        updateParams(p: Partial<P>): void;
+        autoUpdateParams(p: Partial<P>): void;
         getPersistentState<T>(prop: string, defaultValue: T): any;
         setPersistentState<T>(prop: string, value: T): void;
         readonly transformSourceEntity: Bootstrap.Entity.Any;
@@ -2890,7 +2890,7 @@ declare namespace LiteMol.Plugin.Views.Transform.Density {
         private colors();
         protected renderControls(): JSX.Element;
     }
-    class CreateVisualBehaviour extends Transform.ControllerBase<Bootstrap.Components.Transform.DensityVisual, Transformer.Density.CreateVisualBehaviourParams> {
+    class CreateVisualBehaviour extends Transform.ControllerBase<Bootstrap.Components.Transform.DensityVisual, Transformer.Density.CreateVisualParams | Transformer.Density.CreateVisualBehaviourParams> {
         private surface();
         private colors();
         private show();
@@ -3134,7 +3134,7 @@ declare namespace LiteMol.Plugin {
          * or Visualization.Color instance.
          */
         viewportBackground?: string | Visualization.Color;
-        layoutState?: Bootstrap.Components.LayoutState;
+        layoutState?: Partial<Bootstrap.Components.LayoutState>;
         /**
          * This options determines if Google Analytics is enabled
          * to collect data about the plugin usage.
@@ -3220,7 +3220,7 @@ declare namespace LiteMol.Plugin {
          *
          * Expanded, show/hide controls, etc..
          */
-        setLayoutState(state: Bootstrap.Components.LayoutState): void;
+        setLayoutState(state: Partial<Bootstrap.Components.LayoutState>): void;
         /**
          * Load molecule from url or string/binary data.
          *
@@ -15464,7 +15464,7 @@ declare namespace LiteMol.Bootstrap.Utils {
     function deepEqual<T>(a: T, b: T): boolean;
     function _assignType<T>(o: T, ...from: any[]): T;
     const assign: (<T>(o: T, ...from: any[]) => T);
-    const merge: (<T>(source: T, ...rest: T[]) => T);
+    const merge: (<T>(source: T, ...rest: Partial<T>[]) => T);
 }
 declare namespace LiteMol.Bootstrap.Service {
     class Dispatcher {
@@ -15674,7 +15674,7 @@ declare namespace LiteMol.Bootstrap.Command {
         }>;
     }
     namespace Layout {
-        const SetState: Event.Type<Components.LayoutState>;
+        const SetState: Event.Type<Partial<Components.LayoutState>>;
         const SetViewportOptions: Event.Type<LiteMol.Visualization.SceneOptions>;
     }
     namespace Molecule {
@@ -16016,17 +16016,17 @@ declare namespace LiteMol.Bootstrap.Visualization {
     interface Style<Type, Params> {
         computeOnBackground?: boolean;
         isNotSelectable?: boolean;
-        type?: Type;
-        theme?: Theme.Instance;
-        params?: Params;
+        type: Type;
+        theme: Theme.Instance;
+        params: Params;
     }
     type AnyStyle = Style<any, any>;
     import TransparencyDescription = LiteMol.Visualization.Theme.Transparency;
     namespace Style {
         interface Props<T> {
             computeOnBackground?: boolean;
-            type?: T;
-            theme?: Theme.Instance;
+            type: T;
+            theme: Theme.Instance;
         }
         function create<Type>(style: Style<Type, any>): Style<Type, any>;
     }
@@ -16038,7 +16038,7 @@ declare namespace LiteMol.Bootstrap.Visualization {
             provider: (e: Entity.Any, props?: LiteMol.Visualization.Theme.Props) => LiteMol.Visualization.Theme;
         }
         interface Instance {
-            template?: Template;
+            template: Template;
             colors?: Immutable.Map<string, LiteMol.Visualization.Color>;
             transparency?: TransparencyDescription;
             interactive?: boolean;
@@ -16078,29 +16078,32 @@ declare namespace LiteMol.Bootstrap.Visualization.Molecule {
 }
 declare namespace LiteMol.Bootstrap.Visualization.Molecule {
     type Source = Entity.Molecule.Model | Entity.Molecule.Selection;
-    type Type = 'Cartoons' | 'Calpha' | 'BallsAndSticks' | 'VDWBalls' | 'Surface';
     type DetailType = 'Automatic' | 'Very Low' | 'Low' | 'Medium' | 'High' | 'Very High';
     type Style<Params> = Visualization.Style<Type, Params>;
     const TypeDescriptions: {
-        [key: string]: TypeDescription;
+        'Cartoons': TypeDescription;
+        'Calpha': TypeDescription;
+        'BallsAndSticks': TypeDescription;
+        'VDWBalls': TypeDescription;
+        'Surface': TypeDescription;
     };
+    type Type = keyof (typeof TypeDescriptions);
     const Types: Type[];
     const DetailTypes: DetailType[];
     interface DetailParams {
-        detail?: DetailType;
+        detail: DetailType;
     }
     interface BallsAndSticksParams extends DetailParams {
-        useVDW?: boolean;
+        useVDW: boolean;
         vdwScaling?: number;
         atomRadius?: number;
-        bondRadius?: number;
-        detail?: DetailType;
+        bondRadius: number;
     }
     interface SurfaceParams {
-        probeRadius?: number;
-        density?: number;
-        smoothing?: number;
-        isWireframe?: boolean;
+        probeRadius: number;
+        density: number;
+        smoothing: number;
+        isWireframe: boolean;
     }
     namespace Default {
         const DetailParams: DetailParams;
@@ -16124,10 +16127,10 @@ declare namespace LiteMol.Bootstrap.Visualization.Density {
     interface Params {
         bottomLeft?: number[];
         topRight?: number[];
-        isoValueType?: IsoValueType;
-        isoValue?: number;
-        smoothing?: number;
-        isWireframe?: boolean;
+        isoValueType: IsoValueType;
+        isoValue: number;
+        smoothing: number;
+        isWireframe: boolean;
     }
     type Style = Visualization.Style<{}, Params>;
     namespace Style {
@@ -16387,8 +16390,8 @@ declare namespace LiteMol.Bootstrap.Entity.Transformer.Basic {
 }
 declare namespace LiteMol.Bootstrap.Entity.Transformer.Molecule {
     interface DownloadMoleculeSourceParams {
-        id?: string;
-        format?: Core.Formats.FormatInfo;
+        id: string;
+        format: Core.Formats.FormatInfo;
     }
     function downloadMoleculeSource(params: {
         sourceId: string;
@@ -16400,43 +16403,43 @@ declare namespace LiteMol.Bootstrap.Entity.Transformer.Molecule {
         isFullUrl?: boolean;
     }): Tree.Transformer<Root, Action, DownloadMoleculeSourceParams>;
     interface OpenMoleculeFromFileParams {
-        file?: File;
+        file: File | undefined;
     }
     const OpenMoleculeFromFile: Tree.Transformer<Root, Action, OpenMoleculeFromFileParams>;
     interface CreateFromDataParams {
-        format?: Core.Formats.FormatInfo;
+        format: Core.Formats.FormatInfo;
         customId?: string;
     }
     const CreateFromData: Tree.Transformer<Entity.Data.String | Entity.Data.Binary, Entity.Molecule.Molecule, CreateFromDataParams>;
     interface CreateFromMmCifParams {
-        blockIndex?: number;
+        blockIndex: number;
     }
     const CreateFromMmCif: Tree.Transformer<Entity.Data.CifDictionary, Entity.Molecule.Molecule, CreateFromMmCifParams>;
     interface CreateModelParams {
-        modelIndex?: number;
+        modelIndex: number;
     }
     const CreateModel: Tree.Transformer<Entity.Molecule.Molecule, Entity.Molecule.Model, CreateModelParams>;
     interface CreateSelectionParams {
         name?: string;
-        queryString?: string;
+        queryString: string;
         silent?: boolean;
         inFullContext?: boolean;
     }
     const CreateSelection: Tree.Transformer<Entity.Molecule.Model | Entity.Molecule.Visual, Entity.Molecule.Selection, CreateSelectionParams>;
     interface CreateSelectionFromQueryParams {
-        query?: Core.Structure.Query.Source;
+        query: Core.Structure.Query.Source;
         name?: string;
         silent?: boolean;
         inFullContext?: boolean;
     }
     const CreateSelectionFromQuery: Tree.Transformer<Entity.Molecule.Model | Entity.Molecule.Visual, Entity.Molecule.Selection, CreateSelectionFromQueryParams>;
     interface CreateAssemblyParams {
-        name?: string;
+        name: string;
     }
     const CreateAssembly: Tree.Transformer<Entity.Molecule.Model, Entity.Molecule.Model, CreateAssemblyParams>;
     interface CreateSymmetryMatesParams {
-        type?: 'Mates' | 'Interaction';
-        radius?: number;
+        type: 'Mates' | 'Interaction';
+        radius: number;
     }
     const CreateSymmetryMates: Tree.Transformer<Entity.Molecule.Model, Entity.Molecule.Model, CreateSymmetryMatesParams>;
     interface ModelTransform3DParams {
@@ -16445,12 +16448,12 @@ declare namespace LiteMol.Bootstrap.Entity.Transformer.Molecule {
          * (Use Core.Geometry.LinearAlgebra.Matrix4.empty & setValue(m, row, column, value)
          *  if you are not sure).
          */
-        transform?: number[];
+        transform: number[];
         description?: string;
     }
     const ModelTransform3D: Tree.Transformer<Entity.Molecule.Model, Entity.Molecule.Model, ModelTransform3DParams>;
     interface CreateVisualParams {
-        style?: Visualization.Molecule.Style<any>;
+        style: Visualization.Molecule.Style<any>;
     }
     const CreateVisual: Tree.Transformer<Entity.Molecule.Model | Entity.Molecule.Selection, Entity.Molecule.Visual, CreateVisualParams>;
     interface CreateMacromoleculeVisualParams {
@@ -16465,15 +16468,11 @@ declare namespace LiteMol.Bootstrap.Entity.Transformer.Molecule {
     const CreateMacromoleculeVisual: Tree.Transformer<Entity.Molecule.Model, Action, CreateMacromoleculeVisualParams>;
 }
 declare namespace LiteMol.Bootstrap.Entity.Transformer.Data {
-    enum DownloadCompression {
-        None = 0,
-        Gzip = 1,
-    }
     interface DownloadParams {
         id?: string;
         description?: string;
-        type?: string;
-        url?: string;
+        type: string;
+        url: string;
         title?: string;
         responseCompression?: Utils.DataCompressionMethod;
     }
@@ -16481,7 +16480,7 @@ declare namespace LiteMol.Bootstrap.Entity.Transformer.Data {
     interface OpenFileParams {
         description?: string;
         id?: string;
-        file?: File;
+        file: File | undefined;
         type?: string;
     }
     const OpenFile: Tree.Transformer<Root, Entity.Data.String | Entity.Data.Binary, OpenFileParams>;
@@ -16503,52 +16502,50 @@ declare namespace LiteMol.Bootstrap.Entity.Transformer.Data {
     interface FromDataParams {
         id?: string;
         description?: string;
-        data?: string | ArrayBuffer;
+        data: string | ArrayBuffer;
     }
     const FromData: Tree.Transformer<Root, Entity.Data.String | Entity.Data.Binary, FromDataParams>;
 }
 declare namespace LiteMol.Bootstrap.Entity.Transformer.Density {
     interface ParseDataParams {
         id?: string;
-        format?: LiteMol.Core.Formats.FormatInfo;
-        normalize?: boolean;
+        format: LiteMol.Core.Formats.FormatInfo;
+        normalize: boolean;
     }
     const ParseData: Tree.Transformer<Entity.Data.String | Entity.Data.Binary, Entity.Density.Data, ParseDataParams>;
     interface CreateVisualParams {
-        style?: Visualization.Density.Style;
+        style: Visualization.Density.Style;
     }
     const CreateVisual: Tree.Transformer<Entity.Density.Data, Entity.Density.Visual, CreateVisualParams>;
     interface CreateVisualBehaviourParams {
         id?: string;
-        isoSigmaMin?: number;
-        isoSigmaMax?: number;
-        minRadius?: number;
-        maxRadius?: number;
-        radius?: number;
-        showFull?: boolean;
-        style?: Visualization.Density.Style;
+        isoSigmaMin: number;
+        isoSigmaMax: number;
+        minRadius: number;
+        maxRadius: number;
+        radius: number;
+        showFull: boolean;
+        style: Visualization.Density.Style;
     }
     const CreateVisualBehaviour: Tree.Transformer<Entity.Density.Data, Entity.Density.InteractiveSurface, CreateVisualBehaviourParams>;
 }
 declare namespace LiteMol.Bootstrap.Entity.Transformer.Molecule.CoordinateStreaming {
     interface CreateStreamingBehaviourParams {
-        server?: string;
-        radius?: number;
+        server: string;
+        radius: number;
     }
     const CreateBehaviour: Tree.Transformer<Entity.Molecule.Model, Entity.Molecule.CoordinateStreaming.Behaviour, CreateStreamingBehaviourParams>;
     interface CreateModelParams {
-        data?: ArrayBuffer;
-        transform?: number[];
+        data: ArrayBuffer;
+        transform: number[];
     }
     const CreateModel: Tree.Transformer<Entity.Molecule.CoordinateStreaming.Behaviour, Entity.Molecule.Model, CreateModelParams>;
     interface InitStreamingParams {
-        id?: string;
-        server?: string;
-        radius?: number;
+        id: string;
+        server: string;
+        radius: number;
     }
     const InitStreaming: Tree.Transformer<Root, Action, InitStreamingParams>;
-}
-declare namespace LiteMol.Bootstrap.Entity.Transformer.Visual {
 }
 declare namespace LiteMol.Bootstrap.Utils.Molecule {
     import Structure = LiteMol.Core.Structure;
@@ -16688,7 +16685,7 @@ declare namespace LiteMol.Bootstrap.Components {
         private _state;
         private _latestState;
         readonly dispatcher: Service.Dispatcher;
-        setState(...states: State[]): void;
+        setState(...states: Partial<State>[]): void;
         readonly state: Rx.Observable<State>;
         readonly latestState: State;
         constructor(context: Context, initialState: State);
@@ -16722,16 +16719,15 @@ declare namespace LiteMol.Bootstrap.Components {
     }
     function makeEmptyTargets(): LayoutTarget[];
     interface LayoutState {
-        isExpanded?: boolean;
-        hideControls?: boolean;
-        collapsedControlsLayout?: CollapsedControlsLayout;
-        hiddenRegions?: LayoutRegion[];
-        hiddenComponentKeys?: Immutable.Set<string>;
+        isExpanded: boolean;
+        hideControls: boolean;
+        collapsedControlsLayout: CollapsedControlsLayout;
+        hiddenRegions: LayoutRegion[];
     }
     class Layout extends Component<LayoutState> {
         targets: LayoutTarget[];
         private root;
-        update(state: LayoutState): void;
+        update(state: Partial<LayoutState>): void;
         private rootState;
         private expandedViewport;
         private getScrollElement();
@@ -16741,12 +16737,12 @@ declare namespace LiteMol.Bootstrap.Components {
 }
 declare namespace LiteMol.Bootstrap.Components.Transform {
     interface ControllerParams<P> {
-        params?: P;
-        isDirty?: boolean;
-        issues?: string[];
-        canApply?: boolean;
-        isBusy?: boolean;
-        parametersAutoUpdating?: boolean;
+        params: P;
+        isDirty: boolean;
+        issues: string[] | undefined;
+        canApply: boolean;
+        isBusy: boolean;
+        parametersAutoUpdating: boolean;
     }
     class Controller<P> extends Component<ControllerParams<P>> {
         transformer: Tree.Transformer.Any;
@@ -16758,8 +16754,8 @@ declare namespace LiteMol.Bootstrap.Components.Transform {
         private _reset();
         private anchorParams;
         private _updateParams(params);
-        updateParams(params: P): void;
-        autoUpdateParams(params: P): void;
+        updateParams(params: Partial<P>): void;
+        autoUpdateParams(params: Partial<P>): void;
         readonly isUpdate: boolean;
         apply(): void;
         setParams(params: P): void;
@@ -16768,8 +16764,8 @@ declare namespace LiteMol.Bootstrap.Components.Transform {
 }
 declare namespace LiteMol.Bootstrap.Components.Transform {
     class View extends Component<{
-        update?: Controller<any>;
-        transforms?: Controller<any>[];
+        update: Controller<any> | undefined;
+        transforms: Controller<any>[];
     }> {
         private update();
         constructor(context: Context);
@@ -16780,7 +16776,7 @@ declare namespace LiteMol.Bootstrap.Components.Transform {
     class MoleculeVisual extends Controller<Bootstrap.Entity.Transformer.Molecule.CreateVisualParams> {
         updateTemplate(key: string, all: Map<string, Bootstrap.Visualization.AnyStyle>): void;
         updateStyleParams(params: any): void;
-        updateStyleTheme(theme: Vis.Theme.Instance): void;
+        updateStyleTheme(theme: Partial<Vis.Theme.Instance>): void;
         updateThemeColor(name: string, value: LiteMol.Visualization.Color): void;
         updateThemeTransparency(transparency: LiteMol.Visualization.Theme.Transparency): void;
         private getThemeInstance(template);
@@ -16788,7 +16784,7 @@ declare namespace LiteMol.Bootstrap.Components.Transform {
     }
     class DensityVisual extends Controller<Bootstrap.Entity.Transformer.Density.CreateVisualParams | Bootstrap.Entity.Transformer.Density.CreateVisualBehaviourParams> {
         updateStyleParams(params: any): void;
-        updateStyleTheme(theme: Vis.Theme.Instance): void;
+        updateStyleTheme(theme: Partial<Vis.Theme.Instance>): void;
         updateThemeColor(name: string, value: LiteMol.Visualization.Color): void;
         updateThemeTransparency(transparency: LiteMol.Visualization.Theme.Transparency): void;
         private getThemeInstance(template);
@@ -16798,7 +16794,7 @@ declare namespace LiteMol.Bootstrap.Components.Transform {
 }
 declare namespace LiteMol.Bootstrap.Components.Transform {
     interface UpdaterState {
-        controller?: Controller<any>;
+        controller: Controller<any> | undefined;
     }
     class Updater extends Component<UpdaterState> {
         private selector;
@@ -16810,7 +16806,7 @@ declare namespace LiteMol.Bootstrap.Components.Transform {
 }
 declare namespace LiteMol.Bootstrap.Components.Transform {
     interface ActionState {
-        controller?: Controller<any>;
+        controller: Controller<any> | undefined;
     }
     class Action extends Component<ActionState> {
         private selector;
@@ -16860,7 +16856,7 @@ declare namespace LiteMol.Bootstrap.Components.Context {
         abort?: () => void;
     }
     interface TasksState {
-        tasks?: Immutable.Map<number, TaskInfo>;
+        tasks: Immutable.Map<number, TaskInfo>;
     }
     class TaskWatcher extends Component<TasksState> {
         private type;

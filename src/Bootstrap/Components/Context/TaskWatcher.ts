@@ -13,7 +13,7 @@ namespace LiteMol.Bootstrap.Components.Context {
     }
 
     export interface TasksState {
-        tasks?: Immutable.Map<number, TaskInfo>
+        tasks: Immutable.Map<number, TaskInfo>
     }
 
     export class TaskWatcher extends Component<TasksState> {

@@ -24,7 +24,7 @@ namespace LiteMol.Bootstrap.Components.Transform {
             this.autoUpdateParams({ style: s })
         }   
         
-        updateStyleTheme(theme: Vis.Theme.Instance) {
+        updateStyleTheme(theme: Partial<Vis.Theme.Instance>) {
             let s = Utils.shallowClone(this.latestState.params!.style)!;
             s.theme = Utils.merge(s.theme, theme);
             this.autoUpdateParams({ style: s });
@@ -75,7 +75,7 @@ namespace LiteMol.Bootstrap.Components.Transform {
             this.autoUpdateParams({ style: s })
         }   
         
-        updateStyleTheme(theme: Vis.Theme.Instance) {
+        updateStyleTheme(theme: Partial<Vis.Theme.Instance>) {
             let s = Utils.shallowClone(this.latestState.params!.style)!;
             s.theme = Utils.merge(s.theme, theme);
             this.autoUpdateParams({ style: s })

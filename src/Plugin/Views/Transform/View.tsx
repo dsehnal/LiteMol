@@ -16,14 +16,14 @@ namespace LiteMol.Plugin.Views.Transform {
         protected abstract renderControls(): void;
 
         get params(): P {
-            return this.controller.latestState.params!;
+            return this.controller.latestState.params;
         }
 
-        updateParams(p: P) {
+        updateParams(p: Partial<P>) {
             this.controller.updateParams(p);
         }
 
-        autoUpdateParams(p: P) {
+        autoUpdateParams(p: Partial<P>) {
             this.controller.autoUpdateParams(p);
         }
 
@@ -183,5 +183,4 @@ namespace LiteMol.Plugin.Views.Transform {
             return React.createElement(v, { controller: c, key: c.transformer.info.id + '-' + c.entity.id, customHeader: this.controller.header, hideBadge: true, isAction: true });
         }
     }
-
 }

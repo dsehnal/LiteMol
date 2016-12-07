@@ -16,9 +16,9 @@ namespace LiteMol.Bootstrap.Visualization {
     export interface Style<Type, Params> {
         computeOnBackground?: boolean,
         isNotSelectable?: boolean
-        type?: Type,
-        theme?: Theme.Instance
-        params?: Params
+        type: Type,
+        theme: Theme.Instance
+        params: Params
     }
     
     export type AnyStyle = Style<any, any>
@@ -28,8 +28,8 @@ namespace LiteMol.Bootstrap.Visualization {
     export namespace Style {        
         export interface Props<T> {
             computeOnBackground?: boolean,
-            type?: T,
-            theme?: Theme.Instance
+            type: T,
+            theme: Theme.Instance
         }
         
         export function create<Type>(style: Style<Type, any>) {
@@ -47,7 +47,7 @@ namespace LiteMol.Bootstrap.Visualization {
         }
         
         export interface Instance {
-            template?: Template,
+            template: Template,
             colors?: Immutable.Map<string, LiteMol.Visualization.Color>,
             transparency?: TransparencyDescription,
             interactive?: boolean,

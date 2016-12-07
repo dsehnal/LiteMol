@@ -7,7 +7,7 @@ namespace LiteMol.Bootstrap.Components.Transform {
     "use strict";
 
     export interface UpdaterState {
-        controller?: Controller<any>;
+        controller: Controller<any> | undefined;
     }
 
     export class Updater extends Component<UpdaterState> {
@@ -29,7 +29,7 @@ namespace LiteMol.Bootstrap.Components.Transform {
         }
 
         constructor(ctx: Context, private selector: Tree.Selector<Entity.Any>, public header: string) {
-            super(ctx, {});
+            super(ctx, { controller: void 0 });
 
             Event.Tree.NodeAdded.getStream(ctx).subscribe(() => this.added());
             Event.Tree.NodeRemoved.getStream(ctx).subscribe(e => this.removed(e.data));            

@@ -13,17 +13,17 @@ namespace LiteMol.Viewer.PDBe.Data {
     import Transform = Tree.Transform;     
     import Visualization = Bootstrap.Visualization;
          
-    export const DensitySources = ['electron-density', 'emdb-pdbid', 'emdb-id'];
     export const DensitySourceLabels = {
         'electron-density': 'Electron Density',
         'emdb-pdbid': 'EMDB (from PDB ID)',
         'emdb-id': 'EMDB'
     }
+    export const DensitySources: (keyof typeof DensitySourceLabels)[] = ['electron-density', 'emdb-pdbid', 'emdb-id'];
     export interface DownloadDensityParams {
         /**
          * Default source is 'electron-density'
          */
-        sourceId?: 'electron-density' | 'emdb-id' | 'emdb-pdbid', 
+        sourceId?: keyof typeof DensitySourceLabels, 
         id?: string | { [sourceId: string]: string }
     }
 

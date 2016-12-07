@@ -85,12 +85,12 @@ var LiteMol;
                 var Transformer = Bootstrap.Entity.Transformer;
                 var Tree = Bootstrap.Tree;
                 var Visualization = Bootstrap.Visualization;
-                Data.DensitySources = ['electron-density', 'emdb-pdbid', 'emdb-id'];
                 Data.DensitySourceLabels = {
                     'electron-density': 'Electron Density',
                     'emdb-pdbid': 'EMDB (from PDB ID)',
                     'emdb-id': 'EMDB'
                 };
+                Data.DensitySources = ['electron-density', 'emdb-pdbid', 'emdb-id'];
                 function doElectron(a, t, id) {
                     var action = Bootstrap.Tree.Transform.build();
                     id = id.trim().toLowerCase();

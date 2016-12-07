@@ -13,10 +13,10 @@ namespace LiteMol.Bootstrap.Visualization.Density {
     export interface Params {
         bottomLeft?: number[],
         topRight?: number[],
-        isoValueType?: IsoValueType, 
-        isoValue?: number,
-        smoothing?: number,
-        isWireframe?: boolean
+        isoValueType: IsoValueType, 
+        isoValue: number,
+        smoothing: number,
+        isWireframe: boolean
     }
     
     export type Style = Visualization.Style<{}, Params>

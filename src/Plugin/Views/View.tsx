@@ -80,7 +80,7 @@ namespace LiteMol.Plugin.Views {
         //     return this.props.controller.latestState;
         // }
         
-        protected get controller() {
+        protected get controller(): this['props']['controller'] {
             return this.props.controller;
         }
                                 

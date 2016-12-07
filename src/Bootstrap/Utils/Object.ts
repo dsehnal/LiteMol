@@ -107,5 +107,5 @@ namespace LiteMol.Bootstrap.Utils {
         return ret;
     }
     
-    export const merge: (<T>(source: T, ...rest: T[]) => T)= _shallowMerge;
+    export const merge: (<T>(source: T, ...rest: Partial<T>[]) => T)= _shallowMerge;
 }

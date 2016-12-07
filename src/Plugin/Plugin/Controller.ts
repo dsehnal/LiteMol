@@ -19,7 +19,7 @@ namespace LiteMol.Plugin {
          */
         viewportBackground?: string | Visualization.Color,
 
-        layoutState?: Bootstrap.Components.LayoutState,
+        layoutState?: Partial<Bootstrap.Components.LayoutState>,
 
         /**
          * This options determines if Google Analytics is enabled
@@ -139,7 +139,7 @@ namespace LiteMol.Plugin {
          * 
          * Expanded, show/hide controls, etc..
          */
-        setLayoutState(state: Bootstrap.Components.LayoutState) {
+        setLayoutState(state: Partial<Bootstrap.Components.LayoutState>) {
             this.command(Bootstrap.Command.Layout.SetState, state);
         }
 
@@ -170,7 +170,7 @@ namespace LiteMol.Plugin {
 
             let data = source.data 
                 ? action.add(this.root, Entity.Transformer.Data.FromData, { data: source.data, id: source.id })
-                : action.add(this.root, Transformer.Data.Download, { url: source.url, type: format.isBinary ? 'Binary' : 'String', id: source.id, title: 'Molecule' });
+                : action.add(this.root, Transformer.Data.Download, { url: source.url!, type: format.isBinary ? 'Binary' : 'String', id: source.id, title: 'Molecule' });
             
             data
                 .then(Transformer.Molecule.CreateFromData, { format, customId: source.id }, { isBinding: true, ref: source.moleculeRef })

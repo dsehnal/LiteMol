@@ -203,7 +203,7 @@ namespace LiteMol.Example.Channels.State {
             computeOnBackground: true,
             //isNotSelectable: false,
             params: {},
-            theme: void 0
+            theme: <any>void 0
         };
 
         return Bootstrap.Task.create<Bootstrap.Entity.Visual.Surface>(`Create Surface`, 'Silent', ctx => {

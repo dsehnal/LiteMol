@@ -68493,7 +68493,7 @@ var LiteMol;
                         description: "Open a molecule from a file (" + LiteMol.Core.Formats.Molecule.SupportedFormats.All.map(function (f) { return f.name; }).join(', ') + ").",
                         from: [Entity.Root],
                         to: [Entity.Action],
-                        defaultParams: function (ctx) { return ({ format: LiteMol.Core.Formats.Molecule.SupportedFormats.mmCIF }); },
+                        defaultParams: function (ctx) { return ({ file: void 0 }); },
                         validateParams: function (p) { return !p.file ? ['Select a file'] : !LiteMol.Core.Formats.FormatInfo.getFormat(p.file.name, LiteMol.Core.Formats.Molecule.SupportedFormats.All)
                             ? ["Select a supported file format (" + [].concat(LiteMol.Core.Formats.Molecule.SupportedFormats.All.map(function (f) { return f.extensions; })).join(', ') + ")."]
                             : void 0; }
@@ -68611,7 +68611,7 @@ var LiteMol;
                         description: 'Create an atom selection.',
                         from: [Entity.Molecule.Model, Entity.Molecule.Visual],
                         to: [Entity.Molecule.Selection],
-                        defaultParams: function (ctx) { return ({}); },
+                        defaultParams: function (ctx) { return void 0; },
                     }, function (ctx, a, t) {
                         return Bootstrap.Task.create("Create Selection (" + a.props.label + ")", 'Background', function (ctx) {
                             var params = t.params;
@@ -68808,11 +68808,6 @@ var LiteMol;
                 var Data;
                 (function (Data) {
                     "use strict";
-                    var DownloadCompression;
-                    (function (DownloadCompression) {
-                        DownloadCompression[DownloadCompression["None"] = 0] = "None";
-                        DownloadCompression[DownloadCompression["Gzip"] = 1] = "Gzip";
-                    })(DownloadCompression = Data.DownloadCompression || (Data.DownloadCompression = {}));
                     function getDataType(type) {
                         if (type === void 0 || type === null)
                             return 'String';
@@ -68922,7 +68917,7 @@ var LiteMol;
                         description: 'Creates a data entity from string or binary data',
                         from: [Entity.Root],
                         to: [Entity.Data.String, Entity.Data.Binary],
-                        defaultParams: function () { return ({}); }
+                        defaultParams: function () { return void 0; }
                     }, function (ctx, a, t) {
                         var data = t.params.data;
                         var e = data instanceof ArrayBuffer
@@ -69071,7 +69066,7 @@ var LiteMol;
                             description: '',
                             from: [Entity.Molecule.CoordinateStreaming.Behaviour],
                             to: [Entity.Molecule.Model],
-                            defaultParams: function () { return ({}); }
+                            defaultParams: function () { return void 0; },
                         }, function (ctx, a, t) {
                             return Bootstrap.Task.create('Load', 'Silent', function (ctx) {
                                 var cif = LiteMol.Core.Formats.CIF.Binary.parse(t.params.data);
@@ -69106,25 +69101,6 @@ var LiteMol;
                         });
                     })(CoordinateStreaming = Molecule.CoordinateStreaming || (Molecule.CoordinateStreaming = {}));
                 })(Molecule = Transformer.Molecule || (Transformer.Molecule = {}));
-            })(Transformer = Entity.Transformer || (Entity.Transformer = {}));
-        })(Entity = Bootstrap.Entity || (Bootstrap.Entity = {}));
-    })(Bootstrap = LiteMol.Bootstrap || (LiteMol.Bootstrap = {}));
-})(LiteMol || (LiteMol = {}));
-/*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
- */
-var LiteMol;
-(function (LiteMol) {
-    var Bootstrap;
-    (function (Bootstrap) {
-        var Entity;
-        (function (Entity) {
-            var Transformer;
-            (function (Transformer) {
-                var Visual;
-                (function (Visual) {
-                    "use strict";
-                })(Visual = Transformer.Visual || (Transformer.Visual = {}));
             })(Transformer = Entity.Transformer || (Entity.Transformer = {}));
         })(Entity = Bootstrap.Entity || (Bootstrap.Entity = {}));
     })(Bootstrap = LiteMol.Bootstrap || (LiteMol.Bootstrap = {}));
@@ -70067,9 +70043,9 @@ var LiteMol;
                 function Layout(context, targets, root) {
                     var _this = _super.call(this, context, {
                         isExpanded: false,
+                        hideControls: false,
                         collapsedControlsLayout: CollapsedControlsLayout.Outside,
-                        hiddenRegions: [],
-                        hiddenComponentKeys: Bootstrap.Immutable.Set()
+                        hiddenRegions: []
                     }) || this;
                     _this.targets = targets;
                     _this.root = root;
@@ -70211,7 +70187,14 @@ var LiteMol;
                 var Controller = (function (_super) {
                     __extends(Controller, _super);
                     function Controller(context, transformer, entity) {
-                        var _this = _super.call(this, context, { params: transformer.info.defaultParams(context, entity), isDirty: false }) || this;
+                        var _this = _super.call(this, context, {
+                            params: transformer.info.defaultParams(context, entity),
+                            canApply: false,
+                            isBusy: false,
+                            issues: void 0,
+                            parametersAutoUpdating: false,
+                            isDirty: false
+                        }) || this;
                         _this.transformer = transformer;
                         _this.entity = entity;
                         _this.updateTimeout = new Bootstrap.Rx.Subject();
@@ -70310,21 +70293,6 @@ var LiteMol;
                         Bootstrap.Event.Entity.CurrentChanged.getStream(context).subscribe(function () { return _this.update(); });
                         return _this;
                     }
-                    // private setParams(c: Controller<any>) {
-                    //     let prms = c.transformer.info.defaultParams(this.context, this.context.currentEntity);
-                    //     c.setParams(prms);
-                    // }
-                    // private updateParams(t: Transformer) {
-                    //     let c = this.context.transforms.getController(t);
-                    //     if (!c) return false;
-                    //     if (t.info.updateParams) {
-                    //         let p = t.info.updateParams(this.context.currentEntity.transform.params, this.context.currentEntity);
-                    //         if (p) c.setParams(p);
-                    //         else c.setParams(this.context.currentEntity.transform.params); 
-                    //     }
-                    //     else c.setParams(this.context.currentEntity.transform.params);
-                    //     return true;
-                    // }
                     View.prototype.update = function () {
                         if (!this.context.currentEntity) {
                             this.setState({ transforms: [] });
@@ -70505,7 +70473,7 @@ var LiteMol;
                 var Updater = (function (_super) {
                     __extends(Updater, _super);
                     function Updater(ctx, selector, header) {
-                        var _this = _super.call(this, ctx, {}) || this;
+                        var _this = _super.call(this, ctx, { controller: void 0 }) || this;
                         _this.selector = selector;
                         _this.header = header;
                         Bootstrap.Event.Tree.NodeAdded.getStream(ctx).subscribe(function () { return _this.added(); });
@@ -70552,7 +70520,7 @@ var LiteMol;
                 var Action = (function (_super) {
                     __extends(Action, _super);
                     function Action(ctx, selector, transformer, header) {
-                        var _this = _super.call(this, ctx, {}) || this;
+                        var _this = _super.call(this, ctx, { controller: void 0 }) || this;
                         _this.selector = selector;
                         _this.transformer = transformer;
                         _this.header = header;
@@ -76509,7 +76477,6 @@ var LiteMol;
                         Download.prototype.renderControls = function () {
                             var _this = this;
                             var params = this.params;
-                            var compression;
                             return Plugin.React.createElement("div", null,
                                 Plugin.React.createElement(Plugin.Controls.OptionsGroup, { options: LiteMol.Bootstrap.Entity.Data.Types, caption: function (s) { return s; }, current: params.type, onChange: function (o) { return _this.updateParams({ type: o, responseCompression: LiteMol.Bootstrap.Utils.DataCompressionMethod.None }); }, label: 'Type' }),
                                 params.type === 'Binary'
@@ -76951,7 +76918,7 @@ var LiteMol;
                                         _this.controller.updateStyleParams({ isoValue: isoValueSigmaToAbsolute(data.props.data, visualParams.isoValue), isoValueType: v });
                                     }
                                     else {
-                                        _this.controller.updateStyleParams({ isoValue: isoValueAbsoluteToSigma(data.props.data, visualParams.isoValue, _this.params.isoSigmaMin, params.isoSigmaMax), isoValueType: v });
+                                        _this.controller.updateStyleParams({ isoValue: isoValueAbsoluteToSigma(data.props.data, visualParams.isoValue, params.isoSigmaMin, params.isoSigmaMax), isoValueType: v });
                                     }
                                 }, min: isSigma ? params.isoSigmaMin : data.props.data.valuesInfo.min, max: isSigma ? params.isoSigmaMax : data.props.data.valuesInfo.max, isSigma: visualParams.isoValueType !== LiteMol.Bootstrap.Visualization.Density.IsoValueType.Absolute, value: visualParams.isoValue });
                         };
@@ -76977,7 +76944,8 @@ var LiteMol;
                             var _this = this;
                             var selLabel = 'Around Selection';
                             var allLabel = 'Everything';
-                            return Plugin.React.createElement(Plugin.Controls.OptionsGroup, { options: [selLabel, allLabel], caption: function (s) { return s; }, current: this.params.showFull ? allLabel : selLabel, onChange: function (o) { return _this.autoUpdateParams({ showFull: o === allLabel }); }, label: 'Show' });
+                            var params = this.params;
+                            return Plugin.React.createElement(Plugin.Controls.OptionsGroup, { options: [selLabel, allLabel], caption: function (s) { return s; }, current: params.showFull ? allLabel : selLabel, onChange: function (o) { return _this.autoUpdateParams({ showFull: o === allLabel }); }, label: 'Show' });
                         };
                         CreateVisualBehaviour.prototype.renderControls = function () {
                             var _this = this;

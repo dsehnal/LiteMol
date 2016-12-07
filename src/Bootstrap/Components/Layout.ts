@@ -36,13 +36,11 @@ namespace LiteMol.Bootstrap.Components {
     }
 
     export interface LayoutState {
-        isExpanded?: boolean;
-        hideControls?: boolean;
+        isExpanded: boolean;
+        hideControls: boolean;
 
-        collapsedControlsLayout?: CollapsedControlsLayout;
-        hiddenRegions?: LayoutRegion[];
-
-        hiddenComponentKeys?: Immutable.Set<string>;
+        collapsedControlsLayout: CollapsedControlsLayout;
+        hiddenRegions: LayoutRegion[];
     }
 
     interface RootState { 
@@ -71,7 +69,7 @@ namespace LiteMol.Bootstrap.Components {
 
     export class Layout extends Component<LayoutState> {
 
-        update(state: LayoutState) {
+        update(state: Partial<LayoutState>) {
             let prevExpanded = !!this.latestState.isExpanded;
             this.setState(state);
             if (typeof state.isExpanded === "boolean" && state.isExpanded !== prevExpanded) this.handleExpand();
@@ -195,15 +193,15 @@ namespace LiteMol.Bootstrap.Components {
         constructor(context: Context, public targets: LayoutTarget[], private root: HTMLElement) {
             super(context, {
                 isExpanded: false,
+                hideControls: false,
                 collapsedControlsLayout: CollapsedControlsLayout.Outside,
-                hiddenRegions: [],
-                hiddenComponentKeys: Bootstrap.Immutable.Set<string>()
+                hiddenRegions: []
             });
             
             Command.Layout.SetState.getStream(this.context).subscribe(e => this.update(e.data));
             
             // <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" />
-            this.expandedViewport = document.createElement('meta');
+            this.expandedViewport = document.createElement('meta') as any;
             this.expandedViewport.name = 'viewport';
             this.expandedViewport.content = 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0';
         }

@@ -7,7 +7,6 @@ namespace LiteMol.Bootstrap.Components.Context {
     "use strict";
 
     export class Log extends Component<{ entries: Immutable.List<Service.Logger.Entry> }> {
-
         constructor(context: Context) {
             super(context, { entries: Immutable.List<Service.Logger.Entry>() });
 

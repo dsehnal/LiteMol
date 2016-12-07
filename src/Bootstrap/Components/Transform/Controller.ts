@@ -7,16 +7,15 @@ namespace LiteMol.Bootstrap.Components.Transform {
     "use strict";
     
     export interface ControllerParams<P> {
-        params?: P, 
-        isDirty?: boolean, 
-        issues?: string[], 
-        canApply?: boolean, 
-        isBusy?: boolean, 
-        parametersAutoUpdating?: boolean
+        params: P, 
+        isDirty: boolean, 
+        issues: string[] | undefined, 
+        canApply: boolean, 
+        isBusy: boolean, 
+        parametersAutoUpdating: boolean
     }
 
-    export class Controller<P> extends Component<ControllerParams<P>> {
-        
+    export class Controller<P> extends Component<ControllerParams<P>> {        
         private updateTimeout = new Rx.Subject<Rx.Observable<number>>();
         private timeout = Rx.Observable.timer(50);
         private never = Rx.Observable.never<number>();
@@ -37,7 +36,7 @@ namespace LiteMol.Bootstrap.Components.Transform {
             
         private anchorParams: P;
         
-        private _updateParams(params: P) {            
+        private _updateParams(params: Partial<P>) {            
             let updated = Utils.merge(this.latestState.params, params);       
             if (this.transformer.info.validateParams) {
                 let isInvalid = this.transformer.info.validateParams(updated);
@@ -50,12 +49,12 @@ namespace LiteMol.Bootstrap.Components.Transform {
             this.setState({ params: updated, isDirty, issues: void 0, canApply: true });
         }
         
-        updateParams(params: P) {
+        updateParams(params: Partial<P>) {
             this._reset();
             this._updateParams(params);   
         }
         
-        autoUpdateParams(params: P) {
+        autoUpdateParams(params: Partial<P>) {
             this._update();
             this._updateParams(params);
         }
@@ -88,7 +87,14 @@ namespace LiteMol.Bootstrap.Components.Transform {
         }
                 
         constructor(context: Context, public transformer: Tree.Transformer.Any, public entity: Entity.Any) {
-            super(context, { params: transformer.info.defaultParams(context, entity), isDirty: false });            
+            super(context, { 
+                params: transformer.info.defaultParams(context, entity),
+                canApply: false,
+                isBusy: false,
+                issues: void 0,
+                parametersAutoUpdating: false, 
+                isDirty: false 
+            });            
             this.anchorParams = this.latestState.params!;    
             this.updateParams(this.anchorParams);
             

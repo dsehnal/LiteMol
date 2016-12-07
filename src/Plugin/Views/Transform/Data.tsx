@@ -11,8 +11,6 @@ namespace LiteMol.Plugin.Views.Transform.Data {
         protected renderControls() {            
             let params = this.params;
 
-            let compression 
-
             return <div>
                 <Controls.OptionsGroup options={Bootstrap.Entity.Data.Types} caption={s => s} current={params.type} onChange={(o) => this.updateParams({ type: o, responseCompression: Bootstrap.Utils.DataCompressionMethod.None }) } label='Type' />
                 { params.type === 'Binary' 
