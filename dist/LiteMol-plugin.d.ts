@@ -15695,7 +15695,7 @@ declare namespace LiteMol.Bootstrap.Command {
     namespace Visual {
         const ResetScene: Event.Type<void>;
         const ResetTheme: Event.Type<{
-            selection?: string | Bootstrap.Entity.Any | ((tree: Tree<Bootstrap.Entity.Any>) => Bootstrap.Entity.Any[]) | Bootstrap.Tree.Selection.Helpers.Builder<Bootstrap.Entity.Any> | undefined;
+            selection?: string | Bootstrap.Entity.Any | Bootstrap.Tree.Selection.Query<Bootstrap.Entity.Any> | Bootstrap.Tree.Selection.Helpers.Builder<Bootstrap.Entity.Any> | undefined;
         } | undefined>;
         const UpdateBasicTheme: Event.Type<{
             visual: Bootstrap.Entity.Visual.Any;

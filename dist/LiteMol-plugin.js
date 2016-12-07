@@ -11795,7 +11795,7 @@ var LiteMol;
                 PerformanceMonitor.prototype.formatTimeSum = function () {
                     var names = [];
                     for (var _i = 0; _i < arguments.length; _i++) {
-                        names[_i - 0] = arguments[_i];
+                        names[_i] = arguments[_i];
                     }
                     return PerformanceMonitor.format(this.timeSum.apply(this, names));
                 };
@@ -11810,7 +11810,7 @@ var LiteMol;
                     var _this = this;
                     var names = [];
                     for (var _i = 0; _i < arguments.length; _i++) {
-                        names[_i - 0] = arguments[_i];
+                        names[_i] = arguments[_i];
                     }
                     var t = 0;
                     for (var _a = 0, _b = names.map(function (n) { return _this.ends.get(n) - _this.starts.get(n); }); _a < _b.length; _a++) {
@@ -15871,13 +15871,13 @@ var LiteMol;
                 return DataTableBuilder;
             }());
             Structure.DataTableBuilder = DataTableBuilder;
+            var EntityType;
             (function (EntityType) {
                 EntityType[EntityType["Polymer"] = 0] = "Polymer";
                 EntityType[EntityType["NonPolymer"] = 1] = "NonPolymer";
                 EntityType[EntityType["Water"] = 2] = "Water";
                 EntityType[EntityType["Unknown"] = 3] = "Unknown";
-            })(Structure.EntityType || (Structure.EntityType = {}));
-            var EntityType = Structure.EntityType;
+            })(EntityType = Structure.EntityType || (Structure.EntityType = {}));
             var ComponentBondInfoEntry = (function () {
                 function ComponentBondInfoEntry(id) {
                     this.id = id;
@@ -16127,11 +16127,11 @@ var LiteMol;
                 }
                 DefaultDataTables.forBonds = forBonds;
             })(DefaultDataTables = Structure.DefaultDataTables || (Structure.DefaultDataTables = {}));
+            var MoleculeModelSource;
             (function (MoleculeModelSource) {
                 MoleculeModelSource[MoleculeModelSource["File"] = 0] = "File";
                 MoleculeModelSource[MoleculeModelSource["Computed"] = 1] = "Computed";
-            })(Structure.MoleculeModelSource || (Structure.MoleculeModelSource = {}));
-            var MoleculeModelSource = Structure.MoleculeModelSource;
+            })(MoleculeModelSource = Structure.MoleculeModelSource || (Structure.MoleculeModelSource = {}));
             var Operator = (function () {
                 function Operator(matrix, id, isIdentity) {
                     this.matrix = matrix;
@@ -18889,7 +18889,7 @@ var LiteMol;
                         Builder.BuilderPrototype[name] = function () {
                             var args = [];
                             for (var _i = 0; _i < arguments.length; _i++) {
-                                args[_i - 0] = arguments[_i];
+                                args[_i] = arguments[_i];
                             }
                             return f.call.apply(f, [void 0, this].concat(args));
                         };
@@ -18926,7 +18926,7 @@ var LiteMol;
                 function atomsByElement() {
                     var elements = [];
                     for (var _i = 0; _i < arguments.length; _i++) {
-                        elements[_i - 0] = arguments[_i];
+                        elements[_i] = arguments[_i];
                     }
                     return Builder.build(function () { return Compiler.compileAtoms(elements, function (m) { return m.atoms.elementSymbol; }); });
                 }
@@ -18934,7 +18934,7 @@ var LiteMol;
                 function atomsByName() {
                     var names = [];
                     for (var _i = 0; _i < arguments.length; _i++) {
-                        names[_i - 0] = arguments[_i];
+                        names[_i] = arguments[_i];
                     }
                     return Builder.build(function () { return Compiler.compileAtoms(names, function (m) { return m.atoms.name; }); });
                 }
@@ -18942,7 +18942,7 @@ var LiteMol;
                 function atomsById() {
                     var ids = [];
                     for (var _i = 0; _i < arguments.length; _i++) {
-                        ids[_i - 0] = arguments[_i];
+                        ids[_i] = arguments[_i];
                     }
                     return Builder.build(function () { return Compiler.compileAtoms(ids, function (m) { return m.atoms.id; }); });
                 }
@@ -18950,7 +18950,7 @@ var LiteMol;
                 function residues() {
                     var ids = [];
                     for (var _i = 0; _i < arguments.length; _i++) {
-                        ids[_i - 0] = arguments[_i];
+                        ids[_i] = arguments[_i];
                     }
                     return Builder.build(function () { return Compiler.compileAtomRanges(false, ids, function (m) { return m.residues; }); });
                 }
@@ -18958,7 +18958,7 @@ var LiteMol;
                 function chains() {
                     var ids = [];
                     for (var _i = 0; _i < arguments.length; _i++) {
-                        ids[_i - 0] = arguments[_i];
+                        ids[_i] = arguments[_i];
                     }
                     return Builder.build(function () { return Compiler.compileAtomRanges(false, ids, function (m) { return m.chains; }); });
                 }
@@ -18966,7 +18966,7 @@ var LiteMol;
                 function entities() {
                     var ids = [];
                     for (var _i = 0; _i < arguments.length; _i++) {
-                        ids[_i - 0] = arguments[_i];
+                        ids[_i] = arguments[_i];
                     }
                     return Builder.build(function () { return Compiler.compileAtomRanges(false, ids, function (m) { return m.entities; }); });
                 }
@@ -18974,7 +18974,7 @@ var LiteMol;
                 function notEntities() {
                     var ids = [];
                     for (var _i = 0; _i < arguments.length; _i++) {
-                        ids[_i - 0] = arguments[_i];
+                        ids[_i] = arguments[_i];
                     }
                     return Builder.build(function () { return Compiler.compileAtomRanges(true, ids, function (m) { return m.entities; }); });
                 }
@@ -18998,7 +18998,7 @@ var LiteMol;
                 function polymerTrace() {
                     var atomNames = [];
                     for (var _i = 0; _i < arguments.length; _i++) {
-                        atomNames[_i - 0] = arguments[_i];
+                        atomNames[_i] = arguments[_i];
                     }
                     return Builder.build(function () { return Compiler.compilePolymerNames(atomNames, false); });
                 }
@@ -19014,7 +19014,7 @@ var LiteMol;
                 function or() {
                     var elements = [];
                     for (var _i = 0; _i < arguments.length; _i++) {
-                        elements[_i - 0] = arguments[_i];
+                        elements[_i] = arguments[_i];
                     }
                     return Builder.build(function () { return Compiler.compileOr(elements); });
                 }
@@ -19046,7 +19046,7 @@ var LiteMol;
                 function residuesByName() {
                     var names = [];
                     for (var _i = 0; _i < arguments.length; _i++) {
-                        names[_i - 0] = arguments[_i];
+                        names[_i] = arguments[_i];
                     }
                     return residues.apply(void 0, names.map(function (n) { return ({ name: n }); }));
                 }
@@ -19054,7 +19054,7 @@ var LiteMol;
                 function residuesById() {
                     var ids = [];
                     for (var _i = 0; _i < arguments.length; _i++) {
-                        ids[_i - 0] = arguments[_i];
+                        ids[_i] = arguments[_i];
                     }
                     return residues.apply(void 0, ids.map(function (id) { return ({ authSeqNumber: id }); }));
                 }
@@ -19062,7 +19062,7 @@ var LiteMol;
                 function chainsById() {
                     var ids = [];
                     for (var _i = 0; _i < arguments.length; _i++) {
-                        ids[_i - 0] = arguments[_i];
+                        ids[_i] = arguments[_i];
                     }
                     return chains.apply(void 0, ids.map(function (id) { return ({ authAsymId: id }); }));
                 }
@@ -55640,11 +55640,11 @@ var LiteMol;
 (function (LiteMol) {
     var Visualization;
     (function (Visualization) {
+        var CameraType;
         (function (CameraType) {
             CameraType[CameraType["Perspective"] = 0] = "Perspective";
             CameraType[CameraType["Orthographic"] = 1] = "Orthographic";
-        })(Visualization.CameraType || (Visualization.CameraType = {}));
-        var CameraType = Visualization.CameraType;
+        })(CameraType = Visualization.CameraType || (Visualization.CameraType = {}));
         var SlabControls = (function () {
             function SlabControls(element) {
                 var _this = this;
@@ -55828,7 +55828,7 @@ var LiteMol;
             Camera.prototype.focusOnModel = function () {
                 var models = [];
                 for (var _i = 0; _i < arguments.length; _i++) {
-                    models[_i - 0] = arguments[_i];
+                    models[_i] = arguments[_i];
                 }
                 this.updateFocus(models);
                 this.nearPlaneDelta = 0;
@@ -59412,11 +59412,11 @@ var LiteMol;
             var Cartoons;
             (function (Cartoons) {
                 "use strict";
+                var CartoonsModelType;
                 (function (CartoonsModelType) {
                     CartoonsModelType[CartoonsModelType["Default"] = 0] = "Default";
                     CartoonsModelType[CartoonsModelType["AlphaTrace"] = 1] = "AlphaTrace";
-                })(Cartoons.CartoonsModelType || (Cartoons.CartoonsModelType = {}));
-                var CartoonsModelType = Cartoons.CartoonsModelType;
+                })(CartoonsModelType = Cartoons.CartoonsModelType || (Cartoons.CartoonsModelType = {}));
                 ;
                 Cartoons.DefaultCartoonsModelParameters = {
                     tessalation: 3,
@@ -65048,11 +65048,11 @@ var LiteMol;
         var Utils;
         (function (Utils) {
             "use strict";
+            var DataCompressionMethod;
             (function (DataCompressionMethod) {
                 DataCompressionMethod[DataCompressionMethod["None"] = 0] = "None";
                 DataCompressionMethod[DataCompressionMethod["Gzip"] = 1] = "Gzip";
-            })(Utils.DataCompressionMethod || (Utils.DataCompressionMethod = {}));
-            var DataCompressionMethod = Utils.DataCompressionMethod;
+            })(DataCompressionMethod = Utils.DataCompressionMethod || (Utils.DataCompressionMethod = {}));
             function readStringFromFile(file) {
                 return readFromFileInternal(file, false);
             }
@@ -65714,6 +65714,7 @@ var LiteMol;
             }());
             Service.Dispatcher = Dispatcher;
             (function (Dispatcher) {
+                var Lane;
                 (function (Lane) {
                     Lane[Lane["Slow"] = 0] = "Slow";
                     Lane[Lane["Fast"] = 1] = "Fast";
@@ -65721,8 +65722,7 @@ var LiteMol;
                     Lane[Lane["Busy"] = 3] = "Busy";
                     Lane[Lane["Transformer"] = 4] = "Transformer";
                     Lane[Lane["Task"] = 5] = "Task";
-                })(Dispatcher.Lane || (Dispatcher.Lane = {}));
-                var Lane = Dispatcher.Lane;
+                })(Lane = Dispatcher.Lane || (Dispatcher.Lane = {}));
             })(Dispatcher = Service.Dispatcher || (Service.Dispatcher = {}));
         })(Service = Bootstrap.Service || (Bootstrap.Service = {}));
     })(Bootstrap = LiteMol.Bootstrap || (LiteMol.Bootstrap = {}));
@@ -65760,13 +65760,13 @@ var LiteMol;
             }());
             Service.Logger = Logger;
             (function (Logger) {
+                var EntryType;
                 (function (EntryType) {
                     EntryType[EntryType["Message"] = 0] = "Message";
                     EntryType[EntryType["Error"] = 1] = "Error";
                     EntryType[EntryType["Warning"] = 2] = "Warning";
                     EntryType[EntryType["Info"] = 3] = "Info";
-                })(Logger.EntryType || (Logger.EntryType = {}));
-                var EntryType = Logger.EntryType;
+                })(EntryType = Logger.EntryType || (Logger.EntryType = {}));
             })(Logger = Service.Logger || (Service.Logger = {}));
         })(Service = Bootstrap.Service || (Bootstrap.Service = {}));
     })(Bootstrap = LiteMol.Bootstrap || (LiteMol.Bootstrap = {}));
@@ -66552,7 +66552,7 @@ var LiteMol;
                         Helpers.BuilderPrototype[name] = function () {
                             var args = [];
                             for (var _i = 0; _i < arguments.length; _i++) {
-                                args[_i - 0] = arguments[_i];
+                                args[_i] = arguments[_i];
                             }
                             return f.call.apply(f, [void 0, this].concat(args));
                         };
@@ -66568,7 +66568,7 @@ var LiteMol;
                 function byRef() {
                     var refs = [];
                     for (var _i = 0; _i < arguments.length; _i++) {
-                        refs[_i - 0] = arguments[_i];
+                        refs[_i] = arguments[_i];
                     }
                     return build(function () { return function (tree) {
                         var ret = [];
@@ -66589,7 +66589,7 @@ var LiteMol;
                 function byValue() {
                     var entities = [];
                     for (var _i = 0; _i < arguments.length; _i++) {
-                        entities[_i - 0] = arguments[_i];
+                        entities[_i] = arguments[_i];
                     }
                     return build(function () { return function (tree) { return entities; }; });
                 }
@@ -68047,11 +68047,11 @@ var LiteMol;
             var Density;
             (function (Density) {
                 "use strict";
+                var IsoValueType;
                 (function (IsoValueType) {
                     IsoValueType[IsoValueType["Sigma"] = 0] = "Sigma";
                     IsoValueType[IsoValueType["Absolute"] = 1] = "Absolute";
-                })(Density.IsoValueType || (Density.IsoValueType = {}));
-                var IsoValueType = Density.IsoValueType;
+                })(IsoValueType = Density.IsoValueType || (Density.IsoValueType = {}));
                 var Style;
                 (function (Style) {
                     function create(params) {
@@ -68808,11 +68808,11 @@ var LiteMol;
                 var Data;
                 (function (Data) {
                     "use strict";
+                    var DownloadCompression;
                     (function (DownloadCompression) {
                         DownloadCompression[DownloadCompression["None"] = 0] = "None";
                         DownloadCompression[DownloadCompression["Gzip"] = 1] = "Gzip";
-                    })(Data.DownloadCompression || (Data.DownloadCompression = {}));
-                    var DownloadCompression = Data.DownloadCompression;
+                    })(DownloadCompression = Data.DownloadCompression || (Data.DownloadCompression = {}));
                     function getDataType(type) {
                         if (type === void 0 || type === null)
                             return 'String';
@@ -69993,7 +69993,7 @@ var LiteMol;
                 Component.prototype.setState = function () {
                     var states = [];
                     for (var _i = 0; _i < arguments.length; _i++) {
-                        states[_i - 0] = arguments[_i];
+                        states[_i] = arguments[_i];
                     }
                     var s = Bootstrap.Utils.merge.apply(Bootstrap.Utils, [this._latestState].concat(states));
                     if (s !== this._latestState) {
@@ -70031,6 +70031,7 @@ var LiteMol;
         var Components;
         (function (Components) {
             "use strict";
+            var LayoutRegion;
             (function (LayoutRegion) {
                 LayoutRegion[LayoutRegion["Main"] = 0] = "Main";
                 LayoutRegion[LayoutRegion["Top"] = 1] = "Top";
@@ -70038,14 +70039,13 @@ var LiteMol;
                 LayoutRegion[LayoutRegion["Bottom"] = 3] = "Bottom";
                 LayoutRegion[LayoutRegion["Left"] = 4] = "Left";
                 LayoutRegion[LayoutRegion["Root"] = 5] = "Root";
-            })(Components.LayoutRegion || (Components.LayoutRegion = {}));
-            var LayoutRegion = Components.LayoutRegion;
+            })(LayoutRegion = Components.LayoutRegion || (Components.LayoutRegion = {}));
+            var CollapsedControlsLayout;
             (function (CollapsedControlsLayout) {
                 CollapsedControlsLayout[CollapsedControlsLayout["Outside"] = 0] = "Outside";
                 CollapsedControlsLayout[CollapsedControlsLayout["Landscape"] = 1] = "Landscape";
                 CollapsedControlsLayout[CollapsedControlsLayout["Portrait"] = 2] = "Portrait";
-            })(Components.CollapsedControlsLayout || (Components.CollapsedControlsLayout = {}));
-            var CollapsedControlsLayout = Components.CollapsedControlsLayout;
+            })(CollapsedControlsLayout = Components.CollapsedControlsLayout || (Components.CollapsedControlsLayout = {}));
             var LayoutTarget = (function () {
                 function LayoutTarget(cssClass) {
                     this.cssClass = cssClass;
