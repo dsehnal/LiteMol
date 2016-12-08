@@ -5,19 +5,25 @@
 namespace LiteMol.Plugin.Views.Context {
     "use strict";
 
-    class ToastEntry extends React.Component<{ entry: Bootstrap.Components.Context.Toast.Entry }, {}> {                
+    class ToastEntry extends React.Component<{ entry: Bootstrap.Components.Context.Toast.Entry }, {}> {        
+
+        private hide() {
+            let entry = this.props.entry;
+            (entry.hide || function () { }).call(null);
+        }
+
         render() {
             let entry = this.props.entry;
             return <div className='lm-toast-entry'>
-                <div className='lm-toast-title'>
+                <div className='lm-toast-title' onClick={() => this.hide() }>
                    {entry.title}
                 </div>
                 <div className='lm-toast-message'>
-                   {entry.message}
+                   <div dangerouslySetInnerHTML={{ __html: entry.message }} />
                 </div>
                 <div className='lm-toast-clear'></div>
                 <div className='lm-toast-hide'>
-                    <Controls.Button onClick={() => (entry.hide || function () { }).call(null) } style='link' icon='abort' title='Hide' customClass='lm-btn-icon' />
+                    <Controls.Button onClick={() => this.hide() } style='link' icon='abort' title='Hide' customClass='lm-btn-icon' />
                 </div>
             </div>;                 
         }        

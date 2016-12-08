@@ -75652,7 +75652,7 @@ var LiteMol;
 (function (LiteMol) {
     var Plugin;
     (function (Plugin) {
-        Plugin.VERSION = { number: "1.2.8", date: "Nov 30 2016" };
+        Plugin.VERSION = { number: "1.2.9", date: "Dec 8 2016" };
     })(Plugin = LiteMol.Plugin || (LiteMol.Plugin = {}));
 })(LiteMol || (LiteMol = {}));
 /*
@@ -77135,14 +77135,20 @@ var LiteMol;
                     function ToastEntry() {
                         return _super.apply(this, arguments) || this;
                     }
+                    ToastEntry.prototype.hide = function () {
+                        var entry = this.props.entry;
+                        (entry.hide || function () { }).call(null);
+                    };
                     ToastEntry.prototype.render = function () {
+                        var _this = this;
                         var entry = this.props.entry;
                         return Plugin.React.createElement("div", { className: 'lm-toast-entry' },
-                            Plugin.React.createElement("div", { className: 'lm-toast-title' }, entry.title),
-                            Plugin.React.createElement("div", { className: 'lm-toast-message' }, entry.message),
+                            Plugin.React.createElement("div", { className: 'lm-toast-title', onClick: function () { return _this.hide(); } }, entry.title),
+                            Plugin.React.createElement("div", { className: 'lm-toast-message' },
+                                Plugin.React.createElement("div", { dangerouslySetInnerHTML: { __html: entry.message } })),
                             Plugin.React.createElement("div", { className: 'lm-toast-clear' }),
                             Plugin.React.createElement("div", { className: 'lm-toast-hide' },
-                                Plugin.React.createElement(Plugin.Controls.Button, { onClick: function () { return (entry.hide || function () { }).call(null); }, style: 'link', icon: 'abort', title: 'Hide', customClass: 'lm-btn-icon' })));
+                                Plugin.React.createElement(Plugin.Controls.Button, { onClick: function () { return _this.hide(); }, style: 'link', icon: 'abort', title: 'Hide', customClass: 'lm-btn-icon' })));
                     };
                     return ToastEntry;
                 }(Plugin.React.Component));

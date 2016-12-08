@@ -24,18 +24,47 @@
             background: $default-background;
             font-weight: bold;
             display: table-cell;
+
+            -webkit-user-select: none; /* Chrome/Safari */        
+            -moz-user-select: none; /* Firefox */
+            -ms-user-select: none; /* IE10+ */
+
+            /* Rules below not implemented in browsers yet */
+            -o-user-select: none;
+            user-select: none;
+            
+            font-weight: light;
+            
+            cursor: pointer;
         }
 
         .lm-toast-message {
             padding: $info-vertical-padding ($control-spacing + $row-height) $info-vertical-padding $control-spacing;
             display: table-cell;
+
+            a {
+                text-decoration: none;
+                color: $lm-btn-commit-on-font-color;
+                font-weight: bold;
+
+                &:hover {
+                    text-decoration: underline;
+                    color: $lm-btn-commit-on-hover-font-color;
+                }
+
+                &:active, &:focus {
+                    color: $lm-btn-commit-on-font-color;
+                    outline-offset: 0;
+                    outline: none;    
+                }
+            }
         }
 
         .lm-toast-hide {
             position: absolute;
-            top: 0;
+            width: $row-height + $control-spacing;
             right: 0;
-            left: 0;
+            top: 0;
             bottom: 0;
 
             .lm-btn-icon {

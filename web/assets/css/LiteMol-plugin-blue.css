@@ -2906,15 +2906,37 @@
         padding: 0 10px;
         background: #2D3E50;
         font-weight: bold;
-        display: table-cell; }
+        display: table-cell;
+        -webkit-user-select: none;
+        /* Chrome/Safari */
+        -moz-user-select: none;
+        /* Firefox */
+        -ms-user-select: none;
+        /* IE10+ */
+        /* Rules below not implemented in browsers yet */
+        -o-user-select: none;
+        user-select: none;
+        font-weight: light;
+        cursor: pointer; }
       .lm-plugin .lm-toast-container .lm-toast-entry .lm-toast-message {
         padding: 6px 42px 6px 10px;
         display: table-cell; }
+        .lm-plugin .lm-toast-container .lm-toast-entry .lm-toast-message a {
+          text-decoration: none;
+          color: #ffffff;
+          font-weight: bold; }
+          .lm-plugin .lm-toast-container .lm-toast-entry .lm-toast-message a:hover {
+            text-decoration: underline;
+            color: #cccccc; }
+          .lm-plugin .lm-toast-container .lm-toast-entry .lm-toast-message a:active, .lm-plugin .lm-toast-container .lm-toast-entry .lm-toast-message a:focus {
+            color: #ffffff;
+            outline-offset: 0;
+            outline: none; }
       .lm-plugin .lm-toast-container .lm-toast-entry .lm-toast-hide {
         position: absolute;
-        top: 0;
+        width: 42px;
         right: 0;
-        left: 0;
+        top: 0;
         bottom: 0; }
         .lm-plugin .lm-toast-container .lm-toast-entry .lm-toast-hide .lm-btn-icon {
           position: absolute;

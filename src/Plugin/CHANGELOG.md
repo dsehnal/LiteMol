@@ -1,4 +1,7 @@
-﻿# 1.2.8
+﻿# 1.2.9
+* Toasts now support HTML messages.
+
+# 1.2.8
 * Density behavior UI updates.
 
 # 1.2.7
