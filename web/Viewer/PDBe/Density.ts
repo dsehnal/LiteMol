@@ -113,13 +113,9 @@ namespace LiteMol.Viewer.PDBe.Data {
 
         let labelId = 'EMD-' + id;
 
-        if (location.protocol === 'https:') {
-            return fail(a, 'EMDB currently does not work over HTTPS, sorry for the inconvenience.');
-        }
-
         action
             .add(a, Transformer.Data.Download, { 
-                url: `http://ftp.ebi.ac.uk/pub/databases/emdb/structures/EMD-${id}/map/emd_${id}.map.gz`, 
+                url: `https://www.ebi.ac.uk/pdbe/static/files/em/maps/emd_${id}.map.gz`, 
                 type: 'Binary', 
                 id: labelId, 
                 description: 'EMDB Density', 
