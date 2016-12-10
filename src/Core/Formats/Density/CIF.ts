@@ -34,6 +34,7 @@ namespace LiteMol.Core.Formats.Density.CIF {
             function getNum(name: string) { return info.getColumn(name).getFloat(0); }
 
             let header = {
+                name: info.getColumn(name).getString(0),
                 grid: getArray('grid'),
                 axisOrder: getArray('axis_order'),
                 extent: getArray('extent'),
@@ -85,7 +86,7 @@ namespace LiteMol.Core.Formats.Density.CIF {
                 { x: xAxis, y: yAxis, z: zAxis },
                 [header.axisOrder[indices[0]], header.axisOrder[indices[1]], header.axisOrder[indices[2]]],
                 { min: rawData.min, max: rawData.max, mean: header.mean, sigma: header.sigma },
-                { spacegroupIndex: header.spacegroupNumber - 1 });
+                { spacegroupIndex: header.spacegroupNumber - 1, name: header.name });
             
             return ParserResult.success(data);
         }
