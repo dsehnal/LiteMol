@@ -1262,6 +1262,7 @@ var LiteMol;
                 { transformer: Transformer.Molecule.CreateMacromoleculeVisual, view: Views.Transform.Empty },
                 { transformer: Transformer.Molecule.CreateVisual, view: Views.Transform.Molecule.CreateVisual },
                 // density transforms
+                { transformer: Transformer.Density.CreateFromCif, view: Views.Transform.Molecule.CreateFromMmCif },
                 { transformer: Transformer.Density.CreateVisual, view: Views.Transform.Density.CreateVisual },
                 { transformer: Transformer.Density.CreateVisualBehaviour, view: Views.Transform.Density.CreateVisualBehaviour },
                 // Coordinate streaming

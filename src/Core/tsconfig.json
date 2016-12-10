@@ -37,6 +37,7 @@
     "Formats/Molecule/Formats.ts",
     "Formats/Density/Data.ts",
     "Formats/Density/CCP4.ts",
+    "Formats/Density/CIF.ts",
     "Formats/Density/DSN6.ts",
     "Formats/Density/Formats.ts",
     // GEOMETRY

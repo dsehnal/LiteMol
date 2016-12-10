@@ -1045,7 +1045,7 @@ if (typeof window !== 'undefined' && window && window.Promise) {
  */
 var CIFTools;
 (function (CIFTools) {
-    CIFTools.VERSION = { number: "1.0.3", date: "Nov 15 2016" };
+    CIFTools.VERSION = { number: "1.1.0", date: "Dec 10 2016" };
 })(CIFTools || (CIFTools = {}));
 /*
  * Copyright (c) 2016 David Sehnal, licensed under MIT License, See LICENSE file for more info.
@@ -2574,10 +2574,6 @@ var CIFTools;
     (function (Binary) {
         var MessagePack;
         (function (MessagePack) {
-            /*
-             * Adapted from https://github.com/rcsb/mmtf-javascript
-             * by Alexander Rose <alexander.rose@weirdbyte.de>, MIT License, Copyright (c) 2016
-             */
             /**
              * decode all key-value pairs of a map into an object
              * @param  {Integer} length - number of key-value pairs
@@ -3219,13 +3215,15 @@ var CIFTools;
                             case 3 /* Uint8 */: return data;
                             case 0 /* Int8 */: return int8(data);
                             case 1 /* Int16 */: return int16(data);
+                            case 4 /* Uint16 */: return uint16(data);
                             case 2 /* Int32 */: return int32(data);
-                            case 4 /* Float32 */: return float32(data);
-                            case 5 /* Float64 */: return float64(data);
+                            case 5 /* Float32 */: return float32(data);
+                            case 6 /* Float64 */: return float64(data);
                             default: throw new Error('Unsupported ByteArray type.');
                         }
                     }
                     case 'FixedPoint': return fixedPoint(data, encoding);
+                    case 'IntervalQuantization': return intervalQuantization(data, encoding);
                     case 'RunLength': return runLength(data, encoding);
                     case 'Delta': return delta(data, encoding);
                     case 'IntegerPacking': return integerPacking(data, encoding);
@@ -3233,63 +3231,72 @@ var CIFTools;
                 }
             }
             Decoder.decodeStep = decodeStep;
-            function dataView(array) {
-                return new DataView(array.buffer, array.byteOffset, array.byteLength);
-            }
-            function int8(data) {
-                return new Int8Array(data.buffer, data.byteOffset);
-            }
-            function int16(data) {
-                var n = (data.length / 2) | 0;
-                var output = new Int16Array(n);
-                for (var i = 0, i2 = 0; i < n; i++, i2 += 2) {
-                    output[i] = data[i2] << 8 ^ data[i2 + 1] << 0;
-                }
-                return output;
-            }
-            function int32(data) {
-                var n = (data.length / 4) | 0;
-                var output = new Int32Array(n);
-                for (var i = 0, i4 = 0; i < n; i++, i4 += 4) {
-                    output[i] = data[i4] << 24 ^ data[i4 + 1] << 16 ^ data[i4 + 2] << 8 ^ data[i4 + 3] << 0;
-                }
-                return output;
-            }
-            function float32(data) {
-                var n = (data.length / 4) | 0;
-                var output = new Float32Array(n);
-                var src = dataView(data);
-                for (var i = 0, i4 = 0; i < n; i++, i4 += 4) {
-                    output[i] = src.getFloat32(i4);
-                }
-                return output;
-            }
-            function float64(data) {
-                var n = (data.length / 8) | 0;
-                var output = new Float64Array(n);
-                var src = dataView(data);
-                for (var i = 0, i8 = 0; i < n; i++, i8 += 8) {
-                    output[i] = src.getFloat64(i8);
-                }
-                return output;
-            }
-            function fixedPoint(data, encoding) {
-                var n = data.length;
-                var output = new Float32Array(n);
-                var f = 1 / encoding.factor;
-                for (var i = 0; i < n; i++) {
-                    output[i] = f * data[i];
-                }
-                return output;
-            }
             function getIntArray(type, size) {
                 switch (type) {
                     case 0 /* Int8 */: return new Int8Array(size);
                     case 1 /* Int16 */: return new Int16Array(size);
                     case 2 /* Int32 */: return new Int32Array(size);
                     case 3 /* Uint8 */: return new Uint8Array(size);
+                    case 4 /* Uint16 */: return new Uint16Array(size);
                     default: throw new Error('Unsupported integer data type.');
                 }
+            }
+            function getFloatArray(type, size) {
+                switch (type) {
+                    case 0 /* Float32 */: return new Float64Array(size);
+                    case 1 /* Float64 */: return new Float64Array(size);
+                    default: throw new Error('Unsupported floating data type.');
+                }
+            }
+            /* http://stackoverflow.com/questions/7869752/javascript-typed-arrays-and-endianness */
+            var isLittleEndian = (function () {
+                var arrayBuffer = new ArrayBuffer(2);
+                var uint8Array = new Uint8Array(arrayBuffer);
+                var uint16array = new Uint16Array(arrayBuffer);
+                uint8Array[0] = 0xAA;
+                uint8Array[1] = 0xBB;
+                if (uint16array[0] === 0xBBAA)
+                    return true;
+                return false;
+            })();
+            function int8(data) { return new Int8Array(data.buffer, data.byteOffset); }
+            function flipByteOrder(data, bytes) {
+                var ret = new Uint8Array(data.length);
+                for (var i = 0, n = data.length; i < n; i += bytes) {
+                    for (var j = 0; j < bytes; j++) {
+                        ret[i + bytes - j - 1] = data[i + j];
+                    }
+                }
+                return ret;
+            }
+            function view(data, byteSize, c) {
+                if (isLittleEndian)
+                    return new c(data.buffer);
+                return new c(flipByteOrder(data, byteSize).buffer);
+            }
+            function int16(data) { return view(data, 2, Int16Array); }
+            function uint16(data) { return view(data, 2, Uint16Array); }
+            function int32(data) { return view(data, 4, Int32Array); }
+            function float32(data) { return view(data, 4, Float32Array); }
+            function float64(data) { return view(data, 8, Float64Array); }
+            function fixedPoint(data, encoding) {
+                var n = data.length;
+                var output = getFloatArray(encoding.srcType, n);
+                var f = 1 / encoding.factor;
+                for (var i = 0; i < n; i++) {
+                    output[i] = f * data[i];
+                }
+                return output;
+            }
+            function intervalQuantization(data, encoding) {
+                var n = data.length;
+                var output = getFloatArray(encoding.srcType, n);
+                var delta = (encoding.max - encoding.min) / (encoding.numSteps - 1);
+                var min = encoding.min;
+                for (var i = 0; i < n; i++) {
+                    output[i] = min + delta * data[i];
+                }
+                return output;
             }
             function runLength(data, encoding) {
                 var output = getIntArray(encoding.srcType, encoding.srcSize);
@@ -3314,8 +3321,8 @@ var CIFTools;
                 }
                 return output;
             }
-            function integerPacking(data, encoding) {
-                var upperLimit = data instanceof Int8Array ? 0x7F : 0x7FFF;
+            function integerPackingSigned(data, encoding) {
+                var upperLimit = encoding.byteCount === 1 ? 0x7F : 0x7FFF;
                 var lowerLimit = -upperLimit - 1;
                 var n = data.length;
                 var output = new Int32Array(encoding.srcSize);
@@ -3334,6 +3341,29 @@ var CIFTools;
                     j++;
                 }
                 return output;
+            }
+            function integerPackingUnsigned(data, encoding) {
+                var upperLimit = encoding.byteCount === 1 ? 0xFF : 0xFFFF;
+                var n = data.length;
+                var output = new Int32Array(encoding.srcSize);
+                var i = 0;
+                var j = 0;
+                while (i < n) {
+                    var value = 0, t = data[i];
+                    while (t === upperLimit) {
+                        value += t;
+                        i++;
+                        t = data[i];
+                    }
+                    value += t;
+                    output[j] = value;
+                    i++;
+                    j++;
+                }
+                return output;
+            }
+            function integerPacking(data, encoding) {
+                return encoding.isUnsigned ? integerPackingUnsigned(data, encoding) : integerPackingSigned(data, encoding);
             }
             function stringArray(data, encoding) {
                 var str = encoding.stringData;
@@ -3576,6 +3606,7 @@ var CIFTools;
             return Encoder;
         }());
         Binary.Encoder = Encoder;
+        var Encoder;
         (function (Encoder) {
             function by(f) {
                 return new Encoder([f]);
@@ -3602,7 +3633,7 @@ var CIFTools;
                 var result = new Uint8Array(data.length * 2);
                 var view = dataView(result);
                 for (var i = 0, n = data.length; i < n; i++) {
-                    view.setInt16(2 * i, data[i]);
+                    view.setInt16(2 * i, data[i], true);
                 }
                 return {
                     encodings: [{ kind: 'ByteArray', type: 1 /* Int16 */ }],
@@ -3610,11 +3641,23 @@ var CIFTools;
                 };
             }
             Encoder.int16 = int16;
+            function uint16(data) {
+                var result = new Uint8Array(data.length * 2);
+                var view = dataView(result);
+                for (var i = 0, n = data.length; i < n; i++) {
+                    view.setUint16(2 * i, data[i], true);
+                }
+                return {
+                    encodings: [{ kind: 'ByteArray', type: 4 /* Uint16 */ }],
+                    data: result
+                };
+            }
+            Encoder.uint16 = uint16;
             function int32(data) {
                 var result = new Uint8Array(data.length * 4);
                 var view = dataView(result);
                 for (var i = 0, n = data.length; i < n; i++) {
-                    view.setInt32(4 * i, data[i]);
+                    view.setInt32(4 * i, data[i], true);
                 }
                 return {
                     encodings: [{ kind: 'ByteArray', type: 2 /* Int32 */ }],
@@ -3626,10 +3669,10 @@ var CIFTools;
                 var result = new Uint8Array(data.length * 4);
                 var view = dataView(result);
                 for (var i = 0, n = data.length; i < n; i++) {
-                    view.setFloat32(4 * i, data[i]);
+                    view.setFloat32(4 * i, data[i], true);
                 }
                 return {
-                    encodings: [{ kind: 'ByteArray', type: 4 /* Float32 */ }],
+                    encodings: [{ kind: 'ByteArray', type: 5 /* Float32 */ }],
                     data: result
                 };
             }
@@ -3638,26 +3681,58 @@ var CIFTools;
                 var result = new Uint8Array(data.length * 8);
                 var view = dataView(result);
                 for (var i = 0, n = data.length; i < n; i++) {
-                    view.setFloat64(8 * i, data[i]);
+                    view.setFloat64(8 * i, data[i], true);
                 }
                 return {
-                    encodings: [{ kind: 'ByteArray', type: 5 /* Float64 */ }],
+                    encodings: [{ kind: 'ByteArray', type: 6 /* Float64 */ }],
                     data: result
                 };
             }
             Encoder.float64 = float64;
             function _fixedPoint(data, factor) {
+                var srcType = Binary.Encoding.getFloatDataType(data);
                 var result = new Int32Array(data.length);
                 for (var i = 0, n = data.length; i < n; i++) {
                     result[i] = Math.round(data[i] * factor);
                 }
                 return {
-                    encodings: [{ kind: 'FixedPoint', factor: factor }],
+                    encodings: [{ kind: 'FixedPoint', factor: factor, srcType: srcType }],
                     data: result
                 };
             }
             function fixedPoint(factor) { return function (data) { return _fixedPoint(data, factor); }; }
             Encoder.fixedPoint = fixedPoint;
+            function _intervalQuantizaiton(data, min, max, numSteps) {
+                var srcType = Binary.Encoding.getFloatDataType(data);
+                if (!data.length) {
+                    return {
+                        encodings: [{ kind: 'IntervalQuantization', min: min, max: max, numSteps: numSteps, srcType: srcType }],
+                        data: new Int32Array(0)
+                    };
+                }
+                if (max < min) {
+                    var t = min;
+                    min = max;
+                    max = t;
+                }
+                var delta = (max - min) / (numSteps - 1);
+                var output = new Int32Array(data.length);
+                for (var i = 0, n = data.length; i < n; i++) {
+                    var v = data[i];
+                    if (v <= 0)
+                        output[i] = 0;
+                    else if (v >= max)
+                        output[i] = numSteps;
+                    else
+                        output[i] = (Math.round((v - min) / delta)) | 0;
+                }
+                return {
+                    encodings: [{ kind: 'IntervalQuantization', min: min, max: max, numSteps: numSteps, srcType: srcType }],
+                    data: output
+                };
+            }
+            function intervalQuantizaiton(min, max, numSteps) { return function (data) { return _intervalQuantizaiton(data, min, max, numSteps); }; }
+            Encoder.intervalQuantizaiton = intervalQuantizaiton;
             function runLength(data) {
                 var srcType = Binary.Encoding.getIntDataType(data);
                 if (srcType === void 0) {
@@ -3724,7 +3799,14 @@ var CIFTools;
                 };
             }
             Encoder.delta = delta;
-            function packingSize(data, upperLimit) {
+            function isSigned(data) {
+                for (var i = 0, n = data.length; i < n; i++) {
+                    if (data[i] < 0)
+                        return true;
+                }
+                return false;
+            }
+            function packingSizeSigned(data, upperLimit) {
                 var lowerLimit = -upperLimit - 1;
                 var size = 0;
                 for (var i = 0, n = data.length; i < n; i++) {
@@ -3744,12 +3826,30 @@ var CIFTools;
                 }
                 return size;
             }
+            function packingSizeUnsigned(data, upperLimit) {
+                var size = 0;
+                for (var i = 0, n = data.length; i < n; i++) {
+                    var value = data[i];
+                    if (value === 0) {
+                        size += 1;
+                    }
+                    else if (value === upperLimit) {
+                        size += 2;
+                    }
+                    else {
+                        size += Math.ceil(value / upperLimit);
+                    }
+                }
+                return size;
+            }
             function determinePacking(data) {
-                var size8 = packingSize(data, 0x7f);
-                var size16 = packingSize(data, 0x7fff);
+                var signed = isSigned(data);
+                var size8 = signed ? packingSizeSigned(data, 0x7f) : packingSizeUnsigned(data, 0xff);
+                var size16 = signed ? packingSizeSigned(data, 0x7fff) : packingSizeUnsigned(data, 0xffff);
                 if (data.length * 4 < size16 * 2) {
                     // 4 byte packing is the most effective
                     return {
+                        isSigned: signed,
                         size: data.length,
                         bytesPerElement: 4
                     };
@@ -3757,6 +3857,7 @@ var CIFTools;
                 else if (size16 * 2 < size8) {
                     // 2 byte packing is the most effective
                     return {
+                        isSigned: signed,
                         size: size16,
                         bytesPerElement: 2
                     };
@@ -3764,21 +3865,14 @@ var CIFTools;
                 else {
                     // 1 byte packing is the most effective
                     return {
+                        isSigned: signed,
                         size: size8,
                         bytesPerElement: 1
                     };
                 }
                 ;
             }
-            /**
-             * Packs Int32 array. The packing level is determined automatically to either 1-, 2-, or 4-byte words.
-             */
-            function integerPacking(data) {
-                var packing = determinePacking(data);
-                if (packing.bytesPerElement === 4) {
-                    // no packing done, Int32 encoding will be used
-                    return int32(data);
-                }
+            function integerPackingSigned(data, packing) {
                 var upperLimit = packing.bytesPerElement === 1 ? 0x7F : 0x7FFF;
                 var lowerLimit = -upperLimit - 1;
                 var n = data.length;
@@ -3805,9 +3899,43 @@ var CIFTools;
                 }
                 var result = packing.bytesPerElement === 1 ? int8(packed) : int16(packed);
                 return {
-                    encodings: [{ kind: 'IntegerPacking', byteCount: packing.bytesPerElement, srcSize: n }, result.encodings[0]],
+                    encodings: [{ kind: 'IntegerPacking', byteCount: packing.bytesPerElement, isUnsigned: false, srcSize: n }, result.encodings[0]],
                     data: result.data
                 };
+            }
+            function integerPackingUnsigned(data, packing) {
+                var upperLimit = packing.bytesPerElement === 1 ? 0xFF : 0xFFFF;
+                var n = data.length;
+                var packed = packing.bytesPerElement === 1 ? new Uint8Array(packing.size) : new Uint16Array(packing.size);
+                var j = 0;
+                for (var i = 0; i < n; i++) {
+                    var value = data[i];
+                    while (value >= upperLimit) {
+                        packed[j] = upperLimit;
+                        ++j;
+                        value -= upperLimit;
+                    }
+                    packed[j] = value;
+                    ++j;
+                }
+                var result = packing.bytesPerElement === 1 ? uint8(packed) : uint16(packed);
+                return {
+                    encodings: [{ kind: 'IntegerPacking', byteCount: packing.bytesPerElement, isUnsigned: true, srcSize: n }, result.encodings[0]],
+                    data: result.data
+                };
+            }
+            /**
+             * Packs Int32 array. The packing level is determined automatically to either 1-, 2-, or 4-byte words.
+             */
+            function integerPacking(data) {
+                var packing = determinePacking(data);
+                if (packing.bytesPerElement === 4) {
+                    // no packing done, Int32 encoding will be used
+                    return int32(data);
+                }
+                if (packing.isSigned)
+                    return integerPackingSigned(data, packing);
+                return integerPackingUnsigned(data, packing);
             }
             Encoder.integerPacking = integerPacking;
             function stringArray(data) {
@@ -3857,7 +3985,7 @@ var CIFTools;
     var Binary;
     (function (Binary) {
         "use strict";
-        Binary.VERSION = '0.2.0';
+        Binary.VERSION = '0.3.0';
         var Encoding;
         (function (Encoding) {
             function getIntDataType(data) {
@@ -3870,11 +3998,24 @@ var CIFTools;
                     srcType = 2 /* Int32 */;
                 else if (data instanceof Uint8Array)
                     srcType = 3 /* Uint8 */;
+                else if (data instanceof Uint16Array)
+                    srcType = 4 /* Uint16 */;
                 else
                     throw new Error('Unsupported integer data type.');
                 return srcType;
             }
             Encoding.getIntDataType = getIntDataType;
+            function getFloatDataType(data) {
+                var srcType;
+                if (data instanceof Float32Array)
+                    srcType = 0 /* Float32 */;
+                else if (data instanceof Float64Array)
+                    srcType = 1 /* Float64 */;
+                else
+                    throw new Error('Unsupported floating data type.');
+                return srcType;
+            }
+            Encoding.getFloatDataType = getFloatDataType;
         })(Encoding = Binary.Encoding || (Binary.Encoding = {}));
     })(Binary = CIFTools.Binary || (CIFTools.Binary = {}));
 })(CIFTools || (CIFTools = {}));
@@ -3886,10 +4027,21 @@ var CIFTools;
     var Binary;
     (function (Binary) {
         "use strict";
+        function checkVersions(min, current) {
+            for (var i = 0; i < 2; i++) {
+                if (min[i] > current[i])
+                    return false;
+            }
+            return true;
+        }
         function parse(data) {
+            var minVersion = [0, 3];
             try {
                 var array = new Uint8Array(data);
                 var unpacked = Binary.MessagePack.decode(array);
+                if (!checkVersions(minVersion, unpacked.version.match(/(\d)\.(\d)\.\d/).slice(1))) {
+                    return CIFTools.ParserResult.error("Unsupported format version. Current " + unpacked.version + ", required " + minVersion.join('.') + ".");
+                }
                 var file = new Binary.File(unpacked);
                 return CIFTools.ParserResult.success(file);
             }
@@ -13845,6 +13997,109 @@ var LiteMol;
                         }
                     })(Parser || (Parser = {}));
                 })(CCP4 = Density.CCP4 || (Density.CCP4 = {}));
+            })(Density = Formats.Density || (Formats.Density = {}));
+        })(Formats = Core.Formats || (Core.Formats = {}));
+    })(Core = LiteMol.Core || (LiteMol.Core = {}));
+})(LiteMol || (LiteMol = {}));
+/*
+ * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ */
+var LiteMol;
+(function (LiteMol) {
+    var Core;
+    (function (Core) {
+        var Formats;
+        (function (Formats) {
+            var Density;
+            (function (Density) {
+                var CIF;
+                (function (CIF) {
+                    function parse(block) {
+                        return Parser.parse(block);
+                    }
+                    CIF.parse = parse;
+                    /**
+                     * Parses CCP4 files.
+                     */
+                    var Parser;
+                    (function (Parser) {
+                        /**
+                         * Parse CCP4 file according to spec at http://www.ccp4.ac.uk/html/maplib.html
+                         * Inspired by PyMOL implementation of the parser.
+                         */
+                        function parse(block) {
+                            var info = block.getCategory('_density_info');
+                            if (!info)
+                                return Formats.ParserResult.error('_density_info category is missing.');
+                            if (!block.getCategory('_density_data'))
+                                return Formats.ParserResult.error('_density_data category is missing.');
+                            function getArray(name) {
+                                var ret = [];
+                                for (var i = 0; i < 3; i++) {
+                                    ret[i] = info.getColumn(name + "[" + i + "]").getFloat(0);
+                                }
+                                return ret;
+                            }
+                            function getNum(name) { return info.getColumn(name).getFloat(0); }
+                            var header = {
+                                grid: getArray('grid'),
+                                axisOrder: getArray('axis_order'),
+                                extent: getArray('extent'),
+                                origin: getArray('origin'),
+                                cellSize: getArray('cell_size'),
+                                cellAngles: getArray('cell_angles'),
+                                mean: getNum('mean'),
+                                sigma: getNum('sigma'),
+                                spacegroupNumber: getNum('spacegroup_number') | 0,
+                            };
+                            var alpha = (Math.PI / 180.0) * header.cellAngles[0], beta = (Math.PI / 180.0) * header.cellAngles[1], gamma = (Math.PI / 180.0) * header.cellAngles[2];
+                            var xScale = header.cellSize[0] / header.grid[0], yScale = header.cellSize[1] / header.grid[1], zScale = header.cellSize[2] / header.grid[2];
+                            var z1 = Math.cos(beta), z2 = (Math.cos(alpha) - Math.cos(beta) * Math.cos(gamma)) / Math.sin(gamma), z3 = Math.sqrt(1.0 - z1 * z1 - z2 * z2);
+                            var xAxis = [xScale, 0.0, 0.0], yAxis = [Math.cos(gamma) * yScale, Math.sin(gamma) * yScale, 0.0], zAxis = [z1 * zScale, z2 * zScale, z3 * zScale];
+                            var indices = [0, 0, 0];
+                            indices[header.axisOrder[0]] = 0;
+                            indices[header.axisOrder[1]] = 1;
+                            indices[header.axisOrder[2]] = 2;
+                            var d = [header.origin[header.axisOrder[0]], header.origin[header.axisOrder[1]], header.origin[header.axisOrder[2]]];
+                            var origin = [
+                                xAxis[0] * d[0] + yAxis[0] * d[1] + zAxis[0] * d[2],
+                                yAxis[1] * d[1] + zAxis[1] * d[2],
+                                zAxis[2] * d[2]
+                            ];
+                            var extent = [header.extent[indices[0]], header.extent[indices[1]], header.extent[indices[2]]];
+                            var rawData = readRawData1(block.getCategory('_density_data').getColumn('values'), extent, header.extent, indices, header.mean);
+                            var field = new Density.Field3DZYX(rawData.data, extent);
+                            var data = Density.Data.create(header.cellSize, header.cellAngles, origin, false, void 0, field, extent, { x: xAxis, y: yAxis, z: zAxis }, [header.axisOrder[indices[0]], header.axisOrder[indices[1]], header.axisOrder[indices[2]]], { min: rawData.min, max: rawData.max, mean: header.mean, sigma: header.sigma }, { spacegroupIndex: header.spacegroupNumber - 1 });
+                            return Formats.ParserResult.success(data);
+                        }
+                        Parser.parse = parse;
+                        function readRawData1(col, extent, headerExtent, indices, mean) {
+                            var data = new Float32Array(extent[0] * extent[1] * extent[2]), coord = [0, 0, 0], mX, mY, mZ, cX, cY, cZ, xSize, xySize, offset = 0, v = 0.1, min = Number.POSITIVE_INFINITY, max = Number.NEGATIVE_INFINITY, iX = indices[0], iY = indices[1], iZ = indices[2];
+                            mX = headerExtent[0];
+                            mY = headerExtent[1];
+                            mZ = headerExtent[2];
+                            xSize = extent[0];
+                            xySize = extent[0] * extent[1];
+                            for (cZ = 0; cZ < mZ; cZ++) {
+                                coord[2] = cZ;
+                                for (cY = 0; cY < mY; cY++) {
+                                    coord[1] = cY;
+                                    for (cX = 0; cX < mX; cX++) {
+                                        coord[0] = cX;
+                                        v = col.getFloat(offset);
+                                        if (v < min)
+                                            min = v;
+                                        else if (v > max)
+                                            max = v;
+                                        data[coord[iX] + coord[iY] * xSize + coord[iZ] * xySize] = v;
+                                        offset += 1;
+                                    }
+                                }
+                            }
+                            return { data: data, min: min, max: max };
+                        }
+                    })(Parser || (Parser = {}));
+                })(CIF = Density.CIF || (Density.CIF = {}));
             })(Density = Formats.Density || (Formats.Density = {}));
         })(Formats = Core.Formats || (Core.Formats = {}));
     })(Core = LiteMol.Core || (LiteMol.Core = {}));
@@ -68977,6 +69232,26 @@ var LiteMol;
                                 else
                                     LiteMol.Core.Formats.Density.Data.normalize(data);
                                 ctx.resolve(Entity.Density.Data.create(t, { label: t.params.id ? t.params.id : 'Density Data', data: data, description: t.params.normalize ? 'Normalized' : '' }));
+                            });
+                        });
+                    });
+                    Density.CreateFromCif = Bootstrap.Tree.Transformer.create({
+                        id: 'density-create-from-cif',
+                        name: 'Density Data',
+                        description: 'Parse density from cif data.',
+                        from: [Entity.Data.CifDictionary],
+                        to: [Entity.Density.Data],
+                        isUpdatable: false,
+                        defaultParams: function () { return ({ blockIndex: 0 }); }
+                    }, function (ctx, a, t) {
+                        return Bootstrap.Task.create('Create Density', 'Normal', function (ctx) {
+                            ctx.update('Updating...');
+                            ctx.schedule(function () {
+                                var data = LiteMol.Core.Formats.Density.CIF.parse(a.props.dictionary.dataBlocks[t.params.blockIndex]);
+                                if (data.isError) {
+                                    return Bootstrap.Task.reject("Create Density (" + a.props.label + ")", 'Background', data.toString());
+                                }
+                                ctx.resolve(Entity.Density.Data.create(t, { label: t.params.id ? t.params.id : 'Density Data', data: data.result }));
                             });
                         });
                     });

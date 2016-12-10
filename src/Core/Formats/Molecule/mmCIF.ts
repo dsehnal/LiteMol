@@ -850,7 +850,6 @@ namespace LiteMol.Core.Formats.Molecule.mmCIF {
         }
 
         return info;
-
     }
 
     function getModel(startRow: number, data: CIF.DataBlock): { model: Structure.MoleculeModel; endRow: number } {

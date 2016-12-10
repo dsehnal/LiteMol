@@ -495,15 +495,17 @@ declare namespace CIFTools.Binary {
         }
         type Provider = (data: any) => Result;
         function by(f: Provider): Encoder;
-        function uint8(data: Int16Array): Result;
+        function uint8(data: Uint8Array): Result;
         function int8(data: Int8Array): Result;
         function int16(data: Int16Array): Result;
+        function uint16(data: Int16Array): Result;
         function int32(data: Int32Array): Result;
         function float32(data: Float32Array): Result;
         function float64(data: Float64Array): Result;
         function fixedPoint(factor: number): Provider;
-        function runLength(data: (Uint8Array | Int8Array | Int16Array | Int32Array | number[])): Result;
-        function delta(data: (Int8Array | Int16Array | Int32Array | number[])): Result;
+        function intervalQuantizaiton(min: number, max: number, numSteps: number): Provider;
+        function runLength(data: Uint8Array | Int8Array | Int16Array | Int32Array): Result;
+        function delta(data: Int8Array | Int16Array | Int32Array): Result;
         /**
          * Packs Int32 array. The packing level is determined automatically to either 1-, 2-, or 4-byte words.
          */
@@ -512,8 +514,8 @@ declare namespace CIFTools.Binary {
     }
 }
 declare namespace CIFTools.Binary {
-    var VERSION: string;
-    type Encoding = Encoding.ByteArray | Encoding.FixedPoint | Encoding.RunLength | Encoding.Delta | Encoding.IntegerPacking | Encoding.StringArray;
+    const VERSION: string;
+    type Encoding = Encoding.ByteArray | Encoding.FixedPoint | Encoding.RunLength | Encoding.Delta | Encoding.IntervalQuantization | Encoding.IntegerPacking | Encoding.StringArray;
     interface EncodedFile {
         version: string;
         encoder: string;
@@ -551,16 +553,23 @@ declare namespace CIFTools.Binary {
             Int16 = 1,
             Int32 = 2,
             Uint8 = 3,
-            Float32 = 4,
-            Float64 = 5,
+            Uint16 = 4,
+            Float32 = 5,
+            Float64 = 6,
         }
         const enum IntDataType {
             Int8 = 0,
             Int16 = 1,
             Int32 = 2,
             Uint8 = 3,
+            Uint16 = 4,
         }
-        function getIntDataType(data: (Int8Array | Int16Array | Int32Array | number[])): IntDataType;
+        const enum FloatDataType {
+            Float32 = 0,
+            Float64 = 1,
+        }
+        function getIntDataType(data: (Int8Array | Int16Array | Int32Array | Uint8Array | Uint16Array)): IntDataType;
+        function getFloatDataType(data: (Float32Array | Float64Array)): FloatDataType;
         interface ByteArray {
             kind: 'ByteArray';
             type: DataType;
@@ -568,6 +577,14 @@ declare namespace CIFTools.Binary {
         interface FixedPoint {
             kind: 'FixedPoint';
             factor: number;
+            srcType: FloatDataType;
+        }
+        interface IntervalQuantization {
+            kind: 'IntervalQuantization';
+            min: number;
+            max: number;
+            numSteps: number;
+            srcType: FloatDataType;
         }
         interface RunLength {
             kind: 'RunLength';
@@ -582,6 +599,7 @@ declare namespace CIFTools.Binary {
         interface IntegerPacking {
             kind: 'IntegerPacking';
             byteCount: number;
+            isUnsigned: boolean;
             srcSize: number;
         }
         interface StringArray {
@@ -1907,6 +1925,9 @@ declare namespace LiteMol.Core.Formats.Density {
 }
 declare namespace LiteMol.Core.Formats.Density.CCP4 {
     function parse(buffer: ArrayBuffer): ParserResult<Data>;
+}
+declare namespace LiteMol.Core.Formats.Density.CIF {
+    function parse(block: Formats.CIF.DataBlock): ParserResult<Data>;
 }
 declare namespace LiteMol.Core.Formats.Density.DSN6 {
     function parse(buffer: ArrayBuffer): ParserResult<Data>;

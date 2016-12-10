@@ -46,6 +46,31 @@ namespace LiteMol.Bootstrap.Entity.Transformer.Density {
         });
     });
 
+    export interface ParseCifParams {
+        id?: string,
+        blockIndex: number
+    }
+    export const CreateFromCif = Tree.Transformer.create<Entity.Data.CifDictionary, Entity.Density.Data, ParseCifParams>({
+        id: 'density-create-from-cif',
+        name: 'Density Data',
+        description: 'Parse density from cif data.',
+        from: [Entity.Data.CifDictionary],
+        to: [Entity.Density.Data],
+        isUpdatable: false,
+        defaultParams: () => ({ blockIndex: 0 })
+    }, (ctx, a, t) => {
+        return Task.create<Entity.Density.Data>('Create Density', 'Normal', ctx => {
+            ctx.update('Updating...');
+            ctx.schedule(() => {
+                let data = Core.Formats.Density.CIF.parse(a.props.dictionary.dataBlocks[t.params.blockIndex]);
+                if (data.isError) {
+                    return Task.reject(`Create Density (${a.props.label})`, 'Background', data.toString());
+                }
+                ctx.resolve(Entity.Density.Data.create(t, { label: t.params.id ? t.params.id : 'Density Data', data: data.result }));
+            });
+        });
+    });
+
     export interface CreateVisualParams {
         style: Visualization.Density.Style
     }

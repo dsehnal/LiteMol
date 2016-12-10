@@ -64,7 +64,7 @@ namespace LiteMol.Bootstrap.Visualization.Density {
                 0.0, 0.0, 0.0, 1.0);                                    
             fromFrac.setPosition(new LiteMol.Visualization.THREE.Vector3(data.origin[0], data.origin[1], data.origin[2]));
             let toFrac = new LiteMol.Visualization.THREE.Matrix4().getInverse(fromFrac);
-            
+
             let min: number[], max: number[];
             if (params.bottomLeft && params.topRight) {
                 let offsets = getOffsets(data, params.bottomLeft, params.topRight, toFrac);
