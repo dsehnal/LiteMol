@@ -1,4 +1,7 @@
-﻿# 2.4.10
+﻿# 2.4.11
+* Support for CIF density data.
+
+# 2.4.10
 * Detection of "single atom" nucleotides.
 
 # 2.4.9

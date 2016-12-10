@@ -495,16 +495,10 @@ declare namespace CIFTools.Binary {
         }
         type Provider = (data: any) => Result;
         function by(f: Provider): Encoder;
-        function uint8(data: Uint8Array): Result;
-        function int8(data: Int8Array): Result;
-        function int16(data: Int16Array): Result;
-        function uint16(data: Int16Array): Result;
-        function int32(data: Int32Array): Result;
-        function float32(data: Float32Array): Result;
-        function float64(data: Float64Array): Result;
+        function byteArray(data: Encoding.FloatArray | Encoding.IntArray): Result;
         function fixedPoint(factor: number): Provider;
         function intervalQuantizaiton(min: number, max: number, numSteps: number): Provider;
-        function runLength(data: Uint8Array | Int8Array | Int16Array | Int32Array): Result;
+        function runLength(data: Encoding.IntArray): Result;
         function delta(data: Int8Array | Int16Array | Int32Array): Result;
         /**
          * Packs Int32 array. The packing level is determined automatically to either 1-, 2-, or 4-byte words.
@@ -548,28 +542,23 @@ declare namespace CIFTools.Binary {
         data: Uint8Array;
     }
     namespace Encoding {
-        const enum DataType {
-            Int8 = 0,
-            Int16 = 1,
-            Int32 = 2,
-            Uint8 = 3,
-            Uint16 = 4,
-            Float32 = 5,
-            Float64 = 6,
-        }
         const enum IntDataType {
-            Int8 = 0,
-            Int16 = 1,
-            Int32 = 2,
-            Uint8 = 3,
-            Uint16 = 4,
+            Int8 = 1,
+            Int16 = 2,
+            Int32 = 3,
+            Uint8 = 4,
+            Uint16 = 5,
+            Uint32 = 6,
         }
         const enum FloatDataType {
-            Float32 = 0,
-            Float64 = 1,
+            Float32 = 32,
+            Float64 = 33,
         }
-        function getIntDataType(data: (Int8Array | Int16Array | Int32Array | Uint8Array | Uint16Array)): IntDataType;
-        function getFloatDataType(data: (Float32Array | Float64Array)): FloatDataType;
+        type DataType = IntDataType | FloatDataType;
+        type IntArray = Int8Array | Int16Array | Int32Array | Uint8Array | Uint16Array | Uint32Array;
+        type FloatArray = Float32Array | Float64Array;
+        function getDataType(data: IntArray | FloatArray): DataType;
+        function isSignedIntegerDataType(data: IntArray): boolean;
         interface ByteArray {
             kind: 'ByteArray';
             type: DataType;

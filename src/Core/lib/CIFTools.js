@@ -2170,13 +2170,14 @@ var CIFTools;
                 switch (encoding.kind) {
                     case 'ByteArray': {
                         switch (encoding.type) {
-                            case 3 /* Uint8 */: return data;
-                            case 0 /* Int8 */: return int8(data);
-                            case 1 /* Int16 */: return int16(data);
-                            case 4 /* Uint16 */: return uint16(data);
-                            case 2 /* Int32 */: return int32(data);
-                            case 5 /* Float32 */: return float32(data);
-                            case 6 /* Float64 */: return float64(data);
+                            case 4 /* Uint8 */: return data;
+                            case 1 /* Int8 */: return int8(data);
+                            case 2 /* Int16 */: return int16(data);
+                            case 5 /* Uint16 */: return uint16(data);
+                            case 3 /* Int32 */: return int32(data);
+                            case 6 /* Uint32 */: return uint32(data);
+                            case 32 /* Float32 */: return float32(data);
+                            case 33 /* Float64 */: return float64(data);
                             default: throw new Error('Unsupported ByteArray type.');
                         }
                     }
@@ -2191,18 +2192,19 @@ var CIFTools;
             Decoder.decodeStep = decodeStep;
             function getIntArray(type, size) {
                 switch (type) {
-                    case 0 /* Int8 */: return new Int8Array(size);
-                    case 1 /* Int16 */: return new Int16Array(size);
-                    case 2 /* Int32 */: return new Int32Array(size);
-                    case 3 /* Uint8 */: return new Uint8Array(size);
-                    case 4 /* Uint16 */: return new Uint16Array(size);
+                    case 1 /* Int8 */: return new Int8Array(size);
+                    case 2 /* Int16 */: return new Int16Array(size);
+                    case 3 /* Int32 */: return new Int32Array(size);
+                    case 4 /* Uint8 */: return new Uint8Array(size);
+                    case 5 /* Uint16 */: return new Uint16Array(size);
+                    case 6 /* Uint32 */: return new Uint32Array(size);
                     default: throw new Error('Unsupported integer data type.');
                 }
             }
             function getFloatArray(type, size) {
                 switch (type) {
-                    case 0 /* Float32 */: return new Float64Array(size);
-                    case 1 /* Float64 */: return new Float64Array(size);
+                    case 32 /* Float32 */: return new Float64Array(size);
+                    case 33 /* Float64 */: return new Float64Array(size);
                     default: throw new Error('Unsupported floating data type.');
                 }
             }
@@ -2219,22 +2221,24 @@ var CIFTools;
             })();
             function int8(data) { return new Int8Array(data.buffer, data.byteOffset); }
             function flipByteOrder(data, bytes) {
-                var ret = new Uint8Array(data.length);
+                var buffer = new ArrayBuffer(data.length);
+                var ret = new Uint8Array(buffer);
                 for (var i = 0, n = data.length; i < n; i += bytes) {
                     for (var j = 0; j < bytes; j++) {
                         ret[i + bytes - j - 1] = data[i + j];
                     }
                 }
-                return ret;
+                return buffer;
             }
             function view(data, byteSize, c) {
                 if (isLittleEndian)
                     return new c(data.buffer);
-                return new c(flipByteOrder(data, byteSize).buffer);
+                return new c(flipByteOrder(data, byteSize));
             }
             function int16(data) { return view(data, 2, Int16Array); }
             function uint16(data) { return view(data, 2, Uint16Array); }
             function int32(data) { return view(data, 4, Int32Array); }
+            function uint32(data) { return view(data, 4, Uint32Array); }
             function float32(data) { return view(data, 4, Float32Array); }
             function float64(data) { return view(data, 8, Float64Array); }
             function fixedPoint(data, encoding) {
@@ -2570,85 +2574,56 @@ var CIFTools;
                 return new Encoder([f]);
             }
             Encoder.by = by;
-            function dataView(array) {
-                return new DataView(array.buffer, array.byteOffset, array.byteLength);
-            }
             function uint8(data) {
                 return {
-                    encodings: [{ kind: 'ByteArray', type: 3 /* Uint8 */ }],
+                    encodings: [{ kind: 'ByteArray', type: 4 /* Uint8 */ }],
                     data: data
                 };
             }
-            Encoder.uint8 = uint8;
             function int8(data) {
                 return {
-                    encodings: [{ kind: 'ByteArray', type: 0 /* Int8 */ }],
+                    encodings: [{ kind: 'ByteArray', type: 1 /* Int8 */ }],
                     data: new Uint8Array(data.buffer, data.byteOffset)
                 };
             }
-            Encoder.int8 = int8;
-            function int16(data) {
-                var result = new Uint8Array(data.length * 2);
-                var view = dataView(result);
+            var writers = (_a = {},
+                _a[2 /* Int16 */] = function (v, i, a) { v.setInt16(2 * i, a, true); },
+                _a[5 /* Uint16 */] = function (v, i, a) { v.setUint16(2 * i, a, true); },
+                _a[3 /* Int32 */] = function (v, i, a) { v.setInt32(4 * i, a, true); },
+                _a[6 /* Uint32 */] = function (v, i, a) { v.setUint32(4 * i, a, true); },
+                _a[32 /* Float32 */] = function (v, i, a) { v.setFloat32(4 * i, a, true); },
+                _a[33 /* Float64 */] = function (v, i, a) { v.setFloat64(8 * i, a, true); },
+                _a
+            );
+            var byteSizes = (_b = {},
+                _b[2 /* Int16 */] = 2,
+                _b[5 /* Uint16 */] = 2,
+                _b[3 /* Int32 */] = 4,
+                _b[6 /* Uint32 */] = 4,
+                _b[32 /* Float32 */] = 4,
+                _b[33 /* Float64 */] = 8,
+                _b
+            );
+            function byteArray(data) {
+                var type = Binary.Encoding.getDataType(data);
+                if (type === 1 /* Int8 */)
+                    return int8(data);
+                else if (type === 4 /* Uint8 */)
+                    return uint8(data);
+                var result = new Uint8Array(data.length * byteSizes[type]);
+                var w = writers[type];
+                var view = new DataView(result.buffer);
                 for (var i = 0, n = data.length; i < n; i++) {
-                    view.setInt16(2 * i, data[i], true);
+                    w(view, i, data[i]);
                 }
                 return {
-                    encodings: [{ kind: 'ByteArray', type: 1 /* Int16 */ }],
+                    encodings: [{ kind: 'ByteArray', type: type }],
                     data: result
                 };
             }
-            Encoder.int16 = int16;
-            function uint16(data) {
-                var result = new Uint8Array(data.length * 2);
-                var view = dataView(result);
-                for (var i = 0, n = data.length; i < n; i++) {
-                    view.setUint16(2 * i, data[i], true);
-                }
-                return {
-                    encodings: [{ kind: 'ByteArray', type: 4 /* Uint16 */ }],
-                    data: result
-                };
-            }
-            Encoder.uint16 = uint16;
-            function int32(data) {
-                var result = new Uint8Array(data.length * 4);
-                var view = dataView(result);
-                for (var i = 0, n = data.length; i < n; i++) {
-                    view.setInt32(4 * i, data[i], true);
-                }
-                return {
-                    encodings: [{ kind: 'ByteArray', type: 2 /* Int32 */ }],
-                    data: result
-                };
-            }
-            Encoder.int32 = int32;
-            function float32(data) {
-                var result = new Uint8Array(data.length * 4);
-                var view = dataView(result);
-                for (var i = 0, n = data.length; i < n; i++) {
-                    view.setFloat32(4 * i, data[i], true);
-                }
-                return {
-                    encodings: [{ kind: 'ByteArray', type: 5 /* Float32 */ }],
-                    data: result
-                };
-            }
-            Encoder.float32 = float32;
-            function float64(data) {
-                var result = new Uint8Array(data.length * 8);
-                var view = dataView(result);
-                for (var i = 0, n = data.length; i < n; i++) {
-                    view.setFloat64(8 * i, data[i], true);
-                }
-                return {
-                    encodings: [{ kind: 'ByteArray', type: 6 /* Float64 */ }],
-                    data: result
-                };
-            }
-            Encoder.float64 = float64;
+            Encoder.byteArray = byteArray;
             function _fixedPoint(data, factor) {
-                var srcType = Binary.Encoding.getFloatDataType(data);
+                var srcType = Binary.Encoding.getDataType(data);
                 var result = new Int32Array(data.length);
                 for (var i = 0, n = data.length; i < n; i++) {
                     result[i] = Math.round(data[i] * factor);
@@ -2661,7 +2636,7 @@ var CIFTools;
             function fixedPoint(factor) { return function (data) { return _fixedPoint(data, factor); }; }
             Encoder.fixedPoint = fixedPoint;
             function _intervalQuantizaiton(data, min, max, numSteps) {
-                var srcType = Binary.Encoding.getFloatDataType(data);
+                var srcType = Binary.Encoding.getDataType(data);
                 if (!data.length) {
                     return {
                         encodings: [{ kind: 'IntervalQuantization', min: min, max: max, numSteps: numSteps, srcType: srcType }],
@@ -2692,10 +2667,10 @@ var CIFTools;
             function intervalQuantizaiton(min, max, numSteps) { return function (data) { return _intervalQuantizaiton(data, min, max, numSteps); }; }
             Encoder.intervalQuantizaiton = intervalQuantizaiton;
             function runLength(data) {
-                var srcType = Binary.Encoding.getIntDataType(data);
+                var srcType = Binary.Encoding.getDataType(data);
                 if (srcType === void 0) {
                     data = new Int32Array(data);
-                    srcType = 2 /* Int32 */;
+                    srcType = 3 /* Int32 */;
                 }
                 if (!data.length) {
                     return {
@@ -2733,10 +2708,13 @@ var CIFTools;
             }
             Encoder.runLength = runLength;
             function delta(data) {
-                var srcType = Binary.Encoding.getIntDataType(data);
+                if (!Binary.Encoding.isSignedIntegerDataType(data)) {
+                    throw new Error('Only signed integer types can be encoded using delta encoding.');
+                }
+                var srcType = Binary.Encoding.getDataType(data);
                 if (srcType === void 0) {
                     data = new Int32Array(data);
-                    srcType = 2 /* Int32 */;
+                    srcType = 3 /* Int32 */;
                 }
                 if (!data.length) {
                     return {
@@ -2764,7 +2742,7 @@ var CIFTools;
                 }
                 return false;
             }
-            function packingSizeSigned(data, upperLimit) {
+            function packingSize(data, upperLimit) {
                 var lowerLimit = -upperLimit - 1;
                 var size = 0;
                 for (var i = 0, n = data.length; i < n; i++) {
@@ -2784,26 +2762,10 @@ var CIFTools;
                 }
                 return size;
             }
-            function packingSizeUnsigned(data, upperLimit) {
-                var size = 0;
-                for (var i = 0, n = data.length; i < n; i++) {
-                    var value = data[i];
-                    if (value === 0) {
-                        size += 1;
-                    }
-                    else if (value === upperLimit) {
-                        size += 2;
-                    }
-                    else {
-                        size += Math.ceil(value / upperLimit);
-                    }
-                }
-                return size;
-            }
             function determinePacking(data) {
                 var signed = isSigned(data);
-                var size8 = signed ? packingSizeSigned(data, 0x7f) : packingSizeUnsigned(data, 0xff);
-                var size16 = signed ? packingSizeSigned(data, 0x7fff) : packingSizeUnsigned(data, 0xffff);
+                var size8 = signed ? packingSize(data, 0x7F) : packingSize(data, 0xFF);
+                var size16 = signed ? packingSize(data, 0x7FFF) : packingSize(data, 0xFFFF);
                 if (data.length * 4 < size16 * 2) {
                     // 4 byte packing is the most effective
                     return {
@@ -2830,11 +2792,15 @@ var CIFTools;
                 }
                 ;
             }
-            function integerPackingSigned(data, packing) {
-                var upperLimit = packing.bytesPerElement === 1 ? 0x7F : 0x7FFF;
+            function _integerPacking(data, packing) {
+                var upperLimit = packing.isSigned
+                    ? (packing.bytesPerElement === 1 ? 0x7F : 0x7FFF)
+                    : (packing.bytesPerElement === 1 ? 0xFF : 0xFFFF);
                 var lowerLimit = -upperLimit - 1;
                 var n = data.length;
-                var packed = packing.bytesPerElement === 1 ? new Int8Array(packing.size) : new Int16Array(packing.size);
+                var packed = packing.isSigned
+                    ? packing.bytesPerElement === 1 ? new Int8Array(packing.size) : new Int16Array(packing.size)
+                    : packing.bytesPerElement === 1 ? new Uint8Array(packing.size) : new Uint16Array(packing.size);
                 var j = 0;
                 for (var i = 0; i < n; i++) {
                     var value = data[i];
@@ -2855,30 +2821,16 @@ var CIFTools;
                     packed[j] = value;
                     ++j;
                 }
-                var result = packing.bytesPerElement === 1 ? int8(packed) : int16(packed);
+                var result = byteArray(packed);
                 return {
-                    encodings: [{ kind: 'IntegerPacking', byteCount: packing.bytesPerElement, isUnsigned: false, srcSize: n }, result.encodings[0]],
-                    data: result.data
-                };
-            }
-            function integerPackingUnsigned(data, packing) {
-                var upperLimit = packing.bytesPerElement === 1 ? 0xFF : 0xFFFF;
-                var n = data.length;
-                var packed = packing.bytesPerElement === 1 ? new Uint8Array(packing.size) : new Uint16Array(packing.size);
-                var j = 0;
-                for (var i = 0; i < n; i++) {
-                    var value = data[i];
-                    while (value >= upperLimit) {
-                        packed[j] = upperLimit;
-                        ++j;
-                        value -= upperLimit;
-                    }
-                    packed[j] = value;
-                    ++j;
-                }
-                var result = packing.bytesPerElement === 1 ? uint8(packed) : uint16(packed);
-                return {
-                    encodings: [{ kind: 'IntegerPacking', byteCount: packing.bytesPerElement, isUnsigned: true, srcSize: n }, result.encodings[0]],
+                    encodings: [{
+                            kind: 'IntegerPacking',
+                            byteCount: packing.bytesPerElement,
+                            isUnsigned: !packing.isSigned,
+                            srcSize: n
+                        },
+                        result.encodings[0]
+                    ],
                     data: result.data
                 };
             }
@@ -2886,14 +2838,15 @@ var CIFTools;
              * Packs Int32 array. The packing level is determined automatically to either 1-, 2-, or 4-byte words.
              */
             function integerPacking(data) {
+                if (!(data instanceof Int32Array)) {
+                    throw new Error('Integer packing can only be applied to Int32 data.');
+                }
                 var packing = determinePacking(data);
                 if (packing.bytesPerElement === 4) {
                     // no packing done, Int32 encoding will be used
-                    return int32(data);
+                    return byteArray(data);
                 }
-                if (packing.isSigned)
-                    return integerPackingSigned(data, packing);
-                return integerPackingUnsigned(data, packing);
+                return _integerPacking(data, packing);
             }
             Encoder.integerPacking = integerPacking;
             function stringArray(data) {
@@ -2932,6 +2885,7 @@ var CIFTools;
                 };
             }
             Encoder.stringArray = stringArray;
+            var _a, _b;
         })(Encoder = Binary.Encoder || (Binary.Encoder = {}));
     })(Binary = CIFTools.Binary || (CIFTools.Binary = {}));
 })(CIFTools || (CIFTools = {}));
@@ -2946,34 +2900,33 @@ var CIFTools;
         Binary.VERSION = '0.3.0';
         var Encoding;
         (function (Encoding) {
-            function getIntDataType(data) {
+            function getDataType(data) {
                 var srcType;
                 if (data instanceof Int8Array)
-                    srcType = 0 /* Int8 */;
+                    srcType = 1 /* Int8 */;
                 else if (data instanceof Int16Array)
-                    srcType = 1 /* Int16 */;
+                    srcType = 2 /* Int16 */;
                 else if (data instanceof Int32Array)
-                    srcType = 2 /* Int32 */;
+                    srcType = 3 /* Int32 */;
                 else if (data instanceof Uint8Array)
-                    srcType = 3 /* Uint8 */;
+                    srcType = 4 /* Uint8 */;
                 else if (data instanceof Uint16Array)
-                    srcType = 4 /* Uint16 */;
+                    srcType = 5 /* Uint16 */;
+                else if (data instanceof Uint32Array)
+                    srcType = 6 /* Uint32 */;
+                else if (data instanceof Float32Array)
+                    srcType = 32 /* Float32 */;
+                else if (data instanceof Float64Array)
+                    srcType = 33 /* Float64 */;
                 else
                     throw new Error('Unsupported integer data type.');
                 return srcType;
             }
-            Encoding.getIntDataType = getIntDataType;
-            function getFloatDataType(data) {
-                var srcType;
-                if (data instanceof Float32Array)
-                    srcType = 0 /* Float32 */;
-                else if (data instanceof Float64Array)
-                    srcType = 1 /* Float64 */;
-                else
-                    throw new Error('Unsupported floating data type.');
-                return srcType;
+            Encoding.getDataType = getDataType;
+            function isSignedIntegerDataType(data) {
+                return data instanceof Int8Array || data instanceof Int16Array || data instanceof Int32Array;
             }
-            Encoding.getFloatDataType = getFloatDataType;
+            Encoding.isSignedIntegerDataType = isSignedIntegerDataType;
         })(Encoding = Binary.Encoding || (Binary.Encoding = {}));
     })(Binary = CIFTools.Binary || (CIFTools.Binary = {}));
 })(CIFTools || (CIFTools = {}));
@@ -3054,12 +3007,12 @@ var CIFTools;
             var encoded = encoder.encode(array);
             var maskData = void 0;
             if (!allPresent) {
-                var maskRLE = Binary.Encoder.by(Binary.Encoder.runLength).and(Binary.Encoder.int32).encode(mask);
+                var maskRLE = Binary.Encoder.by(Binary.Encoder.runLength).and(Binary.Encoder.byteArray).encode(mask);
                 if (maskRLE.data.length < mask.length) {
                     maskData = maskRLE;
                 }
                 else {
-                    maskData = Binary.Encoder.by(Binary.Encoder.uint8).encode(mask);
+                    maskData = Binary.Encoder.by(Binary.Encoder.byteArray).encode(mask);
                 }
             }
             return {

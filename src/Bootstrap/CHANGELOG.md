@@ -1,4 +1,7 @@
-﻿# 1.2.8
+﻿# 1.2.11
+* Added CIF density parse transform.
+
+# 1.2.8
 * Fixed a bug in Action/Updater controller then the controlled entity was removed. 
 
 # 1.2.7
