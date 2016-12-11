@@ -3180,7 +3180,7 @@ var CIFTools;
             }
             function getFloatArray(type, size) {
                 switch (type) {
-                    case 32 /* Float32 */: return new Float64Array(size);
+                    case 32 /* Float32 */: return new Float32Array(size);
                     case 33 /* Float64 */: return new Float64Array(size);
                     default: throw new Error('Unsupported floating data type.');
                 }
@@ -3629,7 +3629,7 @@ var CIFTools;
                 var output = new Int32Array(data.length);
                 for (var i = 0, n = data.length; i < n; i++) {
                     var v = data[i];
-                    if (v <= 0)
+                    if (v <= min)
                         output[i] = 0;
                     else if (v >= max)
                         output[i] = numSteps;
@@ -13930,6 +13930,7 @@ var LiteMol;
                             }
                             function getNum(name) { return info.getColumn(name).getFloat(0); }
                             var header = {
+                                name: info.getColumn('name').getString(0),
                                 grid: getArray('grid'),
                                 axisOrder: getArray('axis_order'),
                                 extent: getArray('extent'),
@@ -13956,8 +13957,9 @@ var LiteMol;
                             ];
                             var extent = [header.extent[indices[0]], header.extent[indices[1]], header.extent[indices[2]]];
                             var rawData = readRawData1(block.getCategory('_density_data').getColumn('values'), extent, header.extent, indices, header.mean);
+                            var rawRawData = readRawData1(block.getCategory('_density_data').getColumn('raw_values'), extent, header.extent, indices, header.mean);
                             var field = new Density.Field3DZYX(rawData.data, extent);
-                            var data = Density.Data.create(header.cellSize, header.cellAngles, origin, false, void 0, field, extent, { x: xAxis, y: yAxis, z: zAxis }, [header.axisOrder[indices[0]], header.axisOrder[indices[1]], header.axisOrder[indices[2]]], { min: rawData.min, max: rawData.max, mean: header.mean, sigma: header.sigma }, { spacegroupIndex: header.spacegroupNumber - 1 });
+                            var data = Density.Data.create(header.cellSize, header.cellAngles, origin, false, void 0, field, extent, { x: xAxis, y: yAxis, z: zAxis }, [header.axisOrder[indices[0]], header.axisOrder[indices[1]], header.axisOrder[indices[2]]], { min: rawData.min, max: rawData.max, mean: header.mean, sigma: header.sigma }, { spacegroupIndex: header.spacegroupNumber - 1, name: header.name });
                             return Formats.ParserResult.success(data);
                         }
                         Parser.parse = parse;

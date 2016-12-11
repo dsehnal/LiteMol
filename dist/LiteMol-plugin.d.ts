@@ -16523,11 +16523,11 @@ declare namespace LiteMol.Bootstrap.Entity.Transformer.Density {
         normalize: boolean;
     }
     const ParseData: Tree.Transformer<Entity.Data.String | Entity.Data.Binary, Entity.Density.Data, ParseDataParams>;
-    interface ParseCifParams {
+    interface CreateFromCifParams {
         id?: string;
         blockIndex: number;
     }
-    const CreateFromCif: Tree.Transformer<Entity.Data.CifDictionary, Entity.Density.Data, ParseCifParams>;
+    const CreateFromCif: Tree.Transformer<Entity.Data.CifDictionary, Entity.Density.Data, CreateFromCifParams>;
     interface CreateVisualParams {
         style: Visualization.Density.Style;
     }

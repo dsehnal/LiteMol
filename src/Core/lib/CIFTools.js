@@ -2203,7 +2203,7 @@ var CIFTools;
             }
             function getFloatArray(type, size) {
                 switch (type) {
-                    case 32 /* Float32 */: return new Float64Array(size);
+                    case 32 /* Float32 */: return new Float32Array(size);
                     case 33 /* Float64 */: return new Float64Array(size);
                     default: throw new Error('Unsupported floating data type.');
                 }
@@ -2652,7 +2652,7 @@ var CIFTools;
                 var output = new Int32Array(data.length);
                 for (var i = 0, n = data.length; i < n; i++) {
                     var v = data[i];
-                    if (v <= 0)
+                    if (v <= min)
                         output[i] = 0;
                     else if (v >= max)
                         output[i] = numSteps;
