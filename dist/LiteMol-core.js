@@ -980,7 +980,7 @@ if (typeof window !== 'undefined' && window && window.Promise) {
  */
 var CIFTools;
 (function (CIFTools) {
-    CIFTools.VERSION = { number: "1.1.0", date: "Dec 10 2016" };
+    CIFTools.VERSION = { number: "1.1.0", date: "Dec 11 2016" };
 })(CIFTools || (CIFTools = {}));
 /*
  * Copyright (c) 2016 David Sehnal, licensed under MIT License, See LICENSE file for more info.
@@ -1563,7 +1563,7 @@ var CIFTools;
                 this.data = data;
                 this.categoryList = [];
                 this.additionalData = {};
-                this.categoryMap = {};
+                this.categoryMap = new Map();
             }
             Object.defineProperty(DataBlock.prototype, "categories", {
                 /**
@@ -1580,14 +1580,14 @@ var CIFTools;
              * Gets a category by its name.
              */
             DataBlock.prototype.getCategory = function (name) {
-                return this.categoryMap[name];
+                return this.categoryMap.get(name);
             };
             /**
              * Adds a category.
              */
             DataBlock.prototype.addCategory = function (category) {
                 this.categoryList[this.categoryList.length] = category;
-                this.categoryMap[category.name] = category;
+                this.categoryMap.set(category.name, category);
             };
             DataBlock.prototype.toJSON = function () {
                 return {
@@ -1611,12 +1611,11 @@ var CIFTools;
                 this.endIndex = endIndex;
                 this.columnCount = columns.length;
                 this.rowCount = (tokenCount / columns.length) | 0;
-                this.columnWrappers = {};
+                this.columnIndices = new Map();
                 this.columnNameList = [];
                 for (var i = 0; i < columns.length; i++) {
                     var colName = columns[i].substr(name.length + 1);
-                    var col = new Column(this, data, colName, i);
-                    this.columnWrappers[colName] = col;
+                    this.columnIndices.set(colName, i);
                     this.columnNameList.push(colName);
                 }
             }
@@ -1635,7 +1634,10 @@ var CIFTools;
              * @returns undefined if the column isn't present, the Column object otherwise.
              */
             Category.prototype.getColumn = function (name) {
-                return this.columnWrappers[name] || CIFTools.UndefinedColumn;
+                var i = this.columnIndices.get(name);
+                if (i !== void 0)
+                    return new Column(this, this.data, name, i);
+                return CIFTools.UndefinedColumn;
             };
             Category.prototype.toJSON = function () {
                 var rows = [], data = this.data, tokens = this.tokens;
@@ -3352,10 +3354,10 @@ var CIFTools;
                 this.additionalData = {};
                 this.header = data.header;
                 this.categoryList = data.categories.map(function (c) { return new Category(c); });
-                this.categoryMap = {};
+                this.categoryMap = new Map();
                 for (var _i = 0, _a = this.categoryList; _i < _a.length; _i++) {
                     var c = _a[_i];
-                    this.categoryMap[c.name] = c;
+                    this.categoryMap.set(c.name, c);
                 }
             }
             Object.defineProperty(DataBlock.prototype, "categories", {
@@ -3363,7 +3365,7 @@ var CIFTools;
                 enumerable: true,
                 configurable: true
             });
-            DataBlock.prototype.getCategory = function (name) { return this.categoryMap[name]; };
+            DataBlock.prototype.getCategory = function (name) { return this.categoryMap.get(name); };
             DataBlock.prototype.toJSON = function () {
                 return {
                     id: this.header,
@@ -3380,12 +3382,10 @@ var CIFTools;
                 this.columnCount = data.columns.length;
                 this.rowCount = data.rowCount;
                 this.columnNameList = [];
-                this.encodedColumns = {};
-                this.columnWrappers = {};
+                this.encodedColumns = new Map();
                 for (var _i = 0, _a = data.columns; _i < _a.length; _i++) {
                     var c = _a[_i];
-                    this.encodedColumns[c.name] = c;
-                    this.columnWrappers[c.name] = null;
+                    this.encodedColumns.set(c.name, c);
                     this.columnNameList.push(c.name);
                 }
             }
@@ -3395,15 +3395,9 @@ var CIFTools;
                 configurable: true
             });
             Category.prototype.getColumn = function (name) {
-                var c = this.columnWrappers[name];
-                if (c)
-                    return c;
-                var w = this.encodedColumns[name];
-                if (w) {
-                    c = wrapColumn(w);
-                    this.columnWrappers[name] = c;
-                    return c;
-                }
+                var w = this.encodedColumns.get(name);
+                if (w)
+                    return wrapColumn(w);
                 return CIFTools.UndefinedColumn;
             };
             Category.prototype.toJSON = function () {
@@ -11162,7 +11156,7 @@ var LiteMol;
 (function (LiteMol) {
     var Core;
     (function (Core) {
-        Core.VERSION = { number: "2.4.11", date: "Dec 12 2016" };
+        Core.VERSION = { number: "2.4.11", date: "Dec 11 2016" };
     })(Core = LiteMol.Core || (LiteMol.Core = {}));
 })(LiteMol || (LiteMol = {}));
 /*
@@ -12026,20 +12020,50 @@ var LiteMol;
                         }
                         return ret;
                     }
-                    function getModelEndRow(startRow, _atom_site) {
-                        var size = _atom_site.rowCount, modelNum = _atom_site.getColumn('pdbx_PDB_model_num'), i = 0;
-                        if (!modelNum.isDefined)
-                            return size;
-                        for (i = startRow + 1; i < size; i++) {
+                    function getModelEndRow(startRow, rowCount, modelNum) {
+                        var i = 0;
+                        if (!modelNum || !modelNum.isDefined)
+                            return rowCount;
+                        for (i = startRow + 1; i < rowCount; i++) {
                             if (!modelNum.areValuesEqual(i - 1, i))
                                 break;
                         }
                         return i;
                     }
-                    function buildModelAtomTable(startRow, category) {
-                        var endRow = getModelEndRow(startRow, category);
-                        var colCount = category.columnCount, atoms = new Core.Structure.DataTableBuilder(endRow - startRow), id = atoms.addColumn('id', function (size) { return new Int32Array(size); }), idCol = category.getColumn('id'), pX = atoms.addColumn('x', function (size) { return new Float32Array(size); }), pXCol = category.getColumn('Cartn_x'), pY = atoms.addColumn('y', function (size) { return new Float32Array(size); }), pYCol = category.getColumn('Cartn_y'), pZ = atoms.addColumn('z', function (size) { return new Float32Array(size); }), pZCol = category.getColumn('Cartn_z'), altLoc = atoms.addColumn('altLoc', function (size) { return new Array(size); }), altLocCol = category.getColumn('label_alt_id'), rowIndex = atoms.addColumn('rowIndex', function (size) { return new Int32Array(size); }), residueIndex = atoms.addColumn('residueIndex', function (size) { return new Int32Array(size); }), chainIndex = atoms.addColumn('chainIndex', function (size) { return new Int32Array(size); }), entityIndex = atoms.addColumn('entityIndex', function (size) { return new Int32Array(size); }), name = atoms.addColumn('name', function (size) { return new Array(size); }), nameCol = category.getColumn('label_atom_id'), elementSymbol = atoms.addColumn('elementSymbol', function (size) { return new Array(size); }), elementSymbolCol = category.getColumn('type_symbol'), occupancy = atoms.addColumn('occupancy', function (size) { return new Float32Array(size); }), occupancyCol = category.getColumn('occupancy'), tempFactor = atoms.addColumn('tempFactor', function (size) { return new Float32Array(size); }), tempFactorCol = category.getColumn('B_iso_or_equiv'), authName = atoms.addColumn('authName', function (size) { return new Array(size); }), authNameCol = category.getColumn('auth_atom_id');
-                        var resSeqNumberCol = category.getColumn('label_seq_id'), asymIdCol = category.getColumn('label_asym_id'), entityIdCol = category.getColumn('label_entity_id'), insCodeCol = category.getColumn('pdbx_PDB_ins_code'), authResSeqNumberCol = category.getColumn('auth_seq_id'), modelNumCol = category.getColumn('pdbx_PDB_model_num'), numChains = 0, numResidues = 0, numEntities = 0;
+                    var AtomSiteColumns = [
+                        'id',
+                        'Cartn_x',
+                        'Cartn_y',
+                        'Cartn_z',
+                        'label_atom_id',
+                        'type_symbol',
+                        'occupancy',
+                        'B_iso_or_equiv',
+                        'auth_atom_id',
+                        'label_alt_id',
+                        'label_comp_id',
+                        'label_seq_id',
+                        'label_asym_id',
+                        'auth_comp_id',
+                        'auth_seq_id',
+                        'auth_asym_id',
+                        'group_PDB',
+                        'label_entity_id',
+                        'pdbx_PDB_ins_code',
+                        'pdbx_PDB_model_num'
+                    ];
+                    function getAtomSiteColumns(category) {
+                        var ret = new Map();
+                        for (var _i = 0, AtomSiteColumns_1 = AtomSiteColumns; _i < AtomSiteColumns_1.length; _i++) {
+                            var c = AtomSiteColumns_1[_i];
+                            ret.set(c, category.getColumn(c));
+                        }
+                        return ret;
+                    }
+                    function buildModelAtomTable(startRow, rowCount, columns) {
+                        var endRow = getModelEndRow(startRow, rowCount, columns.get('pdbx_PDB_model_num'));
+                        var atoms = new Core.Structure.DataTableBuilder(endRow - startRow), id = atoms.addColumn('id', function (size) { return new Int32Array(size); }), idCol = columns.get('id'), pX = atoms.addColumn('x', function (size) { return new Float32Array(size); }), pXCol = columns.get('Cartn_x'), pY = atoms.addColumn('y', function (size) { return new Float32Array(size); }), pYCol = columns.get('Cartn_y'), pZ = atoms.addColumn('z', function (size) { return new Float32Array(size); }), pZCol = columns.get('Cartn_z'), altLoc = atoms.addColumn('altLoc', function (size) { return new Array(size); }), altLocCol = columns.get('label_alt_id'), rowIndex = atoms.addColumn('rowIndex', function (size) { return new Int32Array(size); }), residueIndex = atoms.addColumn('residueIndex', function (size) { return new Int32Array(size); }), chainIndex = atoms.addColumn('chainIndex', function (size) { return new Int32Array(size); }), entityIndex = atoms.addColumn('entityIndex', function (size) { return new Int32Array(size); }), name = atoms.addColumn('name', function (size) { return new Array(size); }), nameCol = columns.get('label_atom_id'), elementSymbol = atoms.addColumn('elementSymbol', function (size) { return new Array(size); }), elementSymbolCol = columns.get('type_symbol'), occupancy = atoms.addColumn('occupancy', function (size) { return new Float32Array(size); }), occupancyCol = columns.get('occupancy'), tempFactor = atoms.addColumn('tempFactor', function (size) { return new Float32Array(size); }), tempFactorCol = columns.get('B_iso_or_equiv'), authName = atoms.addColumn('authName', function (size) { return new Array(size); }), authNameCol = columns.get('auth_atom_id');
+                        var resSeqNumberCol = columns.get('label_seq_id'), asymIdCol = columns.get('label_asym_id'), entityIdCol = columns.get('label_entity_id'), insCodeCol = columns.get('pdbx_PDB_ins_code'), authResSeqNumberCol = columns.get('auth_seq_id'), modelNumCol = columns.get('pdbx_PDB_model_num'), numChains = 0, numResidues = 0, numEntities = 0;
                         var prev = startRow;
                         for (var row = startRow; row < endRow; row++) {
                             var index = row - startRow;
@@ -12081,8 +12105,8 @@ var LiteMol;
                             endRow: endRow
                         };
                     }
-                    function buildStructure(category, atoms) {
-                        var count = atoms.count, residueIndexCol = atoms.residueIndex, chainIndexCol = atoms.chainIndex, entityIndexCol = atoms.entityIndex, residues = new Core.Structure.DataTableBuilder(atoms.residueIndex[atoms.count - 1] + 1), chains = new Core.Structure.DataTableBuilder(atoms.chainIndex[atoms.count - 1] + 1), entities = new Core.Structure.DataTableBuilder(atoms.entityIndex[atoms.count - 1] + 1), residueName = residues.addColumn('name', function (size) { return new Array(size); }), residueSeqNumber = residues.addColumn('seqNumber', function (size) { return new Int32Array(size); }), residueAsymId = residues.addColumn('asymId', function (size) { return new Array(size); }), residueAuthName = residues.addColumn('authName', function (size) { return new Array(size); }), residueAuthSeqNumber = residues.addColumn('authSeqNumber', function (size) { return new Int32Array(size); }), residueAuthAsymId = residues.addColumn('authAsymId', function (size) { return new Array(size); }), residueInsertionCode = residues.addColumn('insCode', function (size) { return new Array(size); }), residueEntityId = residues.addColumn('entityId', function (size) { return new Array(size); }), residueIsHet = residues.addColumn('isHet', function (size) { return new Int8Array(size); }), residueAtomStartIndex = residues.addColumn('atomStartIndex', function (size) { return new Int32Array(size); }), residueAtomEndIndex = residues.addColumn('atomEndIndex', function (size) { return new Int32Array(size); }), residueChainIndex = residues.addColumn('chainIndex', function (size) { return new Int32Array(size); }), residueEntityIndex = residues.addColumn('entityIndex', function (size) { return new Int32Array(size); }), residueSecondaryStructureIndex = residues.addColumn('secondaryStructureIndex', function (size) { return new Int32Array(size); }), chainAsymId = chains.addColumn('asymId', function (size) { return []; }), chainEntityId = chains.addColumn('entityId', function (size) { return []; }), chainAuthAsymId = chains.addColumn('authAsymId', function (size) { return []; }), chainAtomStartIndex = chains.addColumn('atomStartIndex', function (size) { return new Int32Array(size); }), chainAtomEndIndex = chains.addColumn('atomEndIndex', function (size) { return new Int32Array(size); }), chainResidueStartIndex = chains.addColumn('residueStartIndex', function (size) { return new Int32Array(size); }), chainResidueEndIndex = chains.addColumn('residueEndIndex', function (size) { return new Int32Array(size); }), chainEntityIndex = chains.addColumn('entityIndex', function (size) { return new Int32Array(size); }), entityId = entities.addColumn('entityId', function (size) { return []; }), entityTypeEnum = entities.addColumn('entityType', function (size) { return []; }), entityType = entities.addColumn('type', function (size) { return []; }), entityAtomStartIndex = entities.addColumn('atomStartIndex', function (size) { return new Int32Array(size); }), entityAtomEndIndex = entities.addColumn('atomEndIndex', function (size) { return new Int32Array(size); }), entityResidueStartIndex = entities.addColumn('residueStartIndex', function (size) { return new Int32Array(size); }), entityResidueEndIndex = entities.addColumn('residueEndIndex', function (size) { return new Int32Array(size); }), entityChainStartIndex = entities.addColumn('chainStartIndex', function (size) { return new Int32Array(size); }), entityChainEndIndex = entities.addColumn('chainEndIndex', function (size) { return new Int32Array(size); }), resNameCol = category.getColumn('label_comp_id'), resSeqNumberCol = category.getColumn('label_seq_id'), asymIdCol = category.getColumn('label_asym_id'), authResNameCol = category.getColumn('auth_comp_id'), authResSeqNumberCol = category.getColumn('auth_seq_id'), authAsymIdCol = category.getColumn('auth_asym_id'), isHetCol = category.getColumn('group_PDB'), entityCol = category.getColumn('label_entity_id'), insCodeCol = category.getColumn('pdbx_PDB_ins_code'), residueStart = 0, chainStart = 0, entityStart = 0, entityChainStart = 0, entityResidueStart = 0, chainResidueStart = 0, currentResidue = 0, currentChain = 0, currentEntity = 0;
+                    function buildStructure(columns, atoms) {
+                        var count = atoms.count, residueIndexCol = atoms.residueIndex, chainIndexCol = atoms.chainIndex, entityIndexCol = atoms.entityIndex, residues = new Core.Structure.DataTableBuilder(atoms.residueIndex[atoms.count - 1] + 1), chains = new Core.Structure.DataTableBuilder(atoms.chainIndex[atoms.count - 1] + 1), entities = new Core.Structure.DataTableBuilder(atoms.entityIndex[atoms.count - 1] + 1), residueName = residues.addColumn('name', function (size) { return new Array(size); }), residueSeqNumber = residues.addColumn('seqNumber', function (size) { return new Int32Array(size); }), residueAsymId = residues.addColumn('asymId', function (size) { return new Array(size); }), residueAuthName = residues.addColumn('authName', function (size) { return new Array(size); }), residueAuthSeqNumber = residues.addColumn('authSeqNumber', function (size) { return new Int32Array(size); }), residueAuthAsymId = residues.addColumn('authAsymId', function (size) { return new Array(size); }), residueInsertionCode = residues.addColumn('insCode', function (size) { return new Array(size); }), residueEntityId = residues.addColumn('entityId', function (size) { return new Array(size); }), residueIsHet = residues.addColumn('isHet', function (size) { return new Int8Array(size); }), residueAtomStartIndex = residues.addColumn('atomStartIndex', function (size) { return new Int32Array(size); }), residueAtomEndIndex = residues.addColumn('atomEndIndex', function (size) { return new Int32Array(size); }), residueChainIndex = residues.addColumn('chainIndex', function (size) { return new Int32Array(size); }), residueEntityIndex = residues.addColumn('entityIndex', function (size) { return new Int32Array(size); }), residueSecondaryStructureIndex = residues.addColumn('secondaryStructureIndex', function (size) { return new Int32Array(size); }), chainAsymId = chains.addColumn('asymId', function (size) { return []; }), chainEntityId = chains.addColumn('entityId', function (size) { return []; }), chainAuthAsymId = chains.addColumn('authAsymId', function (size) { return []; }), chainAtomStartIndex = chains.addColumn('atomStartIndex', function (size) { return new Int32Array(size); }), chainAtomEndIndex = chains.addColumn('atomEndIndex', function (size) { return new Int32Array(size); }), chainResidueStartIndex = chains.addColumn('residueStartIndex', function (size) { return new Int32Array(size); }), chainResidueEndIndex = chains.addColumn('residueEndIndex', function (size) { return new Int32Array(size); }), chainEntityIndex = chains.addColumn('entityIndex', function (size) { return new Int32Array(size); }), entityId = entities.addColumn('entityId', function (size) { return []; }), entityTypeEnum = entities.addColumn('entityType', function (size) { return []; }), entityType = entities.addColumn('type', function (size) { return []; }), entityAtomStartIndex = entities.addColumn('atomStartIndex', function (size) { return new Int32Array(size); }), entityAtomEndIndex = entities.addColumn('atomEndIndex', function (size) { return new Int32Array(size); }), entityResidueStartIndex = entities.addColumn('residueStartIndex', function (size) { return new Int32Array(size); }), entityResidueEndIndex = entities.addColumn('residueEndIndex', function (size) { return new Int32Array(size); }), entityChainStartIndex = entities.addColumn('chainStartIndex', function (size) { return new Int32Array(size); }), entityChainEndIndex = entities.addColumn('chainEndIndex', function (size) { return new Int32Array(size); }), resNameCol = columns.get('label_comp_id'), resSeqNumberCol = columns.get('label_seq_id'), asymIdCol = columns.get('label_asym_id'), authResNameCol = columns.get('auth_comp_id'), authResSeqNumberCol = columns.get('auth_seq_id'), authAsymIdCol = columns.get('auth_asym_id'), isHetCol = columns.get('group_PDB'), entityCol = columns.get('label_entity_id'), insCodeCol = columns.get('pdbx_PDB_ins_code'), residueStart = 0, chainStart = 0, entityStart = 0, entityChainStart = 0, entityResidueStart = 0, chainResidueStart = 0, currentResidue = 0, currentChain = 0, currentEntity = 0;
                         var i = 0;
                         for (i = 0; i < count; i++) {
                             if (residueIndexCol[i] !== residueIndexCol[residueStart]) {
@@ -12611,8 +12635,8 @@ var LiteMol;
                         }
                         return info;
                     }
-                    function getModel(startRow, data) {
-                        var _a = buildModelAtomTable(startRow, data.getCategory('_atom_site')), atoms = _a.atoms, modelId = _a.modelId, endRow = _a.endRow, structure = buildStructure(data.getCategory('_atom_site'), atoms), entry = data.getCategory('_entry'), id;
+                    function getModel(startRow, data, atomSiteColumns) {
+                        var _a = buildModelAtomTable(startRow, data.getCategory('_atom_site').rowCount, atomSiteColumns), atoms = _a.atoms, modelId = _a.modelId, endRow = _a.endRow, structure = buildStructure(atomSiteColumns, atoms), entry = data.getCategory('_entry'), id;
                         if (entry && entry.getColumn('id').isDefined)
                             id = entry.getColumn('id').getString(0);
                         else
@@ -12642,13 +12666,13 @@ var LiteMol;
                         if (!atomSite) {
                             throw "'_atom_site' category is missing in the input.";
                         }
-                        var entry = data.getCategory('_entry'), id;
+                        var entry = data.getCategory('_entry'), atomColumns = getAtomSiteColumns(atomSite), id;
                         if (entry && entry.getColumn('id').isDefined)
                             id = entry.getColumn('id').getString(0);
                         else
                             id = data.header;
                         while (startRow < atomSite.rowCount) {
-                            var _a = getModel(startRow, data), model = _a.model, endRow = _a.endRow;
+                            var _a = getModel(startRow, data, atomColumns), model = _a.model, endRow = _a.endRow;
                             models.push(model);
                             startRow = endRow;
                         }
@@ -13957,7 +13981,6 @@ var LiteMol;
                             ];
                             var extent = [header.extent[indices[0]], header.extent[indices[1]], header.extent[indices[2]]];
                             var rawData = readRawData1(block.getCategory('_density_data').getColumn('values'), extent, header.extent, indices, header.mean);
-                            var rawRawData = readRawData1(block.getCategory('_density_data').getColumn('raw_values'), extent, header.extent, indices, header.mean);
                             var field = new Density.Field3DZYX(rawData.data, extent);
                             var data = Density.Data.create(header.cellSize, header.cellAngles, origin, false, void 0, field, extent, { x: xAxis, y: yAxis, z: zAxis }, [header.axisOrder[indices[0]], header.axisOrder[indices[1]], header.axisOrder[indices[2]]], { min: rawData.min, max: rawData.max, mean: header.mean, sigma: header.sigma }, { spacegroupIndex: header.spacegroupNumber - 1, name: header.name });
                             return Formats.ParserResult.success(data);

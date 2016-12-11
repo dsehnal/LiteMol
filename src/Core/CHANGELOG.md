@@ -1,5 +1,8 @@
 ﻿# 2.4.11
 * Support for CIF density data.
+* CIFTools updated.
+* Support for BinaryCIF 0.3.
+* BinaryCIF molecules will consume less memory.
 
 # 2.4.10
 * Detection of "single atom" nucleotides.

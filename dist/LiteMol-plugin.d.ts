@@ -3347,7 +3347,7 @@ declare namespace CIFTools {
         additionalData: {
             [name: string]: any;
         };
-        getCategory(name: string): Category;
+        getCategory(name: string): Category | undefined;
         toJSON(): any;
     }
     /**
@@ -3369,6 +3369,10 @@ declare namespace CIFTools {
          * Columns are accessed by their field name only, i.e.
          * _category.field is accessed by
          * category.getColumn('field')
+         *
+         * Note that column are created on demand and there is some computational
+         * cost when creating a new column. Therefore, if you need to reuse a column,
+         * it is a good idea to cache it.
          */
         getColumn(name: string): Column;
         toJSON(): any;
@@ -3527,7 +3531,7 @@ declare namespace CIFTools.Text {
         /**
          * Gets a category by its name.
          */
-        getCategory(name: string): Category;
+        getCategory(name: string): Category | undefined;
         /**
          * Adds a category.
          */
@@ -3550,7 +3554,7 @@ declare namespace CIFTools.Text {
      */
     class Category implements CIFTools.Category {
         private data;
-        private columnWrappers;
+        private columnIndices;
         private columnNameList;
         /**
          * Name of the category.
@@ -3689,7 +3693,7 @@ declare namespace CIFTools.Binary {
             [name: string]: any;
         };
         readonly categories: Category[];
-        getCategory(name: string): Category;
+        getCategory(name: string): Category | undefined;
         toJSON(): {
             id: string;
             categories: {
@@ -3705,7 +3709,6 @@ declare namespace CIFTools.Binary {
     }
     class Category implements CIFTools.Category {
         private encodedColumns;
-        private columnWrappers;
         private columnNameList;
         name: string;
         columnCount: number;
@@ -4991,8 +4994,8 @@ declare namespace LiteMol.Core.Formats.Molecule.PDB {
     class CrystStructureInfo {
         record: string;
         toCifCategory(id: string): {
-            cell: CIF.Category;
-            symm: CIF.Category;
+            cell: CIF.Category | undefined;
+            symm: CIF.Category | undefined;
         };
         constructor(record: string);
     }

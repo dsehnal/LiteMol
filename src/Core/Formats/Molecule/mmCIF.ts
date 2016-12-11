@@ -28,30 +28,83 @@ namespace LiteMol.Core.Formats.Molecule.mmCIF {
         return ret;
     }
 
-    function getModelEndRow(startRow: number, _atom_site: CIF.Category) {
-        let size = _atom_site.rowCount,
-            modelNum = _atom_site.getColumn('pdbx_PDB_model_num'),
-            i = 0;
+    function getModelEndRow(startRow: number, rowCount: number, modelNum: CIF.Column) {
+        let i = 0;
 
-        if (!modelNum.isDefined) return size;
-        for (i = startRow + 1; i < size; i++) {
+        if (!modelNum || !modelNum.isDefined) return rowCount;
+        for (i = startRow + 1; i < rowCount; i++) {
             if (!modelNum.areValuesEqual(i - 1, i)) break;
         }
         return i;
     }
 
-    function buildModelAtomTable(startRow: number, category: CIF.Category): { atoms: Structure.DefaultAtomTableSchema; modelId: string; endRow: number } {
+    type AtomSiteColumnNames = 
+        'id' |
+        'Cartn_x' |
+        'Cartn_y' |
+        'Cartn_z' |   
+        'label_atom_id' |
+        'type_symbol' |
+        'occupancy' |
+        'B_iso_or_equiv' |
+        'auth_atom_id' | 
+        'label_alt_id' |
+        'label_comp_id' |
+        'label_seq_id' |
+        'label_asym_id' |
+        'auth_comp_id' |
+        'auth_seq_id' |
+        'auth_asym_id' |
+        'group_PDB' |
+        'label_entity_id' |
+        'pdbx_PDB_ins_code' |
+        'pdbx_PDB_model_num'
+    
 
-        let endRow = getModelEndRow(startRow, category);
+    const AtomSiteColumns:AtomSiteColumnNames[] = [
+        'id',
+        'Cartn_x',
+        'Cartn_y',
+        'Cartn_z',   
+        'label_atom_id',
+        'type_symbol',
+        'occupancy',
+        'B_iso_or_equiv',
+        'auth_atom_id', 
+        'label_alt_id',
+        'label_comp_id',
+        'label_seq_id',
+        'label_asym_id',
+        'auth_comp_id',
+        'auth_seq_id',
+        'auth_asym_id',
+        'group_PDB',
+        'label_entity_id',
+        'pdbx_PDB_ins_code',
+        'pdbx_PDB_model_num'
+    ]
 
-        let colCount = category.columnCount,
-            atoms = new Structure.DataTableBuilder(endRow - startRow),
-            id = atoms.addColumn('id', size => new Int32Array(size)), idCol = category.getColumn('id'),
-            pX = atoms.addColumn('x', size => new Float32Array(size)), pXCol = category.getColumn('Cartn_x'),
-            pY = atoms.addColumn('y', size => new Float32Array(size)), pYCol = category.getColumn('Cartn_y'),
-            pZ = atoms.addColumn('z', size => new Float32Array(size)), pZCol = category.getColumn('Cartn_z'),
+    type AtomSiteColumns = { get(name: AtomSiteColumnNames): CIF.Column }
 
-            altLoc: (string | null)[] = atoms.addColumn('altLoc', size => new Array(size)), altLocCol = category.getColumn('label_alt_id'),
+    function getAtomSiteColumns(category: CIF.Category): AtomSiteColumns {   
+        let ret = new Map<string, CIF.Column>();
+        for (let c of AtomSiteColumns) {
+            ret.set(c, category.getColumn(c));
+        }
+        return <any>ret;
+    }
+
+    function buildModelAtomTable(startRow: number, rowCount: number, columns: AtomSiteColumns): { atoms: Structure.DefaultAtomTableSchema; modelId: string; endRow: number } {
+
+        let endRow = getModelEndRow(startRow, rowCount, columns.get('pdbx_PDB_model_num')!);
+
+        let atoms = new Structure.DataTableBuilder(endRow - startRow),
+            id = atoms.addColumn('id', size => new Int32Array(size)), idCol = columns.get('id'),
+            pX = atoms.addColumn('x', size => new Float32Array(size)), pXCol = columns.get('Cartn_x'),
+            pY = atoms.addColumn('y', size => new Float32Array(size)), pYCol = columns.get('Cartn_y'),
+            pZ = atoms.addColumn('z', size => new Float32Array(size)), pZCol = columns.get('Cartn_z'),
+
+            altLoc: (string | null)[] = atoms.addColumn('altLoc', size => new Array(size)), altLocCol = columns.get('label_alt_id'),
 
             rowIndex = atoms.addColumn('rowIndex', size => new Int32Array(size)),
 
@@ -59,21 +112,21 @@ namespace LiteMol.Core.Formats.Molecule.mmCIF {
             chainIndex = atoms.addColumn('chainIndex', size => new Int32Array(size)),
             entityIndex = atoms.addColumn('entityIndex', size => new Int32Array(size)),
 
-            name: string[] = atoms.addColumn('name', size => new Array(size)), nameCol = category.getColumn('label_atom_id'),
-            elementSymbol: string[] = atoms.addColumn('elementSymbol', size => new Array(size)), elementSymbolCol = category.getColumn('type_symbol'),
-            occupancy = atoms.addColumn('occupancy', size => new Float32Array(size)), occupancyCol = category.getColumn('occupancy'),
-            tempFactor = atoms.addColumn('tempFactor', size => new Float32Array(size)), tempFactorCol = category.getColumn('B_iso_or_equiv'),
-            authName: string[] = atoms.addColumn('authName', size => new Array(size)), authNameCol = category.getColumn('auth_atom_id');
+            name: string[] = atoms.addColumn('name', size => new Array(size)), nameCol = columns.get('label_atom_id'),
+            elementSymbol: string[] = atoms.addColumn('elementSymbol', size => new Array(size)), elementSymbolCol = columns.get('type_symbol'),
+            occupancy = atoms.addColumn('occupancy', size => new Float32Array(size)), occupancyCol = columns.get('occupancy'),
+            tempFactor = atoms.addColumn('tempFactor', size => new Float32Array(size)), tempFactorCol = columns.get('B_iso_or_equiv'),
+            authName: string[] = atoms.addColumn('authName', size => new Array(size)), authNameCol = columns.get('auth_atom_id');
 
 
-        let resSeqNumberCol = category.getColumn('label_seq_id'),
-            asymIdCol = category.getColumn('label_asym_id'),
-            entityIdCol = category.getColumn('label_entity_id'),
-            insCodeCol = category.getColumn('pdbx_PDB_ins_code'),
+        let resSeqNumberCol = columns.get('label_seq_id'),
+            asymIdCol = columns.get('label_asym_id'),
+            entityIdCol = columns.get('label_entity_id'),
+            insCodeCol = columns.get('pdbx_PDB_ins_code'),
 
-            authResSeqNumberCol = category.getColumn('auth_seq_id'),
+            authResSeqNumberCol = columns.get('auth_seq_id'),
 
-            modelNumCol = category.getColumn('pdbx_PDB_model_num'),
+            modelNumCol = columns.get('pdbx_PDB_model_num'),
 
             numChains = 0,
             numResidues = 0,
@@ -129,7 +182,7 @@ namespace LiteMol.Core.Formats.Molecule.mmCIF {
         };
     }
 
-    function buildStructure(category: CIF.Category, atoms: Structure.DefaultAtomTableSchema): StructureWrapper {
+    function buildStructure(columns: AtomSiteColumns, atoms: Structure.DefaultAtomTableSchema): StructureWrapper {
 
         let count = atoms.count,
 
@@ -175,19 +228,19 @@ namespace LiteMol.Core.Formats.Molecule.mmCIF {
             entityChainStartIndex = entities.addColumn('chainStartIndex', size => new Int32Array(size)),
             entityChainEndIndex = entities.addColumn('chainEndIndex', size => new Int32Array(size)),
 
-            resNameCol = category.getColumn('label_comp_id'),
-            resSeqNumberCol = category.getColumn('label_seq_id'),
-            asymIdCol = category.getColumn('label_asym_id'),
+            resNameCol = columns.get('label_comp_id'),
+            resSeqNumberCol = columns.get('label_seq_id'),
+            asymIdCol = columns.get('label_asym_id'),
 
 
-            authResNameCol = category.getColumn('auth_comp_id'),
-            authResSeqNumberCol = category.getColumn('auth_seq_id'),
-            authAsymIdCol = category.getColumn('auth_asym_id'),
+            authResNameCol = columns.get('auth_comp_id'),
+            authResSeqNumberCol = columns.get('auth_seq_id'),
+            authAsymIdCol = columns.get('auth_asym_id'),
 
-            isHetCol = category.getColumn('group_PDB'),
+            isHetCol = columns.get('group_PDB'),
 
-            entityCol = category.getColumn('label_entity_id'),
-            insCodeCol = category.getColumn('pdbx_PDB_ins_code'),
+            entityCol = columns.get('label_entity_id'),
+            insCodeCol = columns.get('pdbx_PDB_ins_code'),
 
 
             residueStart = 0, chainStart = 0, entityStart = 0,
@@ -296,7 +349,7 @@ namespace LiteMol.Core.Formats.Molecule.mmCIF {
         };
     }
 
-    function assignEntityTypes(category: CIF.Category, entities: Structure.DefaultEntityTableSchema) {
+    function assignEntityTypes(category: CIF.Category | undefined, entities: Structure.DefaultEntityTableSchema) {
 
         let i: number;
 
@@ -808,7 +861,7 @@ namespace LiteMol.Core.Formats.Molecule.mmCIF {
     }
 
 
-    function getComponentBonds(category: CIF.Category): Structure.ComponentBondInfo | undefined {
+    function getComponentBonds(category: CIF.Category | undefined): Structure.ComponentBondInfo | undefined {
         if (!category || !category.rowCount) return void 0;
 
         let info = new Structure.ComponentBondInfo();
@@ -852,10 +905,10 @@ namespace LiteMol.Core.Formats.Molecule.mmCIF {
         return info;
     }
 
-    function getModel(startRow: number, data: CIF.DataBlock): { model: Structure.MoleculeModel; endRow: number } {
+    function getModel(startRow: number, data: CIF.DataBlock, atomSiteColumns: AtomSiteColumns): { model: Structure.MoleculeModel; endRow: number } {
 
-        let { atoms, modelId, endRow } = buildModelAtomTable(startRow, data.getCategory('_atom_site')),
-            structure = buildStructure(data.getCategory('_atom_site'), atoms),
+        let { atoms, modelId, endRow } = buildModelAtomTable(startRow, data.getCategory('_atom_site')!.rowCount, atomSiteColumns),
+            structure = buildStructure(atomSiteColumns, atoms),
             entry = data.getCategory('_entry'),
             id: string;
 
@@ -894,13 +947,14 @@ namespace LiteMol.Core.Formats.Molecule.mmCIF {
         }
 
         let entry = data.getCategory('_entry'),
+            atomColumns = getAtomSiteColumns(atomSite),
             id: string;
 
-        if (entry && entry.getColumn('id').isDefined) id = entry.getColumn('id').getString(0) as string;
+        if (entry && entry.getColumn('id').isDefined) id = entry.getColumn('id').getString(0)!;
         else id = data.header;
 
         while (startRow < atomSite.rowCount) {
-            let { model, endRow } = getModel(startRow, data);
+            let { model, endRow } = getModel(startRow, data, atomColumns);
             models.push(model);
             startRow = endRow;
         }

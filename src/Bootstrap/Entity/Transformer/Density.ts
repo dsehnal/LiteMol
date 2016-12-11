@@ -60,7 +60,7 @@ namespace LiteMol.Bootstrap.Entity.Transformer.Density {
         defaultParams: () => ({ blockIndex: 0 })
     }, (ctx, a, t) => {
         return Task.create<Entity.Density.Data>('Create Density', 'Normal', ctx => {
-            ctx.update('Updating...');
+            ctx.update('Parsing...');
             ctx.schedule(() => {
                 let data = Core.Formats.Density.CIF.parse(a.props.dictionary.dataBlocks[t.params.blockIndex]);
                 if (data.isError) {
@@ -68,7 +68,7 @@ namespace LiteMol.Bootstrap.Entity.Transformer.Density {
                 }
                 ctx.resolve(Entity.Density.Data.create(t, { label: t.params.id ? t.params.id : 'Density Data', data: data.result, description: data.result.attributes['name'] }));
             });
-        });
+        }).setReportTime(true);
     });
 
     export interface CreateVisualParams {

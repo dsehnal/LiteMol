@@ -26,12 +26,12 @@ namespace LiteMol.Core.Formats.Density.CIF {
             function getArray(name: string) {
                 let ret:number[] = [];
                 for (let i = 0; i < 3; i++) {
-                    ret[i] = info.getColumn(`${name}[${i}]`).getFloat(0);
+                    ret[i] = info!.getColumn(`${name}[${i}]`).getFloat(0);
                 }
                 return ret;
             }
 
-            function getNum(name: string) { return info.getColumn(name).getFloat(0); }
+            function getNum(name: string) { return info!.getColumn(name).getFloat(0); }
 
             let header = {
                 name: info.getColumn('name').getString(0),
@@ -76,9 +76,7 @@ namespace LiteMol.Core.Formats.Density.CIF {
             
             let extent = [header.extent[indices[0]], header.extent[indices[1]], header.extent[indices[2]]];
 
-            let rawData = readRawData1(block.getCategory('_density_data').getColumn('values'), extent, header.extent, indices, header.mean);
-            let rawRawData = readRawData1(block.getCategory('_density_data').getColumn('raw_values'), extent, header.extent, indices, header.mean);
-
+            let rawData = readRawData1(block.getCategory('_density_data')!.getColumn('values'), extent, header.extent, indices, header.mean);            
             let field = new Field3DZYX(<any>rawData.data, extent);                    
                                      
             let data = Data.create(

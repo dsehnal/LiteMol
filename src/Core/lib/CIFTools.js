@@ -3,7 +3,7 @@
  */
 var CIFTools;
 (function (CIFTools) {
-    CIFTools.VERSION = { number: "1.1.0", date: "Dec 10 2016" };
+    CIFTools.VERSION = { number: "1.1.0", date: "Dec 11 2016" };
 })(CIFTools || (CIFTools = {}));
 /*
  * Copyright (c) 2016 David Sehnal, licensed under MIT License, See LICENSE file for more info.
@@ -586,7 +586,7 @@ var CIFTools;
                 this.data = data;
                 this.categoryList = [];
                 this.additionalData = {};
-                this.categoryMap = {};
+                this.categoryMap = new Map();
             }
             Object.defineProperty(DataBlock.prototype, "categories", {
                 /**
@@ -603,14 +603,14 @@ var CIFTools;
              * Gets a category by its name.
              */
             DataBlock.prototype.getCategory = function (name) {
-                return this.categoryMap[name];
+                return this.categoryMap.get(name);
             };
             /**
              * Adds a category.
              */
             DataBlock.prototype.addCategory = function (category) {
                 this.categoryList[this.categoryList.length] = category;
-                this.categoryMap[category.name] = category;
+                this.categoryMap.set(category.name, category);
             };
             DataBlock.prototype.toJSON = function () {
                 return {
@@ -634,12 +634,11 @@ var CIFTools;
                 this.endIndex = endIndex;
                 this.columnCount = columns.length;
                 this.rowCount = (tokenCount / columns.length) | 0;
-                this.columnWrappers = {};
+                this.columnIndices = new Map();
                 this.columnNameList = [];
                 for (var i = 0; i < columns.length; i++) {
                     var colName = columns[i].substr(name.length + 1);
-                    var col = new Column(this, data, colName, i);
-                    this.columnWrappers[colName] = col;
+                    this.columnIndices.set(colName, i);
                     this.columnNameList.push(colName);
                 }
             }
@@ -658,7 +657,10 @@ var CIFTools;
              * @returns undefined if the column isn't present, the Column object otherwise.
              */
             Category.prototype.getColumn = function (name) {
-                return this.columnWrappers[name] || CIFTools.UndefinedColumn;
+                var i = this.columnIndices.get(name);
+                if (i !== void 0)
+                    return new Column(this, this.data, name, i);
+                return CIFTools.UndefinedColumn;
             };
             Category.prototype.toJSON = function () {
                 var rows = [], data = this.data, tokens = this.tokens;
@@ -2375,10 +2377,10 @@ var CIFTools;
                 this.additionalData = {};
                 this.header = data.header;
                 this.categoryList = data.categories.map(function (c) { return new Category(c); });
-                this.categoryMap = {};
+                this.categoryMap = new Map();
                 for (var _i = 0, _a = this.categoryList; _i < _a.length; _i++) {
                     var c = _a[_i];
-                    this.categoryMap[c.name] = c;
+                    this.categoryMap.set(c.name, c);
                 }
             }
             Object.defineProperty(DataBlock.prototype, "categories", {
@@ -2386,7 +2388,7 @@ var CIFTools;
                 enumerable: true,
                 configurable: true
             });
-            DataBlock.prototype.getCategory = function (name) { return this.categoryMap[name]; };
+            DataBlock.prototype.getCategory = function (name) { return this.categoryMap.get(name); };
             DataBlock.prototype.toJSON = function () {
                 return {
                     id: this.header,
@@ -2403,12 +2405,10 @@ var CIFTools;
                 this.columnCount = data.columns.length;
                 this.rowCount = data.rowCount;
                 this.columnNameList = [];
-                this.encodedColumns = {};
-                this.columnWrappers = {};
+                this.encodedColumns = new Map();
                 for (var _i = 0, _a = data.columns; _i < _a.length; _i++) {
                     var c = _a[_i];
-                    this.encodedColumns[c.name] = c;
-                    this.columnWrappers[c.name] = null;
+                    this.encodedColumns.set(c.name, c);
                     this.columnNameList.push(c.name);
                 }
             }
@@ -2418,15 +2418,9 @@ var CIFTools;
                 configurable: true
             });
             Category.prototype.getColumn = function (name) {
-                var c = this.columnWrappers[name];
-                if (c)
-                    return c;
-                var w = this.encodedColumns[name];
-                if (w) {
-                    c = wrapColumn(w);
-                    this.columnWrappers[name] = c;
-                    return c;
-                }
+                var w = this.encodedColumns.get(name);
+                if (w)
+                    return wrapColumn(w);
                 return CIFTools.UndefinedColumn;
             };
             Category.prototype.toJSON = function () {
