@@ -137,5 +137,26 @@ namespace LiteMol.Bootstrap.Entity.Transformer.Density {
         });
         let isSigma = params.style!.params!.isoValueType === void 0 || params.style!.params!.isoValueType === Visualization.Density.IsoValueType.Sigma;
         return Task.resolve('Behaviour', 'Background', Entity.Density.InteractiveSurface.create(t, { label: `${params.id ? t.params.id : 'Interactive'}, ${Utils.round(params.style!.params!.isoValue!, 2)}${isSigma ? ' \u03C3' : ''}`, behaviour: b }));
+    }, (ctx, b, t) => {
+        let oldParams = b.transform.params as CreateVisualBehaviourParams;
+        let params = t.params;
+        if (oldParams.style!.type !== params.style!.type || !Utils.deepEqual(oldParams.style!.params, params.style!.params)) return void 0;
+
+        if (oldParams.isoSigmaMin !== params.isoSigmaMin
+            || oldParams.isoSigmaMax !== params.isoSigmaMax
+            || oldParams.minRadius !== params.minRadius
+            || oldParams.maxRadius !== params.maxRadius
+            || oldParams.radius !== params.radius
+            || oldParams.showFull !== params.showFull) {
+            return void 0; 
+        }
+        
+        let parent = Tree.Node.findClosestNodeOfType(b, [Entity.Density.Data]);
+        if (!parent) return void 0;
+
+        let ti = params.style.theme;
+        b.props.behaviour.updateTheme(ti);
+        Entity.nodeUpdated(b);
+        return Task.resolve(t.transformer.info.name, 'Background', Tree.Node.Null);
     });
 }

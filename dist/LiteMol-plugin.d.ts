@@ -16647,6 +16647,7 @@ declare namespace LiteMol.Bootstrap.Behaviour.Density {
         private remove();
         private getVisual();
         private update(info);
+        updateTheme(ti: Visualization.Theme.Instance): void;
         dispose(): void;
         register(behaviour: Entity.Density.InteractiveSurface): void;
         constructor(context: Context, params: ShowDynamicDensityParams);

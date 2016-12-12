@@ -75,6 +75,16 @@ namespace LiteMol.Bootstrap.Behaviour.Density {
             //this.isBusy = true;
             task.run(this.context);   
         }
+
+        updateTheme(ti: Visualization.Theme.Instance) {
+            this.params.style.theme = ti;
+            if (!this.behaviour) return;
+            let v = this.getVisual();
+            if (!v) return;
+            let source = Tree.Node.findClosestNodeOfType(this.behaviour, [Entity.Density.Data]) as Entity.Density.Data;
+            let theme = ti.template!.provider(source, Visualization.Theme.getProps(ti));
+            v.props.model.applyTheme(theme);
+        }
         
         dispose() {
             this.remove();

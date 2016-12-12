@@ -69281,6 +69281,26 @@ var LiteMol;
                         });
                         var isSigma = params.style.params.isoValueType === void 0 || params.style.params.isoValueType === Bootstrap.Visualization.Density.IsoValueType.Sigma;
                         return Bootstrap.Task.resolve('Behaviour', 'Background', Entity.Density.InteractiveSurface.create(t, { label: (params.id ? t.params.id : 'Interactive') + ", " + Bootstrap.Utils.round(params.style.params.isoValue, 2) + (isSigma ? ' \u03C3' : ''), behaviour: b }));
+                    }, function (ctx, b, t) {
+                        var oldParams = b.transform.params;
+                        var params = t.params;
+                        if (oldParams.style.type !== params.style.type || !Bootstrap.Utils.deepEqual(oldParams.style.params, params.style.params))
+                            return void 0;
+                        if (oldParams.isoSigmaMin !== params.isoSigmaMin
+                            || oldParams.isoSigmaMax !== params.isoSigmaMax
+                            || oldParams.minRadius !== params.minRadius
+                            || oldParams.maxRadius !== params.maxRadius
+                            || oldParams.radius !== params.radius
+                            || oldParams.showFull !== params.showFull) {
+                            return void 0;
+                        }
+                        var parent = Bootstrap.Tree.Node.findClosestNodeOfType(b, [Entity.Density.Data]);
+                        if (!parent)
+                            return void 0;
+                        var ti = params.style.theme;
+                        b.props.behaviour.updateTheme(ti);
+                        Entity.nodeUpdated(b);
+                        return Bootstrap.Task.resolve(t.transformer.info.name, 'Background', Bootstrap.Tree.Node.Null);
                     });
                 })(Density = Transformer.Density || (Transformer.Density = {}));
             })(Transformer = Entity.Transformer || (Entity.Transformer = {}));
@@ -69900,6 +69920,17 @@ var LiteMol;
                             task = Bootstrap.Entity.Transformer.Density.CreateVisual.create({ style: style }, { ref: this.ref, isHidden: true }).update(this.context, visual);
                         //this.isBusy = true;
                         task.run(this.context);
+                    };
+                    ShowDynamicDensity.prototype.updateTheme = function (ti) {
+                        this.params.style.theme = ti;
+                        if (!this.behaviour)
+                            return;
+                        var v = this.getVisual();
+                        if (!v)
+                            return;
+                        var source = Bootstrap.Tree.Node.findClosestNodeOfType(this.behaviour, [Bootstrap.Entity.Density.Data]);
+                        var theme = ti.template.provider(source, Bootstrap.Visualization.Theme.getProps(ti));
+                        v.props.model.applyTheme(theme);
                     };
                     ShowDynamicDensity.prototype.dispose = function () {
                         this.remove();
