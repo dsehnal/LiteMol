@@ -142,8 +142,8 @@ namespace LiteMol.Visualization {
         export interface Transparency { alpha?: number; writeDepth?: boolean }
         
         export namespace Default {
-            export const HighlightColor: Color = { r: 1.0, g: 1.0, b: 0 };
-            export const SelectionColor = { r: 1.0, g: 0.0, b: 0.0 };
+            export const HighlightColor: Color = { r: 1.0, g: 1.0, b: 0 }; 
+            export const SelectionColor: Color = { r: 171 / 255, g: 71 / 255, b: 183 / 255 }; //{ r: 1.0, g: 0.0, b: 0.0 };
             export const UniformColor: Color = { r: 68 / 255, g: 130 / 255, b: 255 };
             
             export const Transparency: Transparency = { alpha: 1.0, writeDepth: false }

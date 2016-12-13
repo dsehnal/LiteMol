@@ -2,7 +2,7 @@
  * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
 
-namespace LiteMol.Viewer.DensityStreaming {
+namespace LiteMol.Extensions.DensityStreaming {
     'use strict';
 
     import Entity = Bootstrap.Entity;
@@ -14,16 +14,17 @@ namespace LiteMol.Viewer.DensityStreaming {
     export interface StreamingType extends Entity.Type<StreamingType, Streaming, StreamingProps> { }
     export const Streaming = Entity.create<Streaming, StreamingType, StreamingProps>({ name: 'Interactive Surface', typeClass: 'Behaviour', shortName: 'B_DS', description: 'Behaviour that downloads density data for molecule selection on demand.' }); 
 
-    export interface CreateStreamingParams {
+    export interface CreateStreamingParamsBase {
         minRadius: number;
         maxRadius: number;
         radius: number,
         server: string,
         source: FieldSource,
         id: string,
-        maxQueryRegion: number[],
-        styles: { [F in FieldType]?: Bootstrap.Visualization.Density.Style }
+        maxQueryRegion: number[]
     }
+
+    export type CreateStreamingParams = CreateStreamingParamsBase & { [F in FieldType]?: Bootstrap.Visualization.Density.Style }
 
     export const CreateStreaming = Tree.Transformer.create<Entity.Molecule.Molecule, Streaming, CreateStreamingParams>({
         id: 'density-streaming-create-streaming',
@@ -32,12 +33,17 @@ namespace LiteMol.Viewer.DensityStreaming {
         from: [],
         to: [Streaming],
         isUpdatable: true,
-        defaultParams: () => <any>{}
-        //customController: (ctx, t, e) => new Components.Transform.DensityVisual(ctx, t, e) as Components.Transform.Controller<any>,
+        defaultParams: () => <any>{},
+        customController: (ctx, t, e) => new Bootstrap.Components.Transform.DensityVisual(ctx, t, e) as Bootstrap.Components.Transform.Controller<any>
     }, (ctx, a, t) => {
         let params = t.params;
         let b = new Behaviour(ctx, { 
-            styles: params.styles, 
+            styles: {
+                'EMD': params['EMD'],
+                '2Fo-Fc': params['2Fo-Fc'],
+                'Fo-Fc(+ve)': params['Fo-Fc(+ve)'],
+                'Fo-Fc(-ve)': params['Fo-Fc(-ve)']
+            }, 
             source: t.params.source, 
             id: t.params.id,
             radius: t.params.radius, 
@@ -46,27 +52,16 @@ namespace LiteMol.Viewer.DensityStreaming {
         });
         return Bootstrap.Task.resolve('Behaviour', 'Background', Streaming.create(t, { label: `Density Streaming`, behaviour: b }));
     }, (ctx, b, t) => {
-        return void 0;
-        // let oldParams = b.transform.params as CreateStreamingParams;
-        // let params = t.params;
-        // if (oldParams.style!.type !== params.style!.type || !Utils.deepEqual(oldParams.style!.params, params.style!.params)) return void 0;
+        let oldParams = b.transform.params as CreateStreamingParams;
+        let params = t.params;
 
-        // if (oldParams.isoSigmaMin !== params.isoSigmaMin
-        //     || oldParams.isoSigmaMax !== params.isoSigmaMax
-        //     || oldParams.minRadius !== params.minRadius
-        //     || oldParams.maxRadius !== params.maxRadius
-        //     || oldParams.radius !== params.radius
-        //     || oldParams.showFull !== params.showFull) {
-        //     return void 0; 
-        // }
-        
-        // let parent = Tree.Node.findClosestNodeOfType(b, [Entity.Density.Data]);
-        // if (!parent) return void 0;
+        if (oldParams.radius !== params.radius) return void 0;
 
-        // let ti = params.style.theme;
-        // b.props.behaviour.updateTheme(ti);
-        // Entity.nodeUpdated(b);
-        // return Task.resolve(t.transformer.info.name, 'Background', Tree.Node.Null);
+        return Bootstrap.Task.create<Tree.Node.Any>('Density', 'Background', (ctx) => {
+            ctx.update('Updating styles...');
+            let update = () => { Entity.nodeUpdated(b); ctx.resolve(Tree.Node.Null) }; 
+            b.props.behaviour.invalidateStyles(params).then(update).catch(update);
+        });
     });
 
     type DensityAction = Tree.Transformer.ActionWithContext<undefined>
@@ -119,12 +114,12 @@ namespace LiteMol.Viewer.DensityStreaming {
         let streaming: CreateStreamingParams = {
             minRadius: 0,
             maxRadius: params.source === 'X-ray' ? Math.min(10, radius) : Math.min(50, radius),
-            radius: Math.min(40, radius),
+            radius: Math.min(5, radius),
             server: params.server,
             source: params.source,
             id: sourceId ? sourceId : params.id,
             maxQueryRegion,
-            styles
+            ...styles
         }
 
         return { 
@@ -230,7 +225,7 @@ namespace LiteMol.Viewer.DensityStreaming {
             let source: FieldSource = 'X-ray';            
             let method = (e.props.molecule.properties.experimentMethod || '').toLowerCase();
             if (method.indexOf('microscopy') >= 0) source = 'EMD';
-            return { server: ctx.settings.get('density.streaming.defaultServer'), id: e.props.molecule.id, source };
+            return { server: ctx.settings.get('extensions.densityStreaming.defaultServer'), id: e.props.molecule.id, source };
         },
         validateParams: p => {
             if (!p.server.trim().length) return ['Enter Server'];

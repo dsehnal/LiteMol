@@ -132,3 +132,11 @@
 .lm-transform-view {
     padding-top: $control-spacing;
 }
+
+.lm-expandable-group-color-stripe {
+    position: absolute;
+    left: 0;
+    top: $row-height - 2px;
+    width: $control-label-width + $control-spacing;
+    height: 2px;
+}

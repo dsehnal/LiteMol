@@ -1,4 +1,7 @@
-﻿# 1.2.9
+﻿# 1.2.10
+* Ability to show color stripe on expander control.
+
+# 1.2.9
 * Toasts now support HTML messages.
 
 # 1.2.8

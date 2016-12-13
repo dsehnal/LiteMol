@@ -1,3 +1,6 @@
+# 1.2.0
+* Support for density streaming vie DensityServer. 
+
 # 1.1.14
 * Support for PDBe EMDB density data.
 

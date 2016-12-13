@@ -55,7 +55,7 @@ namespace LiteMol.Plugin.Views.Transform.Density {
         }        
     }
     
-    export class CreateVisual extends Transform.ControllerBase<Bootstrap.Components.Transform.DensityVisual, Transformer.Density.CreateVisualParams> {        
+    export class CreateVisual extends Transform.ControllerBase<Bootstrap.Components.Transform.DensityVisual<Transformer.Density.CreateVisualParams, 'style'>, Transformer.Density.CreateVisualParams> {        
         
         private surface() {           
             let data = Bootstrap.Tree.Node.findClosestNodeOfType(this.transformSourceEntity, [Bootstrap.Entity.Density.Data]) as Bootstrap.Entity.Density.Data;           
@@ -93,7 +93,7 @@ namespace LiteMol.Plugin.Views.Transform.Density {
                     
             controls.push(<TransparencyControl definition={theme.transparency!} onChange={d => this.controller.updateThemeTransparency(d) } />);
             let visualParams = this.params.style!.params as Bootstrap.Visualization.Density.Params;              
-            controls.push(<Controls.Slider label='Smoothing' onChange={v => this.controller.updateStyleParams({ smoothing: v  })}  min={0} max={10} step={1} value={visualParams.smoothing!} title='Number of laplacian smoothing itrations.' />);
+            //controls.push(<Controls.Slider label='Smoothing' onChange={v => this.controller.updateStyleParams({ smoothing: v  })}  min={0} max={10} step={1} value={visualParams.smoothing!} title='Number of laplacian smoothing itrations.' />);
             controls.push(<Controls.Toggle onChange={v => this.controller.updateStyleParams({ isWireframe: v }) } value={params.isWireframe!} label='Wireframe' />)
                     
             let showThemeOptions = this.getPersistentState('showThemeOptions', false);
@@ -115,7 +115,7 @@ namespace LiteMol.Plugin.Views.Transform.Density {
     }
     
     
-    export class CreateVisualBehaviour extends Transform.ControllerBase<Bootstrap.Components.Transform.DensityVisual, Transformer.Density.CreateVisualParams | Transformer.Density.CreateVisualBehaviourParams> {        
+    export class CreateVisualBehaviour extends Transform.ControllerBase<Bootstrap.Components.Transform.DensityVisual<Transformer.Density.CreateVisualBehaviourParams, 'style'>, Transformer.Density.CreateVisualBehaviourParams> {        
         
         private surface() {           
             let data = Bootstrap.Tree.Node.findClosestNodeOfType(this.transformSourceEntity, [Bootstrap.Entity.Density.Data]) as Bootstrap.Entity.Density.Data;
@@ -154,7 +154,7 @@ namespace LiteMol.Plugin.Views.Transform.Density {
                     
             controls.push(<TransparencyControl definition={theme.transparency!} onChange={d => this.controller.updateThemeTransparency(d) } />);
             let visualParams = this.params.style!.params as Bootstrap.Visualization.Density.Params;              
-            controls.push(<Controls.Slider label='Smoothing' onChange={v => this.controller.updateStyleParams({ smoothing: v  })}  min={0} max={10} step={1} value={visualParams.smoothing!} title='Number of laplacian smoothing itrations.' />);
+            //controls.push(<Controls.Slider label='Smoothing' onChange={v => this.controller.updateStyleParams({ smoothing: v  })}  min={0} max={10} step={1} value={visualParams.smoothing!} title='Number of laplacian smoothing itrations.' />);
             controls.push(<Controls.Toggle onChange={v => this.controller.updateStyleParams({ isWireframe: v }) } value={params.isWireframe!} label='Wireframe' />)
                     
             let showThemeOptions = this.getPersistentState('showThemeOptions', false);
@@ -186,7 +186,7 @@ namespace LiteMol.Plugin.Views.Transform.Density {
                 {this.colors()} 
                 {this.show()}
                 {!params.showFull 
-                    ? <Controls.Slider label='Radius' onChange={v => this.controller.updateRadius(v)} 
+                    ? <Controls.Slider label='Radius' onChange={v => this.autoUpdateParams({ radius: v })} 
                     min={params.minRadius !== void 0 ? params.minRadius : 0} max={params.maxRadius !== void 0 ? params.maxRadius : 10} step={0.005} value={params.radius} />
                     : void 0 }
             </div>

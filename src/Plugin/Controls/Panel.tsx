@@ -55,9 +55,10 @@ namespace LiteMol.Plugin.Controls {
         }
     }
     
-    export const ExpandableGroup = (props: { select: any, options: any[], expander: any, isExpanded: boolean }) => 
+    export const ExpandableGroup = (props: { select: any, options: any[], expander: any, isExpanded: boolean, colorStripe?: LiteMol.Visualization.Color }) => 
         <div className='lm-control-group'>
             {props.select}
+            {props.colorStripe ? <div className='lm-expandable-group-color-stripe' style={{ backgroundColor: `rgb(${(255 * props.colorStripe.r) | 0}, ${(255 * props.colorStripe.g) | 0}, ${(255 * props.colorStripe.b) | 0})`}} /> : void 0 }
             {props.options.length > 0 ? props.expander : void 0 }
             {props.options.length > 0 ? <div style={{ display: props.isExpanded ? 'block' : 'none' }}  className='lm-control-subgroup'>{props.options}</div> : void 0 }
         </div>

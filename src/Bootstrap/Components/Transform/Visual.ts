@@ -65,39 +65,49 @@ namespace LiteMol.Bootstrap.Components.Transform {
             this.updateStyleTheme(this.getThemeInstance(definition));
         }       
     }   
-    
-    
-    export class DensityVisual extends Controller<Bootstrap.Entity.Transformer.Density.CreateVisualParams | Bootstrap.Entity.Transformer.Density.CreateVisualBehaviourParams> {        
         
-        updateStyleParams(params: any) {
-            let s = Utils.shallowClone(this.latestState.params!.style)!;
+    export class DensityVisual<T, Styles> extends Controller<T> {    
+        private cloneStyle(prop?: Styles) {
+            return (<any>Utils.shallowClone((this.latestState.params as any)[prop || 'style'])) as Bootstrap.Visualization.Density.Style;
+        }
+
+        private getStyle(prop?: Styles) {
+            return (this.latestState.params as any)[prop || 'style'] as Bootstrap.Visualization.Density.Style;
+        }
+
+        private setStyle(style: Bootstrap.Visualization.Density.Style, prop?: Styles) {
+            this.autoUpdateParams(<any>{ [<any>prop || 'style']: style })
+        }
+
+        updateStyleParams(params: any, styleProp?: Styles) {
+            let s = this.cloneStyle(styleProp);
             s.params = Utils.merge(s.params, params);
-            this.autoUpdateParams({ style: s })
+            this.setStyle(s, styleProp);
         }   
         
-        updateStyleTheme(theme: Partial<Vis.Theme.Instance>) {
-            let s = Utils.shallowClone(this.latestState.params!.style)!;
+        updateStyleTheme(theme: Partial<Vis.Theme.Instance>, styleProp?:Styles) {
+            let s = this.cloneStyle(styleProp);
             s.theme = Utils.merge(s.theme, theme);
-            this.autoUpdateParams({ style: s })
+            this.setStyle(s, styleProp);
         }
                 
-        updateThemeColor(name: string, value: LiteMol.Visualization.Color) {            
-            let oldTheme = this.latestState.params!.style!.theme;            
+        updateThemeColor(name: string, value: LiteMol.Visualization.Color, styleProp?: Styles) {            
+            let oldTheme = this.getStyle(styleProp).theme;            
             if (!oldTheme) return;           
             let colors = oldTheme.colors;
             if (!colors) colors = Immutable.Map<string, LiteMol.Visualization.Color>();            
             colors = colors.set(name, value);
-            this.updateStyleTheme({ colors });            
+            this.updateStyleTheme({ colors }, styleProp);            
         }
         
-        updateThemeTransparency(transparency: LiteMol.Visualization.Theme.Transparency) {
-            let oldTheme = this.latestState.params!.style!.theme;            
+        updateThemeTransparency(transparency: LiteMol.Visualization.Theme.Transparency, styleProp?: Styles) {
+            let oldTheme = this.getStyle(styleProp).theme;            
             if (!oldTheme) return;
-            this.updateStyleTheme({ transparency });    
+            this.updateStyleTheme({ transparency }, styleProp);    
         }    
                 
-        private getThemeInstance(template: Bootstrap.Visualization.Theme.Template): Bootstrap.Visualization.Theme.Instance {
-            let oldTheme = this.latestState.params!.style!.theme;        
+        private getThemeInstance(template: Bootstrap.Visualization.Theme.Template, styleProp?: Styles): Bootstrap.Visualization.Theme.Instance {
+            let oldTheme = this.getStyle(styleProp).theme;        
             let defaultTransparency = Bootstrap.Visualization.Density.Default.Transparency;
             if (!oldTheme) return { template, colors: template.colors, transparency: defaultTransparency };     
             let colors = template.colors;            
@@ -111,13 +121,9 @@ namespace LiteMol.Bootstrap.Components.Transform {
             let transparency = oldTheme.transparency ? oldTheme.transparency : defaultTransparency;            
             return { template, colors, transparency };
         }
-        
-        updateRadius(radius: number) {
-            this.autoUpdateParams({ radius })
-        }
-        
-        updateThemeDefinition(definition: Bootstrap.Visualization.Theme.Template) {            
-            this.updateStyleTheme(this.getThemeInstance(definition));
+                
+        updateThemeDefinition(definition: Bootstrap.Visualization.Theme.Template, styleProp?: Styles) {            
+            this.updateStyleTheme(this.getThemeInstance(definition, styleProp), styleProp);
         }     
     }   
 }

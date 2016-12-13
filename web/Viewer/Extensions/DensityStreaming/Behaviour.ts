@@ -2,7 +2,7 @@
  * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
 
-namespace LiteMol.Viewer.DensityStreaming {
+namespace LiteMol.Extensions.DensityStreaming {
     'use strict';
 
     import Rx = Bootstrap.Rx
@@ -10,7 +10,8 @@ namespace LiteMol.Viewer.DensityStreaming {
     import Transformer = Bootstrap.Entity.Transformer
     import Utils = Bootstrap.Utils
     import Interactivity = Bootstrap.Interactivity
-
+    import Promise = Core.Promise
+    
     export type FieldSource = 'X-ray' | 'EMD'
     export type FieldType = '2Fo-Fc' | 'Fo-Fc(-ve)' | 'Fo-Fc(+ve)' | 'EMD'
 
@@ -36,6 +37,7 @@ namespace LiteMol.Viewer.DensityStreaming {
         private groups = {
             requested: new Set<string>(),
             shown: new Set<string>(),
+            locked: new Set<string>(),
             toBeRemoved: new Set<string>()
         };
         private removedGroups = new Set<string>();
@@ -60,14 +62,16 @@ namespace LiteMol.Viewer.DensityStreaming {
             }
         }
 
-        private remove() {
+        private remove(ref: string) {
+            for (let e of this.context.select(ref)) Bootstrap.Tree.remove(e);
+            this.groups.toBeRemoved.delete(ref);
+        }
+
+        private clear() {
             this.stop();
-            this.groups.requested.forEach(g => {
-                this.groups.toBeRemoved.add(g);
-            });
-            this.groups.shown.forEach(g => {
-                for (let e of this.context.select(g)) Bootstrap.Tree.remove(e);
-            });
+            this.groups.requested.forEach(g => this.groups.toBeRemoved.add(g));
+            this.groups.locked.forEach(g => this.groups.toBeRemoved.add(g));
+            this.groups.shown.forEach(g => { if (!this.groups.locked.has(g)) this.remove(g); });
             this.groups.shown.clear();
             this.dataBox = void 0;
         }
@@ -75,15 +79,10 @@ namespace LiteMol.Viewer.DensityStreaming {
         private groupDone(ref: string, ok: boolean) {
             this.groups.requested.delete(ref);
             if (this.groups.toBeRemoved.has(ref)) {
-                for (let e of this.context.select(ref)) Bootstrap.Tree.remove(e);
-                this.groups.toBeRemoved.delete(ref);
+                this.remove(ref);
             } else if (ok) {
                 this.groups.shown.add(ref);
             }
-        }
-
-        private getVisual(type: FieldType) {
-            //return this.context.select(this.groupRef + type)[0] as Entity.Density.Visual;
         }
 
         private checkResult(data: Core.Formats.CIF.File) {
@@ -110,41 +109,43 @@ namespace LiteMol.Viewer.DensityStreaming {
             return ret;
         }
 
-        private createXray(box: Box, data: Core.Formats.CIF.File) {
-            let twoFB = data.dataBlocks.filter(b => b.header === '2FO-FC')[0];
-            let oneFB = data.dataBlocks.filter(b => b.header === 'FO-FC')[0];
+        private apply(b: Bootstrap.Tree.Transform.Builder) {
+            return Bootstrap.Tree.Transform.apply(this.context, b).run(this.context);
+        }
 
-            if (!twoFB || !oneFB) return false;
+        private async createXray(box: Box, data: Core.Formats.CIF.File) {
+            try {
+                let twoFB = data.dataBlocks.filter(b => b.header === '2FO-FC')[0];
+                let oneFB = data.dataBlocks.filter(b => b.header === 'FO-FC')[0];
 
-            let twoF = Core.Formats.Density.CIF.parse(twoFB);
-            let oneF = Core.Formats.Density.CIF.parse(oneFB);
-            if (twoF.isError || oneF.isError) return false;
+                if (!twoFB || !oneFB) return;
 
-            let action = Bootstrap.Tree.Transform.build();
-            let ref = Utils.generateUUID();
-            this.groups.requested.add(ref);
-            let group = action.add(this.behaviour, Transformer.Basic.CreateGroup, { label: 'Density' }, { ref, isHidden: true })
+                let twoF = Core.Formats.Density.CIF.parse(twoFB);
+                let oneF = Core.Formats.Density.CIF.parse(oneFB);
+                if (twoF.isError || oneF.isError) return;
 
-            let styles = this.updateStyles(box);
+                let action = Bootstrap.Tree.Transform.build();
+                let ref = Utils.generateUUID();
+                this.groups.requested.add(ref);
+                let group = action.add(this.behaviour, Transformer.Basic.CreateGroup, { label: 'Density' }, { ref, isHidden: true })
 
-            let twoFoFc = group.then(Transformer.Density.CreateFromData, { id: '2Fo-Fc', data: twoF.result }, { ref: ref + '2Fo-Fc-data' })
-            let foFc = group.then(Transformer.Density.CreateFromData, { id: 'Fo-Fc', data: oneF.result }, { ref: ref + 'Fo-Fc-data' });
+                let styles = this.updateStyles(box);
+
+                let twoFoFc = group.then(Transformer.Density.CreateFromData, { id: '2Fo-Fc', data: twoF.result }, { ref: ref + '2Fo-Fc-data' })
+                let foFc = group.then(Transformer.Density.CreateFromData, { id: 'Fo-Fc', data: oneF.result }, { ref: ref + 'Fo-Fc-data' });
             
-            Bootstrap.Tree.Transform.apply(this.context, action).run(this.context)
-                .then(() => { 
-                    let v2fofc = Bootstrap.Tree.Transform.build().add(ref + '2Fo-Fc-data', Transformer.Density.CreateVisual, { style: styles['2Fo-Fc'] }, { ref: ref + '2Fo-Fc' });
-                    let vfofcp = Bootstrap.Tree.Transform.build().add(ref + 'Fo-Fc-data', Transformer.Density.CreateVisual, { style: styles['Fo-Fc(+ve)'] }, { ref: ref + 'Fo-Fc(+ve)' });
-                    let vfofcm = Bootstrap.Tree.Transform.build().add(ref + 'Fo-Fc-data', Transformer.Density.CreateVisual, { style: styles['Fo-Fc(-ve)'] }, { ref: ref + 'Fo-Fc(-ve)' });
+                await this.apply(action);            
+                let a = this.apply(Bootstrap.Tree.Transform.build().add(ref + '2Fo-Fc-data', Transformer.Density.CreateVisual, { style: styles['2Fo-Fc'] }, { ref: ref + '2Fo-Fc' }));
+                let b = this.apply(Bootstrap.Tree.Transform.build().add(ref + 'Fo-Fc-data', Transformer.Density.CreateVisual, { style: styles['Fo-Fc(+ve)'] }, { ref: ref + 'Fo-Fc(+ve)' }));
+                let c = this.apply(Bootstrap.Tree.Transform.build().add(ref + 'Fo-Fc-data', Transformer.Density.CreateVisual, { style: styles['Fo-Fc(-ve)'] }, { ref: ref + 'Fo-Fc(-ve)' }));
+                await a;
+                await b;
+                await c;
 
-                    let done = 0;
-
-                    var update = () => { done++; if (done === 3) this.groupDone(ref, true) };
-
-                    Bootstrap.Tree.Transform.apply(this.context, v2fofc).run(this.context).then(update).catch(update);
-                    Bootstrap.Tree.Transform.apply(this.context, vfofcp).run(this.context).then(update).catch(update);
-                    Bootstrap.Tree.Transform.apply(this.context, vfofcm).run(this.context).then(update).catch(update);
-                })
-                .catch(() => this.groupDone(ref, false));
+                this.groupDone(ref, true);
+            } catch (e) {
+                this.context.logger.error('[Density] ' + e);
+            }
         }
 
         private createEmd(box: Box, data: Core.Formats.CIF.File) {
@@ -183,7 +184,7 @@ namespace LiteMol.Viewer.DensityStreaming {
 
         private update(info: Interactivity.Info ) {            
             if (!Interactivity.Molecule.isMoleculeModelInteractivity(info)) {
-                this.remove();
+                this.clear();
                 return;
             }
 
@@ -201,7 +202,7 @@ namespace LiteMol.Viewer.DensityStreaming {
 
             if (this.areBoxesSame(box)) return;
 
-            this.remove(); 
+            this.clear(); 
              
             let url = 
                 `${this.server}`
@@ -213,7 +214,7 @@ namespace LiteMol.Viewer.DensityStreaming {
             this.download = Utils.ajaxGetArrayBuffer(url, 'Density').run(this.context);
 
             this.download.then(data => {
-                this.remove();
+                this.clear();
 
                 this.dataBox = box;
                 let cif = Core.Formats.CIF.Binary.parse(data);
@@ -224,8 +225,55 @@ namespace LiteMol.Viewer.DensityStreaming {
             });
         }
 
+        private updateVisual(v: Entity.Density.Visual, style: Bootstrap.Visualization.Density.Style) {
+            return Entity.Transformer.Density.CreateVisual.create({ style }, { ref: v.ref }).update(this.context, v).run(this.context);
+        }
+
+        private async invalidate(inputStyles: CreateStreamingParams): LiteMol.Core.Promise<boolean> {
+            for (let t of this.types) {
+                this.params.styles[t] = inputStyles[t];
+            }
+
+            if (!this.dataBox) return true;
+
+            let styles = this.updateStyles(this.dataBox);
+
+            // cache the refs and lock them
+            let refs: string[] = [];
+            this.groups.shown.forEach(r => {
+                refs.push(r)
+                this.groups.locked.add(r);
+            });
+
+            // update all the existing visuals.
+            for (let t of this.types) {
+                let vs = this.context.select(Bootstrap.Tree.Selection.byRef(...refs.map(r => r + t)));
+                for (let v of vs) {
+                    let s = styles[t];
+                    if (!s) continue;
+                    await this.updateVisual(v as Entity.Density.Visual, s);
+                }
+            }
+
+            // unlock and delete if the request is pending
+            for (let r of refs) {
+                this.groups.locked.delete(r);
+                if (this.groups.toBeRemoved.has(r)) this.remove(r);
+            }
+
+            return true;
+        }
+
+        async invalidateStyles(styles: CreateStreamingParams): LiteMol.Core.Promise<boolean> {
+            try {
+                return this.invalidate(styles);
+            } catch (e) {
+                return true;
+            }
+        }
+
         dispose() {
-            this.remove();
+            this.clear();
             Bootstrap.Command.Toast.Hide.dispatch(this.context, { key: ToastKey });
             for (let o of this.obs) o.dispose();
             this.obs = [];

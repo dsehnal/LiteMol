@@ -19,7 +19,8 @@ namespace LiteMol.Viewer {
             'molecule.downloadBinaryCIFFromCoordinateServer.server': 'https://webchemdev.ncbr.muni.cz/CoordinateServer',
             'molecule.coordinateStreaming.defaultRadius': 10,
             'density.defaultVisualBehaviourRadius': 5,
-            'density.streaming.defaultServer': 'http://localhost:1337/DensityServer/'
+
+            'extensions.densityStreaming.defaultServer': 'http://localhost:1337/DensityServer/'
         },
         transforms: [
             // Root transforms -- things that load data.
@@ -53,8 +54,8 @@ namespace LiteMol.Viewer {
             { transformer: Transformer.Density.CreateFromCif, view: Views.Transform.Molecule.CreateFromMmCif },
             { transformer: Transformer.Density.CreateVisual, view: Views.Transform.Density.CreateVisual },
             { transformer: Transformer.Density.CreateVisualBehaviour, view: Views.Transform.Density.CreateVisualBehaviour },
-            { transformer: DensityStreaming.Create, view: DensityStreaming.CreateView },
-            { transformer: DensityStreaming.CreateStreaming, view: DensityStreaming.StreamingView },
+            { transformer: Extensions.DensityStreaming.Create, view: Extensions.DensityStreaming.CreateView },
+            { transformer: Extensions.DensityStreaming.CreateStreaming, view: Extensions.DensityStreaming.StreamingView },
             
             // Coordinate streaming
             { transformer: Transformer.Molecule.CoordinateStreaming.CreateBehaviour, view: Views.Transform.Empty, initiallyCollapsed: true },

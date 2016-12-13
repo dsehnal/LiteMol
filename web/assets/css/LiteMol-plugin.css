@@ -2286,6 +2286,12 @@
     margin-bottom: 10px; }
   .lm-plugin .lm-transform-view {
     padding-top: 10px; }
+  .lm-plugin .lm-expandable-group-color-stripe {
+    position: absolute;
+    left: 0;
+    top: 30px;
+    width: 120px;
+    height: 2px; }
   .lm-plugin .lm-description {
     padding: 10px;
     font-size: 85%;

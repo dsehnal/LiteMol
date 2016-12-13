@@ -1,4 +1,7 @@
-﻿# 1.5.2
+﻿# 1.5.3
+* Default selection color is now purple.
+
+# 1.5.2
 * Improved support for CA/P-only cartoon (alpha-trace) models.
 
 # 1.5.1

@@ -2691,6 +2691,7 @@ declare namespace LiteMol.Plugin.Controls {
         options: any[];
         expander: any;
         isExpanded: boolean;
+        colorStripe?: Visualization.Color | undefined;
     }) => JSX.Element;
 }
 declare namespace LiteMol.Plugin.Controls {
@@ -2885,12 +2886,12 @@ declare namespace LiteMol.Plugin.Views.Transform.Density {
     class ParseData extends Transform.ControllerBase<Bootstrap.Components.Transform.Controller<Transformer.Density.ParseDataParams>, Transformer.Density.ParseDataParams> {
         protected renderControls(): JSX.Element;
     }
-    class CreateVisual extends Transform.ControllerBase<Bootstrap.Components.Transform.DensityVisual, Transformer.Density.CreateVisualParams> {
+    class CreateVisual extends Transform.ControllerBase<Bootstrap.Components.Transform.DensityVisual<Transformer.Density.CreateVisualParams, 'style'>, Transformer.Density.CreateVisualParams> {
         private surface();
         private colors();
         protected renderControls(): JSX.Element;
     }
-    class CreateVisualBehaviour extends Transform.ControllerBase<Bootstrap.Components.Transform.DensityVisual, Transformer.Density.CreateVisualParams | Transformer.Density.CreateVisualBehaviourParams> {
+    class CreateVisualBehaviour extends Transform.ControllerBase<Bootstrap.Components.Transform.DensityVisual<Transformer.Density.CreateVisualBehaviourParams, 'style'>, Transformer.Density.CreateVisualBehaviourParams> {
         private surface();
         private colors();
         private show();
@@ -12057,11 +12058,7 @@ declare namespace LiteMol.Visualization {
         }
         namespace Default {
             const HighlightColor: Color;
-            const SelectionColor: {
-                r: number;
-                g: number;
-                b: number;
-            };
+            const SelectionColor: Color;
             const UniformColor: Color;
             const Transparency: Transparency;
         }
@@ -16810,14 +16807,16 @@ declare namespace LiteMol.Bootstrap.Components.Transform {
         private getThemeInstance(template);
         updateThemeDefinition(definition: Bootstrap.Visualization.Theme.Template): void;
     }
-    class DensityVisual extends Controller<Bootstrap.Entity.Transformer.Density.CreateVisualParams | Bootstrap.Entity.Transformer.Density.CreateVisualBehaviourParams> {
-        updateStyleParams(params: any): void;
-        updateStyleTheme(theme: Partial<Vis.Theme.Instance>): void;
-        updateThemeColor(name: string, value: LiteMol.Visualization.Color): void;
-        updateThemeTransparency(transparency: LiteMol.Visualization.Theme.Transparency): void;
-        private getThemeInstance(template);
-        updateRadius(radius: number): void;
-        updateThemeDefinition(definition: Bootstrap.Visualization.Theme.Template): void;
+    class DensityVisual<T, Styles> extends Controller<T> {
+        private cloneStyle(prop?);
+        private getStyle(prop?);
+        private setStyle(style, prop?);
+        updateStyleParams(params: any, styleProp?: Styles): void;
+        updateStyleTheme(theme: Partial<Vis.Theme.Instance>, styleProp?: Styles): void;
+        updateThemeColor(name: string, value: LiteMol.Visualization.Color, styleProp?: Styles): void;
+        updateThemeTransparency(transparency: LiteMol.Visualization.Theme.Transparency, styleProp?: Styles): void;
+        private getThemeInstance(template, styleProp?);
+        updateThemeDefinition(definition: Bootstrap.Visualization.Theme.Template, styleProp?: Styles): void;
     }
 }
 declare namespace LiteMol.Bootstrap.Components.Transform {

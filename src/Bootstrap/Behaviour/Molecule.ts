@@ -18,7 +18,7 @@ namespace LiteMol.Bootstrap.Behaviour.Molecule {
                 type: 'BallsAndSticks',
                 computationType: 'Silent',
                 params: { useVDW: true, vdwScaling: 0.25, bondRadius: 0.13, detail: 'Automatic' },
-                theme: { template: Visualization.Molecule.Default.ElementSymbolThemeTemplate, colors: Visualization.Molecule.Default.ElementSymbolThemeTemplate.colors!.set('Bond', { r:1, g: 0, b: 0 }), transparency: { alpha: 0.4 } },
+                theme: { template: Visualization.Molecule.Default.ElementSymbolThemeTemplate, colors: Visualization.Molecule.Default.ElementSymbolThemeTemplate.colors!.set('Bond', LiteMol.Visualization.Theme.Default.SelectionColor), transparency: { alpha: 0.4 } },
                 isNotSelectable: true
             } 
                 
@@ -44,7 +44,6 @@ namespace LiteMol.Bootstrap.Behaviour.Molecule {
                     return;
                 }
 
-                
                 if (info.source.ref === ambRef) {
                     let model = Utils.Molecule.findModel(info.source);
                     if (!model) return;

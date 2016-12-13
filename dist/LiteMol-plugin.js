@@ -55052,7 +55052,7 @@ var LiteMol;
 (function (LiteMol) {
     var Visualization;
     (function (Visualization) {
-        Visualization.VERSION = { number: "1.5.2", date: "Nov 30 2016" };
+        Visualization.VERSION = { number: "1.5.3", date: "Dec 13 2016" };
     })(Visualization = LiteMol.Visualization || (LiteMol.Visualization = {}));
 })(LiteMol || (LiteMol = {}));
 var LiteMol;
@@ -55293,7 +55293,7 @@ var LiteMol;
             var Default;
             (function (Default) {
                 Default.HighlightColor = { r: 1.0, g: 1.0, b: 0 };
-                Default.SelectionColor = { r: 1.0, g: 0.0, b: 0.0 };
+                Default.SelectionColor = { r: 171 / 255, g: 71 / 255, b: 183 / 255 }; //{ r: 1.0, g: 0.0, b: 0.0 };
                 Default.UniformColor = { r: 68 / 255, g: 130 / 255, b: 255 };
                 Default.Transparency = { alpha: 1.0, writeDepth: false };
             })(Default = Theme.Default || (Theme.Default = {}));
@@ -69264,11 +69264,13 @@ var LiteMol;
                         var model = b.props.model;
                         if (!model)
                             return void 0;
-                        var ti = t.params.style.theme;
-                        var theme = ti.template.provider(parent, Bootstrap.Visualization.Theme.getProps(ti));
-                        model.applyTheme(theme);
-                        b.props.style.theme = ti;
-                        Entity.nodeUpdated(b);
+                        if (!Bootstrap.Utils.deepEqual(oldParams.style.theme, t.params.style.theme)) {
+                            var ti = t.params.style.theme;
+                            var theme = ti.template.provider(parent, Bootstrap.Visualization.Theme.getProps(ti));
+                            model.applyTheme(theme);
+                            b.props.style.theme = ti;
+                            Entity.nodeUpdated(b);
+                        }
                         return Bootstrap.Task.resolve(t.transformer.info.name, 'Background', Bootstrap.Tree.Node.Null);
                     });
                     Density.CreateVisualBehaviour = Bootstrap.Tree.Transformer.create({
@@ -69758,7 +69760,7 @@ var LiteMol;
                             type: 'BallsAndSticks',
                             computationType: 'Silent',
                             params: { useVDW: true, vdwScaling: 0.25, bondRadius: 0.13, detail: 'Automatic' },
-                            theme: { template: Bootstrap.Visualization.Molecule.Default.ElementSymbolThemeTemplate, colors: Bootstrap.Visualization.Molecule.Default.ElementSymbolThemeTemplate.colors.set('Bond', { r: 1, g: 0, b: 0 }), transparency: { alpha: 0.4 } },
+                            theme: { template: Bootstrap.Visualization.Molecule.Default.ElementSymbolThemeTemplate, colors: Bootstrap.Visualization.Molecule.Default.ElementSymbolThemeTemplate.colors.set('Bond', LiteMol.Visualization.Theme.Default.SelectionColor), transparency: { alpha: 0.4 } },
                             isNotSelectable: true
                         };
                         var ambStyle = {
@@ -70694,34 +70696,44 @@ var LiteMol;
                     function DensityVisual() {
                         return _super.apply(this, arguments) || this;
                     }
-                    DensityVisual.prototype.updateStyleParams = function (params) {
-                        var s = Bootstrap.Utils.shallowClone(this.latestState.params.style);
+                    DensityVisual.prototype.cloneStyle = function (prop) {
+                        return Bootstrap.Utils.shallowClone(this.latestState.params[prop || 'style']);
+                    };
+                    DensityVisual.prototype.getStyle = function (prop) {
+                        return this.latestState.params[prop || 'style'];
+                    };
+                    DensityVisual.prototype.setStyle = function (style, prop) {
+                        this.autoUpdateParams((_a = {}, _a[prop || 'style'] = style, _a));
+                        var _a;
+                    };
+                    DensityVisual.prototype.updateStyleParams = function (params, styleProp) {
+                        var s = this.cloneStyle(styleProp);
                         s.params = Bootstrap.Utils.merge(s.params, params);
-                        this.autoUpdateParams({ style: s });
+                        this.setStyle(s, styleProp);
                     };
-                    DensityVisual.prototype.updateStyleTheme = function (theme) {
-                        var s = Bootstrap.Utils.shallowClone(this.latestState.params.style);
+                    DensityVisual.prototype.updateStyleTheme = function (theme, styleProp) {
+                        var s = this.cloneStyle(styleProp);
                         s.theme = Bootstrap.Utils.merge(s.theme, theme);
-                        this.autoUpdateParams({ style: s });
+                        this.setStyle(s, styleProp);
                     };
-                    DensityVisual.prototype.updateThemeColor = function (name, value) {
-                        var oldTheme = this.latestState.params.style.theme;
+                    DensityVisual.prototype.updateThemeColor = function (name, value, styleProp) {
+                        var oldTheme = this.getStyle(styleProp).theme;
                         if (!oldTheme)
                             return;
                         var colors = oldTheme.colors;
                         if (!colors)
                             colors = Bootstrap.Immutable.Map();
                         colors = colors.set(name, value);
-                        this.updateStyleTheme({ colors: colors });
+                        this.updateStyleTheme({ colors: colors }, styleProp);
                     };
-                    DensityVisual.prototype.updateThemeTransparency = function (transparency) {
-                        var oldTheme = this.latestState.params.style.theme;
+                    DensityVisual.prototype.updateThemeTransparency = function (transparency, styleProp) {
+                        var oldTheme = this.getStyle(styleProp).theme;
                         if (!oldTheme)
                             return;
-                        this.updateStyleTheme({ transparency: transparency });
+                        this.updateStyleTheme({ transparency: transparency }, styleProp);
                     };
-                    DensityVisual.prototype.getThemeInstance = function (template) {
-                        var oldTheme = this.latestState.params.style.theme;
+                    DensityVisual.prototype.getThemeInstance = function (template, styleProp) {
+                        var oldTheme = this.getStyle(styleProp).theme;
                         var defaultTransparency = Bootstrap.Visualization.Density.Default.Transparency;
                         if (!oldTheme)
                             return { template: template, colors: template.colors, transparency: defaultTransparency };
@@ -70737,11 +70749,8 @@ var LiteMol;
                         var transparency = oldTheme.transparency ? oldTheme.transparency : defaultTransparency;
                         return { template: template, colors: colors, transparency: transparency };
                     };
-                    DensityVisual.prototype.updateRadius = function (radius) {
-                        this.autoUpdateParams({ radius: radius });
-                    };
-                    DensityVisual.prototype.updateThemeDefinition = function (definition) {
-                        this.updateStyleTheme(this.getThemeInstance(definition));
+                    DensityVisual.prototype.updateThemeDefinition = function (definition, styleProp) {
+                        this.updateStyleTheme(this.getThemeInstance(definition, styleProp), styleProp);
                     };
                     return DensityVisual;
                 }(Transform.Controller));
@@ -75944,7 +75953,7 @@ var LiteMol;
 (function (LiteMol) {
     var Plugin;
     (function (Plugin) {
-        Plugin.VERSION = { number: "1.2.9", date: "Dec 8 2016" };
+        Plugin.VERSION = { number: "1.2.10", date: "Dec 13 2016" };
     })(Plugin = LiteMol.Plugin || (LiteMol.Plugin = {}));
 })(LiteMol || (LiteMol = {}));
 /*
@@ -76164,6 +76173,7 @@ var LiteMol;
             Controls.ExpandableGroup = function (props) {
                 return Plugin.React.createElement("div", { className: 'lm-control-group' },
                     props.select,
+                    props.colorStripe ? Plugin.React.createElement("div", { className: 'lm-expandable-group-color-stripe', style: { backgroundColor: "rgb(" + ((255 * props.colorStripe.r) | 0) + ", " + ((255 * props.colorStripe.g) | 0) + ", " + ((255 * props.colorStripe.b) | 0) + ")" } }) : void 0,
                     props.options.length > 0 ? props.expander : void 0,
                     props.options.length > 0 ? Plugin.React.createElement("div", { style: { display: props.isExpanded ? 'block' : 'none' }, className: 'lm-control-subgroup' }, props.options) : void 0);
             };
@@ -77178,7 +77188,7 @@ var LiteMol;
                             //     .map((c, n) => <Controls.ToggleColorPicker  key={n} label={n!} color={c!} onChange={c => this.controller.updateThemeColor(n!, c) } />).toArray();
                             controls.push(Plugin.React.createElement(Transform.TransparencyControl, { definition: theme.transparency, onChange: function (d) { return _this.controller.updateThemeTransparency(d); } }));
                             var visualParams = this.params.style.params;
-                            controls.push(Plugin.React.createElement(Plugin.Controls.Slider, { label: 'Smoothing', onChange: function (v) { return _this.controller.updateStyleParams({ smoothing: v }); }, min: 0, max: 10, step: 1, value: visualParams.smoothing, title: 'Number of laplacian smoothing itrations.' }));
+                            //controls.push(<Controls.Slider label='Smoothing' onChange={v => this.controller.updateStyleParams({ smoothing: v  })}  min={0} max={10} step={1} value={visualParams.smoothing!} title='Number of laplacian smoothing itrations.' />);
                             controls.push(Plugin.React.createElement(Plugin.Controls.Toggle, { onChange: function (v) { return _this.controller.updateStyleParams({ isWireframe: v }); }, value: params.isWireframe, label: 'Wireframe' }));
                             var showThemeOptions = this.getPersistentState('showThemeOptions', false);
                             return Plugin.React.createElement(Plugin.Controls.ExpandableGroup, { select: uniform, expander: Plugin.React.createElement(Plugin.Controls.ControlGroupExpander, { isExpanded: showThemeOptions, onChange: function (e) { return _this.setPersistentState('showThemeOptions', e); } }), options: controls, isExpanded: showThemeOptions });
@@ -77227,7 +77237,7 @@ var LiteMol;
                             //     .map((c, n) => <Controls.ToggleColorPicker  key={n} label={n!} color={c!} onChange={c => this.controller.updateThemeColor(n!, c) } />).toArray();
                             controls.push(Plugin.React.createElement(Transform.TransparencyControl, { definition: theme.transparency, onChange: function (d) { return _this.controller.updateThemeTransparency(d); } }));
                             var visualParams = this.params.style.params;
-                            controls.push(Plugin.React.createElement(Plugin.Controls.Slider, { label: 'Smoothing', onChange: function (v) { return _this.controller.updateStyleParams({ smoothing: v }); }, min: 0, max: 10, step: 1, value: visualParams.smoothing, title: 'Number of laplacian smoothing itrations.' }));
+                            //controls.push(<Controls.Slider label='Smoothing' onChange={v => this.controller.updateStyleParams({ smoothing: v  })}  min={0} max={10} step={1} value={visualParams.smoothing!} title='Number of laplacian smoothing itrations.' />);
                             controls.push(Plugin.React.createElement(Plugin.Controls.Toggle, { onChange: function (v) { return _this.controller.updateStyleParams({ isWireframe: v }); }, value: params.isWireframe, label: 'Wireframe' }));
                             var showThemeOptions = this.getPersistentState('showThemeOptions', false);
                             return Plugin.React.createElement(Plugin.Controls.ExpandableGroup, { select: uniform, expander: Plugin.React.createElement(Plugin.Controls.ControlGroupExpander, { isExpanded: showThemeOptions, onChange: function (e) { return _this.setPersistentState('showThemeOptions', e); } }), options: controls, isExpanded: showThemeOptions });
@@ -77247,7 +77257,7 @@ var LiteMol;
                                 this.colors(),
                                 this.show(),
                                 !params.showFull
-                                    ? Plugin.React.createElement(Plugin.Controls.Slider, { label: 'Radius', onChange: function (v) { return _this.controller.updateRadius(v); }, min: params.minRadius !== void 0 ? params.minRadius : 0, max: params.maxRadius !== void 0 ? params.maxRadius : 10, step: 0.005, value: params.radius })
+                                    ? Plugin.React.createElement(Plugin.Controls.Slider, { label: 'Radius', onChange: function (v) { return _this.autoUpdateParams({ radius: v }); }, min: params.minRadius !== void 0 ? params.minRadius : 0, max: params.maxRadius !== void 0 ? params.maxRadius : 10, step: 0.005, value: params.radius })
                                     : void 0);
                         };
                         return CreateVisualBehaviour;

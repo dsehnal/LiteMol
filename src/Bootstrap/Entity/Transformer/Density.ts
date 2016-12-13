@@ -118,12 +118,13 @@ namespace LiteMol.Bootstrap.Entity.Transformer.Density {
         let model = b.props.model;
         if (!model) return void 0;
 
-        let ti = t.params.style!.theme!;
-        let theme = ti.template!.provider(parent, Visualization.Theme.getProps(ti));
-
-        model.applyTheme(theme);
-        b.props.style.theme = ti;
-        Entity.nodeUpdated(b);
+        if (!Utils.deepEqual(oldParams.style!.theme, t.params.style!.theme)) {
+            let ti = t.params.style!.theme!;
+            let theme = ti.template!.provider(parent, Visualization.Theme.getProps(ti));
+            model.applyTheme(theme);
+            b.props.style.theme = ti;
+            Entity.nodeUpdated(b);
+        }
         return Task.resolve(t.transformer.info.name, 'Background', Tree.Node.Null);
     });
 

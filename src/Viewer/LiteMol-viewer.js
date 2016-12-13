@@ -1,3 +1,46 @@
+var __assign = (this && this.__assign) || Object.assign || function(t) {
+    for (var s, i = 1, n = arguments.length; i < n; i++) {
+        s = arguments[i];
+        for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+            t[p] = s[p];
+    }
+    return t;
+};
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments)).next());
+    });
+};
+var __generator = (this && this.__generator) || function (thisArg, body) {
+    var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t;
+    return { next: verb(0), "throw": verb(1), "return": verb(2) };
+    function verb(n) { return function (v) { return step([n, v]); }; }
+    function step(op) {
+        if (f) throw new TypeError("Generator is already executing.");
+        while (_) try {
+            if (f = 1, y && (t = y[op[0] & 2 ? "return" : op[0] ? "throw" : "next"]) && !(t = t.call(y, op[1])).done) return t;
+            if (y = 0, t) op = [0, t.value];
+            switch (op[0]) {
+                case 0: case 1: t = op; break;
+                case 4: _.label++; return { value: op[1], done: false };
+                case 5: _.label++; y = op[1]; op = [0]; continue;
+                case 7: op = _.ops.pop(); _.trys.pop(); continue;
+                default:
+                    if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) { _ = 0; continue; }
+                    if (op[0] === 3 && (!t || (op[1] > t[0] && op[1] < t[3]))) { _.label = op[1]; break; }
+                    if (op[0] === 6 && _.label < t[1]) { _.label = t[1]; t = op; break; }
+                    if (t && _.label < t[2]) { _.label = t[2]; _.ops.push(op); break; }
+                    if (t[2]) _.ops.pop();
+                    _.trys.pop(); continue;
+            }
+            op = body.call(thisArg, _);
+        } catch (e) { op = [6, e]; y = 0; } finally { f = t = 0; }
+        if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
+    }
+};
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -7,7 +50,7 @@ var LiteMol;
 (function (LiteMol) {
     var Viewer;
     (function (Viewer) {
-        Viewer.VERSION = { number: "1.1.14", date: "Dec 3 2016" };
+        Viewer.VERSION = { number: "1.2.0", date: "Dec 13 2016" };
     })(Viewer = LiteMol.Viewer || (LiteMol.Viewer = {}));
 })(LiteMol || (LiteMol = {}));
 /*
@@ -317,8 +360,8 @@ var LiteMol;
  */
 var LiteMol;
 (function (LiteMol) {
-    var Viewer;
-    (function (Viewer) {
+    var Extensions;
+    (function (Extensions) {
         var DensityStreaming;
         (function (DensityStreaming) {
             'use strict';
@@ -333,11 +376,17 @@ var LiteMol;
                 from: [],
                 to: [DensityStreaming.Streaming],
                 isUpdatable: true,
-                defaultParams: function () { return ({}); }
+                defaultParams: function () { return ({}); },
+                customController: function (ctx, t, e) { return new LiteMol.Bootstrap.Components.Transform.DensityVisual(ctx, t, e); }
             }, function (ctx, a, t) {
                 var params = t.params;
                 var b = new DensityStreaming.Behaviour(ctx, {
-                    styles: params.styles,
+                    styles: {
+                        'EMD': params['EMD'],
+                        '2Fo-Fc': params['2Fo-Fc'],
+                        'Fo-Fc(+ve)': params['Fo-Fc(+ve)'],
+                        'Fo-Fc(-ve)': params['Fo-Fc(-ve)']
+                    },
                     source: t.params.source,
                     id: t.params.id,
                     radius: t.params.radius,
@@ -346,24 +395,15 @@ var LiteMol;
                 });
                 return LiteMol.Bootstrap.Task.resolve('Behaviour', 'Background', DensityStreaming.Streaming.create(t, { label: "Density Streaming", behaviour: b }));
             }, function (ctx, b, t) {
-                return void 0;
-                // let oldParams = b.transform.params as CreateStreamingParams;
-                // let params = t.params;
-                // if (oldParams.style!.type !== params.style!.type || !Utils.deepEqual(oldParams.style!.params, params.style!.params)) return void 0;
-                // if (oldParams.isoSigmaMin !== params.isoSigmaMin
-                //     || oldParams.isoSigmaMax !== params.isoSigmaMax
-                //     || oldParams.minRadius !== params.minRadius
-                //     || oldParams.maxRadius !== params.maxRadius
-                //     || oldParams.radius !== params.radius
-                //     || oldParams.showFull !== params.showFull) {
-                //     return void 0; 
-                // }
-                // let parent = Tree.Node.findClosestNodeOfType(b, [Entity.Density.Data]);
-                // if (!parent) return void 0;
-                // let ti = params.style.theme;
-                // b.props.behaviour.updateTheme(ti);
-                // Entity.nodeUpdated(b);
-                // return Task.resolve(t.transformer.info.name, 'Background', Tree.Node.Null);
+                var oldParams = b.transform.params;
+                var params = t.params;
+                if (oldParams.radius !== params.radius)
+                    return void 0;
+                return LiteMol.Bootstrap.Task.create('Density', 'Background', function (ctx) {
+                    ctx.update('Updating styles...');
+                    var update = function () { Entity.nodeUpdated(b); ctx.resolve(Tree.Node.Null); };
+                    b.props.behaviour.invalidateStyles(params).then(update).catch(update);
+                });
             });
             function fail(e, message) {
                 return {
@@ -407,16 +447,7 @@ var LiteMol;
                             transparency: { alpha: 1.0 }
                         })
                     };
-                var streaming = {
-                    minRadius: 0,
-                    maxRadius: params.source === 'X-ray' ? Math.min(10, radius) : Math.min(50, radius),
-                    radius: Math.min(40, radius),
-                    server: params.server,
-                    source: params.source,
-                    id: sourceId ? sourceId : params.id,
-                    maxQueryRegion: maxQueryRegion,
-                    styles: styles
-                };
+                var streaming = __assign({ minRadius: 0, maxRadius: params.source === 'X-ray' ? Math.min(10, radius) : Math.min(50, radius), radius: Math.min(5, radius), server: params.server, source: params.source, id: sourceId ? sourceId : params.id, maxQueryRegion: maxQueryRegion }, styles);
                 return {
                     action: LiteMol.Bootstrap.Tree.Transform.build().add(m, DensityStreaming.CreateStreaming, streaming),
                     context: void 0
@@ -514,7 +545,7 @@ var LiteMol;
                     var method = (e.props.molecule.properties.experimentMethod || '').toLowerCase();
                     if (method.indexOf('microscopy') >= 0)
                         source = 'EMD';
-                    return { server: ctx.settings.get('density.streaming.defaultServer'), id: e.props.molecule.id, source: source };
+                    return { server: ctx.settings.get('extensions.densityStreaming.defaultServer'), id: e.props.molecule.id, source: source };
                 },
                 validateParams: function (p) {
                     if (!p.server.trim().length)
@@ -528,19 +559,20 @@ var LiteMol;
                     default: return fail(a, 'Unknown data source.');
                 }
             });
-        })(DensityStreaming = Viewer.DensityStreaming || (Viewer.DensityStreaming = {}));
-    })(Viewer = LiteMol.Viewer || (LiteMol.Viewer = {}));
+        })(DensityStreaming = Extensions.DensityStreaming || (Extensions.DensityStreaming = {}));
+    })(Extensions = LiteMol.Extensions || (LiteMol.Extensions = {}));
 })(LiteMol || (LiteMol = {}));
 /*
  * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
 var LiteMol;
 (function (LiteMol) {
-    var Viewer;
-    (function (Viewer) {
+    var Extensions;
+    (function (Extensions) {
         var DensityStreaming;
         (function (DensityStreaming) {
             'use strict';
+            var Entity = LiteMol.Bootstrap.Entity;
             var Transformer = LiteMol.Bootstrap.Entity.Transformer;
             var Utils = LiteMol.Bootstrap.Utils;
             var Interactivity = LiteMol.Bootstrap.Interactivity;
@@ -554,12 +586,13 @@ var LiteMol;
                     this.groups = {
                         requested: new Set(),
                         shown: new Set(),
+                        locked: new Set(),
                         toBeRemoved: new Set()
                     };
                     this.removedGroups = new Set();
                     this.download = void 0;
                     this.isBusy = false;
-                    this.latestBox = void 0;
+                    this.dataBox = void 0;
                     this.server = params.server;
                     if (this.server[this.server.length - 1] === '/')
                         this.server = this.server.substr(0, this.server.length - 1);
@@ -571,10 +604,10 @@ var LiteMol;
                     }
                 }
                 Behaviour.prototype.areBoxesSame = function (b) {
-                    if (!this.latestBox)
+                    if (!this.dataBox)
                         return false;
                     for (var i = 0; i < 3; i++) {
-                        if (b.a[i] !== this.latestBox.a[i] || b.b[i] !== this.latestBox.b[i])
+                        if (b.a[i] !== this.dataBox.a[i] || b.b[i] !== this.dataBox.b[i])
                             return false;
                     }
                     return true;
@@ -585,36 +618,31 @@ var LiteMol;
                         this.download = void 0;
                     }
                 };
-                Behaviour.prototype.remove = function () {
+                Behaviour.prototype.remove = function (ref) {
+                    for (var _i = 0, _a = this.context.select(ref); _i < _a.length; _i++) {
+                        var e = _a[_i];
+                        LiteMol.Bootstrap.Tree.remove(e);
+                    }
+                    this.groups.toBeRemoved.delete(ref);
+                };
+                Behaviour.prototype.clear = function () {
                     var _this = this;
                     this.stop();
-                    this.groups.requested.forEach(function (g) {
-                        _this.groups.toBeRemoved.add(g);
-                    });
-                    this.groups.shown.forEach(function (g) {
-                        for (var _i = 0, _a = _this.context.select(g); _i < _a.length; _i++) {
-                            var e = _a[_i];
-                            LiteMol.Bootstrap.Tree.remove(e);
-                        }
-                    });
+                    this.groups.requested.forEach(function (g) { return _this.groups.toBeRemoved.add(g); });
+                    this.groups.locked.forEach(function (g) { return _this.groups.toBeRemoved.add(g); });
+                    this.groups.shown.forEach(function (g) { if (!_this.groups.locked.has(g))
+                        _this.remove(g); });
                     this.groups.shown.clear();
-                    this.latestBox = void 0;
+                    this.dataBox = void 0;
                 };
                 Behaviour.prototype.groupDone = function (ref, ok) {
                     this.groups.requested.delete(ref);
                     if (this.groups.toBeRemoved.has(ref)) {
-                        for (var _i = 0, _a = this.context.select(ref); _i < _a.length; _i++) {
-                            var e = _a[_i];
-                            LiteMol.Bootstrap.Tree.remove(e);
-                        }
-                        this.groups.toBeRemoved.delete(ref);
+                        this.remove(ref);
                     }
                     else if (ok) {
                         this.groups.shown.add(ref);
                     }
-                };
-                Behaviour.prototype.getVisual = function (type) {
-                    //return this.context.select(this.groupRef + type)[0] as Entity.Density.Visual;
                 };
                 Behaviour.prototype.checkResult = function (data) {
                     var server = data.dataBlocks.filter(function (b) { return b.header === 'SERVER'; })[0];
@@ -641,42 +669,56 @@ var LiteMol;
                     }
                     return ret;
                 };
+                Behaviour.prototype.apply = function (b) {
+                    return LiteMol.Bootstrap.Tree.Transform.apply(this.context, b).run(this.context);
+                };
                 Behaviour.prototype.createXray = function (box, data) {
-                    var _this = this;
-                    var twoFB = data.dataBlocks.filter(function (b) { return b.header === '2FO-FC'; })[0];
-                    var oneFB = data.dataBlocks.filter(function (b) { return b.header === 'FO-FC'; })[0];
-                    if (!twoFB || !oneFB)
-                        return false;
-                    var twoF = LiteMol.Core.Formats.Density.CIF.parse(twoFB);
-                    var oneF = LiteMol.Core.Formats.Density.CIF.parse(oneFB);
-                    if (twoF.isError || oneF.isError)
-                        return false;
-                    var action = LiteMol.Bootstrap.Tree.Transform.build();
-                    var ref = Utils.generateUUID();
-                    this.groups.requested.add(ref);
-                    var group = action.add(this.behaviour, Transformer.Basic.CreateGroup, { label: 'Density' }, { ref: ref, isHidden: true });
-                    var styles = this.updateStyles(box);
-                    var twoFoFc = group.then(Transformer.Density.CreateFromData, { id: '2Fo-Fc', data: twoF.result }, { ref: ref + '2Fo-Fc-data' });
-                    var foFc = group.then(Transformer.Density.CreateFromData, { id: 'Fo-Fc', data: oneF.result }, { ref: ref + 'Fo-Fc-data' });
-                    LiteMol.Bootstrap.Tree.Transform.apply(this.context, action).run(this.context)
-                        .then(function () {
-                        var v2fofc = LiteMol.Bootstrap.Tree.Transform.build().add(ref + '2Fo-Fc-data', Transformer.Density.CreateVisual, { style: styles['2Fo-Fc'] }, { ref: ref + '2Fo-Fc' });
-                        var vfofcp = LiteMol.Bootstrap.Tree.Transform.build().add(ref + 'Fo-Fc-data', Transformer.Density.CreateVisual, { style: styles['Fo-Fc(+ve)'] }, { ref: ref + 'Fo-Fc(+ve)' });
-                        var vfofcm = LiteMol.Bootstrap.Tree.Transform.build().add(ref + 'Fo-Fc-data', Transformer.Density.CreateVisual, { style: styles['Fo-Fc(-ve)'] }, { ref: ref + 'Fo-Fc(-ve)' });
-                        var done = 0;
-                        var update = function () { done++; if (done === 3)
-                            _this.groupDone(ref, true); };
-                        LiteMol.Bootstrap.Tree.Transform.apply(_this.context, v2fofc).run(_this.context).then(update).catch(update);
-                        LiteMol.Bootstrap.Tree.Transform.apply(_this.context, vfofcp).run(_this.context).then(update).catch(update);
-                        LiteMol.Bootstrap.Tree.Transform.apply(_this.context, vfofcm).run(_this.context).then(update).catch(update);
-                    })
-                        .catch(function () { return _this.groupDone(ref, false); });
-                    // twoFoFc.then(Transformer.Density.CreateVisual, { style: styles['2Fo-Fc'] }, { ref: ref + '2Fo-Fc' });
-                    // foFc.then(Transformer.Density.CreateVisual, { style: styles['Fo-Fc(+ve)'] }, { ref: ref + 'Fo-Fc(+ve)' })
-                    // foFc.then(Transformer.Density.CreateVisual, { style: styles['Fo-Fc(-ve)'] }, { ref: ref + 'Fo-Fc(-ve)' });
-                    // Bootstrap.Tree.Transform.apply(this.context, action).run(this.context)
-                    //     .then(() => this.groupDone(ref, true))
-                    //     .catch(() => this.groupDone(ref, false));
+                    return __awaiter(this, void 0, void 0, function () {
+                        var twoFB, oneFB, twoF, oneF, action, ref, group, styles, twoFoFc, foFc, a, b, c, e_1;
+                        return __generator(this, function (_a) {
+                            switch (_a.label) {
+                                case 0:
+                                    _a.trys.push([0, 5, , 6]);
+                                    twoFB = data.dataBlocks.filter(function (b) { return b.header === '2FO-FC'; })[0];
+                                    oneFB = data.dataBlocks.filter(function (b) { return b.header === 'FO-FC'; })[0];
+                                    if (!twoFB || !oneFB)
+                                        return [2 /*return*/];
+                                    twoF = LiteMol.Core.Formats.Density.CIF.parse(twoFB);
+                                    oneF = LiteMol.Core.Formats.Density.CIF.parse(oneFB);
+                                    if (twoF.isError || oneF.isError)
+                                        return [2 /*return*/];
+                                    action = LiteMol.Bootstrap.Tree.Transform.build();
+                                    ref = Utils.generateUUID();
+                                    this.groups.requested.add(ref);
+                                    group = action.add(this.behaviour, Transformer.Basic.CreateGroup, { label: 'Density' }, { ref: ref, isHidden: true });
+                                    styles = this.updateStyles(box);
+                                    twoFoFc = group.then(Transformer.Density.CreateFromData, { id: '2Fo-Fc', data: twoF.result }, { ref: ref + '2Fo-Fc-data' });
+                                    foFc = group.then(Transformer.Density.CreateFromData, { id: 'Fo-Fc', data: oneF.result }, { ref: ref + 'Fo-Fc-data' });
+                                    return [4 /*yield*/, this.apply(action)];
+                                case 1:
+                                    _a.sent();
+                                    a = this.apply(LiteMol.Bootstrap.Tree.Transform.build().add(ref + '2Fo-Fc-data', Transformer.Density.CreateVisual, { style: styles['2Fo-Fc'] }, { ref: ref + '2Fo-Fc' }));
+                                    b = this.apply(LiteMol.Bootstrap.Tree.Transform.build().add(ref + 'Fo-Fc-data', Transformer.Density.CreateVisual, { style: styles['Fo-Fc(+ve)'] }, { ref: ref + 'Fo-Fc(+ve)' }));
+                                    c = this.apply(LiteMol.Bootstrap.Tree.Transform.build().add(ref + 'Fo-Fc-data', Transformer.Density.CreateVisual, { style: styles['Fo-Fc(-ve)'] }, { ref: ref + 'Fo-Fc(-ve)' }));
+                                    return [4 /*yield*/, a];
+                                case 2:
+                                    _a.sent();
+                                    return [4 /*yield*/, b];
+                                case 3:
+                                    _a.sent();
+                                    return [4 /*yield*/, c];
+                                case 4:
+                                    _a.sent();
+                                    this.groupDone(ref, true);
+                                    return [3 /*break*/, 6];
+                                case 5:
+                                    e_1 = _a.sent();
+                                    this.context.logger.error('[Density] ' + e_1);
+                                    return [3 /*break*/, 6];
+                                case 6: return [2 /*return*/];
+                            }
+                        });
+                    });
                 };
                 Behaviour.prototype.createEmd = function (box, data) {
                     var _this = this;
@@ -697,10 +739,23 @@ var LiteMol;
                         .then(function () { return _this.groupDone(ref, true); })
                         .catch(function () { return _this.groupDone(ref, false); });
                 };
+                Behaviour.prototype.clampBox = function (box) {
+                    var max = this.params.maxQueryRegion;
+                    for (var i = 0; i < 3; i++) {
+                        var d = box.b[i] - box.a[i];
+                        if (d < max[i])
+                            continue;
+                        var r = max[i] / 2;
+                        var m = 0.5 * (box.b[i] + box.a[i]);
+                        box.a[i] = m - r;
+                        box.b[i] = m + r;
+                    }
+                    return box;
+                };
                 Behaviour.prototype.update = function (info) {
                     var _this = this;
                     if (!Interactivity.Molecule.isMoleculeModelInteractivity(info)) {
-                        this.remove();
+                        this.clear();
                         return;
                     }
                     LiteMol.Bootstrap.Command.Toast.Hide.dispatch(this.context, { key: ToastKey });
@@ -712,10 +767,10 @@ var LiteMol;
                         elems = Utils.Molecule.getResidueIndices(m, i.elements[0]);
                     }
                     var _a = Utils.Molecule.getBox(m, elems, this.params.radius), a = _a.bottomLeft, b = _a.topRight;
-                    var box = { a: a, b: b };
+                    var box = this.clampBox({ a: a, b: b });
                     if (this.areBoxesSame(box))
                         return;
-                    this.remove();
+                    this.clear();
                     var url = "" + this.server
                         + ("/" + this.params.source)
                         + ("/" + this.params.id)
@@ -723,7 +778,8 @@ var LiteMol;
                         + ("/" + b.map(function (v) { return Math.round(1000 * v) / 1000; }).join(','));
                     this.download = Utils.ajaxGetArrayBuffer(url, 'Density').run(this.context);
                     this.download.then(function (data) {
-                        _this.remove();
+                        _this.clear();
+                        _this.dataBox = box;
                         var cif = LiteMol.Core.Formats.CIF.Binary.parse(data);
                         if (cif.isError || !_this.checkResult(cif.result))
                             return;
@@ -733,8 +789,96 @@ var LiteMol;
                             _this.createXray(box, cif.result);
                     });
                 };
+                Behaviour.prototype.updateVisual = function (v, style) {
+                    return Entity.Transformer.Density.CreateVisual.create({ style: style }, { ref: v.ref }).update(this.context, v).run(this.context);
+                };
+                Behaviour.prototype.invalidate = function (inputStyles) {
+                    return __awaiter(this, void 0, LiteMol.Core.Promise, function () {
+                        var _this = this;
+                        var _i, _a, t, styles, refs, _loop_1, this_1, _b, _c, t, _d, refs_1, r, _e;
+                        return __generator(this, function (_f) {
+                            switch (_f.label) {
+                                case 0:
+                                    for (_i = 0, _a = this.types; _i < _a.length; _i++) {
+                                        t = _a[_i];
+                                        this.params.styles[t] = inputStyles[t];
+                                    }
+                                    if (!this.dataBox)
+                                        return [2 /*return*/, true];
+                                    styles = this.updateStyles(this.dataBox);
+                                    refs = [];
+                                    this.groups.shown.forEach(function (r) {
+                                        refs.push(r);
+                                        _this.groups.locked.add(r);
+                                    });
+                                    _loop_1 = function (t) {
+                                        var vs, _i, vs_1, v, s;
+                                        return __generator(this, function (_a) {
+                                            switch (_a.label) {
+                                                case 0:
+                                                    vs = this_1.context.select((_e = LiteMol.Bootstrap.Tree.Selection).byRef.apply(_e, refs.map(function (r) { return r + t; })));
+                                                    _i = 0, vs_1 = vs;
+                                                    _a.label = 1;
+                                                case 1:
+                                                    if (!(_i < vs_1.length))
+                                                        return [3 /*break*/, 4];
+                                                    v = vs_1[_i];
+                                                    s = styles[t];
+                                                    if (!s)
+                                                        return [3 /*break*/, 3];
+                                                    return [4 /*yield*/, this_1.updateVisual(v, s)];
+                                                case 2:
+                                                    _a.sent();
+                                                    _a.label = 3;
+                                                case 3:
+                                                    _i++;
+                                                    return [3 /*break*/, 1];
+                                                case 4: return [2 /*return*/];
+                                            }
+                                        });
+                                    };
+                                    this_1 = this;
+                                    _b = 0, _c = this.types;
+                                    _f.label = 1;
+                                case 1:
+                                    if (!(_b < _c.length))
+                                        return [3 /*break*/, 4];
+                                    t = _c[_b];
+                                    return [5 /*yield**/, _loop_1(t)];
+                                case 2:
+                                    _f.sent();
+                                    _f.label = 3;
+                                case 3:
+                                    _b++;
+                                    return [3 /*break*/, 1];
+                                case 4:
+                                    // unlock and delete if the request is pending
+                                    for (_d = 0, refs_1 = refs; _d < refs_1.length; _d++) {
+                                        r = refs_1[_d];
+                                        this.groups.locked.delete(r);
+                                        if (this.groups.toBeRemoved.has(r))
+                                            this.remove(r);
+                                    }
+                                    return [2 /*return*/, true];
+                            }
+                        });
+                    });
+                };
+                Behaviour.prototype.invalidateStyles = function (styles) {
+                    return __awaiter(this, void 0, LiteMol.Core.Promise, function () {
+                        return __generator(this, function (_a) {
+                            try {
+                                return [2 /*return*/, this.invalidate(styles)];
+                            }
+                            catch (e) {
+                                return [2 /*return*/, true];
+                            }
+                            return [2 /*return*/];
+                        });
+                    });
+                };
                 Behaviour.prototype.dispose = function () {
-                    this.remove();
+                    this.clear();
                     LiteMol.Bootstrap.Command.Toast.Hide.dispatch(this.context, { key: ToastKey });
                     for (var _i = 0, _a = this.obs; _i < _a.length; _i++) {
                         var o = _a[_i];
@@ -753,16 +897,16 @@ var LiteMol;
                 return Behaviour;
             }());
             DensityStreaming.Behaviour = Behaviour;
-        })(DensityStreaming = Viewer.DensityStreaming || (Viewer.DensityStreaming = {}));
-    })(Viewer = LiteMol.Viewer || (LiteMol.Viewer = {}));
+        })(DensityStreaming = Extensions.DensityStreaming || (Extensions.DensityStreaming = {}));
+    })(Extensions = LiteMol.Extensions || (LiteMol.Extensions = {}));
 })(LiteMol || (LiteMol = {}));
 /*
  * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
 var LiteMol;
 (function (LiteMol) {
-    var Viewer;
-    (function (Viewer) {
+    var Extensions;
+    (function (Extensions) {
         var DensityStreaming;
         (function (DensityStreaming) {
             'use strict';
@@ -784,20 +928,51 @@ var LiteMol;
                 return CreateView;
             }(LiteMol.Plugin.Views.Transform.ControllerBase));
             DensityStreaming.CreateView = CreateView;
+            var IsoBounds = {
+                'EMD': { min: -5, max: 5 },
+                '2Fo-Fc': { min: 0, max: 2 },
+                'Fo-Fc(+ve)': { min: 0, max: 5 },
+                'Fo-Fc(-ve)': { min: -5, max: 0 },
+            };
             var StreamingView = (function (_super) {
                 __extends(StreamingView, _super);
                 function StreamingView() {
                     return _super.apply(this, arguments) || this;
                 }
+                StreamingView.prototype.iso = function (type) {
+                    var _this = this;
+                    var data = LiteMol.Bootstrap.Tree.Node.findClosestNodeOfType(this.transformSourceEntity, [LiteMol.Bootstrap.Entity.Density.Data]);
+                    var params = this.params[type].params;
+                    var isSigma = params.isoValueType === LiteMol.Bootstrap.Visualization.Density.IsoValueType.Sigma;
+                    var label = isSigma ? type + " \u03C3" : type;
+                    return React.createElement(Controls.Slider, { label: label, onChange: function (v) { return _this.controller.updateStyleParams({ isoValue: v }, type); }, min: isSigma ? IsoBounds[type].min : data.props.data.valuesInfo.min, max: isSigma ? IsoBounds[type].max : data.props.data.valuesInfo.max, value: params.isoValue, step: 0.001 });
+                };
+                StreamingView.prototype.style = function (type) {
+                    var _this = this;
+                    var showTypeOptions = this.getPersistentState('showTypeOptions-' + type, false);
+                    var theme = this.params[type].theme;
+                    var params = this.params[type].params;
+                    var color = theme.colors.get('Uniform');
+                    return React.createElement(Controls.ExpandableGroup, { select: this.iso(type), expander: React.createElement(Controls.ControlGroupExpander, { isExpanded: showTypeOptions, onChange: function (e) { return _this.setPersistentState('showTypeOptions-' + type, e); } }), colorStripe: color, options: [
+                            React.createElement(Controls.ToggleColorPicker, { key: 'Uniform', label: 'Color', color: color, onChange: function (c) { return _this.controller.updateThemeColor('Uniform', c, type); } }),
+                            React.createElement(LiteMol.Plugin.Views.Transform.TransparencyControl, { definition: theme.transparency, onChange: function (d) { return _this.controller.updateThemeTransparency(d, type); } }),
+                            React.createElement(Controls.Toggle, { onChange: function (v) { return _this.controller.updateStyleParams({ isWireframe: v }, type); }, value: params.isWireframe, label: 'Wireframe' })
+                        ], isExpanded: showTypeOptions });
+                };
                 StreamingView.prototype.renderControls = function () {
+                    var _this = this;
                     var params = this.params;
-                    return React.createElement("div", null, "hi");
+                    return React.createElement("div", null,
+                        params.source === 'EMD'
+                            ? [this.style('EMD')]
+                            : [this.style('2Fo-Fc'), this.style('Fo-Fc(+ve)'), this.style('Fo-Fc(-ve)')],
+                        React.createElement(Controls.Slider, { label: 'Radius', onChange: function (v) { return _this.autoUpdateParams({ radius: v }); }, min: params.minRadius !== void 0 ? params.minRadius : 0, max: params.maxRadius !== void 0 ? params.maxRadius : 10, step: 0.005, value: params.radius }));
                 };
                 return StreamingView;
             }(LiteMol.Plugin.Views.Transform.ControllerBase));
             DensityStreaming.StreamingView = StreamingView;
-        })(DensityStreaming = Viewer.DensityStreaming || (Viewer.DensityStreaming = {}));
-    })(Viewer = LiteMol.Viewer || (LiteMol.Viewer = {}));
+        })(DensityStreaming = Extensions.DensityStreaming || (Extensions.DensityStreaming = {}));
+    })(Extensions = LiteMol.Extensions || (LiteMol.Extensions = {}));
 })(LiteMol || (LiteMol = {}));
 /*
  * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
@@ -1524,7 +1699,7 @@ var LiteMol;
                         return action;
                     }
                     var baseColor = LiteMol.Visualization.Color.fromHex(0xFA6900);
-                    var _loop_1 = function (g) {
+                    var _loop_2 = function (g) {
                         var ans = data[g];
                         if (!ans)
                             return "continue";
@@ -1539,7 +1714,7 @@ var LiteMol;
                     };
                     for (var _i = 0, _a = ["Pfam", "InterPro", "CATH", "SCOP", "UniProt"]; _i < _a.length; _i++) {
                         var g = _a[_i];
-                        _loop_1(g);
+                        _loop_2(g);
                     }
                     action.add(parent, CreateBehaviour, {}, { isHidden: true });
                     return action;
@@ -1724,7 +1899,7 @@ var LiteMol;
                 'molecule.downloadBinaryCIFFromCoordinateServer.server': 'https://webchemdev.ncbr.muni.cz/CoordinateServer',
                 'molecule.coordinateStreaming.defaultRadius': 10,
                 'density.defaultVisualBehaviourRadius': 5,
-                'density.streaming.defaultServer': 'http://localhost:1337/DensityServer/'
+                'extensions.densityStreaming.defaultServer': 'http://localhost:1337/DensityServer/'
             },
             transforms: [
                 // Root transforms -- things that load data.
@@ -1753,8 +1928,8 @@ var LiteMol;
                 { transformer: Transformer.Density.CreateFromCif, view: Views.Transform.Molecule.CreateFromMmCif },
                 { transformer: Transformer.Density.CreateVisual, view: Views.Transform.Density.CreateVisual },
                 { transformer: Transformer.Density.CreateVisualBehaviour, view: Views.Transform.Density.CreateVisualBehaviour },
-                { transformer: Viewer.DensityStreaming.Create, view: Viewer.DensityStreaming.CreateView },
-                { transformer: Viewer.DensityStreaming.CreateStreaming, view: Viewer.DensityStreaming.StreamingView },
+                { transformer: LiteMol.Extensions.DensityStreaming.Create, view: LiteMol.Extensions.DensityStreaming.CreateView },
+                { transformer: LiteMol.Extensions.DensityStreaming.CreateStreaming, view: LiteMol.Extensions.DensityStreaming.StreamingView },
                 // Coordinate streaming
                 { transformer: Transformer.Molecule.CoordinateStreaming.CreateBehaviour, view: Views.Transform.Empty, initiallyCollapsed: true },
                 // Validation reports

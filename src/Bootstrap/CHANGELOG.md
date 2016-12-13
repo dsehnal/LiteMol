@@ -1,6 +1,7 @@
 ﻿# 1.2.12
 * Visual.Style.computeOnBackground is now computationType: 'Normal' | 'Silent' | 'Background'.
 * Added Density.CreateFromData transform.
+* Updated how DensityVisual controller works to be able to edit more than one style at once.
 
 # 1.2.11
 * Added CIF density parse transform.
