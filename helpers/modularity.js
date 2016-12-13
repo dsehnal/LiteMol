@@ -1,12 +1,12 @@
 "use strict";
 function createPre(spec) {
     var ret = [
-        ("\n; var __LiteMol_" + spec.name + " = function (" + spec.dependencies.map(function (d) { return ("__LiteMol_" + d); }).join(', ') + ") {"),
+        "\n; var __LiteMol_" + spec.name + " = function (" + spec.dependencies.map(function (d) { return "__LiteMol_" + d; }).join(', ') + ") {",
         "  'use strict';"
     ];
     if (spec.dependencies.length) {
-        var modules = "var LiteMol = { " + spec.dependencies.map(function (d) { return (d + ": __LiteMol_" + d); }) + " };";
-        ret.push("var LiteMol = { " + spec.dependencies.map(function (d) { return (d + ": __LiteMol_" + d); }) + " };");
+        var modules = "var LiteMol = { " + spec.dependencies.map(function (d) { return d + ": __LiteMol_" + d; }) + " };";
+        ret.push("var LiteMol = { " + spec.dependencies.map(function (d) { return d + ": __LiteMol_" + d; }) + " };");
     }
     return ret.join('\n') + '\n';
 }
@@ -17,9 +17,9 @@ function createPost(spec) {
     else
         ret.push("  return LiteMol." + spec.name + ";");
     ret.push("}");
-    var req = spec.dependencies.map(function (d) { return ("require(LiteMol-" + d.toLowerCase() + ")"); }).join(', ');
-    var reqWin = spec.dependencies.map(function (d) { return ("__target.LiteMol." + d); }).join(', ');
-    var reqCheck = spec.dependencies.map(function (d) { return ("!__target.LiteMol." + d); }).join(' || ');
+    var req = spec.dependencies.map(function (d) { return "require(LiteMol-" + d.toLowerCase() + ")"; }).join(', ');
+    var reqWin = spec.dependencies.map(function (d) { return "__target.LiteMol." + d; }).join(', ');
+    var reqCheck = spec.dependencies.map(function (d) { return "!__target.LiteMol." + d; }).join(' || ');
     // commonjs
     ret.push("if (typeof module === 'object' && typeof module.exports === 'object') {");
     ret.push("  module.exports = __LiteMol_" + spec.name + "(" + req + ");");
@@ -55,7 +55,7 @@ function createInfo(spec) {
 function base(root, gulp, plugins) {
     return function () {
         var project = plugins.ts.createProject(root + '/tsconfig.json', { typescript: plugins.tsc });
-        var b = project.src().pipe(plugins.ts(project));
+        var b = project.src().pipe(project());
         return plugins.merge([
             b.js.pipe(gulp.dest('./build')),
             b.dts.pipe(gulp.dest('./build'))
@@ -65,25 +65,25 @@ function base(root, gulp, plugins) {
 function assemble(root, spec, gulp, plugins) {
     return function () {
         var info = createInfo(spec);
-        var include = (spec.include || []).map(function (i) { return ("./build/LiteMol-" + i.toLowerCase()); });
+        var include = (spec.include || []).map(function (i) { return "./build/LiteMol-" + i.toLowerCase(); });
         var js = gulp
             .src((spec.priorityLib || [])
-            .map(function (l) { return (root + "/lib/" + l + ".js"); })
+            .map(function (l) { return root + "/lib/" + l + ".js"; })
             .concat(include.map(function (i) { return i + '.js'; }))
-            .concat([(root + "/lib/*.js"), ("./build/LiteMol-" + spec.name.toLowerCase() + "-temp.js")]))
+            .concat([root + "/lib/*.js", "./build/LiteMol-" + spec.name.toLowerCase() + "-temp.js"]))
             .pipe(plugins.unique())
             .pipe(plugins.concat("LiteMol-" + spec.name.toLowerCase() + ".js"));
         var jsMod = gulp
             .src((spec.priorityLib || [])
-            .map(function (l) { return (root + "/lib/" + l + ".js"); })
+            .map(function (l) { return root + "/lib/" + l + ".js"; })
             .concat(include.map(function (i) { return i + '.js'; }))
-            .concat([(root + "/lib/*.js"), ("./build/LiteMol-" + spec.name.toLowerCase() + "-temp.js")]))
+            .concat([root + "/lib/*.js", "./build/LiteMol-" + spec.name.toLowerCase() + "-temp.js"]))
             .pipe(plugins.unique())
             .pipe(plugins.concat("LiteMol-" + spec.name.toLowerCase() + ".js"))
             .pipe(plugins.insert.prepend(info.pre))
             .pipe(plugins.insert.append(info.post));
         var dts = gulp
-            .src([(root + "/lib/*.d.ts"), ("./build/LiteMol-" + spec.name.toLowerCase() + "-temp.d.ts")]
+            .src([root + "/lib/*.d.ts", "./build/LiteMol-" + spec.name.toLowerCase() + "-temp.d.ts"]
             .concat(include.map(function (i) { return i + '.d.ts'; })))
             .pipe(plugins.concat("LiteMol-" + spec.name.toLowerCase() + ".d.ts"))
             .pipe(plugins.insert.prepend(info.ts));
@@ -92,17 +92,19 @@ function assemble(root, spec, gulp, plugins) {
                 js.pipe(gulp.dest('./build')),
                 jsMod.pipe(gulp.dest('./dist')),
                 dts.pipe(gulp.dest('./dist')),
-                dts.pipe(gulp.dest('./build'))]);
+                dts.pipe(gulp.dest('./build'))
+            ]);
         }
         return plugins.merge([
             js.pipe(gulp.dest('./build')),
-            dts.pipe(gulp.dest('./build'))]);
+            dts.pipe(gulp.dest('./build'))
+        ]);
     };
 }
 function cleanup(spec, gulp, plugins) {
     return function () {
         return gulp
-            .src([("./build/LiteMol-" + spec.name.toLowerCase() + "-temp.*")])
+            .src(["./build/LiteMol-" + spec.name.toLowerCase() + "-temp.*"])
             .pipe(plugins.clean());
     };
 }

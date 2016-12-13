@@ -22,7 +22,7 @@ function build(name) {
 
 function buildts(root) {
     var project = plugins.ts.createProject(root + '/tsconfig.json', { typescript: plugins.tsc });
-    var b = project.src().pipe(plugins.ts(project));    
+    var b = project.src().pipe(project());    
     return b.js.pipe(gulp.dest(root));
 }
 

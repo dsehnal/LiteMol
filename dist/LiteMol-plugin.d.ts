@@ -15403,6 +15403,7 @@ declare namespace LiteMolZlib {
         constructor(data: number[] | Uint8Array);
     }
 }
+/// <reference types="node" />
 declare namespace LiteMol.Bootstrap {
     var VERSION: {
         number: string;
@@ -15486,7 +15487,7 @@ declare namespace LiteMol.Bootstrap.Service {
         private lanes;
         constructor();
         dispatch<T>(event: Event<T>): void;
-        schedule(action: () => void, onError?: (e: string) => void, timeout?: number): number;
+        schedule(action: () => void, onError?: (e: string) => void, timeout?: number): NodeJS.Timer;
         getStream<T>(type: Event.Type<T>): Event.Stream<T>;
         finished(): void;
     }
