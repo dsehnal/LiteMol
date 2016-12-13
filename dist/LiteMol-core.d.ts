@@ -2505,10 +2505,14 @@ declare namespace LiteMol.Core.Structure {
         query(q: Query.Source): Query.FragmentSeq;
         constructor(data: MoleculeModelData);
     }
+    interface MoleculeProperties {
+        experimentMethod?: string;
+    }
     class Molecule {
         id: string;
         models: MoleculeModel[];
-        constructor(id: string, models: MoleculeModel[]);
+        properties: MoleculeProperties;
+        constructor(id: string, models: MoleculeModel[], properties?: MoleculeProperties);
     }
     namespace MoleculeModel {
         function withTransformedXYZ<T>(model: MoleculeModel, ctx: T, transform: (ctx: T, x: number, y: number, z: number, out: Geometry.LinearAlgebra.ObjectVec3) => void): MoleculeModel;

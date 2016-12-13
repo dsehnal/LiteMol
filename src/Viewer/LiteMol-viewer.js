@@ -319,6 +319,493 @@ var LiteMol;
 (function (LiteMol) {
     var Viewer;
     (function (Viewer) {
+        var DensityStreaming;
+        (function (DensityStreaming) {
+            'use strict';
+            var Entity = LiteMol.Bootstrap.Entity;
+            var Transformer = LiteMol.Bootstrap.Entity.Transformer;
+            var Tree = LiteMol.Bootstrap.Tree;
+            DensityStreaming.Streaming = Entity.create({ name: 'Interactive Surface', typeClass: 'Behaviour', shortName: 'B_DS', description: 'Behaviour that downloads density data for molecule selection on demand.' });
+            DensityStreaming.CreateStreaming = Tree.Transformer.create({
+                id: 'density-streaming-create-streaming',
+                name: 'Density Streaming',
+                description: 'On demand download of density data when a residue or atom is selected.',
+                from: [],
+                to: [DensityStreaming.Streaming],
+                isUpdatable: true,
+                defaultParams: function () { return ({}); }
+            }, function (ctx, a, t) {
+                var params = t.params;
+                var b = new DensityStreaming.Behaviour(ctx, {
+                    styles: params.styles,
+                    source: t.params.source,
+                    id: t.params.id,
+                    radius: t.params.radius,
+                    server: t.params.server,
+                    maxQueryRegion: t.params.maxQueryRegion
+                });
+                return LiteMol.Bootstrap.Task.resolve('Behaviour', 'Background', DensityStreaming.Streaming.create(t, { label: "Density Streaming", behaviour: b }));
+            }, function (ctx, b, t) {
+                return void 0;
+                // let oldParams = b.transform.params as CreateStreamingParams;
+                // let params = t.params;
+                // if (oldParams.style!.type !== params.style!.type || !Utils.deepEqual(oldParams.style!.params, params.style!.params)) return void 0;
+                // if (oldParams.isoSigmaMin !== params.isoSigmaMin
+                //     || oldParams.isoSigmaMax !== params.isoSigmaMax
+                //     || oldParams.minRadius !== params.minRadius
+                //     || oldParams.maxRadius !== params.maxRadius
+                //     || oldParams.radius !== params.radius
+                //     || oldParams.showFull !== params.showFull) {
+                //     return void 0; 
+                // }
+                // let parent = Tree.Node.findClosestNodeOfType(b, [Entity.Density.Data]);
+                // if (!parent) return void 0;
+                // let ti = params.style.theme;
+                // b.props.behaviour.updateTheme(ti);
+                // Entity.nodeUpdated(b);
+                // return Task.resolve(t.transformer.info.name, 'Background', Tree.Node.Null);
+            });
+            function fail(e, message) {
+                return {
+                    action: LiteMol.Bootstrap.Tree.Transform.build()
+                        .add(e, Transformer.Basic.Fail, { title: 'Density Streaming', message: message }),
+                    context: void 0
+                };
+            }
+            function doAction(m, params, maxQueryRegion, sourceId, contourLevel) {
+                var radius = maxQueryRegion.reduce(function (m, v) { return Math.min(m, v); }, maxQueryRegion[0]) / 2 - 3;
+                var styles = params.source === 'EMD'
+                    ? {
+                        'EMD': LiteMol.Bootstrap.Visualization.Density.Style.create({
+                            isoValue: contourLevel !== void 0 ? contourLevel : 1.5,
+                            isoValueType: contourLevel !== void 0 ? LiteMol.Bootstrap.Visualization.Density.IsoValueType.Absolute : LiteMol.Bootstrap.Visualization.Density.IsoValueType.Sigma,
+                            color: LiteMol.Visualization.Color.fromHex(0x638F8F),
+                            isWireframe: false,
+                            transparency: { alpha: 0.3 }
+                        })
+                    }
+                    : {
+                        '2Fo-Fc': LiteMol.Bootstrap.Visualization.Density.Style.create({
+                            isoValue: 1.5,
+                            isoValueType: LiteMol.Bootstrap.Visualization.Density.IsoValueType.Sigma,
+                            color: LiteMol.Visualization.Color.fromHex(0x3362B2),
+                            isWireframe: false,
+                            transparency: { alpha: 0.4 }
+                        }),
+                        'Fo-Fc(+ve)': LiteMol.Bootstrap.Visualization.Density.Style.create({
+                            isoValue: 3,
+                            isoValueType: LiteMol.Bootstrap.Visualization.Density.IsoValueType.Sigma,
+                            color: LiteMol.Visualization.Color.fromHex(0x33BB33),
+                            isWireframe: true,
+                            transparency: { alpha: 1.0 }
+                        }),
+                        'Fo-Fc(-ve)': LiteMol.Bootstrap.Visualization.Density.Style.create({
+                            isoValue: -3,
+                            isoValueType: LiteMol.Bootstrap.Visualization.Density.IsoValueType.Sigma,
+                            color: LiteMol.Visualization.Color.fromHex(0xBB3333),
+                            isWireframe: true,
+                            transparency: { alpha: 1.0 }
+                        })
+                    };
+                var streaming = {
+                    minRadius: 0,
+                    maxRadius: params.source === 'X-ray' ? Math.min(10, radius) : Math.min(50, radius),
+                    radius: Math.min(40, radius),
+                    server: params.server,
+                    source: params.source,
+                    id: sourceId ? sourceId : params.id,
+                    maxQueryRegion: maxQueryRegion,
+                    styles: styles
+                };
+                return {
+                    action: LiteMol.Bootstrap.Tree.Transform.build().add(m, DensityStreaming.CreateStreaming, streaming),
+                    context: void 0
+                };
+            }
+            function doCS(m, ctx, params, sourceId, contourLevel) {
+                var server = params.server.trim();
+                if (server[server.length - 1] !== '/')
+                    server += '/';
+                var uri = "" + server + params.source + "/" + (sourceId ? sourceId : params.id);
+                return new LiteMol.Core.Promise(function (res, rej) {
+                    LiteMol.Bootstrap.Utils.ajaxGetString(uri, 'DensityServer')
+                        .run(ctx)
+                        .then(function (s) {
+                        try {
+                            var json = JSON.parse(s);
+                            if (!json.isAvailable) {
+                                res(fail(m, "Density streaming is not available for '" + params.source + "/" + params.id + "'."));
+                                return;
+                            }
+                            res(doAction(m, params, json.maxQueryRegion, sourceId, contourLevel));
+                        }
+                        catch (e) {
+                            res(fail(e, 'DensityServer API call failed.'));
+                        }
+                    })
+                        .catch(function (e) { return res(fail(e, 'DensityServer API call failed.')); });
+                });
+            }
+            function doEmdbId(m, ctx, params, id) {
+                return new LiteMol.Core.Promise(function (res, rej) {
+                    id = id.trim();
+                    LiteMol.Bootstrap.Utils.ajaxGetString("https://www.ebi.ac.uk/pdbe/api/emdb/entry/map/EMD-" + id, 'EMDB API')
+                        .run(ctx)
+                        .then(function (s) {
+                        try {
+                            var json = JSON.parse(s);
+                            var contour = void 0;
+                            var e = json['EMD-' + id];
+                            if (e && e[0] && e[0].map && e[0].map.contour_level && e[0].map.contour_level.value !== void 0) {
+                                contour = +e[0].map.contour_level.value;
+                            }
+                            doCS(m, ctx, params, id, contour)
+                                .then(function (a) { return res(a); })
+                                .catch(function () { return res(fail(m, 'Something went terribly wrong.')); });
+                        }
+                        catch (e) {
+                            res(fail(m, 'EMDB API call failed.'));
+                        }
+                    })
+                        .catch(function (e) { return res(fail(m, 'EMDB API call failed.')); });
+                });
+            }
+            function doEmd(m, ctx, params) {
+                return new LiteMol.Core.Promise(function (res, rej) {
+                    var id = params.id.trim().toLowerCase();
+                    LiteMol.Bootstrap.Utils.ajaxGetString("https://www.ebi.ac.uk/pdbe/api/pdb/entry/summary/" + id, 'PDB API')
+                        .run(ctx)
+                        .then(function (s) {
+                        try {
+                            var json = JSON.parse(s);
+                            var emdbId = void 0;
+                            var e = json[id];
+                            if (e && e[0] && e[0].related_structures) {
+                                var emdb = e[0].related_structures.filter(function (s) { return s.resource === 'EMDB'; });
+                                if (!emdb.length) {
+                                    res(fail(m, "No related EMDB entry found for '" + id + "'."));
+                                    return;
+                                }
+                                emdbId = emdb[0].accession.split('-')[1];
+                            }
+                            else {
+                                res(fail(m, "No related EMDB entry found for '" + id + "'."));
+                                return;
+                            }
+                            doEmdbId(m, ctx, params, emdbId)
+                                .then(function (a) { return res(a); })
+                                .catch(function () { return res(fail(m, 'Something went terribly wrong.')); });
+                        }
+                        catch (e) {
+                            res(fail(m, 'PDBe API call failed.'));
+                        }
+                    })
+                        .catch(function (e) { return res(fail(m, 'PDBe API call failed.')); });
+                });
+            }
+            DensityStreaming.Create = LiteMol.Bootstrap.Tree.Transformer.actionWithContext({
+                id: 'density-streaming-create',
+                name: 'Density Streaming',
+                description: 'On demand download of density data when a residue or atom is selected.',
+                from: [Entity.Molecule.Molecule],
+                to: [Entity.Action],
+                defaultParams: function (ctx, e) {
+                    var source = 'X-ray';
+                    var method = (e.props.molecule.properties.experimentMethod || '').toLowerCase();
+                    if (method.indexOf('microscopy') >= 0)
+                        source = 'EMD';
+                    return { server: ctx.settings.get('density.streaming.defaultServer'), id: e.props.molecule.id, source: source };
+                },
+                validateParams: function (p) {
+                    if (!p.server.trim().length)
+                        return ['Enter Server'];
+                    return !p.id.trim().length ? ['Enter Id'] : void 0;
+                }
+            }, function (context, a, t) {
+                switch (t.params.source) {
+                    case 'X-ray': return doCS(a, context, t.params);
+                    case 'EMD': return doEmd(a, context, t.params);
+                    default: return fail(a, 'Unknown data source.');
+                }
+            });
+        })(DensityStreaming = Viewer.DensityStreaming || (Viewer.DensityStreaming = {}));
+    })(Viewer = LiteMol.Viewer || (LiteMol.Viewer = {}));
+})(LiteMol || (LiteMol = {}));
+/*
+ * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ */
+var LiteMol;
+(function (LiteMol) {
+    var Viewer;
+    (function (Viewer) {
+        var DensityStreaming;
+        (function (DensityStreaming) {
+            'use strict';
+            var Transformer = LiteMol.Bootstrap.Entity.Transformer;
+            var Utils = LiteMol.Bootstrap.Utils;
+            var Interactivity = LiteMol.Bootstrap.Interactivity;
+            DensityStreaming.FieldSources = ['X-ray', 'EMD'];
+            var ToastKey = '__ShowDynamicDensity-toast';
+            var Behaviour = (function () {
+                function Behaviour(context, params) {
+                    this.context = context;
+                    this.params = params;
+                    this.obs = [];
+                    this.groups = {
+                        requested: new Set(),
+                        shown: new Set(),
+                        toBeRemoved: new Set()
+                    };
+                    this.removedGroups = new Set();
+                    this.download = void 0;
+                    this.isBusy = false;
+                    this.latestBox = void 0;
+                    this.server = params.server;
+                    if (this.server[this.server.length - 1] === '/')
+                        this.server = this.server.substr(0, this.server.length - 1);
+                    if (params.source === 'EMD') {
+                        this.types = ['EMD'];
+                    }
+                    else {
+                        this.types = ['2Fo-Fc', 'Fo-Fc(+ve)', 'Fo-Fc(-ve)'];
+                    }
+                }
+                Behaviour.prototype.areBoxesSame = function (b) {
+                    if (!this.latestBox)
+                        return false;
+                    for (var i = 0; i < 3; i++) {
+                        if (b.a[i] !== this.latestBox.a[i] || b.b[i] !== this.latestBox.b[i])
+                            return false;
+                    }
+                    return true;
+                };
+                Behaviour.prototype.stop = function () {
+                    if (this.download) {
+                        this.download.discard();
+                        this.download = void 0;
+                    }
+                };
+                Behaviour.prototype.remove = function () {
+                    var _this = this;
+                    this.stop();
+                    this.groups.requested.forEach(function (g) {
+                        _this.groups.toBeRemoved.add(g);
+                    });
+                    this.groups.shown.forEach(function (g) {
+                        for (var _i = 0, _a = _this.context.select(g); _i < _a.length; _i++) {
+                            var e = _a[_i];
+                            LiteMol.Bootstrap.Tree.remove(e);
+                        }
+                    });
+                    this.groups.shown.clear();
+                    this.latestBox = void 0;
+                };
+                Behaviour.prototype.groupDone = function (ref, ok) {
+                    this.groups.requested.delete(ref);
+                    if (this.groups.toBeRemoved.has(ref)) {
+                        for (var _i = 0, _a = this.context.select(ref); _i < _a.length; _i++) {
+                            var e = _a[_i];
+                            LiteMol.Bootstrap.Tree.remove(e);
+                        }
+                        this.groups.toBeRemoved.delete(ref);
+                    }
+                    else if (ok) {
+                        this.groups.shown.add(ref);
+                    }
+                };
+                Behaviour.prototype.getVisual = function (type) {
+                    //return this.context.select(this.groupRef + type)[0] as Entity.Density.Visual;
+                };
+                Behaviour.prototype.checkResult = function (data) {
+                    var server = data.dataBlocks.filter(function (b) { return b.header === 'SERVER'; })[0];
+                    if (!server)
+                        return false;
+                    var cat = server.getCategory('_density_server_result');
+                    if (!cat)
+                        return false;
+                    if (cat.getColumn('is_empty').getString(0) === 'yes' || cat.getColumn('has_error').getString(0) === 'yes') {
+                        return false;
+                    }
+                    return true;
+                };
+                Behaviour.prototype.updateStyles = function (box) {
+                    var ret = {};
+                    for (var _i = 0, _a = this.types; _i < _a.length; _i++) {
+                        var t = _a[_i];
+                        var style = Utils.shallowClone(this.params.styles[t]);
+                        style.params = Utils.shallowClone(style.params);
+                        style.params.bottomLeft = box.a;
+                        style.params.topRight = box.b;
+                        style.computationType = 'Background';
+                        ret[t] = style;
+                    }
+                    return ret;
+                };
+                Behaviour.prototype.createXray = function (box, data) {
+                    var _this = this;
+                    var twoFB = data.dataBlocks.filter(function (b) { return b.header === '2FO-FC'; })[0];
+                    var oneFB = data.dataBlocks.filter(function (b) { return b.header === 'FO-FC'; })[0];
+                    if (!twoFB || !oneFB)
+                        return false;
+                    var twoF = LiteMol.Core.Formats.Density.CIF.parse(twoFB);
+                    var oneF = LiteMol.Core.Formats.Density.CIF.parse(oneFB);
+                    if (twoF.isError || oneF.isError)
+                        return false;
+                    var action = LiteMol.Bootstrap.Tree.Transform.build();
+                    var ref = Utils.generateUUID();
+                    this.groups.requested.add(ref);
+                    var group = action.add(this.behaviour, Transformer.Basic.CreateGroup, { label: 'Density' }, { ref: ref, isHidden: true });
+                    var styles = this.updateStyles(box);
+                    var twoFoFc = group.then(Transformer.Density.CreateFromData, { id: '2Fo-Fc', data: twoF.result }, { ref: ref + '2Fo-Fc-data' });
+                    var foFc = group.then(Transformer.Density.CreateFromData, { id: 'Fo-Fc', data: oneF.result }, { ref: ref + 'Fo-Fc-data' });
+                    LiteMol.Bootstrap.Tree.Transform.apply(this.context, action).run(this.context)
+                        .then(function () {
+                        var v2fofc = LiteMol.Bootstrap.Tree.Transform.build().add(ref + '2Fo-Fc-data', Transformer.Density.CreateVisual, { style: styles['2Fo-Fc'] }, { ref: ref + '2Fo-Fc' });
+                        var vfofcp = LiteMol.Bootstrap.Tree.Transform.build().add(ref + 'Fo-Fc-data', Transformer.Density.CreateVisual, { style: styles['Fo-Fc(+ve)'] }, { ref: ref + 'Fo-Fc(+ve)' });
+                        var vfofcm = LiteMol.Bootstrap.Tree.Transform.build().add(ref + 'Fo-Fc-data', Transformer.Density.CreateVisual, { style: styles['Fo-Fc(-ve)'] }, { ref: ref + 'Fo-Fc(-ve)' });
+                        var done = 0;
+                        var update = function () { done++; if (done === 3)
+                            _this.groupDone(ref, true); };
+                        LiteMol.Bootstrap.Tree.Transform.apply(_this.context, v2fofc).run(_this.context).then(update).catch(update);
+                        LiteMol.Bootstrap.Tree.Transform.apply(_this.context, vfofcp).run(_this.context).then(update).catch(update);
+                        LiteMol.Bootstrap.Tree.Transform.apply(_this.context, vfofcm).run(_this.context).then(update).catch(update);
+                    })
+                        .catch(function () { return _this.groupDone(ref, false); });
+                    // twoFoFc.then(Transformer.Density.CreateVisual, { style: styles['2Fo-Fc'] }, { ref: ref + '2Fo-Fc' });
+                    // foFc.then(Transformer.Density.CreateVisual, { style: styles['Fo-Fc(+ve)'] }, { ref: ref + 'Fo-Fc(+ve)' })
+                    // foFc.then(Transformer.Density.CreateVisual, { style: styles['Fo-Fc(-ve)'] }, { ref: ref + 'Fo-Fc(-ve)' });
+                    // Bootstrap.Tree.Transform.apply(this.context, action).run(this.context)
+                    //     .then(() => this.groupDone(ref, true))
+                    //     .catch(() => this.groupDone(ref, false));
+                };
+                Behaviour.prototype.createEmd = function (box, data) {
+                    var _this = this;
+                    var emdB = data.dataBlocks.filter(function (b) { return b.header === 'EM'; })[0];
+                    if (!emdB)
+                        return false;
+                    var emd = LiteMol.Core.Formats.Density.CIF.parse(emdB);
+                    if (emd.isError)
+                        return false;
+                    var action = LiteMol.Bootstrap.Tree.Transform.build();
+                    var ref = Utils.generateUUID();
+                    this.groups.requested.add(ref);
+                    var styles = this.updateStyles(box);
+                    action.add(this.behaviour, Transformer.Basic.CreateGroup, { label: 'Density' }, { ref: ref, isHidden: true })
+                        .then(Transformer.Density.CreateFromData, { id: 'EMD', data: emd.result })
+                        .then(Transformer.Density.CreateVisual, { style: styles['EMD'] }, { ref: ref + 'EMD' });
+                    LiteMol.Bootstrap.Tree.Transform.apply(this.context, action).run(this.context)
+                        .then(function () { return _this.groupDone(ref, true); })
+                        .catch(function () { return _this.groupDone(ref, false); });
+                };
+                Behaviour.prototype.update = function (info) {
+                    var _this = this;
+                    if (!Interactivity.Molecule.isMoleculeModelInteractivity(info)) {
+                        this.remove();
+                        return;
+                    }
+                    LiteMol.Bootstrap.Command.Toast.Hide.dispatch(this.context, { key: ToastKey });
+                    var i = info;
+                    var model = Utils.Molecule.findModel(i.source);
+                    var elems = i.elements;
+                    var m = model.props.model;
+                    if (i.elements.length === 1) {
+                        elems = Utils.Molecule.getResidueIndices(m, i.elements[0]);
+                    }
+                    var _a = Utils.Molecule.getBox(m, elems, this.params.radius), a = _a.bottomLeft, b = _a.topRight;
+                    var box = { a: a, b: b };
+                    if (this.areBoxesSame(box))
+                        return;
+                    this.remove();
+                    var url = "" + this.server
+                        + ("/" + this.params.source)
+                        + ("/" + this.params.id)
+                        + ("/" + a.map(function (v) { return Math.round(1000 * v) / 1000; }).join(','))
+                        + ("/" + b.map(function (v) { return Math.round(1000 * v) / 1000; }).join(','));
+                    this.download = Utils.ajaxGetArrayBuffer(url, 'Density').run(this.context);
+                    this.download.then(function (data) {
+                        _this.remove();
+                        var cif = LiteMol.Core.Formats.CIF.Binary.parse(data);
+                        if (cif.isError || !_this.checkResult(cif.result))
+                            return;
+                        if (_this.params.source === 'EMD')
+                            _this.createEmd(box, cif.result);
+                        else
+                            _this.createXray(box, cif.result);
+                    });
+                };
+                Behaviour.prototype.dispose = function () {
+                    this.remove();
+                    LiteMol.Bootstrap.Command.Toast.Hide.dispatch(this.context, { key: ToastKey });
+                    for (var _i = 0, _a = this.obs; _i < _a.length; _i++) {
+                        var o = _a[_i];
+                        o.dispose();
+                    }
+                    this.obs = [];
+                };
+                Behaviour.prototype.register = function (behaviour) {
+                    var _this = this;
+                    this.behaviour = behaviour;
+                    LiteMol.Bootstrap.Command.Toast.Show.dispatch(this.context, { key: ToastKey, title: 'Density', message: 'Click on a residue or an atom to view the data.', timeoutMs: 30 * 1000 });
+                    this.obs.push(this.context.behaviours.select.subscribe(function (e) {
+                        _this.update(e);
+                    }));
+                };
+                return Behaviour;
+            }());
+            DensityStreaming.Behaviour = Behaviour;
+        })(DensityStreaming = Viewer.DensityStreaming || (Viewer.DensityStreaming = {}));
+    })(Viewer = LiteMol.Viewer || (LiteMol.Viewer = {}));
+})(LiteMol || (LiteMol = {}));
+/*
+ * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ */
+var LiteMol;
+(function (LiteMol) {
+    var Viewer;
+    (function (Viewer) {
+        var DensityStreaming;
+        (function (DensityStreaming) {
+            'use strict';
+            var React = LiteMol.Plugin.React; // this is to enable the HTML-like syntax
+            var Controls = LiteMol.Plugin.Controls;
+            var CreateView = (function (_super) {
+                __extends(CreateView, _super);
+                function CreateView() {
+                    return _super.apply(this, arguments) || this;
+                }
+                CreateView.prototype.renderControls = function () {
+                    var _this = this;
+                    var params = this.params;
+                    return React.createElement("div", null,
+                        React.createElement(Controls.OptionsGroup, { options: DensityStreaming.FieldSources, caption: function (s) { return s; }, current: params.source, onChange: function (o) { return _this.updateParams({ source: o }); }, label: 'Source', title: 'Determines how to obtain the data.' }),
+                        React.createElement(Controls.TextBoxGroup, { value: params.id, onChange: function (v) { return _this.updateParams({ id: v }); }, label: 'Id', onEnter: function (e) { return _this.applyEnter(e); }, placeholder: 'Enter id...' }),
+                        React.createElement(Controls.TextBoxGroup, { value: params.server, onChange: function (v) { return _this.updateParams({ server: v }); }, label: 'Server', onEnter: function (e) { return _this.applyEnter(e); }, placeholder: 'Enter server...' }));
+                };
+                return CreateView;
+            }(LiteMol.Plugin.Views.Transform.ControllerBase));
+            DensityStreaming.CreateView = CreateView;
+            var StreamingView = (function (_super) {
+                __extends(StreamingView, _super);
+                function StreamingView() {
+                    return _super.apply(this, arguments) || this;
+                }
+                StreamingView.prototype.renderControls = function () {
+                    var params = this.params;
+                    return React.createElement("div", null, "hi");
+                };
+                return StreamingView;
+            }(LiteMol.Plugin.Views.Transform.ControllerBase));
+            DensityStreaming.StreamingView = StreamingView;
+        })(DensityStreaming = Viewer.DensityStreaming || (Viewer.DensityStreaming = {}));
+    })(Viewer = LiteMol.Viewer || (LiteMol.Viewer = {}));
+})(LiteMol || (LiteMol = {}));
+/*
+ * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ */
+var LiteMol;
+(function (LiteMol) {
+    var Viewer;
+    (function (Viewer) {
         var PDBe;
         (function (PDBe) {
             var Data;
@@ -513,10 +1000,10 @@ var LiteMol;
                                 res(doEmdbId(ctx, a, t, emdbId));
                             }
                             catch (e) {
-                                res(fail(a, 'PDB API call failed.'));
+                                res(fail(a, 'PDBe API call failed.'));
                             }
                         })
-                            .catch(function (e) { return res(fail(a, 'PDB API call failed.')); });
+                            .catch(function (e) { return res(fail(a, 'PDBe API call failed.')); });
                     });
                 }
                 function doEmdbId(ctx, a, t, id) {
@@ -552,8 +1039,8 @@ var LiteMol;
                         sourceId: 'electron-density',
                         id: {
                             'electron-density': '1cbs',
-                            'emdb-id': '8003',
-                            'emdb-pdbid': '5gag'
+                            'emdb-id': '3121',
+                            'emdb-pdbid': '5aco'
                         }
                     }); },
                     validateParams: function (p) {
@@ -1236,7 +1723,8 @@ var LiteMol;
                 'molecule.coordinateStreaming.defaultServer': 'https://webchemdev.ncbr.muni.cz/CoordinateServer',
                 'molecule.downloadBinaryCIFFromCoordinateServer.server': 'https://webchemdev.ncbr.muni.cz/CoordinateServer',
                 'molecule.coordinateStreaming.defaultRadius': 10,
-                'density.defaultVisualBehaviourRadius': 5
+                'density.defaultVisualBehaviourRadius': 5,
+                'density.streaming.defaultServer': 'http://localhost:1337/DensityServer/'
             },
             transforms: [
                 // Root transforms -- things that load data.
@@ -1265,6 +1753,8 @@ var LiteMol;
                 { transformer: Transformer.Density.CreateFromCif, view: Views.Transform.Molecule.CreateFromMmCif },
                 { transformer: Transformer.Density.CreateVisual, view: Views.Transform.Density.CreateVisual },
                 { transformer: Transformer.Density.CreateVisualBehaviour, view: Views.Transform.Density.CreateVisualBehaviour },
+                { transformer: Viewer.DensityStreaming.Create, view: Viewer.DensityStreaming.CreateView },
+                { transformer: Viewer.DensityStreaming.CreateStreaming, view: Viewer.DensityStreaming.StreamingView },
                 // Coordinate streaming
                 { transformer: Transformer.Molecule.CoordinateStreaming.CreateBehaviour, view: Views.Transform.Empty, initiallyCollapsed: true },
                 // Validation reports

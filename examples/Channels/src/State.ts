@@ -200,7 +200,7 @@ namespace LiteMol.Example.Channels.State {
         let theme = Visualization.Theme.createUniform({ colors: new Map<string, Visualization.Color>([['Uniform', t.params.color!]]), interactive: t.params.isInteractive, transparency: t.params.transparency });
         let style: Bootstrap.Visualization.Style<'Surface', {}> = {
             type: 'Surface',
-            computeOnBackground: true,
+            computationType: 'Silent',
             //isNotSelectable: false,
             params: {},
             theme: <any>void 0

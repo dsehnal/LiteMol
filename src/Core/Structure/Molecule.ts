@@ -500,12 +500,20 @@ namespace LiteMol.Core.Structure {
         }
     }
 
+    export interface MoleculeProperties {
+        experimentMethod?: string
+    }
+
     // TODO: refactor this into using a tree structure similar to what the plugin is using, query is then a transformation of the tree
     export class Molecule {
 
+        properties: MoleculeProperties;
+
         constructor(
             public id: string,
-            public models: MoleculeModel[]) {
+            public models: MoleculeModel[],
+            properties: MoleculeProperties = {}) {
+            this.properties = properties;
         }
     }
 

@@ -177,10 +177,10 @@ namespace LiteMol.Viewer.PDBe.Data {
                         }
                         res(doEmdbId(ctx, a, t, emdbId));
                     } catch (e) {
-                        res(fail(a, 'PDB API call failed.'))
+                        res(fail(a, 'PDBe API call failed.'))
                     }
                 })
-                .catch(e => res(fail(a, 'PDB API call failed.')));
+                .catch(e => res(fail(a, 'PDBe API call failed.')));
         });
     }
 
@@ -217,8 +217,8 @@ namespace LiteMol.Viewer.PDBe.Data {
             sourceId: 'electron-density', 
             id: { 
                 'electron-density': '1cbs',
-                'emdb-id': '8003',
-                'emdb-pdbid': '5gag' 
+                'emdb-id': '3121',
+                'emdb-pdbid': '5aco' 
             } 
         }),
         validateParams: p => {

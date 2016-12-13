@@ -5748,10 +5748,14 @@ declare namespace LiteMol.Core.Structure {
         query(q: Query.Source): Query.FragmentSeq;
         constructor(data: MoleculeModelData);
     }
+    interface MoleculeProperties {
+        experimentMethod?: string;
+    }
     class Molecule {
         id: string;
         models: MoleculeModel[];
-        constructor(id: string, models: MoleculeModel[]);
+        properties: MoleculeProperties;
+        constructor(id: string, models: MoleculeModel[], properties?: MoleculeProperties);
     }
     namespace MoleculeModel {
         function withTransformedXYZ<T>(model: MoleculeModel, ctx: T, transform: (ctx: T, x: number, y: number, z: number, out: Geometry.LinearAlgebra.ObjectVec3) => void): MoleculeModel;
@@ -15851,7 +15855,7 @@ declare namespace LiteMol.Bootstrap.Tree {
             action: Transform.Source;
             context: T;
         }
-        function action<A extends Node, B extends Node, P>(info: Info<A, B, P>, builder: (ctx: Context, a: A, t: Transform<A, B, P>) => Transform.Source | Promise<Transform.Source>, onDone?: string, onError?: string): Transformer<A, B, P>;
+        function action<A extends Node, B extends Node, P>(info: Info<A, B, P>, builder: (ctx: Context, a: A, t: Transform<A, B, P>) => Transform.Source, onDone?: string, onError?: string): Transformer<A, B, P>;
         function actionWithContext<A extends Node, B extends Node, P, T>(info: Info<A, B, P>, builder: (ctx: Context, a: A, t: Transform<A, B, P>) => ActionWithContext<T> | Promise<ActionWithContext<T>>, onDone?: (ctx: Context, actionCtx: T | undefined) => void, onError?: (ctx: Context, actionCtx: T | undefined, error: any) => void): Transformer<A, B, P>;
     }
 }
@@ -16027,7 +16031,7 @@ declare namespace LiteMol.Bootstrap.Visualization {
         description?: string;
     }
     interface Style<Type, Params> {
-        computeOnBackground?: boolean;
+        computationType?: 'Background' | 'Silent' | 'Normal';
         isNotSelectable?: boolean;
         type: Type;
         theme: Theme.Instance;
@@ -16037,7 +16041,7 @@ declare namespace LiteMol.Bootstrap.Visualization {
     import TransparencyDescription = LiteMol.Visualization.Theme.Transparency;
     namespace Style {
         interface Props<T> {
-            computeOnBackground?: boolean;
+            computationType?: 'Background' | 'Silent' | 'Normal';
             type: T;
             theme: Theme.Instance;
         }
@@ -16531,6 +16535,11 @@ declare namespace LiteMol.Bootstrap.Entity.Transformer.Density {
         blockIndex: number;
     }
     const CreateFromCif: Tree.Transformer<Entity.Data.CifDictionary, Entity.Density.Data, CreateFromCifParams>;
+    interface CreateFromDataParams {
+        id?: string;
+        data: Core.Formats.Density.Data;
+    }
+    const CreateFromData: Tree.Transformer<Root, Entity.Density.Data, CreateFromDataParams>;
     interface CreateVisualParams {
         style: Visualization.Density.Style;
     }

@@ -28,7 +28,7 @@ namespace LiteMol.Bootstrap.Tree.Transform {
             }
             
             then<C extends Node, Q>(t: Transformer<B, C, Q>, params: Q, props?:Transform.Props): Builder {                
-                if (!this.last) throw `Cannot 'then' on an empty builder`;                
+                if (!this.last) throw `Cannot 'then' on an empty builder`;
                 let transform = t.create(params, props);
                 let i = <Instance>{ selector: this.last.transform.props.ref, transform };
                 this.transforms.push(i);

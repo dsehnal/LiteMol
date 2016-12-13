@@ -226,10 +226,10 @@ var LiteMol;
                                 res(doEmdbId(ctx, a, t, emdbId));
                             }
                             catch (e) {
-                                res(fail(a, 'PDB API call failed.'));
+                                res(fail(a, 'PDBe API call failed.'));
                             }
                         })
-                            .catch(function (e) { return res(fail(a, 'PDB API call failed.')); });
+                            .catch(function (e) { return res(fail(a, 'PDBe API call failed.')); });
                     });
                 }
                 function doEmdbId(ctx, a, t, id) {
@@ -265,8 +265,8 @@ var LiteMol;
                         sourceId: 'electron-density',
                         id: {
                             'electron-density': '1cbs',
-                            'emdb-id': '8003',
-                            'emdb-pdbid': '5gag'
+                            'emdb-id': '3121',
+                            'emdb-pdbid': '5aco'
                         }
                     }); },
                     validateParams: function (p) {

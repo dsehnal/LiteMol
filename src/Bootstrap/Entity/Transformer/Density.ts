@@ -50,10 +50,11 @@ namespace LiteMol.Bootstrap.Entity.Transformer.Density {
         id?: string,
         blockIndex: number
     }
+
     export const CreateFromCif = Tree.Transformer.create<Entity.Data.CifDictionary, Entity.Density.Data, CreateFromCifParams>({
         id: 'density-create-from-cif',
         name: 'Density Data',
-        description: 'Parse density from cif data.',
+        description: 'Parse density from CIF data.',
         from: [Entity.Data.CifDictionary],
         to: [Entity.Density.Data],
         isUpdatable: false,
@@ -69,6 +70,24 @@ namespace LiteMol.Bootstrap.Entity.Transformer.Density {
                 ctx.resolve(Entity.Density.Data.create(t, { label: t.params.id ? t.params.id : 'Density Data', data: data.result, description: data.result.attributes['name'] }));
             });
         }).setReportTime(true);
+    });
+
+    export interface CreateFromDataParams {
+        id?: string,
+        data: Core.Formats.Density.Data
+    }
+    
+    export const CreateFromData = Tree.Transformer.create<Entity.Root, Entity.Density.Data, CreateFromDataParams>({
+        id: 'density-create-from-data',
+        name: 'Density Data',
+        description: 'Create density from data.',
+        from: [],
+        to: [Entity.Density.Data],
+        isUpdatable: false,
+        defaultParams: () => (<any>{ })
+    }, (ctx, a, t) => {
+        let e = Entity.Density.Data.create(t, { label: t.params.id ? t.params.id : 'Density Data', data: t.params.data, description: t.params.data.attributes['name'] });
+        return Task.resolve<Entity.Density.Data>('Create Density', 'Background', e);
     });
 
     export interface CreateVisualParams {
@@ -87,7 +106,7 @@ namespace LiteMol.Bootstrap.Entity.Transformer.Density {
         customController: (ctx, t, e) => new Components.Transform.DensityVisual(ctx, t, e) as Components.Transform.Controller<any>,
     }, (ctx, a, t) => {
         let params = t.params;
-        return Visualization.Density.create(a, t, params.style!).setReportTime(!t.params.style!.computeOnBackground);
+        return Visualization.Density.create(a, t, params.style!).setReportTime(t.params.style.computationType === 'Normal');
     }, (ctx, b, t) => {
 
         let oldParams = b.transform.params as CreateVisualParams;

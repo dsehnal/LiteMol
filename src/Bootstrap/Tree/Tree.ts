@@ -29,7 +29,8 @@ namespace LiteMol.Bootstrap {
         }
         
         function _addRef<T extends Node.Any>(entity: T) {
-            let refs = entity.tree!.refs.get(entity.ref);
+            if (!entity.tree) return;
+            let refs = entity.tree.refs.get(entity.ref);
             if (!refs) {
                 entity.tree!.refs.set(entity.ref, [entity]);
             } else {

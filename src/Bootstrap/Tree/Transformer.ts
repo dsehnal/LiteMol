@@ -197,22 +197,15 @@ namespace LiteMol.Bootstrap.Tree {
 
         export function action<A extends Node, B extends Node, P>(
             info: Info<A, B, P>, 
-            builder: (ctx: Context, a: A, t: Transform<A, B, P>) => Transform.Source | Promise<Transform.Source>,
+            builder: (ctx: Context, a: A, t: Transform<A, B, P>) => Transform.Source,
             onDone?: string, onError?: string): Transformer<A, B, P> {
             return create(info, (context, a, t) => {
                 return Task.create<Entity.Action>(info.name, 'Background', ctx => {
                     let src = builder(context, a, t);
-                    if (Task.isPromise(src)) {
-                        src
-                            .then(s => resolveAction<undefined>({ action: s, context: void 0 }, context, ctx, onDone, onError))
-                            .catch(e => rejectAction<undefined>(void 0, e, context, ctx, onError));
-                    } else {
-                        resolveAction<undefined>({ action: src, context: void 0 }, context, ctx, onDone, onError)
-                    }
+                    resolveAction<undefined>({ action: src, context: void 0 }, context, ctx, onDone, onError);
                 });
             }) 
         }
-
 
         export function actionWithContext<A extends Node, B extends Node, P, T>(
             info: Info<A, B, P>, 

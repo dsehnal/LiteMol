@@ -12676,7 +12676,12 @@ var LiteMol;
                             models.push(model);
                             startRow = endRow;
                         }
-                        return new Core.Structure.Molecule(id, models);
+                        var experimentMethod = void 0;
+                        var _exptl = data.getCategory('_exptl');
+                        if (_exptl) {
+                            experimentMethod = _exptl.getColumn('method').getString(0) || void 0;
+                        }
+                        return new Core.Structure.Molecule(id, models, { experimentMethod: experimentMethod });
                     }
                     mmCIF.ofDataBlock = ofDataBlock;
                 })(mmCIF = Molecule.mmCIF || (Molecule.mmCIF = {}));
@@ -13930,15 +13935,8 @@ var LiteMol;
                         return Parser.parse(block);
                     }
                     CIF.parse = parse;
-                    /**
-                     * Parses CCP4 files.
-                     */
                     var Parser;
                     (function (Parser) {
-                        /**
-                         * Parse CCP4 file according to spec at http://www.ccp4.ac.uk/html/maplib.html
-                         * Inspired by PyMOL implementation of the parser.
-                         */
                         function parse(block) {
                             var info = block.getCategory('_density_info');
                             if (!info)
@@ -16362,9 +16360,11 @@ var LiteMol;
             Structure.MoleculeModel = MoleculeModel;
             // TODO: refactor this into using a tree structure similar to what the plugin is using, query is then a transformation of the tree
             var Molecule = (function () {
-                function Molecule(id, models) {
+                function Molecule(id, models, properties) {
+                    if (properties === void 0) { properties = {}; }
                     this.id = id;
                     this.models = models;
+                    this.properties = properties;
                 }
                 return Molecule;
             }());

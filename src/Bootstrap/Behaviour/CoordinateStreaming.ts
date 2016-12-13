@@ -37,7 +37,7 @@ namespace LiteMol.Bootstrap.Behaviour.Molecule {
            
         private style: Visualization.Molecule.Style<Visualization.Molecule.BallsAndSticksParams> = {
             type: 'BallsAndSticks',
-            computeOnBackground: true,
+            computationType: 'Silent',
             params: { useVDW: true, vdwScaling: 0.17, bondRadius: 0.07, detail: 'Automatic' },
             theme: { template: Visualization.Molecule.Default.ElementSymbolThemeTemplate, colors: Visualization.Molecule.Default.ElementSymbolThemeTemplate.colors, transparency: { alpha: 1.0 } },
             isNotSelectable: true

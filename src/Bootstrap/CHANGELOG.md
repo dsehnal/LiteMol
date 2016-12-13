@@ -1,4 +1,8 @@
-﻿# 1.2.11
+﻿# 1.2.12
+* Visual.Style.computeOnBackground is now computationType: 'Normal' | 'Silent' | 'Background'.
+* Added Density.CreateFromData transform.
+
+# 1.2.11
 * Added CIF density parse transform.
 
 # 1.2.8

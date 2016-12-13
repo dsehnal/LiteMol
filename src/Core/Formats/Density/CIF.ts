@@ -8,15 +8,8 @@ namespace LiteMol.Core.Formats.Density.CIF {
         return Parser.parse(block);
     }
 
-    /**
-     * Parses CCP4 files.
-     */
     namespace Parser {
 
-        /**
-         * Parse CCP4 file according to spec at http://www.ccp4.ac.uk/html/maplib.html
-         * Inspired by PyMOL implementation of the parser.
-         */
         export function parse(block: Formats.CIF.DataBlock): ParserResult<Data> {
 
             let info = block.getCategory('_density_info');

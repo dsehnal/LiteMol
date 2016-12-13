@@ -958,6 +958,13 @@ namespace LiteMol.Core.Formats.Molecule.mmCIF {
             models.push(model);
             startRow = endRow;
         }
-        return new Structure.Molecule(id, models);
+
+        let experimentMethod: string | undefined = void 0;
+        let _exptl = data.getCategory('_exptl');
+        if (_exptl) {
+            experimentMethod = _exptl.getColumn('method').getString(0) || void 0;
+        }
+
+        return new Structure.Molecule(id, models, { experimentMethod });
     }
 }

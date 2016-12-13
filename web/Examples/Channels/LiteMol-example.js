@@ -204,7 +204,7 @@ var LiteMol;
                     var theme = LiteMol.Visualization.Theme.createUniform({ colors: new Map([['Uniform', t.params.color]]), interactive: t.params.isInteractive, transparency: t.params.transparency });
                     var style = {
                         type: 'Surface',
-                        computeOnBackground: true,
+                        computationType: 'Silent',
                         //isNotSelectable: false,
                         params: {},
                         theme: void 0
