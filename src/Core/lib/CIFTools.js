@@ -3,7 +3,7 @@
  */
 var CIFTools;
 (function (CIFTools) {
-    CIFTools.VERSION = { number: "1.1.0", date: "Dec 11 2016" };
+    CIFTools.VERSION = { number: "1.1.1", date: "Dec 14 2016" };
 })(CIFTools || (CIFTools = {}));
 /*
  * Copyright (c) 2016 David Sehnal, licensed under MIT License, See LICENSE file for more info.
@@ -187,9 +187,11 @@ var CIFTools;
             }
             FastNumberParsers.parseInt = parseInt;
             function parseScientific(main, str, start, end) {
+                // handle + in '1e+1' separately.
+                if (str.charCodeAt(start) === 43 /* + */)
+                    start++;
                 return main * Math.pow(10.0, parseInt(str, start, end));
             }
-            FastNumberParsers.parseScientific = parseScientific;
             function parseFloatSkipTrailingWhitespace(str, start, end) {
                 while (start < end && str.charCodeAt(start) === 32)
                     start++;

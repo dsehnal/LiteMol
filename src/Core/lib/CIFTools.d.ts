@@ -47,7 +47,6 @@ declare namespace CIFTools.Utils {
 declare namespace CIFTools.Utils.FastNumberParsers {
     function parseIntSkipTrailingWhitespace(str: string, start: number, end: number): number;
     function parseInt(str: string, start: number, end: number): number;
-    function parseScientific(main: number, str: string, start: number, end: number): number;
     function parseFloatSkipTrailingWhitespace(str: string, start: number, end: number): number;
     function parseFloat(str: string, start: number, end: number): number;
 }
