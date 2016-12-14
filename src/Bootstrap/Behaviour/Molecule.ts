@@ -16,7 +16,7 @@ namespace LiteMol.Bootstrap.Behaviour.Molecule {
             
             let ligandStyle: Visualization.Molecule.Style<Visualization.Molecule.BallsAndSticksParams> = {
                 type: 'BallsAndSticks',
-                computationType: 'Silent',
+                taskType: 'Silent',
                 params: { useVDW: true, vdwScaling: 0.25, bondRadius: 0.13, detail: 'Automatic' },
                 theme: { template: Visualization.Molecule.Default.ElementSymbolThemeTemplate, colors: Visualization.Molecule.Default.ElementSymbolThemeTemplate.colors!.set('Bond', LiteMol.Visualization.Theme.Default.SelectionColor), transparency: { alpha: 0.4 } },
                 isNotSelectable: true
@@ -24,7 +24,7 @@ namespace LiteMol.Bootstrap.Behaviour.Molecule {
                 
             let ambStyle: Visualization.Molecule.Style<Visualization.Molecule.BallsAndSticksParams> = {
                 type: 'BallsAndSticks',
-                computationType: 'Silent',
+                taskType: 'Silent',
                 params: { useVDW: false, atomRadius: 0.15, bondRadius: 0.07, detail: 'Automatic' },
                 theme: { template: Visualization.Molecule.Default.UniformThemeTemplate, colors: Visualization.Molecule.Default.UniformThemeTemplate.colors!.set('Uniform', { r: 0.4, g: 0.4, b: 0.4 }), transparency: { alpha: 0.75 } },
                 isNotSelectable: true

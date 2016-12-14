@@ -66,6 +66,36 @@ namespace LiteMol.Extensions.DensityStreaming {
         });
     });
 
+    export interface CreateParams {
+        server: string,
+        id: string,
+        source: FieldSource
+    }
+
+    export const Create = Bootstrap.Tree.Transformer.actionWithContext<Entity.Molecule.Molecule, Entity.Action, CreateParams, undefined>({
+        id: 'density-streaming-create',
+        name: 'Density Streaming',
+        description: 'On demand download of density data when a residue or atom is selected.',
+        from: [Entity.Molecule.Molecule],
+        to: [Entity.Action],
+        defaultParams: (ctx, e) => {
+            let source: FieldSource = 'X-ray';            
+            let method = (e.props.molecule.properties.experimentMethod || '').toLowerCase();
+            if (method.indexOf('microscopy') >= 0) source = 'EMD';
+            return { server: ctx.settings.get('extensions.densityStreaming.defaultServer'), id: e.props.molecule.id, source };
+        },
+        validateParams: p => {
+            if (!p.server.trim().length) return ['Enter Server'];
+            return !p.id.trim().length ? ['Enter Id'] : void 0;  
+        }   
+    }, (context, a, t) => {
+        switch (t.params.source) {
+            case 'X-ray': return doCS(a, context, t.params);
+            case 'EMD': return doEmd(a, context, t.params);
+            default: return fail(a, 'Unknown data source.');
+        }
+    });
+
     type DensityAction = Tree.Transformer.ActionWithContext<undefined>
 
     function fail(e: Entity.Any, message: string): DensityAction {
@@ -86,7 +116,8 @@ namespace LiteMol.Extensions.DensityStreaming {
                     isoValueType: contourLevel !== void 0 ? Bootstrap.Visualization.Density.IsoValueType.Absolute : Bootstrap.Visualization.Density.IsoValueType.Sigma,
                     color: LiteMol.Visualization.Color.fromHex(0x638F8F),
                     isWireframe: false,
-                    transparency: { alpha: 0.3 }
+                    transparency: { alpha: 0.3 },
+                    taskType: 'Background'
                 })
             }
             : {
@@ -95,21 +126,24 @@ namespace LiteMol.Extensions.DensityStreaming {
                     isoValueType: Bootstrap.Visualization.Density.IsoValueType.Sigma,
                     color: LiteMol.Visualization.Color.fromHex(0x3362B2), 
                     isWireframe: false,
-                    transparency: { alpha: 0.4 }
+                    transparency: { alpha: 0.4 },
+                    taskType: 'Background'
                 }),
                 'Fo-Fc(+ve)': Bootstrap.Visualization.Density.Style.create({
                     isoValue: 3,
                     isoValueType: Bootstrap.Visualization.Density.IsoValueType.Sigma,
                     color: LiteMol.Visualization.Color.fromHex(0x33BB33), 
                     isWireframe: true,
-                    transparency: { alpha: 1.0 }
+                    transparency: { alpha: 1.0 },
+                    taskType: 'Background'
                 }),
                 'Fo-Fc(-ve)': Bootstrap.Visualization.Density.Style.create({
                     isoValue: -3,
                     isoValueType: Bootstrap.Visualization.Density.IsoValueType.Sigma,
                     color: LiteMol.Visualization.Color.fromHex(0xBB3333),
                     isWireframe: true,
-                    transparency: { alpha: 1.0 }
+                    transparency: { alpha: 1.0 },
+                    taskType: 'Background'
                 })
             };
 
@@ -210,34 +244,4 @@ namespace LiteMol.Extensions.DensityStreaming {
                 .catch(e => res(fail(m, 'PDBe API call failed.')));
         });
     }
-
-    export interface CreateParams {
-        server: string,
-        id: string,
-        source: FieldSource
-    }
-
-    export const Create = Bootstrap.Tree.Transformer.actionWithContext<Entity.Molecule.Molecule, Entity.Action, CreateParams, undefined>({
-        id: 'density-streaming-create',
-        name: 'Density Streaming',
-        description: 'On demand download of density data when a residue or atom is selected.',
-        from: [Entity.Molecule.Molecule],
-        to: [Entity.Action],
-        defaultParams: (ctx, e) => {
-            let source: FieldSource = 'X-ray';            
-            let method = (e.props.molecule.properties.experimentMethod || '').toLowerCase();
-            if (method.indexOf('microscopy') >= 0) source = 'EMD';
-            return { server: ctx.settings.get('extensions.densityStreaming.defaultServer'), id: e.props.molecule.id, source };
-        },
-        validateParams: p => {
-            if (!p.server.trim().length) return ['Enter Server'];
-            return !p.id.trim().length ? ['Enter Id'] : void 0;  
-        }   
-    }, (context, a, t) => {
-        switch (t.params.source) {
-            case 'X-ray': return doCS(a, context, t.params);
-            case 'EMD': return doEmd(a, context, t.params);
-            default: return fail(a, 'Unknown data source.');
-        }
-    });
 }

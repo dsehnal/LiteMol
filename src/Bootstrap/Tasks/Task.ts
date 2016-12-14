@@ -77,7 +77,6 @@ namespace LiteMol.Bootstrap {
         }
                 
         export type Type = 'Normal' | 'Background' | 'Silent' | 'Child';
-        //export type RunningTask<T> = Core.Promise<T>;
         
         export function create<A>(name: string, type: Type, task: (ctx: Context<A>) => void) {
             return new Task(name, type, task);

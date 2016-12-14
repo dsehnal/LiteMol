@@ -14,7 +14,7 @@ namespace LiteMol.Bootstrap.Visualization {
     }
     
     export interface Style<Type, Params> {
-        computationType?: 'Background' | 'Silent' | 'Normal',
+        taskType?: Task.Type,
         isNotSelectable?: boolean
         type: Type,
         theme: Theme.Instance
@@ -27,7 +27,7 @@ namespace LiteMol.Bootstrap.Visualization {
     
     export namespace Style {        
         export interface Props<T> {
-            computationType?: 'Background' | 'Silent' | 'Normal',
+            taskType?: Task.Type,
             type: T,
             theme: Theme.Instance
         }

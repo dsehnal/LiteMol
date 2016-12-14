@@ -97,24 +97,11 @@ namespace LiteMol.Extensions.DensityStreaming {
             return true;
         }
 
-        private updateStyles(box: Box): { [F in FieldType]?: Bootstrap.Visualization.Density.Style } {
-            let ret: { [F in FieldType]?: Bootstrap.Visualization.Density.Style } = { }
-            for (let t of this.types) {
-                let style = Utils.shallowClone(this.params.styles[t]!);
-                style.params = Utils.shallowClone(style.params);
-                style.params!.bottomLeft = box.a;
-                style.params!.topRight = box.b;
-                style.computationType = 'Background';
-                ret[t] = style;
-            }
-            return ret;
-        }
-
         private apply(b: Bootstrap.Tree.Transform.Builder) {
             return Bootstrap.Tree.Transform.apply(this.context, b).run(this.context);
         }
 
-        private async createXray(box: Box, data: Core.Formats.CIF.File) {
+        private async createXray(data: Core.Formats.CIF.File) {
             try {
                 let twoFB = data.dataBlocks.filter(b => b.header === '2FO-FC')[0];
                 let oneFB = data.dataBlocks.filter(b => b.header === 'FO-FC')[0];
@@ -130,7 +117,7 @@ namespace LiteMol.Extensions.DensityStreaming {
                 this.groups.requested.add(ref);
                 let group = action.add(this.behaviour, Transformer.Basic.CreateGroup, { label: 'Density' }, { ref, isHidden: true })
 
-                let styles = this.updateStyles(box);
+                let styles = this.params.styles; 
 
                 let twoFoFc = group.then(Transformer.Density.CreateFromData, { id: '2Fo-Fc', data: twoF.result }, { ref: ref + '2Fo-Fc-data' })
                 let foFc = group.then(Transformer.Density.CreateFromData, { id: 'Fo-Fc', data: oneF.result }, { ref: ref + 'Fo-Fc-data' });
@@ -149,7 +136,7 @@ namespace LiteMol.Extensions.DensityStreaming {
             }
         }
 
-        private createEmd(box: Box, data: Core.Formats.CIF.File) {
+        private createEmd(data: Core.Formats.CIF.File) {
             let emdB = data.dataBlocks.filter(b => b.header === 'EM')[0];
             if (!emdB) return false;
 
@@ -159,7 +146,7 @@ namespace LiteMol.Extensions.DensityStreaming {
             let action = Bootstrap.Tree.Transform.build();
             let ref = Utils.generateUUID();
             this.groups.requested.add(ref);
-            let styles = this.updateStyles(box);
+            let styles = this.params.styles;//  this.updateStyles(box);
             
             action.add(this.behaviour, Transformer.Basic.CreateGroup, { label: 'Density' }, { ref, isHidden: true })
                 .then(Transformer.Density.CreateFromData, { id: 'EMD', data: emd.result })
@@ -221,8 +208,8 @@ namespace LiteMol.Extensions.DensityStreaming {
                 let cif = Core.Formats.CIF.Binary.parse(data);
                 if (cif.isError || !this.checkResult(cif.result)) return; 
 
-                if (this.params.source === 'EMD') this.createEmd(box, cif.result);
-                else this.createXray(box, cif.result);
+                if (this.params.source === 'EMD') this.createEmd(cif.result);
+                else this.createXray(cif.result);
             });
         }
 
@@ -237,7 +224,7 @@ namespace LiteMol.Extensions.DensityStreaming {
 
             if (!this.dataBox) return true;
 
-            let styles = this.updateStyles(this.dataBox);
+            let styles = this.params.styles; 
 
             // cache the refs and lock them
             let refs: string[] = [];
@@ -248,10 +235,10 @@ namespace LiteMol.Extensions.DensityStreaming {
 
             // update all the existing visuals.
             for (let t of this.types) {
+                let s = styles[t];
+                if (!s) continue;
                 let vs = this.context.select(Bootstrap.Tree.Selection.byRef(...refs.map(r => r + t)));
                 for (let v of vs) {
-                    let s = styles[t];
-                    if (!s) continue;
                     await this.updateVisual(v as Entity.Density.Visual, s);
                 }
             }
@@ -283,7 +270,7 @@ namespace LiteMol.Extensions.DensityStreaming {
         register(behaviour: Streaming) {
             this.behaviour = behaviour;
 
-            Bootstrap.Command.Toast.Show.dispatch(this.context, { key: ToastKey, title: 'Density', message: 'Click on a residue or an atom to view the data.', timeoutMs: 30 * 1000 });
+            Bootstrap.Command.Toast.Show.dispatch(this.context, { key: ToastKey, title: 'Density', message: 'Streaming enabled, click on a residue or an atom to view the data.', timeoutMs: 30 * 1000 });
 
             this.obs.push(this.context.behaviours.select.subscribe(e => {                
                 this.update(e);

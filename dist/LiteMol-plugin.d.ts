@@ -16016,7 +16016,7 @@ declare namespace LiteMol.Bootstrap.Visualization {
         description?: string;
     }
     interface Style<Type, Params> {
-        computationType?: 'Background' | 'Silent' | 'Normal';
+        taskType?: Task.Type;
         isNotSelectable?: boolean;
         type: Type;
         theme: Theme.Instance;
@@ -16026,7 +16026,7 @@ declare namespace LiteMol.Bootstrap.Visualization {
     import TransparencyDescription = LiteMol.Visualization.Theme.Transparency;
     namespace Style {
         interface Props<T> {
-            computationType?: 'Background' | 'Silent' | 'Normal';
+            taskType?: Task.Type;
             type: T;
             theme: Theme.Instance;
         }
@@ -16143,6 +16143,7 @@ declare namespace LiteMol.Bootstrap.Visualization.Density {
             isWireframe?: boolean;
             disableFog?: boolean;
             transparency?: LiteMol.Visualization.Theme.Transparency;
+            taskType?: Task.Type;
         }): Style;
     }
     namespace Default {

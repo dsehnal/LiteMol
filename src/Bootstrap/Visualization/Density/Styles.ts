@@ -28,10 +28,13 @@ namespace LiteMol.Bootstrap.Visualization.Density {
             color: LiteMol.Visualization.Color, 
             isWireframe?: boolean, 
             disableFog?: boolean,
-            transparency?: LiteMol.Visualization.Theme.Transparency}): Style  {
+            transparency?: LiteMol.Visualization.Theme.Transparency,
+            taskType?: Task.Type
+        }): Style  {
             let colors = Default.Theme.colors!.set('Uniform', params.color);
-            return { 
-                type: {}, 
+            return <Style>{ 
+                type: {},
+                taskType: params.taskType,
                 params: { isoValue: params.isoValue, isoValueType: params.isoValueType, smoothing: 1, isWireframe: !!params.isWireframe }, 
                 theme: { template: Default.Theme, colors, transparency: params.transparency ? params.transparency : Default.Transparency, interactive: false, disableFog: !!params.disableFog }
             }; 

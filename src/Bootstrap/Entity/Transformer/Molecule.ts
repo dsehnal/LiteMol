@@ -333,7 +333,7 @@ namespace LiteMol.Bootstrap.Entity.Transformer.Molecule {
         customController: (ctx, t, e) => new Components.Transform.MoleculeVisual(ctx, t, e) as Components.Transform.Controller<any>
     }, (ctx, a, t) => {
         let params = t.params;
-        return Visualization.Molecule.create(a, t, params.style).setReportTime(t.params.style.computationType === 'Normal');
+        return Visualization.Molecule.create(a, t, params.style).setReportTime(t.params.style.taskType === 'Normal');
     }, (ctx, b, t) => {
 
         let oldParams = b.transform.params as CreateVisualParams;

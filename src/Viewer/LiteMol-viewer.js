@@ -405,6 +405,31 @@ var LiteMol;
                     b.props.behaviour.invalidateStyles(params).then(update).catch(update);
                 });
             });
+            DensityStreaming.Create = LiteMol.Bootstrap.Tree.Transformer.actionWithContext({
+                id: 'density-streaming-create',
+                name: 'Density Streaming',
+                description: 'On demand download of density data when a residue or atom is selected.',
+                from: [Entity.Molecule.Molecule],
+                to: [Entity.Action],
+                defaultParams: function (ctx, e) {
+                    var source = 'X-ray';
+                    var method = (e.props.molecule.properties.experimentMethod || '').toLowerCase();
+                    if (method.indexOf('microscopy') >= 0)
+                        source = 'EMD';
+                    return { server: ctx.settings.get('extensions.densityStreaming.defaultServer'), id: e.props.molecule.id, source: source };
+                },
+                validateParams: function (p) {
+                    if (!p.server.trim().length)
+                        return ['Enter Server'];
+                    return !p.id.trim().length ? ['Enter Id'] : void 0;
+                }
+            }, function (context, a, t) {
+                switch (t.params.source) {
+                    case 'X-ray': return doCS(a, context, t.params);
+                    case 'EMD': return doEmd(a, context, t.params);
+                    default: return fail(a, 'Unknown data source.');
+                }
+            });
             function fail(e, message) {
                 return {
                     action: LiteMol.Bootstrap.Tree.Transform.build()
@@ -421,7 +446,8 @@ var LiteMol;
                             isoValueType: contourLevel !== void 0 ? LiteMol.Bootstrap.Visualization.Density.IsoValueType.Absolute : LiteMol.Bootstrap.Visualization.Density.IsoValueType.Sigma,
                             color: LiteMol.Visualization.Color.fromHex(0x638F8F),
                             isWireframe: false,
-                            transparency: { alpha: 0.3 }
+                            transparency: { alpha: 0.3 },
+                            taskType: 'Background'
                         })
                     }
                     : {
@@ -430,21 +456,24 @@ var LiteMol;
                             isoValueType: LiteMol.Bootstrap.Visualization.Density.IsoValueType.Sigma,
                             color: LiteMol.Visualization.Color.fromHex(0x3362B2),
                             isWireframe: false,
-                            transparency: { alpha: 0.4 }
+                            transparency: { alpha: 0.4 },
+                            taskType: 'Background'
                         }),
                         'Fo-Fc(+ve)': LiteMol.Bootstrap.Visualization.Density.Style.create({
                             isoValue: 3,
                             isoValueType: LiteMol.Bootstrap.Visualization.Density.IsoValueType.Sigma,
                             color: LiteMol.Visualization.Color.fromHex(0x33BB33),
                             isWireframe: true,
-                            transparency: { alpha: 1.0 }
+                            transparency: { alpha: 1.0 },
+                            taskType: 'Background'
                         }),
                         'Fo-Fc(-ve)': LiteMol.Bootstrap.Visualization.Density.Style.create({
                             isoValue: -3,
                             isoValueType: LiteMol.Bootstrap.Visualization.Density.IsoValueType.Sigma,
                             color: LiteMol.Visualization.Color.fromHex(0xBB3333),
                             isWireframe: true,
-                            transparency: { alpha: 1.0 }
+                            transparency: { alpha: 1.0 },
+                            taskType: 'Background'
                         })
                     };
                 var streaming = __assign({ minRadius: 0, maxRadius: params.source === 'X-ray' ? Math.min(10, radius) : Math.min(50, radius), radius: Math.min(5, radius), server: params.server, source: params.source, id: sourceId ? sourceId : params.id, info: info }, styles);
@@ -534,31 +563,6 @@ var LiteMol;
                         .catch(function (e) { return res(fail(m, 'PDBe API call failed.')); });
                 });
             }
-            DensityStreaming.Create = LiteMol.Bootstrap.Tree.Transformer.actionWithContext({
-                id: 'density-streaming-create',
-                name: 'Density Streaming',
-                description: 'On demand download of density data when a residue or atom is selected.',
-                from: [Entity.Molecule.Molecule],
-                to: [Entity.Action],
-                defaultParams: function (ctx, e) {
-                    var source = 'X-ray';
-                    var method = (e.props.molecule.properties.experimentMethod || '').toLowerCase();
-                    if (method.indexOf('microscopy') >= 0)
-                        source = 'EMD';
-                    return { server: ctx.settings.get('extensions.densityStreaming.defaultServer'), id: e.props.molecule.id, source: source };
-                },
-                validateParams: function (p) {
-                    if (!p.server.trim().length)
-                        return ['Enter Server'];
-                    return !p.id.trim().length ? ['Enter Id'] : void 0;
-                }
-            }, function (context, a, t) {
-                switch (t.params.source) {
-                    case 'X-ray': return doCS(a, context, t.params);
-                    case 'EMD': return doEmd(a, context, t.params);
-                    default: return fail(a, 'Unknown data source.');
-                }
-            });
         })(DensityStreaming = Extensions.DensityStreaming || (Extensions.DensityStreaming = {}));
     })(Extensions = LiteMol.Extensions || (LiteMol.Extensions = {}));
 })(LiteMol || (LiteMol = {}));
@@ -656,23 +660,10 @@ var LiteMol;
                     }
                     return true;
                 };
-                Behaviour.prototype.updateStyles = function (box) {
-                    var ret = {};
-                    for (var _i = 0, _a = this.types; _i < _a.length; _i++) {
-                        var t = _a[_i];
-                        var style = Utils.shallowClone(this.params.styles[t]);
-                        style.params = Utils.shallowClone(style.params);
-                        style.params.bottomLeft = box.a;
-                        style.params.topRight = box.b;
-                        style.computationType = 'Background';
-                        ret[t] = style;
-                    }
-                    return ret;
-                };
                 Behaviour.prototype.apply = function (b) {
                     return LiteMol.Bootstrap.Tree.Transform.apply(this.context, b).run(this.context);
                 };
-                Behaviour.prototype.createXray = function (box, data) {
+                Behaviour.prototype.createXray = function (data) {
                     return __awaiter(this, void 0, void 0, function () {
                         var twoFB, oneFB, twoF, oneF, action, ref, group, styles, twoFoFc, foFc, a, b, c, e_1;
                         return __generator(this, function (_a) {
@@ -691,7 +682,7 @@ var LiteMol;
                                     ref = Utils.generateUUID();
                                     this.groups.requested.add(ref);
                                     group = action.add(this.behaviour, Transformer.Basic.CreateGroup, { label: 'Density' }, { ref: ref, isHidden: true });
-                                    styles = this.updateStyles(box);
+                                    styles = this.params.styles;
                                     twoFoFc = group.then(Transformer.Density.CreateFromData, { id: '2Fo-Fc', data: twoF.result }, { ref: ref + '2Fo-Fc-data' });
                                     foFc = group.then(Transformer.Density.CreateFromData, { id: 'Fo-Fc', data: oneF.result }, { ref: ref + 'Fo-Fc-data' });
                                     return [4 /*yield*/, this.apply(action)];
@@ -720,7 +711,7 @@ var LiteMol;
                         });
                     });
                 };
-                Behaviour.prototype.createEmd = function (box, data) {
+                Behaviour.prototype.createEmd = function (data) {
                     var _this = this;
                     var emdB = data.dataBlocks.filter(function (b) { return b.header === 'EM'; })[0];
                     if (!emdB)
@@ -731,7 +722,7 @@ var LiteMol;
                     var action = LiteMol.Bootstrap.Tree.Transform.build();
                     var ref = Utils.generateUUID();
                     this.groups.requested.add(ref);
-                    var styles = this.updateStyles(box);
+                    var styles = this.params.styles; //  this.updateStyles(box);
                     action.add(this.behaviour, Transformer.Basic.CreateGroup, { label: 'Density' }, { ref: ref, isHidden: true })
                         .then(Transformer.Density.CreateFromData, { id: 'EMD', data: emd.result })
                         .then(Transformer.Density.CreateVisual, { style: styles['EMD'] }, { ref: ref + 'EMD' });
@@ -784,9 +775,9 @@ var LiteMol;
                         if (cif.isError || !_this.checkResult(cif.result))
                             return;
                         if (_this.params.source === 'EMD')
-                            _this.createEmd(box, cif.result);
+                            _this.createEmd(cif.result);
                         else
-                            _this.createXray(box, cif.result);
+                            _this.createXray(cif.result);
                     });
                 };
                 Behaviour.prototype.updateVisual = function (v, style) {
@@ -805,17 +796,20 @@ var LiteMol;
                                     }
                                     if (!this.dataBox)
                                         return [2 /*return*/, true];
-                                    styles = this.updateStyles(this.dataBox);
+                                    styles = this.params.styles;
                                     refs = [];
                                     this.groups.shown.forEach(function (r) {
                                         refs.push(r);
                                         _this.groups.locked.add(r);
                                     });
                                     _loop_1 = function (t) {
-                                        var vs, _i, vs_1, v, s;
+                                        var s, vs, _i, vs_1, v;
                                         return __generator(this, function (_a) {
                                             switch (_a.label) {
                                                 case 0:
+                                                    s = styles[t];
+                                                    if (!s)
+                                                        return [2 /*return*/, "continue"];
                                                     vs = this_1.context.select((_e = LiteMol.Bootstrap.Tree.Selection).byRef.apply(_e, refs.map(function (r) { return r + t; })));
                                                     _i = 0, vs_1 = vs;
                                                     _a.label = 1;
@@ -823,9 +817,6 @@ var LiteMol;
                                                     if (!(_i < vs_1.length))
                                                         return [3 /*break*/, 4];
                                                     v = vs_1[_i];
-                                                    s = styles[t];
-                                                    if (!s)
-                                                        return [3 /*break*/, 3];
                                                     return [4 /*yield*/, this_1.updateVisual(v, s)];
                                                 case 2:
                                                     _a.sent();
@@ -889,7 +880,7 @@ var LiteMol;
                 Behaviour.prototype.register = function (behaviour) {
                     var _this = this;
                     this.behaviour = behaviour;
-                    LiteMol.Bootstrap.Command.Toast.Show.dispatch(this.context, { key: ToastKey, title: 'Density', message: 'Click on a residue or an atom to view the data.', timeoutMs: 30 * 1000 });
+                    LiteMol.Bootstrap.Command.Toast.Show.dispatch(this.context, { key: ToastKey, title: 'Density', message: 'Streaming enabled, click on a residue or an atom to view the data.', timeoutMs: 30 * 1000 });
                     this.obs.push(this.context.behaviours.select.subscribe(function (e) {
                         _this.update(e);
                     }));

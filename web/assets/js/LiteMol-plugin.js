@@ -66003,7 +66003,6 @@ var LiteMol;
                 return Running;
             }());
             Task.Running = Running;
-            //export type RunningTask<T> = Core.Promise<T>;
             function create(name, type, task) {
                 return new Task(name, type, task);
             }
@@ -68013,7 +68012,7 @@ var LiteMol;
                     }
                 }
                 function createStandardVisual(source, transform, style) {
-                    return Bootstrap.Task.create("Visual (" + source.props.label + ")", style.computationType || 'Normal', function (ctx) {
+                    return Bootstrap.Task.create("Visual (" + source.props.label + ")", style.taskType || 'Normal', function (ctx) {
                         var label = Molecule.TypeDescriptions[style.type].label;
                         ctx.update("Creating " + label + "...");
                         ctx.schedule(function () {
@@ -68033,7 +68032,7 @@ var LiteMol;
                     });
                 }
                 function createSurface(source, transform, style) {
-                    return Bootstrap.Task.create("Molecular Surface (" + source.props.label + ")", style.computationType || 'Normal', function (ctx) {
+                    return Bootstrap.Task.create("Molecular Surface (" + source.props.label + ")", style.taskType || 'Normal', function (ctx) {
                         var model = Bootstrap.Utils.Molecule.findModel(source).props.model;
                         var atomIndices = Bootstrap.Entity.isMoleculeModel(source) ? source.props.model.atoms.indices : source.props.indices;
                         var params = style.params;
@@ -68115,8 +68114,8 @@ var LiteMol;
                     };
                 }
                 function create(parent, transform, style) {
-                    var name = style.computationType === 'Background' ? parent.props.label : "Density Surface (" + parent.props.label + ")";
-                    return Bootstrap.Task.create(name, style.computationType || 'Normal', function (ctx) {
+                    var name = style.taskType === 'Background' ? parent.props.label : "Density Surface (" + parent.props.label + ")";
+                    return Bootstrap.Task.create(name, style.taskType || 'Normal', function (ctx) {
                         var params = style.params;
                         var source = Bootstrap.Tree.Node.findClosestNodeOfType(parent, [Bootstrap.Entity.Density.Data]);
                         if (!source) {
@@ -68197,6 +68196,7 @@ var LiteMol;
                         var colors = Default.Theme.colors.set('Uniform', params.color);
                         return {
                             type: {},
+                            taskType: params.taskType,
                             params: { isoValue: params.isoValue, isoValueType: params.isoValueType, smoothing: 1, isWireframe: !!params.isWireframe },
                             theme: { template: Default.Theme, colors: colors, transparency: params.transparency ? params.transparency : Default.Transparency, interactive: false, disableFog: !!params.disableFog }
                         };
@@ -68876,7 +68876,7 @@ var LiteMol;
                         customController: function (ctx, t, e) { return new Bootstrap.Components.Transform.MoleculeVisual(ctx, t, e); }
                     }, function (ctx, a, t) {
                         var params = t.params;
-                        return Bootstrap.Visualization.Molecule.create(a, t, params.style).setReportTime(t.params.style.computationType === 'Normal');
+                        return Bootstrap.Visualization.Molecule.create(a, t, params.style).setReportTime(t.params.style.taskType === 'Normal');
                     }, function (ctx, b, t) {
                         var oldParams = b.transform.params;
                         if (oldParams.style.type !== t.params.style.type || !Bootstrap.Utils.deepEqual(oldParams.style.params, t.params.style.params))
@@ -69163,7 +69163,7 @@ var LiteMol;
                         customController: function (ctx, t, e) { return new Bootstrap.Components.Transform.DensityVisual(ctx, t, e); },
                     }, function (ctx, a, t) {
                         var params = t.params;
-                        return Bootstrap.Visualization.Density.create(a, t, params.style).setReportTime(t.params.style.computationType === 'Normal');
+                        return Bootstrap.Visualization.Density.create(a, t, params.style).setReportTime(t.params.style.taskType === 'Normal');
                     }, function (ctx, b, t) {
                         var oldParams = b.transform.params;
                         if (oldParams.style.type !== t.params.style.type || !Bootstrap.Utils.deepEqual(oldParams.style.params, t.params.style.params))
@@ -69668,14 +69668,14 @@ var LiteMol;
                         var ambRef = void 0;
                         var ligandStyle = {
                             type: 'BallsAndSticks',
-                            computationType: 'Silent',
+                            taskType: 'Silent',
                             params: { useVDW: true, vdwScaling: 0.25, bondRadius: 0.13, detail: 'Automatic' },
                             theme: { template: Bootstrap.Visualization.Molecule.Default.ElementSymbolThemeTemplate, colors: Bootstrap.Visualization.Molecule.Default.ElementSymbolThemeTemplate.colors.set('Bond', LiteMol.Visualization.Theme.Default.SelectionColor), transparency: { alpha: 0.4 } },
                             isNotSelectable: true
                         };
                         var ambStyle = {
                             type: 'BallsAndSticks',
-                            computationType: 'Silent',
+                            taskType: 'Silent',
                             params: { useVDW: false, atomRadius: 0.15, bondRadius: 0.07, detail: 'Automatic' },
                             theme: { template: Bootstrap.Visualization.Molecule.Default.UniformThemeTemplate, colors: Bootstrap.Visualization.Molecule.Default.UniformThemeTemplate.colors.set('Uniform', { r: 0.4, g: 0.4, b: 0.4 }), transparency: { alpha: 0.75 } },
                             isNotSelectable: true
@@ -69814,7 +69814,7 @@ var LiteMol;
                         if (this.params.showFull) {
                             style.params.bottomLeft = void 0;
                             style.params.topRight = void 0;
-                            style.computationType = 'Normal';
+                            style.taskType = 'Normal';
                         }
                         else {
                             var i = info;
@@ -69827,7 +69827,7 @@ var LiteMol;
                             var box = Bootstrap.Utils.Molecule.getBox(m, elems, this.params.radius);
                             style.params.bottomLeft = box.bottomLeft;
                             style.params.topRight = box.topRight;
-                            style.computationType = 'Silent';
+                            style.taskType = 'Silent';
                         }
                         var task;
                         var visual = this.getVisual();
@@ -69905,7 +69905,7 @@ var LiteMol;
                         this.cache = new CoordinateStreaming.Cache(100);
                         this.style = {
                             type: 'BallsAndSticks',
-                            computationType: 'Silent',
+                            taskType: 'Silent',
                             params: { useVDW: true, vdwScaling: 0.17, bondRadius: 0.07, detail: 'Automatic' },
                             theme: { template: Bootstrap.Visualization.Molecule.Default.ElementSymbolThemeTemplate, colors: Bootstrap.Visualization.Molecule.Default.ElementSymbolThemeTemplate.colors, transparency: { alpha: 1.0 } },
                             isNotSelectable: true

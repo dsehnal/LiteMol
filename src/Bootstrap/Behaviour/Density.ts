@@ -46,7 +46,7 @@ namespace LiteMol.Bootstrap.Behaviour.Density {
             if (this.params.showFull) {
                 style.params!.bottomLeft = void 0;
                 style.params!.topRight = void 0;
-                style.computationType = 'Normal';
+                style.taskType = 'Normal';
             } else {
                 let i = info as Interactivity.Info.Selection;
                 let model = Utils.Molecule.findModel(i.source)!;
@@ -59,7 +59,7 @@ namespace LiteMol.Bootstrap.Behaviour.Density {
 
                 style.params!.bottomLeft = box.bottomLeft;
                 style.params!.topRight = box.topRight;
-                style.computationType = 'Silent';
+                style.taskType = 'Silent';
             }
             
             let task: Task<any>;
