@@ -391,7 +391,7 @@ var LiteMol;
                     id: t.params.id,
                     radius: t.params.radius,
                     server: t.params.server,
-                    maxQueryRegion: t.params.maxQueryRegion
+                    maxQueryRegion: t.params.info.maxQueryRegion
                 });
                 return LiteMol.Bootstrap.Task.resolve('Behaviour', 'Background', DensityStreaming.Streaming.create(t, { label: "Density Streaming", behaviour: b }));
             }, function (ctx, b, t) {
@@ -412,8 +412,8 @@ var LiteMol;
                     context: void 0
                 };
             }
-            function doAction(m, params, maxQueryRegion, sourceId, contourLevel) {
-                var radius = maxQueryRegion.reduce(function (m, v) { return Math.min(m, v); }, maxQueryRegion[0]) / 2 - 3;
+            function doAction(m, params, info, sourceId, contourLevel) {
+                var radius = info.maxQueryRegion.reduce(function (m, v) { return Math.min(m, v); }, info.maxQueryRegion[0]) / 2 - 3;
                 var styles = params.source === 'EMD'
                     ? {
                         'EMD': LiteMol.Bootstrap.Visualization.Density.Style.create({
@@ -447,7 +447,7 @@ var LiteMol;
                             transparency: { alpha: 1.0 }
                         })
                     };
-                var streaming = __assign({ minRadius: 0, maxRadius: params.source === 'X-ray' ? Math.min(10, radius) : Math.min(50, radius), radius: Math.min(5, radius), server: params.server, source: params.source, id: sourceId ? sourceId : params.id, maxQueryRegion: maxQueryRegion }, styles);
+                var streaming = __assign({ minRadius: 0, maxRadius: params.source === 'X-ray' ? Math.min(10, radius) : Math.min(50, radius), radius: Math.min(5, radius), server: params.server, source: params.source, id: sourceId ? sourceId : params.id, info: info }, styles);
                 return {
                     action: LiteMol.Bootstrap.Tree.Transform.build().add(m, DensityStreaming.CreateStreaming, streaming),
                     context: void 0
@@ -468,7 +468,7 @@ var LiteMol;
                                 res(fail(m, "Density streaming is not available for '" + params.source + "/" + params.id + "'."));
                                 return;
                             }
-                            res(doAction(m, params, json.maxQueryRegion, sourceId, contourLevel));
+                            res(doAction(m, params, { maxQueryRegion: json.maxQueryRegion, data: json.dataInfo }, sourceId, contourLevel));
                         }
                         catch (e) {
                             res(fail(e, 'DensityServer API call failed.'));
@@ -928,11 +928,11 @@ var LiteMol;
                 return CreateView;
             }(LiteMol.Plugin.Views.Transform.ControllerBase));
             DensityStreaming.CreateView = CreateView;
-            var IsoBounds = {
-                'EMD': { min: -5, max: 5 },
-                '2Fo-Fc': { min: 0, max: 2 },
-                'Fo-Fc(+ve)': { min: 0, max: 5 },
-                'Fo-Fc(-ve)': { min: -5, max: 0 },
+            var IsoInfo = {
+                'EMD': { min: -5, max: 5, dataKey: 'EM' },
+                '2Fo-Fc': { min: 0, max: 2, dataKey: '2FO-FC' },
+                'Fo-Fc(+ve)': { min: 0, max: 5, dataKey: 'FO-FC' },
+                'Fo-Fc(-ve)': { min: -5, max: 0, dataKey: 'FO-FC' },
             };
             var StreamingView = (function (_super) {
                 __extends(StreamingView, _super);
@@ -945,7 +945,8 @@ var LiteMol;
                     var params = this.params[type].params;
                     var isSigma = params.isoValueType === LiteMol.Bootstrap.Visualization.Density.IsoValueType.Sigma;
                     var label = isSigma ? type + " \u03C3" : type;
-                    return React.createElement(Controls.Slider, { label: label, onChange: function (v) { return _this.controller.updateStyleParams({ isoValue: v }, type); }, min: isSigma ? IsoBounds[type].min : data.props.data.valuesInfo.min, max: isSigma ? IsoBounds[type].max : data.props.data.valuesInfo.max, value: params.isoValue, step: 0.001 });
+                    var info = this.params.info.data[IsoInfo[type].dataKey];
+                    return React.createElement(Controls.Slider, { label: label, onChange: function (v) { return _this.controller.updateStyleParams({ isoValue: v }, type); }, min: isSigma ? IsoInfo[type].min : info.min, max: isSigma ? IsoInfo[type].max : info.max, value: params.isoValue, step: 0.001 });
                 };
                 StreamingView.prototype.style = function (type) {
                     var _this = this;
@@ -1899,7 +1900,7 @@ var LiteMol;
                 'molecule.downloadBinaryCIFFromCoordinateServer.server': 'https://webchemdev.ncbr.muni.cz/CoordinateServer',
                 'molecule.coordinateStreaming.defaultRadius': 10,
                 'density.defaultVisualBehaviourRadius': 5,
-                'extensions.densityStreaming.defaultServer': 'http://localhost:1337/DensityServer/'
+                'extensions.densityStreaming.defaultServer': 'https://webchemdev.ncbr.muni.cz/DensityServer/'
             },
             transforms: [
                 // Root transforms -- things that load data.

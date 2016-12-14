@@ -13,6 +13,7 @@ namespace LiteMol.Extensions.DensityStreaming {
     import Promise = Core.Promise
     
     export type FieldSource = 'X-ray' | 'EMD'
+    export type DataType = 'EM' | '2FO-FC' | 'FO-FC'
     export type FieldType = '2Fo-Fc' | 'Fo-Fc(-ve)' | 'Fo-Fc(+ve)' | 'EMD'
 
     export const FieldSources: FieldSource[] = ['X-ray', 'EMD' ]  

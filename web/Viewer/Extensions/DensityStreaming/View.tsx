@@ -24,11 +24,11 @@ namespace LiteMol.Extensions.DensityStreaming {
         }        
     }   
 
-    const IsoBounds: {[F in FieldType]: { min: number, max: number } } = {
-        'EMD': { min: -5, max: 5 },
-        '2Fo-Fc': { min: 0, max: 2 },
-        'Fo-Fc(+ve)': { min: 0, max: 5 },
-        'Fo-Fc(-ve)': { min: -5, max: 0 },
+    const IsoInfo: {[F in FieldType]: { min: number, max: number, dataKey: DataType } } = {
+        'EMD': { min: -5, max: 5, dataKey: 'EM' },
+        '2Fo-Fc': { min: 0, max: 2, dataKey: '2FO-FC' },
+        'Fo-Fc(+ve)': { min: 0, max: 5, dataKey: 'FO-FC' },
+        'Fo-Fc(-ve)': { min: -5, max: 0, dataKey: 'FO-FC' },
     }
 
     export class StreamingView extends LiteMol.Plugin.Views.Transform.ControllerBase<
@@ -39,8 +39,11 @@ namespace LiteMol.Extensions.DensityStreaming {
             let params = this.params[type]!.params;
             let isSigma = params.isoValueType === Bootstrap.Visualization.Density.IsoValueType.Sigma
             let label = isSigma ? `${type} \u03C3` : type;
+
+            let info = this.params.info.data[IsoInfo[type].dataKey]!;
+
             return <Controls.Slider label={label} onChange={v => this.controller.updateStyleParams({ isoValue: v  }, type)}
-                min={isSigma ? IsoBounds[type].min : data.props.data.valuesInfo.min} max={isSigma ? IsoBounds[type].max : data.props.data.valuesInfo.max}
+                min={isSigma ? IsoInfo[type].min : info.min} max={isSigma ? IsoInfo[type].max : info.max}
                 value={params.isoValue} step={0.001}  />
         }
 

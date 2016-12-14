@@ -14,6 +14,8 @@ namespace LiteMol.Extensions.DensityStreaming {
     export interface StreamingType extends Entity.Type<StreamingType, Streaming, StreamingProps> { }
     export const Streaming = Entity.create<Streaming, StreamingType, StreamingProps>({ name: 'Interactive Surface', typeClass: 'Behaviour', shortName: 'B_DS', description: 'Behaviour that downloads density data for molecule selection on demand.' }); 
 
+    type DataInfo = { maxQueryRegion: number[], data: { [K in DataType ]?: { mean: number, sigma: number, min: number, max: number } } }
+
     export interface CreateStreamingParamsBase {
         minRadius: number;
         maxRadius: number;
@@ -21,7 +23,7 @@ namespace LiteMol.Extensions.DensityStreaming {
         server: string,
         source: FieldSource,
         id: string,
-        maxQueryRegion: number[]
+        info: DataInfo
     }
 
     export type CreateStreamingParams = CreateStreamingParamsBase & { [F in FieldType]?: Bootstrap.Visualization.Density.Style }
@@ -48,7 +50,7 @@ namespace LiteMol.Extensions.DensityStreaming {
             id: t.params.id,
             radius: t.params.radius, 
             server: t.params.server, 
-            maxQueryRegion: t.params.maxQueryRegion 
+            maxQueryRegion: t.params.info.maxQueryRegion 
         });
         return Bootstrap.Task.resolve('Behaviour', 'Background', Streaming.create(t, { label: `Density Streaming`, behaviour: b }));
     }, (ctx, b, t) => {
@@ -74,8 +76,8 @@ namespace LiteMol.Extensions.DensityStreaming {
         };
     }
 
-    function doAction(m: Entity.Molecule.Molecule, params: CreateParams, maxQueryRegion: number[], sourceId?: string, contourLevel?: number): DensityAction {
-        let radius = maxQueryRegion.reduce((m, v) => Math.min(m, v), maxQueryRegion[0]) / 2 - 3;
+    function doAction(m: Entity.Molecule.Molecule, params: CreateParams, info: DataInfo, sourceId?: string, contourLevel?: number): DensityAction {
+        let radius = info.maxQueryRegion.reduce((m, v) => Math.min(m, v), info.maxQueryRegion[0]) / 2 - 3;
 
         let styles: { [F in FieldType]?: Bootstrap.Visualization.Density.Style } = params.source === 'EMD'
             ? {
@@ -118,7 +120,7 @@ namespace LiteMol.Extensions.DensityStreaming {
             server: params.server,
             source: params.source,
             id: sourceId ? sourceId : params.id,
-            maxQueryRegion,
+            info,
             ...styles
         }
 
@@ -144,7 +146,7 @@ namespace LiteMol.Extensions.DensityStreaming {
                             res(fail(m, `Density streaming is not available for '${params.source}/${params.id}'.`));
                             return; 
                         } 
-                        res(doAction(m, params, json.maxQueryRegion, sourceId, contourLevel));
+                        res(doAction(m, params, { maxQueryRegion: json.maxQueryRegion, data: json.dataInfo } , sourceId, contourLevel));
                     } catch (e) {
                         res(fail(e, 'DensityServer API call failed.'))
                     }
