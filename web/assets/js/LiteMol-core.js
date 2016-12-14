@@ -980,7 +980,7 @@ if (typeof window !== 'undefined' && window && window.Promise) {
  */
 var CIFTools;
 (function (CIFTools) {
-    CIFTools.VERSION = { number: "1.1.0", date: "Dec 11 2016" };
+    CIFTools.VERSION = { number: "1.1.1", date: "Dec 14 2016" };
 })(CIFTools || (CIFTools = {}));
 /*
  * Copyright (c) 2016 David Sehnal, licensed under MIT License, See LICENSE file for more info.
@@ -1164,9 +1164,11 @@ var CIFTools;
             }
             FastNumberParsers.parseInt = parseInt;
             function parseScientific(main, str, start, end) {
+                // handle + in '1e+1' separately.
+                if (str.charCodeAt(start) === 43 /* + */)
+                    start++;
                 return main * Math.pow(10.0, parseInt(str, start, end));
             }
-            FastNumberParsers.parseScientific = parseScientific;
             function parseFloatSkipTrailingWhitespace(str, start, end) {
                 while (start < end && str.charCodeAt(start) === 32)
                     start++;
@@ -11332,6 +11334,7 @@ var LiteMol;
         var Utils;
         (function (Utils) {
             "use strict";
+            Utils.FastNumberParsers = Core.Formats.CIF.Utils.FastNumberParsers;
             function extend(object, source, guard) {
                 var v;
                 var s = source;
@@ -11672,99 +11675,6 @@ var LiteMol;
                 }
                 ArrayBuilder.create = create;
             })(ArrayBuilder = Utils.ArrayBuilder || (Utils.ArrayBuilder = {}));
-        })(Utils = Core.Utils || (Core.Utils = {}));
-    })(Core = LiteMol.Core || (LiteMol.Core = {}));
-})(LiteMol || (LiteMol = {}));
-/*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
- */
-/**
- * Efficient integer and float parsers.
- *
- * For the purposes of parsing numbers from the mmCIF data representations,
- * up to 4 times faster than JS parseInt/parseFloat.
- */
-var LiteMol;
-(function (LiteMol) {
-    var Core;
-    (function (Core) {
-        var Utils;
-        (function (Utils) {
-            var FastNumberParsers;
-            (function (FastNumberParsers) {
-                "use strict";
-                function parseIntSkipTrailingWhitespace(str, start, end) {
-                    while (start < end && str.charCodeAt(start) === 32)
-                        start++;
-                    return parseInt(str, start, end);
-                }
-                FastNumberParsers.parseIntSkipTrailingWhitespace = parseIntSkipTrailingWhitespace;
-                function parseInt(str, start, end) {
-                    var ret = 0, neg = 1;
-                    if (str.charCodeAt(start) === 45 /* - */) {
-                        neg = -1;
-                        start++;
-                    }
-                    for (; start < end; start++) {
-                        var c = str.charCodeAt(start) - 48;
-                        if (c > 9 || c < 0)
-                            return (neg * ret) | 0;
-                        else
-                            ret = (10 * ret + c) | 0;
-                    }
-                    return neg * ret;
-                }
-                FastNumberParsers.parseInt = parseInt;
-                function parseScientific(main, str, start, end) {
-                    return main * Math.pow(10.0, parseInt(str, start, end));
-                }
-                FastNumberParsers.parseScientific = parseScientific;
-                function parseFloatSkipTrailingWhitespace(str, start, end) {
-                    while (start < end && str.charCodeAt(start) === 32)
-                        start++;
-                    return parseFloat(str, start, end);
-                }
-                FastNumberParsers.parseFloatSkipTrailingWhitespace = parseFloatSkipTrailingWhitespace;
-                function parseFloat(str, start, end) {
-                    var neg = 1.0, ret = 0.0, point = 0.0, div = 1.0;
-                    if (str.charCodeAt(start) === 45) {
-                        neg = -1.0;
-                        ++start;
-                    }
-                    while (start < end) {
-                        var c = str.charCodeAt(start) - 48;
-                        if (c >= 0 && c < 10) {
-                            ret = ret * 10 + c;
-                            ++start;
-                        }
-                        else if (c === -2) {
-                            ++start;
-                            while (start < end) {
-                                c = str.charCodeAt(start) - 48;
-                                if (c >= 0 && c < 10) {
-                                    point = 10.0 * point + c;
-                                    div = 10.0 * div;
-                                    ++start;
-                                }
-                                else if (c === 53 || c === 21) {
-                                    return parseScientific(neg * (ret + point / div), str, start + 1, end);
-                                }
-                                else {
-                                    return neg * (ret + point / div);
-                                }
-                            }
-                            return neg * (ret + point / div);
-                        }
-                        else if (c === 53 || c === 21) {
-                            return parseScientific(neg * ret, str, start + 1, end);
-                        }
-                        else
-                            break;
-                    }
-                    return neg * ret;
-                }
-                FastNumberParsers.parseFloat = parseFloat;
-            })(FastNumberParsers = Utils.FastNumberParsers || (Utils.FastNumberParsers = {}));
         })(Utils = Core.Utils || (Core.Utils = {}));
     })(Core = LiteMol.Core || (LiteMol.Core = {}));
 })(LiteMol || (LiteMol = {}));

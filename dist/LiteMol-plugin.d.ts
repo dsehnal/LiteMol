@@ -3291,7 +3291,6 @@ declare namespace CIFTools.Utils {
 declare namespace CIFTools.Utils.FastNumberParsers {
     function parseIntSkipTrailingWhitespace(str: string, start: number, end: number): number;
     function parseInt(str: string, start: number, end: number): number;
-    function parseScientific(main: number, str: string, start: number, end: number): number;
     function parseFloatSkipTrailingWhitespace(str: string, start: number, end: number): number;
     function parseFloat(str: string, start: number, end: number): number;
 }
@@ -4815,6 +4814,7 @@ declare namespace LiteMol.Core {
     }
 }
 declare namespace LiteMol.Core.Utils {
+    export import FastNumberParsers = Core.Formats.CIF.Utils.FastNumberParsers;
     function extend<S, T, U>(object: S, source: T, guard?: U): S & T & U;
     function debounce<T>(func: () => T, wait: number): () => T;
 }
@@ -4881,19 +4881,6 @@ declare namespace LiteMol.Core.Utils {
         function forArray<T>(count: number): ArrayBuilder<T>;
         function create<T>(creator: (size: number) => any, chunkElementCount: number, elementSize: number): ArrayBuilder<T>;
     }
-}
-/**
- * Efficient integer and float parsers.
- *
- * For the purposes of parsing numbers from the mmCIF data representations,
- * up to 4 times faster than JS parseInt/parseFloat.
- */
-declare namespace LiteMol.Core.Utils.FastNumberParsers {
-    function parseIntSkipTrailingWhitespace(str: string, start: number, end: number): number;
-    function parseInt(str: string, start: number, end: number): number;
-    function parseScientific(main: number, str: string, start: number, end: number): number;
-    function parseFloatSkipTrailingWhitespace(str: string, start: number, end: number): number;
-    function parseFloat(str: string, start: number, end: number): number;
 }
 declare namespace LiteMol.Core.Utils {
     class PerformanceMonitor {

@@ -26,7 +26,6 @@
     // UTILS
     "Utils/MiscUtils.ts",
     "Utils/ArrayBuilder.ts",
-    "Utils/NumberParsers.ts",
     "Utils/PerformanceMonitor.ts",
     // FORMATS
     "Formats/Common.ts",

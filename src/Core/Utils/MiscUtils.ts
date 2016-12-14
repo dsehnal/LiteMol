@@ -4,6 +4,8 @@
 
 namespace LiteMol.Core.Utils {
     "use strict";
+
+    export import FastNumberParsers = Core.Formats.CIF.Utils.FastNumberParsers
         
     export function extend<S, T, U>(object: S, source: T, guard?: U): S & T & U {
         let v: any;
