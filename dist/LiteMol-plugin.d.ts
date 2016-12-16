@@ -2712,10 +2712,87 @@ declare namespace LiteMol.Plugin.Controls {
         private firedValue;
         componentWillMount(): void;
         componentWillReceiveProps(nextProps: any): void;
-        componentDidMount(): void;
         private updateValue(s);
         private fire();
         render(): JSX.Element;
+    }
+    class Handle extends React.Component<Partial<HandleProps>, {}> {
+        render(): JSX.Element;
+    }
+    interface SliderBaseProps {
+        min: number;
+        max: number;
+        step?: number;
+        defaultValue?: number | number[];
+        value?: number | number[];
+        marks?: any;
+        included?: boolean;
+        className?: string;
+        prefixCls?: string;
+        disabled?: boolean;
+        children?: any;
+        onBeforeChange?: (value: number | number[]) => void;
+        onChange?: (value: number | number[]) => void;
+        onAfterChange?: (value: number | number[]) => void;
+        handle?: JSX.Element;
+        tipFormatter?: (value: number, index: number) => any;
+        dots?: boolean;
+        range?: boolean | number;
+        vertical?: boolean;
+        allowCross?: boolean;
+        pushable?: boolean | number;
+    }
+    interface SliderBaseState {
+        handle: number | null;
+        recent: number;
+        bounds: number[];
+    }
+    class SliderBase extends React.Component<SliderBaseProps, SliderBaseState> {
+        constructor(props: SliderBaseProps);
+        static defaultProps: SliderBaseProps;
+        private dragOffset;
+        private startPosition;
+        private startValue;
+        private _getPointsCache;
+        componentWillReceiveProps(nextProps: SliderBaseProps): void;
+        onChange(state: this['state']): void;
+        onMouseDown(e: MouseEvent): void;
+        onMouseMove(e: MouseEvent): void;
+        onMove(e: MouseEvent | TouchEvent, position: number): void;
+        onStart(position: number): void;
+        onTouchMove(e: TouchEvent): void;
+        onTouchStart(e: TouchEvent): void;
+        /**
+         * Returns an array of possible slider points, taking into account both
+         * `marks` and `step`. The result is cached.
+         */
+        getPoints(): any;
+        getPrecision(step: number): number;
+        getSliderLength(): number;
+        getSliderStart(): number;
+        getValue(): number;
+        private eventHandlers;
+        addDocumentEvents(type: 'touch' | 'mouse'): void;
+        calcOffset(value: number): number;
+        calcValue(offset: number): number;
+        calcValueByPos(position: number): number;
+        end(type: 'mouse' | 'touch'): void;
+        isEventFromHandle(e: Event): boolean;
+        isValueOutOfBounds(value: number, props: SliderBaseProps): boolean;
+        pushHandle(bounds: number[], handle: number, direction: number, amount: number): boolean;
+        pushHandleOnePoint(bounds: number[], handle: number, direction: number): boolean;
+        pushSurroundingHandles(bounds: number[], handle: number, originalValue: number): void;
+        removeEvents(type: 'touch' | 'mouse'): void;
+        trimAlignValue(v: number, nextProps?: SliderBaseProps): number;
+        render(): JSX.Element;
+    }
+    interface HandleProps {
+        className: string;
+        vertical: boolean;
+        offset: number;
+        tipFormatter: (v: number, index: number) => any;
+        value: number;
+        index: number;
     }
 }
 declare namespace LiteMol.Plugin.Controls {

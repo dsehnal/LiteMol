@@ -69,7 +69,7 @@
                 height: $row-height;
                 display: table-cell;
                 vertical-align: middle;
-                padding: 0 $control-spacing;
+                padding: 0 ($control-spacing + 4px);
             }
         }
         > div:last-child {

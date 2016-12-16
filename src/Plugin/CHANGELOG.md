@@ -1,4 +1,7 @@
-﻿# 1.2.10
+﻿# 1.2.11
+* Replaced HTML5 input=range by custom slider component.
+
+# 1.2.10
 * Ability to show color stripe on expander control.
 
 # 1.2.9

@@ -75863,7 +75863,7 @@ var LiteMol;
 (function (LiteMol) {
     var Plugin;
     (function (Plugin) {
-        Plugin.VERSION = { number: "1.2.10", date: "Dec 13 2016" };
+        Plugin.VERSION = { number: "1.2.11", date: "Dec 16 2016" };
     })(Plugin = LiteMol.Plugin || (LiteMol.Plugin = {}));
 })(LiteMol || (LiteMol = {}));
 /*
@@ -76114,12 +76114,6 @@ var LiteMol;
                 Slider.prototype.componentWillReceiveProps = function (nextProps) {
                     this.setState({ value: '' + nextProps.value });
                 };
-                Slider.prototype.componentDidMount = function () {
-                    // chrome hack
-                    var s = this.refs['slider'];
-                    if (s.value !== this.state.value)
-                        s.value = this.state.value;
-                };
                 Slider.prototype.updateValue = function (s) {
                     var v = +s;
                     if (v < this.props.min) {
@@ -76154,11 +76148,7 @@ var LiteMol;
                         Plugin.React.createElement("div", null,
                             Plugin.React.createElement("div", null,
                                 Plugin.React.createElement("div", null,
-                                    Plugin.React.createElement("form", { noValidate: true },
-                                        Plugin.React.createElement("input", { type: 'range', min: this.props.min, max: this.props.max, value: this.state.value, ref: 'slider', step: step, onInput: function (e) {
-                                                var s = e.target.value;
-                                                _this.setState({ value: s });
-                                            }, onSelect: function (e) { _this.fire(); e.target.blur(); }, onBlur: function () { return _this.fire(); }, onTouchEnd: function () { return _this.fire(); } })))),
+                                    Plugin.React.createElement(SliderBase, { min: this.props.min, max: this.props.max, step: step, value: +this.state.value, onChange: function (v) { return _this.setState({ value: '' + v }); }, onAfterChange: function (v) { return _this.fire(); } }))),
                             Plugin.React.createElement("div", null,
                                 Plugin.React.createElement(Controls.TextBox, { value: this.state.value, onChange: function (v) { return _this.updateValue(v); }, onBlur: function () { return _this.fire(); }, onKeyPress: function (e) {
                                         if (Controls.isEnter(e))
@@ -76168,6 +76158,597 @@ var LiteMol;
                 return Slider;
             }(Plugin.React.Component));
             Controls.Slider = Slider;
+            /**
+             * The following code was adapted from react-components/slider library.
+             *
+             * The MIT License (MIT)
+             * Copyright (c) 2015-present Alipay.com, https://www.alipay.com/
+             *
+             * Permission is hereby granted, free of charge, to any person obtaining a copy
+             * of this software and associated documentation files (the "Software"), to deal
+             * in the Software without restriction, including without limitation the rights
+             * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+             * copies of the Software, and to permit persons to whom the Software is
+             * furnished to do so, subject to the following conditions:
+        
+             * The above copyright notice and this permission notice shall be included in
+             * all copies or substantial portions of the Software.
+        
+             * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+             * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+             * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+             * IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+             * CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+             * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+             * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+             */
+            function classNames(_classes) {
+                var classes = [];
+                var hasOwn = {}.hasOwnProperty;
+                for (var i = 0; i < arguments.length; i++) {
+                    var arg = arguments[i];
+                    if (!arg)
+                        continue;
+                    var argType = typeof arg;
+                    if (argType === 'string' || argType === 'number') {
+                        classes.push(arg);
+                    }
+                    else if (Array.isArray(arg)) {
+                        classes.push(classNames.apply(null, arg));
+                    }
+                    else if (argType === 'object') {
+                        for (var key in arg) {
+                            if (hasOwn.call(arg, key) && arg[key]) {
+                                classes.push(key);
+                            }
+                        }
+                    }
+                }
+                return classes.join(' ');
+            }
+            function noop() {
+            }
+            function isNotTouchEvent(e) {
+                return e.touches.length > 1 || (e.type.toLowerCase() === 'touchend' && e.touches.length > 0);
+            }
+            function getTouchPosition(vertical, e) {
+                return vertical ? e.touches[0].clientY : e.touches[0].pageX;
+            }
+            function getMousePosition(vertical, e) {
+                return vertical ? e.clientY : e.pageX;
+            }
+            function getHandleCenterPosition(vertical, handle) {
+                var coords = handle.getBoundingClientRect();
+                return vertical ?
+                    coords.top + (coords.height * 0.5) :
+                    coords.left + (coords.width * 0.5);
+            }
+            function pauseEvent(e) {
+                e.stopPropagation();
+                e.preventDefault();
+            }
+            var Handle = (function (_super) {
+                __extends(Handle, _super);
+                function Handle() {
+                    return _super.apply(this, arguments) || this;
+                }
+                Handle.prototype.render = function () {
+                    var _a = this.props, className = _a.className, tipFormatter = _a.tipFormatter, vertical = _a.vertical, offset = _a.offset, value = _a.value, index = _a.index;
+                    var style = vertical ? { bottom: offset + "%" } : { left: offset + "%" };
+                    return (Plugin.React.createElement("div", { className: className, style: style, title: tipFormatter(value, index) }));
+                };
+                return Handle;
+            }(Plugin.React.Component));
+            Controls.Handle = Handle;
+            var SliderBase = (function (_super) {
+                __extends(SliderBase, _super);
+                function SliderBase(props) {
+                    var _this = _super.call(this, props) || this;
+                    _this.dragOffset = 0;
+                    _this.startPosition = 0;
+                    _this.startValue = 0;
+                    _this._getPointsCache = void 0;
+                    _this.eventHandlers = {
+                        'touchmove': function (e) { return _this.onTouchMove(e); },
+                        'touchend': function (e) { return _this.end('touch'); },
+                        'mousemove': function (e) { return _this.onMouseMove(e); },
+                        'mouseup': function (e) { return _this.end('mouse'); },
+                    };
+                    var range = props.range, min = props.min, max = props.max, step = props.step;
+                    var initialValue = range ? Array.apply(null, Array(+range + 1)).map(function () { return min; }) : min;
+                    var defaultValue = ('defaultValue' in props ? props.defaultValue : initialValue);
+                    var value = (props.value !== undefined ? props.value : defaultValue);
+                    var bounds = (range ? value : [min, value]).map(function (v) { return _this.trimAlignValue(v); });
+                    var recent;
+                    if (range && bounds[0] === bounds[bounds.length - 1] && bounds[0] === max) {
+                        recent = 0;
+                    }
+                    else {
+                        recent = bounds.length - 1;
+                    }
+                    _this.state = {
+                        handle: null,
+                        recent: recent,
+                        bounds: bounds,
+                    };
+                    return _this;
+                }
+                SliderBase.prototype.componentWillReceiveProps = function (nextProps) {
+                    var _this = this;
+                    if (!('value' in nextProps || 'min' in nextProps || 'max' in nextProps))
+                        return;
+                    var bounds = this.state.bounds;
+                    if (nextProps.range) {
+                        var value = nextProps.value || bounds;
+                        var nextBounds = value.map(function (v) { return _this.trimAlignValue(v, nextProps); });
+                        if (nextBounds.every(function (v, i) { return v === bounds[i]; }))
+                            return;
+                        this.setState({ bounds: nextBounds });
+                        if (bounds.some(function (v) { return _this.isValueOutOfBounds(v, nextProps); })) {
+                            this.props.onChange(nextBounds);
+                        }
+                    }
+                    else {
+                        var value = nextProps.value !== undefined ? nextProps.value : bounds[1];
+                        var nextValue = this.trimAlignValue(value, nextProps);
+                        if (nextValue === bounds[1] && bounds[0] === nextProps.min)
+                            return;
+                        this.setState({ bounds: [nextProps.min, nextValue] });
+                        if (this.isValueOutOfBounds(bounds[1], nextProps)) {
+                            this.props.onChange(nextValue);
+                        }
+                    }
+                };
+                SliderBase.prototype.onChange = function (state) {
+                    var props = this.props;
+                    var isNotControlled = !('value' in props);
+                    if (isNotControlled) {
+                        this.setState(state);
+                    }
+                    else if (state.handle !== undefined) {
+                        this.setState({ handle: state.handle });
+                    }
+                    var data = __assign({}, this.state, state);
+                    var changedValue = props.range ? data.bounds : data.bounds[1];
+                    props.onChange(changedValue);
+                };
+                SliderBase.prototype.onMouseDown = function (e) {
+                    if (e.button !== 0) {
+                        return;
+                    }
+                    var position = getMousePosition(this.props.vertical, e);
+                    if (!this.isEventFromHandle(e)) {
+                        this.dragOffset = 0;
+                    }
+                    else {
+                        var handlePosition = getHandleCenterPosition(this.props.vertical, e.target);
+                        this.dragOffset = position - handlePosition;
+                        position = handlePosition;
+                    }
+                    this.onStart(position);
+                    this.addDocumentEvents('mouse');
+                    pauseEvent(e);
+                };
+                SliderBase.prototype.onMouseMove = function (e) {
+                    var position = getMousePosition(this.props.vertical, e);
+                    this.onMove(e, position - this.dragOffset);
+                };
+                SliderBase.prototype.onMove = function (e, position) {
+                    pauseEvent(e);
+                    var props = this.props;
+                    var state = this.state;
+                    var diffPosition = position - this.startPosition;
+                    diffPosition = this.props.vertical ? -diffPosition : diffPosition;
+                    var diffValue = diffPosition / this.getSliderLength() * (props.max - props.min);
+                    var value = this.trimAlignValue(this.startValue + diffValue);
+                    var oldValue = state.bounds[state.handle];
+                    if (value === oldValue)
+                        return;
+                    var nextBounds = state.bounds.slice();
+                    nextBounds[state.handle] = value;
+                    var nextHandle = state.handle;
+                    if (props.pushable !== false) {
+                        var originalValue = state.bounds[nextHandle];
+                        this.pushSurroundingHandles(nextBounds, nextHandle, originalValue);
+                    }
+                    else if (props.allowCross) {
+                        nextBounds.sort(function (a, b) { return a - b; });
+                        nextHandle = nextBounds.indexOf(value);
+                    }
+                    this.onChange({
+                        handle: nextHandle,
+                        bounds: nextBounds,
+                    });
+                };
+                SliderBase.prototype.onStart = function (position) {
+                    var props = this.props;
+                    props.onBeforeChange(this.getValue());
+                    var value = this.calcValueByPos(position);
+                    this.startValue = value;
+                    this.startPosition = position;
+                    var state = this.state;
+                    var bounds = state.bounds;
+                    var valueNeedChanging = 1;
+                    if (this.props.range) {
+                        var closestBound = 0;
+                        for (var i = 1; i < bounds.length - 1; ++i) {
+                            if (value > bounds[i]) {
+                                closestBound = i;
+                            }
+                        }
+                        if (Math.abs(bounds[closestBound + 1] - value) < Math.abs(bounds[closestBound] - value)) {
+                            closestBound = closestBound + 1;
+                        }
+                        valueNeedChanging = closestBound;
+                        var isAtTheSamePoint = (bounds[closestBound + 1] === bounds[closestBound]);
+                        if (isAtTheSamePoint) {
+                            valueNeedChanging = state.recent;
+                        }
+                        if (isAtTheSamePoint && (value !== bounds[closestBound + 1])) {
+                            valueNeedChanging = value < bounds[closestBound + 1] ? closestBound : closestBound + 1;
+                        }
+                    }
+                    this.setState({
+                        handle: valueNeedChanging,
+                        recent: valueNeedChanging,
+                    });
+                    var oldValue = state.bounds[valueNeedChanging];
+                    if (value === oldValue)
+                        return;
+                    var nextBounds = state.bounds.slice();
+                    nextBounds[valueNeedChanging] = value;
+                    this.onChange({ bounds: nextBounds });
+                };
+                SliderBase.prototype.onTouchMove = function (e) {
+                    if (isNotTouchEvent(e)) {
+                        this.end('touch');
+                        return;
+                    }
+                    var position = getTouchPosition(this.props.vertical, e);
+                    this.onMove(e, position - this.dragOffset);
+                };
+                SliderBase.prototype.onTouchStart = function (e) {
+                    if (isNotTouchEvent(e))
+                        return;
+                    var position = getTouchPosition(this.props.vertical, e);
+                    if (!this.isEventFromHandle(e)) {
+                        this.dragOffset = 0;
+                    }
+                    else {
+                        var handlePosition = getHandleCenterPosition(this.props.vertical, e.target);
+                        this.dragOffset = position - handlePosition;
+                        position = handlePosition;
+                    }
+                    this.onStart(position);
+                    this.addDocumentEvents('touch');
+                    pauseEvent(e);
+                };
+                /**
+                 * Returns an array of possible slider points, taking into account both
+                 * `marks` and `step`. The result is cached.
+                 */
+                SliderBase.prototype.getPoints = function () {
+                    var _a = this.props, marks = _a.marks, step = _a.step, min = _a.min, max = _a.max;
+                    var cache = this._getPointsCache;
+                    if (!cache || cache.marks !== marks || cache.step !== step) {
+                        var pointsObject = __assign({}, marks);
+                        if (step !== null) {
+                            for (var point = min; point <= max; point += step) {
+                                pointsObject[point] = point;
+                            }
+                        }
+                        var points = Object.keys(pointsObject).map(parseFloat);
+                        points.sort(function (a, b) { return a - b; });
+                        this._getPointsCache = { marks: marks, step: step, points: points };
+                    }
+                    return this._getPointsCache.points;
+                };
+                SliderBase.prototype.getPrecision = function (step) {
+                    var stepString = step.toString();
+                    var precision = 0;
+                    if (stepString.indexOf('.') >= 0) {
+                        precision = stepString.length - stepString.indexOf('.') - 1;
+                    }
+                    return precision;
+                };
+                SliderBase.prototype.getSliderLength = function () {
+                    var slider = this.refs['slider'];
+                    if (!slider) {
+                        return 0;
+                    }
+                    return this.props.vertical ? slider.clientHeight : slider.clientWidth;
+                };
+                SliderBase.prototype.getSliderStart = function () {
+                    var slider = this.refs['slider'];
+                    var rect = slider.getBoundingClientRect();
+                    return this.props.vertical ? rect.top : rect.left;
+                };
+                SliderBase.prototype.getValue = function () {
+                    var bounds = this.state.bounds;
+                    return (this.props.range ? bounds : bounds[1]);
+                };
+                SliderBase.prototype.addDocumentEvents = function (type) {
+                    if (type === 'touch') {
+                        document.addEventListener('touchmove', this.eventHandlers.touchmove);
+                        document.addEventListener('touchend', this.eventHandlers.touchend);
+                    }
+                    else if (type === 'mouse') {
+                        document.addEventListener('mousemove', this.eventHandlers.mousemove);
+                        document.addEventListener('mouseup', this.eventHandlers.mouseup);
+                    }
+                };
+                SliderBase.prototype.calcOffset = function (value) {
+                    var _a = this.props, min = _a.min, max = _a.max;
+                    var ratio = (value - min) / (max - min);
+                    return ratio * 100;
+                };
+                SliderBase.prototype.calcValue = function (offset) {
+                    var _a = this.props, vertical = _a.vertical, min = _a.min, max = _a.max;
+                    var ratio = Math.abs(offset / this.getSliderLength());
+                    var value = vertical ? (1 - ratio) * (max - min) + min : ratio * (max - min) + min;
+                    return value;
+                };
+                SliderBase.prototype.calcValueByPos = function (position) {
+                    var pixelOffset = position - this.getSliderStart();
+                    var nextValue = this.trimAlignValue(this.calcValue(pixelOffset));
+                    return nextValue;
+                };
+                SliderBase.prototype.end = function (type) {
+                    this.removeEvents(type);
+                    this.props.onAfterChange(this.getValue());
+                    this.setState({ handle: null });
+                };
+                SliderBase.prototype.isEventFromHandle = function (e) {
+                    var _this = this;
+                    return this.state.bounds.some(function (x, i) { return (_this.refs["handle-" + i] &&
+                        e.target === Plugin.ReactDOM.findDOMNode(_this.refs["handle-" + i])); });
+                };
+                SliderBase.prototype.isValueOutOfBounds = function (value, props) {
+                    return value < props.min || value > props.max;
+                };
+                SliderBase.prototype.pushHandle = function (bounds, handle, direction, amount) {
+                    var originalValue = bounds[handle];
+                    var currentValue = bounds[handle];
+                    while (direction * (currentValue - originalValue) < amount) {
+                        if (!this.pushHandleOnePoint(bounds, handle, direction)) {
+                            // can't push handle enough to create the needed `amount` gap, so we
+                            // revert its position to the original value
+                            bounds[handle] = originalValue;
+                            return false;
+                        }
+                        currentValue = bounds[handle];
+                    }
+                    // the handle was pushed enough to create the needed `amount` gap
+                    return true;
+                };
+                SliderBase.prototype.pushHandleOnePoint = function (bounds, handle, direction) {
+                    var points = this.getPoints();
+                    var pointIndex = points.indexOf(bounds[handle]);
+                    var nextPointIndex = pointIndex + direction;
+                    if (nextPointIndex >= points.length || nextPointIndex < 0) {
+                        // reached the minimum or maximum available point, can't push anymore
+                        return false;
+                    }
+                    var nextHandle = handle + direction;
+                    var nextValue = points[nextPointIndex];
+                    var threshold = this.props.pushable;
+                    var diffToNext = direction * (bounds[nextHandle] - nextValue);
+                    if (!this.pushHandle(bounds, nextHandle, direction, +threshold - diffToNext)) {
+                        // couldn't push next handle, so we won't push this one either
+                        return false;
+                    }
+                    // push the handle
+                    bounds[handle] = nextValue;
+                    return true;
+                };
+                SliderBase.prototype.pushSurroundingHandles = function (bounds, handle, originalValue) {
+                    var threshold = this.props.pushable;
+                    var value = bounds[handle];
+                    var direction = 0;
+                    if (bounds[handle + 1] - value < threshold) {
+                        direction = +1;
+                    }
+                    else if (value - bounds[handle - 1] < threshold) {
+                        direction = -1;
+                    }
+                    if (direction === 0) {
+                        return;
+                    }
+                    var nextHandle = handle + direction;
+                    var diffToNext = direction * (bounds[nextHandle] - value);
+                    if (!this.pushHandle(bounds, nextHandle, direction, +threshold - diffToNext)) {
+                        // revert to original value if pushing is impossible
+                        bounds[handle] = originalValue;
+                    }
+                };
+                SliderBase.prototype.removeEvents = function (type) {
+                    if (type === 'touch') {
+                        document.removeEventListener('touchmove', this.eventHandlers.touchmove);
+                        document.removeEventListener('touchend', this.eventHandlers.touchend);
+                    }
+                    else if (type === 'mouse') {
+                        document.removeEventListener('mousemove', this.eventHandlers.mousemove);
+                        document.removeEventListener('mouseup', this.eventHandlers.mouseup);
+                    }
+                };
+                SliderBase.prototype.trimAlignValue = function (v, nextProps) {
+                    var _a = (this.state || {}), handle = _a.handle, bounds = _a.bounds;
+                    var _b = __assign({}, this.props, (nextProps || {})), marks = _b.marks, step = _b.step, min = _b.min, max = _b.max, allowCross = _b.allowCross;
+                    var val = v;
+                    if (val <= min) {
+                        val = min;
+                    }
+                    if (val >= max) {
+                        val = max;
+                    }
+                    /* eslint-disable eqeqeq */
+                    if (!allowCross && handle != null && handle > 0 && val <= bounds[handle - 1]) {
+                        val = bounds[handle - 1];
+                    }
+                    if (!allowCross && handle != null && handle < bounds.length - 1 && val >= bounds[handle + 1]) {
+                        val = bounds[handle + 1];
+                    }
+                    /* eslint-enable eqeqeq */
+                    var points = Object.keys(marks).map(parseFloat);
+                    if (step !== null) {
+                        var closestStep = (Math.round((val - min) / step) * step) + min;
+                        points.push(closestStep);
+                    }
+                    var diffs = points.map(function (point) { return Math.abs(val - point); });
+                    var closestPoint = points[diffs.indexOf(Math.min.apply(Math, diffs))];
+                    return step !== null ? parseFloat(closestPoint.toFixed(this.getPrecision(step))) : closestPoint;
+                };
+                SliderBase.prototype.render = function () {
+                    var _this = this;
+                    var _a = this.state, handle = _a.handle, bounds = _a.bounds;
+                    var _b = this.props, className = _b.className, prefixCls = _b.prefixCls, disabled = _b.disabled, vertical = _b.vertical, dots = _b.dots, included = _b.included, range = _b.range, step = _b.step, marks = _b.marks, max = _b.max, min = _b.min, tipFormatter = _b.tipFormatter, children = _b.children;
+                    var customHandle = this.props.handle;
+                    var offsets = bounds.map(function (v) { return _this.calcOffset(v); });
+                    var handleClassName = prefixCls + "-handle";
+                    var handlesClassNames = bounds.map(function (v, i) {
+                        return classNames((_a = {},
+                            _a[handleClassName] = true,
+                            _a[handleClassName + "-" + (i + 1)] = true,
+                            _a[handleClassName + "-lower"] = i === 0,
+                            _a[handleClassName + "-upper"] = i === bounds.length - 1,
+                            _a));
+                        var _a;
+                    });
+                    var isNoTip = (step === null) || (tipFormatter === null);
+                    var commonHandleProps = {
+                        prefixCls: prefixCls,
+                        noTip: isNoTip,
+                        tipFormatter: tipFormatter,
+                        vertical: vertical,
+                    };
+                    var handles = bounds.map(function (v, i) { return Plugin.React.cloneElement(customHandle, __assign({}, commonHandleProps, { className: handlesClassNames[i], value: v, offset: offsets[i], dragging: handle === i, index: i, key: i, ref: "handle-" + i })); });
+                    if (!range) {
+                        handles.shift();
+                    }
+                    var isIncluded = included || range;
+                    var tracks = [];
+                    for (var i = 1; i < bounds.length; ++i) {
+                        var trackClassName = classNames((_c = {},
+                            _c[prefixCls + "-track"] = true,
+                            _c[prefixCls + "-track-" + i] = true,
+                            _c));
+                    }
+                    var sliderClassName = classNames((_d = {},
+                        _d[prefixCls] = true,
+                        _d[prefixCls + "-with-marks"] = Object.keys(marks).length,
+                        _d[prefixCls + "-disabled"] = disabled,
+                        _d[prefixCls + "-vertical"] = this.props.vertical,
+                        _d[className] = !!className,
+                        _d));
+                    return (Plugin.React.createElement("div", { ref: "slider", className: sliderClassName, onTouchStart: disabled ? noop : this.onTouchStart.bind(this), onMouseDown: disabled ? noop : this.onMouseDown.bind(this) },
+                        Plugin.React.createElement("div", { className: prefixCls + "-rail" }),
+                        tracks,
+                        Plugin.React.createElement(Steps, { prefixCls: prefixCls, vertical: vertical, marks: marks, dots: dots, step: step, included: isIncluded, lowerBound: bounds[0], upperBound: bounds[bounds.length - 1], max: max, min: min }),
+                        handles,
+                        Plugin.React.createElement(Marks, { className: prefixCls + "-mark", vertical: vertical, marks: marks, included: isIncluded, lowerBound: bounds[0], upperBound: bounds[bounds.length - 1], max: max, min: min }),
+                        children));
+                    var _c, _d;
+                };
+                return SliderBase;
+            }(Plugin.React.Component));
+            SliderBase.defaultProps = {
+                prefixCls: 'lm-slider-base',
+                className: '',
+                min: 0,
+                max: 100,
+                step: 1,
+                marks: {},
+                handle: Plugin.React.createElement(Handle, { className: '', vertical: false, offset: 0, tipFormatter: function (v) { return v; }, value: 0, index: 0 }),
+                onBeforeChange: noop,
+                onChange: noop,
+                onAfterChange: noop,
+                tipFormatter: function (value, index) { return value; },
+                included: true,
+                disabled: false,
+                dots: false,
+                range: false,
+                vertical: false,
+                allowCross: true,
+                pushable: false,
+            };
+            Controls.SliderBase = SliderBase;
+            var Marks = function (_a) {
+                var className = _a.className, vertical = _a.vertical, marks = _a.marks, included = _a.included, upperBound = _a.upperBound, lowerBound = _a.lowerBound, max = _a.max, min = _a.min;
+                var marksKeys = Object.keys(marks);
+                var marksCount = marksKeys.length;
+                var unit = 100 / (marksCount - 1);
+                var markWidth = unit * 0.9;
+                var range = max - min;
+                var elements = marksKeys.map(parseFloat).sort(function (a, b) { return a - b; }).map(function (point) {
+                    var isActived = (!included && point === upperBound) ||
+                        (included && point <= upperBound && point >= lowerBound);
+                    var markClassName = classNames((_a = {},
+                        _a[className + "-text"] = true,
+                        _a[className + "-text-active"] = isActived,
+                        _a));
+                    var bottomStyle = {
+                        // height: markWidth + '%',
+                        marginBottom: '-50%',
+                        bottom: (point - min) / range * 100 + "%",
+                    };
+                    var leftStyle = {
+                        width: markWidth + "%",
+                        marginLeft: -markWidth / 2 + "%",
+                        left: (point - min) / range * 100 + "%",
+                    };
+                    var style = vertical ? bottomStyle : leftStyle;
+                    var markPoint = marks[point];
+                    var markPointIsObject = typeof markPoint === 'object' && !Plugin.React.isValidElement(markPoint);
+                    var markLabel = markPointIsObject ? markPoint.label : markPoint;
+                    var markStyle = markPointIsObject ? __assign({}, style, markPoint.style) : style;
+                    return (Plugin.React.createElement("span", { className: markClassName, style: markStyle, key: point }, markLabel));
+                    var _a;
+                });
+                return Plugin.React.createElement("div", { className: className }, elements);
+            };
+            function calcPoints(vertical, marks, dots, step, min, max) {
+                var points = Object.keys(marks).map(parseFloat);
+                if (dots) {
+                    for (var i = min; i <= max; i = i + step) {
+                        if (points.indexOf(i) >= 0)
+                            continue;
+                        points.push(i);
+                    }
+                }
+                return points;
+            }
+            var Steps = function (_a) {
+                var prefixCls = _a.prefixCls, vertical = _a.vertical, marks = _a.marks, dots = _a.dots, step = _a.step, included = _a.included, lowerBound = _a.lowerBound, upperBound = _a.upperBound, max = _a.max, min = _a.min;
+                var range = max - min;
+                var elements = calcPoints(vertical, marks, dots, step, min, max).map(function (point) {
+                    var offset = Math.abs(point - min) / range * 100 + "%";
+                    var style = vertical ? { bottom: offset } : { left: offset };
+                    var isActived = (!included && point === upperBound) ||
+                        (included && point <= upperBound && point >= lowerBound);
+                    var pointClassName = classNames((_a = {},
+                        _a[prefixCls + "-dot"] = true,
+                        _a[prefixCls + "-dot-active"] = isActived,
+                        _a));
+                    return Plugin.React.createElement("span", { className: pointClassName, style: style, key: point });
+                    var _a;
+                });
+                return Plugin.React.createElement("div", { className: prefixCls + "-step" }, elements);
+            };
+            var Track = function (_a) {
+                var className = _a.className, included = _a.included, vertical = _a.vertical, offset = _a.offset, length = _a.length;
+                var style = {
+                    visibility: included ? 'visible' : 'hidden'
+                };
+                if (vertical) {
+                    style.bottom = offset + "%";
+                    style.height = length + "%";
+                }
+                else {
+                    style.left = offset + "%";
+                    style.width = length + "%";
+                }
+                return Plugin.React.createElement("div", { className: className, style: style });
+            };
         })(Controls = Plugin.Controls || (Plugin.Controls = {}));
     })(Plugin = LiteMol.Plugin || (LiteMol.Plugin = {}));
 })(LiteMol || (LiteMol = {}));

@@ -6,9 +6,9 @@ $row-height:            32px;
 $control-spacing:       10px;
 $entity-subtree-offset: 8px;
 $info-vertical-padding: 6px;
+$slider-border-radius-base: 6px;
 
 // layout
-
 $expanded-top-height:    100px;
 $expanded-bottom-height: 3 * $row-height + 2;
 $expanded-right-width:   290px;
@@ -38,7 +38,9 @@ $entity-color-Visual:    color-lower-contrast(#3498db, 5%);
 $entity-color-Group:     color-lower-contrast(#e67e22, 5%); 
 
 //////////////////////////////////////////////////
-// COMPUTED COLORS
+// COLORS and COMPUTED COLORS
+
+$slider-disabledColor: #ccc;
 
 $control-background: color-increase-contrast($default-background, 6.5%);
 $border-color: color-increase-contrast($default-background, 15%);  

@@ -2119,7 +2119,7 @@
       height: 32px;
       display: table-cell;
       vertical-align: middle;
-      padding: 0 10px; }
+      padding: 0 14px; }
   .lm-plugin .lm-slider > div > div:last-child {
     position: absolute;
     height: 32px;
@@ -2192,6 +2192,116 @@
   .lm-plugin .lm-row-text > div {
     line-height: 32px;
     text-align: center; }
+  .lm-plugin .lm-slider-base {
+    position: relative;
+    height: 14px;
+    padding: 5px 0;
+    width: 100%;
+    border-radius: 6px;
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent; }
+    .lm-plugin .lm-slider-base * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent; }
+    .lm-plugin .lm-slider-base-rail {
+      position: absolute;
+      width: 100%;
+      background-color: #313645;
+      height: 4px;
+      border-radius: 2px; }
+    .lm-plugin .lm-slider-base-track {
+      position: absolute;
+      left: 0;
+      height: 4px;
+      border-radius: 6px;
+      background-color: tint(#ccd4e0, 60%); }
+    .lm-plugin .lm-slider-base-handle {
+      position: absolute;
+      margin-left: -11px;
+      margin-top: -9px;
+      width: 22px;
+      height: 22px;
+      cursor: pointer;
+      border-radius: 50%;
+      background-color: #ccd4e0;
+      border: 4px solid #313645; }
+      .lm-plugin .lm-slider-base-handle:hover {
+        background-color: #51A2FB; }
+    .lm-plugin .lm-slider-base-mark {
+      position: absolute;
+      top: 18px;
+      left: 0;
+      width: 100%;
+      font-size: 12px; }
+    .lm-plugin .lm-slider-base-mark-text {
+      position: absolute;
+      display: inline-block;
+      vertical-align: middle;
+      text-align: center;
+      cursor: pointer;
+      color: #999; }
+      .lm-plugin .lm-slider-base-mark-text-active {
+        color: #666; }
+    .lm-plugin .lm-slider-base-step {
+      position: absolute;
+      width: 100%;
+      height: 4px;
+      background: transparent; }
+    .lm-plugin .lm-slider-base-dot {
+      position: absolute;
+      bottom: -2px;
+      margin-left: -4px;
+      width: 8px;
+      height: 8px;
+      border: 2px solid #e9e9e9;
+      background-color: #fff;
+      cursor: pointer;
+      border-radius: 50%;
+      vertical-align: middle; }
+      .lm-plugin .lm-slider-base-dot:first-child {
+        margin-left: -4px; }
+      .lm-plugin .lm-slider-base-dot:last-child {
+        margin-left: -4px; }
+      .lm-plugin .lm-slider-base-dot-active {
+        border-color: tint(#ccd4e0, 50%); }
+    .lm-plugin .lm-slider-base-disabled {
+      background-color: #e9e9e9; }
+      .lm-plugin .lm-slider-base-disabled .lm-slider-base-track {
+        background-color: #ccc; }
+      .lm-plugin .lm-slider-base-disabled .lm-slider-base-handle, .lm-plugin .lm-slider-base-disabled .lm-slider-base-dot {
+        border-color: #ccc;
+        background-color: #fff;
+        cursor: not-allowed; }
+      .lm-plugin .lm-slider-base-disabled .lm-slider-base-mark-text, .lm-plugin .lm-slider-base-disabled .lm-slider-base-dot {
+        cursor: not-allowed !important; }
+  .lm-plugin .lm-slider-base-vertical {
+    width: 14px;
+    height: 100%;
+    padding: 0 5px; }
+    .lm-plugin .lm-slider-base-vertical .lm-slider-base-rail {
+      height: 100%;
+      width: 4px; }
+    .lm-plugin .lm-slider-base-vertical .lm-slider-base-track {
+      left: 5px;
+      bottom: 0;
+      width: 4px; }
+    .lm-plugin .lm-slider-base-vertical .lm-slider-base-handle {
+      margin-left: -5px;
+      margin-bottom: -7px; }
+    .lm-plugin .lm-slider-base-vertical .lm-slider-base-mark {
+      top: 0;
+      left: 18px;
+      height: 100%; }
+    .lm-plugin .lm-slider-base-vertical .lm-slider-base-step {
+      height: 100%;
+      width: 4px; }
+    .lm-plugin .lm-slider-base-vertical .lm-slider-base-dot {
+      left: 2px;
+      margin-bottom: -4px; }
+      .lm-plugin .lm-slider-base-vertical .lm-slider-base-dot:first-child {
+        margin-bottom: -4px; }
+      .lm-plugin .lm-slider-base-vertical .lm-slider-base-dot:last-child {
+        margin-bottom: -4px; }
   .lm-plugin .lm-panel-header .lm-panel-expander {
     display: block;
     width: 100%;

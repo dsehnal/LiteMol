@@ -2,3 +2,4 @@
 node_modules/
 build/
 generated_docs/
+debug.log
