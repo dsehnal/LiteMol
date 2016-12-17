@@ -42,7 +42,7 @@ namespace LiteMol.Bootstrap.Components.Visualization {
             
             Command.Layout.SetViewportOptions.getStream(this.context).subscribe(e => this.setState(e.data) );
                         
-            this.state.throttle(1000 / 30).subscribe(s => {
+            this.state.debounce(1000 / 30).subscribe(s => {
                 this.scene.scene.updateOptions(s);
             });
         }

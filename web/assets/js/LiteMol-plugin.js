@@ -11331,7 +11331,7 @@ var LiteMol;
                 this.promiseStack = [];
                 this.resolve = this._resolve.bind(this);
                 this.reject = this._reject.bind(this);
-                this.progressTick.throttle(1000 / 30).subscribe(function (p) {
+                this.progressTick.debounce(1000 / 15).subscribe(function (p) {
                     _this.progressStream.onNext({
                         message: p.message,
                         isIndeterminate: p.isIndeterminate,
@@ -67809,7 +67809,7 @@ var LiteMol;
                     this.scene.camera.observe(this.cameraObserver);
                     this.scene.events.addEventListener('hover', function (e) { return _this.handleEvent(e, Bootstrap.Event.Visual.VisualHoverElement); });
                     this.scene.events.addEventListener('select', function (e) { return _this.handleEvent(e, Bootstrap.Event.Visual.VisualSelectElement); });
-                    this.cameraChanged.throttle(1000 / 30).subscribe(function (c) {
+                    this.cameraChanged.debounce(1000 / 30).subscribe(function (c) {
                         Bootstrap.Event.Visual.CameraChanged.dispatch(_this.context, c);
                     });
                     Bootstrap.Command.Entity.Focus.getStream(context)
@@ -71256,7 +71256,7 @@ var LiteMol;
                                 _this._scene.scene.resized();
                         });
                         Bootstrap.Command.Layout.SetViewportOptions.getStream(_this.context).subscribe(function (e) { return _this.setState(e.data); });
-                        _this.state.throttle(1000 / 30).subscribe(function (s) {
+                        _this.state.debounce(1000 / 30).subscribe(function (s) {
                             _this.scene.scene.updateOptions(s);
                         });
                         return _this;

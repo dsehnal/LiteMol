@@ -198,7 +198,7 @@ namespace LiteMol.Bootstrap.Visualization {
             this.scene.events.addEventListener('hover', e => this.handleEvent(e, Event.Visual.VisualHoverElement));
             this.scene.events.addEventListener('select', e => this.handleEvent(e, Event.Visual.VisualSelectElement)); 
             
-            this.cameraChanged.throttle(1000 / 30).subscribe(c => {
+            this.cameraChanged.debounce(1000 / 30).subscribe(c => {
                 Event.Visual.CameraChanged.dispatch(this.context, c);
             });            
             

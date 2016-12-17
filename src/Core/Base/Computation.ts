@@ -146,7 +146,7 @@ namespace LiteMol.Core {
         reject = this._reject.bind(this);            
                                     
         constructor() {            
-            this.progressTick.throttle(1000 / 30).subscribe(p => {
+            this.progressTick.debounce(1000 / 15).subscribe(p => {
                 this.progressStream.onNext({ 
                     message: p.message, 
                     isIndeterminate: p.isIndeterminate, 
