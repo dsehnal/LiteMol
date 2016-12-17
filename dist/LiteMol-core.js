@@ -11266,7 +11266,7 @@ var LiteMol;
                 this.promiseStack = [];
                 this.resolve = this._resolve.bind(this);
                 this.reject = this._reject.bind(this);
-                this.progressTick.debounce(1000 / 15).subscribe(function (p) {
+                this.progressTick.throttle(1000 / 15).subscribe(function (p) {
                     _this.progressStream.onNext({
                         message: p.message,
                         isIndeterminate: p.isIndeterminate,
