@@ -108,6 +108,7 @@ namespace LiteMol.Extensions.DensityStreaming {
 
     function doAction(m: Entity.Molecule.Molecule, params: CreateParams, info: DataInfo, sourceId?: string, contourLevel?: number): DensityAction {
         let radius = info.maxQueryRegion.reduce((m, v) => Math.min(m, v), info.maxQueryRegion[0]) / 2 - 3;
+        let taskType: Bootstrap.Task.Type = 'Silent';
 
         let styles: { [F in FieldType]?: Bootstrap.Visualization.Density.Style } = params.source === 'EMD'
             ? {
@@ -117,7 +118,7 @@ namespace LiteMol.Extensions.DensityStreaming {
                     color: LiteMol.Visualization.Color.fromHex(0x638F8F),
                     isWireframe: false,
                     transparency: { alpha: 0.3 },
-                    taskType: 'Background'
+                    taskType
                 })
             }
             : {
@@ -127,7 +128,7 @@ namespace LiteMol.Extensions.DensityStreaming {
                     color: LiteMol.Visualization.Color.fromHex(0x3362B2), 
                     isWireframe: false,
                     transparency: { alpha: 0.4 },
-                    taskType: 'Background'
+                    taskType
                 }),
                 'Fo-Fc(+ve)': Bootstrap.Visualization.Density.Style.create({
                     isoValue: 3,
@@ -135,7 +136,7 @@ namespace LiteMol.Extensions.DensityStreaming {
                     color: LiteMol.Visualization.Color.fromHex(0x33BB33), 
                     isWireframe: true,
                     transparency: { alpha: 1.0 },
-                    taskType: 'Background'
+                    taskType
                 }),
                 'Fo-Fc(-ve)': Bootstrap.Visualization.Density.Style.create({
                     isoValue: -3,
@@ -143,7 +144,7 @@ namespace LiteMol.Extensions.DensityStreaming {
                     color: LiteMol.Visualization.Color.fromHex(0xBB3333),
                     isWireframe: true,
                     transparency: { alpha: 1.0 },
-                    taskType: 'Background'
+                    taskType
                 })
             };
 

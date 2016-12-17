@@ -17,18 +17,19 @@ namespace LiteMol.Core {
                 progress: context.progressStream,
                 result: new Promise<A>(async (resolve, reject) => {
                     try {
-                        context.__push(resolve, reject);
-                        let result = await this.computation(context);
-                        context.resolve(result);
+                        context.started();
+                        let result = await this.computation(contextView(context));
+                        resolve(result);
                     } catch (e) {
-                        context.reject(e);
+                        reject(e);
+                    } finally {
+                        context.finished();
                     }
                 })
             };
         }
                 
-        constructor(private computation: (ctx: Computation.Context) => Promise<A>) {
-            
+        constructor(private computation: (ctx: Computation.Context) => Promise<A>) {            
         }
     }
     
@@ -67,6 +68,22 @@ namespace LiteMol.Core {
             result: Promise<A>
         }
     }
+
+    function contextView(ctx: Computation.Context): Computation.Context {
+        if (ctx instanceof ContextView) return ctx;
+        return new ContextView(ctx);
+    }
+
+    class ContextView implements Computation.Context {
+
+        get progress() { return this.ctx.progress; }
+
+        updateProgress(msg: string, abort: boolean | (() => void), current = NaN, max = NaN) {
+            this.ctx.updateProgress(msg, abort, current, max);
+        }
+
+        constructor(private ctx: Computation.Context) { }
+    }
                     
     class ContextImpl implements Computation.Context {            
         private _abortRequested = false;
@@ -80,10 +97,6 @@ namespace LiteMol.Core {
                     
         private _abortRequester = () => { this._abortRequested = true };
 
-        abort() {
-            this.reject(Computation.Aborted);
-        }
-        
         private progressTick = new Rx.Subject<Computation.Progress>();
         private _progress: Computation.Progress = { message: 'Working...', current: 0, max: 0, isIndeterminate: true, requestAbort: void 0 };
         progressStream = new Rx.BehaviorSubject<Computation.Progress>(this._progress);
@@ -113,39 +126,25 @@ namespace LiteMol.Core {
 
             return new Promise<void>(res => setTimeout(res, 0));
         }
-        
-        private promiseStack: { resolve: (r: any) => void, reject: (err: any) => void }[] = [];
-        __push(resolve: (r: any) => void, reject: (err: any) => void) {
-            this.promiseStack.push({ resolve, reject });
-        }            
-        
-        private _resolve(result: any) {
-            let top = this.promiseStack.pop();
-            if (!top) {
-                throw 'Bug in code somewhere, Computation.resolve/reject called too many times.'
-            }
-            top.resolve(result);
-            if (!this.promiseStack.length) {
+
+        private startEndCounter = 0;
+
+        started() {
+            this.startEndCounter++;
+        }
+
+        finished() {
+            this.startEndCounter--;
+            if (this.startEndCounter <= 0) {
                 this.progressTick.onCompleted();
                 this.progressStream.onCompleted();
             }
-        }
-        
-        private _reject(err: any) {
-            let top = this.promiseStack.pop();
-            if (!top) {
+
+            if (this.startEndCounter < 0) {
                 throw 'Bug in code somewhere, Computation.resolve/reject called too many times.'
             }
-            top.reject(err);
-            if (!this.promiseStack.length) {
-                this.progressTick.onCompleted();
-                this.progressStream.onCompleted();
-            }
         }
         
-        resolve = this._resolve.bind(this);
-        reject = this._reject.bind(this);            
-                                    
         constructor() {            
             this.progressTick.throttle(1000 / 15).subscribe(p => {
                 this.progressStream.onNext({ 

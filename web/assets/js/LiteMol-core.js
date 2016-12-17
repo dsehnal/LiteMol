@@ -11195,7 +11195,7 @@ var LiteMol;
 (function (LiteMol) {
     var Core;
     (function (Core) {
-        Core.VERSION = { number: "2.4.11", date: "Dec 11 2016" };
+        Core.VERSION = { number: "2.5.0", date: "Dec 17 2016" };
     })(Core = LiteMol.Core || (LiteMol.Core = {}));
 })(LiteMol || (LiteMol = {}));
 /*
@@ -11224,18 +11224,21 @@ var LiteMol;
                         return __generator(this, function (_a) {
                             switch (_a.label) {
                                 case 0:
-                                    _a.trys.push([0, 2, , 3]);
-                                    context.__push(resolve, reject);
-                                    return [4 /*yield*/, this.computation(context)];
+                                    _a.trys.push([0, 2, 3, 4]);
+                                    context.started();
+                                    return [4 /*yield*/, this.computation(contextView(context))];
                                 case 1:
                                     result = _a.sent();
-                                    context.resolve(result);
-                                    return [3 /*break*/, 3];
+                                    resolve(result);
+                                    return [3 /*break*/, 4];
                                 case 2:
                                     e_1 = _a.sent();
-                                    context.reject(e_1);
-                                    return [3 /*break*/, 3];
-                                case 3: return [2 /*return*/];
+                                    reject(e_1);
+                                    return [3 /*break*/, 4];
+                                case 3:
+                                    context.finished();
+                                    return [7 /*endfinally*/];
+                                case 4: return [2 /*return*/];
                             }
                         });
                     }); })
@@ -11256,6 +11259,27 @@ var LiteMol;
             Computation.Aborted = 'Aborted';
             Computation.UpdateProgressDelta = 100;
         })(Computation = Core.Computation || (Core.Computation = {}));
+        function contextView(ctx) {
+            if (ctx instanceof ContextView)
+                return ctx;
+            return new ContextView(ctx);
+        }
+        var ContextView = (function () {
+            function ContextView(ctx) {
+                this.ctx = ctx;
+            }
+            Object.defineProperty(ContextView.prototype, "progress", {
+                get: function () { return this.ctx.progress; },
+                enumerable: true,
+                configurable: true
+            });
+            ContextView.prototype.updateProgress = function (msg, abort, current, max) {
+                if (current === void 0) { current = NaN; }
+                if (max === void 0) { max = NaN; }
+                this.ctx.updateProgress(msg, abort, current, max);
+            };
+            return ContextView;
+        }());
         var ContextImpl = (function () {
             function ContextImpl() {
                 var _this = this;
@@ -11264,9 +11288,7 @@ var LiteMol;
                 this.progressTick = new Core.Rx.Subject();
                 this._progress = { message: 'Working...', current: 0, max: 0, isIndeterminate: true, requestAbort: void 0 };
                 this.progressStream = new Core.Rx.BehaviorSubject(this._progress);
-                this.promiseStack = [];
-                this.resolve = this._resolve.bind(this);
-                this.reject = this._reject.bind(this);
+                this.startEndCounter = 0;
                 this.progressTick.throttle(1000 / 15).subscribe(function (p) {
                     _this.progressStream.onNext({
                         message: p.message,
@@ -11287,9 +11309,6 @@ var LiteMol;
             ContextImpl.prototype.checkAborted = function () {
                 if (this._abortRequested)
                     throw Computation.Aborted;
-            };
-            ContextImpl.prototype.abort = function () {
-                this.reject(Computation.Aborted);
             };
             Object.defineProperty(ContextImpl.prototype, "progress", {
                 get: function () { return this.progressTick; },
@@ -11320,29 +11339,17 @@ var LiteMol;
                 this.progressTick.onNext(this._progress);
                 return new LiteMol.Promise(function (res) { return setTimeout(res, 0); });
             };
-            ContextImpl.prototype.__push = function (resolve, reject) {
-                this.promiseStack.push({ resolve: resolve, reject: reject });
+            ContextImpl.prototype.started = function () {
+                this.startEndCounter++;
             };
-            ContextImpl.prototype._resolve = function (result) {
-                var top = this.promiseStack.pop();
-                if (!top) {
-                    throw 'Bug in code somewhere, Computation.resolve/reject called too many times.';
-                }
-                top.resolve(result);
-                if (!this.promiseStack.length) {
+            ContextImpl.prototype.finished = function () {
+                this.startEndCounter--;
+                if (this.startEndCounter <= 0) {
                     this.progressTick.onCompleted();
                     this.progressStream.onCompleted();
                 }
-            };
-            ContextImpl.prototype._reject = function (err) {
-                var top = this.promiseStack.pop();
-                if (!top) {
+                if (this.startEndCounter < 0) {
                     throw 'Bug in code somewhere, Computation.resolve/reject called too many times.';
-                }
-                top.reject(err);
-                if (!this.promiseStack.length) {
-                    this.progressTick.onCompleted();
-                    this.progressStream.onCompleted();
                 }
             };
             return ContextImpl;

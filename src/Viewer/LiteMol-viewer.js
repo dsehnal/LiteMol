@@ -439,6 +439,7 @@ var LiteMol;
             }
             function doAction(m, params, info, sourceId, contourLevel) {
                 var radius = info.maxQueryRegion.reduce(function (m, v) { return Math.min(m, v); }, info.maxQueryRegion[0]) / 2 - 3;
+                var taskType = 'Silent';
                 var styles = params.source === 'EMD'
                     ? {
                         'EMD': LiteMol.Bootstrap.Visualization.Density.Style.create({
@@ -447,7 +448,7 @@ var LiteMol;
                             color: LiteMol.Visualization.Color.fromHex(0x638F8F),
                             isWireframe: false,
                             transparency: { alpha: 0.3 },
-                            taskType: 'Background'
+                            taskType: taskType
                         })
                     }
                     : {
@@ -457,7 +458,7 @@ var LiteMol;
                             color: LiteMol.Visualization.Color.fromHex(0x3362B2),
                             isWireframe: false,
                             transparency: { alpha: 0.4 },
-                            taskType: 'Background'
+                            taskType: taskType
                         }),
                         'Fo-Fc(+ve)': LiteMol.Bootstrap.Visualization.Density.Style.create({
                             isoValue: 3,
@@ -465,7 +466,7 @@ var LiteMol;
                             color: LiteMol.Visualization.Color.fromHex(0x33BB33),
                             isWireframe: true,
                             transparency: { alpha: 1.0 },
-                            taskType: 'Background'
+                            taskType: taskType
                         }),
                         'Fo-Fc(-ve)': LiteMol.Bootstrap.Visualization.Density.Style.create({
                             isoValue: -3,
@@ -473,7 +474,7 @@ var LiteMol;
                             color: LiteMol.Visualization.Color.fromHex(0xBB3333),
                             isWireframe: true,
                             transparency: { alpha: 1.0 },
-                            taskType: 'Background'
+                            taskType: taskType
                         })
                     };
                 var streaming = __assign({ minRadius: 0, maxRadius: params.source === 'X-ray' ? Math.min(10, radius) : Math.min(50, radius), radius: Math.min(5, radius), server: params.server, source: params.source, id: sourceId ? sourceId : params.id, info: info }, styles);
@@ -648,6 +649,13 @@ var LiteMol;
                         this.groups.shown.add(ref);
                     }
                 };
+                Behaviour.prototype.updateStyleTaskTypes = function () {
+                    var taskType = this.params.radius > 10 ? 'Background' : 'Silent';
+                    for (var _i = 0, _a = this.types; _i < _a.length; _i++) {
+                        var t = _a[_i];
+                        this.params.styles[t].taskType = taskType;
+                    }
+                };
                 Behaviour.prototype.checkResult = function (data) {
                     var server = data.dataBlocks.filter(function (b) { return b.header === 'SERVER'; })[0];
                     if (!server)
@@ -774,6 +782,7 @@ var LiteMol;
                         var cif = LiteMol.Core.Formats.CIF.Binary.parse(data);
                         if (cif.isError || !_this.checkResult(cif.result))
                             return;
+                        _this.updateStyleTaskTypes();
                         if (_this.params.source === 'EMD')
                             _this.createEmd(cif.result);
                         else
@@ -796,6 +805,7 @@ var LiteMol;
                                     }
                                     if (!this.dataBox)
                                         return [2 /*return*/, true];
+                                    this.updateStyleTaskTypes();
                                     styles = this.params.styles;
                                     refs = [];
                                     this.groups.shown.forEach(function (r) {

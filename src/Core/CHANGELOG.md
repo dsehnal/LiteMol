@@ -1,4 +1,7 @@
-﻿# 2.4.11
+﻿# 2.5.0
+* Updated Computation API. As a result, many (especially small) computation should feel a lot more responsive.
+
+# 2.4.11
 * Support for CIF density data.
 * CIFTools updated.
 * Support for BinaryCIF 0.3.

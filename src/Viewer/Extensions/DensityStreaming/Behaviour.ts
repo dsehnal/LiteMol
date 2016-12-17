@@ -85,6 +85,13 @@ namespace LiteMol.Extensions.DensityStreaming {
             }
         }
 
+        private updateStyleTaskTypes() {
+            let taskType: Bootstrap.Task.Type = this.params.radius > 10 ? 'Background' : 'Silent';
+            for (let t of this.types) {
+                this.params.styles[t]!.taskType = taskType;
+            }
+        }
+
         private checkResult(data: Core.Formats.CIF.File) {
             let server = data.dataBlocks.filter(b => b.header === 'SERVER')[0];
             if (!server) return false;
@@ -207,6 +214,7 @@ namespace LiteMol.Extensions.DensityStreaming {
                 let cif = Core.Formats.CIF.Binary.parse(data);
                 if (cif.isError || !this.checkResult(cif.result)) return; 
 
+                this.updateStyleTaskTypes();
                 if (this.params.source === 'EMD') this.createEmd(cif.result);
                 else this.createXray(cif.result);
             });
@@ -223,6 +231,7 @@ namespace LiteMol.Extensions.DensityStreaming {
 
             if (!this.dataBox) return true;
 
+            this.updateStyleTaskTypes();
             let styles = this.params.styles; 
 
             // cache the refs and lock them
