@@ -887,31 +887,21 @@ namespace LiteMol.Visualization.Molecule.Cartoons.Geometry {
         }
     }
 
-    export function buildUnitsChunk(start: number, ctx: Context, done: () => void) {
-        let chunkSize = 10000; // residues
+    export async function buildUnitsAsync(ctx: Context): LiteMol.Promise<void> {
+        const chunkSize = 10000; // residues
 
+        let unitIndex = 0;
+        while (unitIndex < ctx.units.length) {
+            let residuesDone = 0;
 
-        if (start >= ctx.units.length) {
-            done();
-            return;
+            while (residuesDone < chunkSize && unitIndex < ctx.units.length) {
+                buildUnit(ctx.units[unitIndex], ctx);
+                residuesDone += ctx.units[unitIndex].residueCount;
+                unitIndex++;
+            }
+
+            await ctx.computation.updateProgress('Building units...', true, unitIndex, ctx.units.length);
         }
-
-        if (ctx.computation.abortRequested) {
-            ctx.computation.abort();
-            return;
-        }
-
-        let residuesDone = 0;
-        let index = start;
-
-        while (residuesDone < chunkSize && index < ctx.units.length) {
-            buildUnit(ctx.units[index], ctx);
-            residuesDone += ctx.units[index].residueCount;
-            index++;
-        }
-
-        ctx.computation.update('Building units...', ctx.computation.abortRequest, start, ctx.units.length)
-        ctx.computation.schedule(() => buildUnitsChunk(index, ctx, done));
     }
 
     export function createGeometry(ctx: Context) {

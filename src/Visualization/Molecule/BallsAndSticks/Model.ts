@@ -102,34 +102,33 @@ namespace LiteMol.Visualization.Molecule.BallsAndSticks {
             params: Parameters,
             props?: Model.Props            
         }): Core.Computation<Model> {
-            return Core.Computation.create<Model>(ctx => {                
-                buildGeometry(model, params, atomIndices, ctx, geom => {
-                    let ret = new Model();
-                    
-                    ret.molecule = model;
-                    ret.ballsAndSticks = geom;
-                    ret.material = MaterialsHelper.getMeshMaterial();
-                    ret.bondsMaterial = new THREE.MeshPhongMaterial({ specular: 0xAAAAAA, shininess: 1, shading: THREE.SmoothShading, side: THREE.FrontSide, vertexColors: THREE.VertexColors });
-                    ret.pickMaterial = MaterialsHelper.getPickMaterial();
+            return Core.computation<Model>(async ctx => {                
+                let geom = await buildGeometry(model, params, atomIndices, ctx);
+                let ret = new Model();
+                
+                ret.molecule = model;
+                ret.ballsAndSticks = geom;
+                ret.material = MaterialsHelper.getMeshMaterial();
+                ret.bondsMaterial = new THREE.MeshPhongMaterial({ specular: 0xAAAAAA, shininess: 1, shading: THREE.SmoothShading, side: THREE.FrontSide, vertexColors: THREE.VertexColors });
+                ret.pickMaterial = MaterialsHelper.getPickMaterial();
 
-                    ret.entity = entity;
-                    ret.ballsAndSticks.atomsGeometry.computeBoundingSphere();
-                    ret.centroid = ret.ballsAndSticks.atomsGeometry.boundingSphere.center;
-                    ret.radius = ret.ballsAndSticks.atomsGeometry.boundingSphere.radius;
-                    if (props) ret.props = props;
-                    
-                    let obj = ret.createObjects();
-                    ret.object = obj.main;
-                    
-                    ret.applyTheme(theme);
+                ret.entity = entity;
+                ret.ballsAndSticks.atomsGeometry.computeBoundingSphere();
+                ret.centroid = ret.ballsAndSticks.atomsGeometry.boundingSphere.center;
+                ret.radius = ret.ballsAndSticks.atomsGeometry.boundingSphere.radius;
+                if (props) ret.props = props;
+                
+                let obj = ret.createObjects();
+                ret.object = obj.main;
+                
+                ret.applyTheme(theme);
 
-                    ret.disposeList.push(ret.ballsAndSticks, ret.material, ret.bondsMaterial, ret.pickMaterial);
-                    
-                    ret.pickObject = obj.pick;
-                    ret.pickBufferAttributes = [(<any>ret.ballsAndSticks.pickGeometry.attributes).pColor];
+                ret.disposeList.push(ret.ballsAndSticks, ret.material, ret.bondsMaterial, ret.pickMaterial);
+                
+                ret.pickObject = obj.pick;
+                ret.pickBufferAttributes = [(<any>ret.ballsAndSticks.pickGeometry.attributes).pColor];
 
-                    ctx.resolve(ret);
-                });
+                return ret;
             });
         }
     }

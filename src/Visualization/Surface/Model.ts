@@ -195,32 +195,31 @@ namespace LiteMol.Visualization.Surface {
             props?: Model.Props   
         }): Core.Computation<Model> {
 
-            return Core.Computation.create(ctx => {
-                buildGeometry(surface, ctx, !!parameters.isWireframe, geometry => {
-                    let ret = new Model();
+            return Core.computation<Model>(async ctx => {
+                let geometry = await buildGeometry(surface, ctx, !!parameters.isWireframe);
+                let ret = new Model();
 
-                    ret.surface = surface;
-                    ret.material =  MaterialsHelper.getMeshMaterial(THREE.FlatShading, !!parameters.isWireframe);//new THREE.MeshPhongMaterial({ specular: 0xAAAAAA, /*ambient: 0xffffff, */shininess: 1, shading: THREE.FlatShading, side: THREE.DoubleSide, vertexColors: THREE.VertexColors });
-                    ret.geometry = geometry;
-                    ret.pickMaterial = MaterialsHelper.getPickMaterial();
-                                    
-                    ret.entity = entity;
-                    ret.centroid = new THREE.Vector3().copy(<any>surface.boundingSphere!.center);
-                    ret.radius = surface.boundingSphere!.radius;
-                    
-                    if (props) ret.props = props;
-                            
-                    ret.disposeList.push(ret.geometry, ret.material, ret.pickMaterial);
+                ret.surface = surface;
+                ret.material =  MaterialsHelper.getMeshMaterial(THREE.FlatShading, !!parameters.isWireframe);//new THREE.MeshPhongMaterial({ specular: 0xAAAAAA, /*ambient: 0xffffff, */shininess: 1, shading: THREE.FlatShading, side: THREE.DoubleSide, vertexColors: THREE.VertexColors });
+                ret.geometry = geometry;
+                ret.pickMaterial = MaterialsHelper.getPickMaterial();
+                                
+                ret.entity = entity;
+                ret.centroid = new THREE.Vector3().copy(<any>surface.boundingSphere!.center);
+                ret.radius = surface.boundingSphere!.radius;
+                
+                if (props) ret.props = props;
+                        
+                ret.disposeList.push(ret.geometry, ret.material, ret.pickMaterial);
 
-                    let obj = ret.createObjects();
-                    ret.object = obj.main;
-                    ret.pickObject = obj.pick;
+                let obj = ret.createObjects();
+                ret.object = obj.main;
+                ret.pickObject = obj.pick;
 
-                    ret.applyTheme(theme);
-                    
-                    ret.pickBufferAttributes = [(<any>ret.geometry.pickGeometry.attributes).pColor];                    
-                    ctx.resolve(ret);
-                });
+                ret.applyTheme(theme);
+                
+                ret.pickBufferAttributes = [(<any>ret.geometry.pickGeometry.attributes).pColor];                    
+                return ret;
             });
         }
     }

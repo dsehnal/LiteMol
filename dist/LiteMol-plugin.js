@@ -11200,6 +11200,41 @@ var __LiteMolRxTemp = {};
 }.call(this, __LiteMolRxTemp, __LiteMolPromise));
 
 var __LiteMolRx = __LiteMolRxTemp.Rx;
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments)).next());
+    });
+};
+var __generator = (this && this.__generator) || function (thisArg, body) {
+    var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t;
+    return { next: verb(0), "throw": verb(1), "return": verb(2) };
+    function verb(n) { return function (v) { return step([n, v]); }; }
+    function step(op) {
+        if (f) throw new TypeError("Generator is already executing.");
+        while (_) try {
+            if (f = 1, y && (t = y[op[0] & 2 ? "return" : op[0] ? "throw" : "next"]) && !(t = t.call(y, op[1])).done) return t;
+            if (y = 0, t) op = [0, t.value];
+            switch (op[0]) {
+                case 0: case 1: t = op; break;
+                case 4: _.label++; return { value: op[1], done: false };
+                case 5: _.label++; y = op[1]; op = [0]; continue;
+                case 7: op = _.ops.pop(); _.trys.pop(); continue;
+                default:
+                    if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) { _ = 0; continue; }
+                    if (op[0] === 3 && (!t || (op[1] > t[0] && op[1] < t[3]))) { _.label = op[1]; break; }
+                    if (op[0] === 6 && _.label < t[1]) { _.label = t[1]; t = op; break; }
+                    if (t && _.label < t[2]) { _.label = t[2]; _.ops.push(op); break; }
+                    if (t[2]) _.ops.pop();
+                    _.trys.pop(); continue;
+            }
+            op = body.call(thisArg, _);
+        } catch (e) { op = [6, e]; y = 0; } finally { f = t = 0; }
+        if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
+    }
+};
 /*
  * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
@@ -11209,12 +11244,14 @@ var LiteMol;
     (function (Core) {
         "use strict";
         Core.Rx = __LiteMolRx;
-        Core.Promise = __LiteMolPromise;
         var Formats;
         (function (Formats) {
             Formats.CIF = CIFTools;
         })(Formats = Core.Formats || (Core.Formats = {}));
     })(Core = LiteMol.Core || (LiteMol.Core = {}));
+})(LiteMol || (LiteMol = {}));
+(function (LiteMol) {
+    LiteMol.Promise = __LiteMolPromise;
 })(LiteMol || (LiteMol = {}));
 /*
  * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
@@ -11234,159 +11271,146 @@ var LiteMol;
     var Core;
     (function (Core) {
         "use strict";
+        function computation(c) {
+            return new Computation(c);
+        }
+        Core.computation = computation;
         var Computation = (function () {
             function Computation(computation) {
                 this.computation = computation;
             }
-            Computation.prototype.bind = function (next) {
-                var _this = this;
-                return Computation.create(function (ctx) {
-                    _this.run(ctx).result.then(function (a) {
-                        next(a).run(ctx).result.then(ctx.resolve).catch(ctx.reject);
-                    }).catch(ctx.reject);
-                });
-            };
-            Computation.prototype.map = function (f) {
-                var _this = this;
-                return Computation.create(function (ctx) {
-                    _this.run(ctx).result.then(function (r) { return ctx.resolve(f(r)); }).catch(ctx.reject);
-                });
-            };
             Computation.prototype.run = function (ctx) {
                 var _this = this;
-                var context = ctx ? ctx : new Computation.Context();
+                var context = ctx ? ctx : new ContextImpl();
                 return {
                     progress: context.progressStream,
-                    result: new Core.Promise(function (resolve, reject) {
-                        try {
-                            context.__push(resolve, reject);
-                            _this.computation(context);
-                        }
-                        catch (e) {
-                            context.reject(e);
-                        }
-                    })
+                    result: new LiteMol.Promise(function (resolve, reject) { return __awaiter(_this, void 0, void 0, function () {
+                        var result, e_1;
+                        return __generator(this, function (_a) {
+                            switch (_a.label) {
+                                case 0:
+                                    _a.trys.push([0, 2, , 3]);
+                                    context.__push(resolve, reject);
+                                    return [4 /*yield*/, this.computation(context)];
+                                case 1:
+                                    result = _a.sent();
+                                    context.resolve(result);
+                                    return [3 /*break*/, 3];
+                                case 2:
+                                    e_1 = _a.sent();
+                                    context.reject(e_1);
+                                    return [3 /*break*/, 3];
+                                case 3: return [2 /*return*/];
+                            }
+                        });
+                    }); })
                 };
             };
             return Computation;
         }());
         Core.Computation = Computation;
         (function (Computation) {
-            function create(computation) {
-                return new Computation(computation);
-            }
-            Computation.create = create;
             function resolve(a) {
-                return create(function (ctx) { return ctx.resolve(a); });
+                return computation(function () { return LiteMol.Promise.resolve(a); });
             }
             Computation.resolve = resolve;
-            function schedule(ctx, f, afterMs) {
-                if (afterMs === void 0) { afterMs = 0; }
-                return new LiteMol.Core.Promise(function (res) { return ctx.schedule(function () {
-                    try {
-                        res(f());
-                    }
-                    finally {
-                        res(undefined);
-                    }
-                }, afterMs); });
+            function createContext() {
+                return new ContextImpl();
             }
-            Computation.schedule = schedule;
-            var Context = (function () {
-                function Context() {
-                    var _this = this;
-                    this._abortRequested = false;
-                    this._abortRequest = function () { return _this._abortRequested = true; };
-                    this.progressTick = new Core.Rx.Subject();
-                    this.progress = { message: 'Working...', current: 0, max: 0, isIndeterminate: false, requestAbort: void 0 };
-                    this.progressStream = new Core.Rx.BehaviorSubject(this.progress);
-                    this.promiseStack = [];
-                    this.resolve = this._resolve.bind(this);
-                    this.reject = this._reject.bind(this);
-                    this.progressTick.throttle(1000 / 30).subscribe(function (p) {
-                        _this.progressStream.onNext({
-                            message: p.message,
-                            isIndeterminate: p.isIndeterminate,
-                            current: p.current,
-                            max: p.max,
-                            requestAbort: p.requestAbort
-                        });
-                    });
-                }
-                Context.prototype.schedule = function (action, afterMs) {
-                    var _this = this;
-                    if (afterMs === void 0) { afterMs = 0; }
-                    setTimeout(function () {
-                        try {
-                            action();
-                        }
-                        catch (e) {
-                            _this.reject(e);
-                        }
-                    }, afterMs);
-                };
-                Object.defineProperty(Context.prototype, "abortRequested", {
-                    get: function () {
-                        return this._abortRequested;
-                    },
-                    enumerable: true,
-                    configurable: true
-                });
-                Context.prototype.setRequestAbort = function (abort) {
-                    this.progress.requestAbort = abort;
-                };
-                Object.defineProperty(Context.prototype, "abortRequest", {
-                    get: function () { return this._abortRequest; },
-                    enumerable: true,
-                    configurable: true
-                });
-                Context.prototype.update = function (msg, abort, current, max) {
-                    if (current === void 0) { current = NaN; }
-                    if (max === void 0) { max = NaN; }
-                    this.progress.message = msg;
-                    this.progress.requestAbort = abort;
-                    if (isNaN(current)) {
-                        this.progress.isIndeterminate = true;
-                    }
-                    else {
-                        this.progress.isIndeterminate = false;
-                        this.progress.current = current;
-                        this.progress.max = max;
-                    }
-                    this.progressTick.onNext(this.progress);
-                };
-                Context.prototype.__push = function (resolve, reject) {
-                    this.promiseStack.push({ resolve: resolve, reject: reject });
-                };
-                Context.prototype._resolve = function (result) {
-                    var top = this.promiseStack.pop();
-                    if (!top) {
-                        throw 'Bug in code somewhere, Computation.resolve/reject called too many times.';
-                    }
-                    top.resolve(result);
-                    if (!this.promiseStack.length) {
-                        this.progressTick.onCompleted();
-                        this.progressStream.onCompleted();
-                    }
-                };
-                Context.prototype._reject = function (err) {
-                    var top = this.promiseStack.pop();
-                    if (!top) {
-                        throw 'Bug in code somewhere, Computation.resolve/reject called too many times.';
-                    }
-                    top.reject(err);
-                    if (!this.promiseStack.length) {
-                        this.progressTick.onCompleted();
-                        this.progressStream.onCompleted();
-                    }
-                };
-                Context.prototype.abort = function () {
-                    this.reject('Aborted.');
-                };
-                return Context;
-            }());
-            Computation.Context = Context;
+            Computation.createContext = createContext;
+            Computation.Aborted = 'Aborted';
         })(Computation = Core.Computation || (Core.Computation = {}));
+        var ContextImpl = (function () {
+            function ContextImpl() {
+                var _this = this;
+                this._abortRequested = false;
+                this._abortRequester = function () { _this._abortRequested = true; };
+                this.progressTick = new Core.Rx.Subject();
+                this._progress = { message: 'Working...', current: 0, max: 0, isIndeterminate: true, requestAbort: void 0 };
+                this.progressStream = new Core.Rx.BehaviorSubject(this._progress);
+                this.promiseStack = [];
+                this.resolve = this._resolve.bind(this);
+                this.reject = this._reject.bind(this);
+                this.progressTick.throttle(1000 / 30).subscribe(function (p) {
+                    _this.progressStream.onNext({
+                        message: p.message,
+                        isIndeterminate: p.isIndeterminate,
+                        current: p.current,
+                        max: p.max,
+                        requestAbort: p.requestAbort
+                    });
+                });
+            }
+            Object.defineProperty(ContextImpl.prototype, "isAbortRequested", {
+                get: function () {
+                    return this._abortRequested;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            ContextImpl.prototype.checkAborted = function () {
+                if (this._abortRequested)
+                    throw Computation.Aborted;
+            };
+            ContextImpl.prototype.abort = function () {
+                this.reject(Computation.Aborted);
+            };
+            Object.defineProperty(ContextImpl.prototype, "progress", {
+                get: function () { return this.progressTick; },
+                enumerable: true,
+                configurable: true
+            });
+            ContextImpl.prototype.updateProgress = function (msg, abort, current, max) {
+                if (current === void 0) { current = NaN; }
+                if (max === void 0) { max = NaN; }
+                this.checkAborted();
+                this._progress.message = msg;
+                if (typeof abort === 'boolean') {
+                    this._progress.requestAbort = abort ? this._abortRequester : void 0;
+                }
+                else {
+                    if (abort)
+                        this._abortRequester = abort;
+                    this._progress.requestAbort = abort ? this._abortRequester : void 0;
+                }
+                if (isNaN(current)) {
+                    this._progress.isIndeterminate = true;
+                }
+                else {
+                    this._progress.isIndeterminate = false;
+                    this._progress.current = current;
+                    this._progress.max = max;
+                }
+                this.progressTick.onNext(this._progress);
+                return new LiteMol.Promise(function (res) { return setTimeout(res, 0); });
+            };
+            ContextImpl.prototype.__push = function (resolve, reject) {
+                this.promiseStack.push({ resolve: resolve, reject: reject });
+            };
+            ContextImpl.prototype._resolve = function (result) {
+                var top = this.promiseStack.pop();
+                if (!top) {
+                    throw 'Bug in code somewhere, Computation.resolve/reject called too many times.';
+                }
+                top.resolve(result);
+                if (!this.promiseStack.length) {
+                    this.progressTick.onCompleted();
+                    this.progressStream.onCompleted();
+                }
+            };
+            ContextImpl.prototype._reject = function (err) {
+                var top = this.promiseStack.pop();
+                if (!top) {
+                    throw 'Bug in code somewhere, Computation.resolve/reject called too many times.';
+                }
+                top.reject(err);
+                if (!this.promiseStack.length) {
+                    this.progressTick.onCompleted();
+                    this.progressStream.onCompleted();
+                }
+            };
+            return ContextImpl;
+        }());
     })(Core = LiteMol.Core || (LiteMol.Core = {}));
 })(LiteMol || (LiteMol = {}));
 /*
@@ -13433,121 +13457,73 @@ var LiteMol;
         (function (Formats) {
             var Molecule;
             (function (Molecule) {
+                function parseCIF(type, parse) {
+                    var _this = this;
+                    return function (data, params) { return Core.computation(function (ctx) { return __awaiter(_this, void 0, void 0, function () {
+                        var file, result, mol;
+                        return __generator(this, function (_a) {
+                            switch (_a.label) {
+                                case 0: return [4 /*yield*/, ctx.updateProgress('Parsing...')];
+                                case 1:
+                                    _a.sent();
+                                    file = parse(data, params);
+                                    if (file.isError) {
+                                        throw file.toString();
+                                    }
+                                    result = file.result;
+                                    if (!result.dataBlocks.length) {
+                                        throw "The " + type + " data does not contain a data block.";
+                                    }
+                                    return [4 /*yield*/, ctx.updateProgress('Creating representation...')];
+                                case 2:
+                                    _a.sent();
+                                    mol = Molecule.mmCIF.ofDataBlock(result.dataBlocks[0]);
+                                    return [2 /*return*/, Formats.ParserResult.success(mol, result.dataBlocks.length > 1 ? ["The input data contains multiple data blocks, only the first one was parsed. To parse all data blocks, use the function 'mmCIF.ofDataBlock' separately for each block."] : void 0)];
+                            }
+                        });
+                    }); }); };
+                }
                 var SupportedFormats;
                 (function (SupportedFormats) {
+                    var _this = this;
                     SupportedFormats.mmCIF = {
                         name: 'mmCIF',
                         shortcuts: ['mmcif', 'cif'],
                         extensions: ['.cif'],
-                        parse: function (data) {
-                            return Core.Computation.create(function (ctx) {
-                                ctx.update('Parsing...');
-                                ctx.schedule(function () {
-                                    var file = Formats.CIF.Text.parse(data);
-                                    if (file.isError) {
-                                        ctx.reject(file.toString());
-                                        return;
-                                    }
-                                    var result = file.result;
-                                    if (!result.dataBlocks.length) {
-                                        ctx.reject("The CIF data does not contain a data block.");
-                                        return;
-                                    }
-                                    ctx.update('Creating representation...');
-                                    ctx.schedule(function () {
-                                        try {
-                                            var mol = Molecule.mmCIF.ofDataBlock(result.dataBlocks[0]);
-                                            ctx.resolve(Formats.ParserResult.success(mol, result.dataBlocks.length > 1 ? ["The input data contains multiple data blocks, only the first one was parsed. To parse all data blocks, use the function 'mmCIF.ofDataBlock' separately for each block."] : void 0));
-                                        }
-                                        catch (e) {
-                                            ctx.reject("" + e);
-                                        }
-                                    });
-                                });
-                            });
-                        }
+                        parse: parseCIF('CIF', Formats.CIF.Text.parse)
                     };
                     SupportedFormats.mmBCIF = {
                         name: 'mmCIF (Binary)',
                         shortcuts: ['mmbcif', 'bcif', 'binarycif'],
                         extensions: ['.bcif'],
                         isBinary: true,
-                        parse: function (data) {
-                            return Core.Computation.create(function (ctx) {
-                                ctx.update('Parsing...');
-                                ctx.schedule(function () {
-                                    var file = Formats.CIF.Binary.parse(data);
-                                    if (file.isError) {
-                                        ctx.reject(file.toString());
-                                        return;
-                                    }
-                                    var result = file.result;
-                                    if (!result.dataBlocks.length) {
-                                        ctx.reject("The BinaryCIF data does not contain a data block.");
-                                        return;
-                                    }
-                                    ctx.update('Creating representation...');
-                                    ctx.schedule(function () {
-                                        try {
-                                            var mol = Molecule.mmCIF.ofDataBlock(result.dataBlocks[0]);
-                                            ctx.resolve(Formats.ParserResult.success(mol, result.dataBlocks.length > 1 ? ["The input data contains multiple data blocks, only the first one was parsed. To parse all data blocks, use the function 'mmCIF.ofDataBlock' separately for each block."] : void 0));
-                                        }
-                                        catch (e) {
-                                            ctx.reject("" + e);
-                                        }
-                                    });
-                                });
-                            });
-                        }
+                        parse: parseCIF('BinaryCIF', Formats.CIF.Binary.parse)
                     };
                     SupportedFormats.PDB = {
                         name: 'PDB',
                         shortcuts: ['pdb', 'ent'],
                         extensions: ['.pdb', '.ent'],
-                        parse: function (data, options) {
-                            return Core.Computation.create(function (ctx) {
-                                ctx.update('Parsing...');
-                                ctx.schedule(function () {
-                                    var file = Molecule.PDB.toCifFile((options && options.id) || 'PDB', data);
-                                    if (file.isError) {
-                                        ctx.reject(file.toString());
-                                        return;
-                                    }
-                                    var result = file.result;
-                                    if (!result.dataBlocks.length) {
-                                        ctx.reject("The PDB data does not contain a data block.");
-                                        return;
-                                    }
-                                    ctx.update('Creating representation...');
-                                    ctx.schedule(function () {
-                                        try {
-                                            var mol = Molecule.mmCIF.ofDataBlock(result.dataBlocks[0]);
-                                            ctx.resolve(Formats.ParserResult.success(mol));
-                                        }
-                                        catch (e) {
-                                            ctx.reject("" + e);
-                                        }
-                                    });
-                                });
-                            });
-                        }
+                        parse: parseCIF('PDB', function (d, p) { return Molecule.PDB.toCifFile((p && p.id) || 'PDB', d); })
                     };
                     SupportedFormats.SDF = {
                         name: 'SDF',
                         shortcuts: ['sdf', 'mol'],
                         extensions: ['.sdf', '.mol'],
                         parse: function (data, options) {
-                            return Core.Computation.create(function (ctx) {
-                                ctx.update('Parsing...');
-                                ctx.schedule(function () {
-                                    var mol = Molecule.SDF.parse(data, (options && options.id) || undefined);
-                                    if (mol.isError) {
-                                        ctx.reject(mol.toString());
-                                        return;
+                            return Core.computation(function (ctx) { return __awaiter(_this, void 0, void 0, function () {
+                                var mol;
+                                return __generator(this, function (_a) {
+                                    switch (_a.label) {
+                                        case 0: return [4 /*yield*/, ctx.updateProgress('Parsing...')];
+                                        case 1:
+                                            _a.sent();
+                                            mol = Molecule.SDF.parse(data, (options && options.id) || undefined);
+                                            if (mol.isError)
+                                                throw mol.toString();
+                                            return [2 /*return*/, Formats.ParserResult.success(mol.result)];
                                     }
-                                    ctx.resolve(Formats.ParserResult.success(mol.result));
                                 });
-                            });
+                            }); });
                         }
                     };
                     SupportedFormats.All = [SupportedFormats.mmCIF, SupportedFormats.mmBCIF, SupportedFormats.PDB, SupportedFormats.SDF];
@@ -14223,15 +14199,17 @@ var LiteMol;
             var Density;
             (function (Density) {
                 function parse(data, name, parser) {
-                    return Core.Computation.create(function (ctx) {
-                        ctx.update("Parsing " + name + "...");
-                        try {
-                            ctx.resolve(parser(data));
-                        }
-                        catch (e) {
-                            ctx.reject('' + e);
-                        }
-                    });
+                    var _this = this;
+                    return Core.computation(function (ctx) { return __awaiter(_this, void 0, void 0, function () {
+                        return __generator(this, function (_a) {
+                            switch (_a.label) {
+                                case 0: return [4 /*yield*/, ctx.updateProgress("Parsing " + name + "...")];
+                                case 1:
+                                    _a.sent();
+                                    return [2 /*return*/, parser(data)];
+                            }
+                        });
+                    }); });
                 }
                 var SupportedFormats;
                 (function (SupportedFormats) {
@@ -14897,18 +14875,23 @@ var LiteMol;
                 }
                 Surface.computeNormalsImmediate = computeNormalsImmediate;
                 function computeNormals(surface) {
-                    return Core.Computation.create(function (ctx) {
-                        if (surface.normals) {
-                            ctx.resolve(surface);
-                            return;
-                        }
-                        ;
-                        ctx.update('Computing normals...');
-                        ctx.schedule(function () {
-                            computeNormalsImmediate(surface);
-                            ctx.resolve(surface);
+                    var _this = this;
+                    return Core.computation(function (ctx) { return __awaiter(_this, void 0, void 0, function () {
+                        return __generator(this, function (_a) {
+                            switch (_a.label) {
+                                case 0:
+                                    if (surface.normals) {
+                                        return [2 /*return*/, surface];
+                                    }
+                                    ;
+                                    return [4 /*yield*/, ctx.updateProgress('Computing normals...')];
+                                case 1:
+                                    _a.sent();
+                                    computeNormalsImmediate(surface);
+                                    return [2 /*return*/, surface];
+                            }
                         });
-                    });
+                    }); });
                 }
                 Surface.computeNormals = computeNormals;
                 function addVertex(src, i, dst, j) {
@@ -14941,72 +14924,93 @@ var LiteMol;
                  * Resets normals. Might replace vertex array.
                  */
                 function laplacianSmooth(surface, iterCount) {
+                    var _this = this;
                     if (iterCount === void 0) { iterCount = 1; }
                     if (iterCount < 1)
                         iterCount = 0;
                     if (iterCount === 0)
                         return Core.Computation.resolve(surface);
-                    return Core.Computation.create(function (ctx) {
-                        ctx.update('Smoothing surface...');
-                        var counts = new Int32Array(surface.vertexCount), triCount = surface.triangleIndices.length;
-                        var tris = surface.triangleIndices;
-                        for (var i = 0; i < triCount; i++) {
-                            counts[tris[i]] += 2;
-                        }
-                        var vs = new Float32Array(surface.vertices.length);
-                        var next = function (i) {
-                            if (i >= iterCount) {
-                                ctx.resolve(surface);
-                                return;
+                    return Core.computation(function (ctx) { return __awaiter(_this, void 0, void 0, function () {
+                        var counts, triCount, tris, i, vs, i, j, _b, t;
+                        return __generator(this, function (_a) {
+                            switch (_a.label) {
+                                case 0: return [4 /*yield*/, ctx.updateProgress('Smoothing surface...', true)];
+                                case 1:
+                                    _a.sent();
+                                    counts = new Int32Array(surface.vertexCount), triCount = surface.triangleIndices.length;
+                                    tris = surface.triangleIndices;
+                                    for (i = 0; i < triCount; i++) {
+                                        counts[tris[i]] += 2;
+                                    }
+                                    vs = new Float32Array(surface.vertices.length);
+                                    return [4 /*yield*/, ctx.updateProgress('Smoothing surface...', true)];
+                                case 2:
+                                    _a.sent();
+                                    i = 0;
+                                    _a.label = 3;
+                                case 3:
+                                    if (!(i < iterCount))
+                                        return [3 /*break*/, 6];
+                                    if (i > 0) {
+                                        for (j = 0, _b = vs.length; j < _b; j++)
+                                            vs[j] = 0;
+                                    }
+                                    surface.normals = void 0;
+                                    laplacianSmoothIter(surface, counts, vs);
+                                    t = surface.vertices;
+                                    surface.vertices = vs;
+                                    vs = t;
+                                    return [4 /*yield*/, ctx.updateProgress('Smoothing surface...', true, i + 1, iterCount)];
+                                case 4:
+                                    _a.sent();
+                                    _a.label = 5;
+                                case 5:
+                                    i++;
+                                    return [3 /*break*/, 3];
+                                case 6: return [2 /*return*/, surface];
                             }
-                            if (i > 0) {
-                                for (var j = 0, _b = vs.length; j < _b; j++)
-                                    vs[j] = 0;
-                            }
-                            surface.normals = void 0;
-                            laplacianSmoothIter(surface, counts, vs);
-                            var t = surface.vertices;
-                            surface.vertices = vs;
-                            vs = t;
-                            ctx.update('Smoothing surface...', ctx.abortRequest, i + 1, iterCount);
-                            ctx.schedule(function () { return next(i + 1); });
-                        };
-                        next(0);
-                    });
+                        });
+                    }); });
                 }
                 Surface.laplacianSmooth = laplacianSmooth;
                 function computeBoundingSphere(surface) {
-                    return Core.Computation.create(function (ctx) {
-                        if (surface.boundingSphere) {
-                            ctx.resolve(surface);
-                            return;
-                        }
-                        ctx.update('Computing bounding sphere...');
-                        ctx.schedule(function () {
-                            var vertices = surface.vertices;
-                            var x = 0, y = 0, z = 0;
-                            for (var i = 0, _c = surface.vertices.length; i < _c; i += 3) {
-                                x += vertices[i];
-                                y += vertices[i + 1];
-                                z += vertices[i + 2];
+                    var _this = this;
+                    return Core.computation(function (ctx) { return __awaiter(_this, void 0, void 0, function () {
+                        var vertices, x, y, z, i, _c, r, i, _c, dx, dy, dz;
+                        return __generator(this, function (_a) {
+                            switch (_a.label) {
+                                case 0:
+                                    if (surface.boundingSphere) {
+                                        return [2 /*return*/, surface];
+                                    }
+                                    return [4 /*yield*/, ctx.updateProgress('Computing bounding sphere...')];
+                                case 1:
+                                    _a.sent();
+                                    vertices = surface.vertices;
+                                    x = 0, y = 0, z = 0;
+                                    for (i = 0, _c = surface.vertices.length; i < _c; i += 3) {
+                                        x += vertices[i];
+                                        y += vertices[i + 1];
+                                        z += vertices[i + 2];
+                                    }
+                                    x /= surface.vertexCount;
+                                    y /= surface.vertexCount;
+                                    z /= surface.vertexCount;
+                                    r = 0;
+                                    for (i = 0, _c = vertices.length; i < _c; i += 3) {
+                                        dx = x - vertices[i];
+                                        dy = y - vertices[i + 1];
+                                        dz = z - vertices[i + 2];
+                                        r = Math.max(r, dx * dx + dy * dy + dz * dz);
+                                    }
+                                    surface.boundingSphere = {
+                                        center: { x: x, y: y, z: z },
+                                        radius: Math.sqrt(r)
+                                    };
+                                    return [2 /*return*/, surface];
                             }
-                            x /= surface.vertexCount;
-                            y /= surface.vertexCount;
-                            z /= surface.vertexCount;
-                            var r = 0;
-                            for (var i = 0, _c = vertices.length; i < _c; i += 3) {
-                                var dx = x - vertices[i];
-                                var dy = y - vertices[i + 1];
-                                var dz = z - vertices[i + 2];
-                                r = Math.max(r, dx * dx + dy * dy + dz * dz);
-                            }
-                            surface.boundingSphere = {
-                                center: { x: x, y: y, z: z },
-                                radius: Math.sqrt(r)
-                            };
-                            ctx.resolve(surface);
                         });
-                    });
+                    }); });
                 }
                 Surface.computeBoundingSphere = computeBoundingSphere;
                 function transformImmediate(surface, t) {
@@ -15027,13 +15031,14 @@ var LiteMol;
                 }
                 Surface.transformImmediate = transformImmediate;
                 function transform(surface, t) {
-                    return Core.Computation.create(function (ctx) {
-                        ctx.update('Updating surface...');
-                        ctx.schedule(function () {
+                    var _this = this;
+                    return Core.computation(function (ctx) { return __awaiter(_this, void 0, void 0, function () {
+                        return __generator(this, function (_a) {
+                            ctx.updateProgress('Updating surface...');
                             transformImmediate(surface, t);
-                            ctx.resolve(surface);
+                            return [2 /*return*/, surface];
                         });
-                    });
+                    }); });
                 }
                 Surface.transform = transform;
             })(Surface = Geometry.Surface || (Geometry.Surface = {}));
@@ -15052,54 +15057,30 @@ var LiteMol;
             var MarchingCubes;
             (function (MarchingCubes) {
                 "use strict";
-                // export function computeCubes(parameters: MarchingCubesParameters): MarchingCubesResult {
-                //     let params = <MarchingCubesParameters>Core.Utils.extend({}, parameters);
-                //     if (!params.bottomLeft) params.bottomLeft = [0, 0, 0];
-                //     if (!params.topRight) params.topRight = params.scalarField.dimensions;
-                //      let state = new MarchingCubesState(params),
-                //         minX = params.bottomLeft[0], minY = params.bottomLeft[1], minZ = params.bottomLeft[2],
-                //         maxX = params.topRight[0] - 1, maxY = params.topRight[1] - 1, maxZ = params.topRight[2] - 1;
-                //     for (let k = minZ; k < maxZ; k++) {
-                //         for (let j = minY; j < maxY; j++) {
-                //             for (let i = minX; i < maxX; i++) {
-                //                 state.processCell(i, j, k);
-                //             }
-                //         }
-                //     }
-                //     let vertices = state.vertexBuffer.compact();
-                //     let triangles = state.triangleBuffer.compact();
-                //     state.vertexBuffer = null;
-                //     state.verticesOnEdges = null;
-                //     return new MarchingCubesResult(<Float32Array><any>vertices, <Uint32Array><any>triangles, state.annotate ? state.annotationBuffer.compact() : null);
-                // }
                 function compute(parameters) {
-                    return Core.Computation.create(function (ctx) {
-                        var comp = new MarchingCubesComputation(parameters, ctx);
-                        comp.start();
-                    });
+                    var _this = this;
+                    return Core.computation(function (ctx) { return __awaiter(_this, void 0, void 0, function () {
+                        var comp;
+                        return __generator(this, function (_a) {
+                            switch (_a.label) {
+                                case 0:
+                                    comp = new MarchingCubesComputation(parameters, ctx);
+                                    return [4 /*yield*/, comp.run()];
+                                case 1: return [2 /*return*/, _a.sent()];
+                            }
+                        });
+                    }); });
                 }
                 MarchingCubes.compute = compute;
                 var MarchingCubesComputation = (function () {
                     function MarchingCubesComputation(parameters, ctx) {
-                        var _this = this;
                         this.ctx = ctx;
-                        this.chunkSize = 80 * 80 * 80;
-                        this.done = 0;
-                        this.k = 0;
                         this.minX = 0;
                         this.minY = 0;
                         this.minZ = 0;
                         this.maxX = 0;
                         this.maxY = 0;
                         this.maxZ = 0;
-                        this._slice = function () {
-                            try {
-                                _this.slice();
-                            }
-                            catch (e) {
-                                _this.ctx.reject('' + e);
-                            }
-                        };
                         var params = Core.Utils.extend({}, parameters);
                         if (!params.bottomLeft)
                             params.bottomLeft = [0, 0, 0];
@@ -15112,32 +15093,47 @@ var LiteMol;
                         this.maxX = params.topRight[0] - 1;
                         this.maxY = params.topRight[1] - 1;
                         this.maxZ = params.topRight[2] - 1;
-                        this.k = this.minZ;
                         this.size = (this.maxX - this.minX) * (this.maxY - this.minY) * (this.maxZ - this.minZ);
                         this.sliceSize = (this.maxX - this.minX) * (this.maxY - this.minY);
                     }
-                    MarchingCubesComputation.prototype.nextSlice = function () {
-                        if (this.ctx.abortRequested) {
-                            this.ctx.abort();
-                            return;
-                        }
-                        this.done += this.sliceSize;
-                        this.ctx.update('Computing surface...', this.ctx.abortRequest, this.done, this.size);
-                        if (this.k >= this.maxZ) {
-                            this.finish();
-                        }
-                        else {
-                            this.ctx.schedule(this._slice);
-                        }
+                    MarchingCubesComputation.prototype.doSlices = function () {
+                        return __awaiter(this, void 0, void 0, function () {
+                            var timeFrame, done, started, k, t;
+                            return __generator(this, function (_a) {
+                                switch (_a.label) {
+                                    case 0:
+                                        timeFrame = 100;
+                                        done = 0;
+                                        started = Core.Utils.PerformanceMonitor.currentTime();
+                                        k = this.minZ;
+                                        _a.label = 1;
+                                    case 1:
+                                        if (!(k < this.maxZ))
+                                            return [3 /*break*/, 4];
+                                        this.slice(k);
+                                        done += this.sliceSize;
+                                        t = Core.Utils.PerformanceMonitor.currentTime();
+                                        if (!(t - started > timeFrame))
+                                            return [3 /*break*/, 3];
+                                        return [4 /*yield*/, this.ctx.updateProgress('Computing surface...', true, done, this.size)];
+                                    case 2:
+                                        _a.sent();
+                                        started = t;
+                                        _a.label = 3;
+                                    case 3:
+                                        k++;
+                                        return [3 /*break*/, 1];
+                                    case 4: return [2 /*return*/];
+                                }
+                            });
+                        });
                     };
-                    MarchingCubesComputation.prototype.slice = function () {
+                    MarchingCubesComputation.prototype.slice = function (k) {
                         for (var j = this.minY; j < this.maxY; j++) {
                             for (var i = this.minX; i < this.maxX; i++) {
-                                this.state.processCell(i, j, this.k);
+                                this.state.processCell(i, j, k);
                             }
                         }
-                        this.k++;
-                        this.nextSlice();
                     };
                     MarchingCubesComputation.prototype.finish = function () {
                         var vertices = Core.Utils.ChunkedArray.compact(this.state.vertexBuffer);
@@ -15151,11 +15147,26 @@ var LiteMol;
                             triangleIndices: triangles,
                             annotation: this.state.annotate ? Core.Utils.ChunkedArray.compact(this.state.annotationBuffer) : void 0
                         };
-                        this.ctx.resolve(ret);
+                        return ret;
                     };
-                    MarchingCubesComputation.prototype.start = function () {
-                        this.ctx.update('Computing surface...', this.ctx.abortRequest, 0, this.size);
-                        this.ctx.schedule(this._slice);
+                    MarchingCubesComputation.prototype.run = function () {
+                        return __awaiter(this, void 0, void 0, function () {
+                            var slices;
+                            return __generator(this, function (_a) {
+                                switch (_a.label) {
+                                    case 0: return [4 /*yield*/, this.ctx.updateProgress('Computing surface...', true, 0, this.size)];
+                                    case 1:
+                                        _a.sent();
+                                        return [4 /*yield*/, this.doSlices()];
+                                    case 2:
+                                        slices = _a.sent();
+                                        return [4 /*yield*/, this.ctx.updateProgress('Finalizing...')];
+                                    case 3:
+                                        _a.sent();
+                                        return [2 /*return*/, this.finish()];
+                                }
+                            });
+                        });
                     };
                     return MarchingCubesComputation;
                 }());
@@ -15719,7 +15730,6 @@ var LiteMol;
                 }());
                 var MolecularIsoFieldComputation = (function () {
                     function MolecularIsoFieldComputation(inputParameters, ctx) {
-                        var _this = this;
                         this.inputParameters = inputParameters;
                         this.ctx = ctx;
                         this.minX = Number.MAX_VALUE;
@@ -15739,16 +15749,6 @@ var LiteMol;
                         this.proximityMap = new Int32Array(0);
                         this.minIndex = { i: 0, j: 0, k: 0 };
                         this.maxIndex = { i: 0, j: 0, k: 0 };
-                        this.currentAtom = 0;
-                        this.chunkSize = 10000;
-                        this._addChunk = function () {
-                            try {
-                                _this.addChunk();
-                            }
-                            catch (e) {
-                                _this.ctx.reject(e);
-                            }
-                        };
                         this.parameters = new MolecularIsoSurfaceParametersWrapper(inputParameters.parameters);
                         var positions = inputParameters.positions;
                         this.x = positions.x;
@@ -15842,28 +15842,39 @@ var LiteMol;
                             }
                         }
                     };
-                    MolecularIsoFieldComputation.prototype.addChunk = function () {
-                        var b = this.atomIndices.length;
-                        var currentChunk = 0;
-                        for (; this.currentAtom < b; this.currentAtom++) {
-                            var aI = this.atomIndices[this.currentAtom];
-                            var r = this.parameters.atomRadius(aI) + this.parameters.probeRadius;
-                            currentChunk++;
-                            if (r < 0)
-                                continue;
-                            this.addBall(aI, r);
-                            if (currentChunk >= this.chunkSize) {
-                                if (this.ctx.abortRequested) {
-                                    this.ctx.abort();
-                                    return;
+                    MolecularIsoFieldComputation.prototype.processChunks = function () {
+                        return __awaiter(this, void 0, void 0, function () {
+                            var chunkSize, currentAtom, _b, aI, r;
+                            return __generator(this, function (_a) {
+                                switch (_a.label) {
+                                    case 0:
+                                        chunkSize = 10000;
+                                        return [4 /*yield*/, this.ctx.updateProgress('Creating field...', true)];
+                                    case 1:
+                                        _a.sent();
+                                        currentAtom = 0, _b = this.atomIndices.length;
+                                        _a.label = 2;
+                                    case 2:
+                                        if (!(currentAtom < _b))
+                                            return [3 /*break*/, 5];
+                                        aI = this.atomIndices[currentAtom];
+                                        r = this.parameters.atomRadius(aI) + this.parameters.probeRadius;
+                                        if (r >= 0) {
+                                            this.addBall(aI, r);
+                                        }
+                                        if (!((currentAtom + 1) % chunkSize === 0))
+                                            return [3 /*break*/, 4];
+                                        return [4 /*yield*/, this.ctx.updateProgress('Creating field...', true, currentAtom, _b)];
+                                    case 3:
+                                        _a.sent();
+                                        _a.label = 4;
+                                    case 4:
+                                        currentAtom++;
+                                        return [3 /*break*/, 2];
+                                    case 5: return [2 /*return*/];
                                 }
-                                this.ctx.update('Creating field...', this.ctx.abortRequest, this.currentAtom, this.atomIndices.length);
-                                this.ctx.schedule(this._addChunk);
-                                return;
-                            }
-                        }
-                        this.ctx.update('Creating field...', void 0, this.currentAtom, this.atomIndices.length);
-                        this.finish();
+                            });
+                        });
                     };
                     MolecularIsoFieldComputation.prototype.finish = function () {
                         // help the gc
@@ -15885,51 +15896,69 @@ var LiteMol;
                             inputParameters: this.inputParameters,
                             parameters: this.parameters
                         };
-                        this.ctx.resolve(ret);
+                        return ret;
                     };
-                    MolecularIsoFieldComputation.prototype.start = function () {
-                        var _this = this;
-                        this.ctx.update('Initializing...');
-                        this.ctx.schedule(function () {
-                            try {
-                                _this.findBounds();
-                                _this.initData();
-                            }
-                            catch (e) {
-                                _this.ctx.reject(e);
-                                return;
-                            }
-                            if (_this.ctx.abortRequested) {
-                                _this.ctx.abort();
-                                return;
-                            }
-                            _this.ctx.update('Creating field...', _this.ctx.abortRequest, 0, _this.atomIndices.length);
-                            _this.ctx.schedule(_this._addChunk);
+                    MolecularIsoFieldComputation.prototype.run = function () {
+                        return __awaiter(this, void 0, void 0, function () {
+                            var chunks;
+                            return __generator(this, function (_a) {
+                                switch (_a.label) {
+                                    case 0: return [4 /*yield*/, this.ctx.updateProgress('Initializing...')];
+                                    case 1:
+                                        _a.sent();
+                                        this.findBounds();
+                                        this.initData();
+                                        return [4 /*yield*/, this.processChunks()];
+                                    case 2:
+                                        chunks = _a.sent();
+                                        return [4 /*yield*/, this.ctx.updateProgress('Finalizing...', void 0, this.atomIndices.length, this.atomIndices.length)];
+                                    case 3:
+                                        _a.sent();
+                                        return [2 /*return*/, this.finish()];
+                                }
+                            });
                         });
                     };
                     return MolecularIsoFieldComputation;
                 }());
-                function createResultResultData(field, surface) {
-                    return Core.Computation.resolve({
-                        surface: surface,
-                        usedParameters: field.parameters
-                    });
-                }
                 function createMolecularIsoFieldAsync(parameters) {
-                    return Core.Computation.create(function (ctx) {
-                        var field = new MolecularIsoFieldComputation(parameters, ctx);
-                        field.start();
-                    });
+                    var _this = this;
+                    return Core.computation(function (ctx) { return __awaiter(_this, void 0, void 0, function () {
+                        var field;
+                        return __generator(this, function (_a) {
+                            switch (_a.label) {
+                                case 0:
+                                    field = new MolecularIsoFieldComputation(parameters, ctx);
+                                    return [4 /*yield*/, field.run()];
+                                case 1: return [2 /*return*/, _a.sent()];
+                            }
+                        });
+                    }); });
                 }
                 MolecularSurface.createMolecularIsoFieldAsync = createMolecularIsoFieldAsync;
                 function computeMolecularSurfaceAsync(parameters) {
-                    return createMolecularIsoFieldAsync(parameters)
-                        .bind(function (f) {
-                        return Geometry.MarchingCubes.compute(f.data)
-                            .bind(function (s) { return Geometry.Surface.transform(s, f.transform); })
-                            .bind(function (s) { return Geometry.Surface.laplacianSmooth(s, (f.inputParameters.parameters && f.inputParameters.parameters.smoothingIterations) || 1)
-                            .bind(function (s) { return createResultResultData(f, s); }); });
-                    });
+                    var _this = this;
+                    return Core.computation(function (ctx) { return __awaiter(_this, void 0, void 0, function () {
+                        var field, surface, smoothing;
+                        return __generator(this, function (_a) {
+                            switch (_a.label) {
+                                case 0: return [4 /*yield*/, createMolecularIsoFieldAsync(parameters).run(ctx).result];
+                                case 1:
+                                    field = _a.sent();
+                                    return [4 /*yield*/, Geometry.MarchingCubes.compute(field.data).run(ctx).result];
+                                case 2:
+                                    surface = _a.sent();
+                                    return [4 /*yield*/, Geometry.Surface.transform(surface, field.transform).run(ctx).result];
+                                case 3:
+                                    surface = _a.sent();
+                                    smoothing = (parameters.parameters && parameters.parameters.smoothingIterations) || 1;
+                                    return [4 /*yield*/, Geometry.Surface.laplacianSmooth(surface, smoothing).run(ctx).result];
+                                case 4:
+                                    surface = _a.sent();
+                                    return [2 /*return*/, { surface: surface, usedParameters: field.parameters }];
+                            }
+                        });
+                    }); });
                 }
                 MolecularSurface.computeMolecularSurfaceAsync = computeMolecularSurfaceAsync;
             })(MolecularSurface = Geometry.MolecularSurface || (Geometry.MolecularSurface = {}));
@@ -54955,6 +54984,41 @@ var __extends = (this && this.__extends) || function (d, b) {
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments)).next());
+    });
+};
+var __generator = (this && this.__generator) || function (thisArg, body) {
+    var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t;
+    return { next: verb(0), "throw": verb(1), "return": verb(2) };
+    function verb(n) { return function (v) { return step([n, v]); }; }
+    function step(op) {
+        if (f) throw new TypeError("Generator is already executing.");
+        while (_) try {
+            if (f = 1, y && (t = y[op[0] & 2 ? "return" : op[0] ? "throw" : "next"]) && !(t = t.call(y, op[1])).done) return t;
+            if (y = 0, t) op = [0, t.value];
+            switch (op[0]) {
+                case 0: case 1: t = op; break;
+                case 4: _.label++; return { value: op[1], done: false };
+                case 5: _.label++; y = op[1]; op = [0]; continue;
+                case 7: op = _.ops.pop(); _.trys.pop(); continue;
+                default:
+                    if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) { _ = 0; continue; }
+                    if (op[0] === 3 && (!t || (op[1] > t[0] && op[1] < t[3]))) { _.label = op[1]; break; }
+                    if (op[0] === 6 && _.label < t[1]) { _.label = t[1]; t = op; break; }
+                    if (t && _.label < t[2]) { _.label = t[2]; _.ops.push(op); break; }
+                    if (t[2]) _.ops.pop();
+                    _.trys.pop(); continue;
+            }
+            op = body.call(thisArg, _);
+        } catch (e) { op = [6, e]; y = 0; } finally { f = t = 0; }
+        if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
+    }
+};
 /*
  * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
@@ -57283,64 +57347,81 @@ var LiteMol;
                 map.endElement();
                 return map.getMap();
             }
-            function computeVertexMap(ctx, next) {
-                ctx.computation.update('Computing selection map...');
-                ctx.computation.schedule(function () {
-                    if (ctx.data.annotation) {
-                        ctx.geom.elementToVertexMap = createVertexMap(ctx);
-                    }
-                    else {
-                        ctx.geom.elementToVertexMap = createFullMap(ctx);
-                    }
-                    next();
-                }, 1000 / 15);
+            function computeVertexMap(ctx) {
+                return __awaiter(this, void 0, void 0, function () {
+                    return __generator(this, function (_a) {
+                        switch (_a.label) {
+                            case 0: return [4 /*yield*/, ctx.computation.updateProgress('Computing selection map...')];
+                            case 1:
+                                _a.sent();
+                                if (ctx.data.annotation) {
+                                    ctx.geom.elementToVertexMap = createVertexMap(ctx);
+                                }
+                                else {
+                                    ctx.geom.elementToVertexMap = createFullMap(ctx);
+                                }
+                                return [2 /*return*/];
+                        }
+                    });
+                });
             }
-            function computePickPlatesChunk(start, ctx, next) {
-                var chunkSize = 100000;
-                var tri = ctx.data.triangleIndices;
-                var ids = ctx.data.annotation;
-                if (start >= ctx.triCount) {
-                    next();
-                    return;
-                }
-                var pickPlatesVertices = ctx.pickPlatesVertices;
-                var pickPlatesTris = ctx.pickPlatesTris;
-                var pickPlatesColors = ctx.pickPlatesColors;
-                var vs = ctx.data.vertices;
-                var color = { r: 0.45, g: 0.45, b: 0.45 };
-                var pickTris = ctx.pickTris;
-                ctx.computation.update('Creating selection geometry...', ctx.computation.abortRequest, start, ctx.triCount);
-                if (ctx.computation.abortRequested) {
-                    ctx.computation.abort();
-                    return;
-                }
-                var platesVertexCount = 0;
-                for (var i = start, _b = Math.min(start + chunkSize, ctx.triCount); i < _b; i++) {
-                    var a = tri[3 * i], b = tri[3 * i + 1], c = tri[3 * i + 2];
-                    var aI = ids[a], bI = ids[b], cI = ids[c];
-                    if (aI === bI && bI === cI) {
-                        ChunkedArray.add3(pickTris, a, b, c);
-                        continue;
-                    }
-                    var s = aI === bI ? aI : bI;
-                    ChunkedArray.add3(pickPlatesVertices, vs[3 * a], vs[3 * a + 1], vs[3 * a + 2]);
-                    ChunkedArray.add3(pickPlatesVertices, vs[3 * b], vs[3 * b + 1], vs[3 * b + 2]);
-                    ChunkedArray.add3(pickPlatesVertices, vs[3 * c], vs[3 * c + 1], vs[3 * c + 2]);
-                    ChunkedArray.add3(pickPlatesTris, platesVertexCount++, platesVertexCount++, platesVertexCount++);
-                    if (s < 0) {
-                        color.r = 0;
-                        color.g = 0;
-                        color.b = 0;
-                    }
-                    else {
-                        Visualization.Selection.Picking.assignPickColor(s, color);
-                    }
-                    ChunkedArray.add4(pickPlatesColors, color.r, color.g, color.b, 0.0);
-                    ChunkedArray.add4(pickPlatesColors, color.r, color.g, color.b, 0.0);
-                    ChunkedArray.add4(pickPlatesColors, color.r, color.g, color.b, 0.0);
-                }
-                ctx.platesVertexCount += platesVertexCount;
-                ctx.computation.schedule(function () { return computePickPlatesChunk(start + chunkSize, ctx, next); });
+            function computePickPlatesChunks(ctx) {
+                return __awaiter(this, void 0, void 0, function () {
+                    var chunkSize, tri, ids, start, pickPlatesVertices, pickPlatesTris, pickPlatesColors, vs, color, pickTris, platesVertexCount, i, _b, a, b, c, aI, bI, cI, s;
+                    return __generator(this, function (_a) {
+                        switch (_a.label) {
+                            case 0:
+                                chunkSize = 100000;
+                                tri = ctx.data.triangleIndices;
+                                ids = ctx.data.annotation;
+                                start = 0;
+                                _a.label = 1;
+                            case 1:
+                                if (!(start < ctx.triCount))
+                                    return [3 /*break*/, 4];
+                                pickPlatesVertices = ctx.pickPlatesVertices;
+                                pickPlatesTris = ctx.pickPlatesTris;
+                                pickPlatesColors = ctx.pickPlatesColors;
+                                vs = ctx.data.vertices;
+                                color = { r: 0.45, g: 0.45, b: 0.45 };
+                                pickTris = ctx.pickTris;
+                                return [4 /*yield*/, ctx.computation.updateProgress('Creating selection geometry...', true, start, ctx.triCount)];
+                            case 2:
+                                _a.sent();
+                                platesVertexCount = 0;
+                                for (i = start, _b = Math.min(start + chunkSize, ctx.triCount); i < _b; i++) {
+                                    a = tri[3 * i], b = tri[3 * i + 1], c = tri[3 * i + 2];
+                                    aI = ids[a], bI = ids[b], cI = ids[c];
+                                    if (aI === bI && bI === cI) {
+                                        ChunkedArray.add3(pickTris, a, b, c);
+                                        continue;
+                                    }
+                                    s = aI === bI ? aI : bI;
+                                    ChunkedArray.add3(pickPlatesVertices, vs[3 * a], vs[3 * a + 1], vs[3 * a + 2]);
+                                    ChunkedArray.add3(pickPlatesVertices, vs[3 * b], vs[3 * b + 1], vs[3 * b + 2]);
+                                    ChunkedArray.add3(pickPlatesVertices, vs[3 * c], vs[3 * c + 1], vs[3 * c + 2]);
+                                    ChunkedArray.add3(pickPlatesTris, platesVertexCount++, platesVertexCount++, platesVertexCount++);
+                                    if (s < 0) {
+                                        color.r = 0;
+                                        color.g = 0;
+                                        color.b = 0;
+                                    }
+                                    else {
+                                        Visualization.Selection.Picking.assignPickColor(s, color);
+                                    }
+                                    ChunkedArray.add4(pickPlatesColors, color.r, color.g, color.b, 0.0);
+                                    ChunkedArray.add4(pickPlatesColors, color.r, color.g, color.b, 0.0);
+                                    ChunkedArray.add4(pickPlatesColors, color.r, color.g, color.b, 0.0);
+                                }
+                                ctx.platesVertexCount += platesVertexCount;
+                                _a.label = 3;
+                            case 3:
+                                start += chunkSize;
+                                return [3 /*break*/, 1];
+                            case 4: return [2 /*return*/];
+                        }
+                    });
+                });
             }
             function assignPickColors(ctx) {
                 var color = { r: 0.45, g: 0.45, b: 0.45 }, vs = ctx.data.vertices, ids = ctx.data.annotation, tri = ctx.data.triangleIndices;
@@ -57420,52 +57501,68 @@ var LiteMol;
                 ctx.geom.vertexStateBuffer = new Visualization.THREE.BufferAttribute(new Float32Array(ctx.data.vertices.length), 1);
                 geometry.addAttribute('vState', ctx.geom.vertexStateBuffer);
             }
-            function computePickGeometry(ctx, next) {
-                ctx.computation.update('Creating selection geometry...');
-                ctx.computation.schedule(function () {
-                    ctx.pickColorBuffer = new Float32Array(ctx.vertexCount * 4);
-                    if (!ctx.data.annotation) {
-                        createFullPickGeometry(ctx);
-                        next();
-                    }
-                    else {
-                        assignPickColors(ctx);
-                        ctx.pickPlatesVertices = ChunkedArray.forVertex3D(Math.max(ctx.vertexCount / 10, 10));
-                        ctx.pickPlatesTris = ChunkedArray.forIndexBuffer(Math.max(ctx.triCount / 10, 10));
-                        ctx.pickPlatesColors = ChunkedArray.create(function (s) { return new Float32Array(s); }, Math.max(ctx.vertexCount / 10, 10), 4);
-                        ctx.platesVertexCount = 0;
-                        computePickPlatesChunk(0, ctx, function () {
-                            createPickGeometry(ctx);
-                            next();
-                        });
-                    }
+            function computePickGeometry(ctx) {
+                return __awaiter(this, void 0, void 0, function () {
+                    return __generator(this, function (_a) {
+                        switch (_a.label) {
+                            case 0: return [4 /*yield*/, ctx.computation.updateProgress('Creating selection geometry...')];
+                            case 1:
+                                _a.sent();
+                                ctx.pickColorBuffer = new Float32Array(ctx.vertexCount * 4);
+                                if (!!ctx.data.annotation)
+                                    return [3 /*break*/, 2];
+                                createFullPickGeometry(ctx);
+                                return [2 /*return*/];
+                            case 2:
+                                assignPickColors(ctx);
+                                ctx.pickPlatesVertices = ChunkedArray.forVertex3D(Math.max(ctx.vertexCount / 10, 10));
+                                ctx.pickPlatesTris = ChunkedArray.forIndexBuffer(Math.max(ctx.triCount / 10, 10));
+                                ctx.pickPlatesColors = ChunkedArray.create(function (s) { return new Float32Array(s); }, Math.max(ctx.vertexCount / 10, 10), 4);
+                                ctx.platesVertexCount = 0;
+                                return [4 /*yield*/, computePickPlatesChunks(ctx)];
+                            case 3:
+                                _a.sent();
+                                createPickGeometry(ctx);
+                                _a.label = 4;
+                            case 4: return [2 /*return*/];
+                        }
+                    });
                 });
             }
-            function buildGeometry(data, computation, isWireframe, done) {
-                var ctx = {
-                    data: data,
-                    computation: computation,
-                    geom: new Geometry(),
-                    vertexCount: (data.vertices.length / 3) | 0,
-                    triCount: (data.triangleIndices.length / 3) | 0
-                };
-                computation.update('Creating geometry...');
-                var surface = LiteMol.Core.Geometry.Surface.computeNormals(data)
-                    .bind(function (s) {
-                    return LiteMol.Core.Geometry.Surface.computeBoundingSphere(s);
-                }).run(computation)
-                    .result.then(function () {
-                    computation.schedule(function () {
-                        computeVertexMap(ctx, function () {
-                            computePickGeometry(ctx, function () {
+            function buildGeometry(data, computation, isWireframe) {
+                return __awaiter(this, void 0, LiteMol.Promise, function () {
+                    var ctx;
+                    return __generator(this, function (_a) {
+                        switch (_a.label) {
+                            case 0:
+                                ctx = {
+                                    data: data,
+                                    computation: computation,
+                                    geom: new Geometry(),
+                                    vertexCount: (data.vertices.length / 3) | 0,
+                                    triCount: (data.triangleIndices.length / 3) | 0
+                                };
+                                return [4 /*yield*/, computation.updateProgress('Creating geometry...')];
+                            case 1:
+                                _a.sent();
+                                return [4 /*yield*/, LiteMol.Core.Geometry.Surface.computeNormals(data).run(computation).result];
+                            case 2:
+                                _a.sent();
+                                return [4 /*yield*/, LiteMol.Core.Geometry.Surface.computeBoundingSphere(data).run(computation).result];
+                            case 3:
+                                _a.sent();
+                                return [4 /*yield*/, computeVertexMap(ctx)];
+                            case 4:
+                                _a.sent();
+                                return [4 /*yield*/, computePickGeometry(ctx)];
+                            case 5:
+                                _a.sent();
                                 createGeometry(isWireframe, ctx);
                                 ctx.geom.vertexToElementMap = ctx.data.annotation;
-                                done(ctx.geom);
-                            });
-                        });
+                                return [2 /*return*/, ctx.geom];
+                        }
                     });
-                })
-                    .catch(computation.reject);
+                });
             }
             Surface.buildGeometry = buildGeometry;
             var Geometry = (function (_super) {
@@ -57650,28 +57747,35 @@ var LiteMol;
                     };
                 };
                 Model.create = function (entity, _a) {
+                    var _this = this;
                     var surface = _a.surface, theme = _a.theme, _c = _a.parameters, parameters = _c === void 0 ? Surface.DefaultSurfaceModelParameters : _c, props = _a.props;
-                    return LiteMol.Core.Computation.create(function (ctx) {
-                        Surface.buildGeometry(surface, ctx, !!parameters.isWireframe, function (geometry) {
-                            var ret = new Model();
-                            ret.surface = surface;
-                            ret.material = Visualization.MaterialsHelper.getMeshMaterial(Visualization.THREE.FlatShading, !!parameters.isWireframe); //new THREE.MeshPhongMaterial({ specular: 0xAAAAAA, /*ambient: 0xffffff, */shininess: 1, shading: THREE.FlatShading, side: THREE.DoubleSide, vertexColors: THREE.VertexColors });
-                            ret.geometry = geometry;
-                            ret.pickMaterial = Visualization.MaterialsHelper.getPickMaterial();
-                            ret.entity = entity;
-                            ret.centroid = new Visualization.THREE.Vector3().copy(surface.boundingSphere.center);
-                            ret.radius = surface.boundingSphere.radius;
-                            if (props)
-                                ret.props = props;
-                            ret.disposeList.push(ret.geometry, ret.material, ret.pickMaterial);
-                            var obj = ret.createObjects();
-                            ret.object = obj.main;
-                            ret.pickObject = obj.pick;
-                            ret.applyTheme(theme);
-                            ret.pickBufferAttributes = [ret.geometry.pickGeometry.attributes.pColor];
-                            ctx.resolve(ret);
+                    return LiteMol.Core.computation(function (ctx) { return __awaiter(_this, void 0, void 0, function () {
+                        var geometry, ret, obj;
+                        return __generator(this, function (_a) {
+                            switch (_a.label) {
+                                case 0: return [4 /*yield*/, Surface.buildGeometry(surface, ctx, !!parameters.isWireframe)];
+                                case 1:
+                                    geometry = _a.sent();
+                                    ret = new Model();
+                                    ret.surface = surface;
+                                    ret.material = Visualization.MaterialsHelper.getMeshMaterial(Visualization.THREE.FlatShading, !!parameters.isWireframe); //new THREE.MeshPhongMaterial({ specular: 0xAAAAAA, /*ambient: 0xffffff, */shininess: 1, shading: THREE.FlatShading, side: THREE.DoubleSide, vertexColors: THREE.VertexColors });
+                                    ret.geometry = geometry;
+                                    ret.pickMaterial = Visualization.MaterialsHelper.getPickMaterial();
+                                    ret.entity = entity;
+                                    ret.centroid = new Visualization.THREE.Vector3().copy(surface.boundingSphere.center);
+                                    ret.radius = surface.boundingSphere.radius;
+                                    if (props)
+                                        ret.props = props;
+                                    ret.disposeList.push(ret.geometry, ret.material, ret.pickMaterial);
+                                    obj = ret.createObjects();
+                                    ret.object = obj.main;
+                                    ret.pickObject = obj.pick;
+                                    ret.applyTheme(theme);
+                                    ret.pickBufferAttributes = [ret.geometry.pickGeometry.attributes.pColor];
+                                    return [2 /*return*/, ret];
+                            }
                         });
-                    });
+                    }); });
                 };
                 return Model;
             }(Visualization.Model));
@@ -57776,24 +57880,28 @@ var LiteMol;
                     };
                 };
                 Model.create = function (entity, _a) {
+                    var _this = this;
                     var geometry = _a.geometry, theme = _a.theme, props = _a.props;
-                    return LiteMol.Core.Computation.create(function (ctx) {
-                        var ret = new Model();
-                        ret.material = new Visualization.THREE.MeshBasicMaterial({ wireframe: true });
-                        ret.geometry = geometry;
-                        ret.entity = entity;
-                        ret.centroid = geometry.center;
-                        ret.radius = geometry.radius;
-                        if (props)
-                            ret.props = props;
-                        ret.disposeList.push(ret.geometry, ret.material);
-                        var obj = ret.createObjects();
-                        ret.object = obj.main;
-                        ret.pickObject = void 0;
-                        ret.applyTheme(theme);
-                        ret.pickBufferAttributes = [];
-                        ctx.resolve(ret);
-                    });
+                    return LiteMol.Core.computation(function (ctx) { return __awaiter(_this, void 0, void 0, function () {
+                        var ret, obj;
+                        return __generator(this, function (_a) {
+                            ret = new Model();
+                            ret.material = new Visualization.THREE.MeshBasicMaterial({ wireframe: true });
+                            ret.geometry = geometry;
+                            ret.entity = entity;
+                            ret.centroid = geometry.center;
+                            ret.radius = geometry.radius;
+                            if (props)
+                                ret.props = props;
+                            ret.disposeList.push(ret.geometry, ret.material);
+                            obj = ret.createObjects();
+                            ret.object = obj.main;
+                            ret.pickObject = void 0;
+                            ret.applyTheme(theme);
+                            ret.pickBufferAttributes = [];
+                            return [2 /*return*/, ret];
+                        });
+                    }); });
                 };
                 return Model;
             }(Visualization.Model));
@@ -57873,30 +57981,37 @@ var LiteMol;
                         };
                     };
                     Model.create = function (entity, _a) {
+                        var _this = this;
                         var model = _a.model, atomIndices = _a.atomIndices, theme = _a.theme, params = _a.params, props = _a.props;
-                        return LiteMol.Core.Computation.create(function (ctx) {
-                            BallsAndSticks.buildGeometry(model, params, atomIndices, ctx, function (geom) {
-                                var ret = new Model();
-                                ret.molecule = model;
-                                ret.ballsAndSticks = geom;
-                                ret.material = Visualization.MaterialsHelper.getMeshMaterial();
-                                ret.bondsMaterial = new Visualization.THREE.MeshPhongMaterial({ specular: 0xAAAAAA, shininess: 1, shading: Visualization.THREE.SmoothShading, side: Visualization.THREE.FrontSide, vertexColors: Visualization.THREE.VertexColors });
-                                ret.pickMaterial = Visualization.MaterialsHelper.getPickMaterial();
-                                ret.entity = entity;
-                                ret.ballsAndSticks.atomsGeometry.computeBoundingSphere();
-                                ret.centroid = ret.ballsAndSticks.atomsGeometry.boundingSphere.center;
-                                ret.radius = ret.ballsAndSticks.atomsGeometry.boundingSphere.radius;
-                                if (props)
-                                    ret.props = props;
-                                var obj = ret.createObjects();
-                                ret.object = obj.main;
-                                ret.applyTheme(theme);
-                                ret.disposeList.push(ret.ballsAndSticks, ret.material, ret.bondsMaterial, ret.pickMaterial);
-                                ret.pickObject = obj.pick;
-                                ret.pickBufferAttributes = [ret.ballsAndSticks.pickGeometry.attributes.pColor];
-                                ctx.resolve(ret);
+                        return LiteMol.Core.computation(function (ctx) { return __awaiter(_this, void 0, void 0, function () {
+                            var geom, ret, obj;
+                            return __generator(this, function (_a) {
+                                switch (_a.label) {
+                                    case 0: return [4 /*yield*/, BallsAndSticks.buildGeometry(model, params, atomIndices, ctx)];
+                                    case 1:
+                                        geom = _a.sent();
+                                        ret = new Model();
+                                        ret.molecule = model;
+                                        ret.ballsAndSticks = geom;
+                                        ret.material = Visualization.MaterialsHelper.getMeshMaterial();
+                                        ret.bondsMaterial = new Visualization.THREE.MeshPhongMaterial({ specular: 0xAAAAAA, shininess: 1, shading: Visualization.THREE.SmoothShading, side: Visualization.THREE.FrontSide, vertexColors: Visualization.THREE.VertexColors });
+                                        ret.pickMaterial = Visualization.MaterialsHelper.getPickMaterial();
+                                        ret.entity = entity;
+                                        ret.ballsAndSticks.atomsGeometry.computeBoundingSphere();
+                                        ret.centroid = ret.ballsAndSticks.atomsGeometry.boundingSphere.center;
+                                        ret.radius = ret.ballsAndSticks.atomsGeometry.boundingSphere.radius;
+                                        if (props)
+                                            ret.props = props;
+                                        obj = ret.createObjects();
+                                        ret.object = obj.main;
+                                        ret.applyTheme(theme);
+                                        ret.disposeList.push(ret.ballsAndSticks, ret.material, ret.bondsMaterial, ret.pickMaterial);
+                                        ret.pickObject = obj.pick;
+                                        ret.pickBufferAttributes = [ret.ballsAndSticks.pickGeometry.attributes.pColor];
+                                        return [2 /*return*/, ret];
+                                }
                             });
-                        });
+                        }); });
                     };
                     return Model;
                 }(Visualization.Model));
@@ -58304,20 +58419,10 @@ var LiteMol;
                         state.template.applyMatrix(state.finalMatrix);
                         state.vertices.set(state.templateVB, state.templateVB.length * state.sticksDone);
                         state.normals.set(state.templateNB, state.templateVB.length * state.sticksDone);
-                        //state.indices.set(state.templateIB, state.templateIB.length * state.sticksDone);
                         var tIB = state.templateIB, ib = state.indices, offsetIB = state.templateIB.length * state.sticksDone, offsetVB = state.templateVertexCount * state.sticksDone;
                         for (var i = 0; i < tIB.length; i++) {
                             ib[offsetIB++] = tIB[i] + offsetVB;
                         }
-                        //for (let i = 0; i < state.vbLength; i++) {
-                        //    bondVertices[bondTemplateVertexBufferLength * bondsDone + i] = bondTemplateVertexBuffer[i];
-                        //    bondNormals[bondTemplateVertexBufferLength * bondsDone + i] = bondTemplateNormalBuffer[i];
-                        //}
-                        //translationMatrix.makeTranslation(-this.bondCenter.x, -this.bondCenter.y, -this.bondCenter.z);
-                        //rotationMatrix.makeRotationAxis(this.rotationAxis, rotationAngle);
-                        //scaleMatrix.makeScale(1 / radius, 1 / length, 1 / radius);
-                        //finalMatrix = scaleMatrix.multiply(rotationMatrix.multiply(translationMatrix));
-                        //bondTemplate.applyMatrix(finalMatrix);
                         state.rotationMatrix.getInverse(state.finalMatrix);
                         state.template.applyMatrix(state.rotationMatrix);
                         state.sticksDone++;
@@ -58359,91 +58464,129 @@ var LiteMol;
                             atomVertexMap: state.atomMapBuilder.getMap()
                         };
                     };
-                    BallsAndSticksGeometryBuilder.addAtomsChunk = function (start, state, ctx, done) {
-                        var chunkSize = 1250;
-                        if (ctx.abortRequested) {
-                            ctx.abort();
-                            return;
-                        }
-                        if (start >= state.atomIndices.length) {
-                            done();
-                            return;
-                        }
-                        ctx.update('Adding atoms...', ctx.abortRequest, start, state.atomIndices.length);
-                        for (var i = start, _b = Math.min(start + chunkSize, state.atomIndices.length); i < _b; i++) {
-                            BallsAndSticksGeometryBuilder.addAtom(state.atomIndices[i], state);
-                        }
-                        ctx.schedule(function () { return BallsAndSticksGeometryBuilder.addAtomsChunk(start + chunkSize, state, ctx, done); });
-                    };
-                    BallsAndSticksGeometryBuilder.addBondsChunk = function (start, state, bs, ctx, done) {
-                        var chunkSize = 1250;
-                        if (ctx.abortRequested) {
-                            ctx.abort();
-                            return;
-                        }
-                        if (start >= bs.bondCount) {
-                            done();
-                            return;
-                        }
-                        ctx.update('Adding bonds...', ctx.abortRequest, start, bs.bondCount);
-                        for (var i = start, _b = Math.min(start + chunkSize, bs.bondCount); i < _b; i++) {
-                            BallsAndSticksGeometryBuilder.addBond(i, state, bs);
-                        }
-                        ctx.schedule(function () { return BallsAndSticksGeometryBuilder.addBondsChunk(start + chunkSize, state, bs, ctx, done); });
-                    };
-                    BallsAndSticksGeometryBuilder.addBonds = function (state, ctx, done) {
-                        if (state.params.hideBonds) {
-                            done();
-                            return;
-                        }
-                        ctx.update('Computing bonds...');
-                        ctx.schedule(function () {
-                            var bs = new BondsBuildState(state);
-                            state.bs = bs;
-                            bs.currentResidueIndex = bs.residueIndex[bs.info.bonds[0]];
-                            bs.bondMapBuilder.startElement(bs.currentResidueIndex);
-                            BallsAndSticksGeometryBuilder.addBondsChunk(0, state, bs, ctx, function () {
-                                bs.bondMapBuilder.addVertexRange(bs.bondMapVertexOffsetStart, bs.bondMapVertexOffsetEnd);
-                                bs.bondMapBuilder.endElement();
-                                ctx.update('Finishing up...');
-                                ctx.schedule(done, 1000 / 30);
+                    BallsAndSticksGeometryBuilder.addAtoms = function (state, ctx) {
+                        return __awaiter(this, void 0, void 0, function () {
+                            var chunkSize, start, _l, i, _b;
+                            return __generator(this, function (_a) {
+                                switch (_a.label) {
+                                    case 0:
+                                        chunkSize = 1250;
+                                        start = 0, _l = state.atomIndices.length;
+                                        _a.label = 1;
+                                    case 1:
+                                        if (!(start < _l))
+                                            return [3 /*break*/, 4];
+                                        for (i = start, _b = Math.min(start + chunkSize, state.atomIndices.length); i < _b; i++) {
+                                            BallsAndSticksGeometryBuilder.addAtom(state.atomIndices[i], state);
+                                        }
+                                        return [4 /*yield*/, ctx.updateProgress('Adding atoms...', true, start, _l)];
+                                    case 2:
+                                        _a.sent();
+                                        _a.label = 3;
+                                    case 3:
+                                        start += chunkSize;
+                                        return [3 /*break*/, 1];
+                                    case 4: return [2 /*return*/];
+                                }
                             });
                         });
                     };
-                    BallsAndSticksGeometryBuilder.addAtoms = function (state, ctx, done) {
-                        BallsAndSticksGeometryBuilder.addAtomsChunk(0, state, ctx, done);
+                    BallsAndSticksGeometryBuilder.addBondsChunks = function (state, bs, ctx) {
+                        return __awaiter(this, void 0, void 0, function () {
+                            var chunkSize, start, i, _b;
+                            return __generator(this, function (_a) {
+                                switch (_a.label) {
+                                    case 0:
+                                        chunkSize = 1250;
+                                        start = 0;
+                                        _a.label = 1;
+                                    case 1:
+                                        if (!(start < bs.bondCount))
+                                            return [3 /*break*/, 4];
+                                        for (i = start, _b = Math.min(start + chunkSize, bs.bondCount); i < _b; i++) {
+                                            BallsAndSticksGeometryBuilder.addBond(i, state, bs);
+                                        }
+                                        return [4 /*yield*/, ctx.updateProgress('Adding bonds...', true, start, bs.bondCount)];
+                                    case 2:
+                                        _a.sent();
+                                        _a.label = 3;
+                                    case 3:
+                                        start += chunkSize;
+                                        return [3 /*break*/, 1];
+                                    case 4: return [2 /*return*/];
+                                }
+                            });
+                        });
                     };
-                    BallsAndSticksGeometryBuilder.build = function (model, parameters, atomIndices, ctx, done) {
-                        ctx.update('Creating atoms...');
-                        ctx.schedule(function () {
-                            var state = new BuildState(model, atomIndices, LiteMol.Core.Utils.extend({}, parameters, BallsAndSticks.DefaultBallsAndSticksModelParameters));
-                            BallsAndSticksGeometryBuilder.addAtoms(state, ctx, function () {
-                                BallsAndSticksGeometryBuilder.addBonds(state, ctx, function () {
-                                    var ret = new BallsAndSticksGeometry();
-                                    if (state.bs) {
-                                        var geometry = BallsAndSticksGeometryBuilder.getBondsGeometry(state.bs);
-                                        ret.bondsGeometry = geometry.bondsGeometry;
-                                        ret.bondVertexMap = geometry.bondVertexMap;
-                                    }
-                                    else {
-                                        var geometry = BallsAndSticksGeometryBuilder.getEmptyBondsGeometry();
-                                        ret.bondsGeometry = geometry.bondsGeometry;
-                                        ret.bondVertexMap = geometry.bondVertexMap;
-                                    }
-                                    var atomGeometry = BallsAndSticksGeometryBuilder.getAtomsGeometry(state);
-                                    ret.vertexStateBuffer = atomGeometry.vertexStateBuffer;
-                                    ret.atomsGeometry = atomGeometry.atomsGeometry;
-                                    ret.pickGeometry = atomGeometry.atomsPickGeometry;
-                                    ret.atomVertexMap = atomGeometry.atomVertexMap;
-                                    done(ret);
-                                });
+                    BallsAndSticksGeometryBuilder.addBonds = function (state, ctx) {
+                        return __awaiter(this, void 0, void 0, function () {
+                            var bs;
+                            return __generator(this, function (_a) {
+                                switch (_a.label) {
+                                    case 0:
+                                        if (state.params.hideBonds) {
+                                            return [2 /*return*/];
+                                        }
+                                        return [4 /*yield*/, ctx.updateProgress('Computing bonds...', true)];
+                                    case 1:
+                                        _a.sent();
+                                        bs = new BondsBuildState(state);
+                                        state.bs = bs;
+                                        bs.currentResidueIndex = bs.residueIndex[bs.info.bonds[0]];
+                                        bs.bondMapBuilder.startElement(bs.currentResidueIndex);
+                                        return [4 /*yield*/, BallsAndSticksGeometryBuilder.addBondsChunks(state, bs, ctx)];
+                                    case 2:
+                                        _a.sent();
+                                        bs.bondMapBuilder.addVertexRange(bs.bondMapVertexOffsetStart, bs.bondMapVertexOffsetEnd);
+                                        bs.bondMapBuilder.endElement();
+                                        return [2 /*return*/];
+                                }
+                            });
+                        });
+                    };
+                    BallsAndSticksGeometryBuilder.build = function (model, parameters, atomIndices, ctx) {
+                        return __awaiter(this, void 0, void 0, function () {
+                            var state, ret, geometry, geometry, atomGeometry;
+                            return __generator(this, function (_a) {
+                                switch (_a.label) {
+                                    case 0: return [4 /*yield*/, ctx.updateProgress('Creating atoms...')];
+                                    case 1:
+                                        _a.sent();
+                                        state = new BuildState(model, atomIndices, LiteMol.Core.Utils.extend({}, parameters, BallsAndSticks.DefaultBallsAndSticksModelParameters));
+                                        return [4 /*yield*/, BallsAndSticksGeometryBuilder.addAtoms(state, ctx)];
+                                    case 2:
+                                        _a.sent();
+                                        return [4 /*yield*/, BallsAndSticksGeometryBuilder.addBonds(state, ctx)];
+                                    case 3:
+                                        _a.sent();
+                                        return [4 /*yield*/, ctx.updateProgress('Finalizing...')];
+                                    case 4:
+                                        _a.sent();
+                                        ret = new BallsAndSticksGeometry();
+                                        if (state.bs) {
+                                            geometry = BallsAndSticksGeometryBuilder.getBondsGeometry(state.bs);
+                                            ret.bondsGeometry = geometry.bondsGeometry;
+                                            ret.bondVertexMap = geometry.bondVertexMap;
+                                        }
+                                        else {
+                                            geometry = BallsAndSticksGeometryBuilder.getEmptyBondsGeometry();
+                                            ret.bondsGeometry = geometry.bondsGeometry;
+                                            ret.bondVertexMap = geometry.bondVertexMap;
+                                        }
+                                        atomGeometry = BallsAndSticksGeometryBuilder.getAtomsGeometry(state);
+                                        ret.vertexStateBuffer = atomGeometry.vertexStateBuffer;
+                                        ret.atomsGeometry = atomGeometry.atomsGeometry;
+                                        ret.pickGeometry = atomGeometry.atomsPickGeometry;
+                                        ret.atomVertexMap = atomGeometry.atomVertexMap;
+                                        return [2 /*return*/, ret];
+                                }
                             });
                         });
                     };
                     return BallsAndSticksGeometryBuilder;
                 }());
-                function buildGeometry(model, parameters, atomIndices, ctx, done) {
-                    BallsAndSticksGeometryBuilder.build(model, parameters, atomIndices, ctx, done);
+                function buildGeometry(model, parameters, atomIndices, ctx) {
+                    return BallsAndSticksGeometryBuilder.build(model, parameters, atomIndices, ctx);
                 }
                 BallsAndSticks.buildGeometry = buildGeometry;
                 var BallsAndSticksGeometry = (function (_super) {
@@ -58500,39 +58643,52 @@ var LiteMol;
                         return Data;
                     }(Visualization.GeometryBase));
                     Geometry.Data = Data;
-                    function create(model, atomIndices, linearSegments, parameters, isTrace, computation, done) {
-                        var params = LiteMol.Core.Utils.extend({}, parameters, Geometry.CartoonsGeometryParams.Default);
-                        var ctx = {
-                            computation: computation,
-                            model: model,
-                            atomIndices: atomIndices,
-                            linearSegments: linearSegments,
-                            parameters: parameters,
-                            isTrace: isTrace,
-                            params: params,
-                            state: new Geometry.CartoonsGeometryState(params, model.residues.count),
-                            units: void 0,
-                            strandArrays: void 0,
-                            strandTemplate: void 0,
-                            builder: new Geometry.Builder(),
-                            geom: new Data()
-                        };
-                        ctx.computation.update('Building units...');
-                        ctx.computation.schedule(function () {
-                            ctx.units = Geometry.CartoonAsymUnit.buildUnits(ctx.model, ctx.atomIndices, ctx.linearSegments);
-                            Geometry.buildUnitsChunk(0, ctx, function () {
-                                if (ctx.strandTemplate)
-                                    ctx.strandTemplate.geometry.dispose();
-                                ctx.geom.vertexMap = ctx.state.vertexMap.getMap();
-                                Geometry.createGeometry(ctx);
-                                var ret = ctx.geom;
-                                for (var _i = 0, _a = Object.keys(ctx); _i < _a.length; _i++) {
-                                    var k = _a[_i];
-                                    if (!Object.prototype.hasOwnProperty.call(ctx, k))
-                                        continue;
-                                    ctx[k] = void 0;
+                    function create(model, atomIndices, linearSegments, parameters, isTrace, computation) {
+                        return __awaiter(this, void 0, LiteMol.Promise, function () {
+                            var params, ctx, ret, _i, _a, k;
+                            return __generator(this, function (_b) {
+                                switch (_b.label) {
+                                    case 0:
+                                        params = LiteMol.Core.Utils.extend({}, parameters, Geometry.CartoonsGeometryParams.Default);
+                                        ctx = {
+                                            computation: computation,
+                                            model: model,
+                                            atomIndices: atomIndices,
+                                            linearSegments: linearSegments,
+                                            parameters: parameters,
+                                            isTrace: isTrace,
+                                            params: params,
+                                            state: new Geometry.CartoonsGeometryState(params, model.residues.count),
+                                            units: void 0,
+                                            strandArrays: void 0,
+                                            strandTemplate: void 0,
+                                            builder: new Geometry.Builder(),
+                                            geom: new Data()
+                                        };
+                                        return [4 /*yield*/, ctx.computation.updateProgress('Building units...')];
+                                    case 1:
+                                        _b.sent();
+                                        ctx.units = Geometry.CartoonAsymUnit.buildUnits(ctx.model, ctx.atomIndices, ctx.linearSegments);
+                                        return [4 /*yield*/, Geometry.buildUnitsAsync(ctx)];
+                                    case 2:
+                                        _b.sent();
+                                        if (ctx.strandTemplate)
+                                            ctx.strandTemplate.geometry.dispose();
+                                        ctx.geom.vertexMap = ctx.state.vertexMap.getMap();
+                                        return [4 /*yield*/, ctx.computation.updateProgress('Creating geometry...')];
+                                    case 3:
+                                        _b.sent();
+                                        Geometry.createGeometry(ctx);
+                                        ret = ctx.geom;
+                                        // help the GC
+                                        for (_i = 0, _a = Object.keys(ctx); _i < _a.length; _i++) {
+                                            k = _a[_i];
+                                            if (!Object.prototype.hasOwnProperty.call(ctx, k))
+                                                continue;
+                                            ctx[k] = void 0;
+                                        }
+                                        return [2 /*return*/, ret];
                                 }
-                                done(ret);
                             });
                         });
                     }
@@ -59307,27 +59463,34 @@ var LiteMol;
                         }
                     }
                     Geometry.buildUnit = buildUnit;
-                    function buildUnitsChunk(start, ctx, done) {
-                        var chunkSize = 10000; // residues
-                        if (start >= ctx.units.length) {
-                            done();
-                            return;
-                        }
-                        if (ctx.computation.abortRequested) {
-                            ctx.computation.abort();
-                            return;
-                        }
-                        var residuesDone = 0;
-                        var index = start;
-                        while (residuesDone < chunkSize && index < ctx.units.length) {
-                            buildUnit(ctx.units[index], ctx);
-                            residuesDone += ctx.units[index].residueCount;
-                            index++;
-                        }
-                        ctx.computation.update('Building units...', ctx.computation.abortRequest, start, ctx.units.length);
-                        ctx.computation.schedule(function () { return buildUnitsChunk(index, ctx, done); });
+                    function buildUnitsAsync(ctx) {
+                        return __awaiter(this, void 0, LiteMol.Promise, function () {
+                            var chunkSize, unitIndex, residuesDone;
+                            return __generator(this, function (_a) {
+                                switch (_a.label) {
+                                    case 0:
+                                        chunkSize = 10000;
+                                        unitIndex = 0;
+                                        _a.label = 1;
+                                    case 1:
+                                        if (!(unitIndex < ctx.units.length))
+                                            return [3 /*break*/, 3];
+                                        residuesDone = 0;
+                                        while (residuesDone < chunkSize && unitIndex < ctx.units.length) {
+                                            buildUnit(ctx.units[unitIndex], ctx);
+                                            residuesDone += ctx.units[unitIndex].residueCount;
+                                            unitIndex++;
+                                        }
+                                        return [4 /*yield*/, ctx.computation.updateProgress('Building units...', true, unitIndex, ctx.units.length)];
+                                    case 2:
+                                        _a.sent();
+                                        return [3 /*break*/, 1];
+                                    case 3: return [2 /*return*/];
+                                }
+                            });
+                        });
                     }
-                    Geometry.buildUnitsChunk = buildUnitsChunk;
+                    Geometry.buildUnitsAsync = buildUnitsAsync;
                     function createGeometry(ctx) {
                         var state = ctx.state;
                         var vertexBuffer = new Float32Array(ChunkedArray.compact(state.vertexBuffer)), normalBuffer = new Float32Array(ChunkedArray.compact(state.normalBuffer)), colorBuffer = new Float32Array(state.verticesDone * 3), pickColorBuffer = new Float32Array(state.verticesDone * 4), indexBuffer = new Uint32Array(ChunkedArray.compact(state.indexBuffer)), stateBuffer = new Float32Array(state.verticesDone);
@@ -59664,66 +59827,76 @@ var LiteMol;
                         };
                     };
                     Model.create = function (entity, _c) {
+                        var _this = this;
                         var model = _c.model, queryContext = _c.queryContext, atomIndices = _c.atomIndices, theme = _c.theme, params = _c.params, props = _c.props;
-                        return LiteMol.Core.Computation.create(function (ctx) {
-                            var linearSegments = 0, radialSements = 0;
-                            ctx.update('Computing cartoons...');
-                            params = LiteMol.Core.Utils.extend({}, params, Cartoons.DefaultCartoonsModelParameters);
-                            switch (params.tessalation) {
-                                case 0:
-                                    linearSegments = 1;
-                                    radialSements = 2;
-                                    break;
-                                case 1:
-                                    linearSegments = 4;
-                                    radialSements = 3;
-                                    break;
-                                case 2:
-                                    linearSegments = 6;
-                                    radialSements = 5;
-                                    break;
-                                case 3:
-                                    linearSegments = 10;
-                                    radialSements = 8;
-                                    break;
-                                case 4:
-                                    linearSegments = 12;
-                                    radialSements = 10;
-                                    break;
-                                case 5:
-                                    linearSegments = 16;
-                                    radialSements = 14;
-                                    break;
-                                default:
-                                    linearSegments = 18;
-                                    radialSements = 16;
-                                    break;
-                            }
-                            Cartoons.Geometry.create(model, atomIndices, linearSegments, {
-                                radialSegmentCount: radialSements,
-                                tessalation: params.tessalation
-                            }, params.drawingType === CartoonsModelType.AlphaTrace, ctx, function (cartoons) {
-                                var ret = new Model();
-                                ret.cartoons = cartoons;
-                                ret.queryContext = queryContext;
-                                ret.material = Visualization.MaterialsHelper.getMeshMaterial();
-                                ret.pickMaterial = Visualization.MaterialsHelper.getPickMaterial();
-                                if (props)
-                                    ret.props = props;
-                                ret.entity = entity;
-                                ret.cartoons.geometry.computeBoundingSphere();
-                                ret.centroid = ret.cartoons.geometry.boundingSphere.center;
-                                ret.radius = ret.cartoons.geometry.boundingSphere.radius;
-                                var obj = ret.createObjects();
-                                ret.object = obj.main;
-                                ret.pickObject = obj.pick;
-                                ret.pickBufferAttributes = [ret.cartoons.pickGeometry.attributes.pColor];
-                                ret.model = model;
-                                ret.applyTheme(theme);
-                                ret.disposeList.push(ret.cartoons, ret.material, ret.pickMaterial);
-                                ctx.resolve(ret);
+                        return LiteMol.Core.computation(function (ctx) { return __awaiter(_this, void 0, void 0, function () {
+                            var linearSegments, radialSements, cartoons, ret, obj;
+                            return __generator(this, function (_c) {
+                                switch (_c.label) {
+                                    case 0:
+                                        linearSegments = 0, radialSements = 0;
+                                        return [4 /*yield*/, ctx.updateProgress('Computing cartoons...')];
+                                    case 1:
+                                        _c.sent();
+                                        params = LiteMol.Core.Utils.extend({}, params, Cartoons.DefaultCartoonsModelParameters);
+                                        switch (params.tessalation) {
+                                            case 0:
+                                                linearSegments = 1;
+                                                radialSements = 2;
+                                                break;
+                                            case 1:
+                                                linearSegments = 4;
+                                                radialSements = 3;
+                                                break;
+                                            case 2:
+                                                linearSegments = 6;
+                                                radialSements = 5;
+                                                break;
+                                            case 3:
+                                                linearSegments = 10;
+                                                radialSements = 8;
+                                                break;
+                                            case 4:
+                                                linearSegments = 12;
+                                                radialSements = 10;
+                                                break;
+                                            case 5:
+                                                linearSegments = 16;
+                                                radialSements = 14;
+                                                break;
+                                            default:
+                                                linearSegments = 18;
+                                                radialSements = 16;
+                                                break;
+                                        }
+                                        return [4 /*yield*/, Cartoons.Geometry.create(model, atomIndices, linearSegments, {
+                                                radialSegmentCount: radialSements,
+                                                tessalation: params.tessalation
+                                            }, params.drawingType === CartoonsModelType.AlphaTrace, ctx)];
+                                    case 2:
+                                        cartoons = _c.sent();
+                                        ret = new Model();
+                                        ret.cartoons = cartoons;
+                                        ret.queryContext = queryContext;
+                                        ret.material = Visualization.MaterialsHelper.getMeshMaterial();
+                                        ret.pickMaterial = Visualization.MaterialsHelper.getPickMaterial();
+                                        if (props)
+                                            ret.props = props;
+                                        ret.entity = entity;
+                                        ret.cartoons.geometry.computeBoundingSphere();
+                                        ret.centroid = ret.cartoons.geometry.boundingSphere.center;
+                                        ret.radius = ret.cartoons.geometry.boundingSphere.radius;
+                                        obj = ret.createObjects();
+                                        ret.object = obj.main;
+                                        ret.pickObject = obj.pick;
+                                        ret.pickBufferAttributes = [ret.cartoons.pickGeometry.attributes.pColor];
+                                        ret.model = model;
+                                        ret.applyTheme(theme);
+                                        ret.disposeList.push(ret.cartoons, ret.material, ret.pickMaterial);
+                                        return [2 /*return*/, ret];
+                                }
                             });
-                        });
+                        }); });
                     };
                     return Model;
                 }(Visualization.Model));
@@ -59799,89 +59972,94 @@ var LiteMol;
             'use strict';
             var Surface = LiteMol.Core.Geometry.Surface;
             function buildSurface(shapes) {
-                return LiteMol.Core.Computation.create(function (ctx) {
-                    ctx.update('Building surface...');
-                    ctx.schedule(function () {
-                        var uniqueSpheres = new Map();
-                        for (var _i = 0, shapes_1 = shapes; _i < shapes_1.length; _i++) {
-                            var s = shapes_1[_i];
-                            if (s.type !== 'Sphere' || uniqueSpheres.has(s.tessalation || 0))
-                                continue;
-                            var surf = Primitive.createSphereSurface({ x: 0, y: 0, z: 0 }, 1, s.tessalation || 0);
-                            uniqueSpheres.set(s.tessalation || 0, Primitive.createSphereSurface({ x: 0, y: 0, z: 0 }, 1, s.tessalation || 0));
-                        }
-                        var size = { vertexCount: 0, triangleCount: 0 };
-                        for (var _a = 0, shapes_2 = shapes; _a < shapes_2.length; _a++) {
-                            var s = shapes_2[_a];
-                            switch (s.type) {
-                                case 'Sphere':
-                                    var sphere = uniqueSpheres.get(s.tessalation || 0);
-                                    size.vertexCount += sphere.vertexCount;
-                                    size.triangleCount += sphere.triangleCount;
-                                    break;
-                                case 'Surface':
-                                    size.vertexCount += s.surface.vertexCount;
-                                    size.triangleCount += s.surface.triangleCount;
-                                    break;
-                            }
-                        }
-                        var vertices = new Float32Array(size.vertexCount * 3);
-                        var normals = new Float32Array(size.vertexCount * 3);
-                        var triangles = new Uint32Array(size.triangleCount * 3);
-                        var annotation = new Int32Array(size.vertexCount);
-                        var vOffset = 0, nOffset = 0, tOffset = 0, aOffset = 0;
-                        var v = new Visualization.THREE.Vector3();
-                        var transform = new Visualization.THREE.Matrix4();
-                        var vs;
-                        for (var _c = 0, shapes_3 = shapes; _c < shapes_3.length; _c++) {
-                            var s = shapes_3[_c];
-                            var surface = void 0;
-                            var startVOffset = (vOffset / 3) | 0;
-                            switch (s.type) {
-                                case 'Sphere':
-                                    surface = uniqueSpheres.get(s.tessalation || 0);
-                                    vs = surface.vertices;
-                                    for (var i = 0, _b = surface.vertexCount * 3; i < _b; i += 3) {
-                                        v.x = vs[i], v.y = vs[i + 1], v.z = vs[i + 2];
-                                        v.applyMatrix4(transform.makeScale(s.radius, s.radius, s.radius));
-                                        v.applyMatrix4(transform.makeTranslation(s.center.x, s.center.y, s.center.z));
-                                        vertices[vOffset++] = v.x;
-                                        vertices[vOffset++] = v.y;
-                                        vertices[vOffset++] = v.z;
+                var _this = this;
+                return LiteMol.Core.computation(function (ctx) { return __awaiter(_this, void 0, void 0, function () {
+                    var uniqueSpheres, _i, shapes_1, s, surf, size, _a, shapes_2, s, sphere, vertices, normals, triangles, annotation, vOffset, nOffset, tOffset, aOffset, v, transform, vs, _c, shapes_3, s, surface, startVOffset, i, _b, i, _b, i, _b, ts, i, _b, i, _b, ret;
+                    return __generator(this, function (_d) {
+                        switch (_d.label) {
+                            case 0: return [4 /*yield*/, ctx.updateProgress('Building surface...')];
+                            case 1:
+                                _d.sent();
+                                uniqueSpheres = new Map();
+                                for (_i = 0, shapes_1 = shapes; _i < shapes_1.length; _i++) {
+                                    s = shapes_1[_i];
+                                    if (s.type !== 'Sphere' || uniqueSpheres.has(s.tessalation || 0))
+                                        continue;
+                                    surf = Primitive.createSphereSurface({ x: 0, y: 0, z: 0 }, 1, s.tessalation || 0);
+                                    uniqueSpheres.set(s.tessalation || 0, Primitive.createSphereSurface({ x: 0, y: 0, z: 0 }, 1, s.tessalation || 0));
+                                }
+                                size = { vertexCount: 0, triangleCount: 0 };
+                                for (_a = 0, shapes_2 = shapes; _a < shapes_2.length; _a++) {
+                                    s = shapes_2[_a];
+                                    switch (s.type) {
+                                        case 'Sphere':
+                                            sphere = uniqueSpheres.get(s.tessalation || 0);
+                                            size.vertexCount += sphere.vertexCount;
+                                            size.triangleCount += sphere.triangleCount;
+                                            break;
+                                        case 'Surface':
+                                            size.vertexCount += s.surface.vertexCount;
+                                            size.triangleCount += s.surface.triangleCount;
+                                            break;
                                     }
-                                    break;
-                                case 'Surface':
-                                    surface = s.surface;
-                                    Surface.computeNormalsImmediate(surface);
-                                    vs = surface.vertices;
-                                    for (var i = 0, _b = vs.length; i < _b; i++) {
-                                        vertices[vOffset++] = vs[i];
+                                }
+                                vertices = new Float32Array(size.vertexCount * 3);
+                                normals = new Float32Array(size.vertexCount * 3);
+                                triangles = new Uint32Array(size.triangleCount * 3);
+                                annotation = new Int32Array(size.vertexCount);
+                                vOffset = 0, nOffset = 0, tOffset = 0, aOffset = 0;
+                                v = new Visualization.THREE.Vector3();
+                                transform = new Visualization.THREE.Matrix4();
+                                for (_c = 0, shapes_3 = shapes; _c < shapes_3.length; _c++) {
+                                    s = shapes_3[_c];
+                                    surface = void 0;
+                                    startVOffset = (vOffset / 3) | 0;
+                                    switch (s.type) {
+                                        case 'Sphere':
+                                            surface = uniqueSpheres.get(s.tessalation || 0);
+                                            vs = surface.vertices;
+                                            for (i = 0, _b = surface.vertexCount * 3; i < _b; i += 3) {
+                                                v.x = vs[i], v.y = vs[i + 1], v.z = vs[i + 2];
+                                                v.applyMatrix4(transform.makeScale(s.radius, s.radius, s.radius));
+                                                v.applyMatrix4(transform.makeTranslation(s.center.x, s.center.y, s.center.z));
+                                                vertices[vOffset++] = v.x;
+                                                vertices[vOffset++] = v.y;
+                                                vertices[vOffset++] = v.z;
+                                            }
+                                            break;
+                                        case 'Surface':
+                                            surface = s.surface;
+                                            Surface.computeNormalsImmediate(surface);
+                                            vs = surface.vertices;
+                                            for (i = 0, _b = vs.length; i < _b; i++) {
+                                                vertices[vOffset++] = vs[i];
+                                            }
+                                            break;
                                     }
-                                    break;
-                            }
-                            vs = surface.normals;
-                            for (var i = 0, _b = vs.length; i < _b; i++) {
-                                normals[nOffset++] = vs[i];
-                            }
-                            var ts = surface.triangleIndices;
-                            for (var i = 0, _b = ts.length; i < _b; i++) {
-                                triangles[tOffset++] = startVOffset + ts[i];
-                            }
-                            for (var i = 0, _b = surface.vertexCount; i < _b; i++) {
-                                annotation[aOffset++] = s.id;
-                            }
+                                    vs = surface.normals;
+                                    for (i = 0, _b = vs.length; i < _b; i++) {
+                                        normals[nOffset++] = vs[i];
+                                    }
+                                    ts = surface.triangleIndices;
+                                    for (i = 0, _b = ts.length; i < _b; i++) {
+                                        triangles[tOffset++] = startVOffset + ts[i];
+                                    }
+                                    for (i = 0, _b = surface.vertexCount; i < _b; i++) {
+                                        annotation[aOffset++] = s.id;
+                                    }
+                                }
+                                ret = {
+                                    vertices: vertices,
+                                    vertexCount: size.vertexCount,
+                                    triangleIndices: triangles,
+                                    triangleCount: size.triangleCount,
+                                    normals: normals,
+                                    annotation: annotation
+                                };
+                                return [2 /*return*/, ret];
                         }
-                        var ret = {
-                            vertices: vertices,
-                            vertexCount: size.vertexCount,
-                            triangleIndices: triangles,
-                            triangleCount: size.triangleCount,
-                            normals: normals,
-                            annotation: annotation
-                        };
-                        ctx.resolve(ret);
                     });
-                });
+                }); });
             }
             var Builder = (function () {
                 function Builder() {
@@ -65152,6 +65330,41 @@ var __LiteMolZlib = {};
 var LiteMolZlib = __LiteMolZlib.Zlib;
 
 
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments)).next());
+    });
+};
+var __generator = (this && this.__generator) || function (thisArg, body) {
+    var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t;
+    return { next: verb(0), "throw": verb(1), "return": verb(2) };
+    function verb(n) { return function (v) { return step([n, v]); }; }
+    function step(op) {
+        if (f) throw new TypeError("Generator is already executing.");
+        while (_) try {
+            if (f = 1, y && (t = y[op[0] & 2 ? "return" : op[0] ? "throw" : "next"]) && !(t = t.call(y, op[1])).done) return t;
+            if (y = 0, t) op = [0, t.value];
+            switch (op[0]) {
+                case 0: case 1: t = op; break;
+                case 4: _.label++; return { value: op[1], done: false };
+                case 5: _.label++; y = op[1]; op = [0]; continue;
+                case 7: op = _.ops.pop(); _.trys.pop(); continue;
+                default:
+                    if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) { _ = 0; continue; }
+                    if (op[0] === 3 && (!t || (op[1] > t[0] && op[1] < t[3]))) { _.label = op[1]; break; }
+                    if (op[0] === 6 && _.label < t[1]) { _.label = t[1]; t = op; break; }
+                    if (t && _.label < t[2]) { _.label = t[2]; _.ops.push(op); break; }
+                    if (t[2]) _.ops.pop();
+                    _.trys.pop(); continue;
+            }
+            op = body.call(thisArg, _);
+        } catch (e) { op = [6, e]; y = 0; } finally { f = t = 0; }
+        if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
+    }
+};
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -65177,7 +65390,6 @@ var LiteMol;
         "use strict";
         Bootstrap.Immutable = __LiteMolImmutable;
         Bootstrap.Rx = LiteMol.Core.Rx;
-        Bootstrap.Promise = LiteMol.Core.Promise;
         Bootstrap.Zlib = LiteMolZlib;
     })(Bootstrap = LiteMol.Bootstrap || (LiteMol.Bootstrap = {}));
 })(LiteMol || (LiteMol = {}));
@@ -65248,56 +65460,72 @@ var LiteMol;
                 return str.join('');
             }
             function processFile(ctx, asArrayBuffer, compressed, e) {
-                try {
-                    var data_1 = e.target.result;
-                    if (compressed) {
-                        ctx.update('Decompressing...');
-                        ctx.schedule(function () {
-                            var decompressed = decompress(data_1);
-                            if (asArrayBuffer) {
-                                ctx.resolve(decompressed.buffer);
-                            }
-                            else {
-                                ctx.resolve(toString(decompressed));
-                            }
-                        }, 1000 / 30);
-                    }
-                    else {
-                        ctx.resolve(data_1);
-                    }
-                }
-                catch (e) {
-                    ctx.reject(e);
-                }
+                return __awaiter(this, void 0, void 0, function () {
+                    var data, decompressed;
+                    return __generator(this, function (_a) {
+                        switch (_a.label) {
+                            case 0:
+                                data = e.target.result;
+                                if (!compressed)
+                                    return [3 /*break*/, 2];
+                                return [4 /*yield*/, ctx.updateProgress('Decompressing...')];
+                            case 1:
+                                _a.sent();
+                                decompressed = decompress(data);
+                                if (asArrayBuffer) {
+                                    return [2 /*return*/, decompressed.buffer];
+                                }
+                                else {
+                                    return [2 /*return*/, toString(decompressed)];
+                                }
+                                return [3 /*break*/, 3];
+                            case 2: return [2 /*return*/, data];
+                            case 3: return [2 /*return*/];
+                        }
+                    });
+                });
             }
-            function handleProgress(ctx, action, data, asArrayBuffer, onLoad) {
-                ctx.update(action);
-                data.onerror = function (e) {
-                    var error = e.target.error;
-                    ctx.reject(error ? error : 'Failed.');
-                };
-                data.onabort = function () { return ctx.abort(); };
-                var abort = function () { return data.abort(); };
-                data.onprogress = function (e) {
-                    if (e.lengthComputable) {
-                        ctx.update(action, abort, e.loaded, e.total);
-                    }
-                    else {
-                        ctx.update(action + " " + (e.loaded / 1024 / 1024).toFixed(2) + " MB", abort);
-                    }
-                };
-                data.onload = onLoad;
+            function readData(ctx, action, data, asArrayBuffer) {
+                ctx.updateProgress(action, true);
+                return new LiteMol.Promise(function (resolve, reject) {
+                    data.onerror = function (e) {
+                        var error = e.target.error;
+                        reject(error ? error : 'Failed.');
+                    };
+                    data.onabort = function () { return reject(LiteMol.Core.Computation.Aborted); };
+                    data.onprogress = function (e) {
+                        if (e.lengthComputable) {
+                            ctx.updateProgress(action, true, e.loaded, e.total);
+                        }
+                        else {
+                            ctx.updateProgress(action + " " + (e.loaded / 1024 / 1024).toFixed(2) + " MB", true);
+                        }
+                    };
+                    data.onload = function (e) { return resolve(e); };
+                });
             }
             function readFromFileInternal(file, asArrayBuffer) {
-                return Bootstrap.Task.fromComputation('Open File', 'Background', LiteMol.Core.Computation.create(function (ctx) {
-                    var reader = new FileReader();
-                    var isCompressed = /\.gz$/i.test(file.name);
-                    handleProgress(ctx, 'Reading...', reader, asArrayBuffer, function (e) { return processFile(ctx, asArrayBuffer, isCompressed, e); });
-                    if (isCompressed || asArrayBuffer)
-                        reader.readAsArrayBuffer(file);
-                    else
-                        reader.readAsBinaryString(file);
-                }));
+                var _this = this;
+                return Bootstrap.Task.fromComputation('Open File', 'Background', LiteMol.Core.computation(function (ctx) { return __awaiter(_this, void 0, void 0, function () {
+                    var reader, isCompressed, e, result;
+                    return __generator(this, function (_a) {
+                        switch (_a.label) {
+                            case 0:
+                                reader = new FileReader();
+                                isCompressed = /\.gz$/i.test(file.name);
+                                if (isCompressed || asArrayBuffer)
+                                    reader.readAsArrayBuffer(file);
+                                else
+                                    reader.readAsBinaryString(file);
+                                ctx.updateProgress('Reading...', function () { return reader.abort(); });
+                                return [4 /*yield*/, readData(ctx, 'Reading...', reader, asArrayBuffer)];
+                            case 1:
+                                e = _a.sent();
+                                result = processFile(ctx, asArrayBuffer, isCompressed, e);
+                                return [2 /*return*/, result];
+                        }
+                    });
+                }); }));
             }
             var RequestPool = (function () {
                 function RequestPool() {
@@ -65322,48 +65550,67 @@ var LiteMol;
             RequestPool.pool = [];
             RequestPool.poolSize = 15;
             function processAjax(ctx, asArrayBuffer, decompressGzip, e) {
-                var req = e.target;
-                if (req.status >= 200 && req.status < 400) {
-                    if (asArrayBuffer) {
-                        var buff_1 = e.target.response;
-                        RequestPool.deposit(e.target);
-                        if (decompressGzip) {
-                            ctx.update('Decompressing...');
-                            ctx.schedule(function () {
-                                var gzip = new LiteMolZlib.Gunzip(new Uint8Array(buff_1));
-                                var data = gzip.decompress();
-                                ctx.resolve(data.buffer);
-                            });
+                return __awaiter(this, void 0, void 0, function () {
+                    var req, buff, gzip, data, text, status_1;
+                    return __generator(this, function (_a) {
+                        switch (_a.label) {
+                            case 0:
+                                req = e.target;
+                                if (!(req.status >= 200 && req.status < 400))
+                                    return [3 /*break*/, 6];
+                                if (!asArrayBuffer)
+                                    return [3 /*break*/, 4];
+                                buff = e.target.response;
+                                RequestPool.deposit(e.target);
+                                if (!decompressGzip)
+                                    return [3 /*break*/, 2];
+                                return [4 /*yield*/, ctx.updateProgress('Decompressing...')];
+                            case 1:
+                                _a.sent();
+                                gzip = new LiteMolZlib.Gunzip(new Uint8Array(buff));
+                                data = gzip.decompress();
+                                return [2 /*return*/, data.buffer];
+                            case 2: return [2 /*return*/, buff];
+                            case 3: return [3 /*break*/, 5];
+                            case 4:
+                                text = e.target.responseText;
+                                RequestPool.deposit(e.target);
+                                return [2 /*return*/, text];
+                            case 5: return [3 /*break*/, 7];
+                            case 6:
+                                status_1 = req.statusText;
+                                RequestPool.deposit(e.target);
+                                throw status_1;
+                            case 7: return [2 /*return*/];
                         }
-                        else {
-                            ctx.resolve(buff_1);
-                        }
-                    }
-                    else {
-                        var text = e.target.responseText;
-                        RequestPool.deposit(e.target);
-                        ctx.resolve(text);
-                    }
-                }
-                else {
-                    var status_1 = req.statusText;
-                    RequestPool.deposit(e.target);
-                    ctx.reject(status_1);
-                }
+                    });
+                });
             }
             function ajaxGetInternal(title, url, asArrayBuffer, decompressGzip) {
-                return Bootstrap.Task.fromComputation(title ? title : 'Download', 'Background', LiteMol.Core.Computation.create(function (ctx) {
-                    if (!asArrayBuffer && decompressGzip) {
-                        ctx.reject('Decompress is only available when downloading binary data.');
-                        return;
-                    }
-                    var xhttp = RequestPool.get();
-                    ctx.update('Waiting for server...', function () { return xhttp.abort(); });
-                    handleProgress(ctx, 'Downloading...', xhttp, asArrayBuffer, function (e) { return processAjax(ctx, asArrayBuffer, decompressGzip, e); });
-                    xhttp.open('get', url, true);
-                    xhttp.responseType = asArrayBuffer ? "arraybuffer" : "text";
-                    xhttp.send();
-                }));
+                var _this = this;
+                return Bootstrap.Task.fromComputation(title ? title : 'Download', 'Background', LiteMol.Core.computation(function (ctx) { return __awaiter(_this, void 0, void 0, function () {
+                    var xhttp, e, result;
+                    return __generator(this, function (_a) {
+                        switch (_a.label) {
+                            case 0:
+                                if (!asArrayBuffer && decompressGzip) {
+                                    throw 'Decompress is only available when downloading binary data.';
+                                }
+                                xhttp = RequestPool.get();
+                                xhttp.open('get', url, true);
+                                xhttp.responseType = asArrayBuffer ? "arraybuffer" : "text";
+                                xhttp.send();
+                                ctx.updateProgress('Waiting for server...', function () { return xhttp.abort(); });
+                                return [4 /*yield*/, readData(ctx, 'Downloading...', xhttp, asArrayBuffer)];
+                            case 1:
+                                e = _a.sent();
+                                return [4 /*yield*/, processAjax(ctx, asArrayBuffer, decompressGzip, e)];
+                            case 2:
+                                result = _a.sent();
+                                return [2 /*return*/, result];
+                        }
+                    });
+                }); }));
             }
         })(Utils = Bootstrap.Utils || (Bootstrap.Utils = {}));
     })(Bootstrap = LiteMol.Bootstrap || (LiteMol.Bootstrap = {}));
@@ -65989,7 +66236,7 @@ var LiteMol;
             var Running = (function () {
                 function Running(p) {
                     var _this = this;
-                    this.promise = new Bootstrap.Promise(function (res, rej) { return p(res, rej, function (ctx) { return _this.ctx = ctx; }); });
+                    this.promise = new LiteMol.Promise(function (res, rej) { return p(res, rej, function (ctx) { return _this.ctx = ctx; }); });
                 }
                 Running.prototype.then = function (action) {
                     return this.promise.then(action);
@@ -66029,7 +66276,7 @@ var LiteMol;
             Task.fromComputation = fromComputation;
             function sequencePromises(promises, ignoreErrors) {
                 if (ignoreErrors === void 0) { ignoreErrors = false; }
-                return new Bootstrap.Promise(function (resolve, reject) {
+                return new LiteMol.Promise(function (resolve, reject) {
                     var ret = [];
                     var next = function (i) {
                         if (i >= promises.length) {
@@ -66072,7 +66319,7 @@ var LiteMol;
             }
             Task.sequence = sequence;
             function guardedPromise(context, promise) {
-                return new Bootstrap.Promise(function (resolve, reject) {
+                return new LiteMol.Promise(function (resolve, reject) {
                     try {
                         promise(resolve, reject);
                     }
@@ -68114,59 +68361,81 @@ var LiteMol;
                     };
                 }
                 function create(parent, transform, style) {
+                    var _this = this;
                     var name = style.taskType === 'Background' ? parent.props.label : "Density Surface (" + parent.props.label + ")";
-                    return Bootstrap.Task.create(name, style.taskType || 'Normal', function (ctx) {
-                        var params = style.params;
-                        var source = Bootstrap.Tree.Node.findClosestNodeOfType(parent, [Bootstrap.Entity.Density.Data]);
-                        if (!source) {
-                            ctx.reject('Cannot create density visual on ' + parent.props.label);
-                            return;
-                        }
-                        var data = source.props.data;
-                        var basis = data.basis;
-                        var fromFrac = new LiteMol.Visualization.THREE.Matrix4().set(basis.x[0], basis.y[0], basis.z[0], 0.0, 0.0, basis.y[1], basis.z[1], 0.0, 0.0, 0.0, basis.z[2], 0.0, 0.0, 0.0, 0.0, 1.0);
-                        fromFrac.setPosition(new LiteMol.Visualization.THREE.Vector3(data.origin[0], data.origin[1], data.origin[2]));
-                        var toFrac = new LiteMol.Visualization.THREE.Matrix4().getInverse(fromFrac);
-                        var min, max;
-                        if (params.bottomLeft && params.topRight) {
-                            var offsets = getOffsets(data, params.bottomLeft, params.topRight, toFrac);
-                            min = offsets.bottomLeft;
-                            max = offsets.topRight;
-                        }
-                        else {
-                            min = [0, 0, 0];
-                            max = data.dataDimensions;
-                        }
-                        if (!(min[0] - max[0]) || !(min[1] - max[1]) || !(min[2] - max[2])) {
-                            ctx.reject({ warn: true, message: 'Empty box.' });
-                            return;
-                        }
-                        var isSigma = params.isoValueType === void 0 || params.isoValueType === Density.IsoValueType.Sigma;
-                        var isoValue = isSigma
-                            ? data.valuesInfo.mean + data.valuesInfo.sigma * params.isoValue
-                            : params.isoValue;
-                        var surface = Geom.MarchingCubes.compute({
-                            isoLevel: isoValue,
-                            scalarField: data.data,
-                            bottomLeft: min,
-                            topRight: max
-                        }).bind(function (s) { return Geom.Surface.transform(s, fromFrac.elements)
-                            .bind(function (s) { return Geom.Surface.laplacianSmooth(s, params.smoothing); }); }).run();
-                        surface.progress.subscribe(function (p) { return ctx.update("Density Surface (" + source.props.label + "): " + Bootstrap.Utils.formatProgress(p), p.requestAbort); });
-                        surface.result.then(function (s) {
-                            var theme = style.theme.template.provider(source, Visualization.Theme.getProps(style.theme));
-                            ctx.update('Creating visual...');
-                            ctx.schedule(function () {
-                                var surface = LiteMol.Visualization.Surface.Model.create(source, { surface: s, theme: theme, parameters: { isWireframe: style.params.isWireframe } }).run();
-                                surface.progress.subscribe(function (p) { return ctx.update("Density Surface (" + source.props.label + "): " + Bootstrap.Utils.formatProgress(p), p.requestAbort); });
-                                surface.result.then(function (model) {
-                                    var label = "Surface, " + Bootstrap.Utils.round(params.isoValue, 2) + (isSigma ? ' \u03C3' : '');
-                                    var visual = Bootstrap.Entity.Density.Visual.create(transform, { label: label, model: model, style: style, isSelectable: !style.isNotSelectable });
-                                    ctx.resolve(visual);
-                                }).catch(ctx.reject);
-                            }, 0);
-                        }).catch(ctx.reject);
-                    });
+                    return Bootstrap.Task.create(name, style.taskType || 'Normal', function (ctx) { return __awaiter(_this, void 0, void 0, function () {
+                        var _this = this;
+                        var params, source, data, basis, fromFrac, toFrac, min, max, offsets, isSigma, isoValue, compCtx, surface, theme;
+                        return __generator(this, function (_a) {
+                            switch (_a.label) {
+                                case 0:
+                                    params = style.params;
+                                    source = Bootstrap.Tree.Node.findClosestNodeOfType(parent, [Bootstrap.Entity.Density.Data]);
+                                    if (!source) {
+                                        ctx.reject('Cannot create density visual on ' + parent.props.label);
+                                        return [2 /*return*/];
+                                    }
+                                    data = source.props.data;
+                                    basis = data.basis;
+                                    fromFrac = new LiteMol.Visualization.THREE.Matrix4().set(basis.x[0], basis.y[0], basis.z[0], 0.0, 0.0, basis.y[1], basis.z[1], 0.0, 0.0, 0.0, basis.z[2], 0.0, 0.0, 0.0, 0.0, 1.0);
+                                    fromFrac.setPosition(new LiteMol.Visualization.THREE.Vector3(data.origin[0], data.origin[1], data.origin[2]));
+                                    toFrac = new LiteMol.Visualization.THREE.Matrix4().getInverse(fromFrac);
+                                    if (params.bottomLeft && params.topRight) {
+                                        offsets = getOffsets(data, params.bottomLeft, params.topRight, toFrac);
+                                        min = offsets.bottomLeft;
+                                        max = offsets.topRight;
+                                    }
+                                    else {
+                                        min = [0, 0, 0];
+                                        max = data.dataDimensions;
+                                    }
+                                    if (!(min[0] - max[0]) || !(min[1] - max[1]) || !(min[2] - max[2])) {
+                                        ctx.reject({ warn: true, message: 'Empty box.' });
+                                        return [2 /*return*/];
+                                    }
+                                    isSigma = params.isoValueType === void 0 || params.isoValueType === Density.IsoValueType.Sigma;
+                                    isoValue = isSigma
+                                        ? data.valuesInfo.mean + data.valuesInfo.sigma * params.isoValue
+                                        : params.isoValue;
+                                    compCtx = LiteMol.Core.Computation.createContext();
+                                    compCtx.progress.subscribe(function (p) { return ctx.update("Density Surface (" + source.props.label + "): " + Bootstrap.Utils.formatProgress(p), p.requestAbort); });
+                                    return [4 /*yield*/, Geom.MarchingCubes.compute({
+                                            isoLevel: isoValue,
+                                            scalarField: data.data,
+                                            bottomLeft: min,
+                                            topRight: max
+                                        }).run(compCtx).result];
+                                case 1:
+                                    surface = _a.sent();
+                                    return [4 /*yield*/, Geom.Surface.transform(surface, fromFrac.elements).run(compCtx).result];
+                                case 2:
+                                    surface = _a.sent();
+                                    return [4 /*yield*/, Geom.Surface.laplacianSmooth(surface, params.smoothing).run(compCtx).result];
+                                case 3:
+                                    surface = _a.sent();
+                                    theme = style.theme.template.provider(source, Visualization.Theme.getProps(style.theme));
+                                    ctx.update('Creating visual...');
+                                    ctx.schedule(function () { return __awaiter(_this, void 0, void 0, function () {
+                                        var modelComp, model, label, visual;
+                                        return __generator(this, function (_a) {
+                                            switch (_a.label) {
+                                                case 0:
+                                                    modelComp = LiteMol.Visualization.Surface.Model.create(source, { surface: surface, theme: theme, parameters: { isWireframe: style.params.isWireframe } }).run();
+                                                    modelComp.progress.subscribe(function (p) { return ctx.update("Density Surface (" + source.props.label + "): " + Bootstrap.Utils.formatProgress(p), p.requestAbort); });
+                                                    return [4 /*yield*/, modelComp.result];
+                                                case 1:
+                                                    model = _a.sent();
+                                                    label = "Surface, " + Bootstrap.Utils.round(params.isoValue, 2) + (isSigma ? ' \u03C3' : '');
+                                                    visual = Bootstrap.Entity.Density.Visual.create(transform, { label: label, model: model, style: style, isSelectable: !style.isNotSelectable });
+                                                    ctx.resolve(visual);
+                                                    return [2 /*return*/];
+                                            }
+                                        });
+                                    }); }, 0);
+                                    return [2 /*return*/];
+                            }
+                        });
+                    }); });
                 }
                 Density.create = create;
             })(Density = Visualization.Density || (Visualization.Density = {}));

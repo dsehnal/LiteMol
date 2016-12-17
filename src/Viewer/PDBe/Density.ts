@@ -155,7 +155,7 @@ namespace LiteMol.Viewer.PDBe.Data {
     }
 
     function doEmdbPdbId(ctx: Bootstrap.Context, a: Entity.Root, t: Transform<Entity.Root, Entity.Action, DownloadDensityParams>, id: string) {
-        return new LiteMol.Core.Promise((res, rej) => {
+        return new Promise((res, rej) => {
             id = id.trim().toLowerCase();
             Bootstrap.Utils.ajaxGetString(`https://www.ebi.ac.uk/pdbe/api/pdb/entry/summary/${id}`, 'PDB API')
                 .run(ctx)
@@ -185,7 +185,7 @@ namespace LiteMol.Viewer.PDBe.Data {
     }
 
     function doEmdbId(ctx: Bootstrap.Context, a: Entity.Root, t: Transform<Entity.Root, Entity.Action, DownloadDensityParams>, id: string) {
-        return new LiteMol.Core.Promise((res, rej) => {
+        return new Promise((res, rej) => {
             id = id.trim();
             Bootstrap.Utils.ajaxGetString(`https://www.ebi.ac.uk/pdbe/api/emdb/entry/map/EMD-${id}`, 'EMDB API')
                 .run(ctx)

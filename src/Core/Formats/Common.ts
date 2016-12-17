@@ -11,10 +11,12 @@ namespace LiteMol.Core.Formats {
         // a list of extensions, including the ., e.g. ['.cif']
         extensions: string[],
         isBinary?: boolean,
-        parse: (data: string | ArrayBuffer, params?: { id?: string }) => Computation<ParserResult<any>>
+        parse: (data: string | ArrayBuffer, params?: FormatInfo.Params) => Computation<ParserResult<any>>
     }
 
     export namespace FormatInfo {
+        export type Params = { id?: string };
+
         export function is(o: any): o is FormatInfo {
             return o.name && o.parse;
         }

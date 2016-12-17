@@ -486,8 +486,6 @@ namespace LiteMol.Visualization.Molecule.BallsAndSticks {
             state.vertices.set(state.templateVB, state.templateVB.length * state.sticksDone);
             state.normals.set(state.templateNB, state.templateVB.length * state.sticksDone);
 
-            //state.indices.set(state.templateIB, state.templateIB.length * state.sticksDone);
-
             let tIB = state.templateIB,
                 ib = state.indices,
                 offsetIB = state.templateIB.length * state.sticksDone,
@@ -495,23 +493,11 @@ namespace LiteMol.Visualization.Molecule.BallsAndSticks {
             for (let i = 0; i < tIB.length; i++) {
                 ib[offsetIB++] = tIB[i] + offsetVB;
             }
-            //for (let i = 0; i < state.vbLength; i++) {
-
-
-            //    bondVertices[bondTemplateVertexBufferLength * bondsDone + i] = bondTemplateVertexBuffer[i];
-            //    bondNormals[bondTemplateVertexBufferLength * bondsDone + i] = bondTemplateNormalBuffer[i];
-            //}
-            //translationMatrix.makeTranslation(-this.bondCenter.x, -this.bondCenter.y, -this.bondCenter.z);
-            //rotationMatrix.makeRotationAxis(this.rotationAxis, rotationAngle);
-            //scaleMatrix.makeScale(1 / radius, 1 / length, 1 / radius);
-            //finalMatrix = scaleMatrix.multiply(rotationMatrix.multiply(translationMatrix));
-            //bondTemplate.applyMatrix(finalMatrix);
 
             state.rotationMatrix.getInverse(state.finalMatrix);
             state.template.applyMatrix(state.rotationMatrix);
 
             state.sticksDone++;
-
         }
 
         private static getEmptyBondsGeometry() {
@@ -557,122 +543,82 @@ namespace LiteMol.Visualization.Molecule.BallsAndSticks {
             };
         }
 
-        private static addAtomsChunk(start: number, state: BuildState, ctx: Core.Computation.Context<Model>, done: () => void) {
-            let chunkSize = 1250;
+        private static async addAtoms(state: BuildState, ctx: Core.Computation.Context) {
+            const chunkSize = 1250;
 
-            if (ctx.abortRequested) {
-                ctx.abort();
-                return;
+            for (let start = 0, _l = state.atomIndices.length; start < _l; start += chunkSize) {
+                for (let i = start, _b = Math.min(start + chunkSize, state.atomIndices.length); i < _b; i++) {
+                    BallsAndSticksGeometryBuilder.addAtom(state.atomIndices[i], state);
+                }
+                await ctx.updateProgress('Adding atoms...', true, start, _l);
             }
-
-            if (start >= state.atomIndices.length) {
-                done();
-                return;
-            }
-
-            ctx.update('Adding atoms...', ctx.abortRequest, start, state.atomIndices.length);
-            for (let i = start, _b = Math.min(start + chunkSize, state.atomIndices.length); i < _b; i++) {
-                BallsAndSticksGeometryBuilder.addAtom(state.atomIndices[i], state);
-            }
-
-            ctx.schedule(() => BallsAndSticksGeometryBuilder.addAtomsChunk(start + chunkSize, state, ctx, done));
         }
 
-        private static addBondsChunk(start: number, state: BuildState, bs: BondsBuildState, ctx: Core.Computation.Context<Model>, done: () => void) {
-            let chunkSize = 1250;
+        private static async addBondsChunks(state: BuildState, bs: BondsBuildState, ctx: Core.Computation.Context) {
+            const chunkSize = 1250;
 
-            if (ctx.abortRequested) {
-                ctx.abort();
-                return;
+            for (let start = 0; start < bs.bondCount; start += chunkSize) {
+                for (let i = start, _b = Math.min(start + chunkSize, bs.bondCount); i < _b; i++) {
+                    BallsAndSticksGeometryBuilder.addBond(i, state, bs);
+                }
+                await ctx.updateProgress('Adding bonds...', true, start, bs.bondCount);
             }
-
-            if (start >= bs.bondCount) {
-                done();
-                return;
-            }
-
-            ctx.update('Adding bonds...', ctx.abortRequest, start, bs.bondCount);
-            for (let i = start, _b = Math.min(start + chunkSize, bs.bondCount); i < _b; i++) {
-                BallsAndSticksGeometryBuilder.addBond(i, state, bs);
-            }
-
-            ctx.schedule(() => BallsAndSticksGeometryBuilder.addBondsChunk(start + chunkSize, state, bs, ctx, done));
         }
 
-        private static addBonds(state: BuildState, ctx: Core.Computation.Context<Model>, done: () => void) {
+        private static async addBonds(state: BuildState, ctx: Core.Computation.Context) {
             if (state.params.hideBonds) {
-                done();
                 return;
             }
 
-            ctx.update('Computing bonds...');
+            await ctx.updateProgress('Computing bonds...', true);
 
-            ctx.schedule(() => {
-                let bs = new BondsBuildState(state);
-                state.bs = bs;
-                bs.currentResidueIndex = bs.residueIndex[bs.info.bonds[0]];
-                bs.bondMapBuilder.startElement(bs.currentResidueIndex);
-                BallsAndSticksGeometryBuilder.addBondsChunk(0, state, bs, ctx, () => {
-                    bs.bondMapBuilder.addVertexRange(bs.bondMapVertexOffsetStart, bs.bondMapVertexOffsetEnd);
-                    bs.bondMapBuilder.endElement();
-
-                    ctx.update('Finishing up...');
-                    ctx.schedule(done, 1000 / 30);
-                });
-            });
+            let bs = new BondsBuildState(state);
+            state.bs = bs;
+            bs.currentResidueIndex = bs.residueIndex[bs.info.bonds[0]];
+            bs.bondMapBuilder.startElement(bs.currentResidueIndex);
+            await BallsAndSticksGeometryBuilder.addBondsChunks(state, bs, ctx);
+            bs.bondMapBuilder.addVertexRange(bs.bondMapVertexOffsetStart, bs.bondMapVertexOffsetEnd);
+            bs.bondMapBuilder.endElement();
         }
 
-        private static addAtoms(state: BuildState, ctx: Core.Computation.Context<Model>, done: () => void) {
-            BallsAndSticksGeometryBuilder.addAtomsChunk(0, state, ctx, done)
-        }
-
-        static build(model: Core.Structure.MoleculeModel,
+        static async build(model: Core.Structure.MoleculeModel,
             parameters: Parameters,
             atomIndices: number[],
-            ctx: Core.Computation.Context<Model>,
-            done: (geom: BallsAndSticksGeometry) => void) {
+            ctx: Core.Computation.Context) {
 
-            ctx.update('Creating atoms...');
-            ctx.schedule(() => {
+            await ctx.updateProgress('Creating atoms...');
+            let state = new BuildState(model, atomIndices, <Parameters>Core.Utils.extend({}, parameters, DefaultBallsAndSticksModelParameters))
 
-                let state = new BuildState(model, atomIndices, <Parameters>Core.Utils.extend({}, parameters, DefaultBallsAndSticksModelParameters))
+            await BallsAndSticksGeometryBuilder.addAtoms(state, ctx);
+            await BallsAndSticksGeometryBuilder.addBonds(state, ctx);
 
-                BallsAndSticksGeometryBuilder.addAtoms(state, ctx, () => {
-                    BallsAndSticksGeometryBuilder.addBonds(state, ctx, () => {
+            await ctx.updateProgress('Finalizing...');
 
-                        let ret = new BallsAndSticksGeometry();
-                        if (state.bs) {
-                            let geometry = BallsAndSticksGeometryBuilder.getBondsGeometry(state.bs)
-                            ret.bondsGeometry = geometry.bondsGeometry;
-                            ret.bondVertexMap = geometry.bondVertexMap;
-                        } else {
-                            let geometry = BallsAndSticksGeometryBuilder.getEmptyBondsGeometry();
-                            ret.bondsGeometry = geometry.bondsGeometry;
-                            ret.bondVertexMap = geometry.bondVertexMap;
-                        }
+            let ret = new BallsAndSticksGeometry();
+            if (state.bs) {
+                let geometry = BallsAndSticksGeometryBuilder.getBondsGeometry(state.bs)
+                ret.bondsGeometry = geometry.bondsGeometry;
+                ret.bondVertexMap = geometry.bondVertexMap;
+            } else {
+                let geometry = BallsAndSticksGeometryBuilder.getEmptyBondsGeometry();
+                ret.bondsGeometry = geometry.bondsGeometry;
+                ret.bondVertexMap = geometry.bondVertexMap;
+            }
 
-                        let atomGeometry = BallsAndSticksGeometryBuilder.getAtomsGeometry(state);
+            let atomGeometry = BallsAndSticksGeometryBuilder.getAtomsGeometry(state);
 
-                        ret.vertexStateBuffer = atomGeometry.vertexStateBuffer;
-                        ret.atomsGeometry = atomGeometry.atomsGeometry;
-                        ret.pickGeometry = atomGeometry.atomsPickGeometry;
-                        ret.atomVertexMap = atomGeometry.atomVertexMap;
+            ret.vertexStateBuffer = atomGeometry.vertexStateBuffer;
+            ret.atomsGeometry = atomGeometry.atomsGeometry;
+            ret.pickGeometry = atomGeometry.atomsPickGeometry;
+            ret.atomVertexMap = atomGeometry.atomVertexMap;
 
-                        done(ret);
-                    })
-                });
-
-            });
+            return ret;
         }
     }
 
-    export function buildGeometry(model: Core.Structure.MoleculeModel,
-        parameters: Parameters,
-        atomIndices: number[],
-        ctx: Core.Computation.Context<Model>,
-        done: (geom: BallsAndSticksGeometry) => void) {
-
-        BallsAndSticksGeometryBuilder.build(model, parameters, atomIndices, ctx, done);
+    export function buildGeometry(model: Core.Structure.MoleculeModel, parameters: Parameters,
+        atomIndices: number[], ctx: Core.Computation.Context): LiteMol.Promise<BallsAndSticksGeometry> {
+        return BallsAndSticksGeometryBuilder.build(model, parameters, atomIndices, ctx);
     }
 
     export class BallsAndSticksGeometry extends GeometryBase {

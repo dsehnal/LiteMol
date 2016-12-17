@@ -11135,6 +11135,41 @@ var __LiteMolRxTemp = {};
 }.call(this, __LiteMolRxTemp, __LiteMolPromise));
 
 var __LiteMolRx = __LiteMolRxTemp.Rx;
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments)).next());
+    });
+};
+var __generator = (this && this.__generator) || function (thisArg, body) {
+    var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t;
+    return { next: verb(0), "throw": verb(1), "return": verb(2) };
+    function verb(n) { return function (v) { return step([n, v]); }; }
+    function step(op) {
+        if (f) throw new TypeError("Generator is already executing.");
+        while (_) try {
+            if (f = 1, y && (t = y[op[0] & 2 ? "return" : op[0] ? "throw" : "next"]) && !(t = t.call(y, op[1])).done) return t;
+            if (y = 0, t) op = [0, t.value];
+            switch (op[0]) {
+                case 0: case 1: t = op; break;
+                case 4: _.label++; return { value: op[1], done: false };
+                case 5: _.label++; y = op[1]; op = [0]; continue;
+                case 7: op = _.ops.pop(); _.trys.pop(); continue;
+                default:
+                    if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) { _ = 0; continue; }
+                    if (op[0] === 3 && (!t || (op[1] > t[0] && op[1] < t[3]))) { _.label = op[1]; break; }
+                    if (op[0] === 6 && _.label < t[1]) { _.label = t[1]; t = op; break; }
+                    if (t && _.label < t[2]) { _.label = t[2]; _.ops.push(op); break; }
+                    if (t[2]) _.ops.pop();
+                    _.trys.pop(); continue;
+            }
+            op = body.call(thisArg, _);
+        } catch (e) { op = [6, e]; y = 0; } finally { f = t = 0; }
+        if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
+    }
+};
 /*
  * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
@@ -11144,12 +11179,14 @@ var LiteMol;
     (function (Core) {
         "use strict";
         Core.Rx = __LiteMolRx;
-        Core.Promise = __LiteMolPromise;
         var Formats;
         (function (Formats) {
             Formats.CIF = CIFTools;
         })(Formats = Core.Formats || (Core.Formats = {}));
     })(Core = LiteMol.Core || (LiteMol.Core = {}));
+})(LiteMol || (LiteMol = {}));
+(function (LiteMol) {
+    LiteMol.Promise = __LiteMolPromise;
 })(LiteMol || (LiteMol = {}));
 /*
  * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
@@ -11169,159 +11206,146 @@ var LiteMol;
     var Core;
     (function (Core) {
         "use strict";
+        function computation(c) {
+            return new Computation(c);
+        }
+        Core.computation = computation;
         var Computation = (function () {
             function Computation(computation) {
                 this.computation = computation;
             }
-            Computation.prototype.bind = function (next) {
-                var _this = this;
-                return Computation.create(function (ctx) {
-                    _this.run(ctx).result.then(function (a) {
-                        next(a).run(ctx).result.then(ctx.resolve).catch(ctx.reject);
-                    }).catch(ctx.reject);
-                });
-            };
-            Computation.prototype.map = function (f) {
-                var _this = this;
-                return Computation.create(function (ctx) {
-                    _this.run(ctx).result.then(function (r) { return ctx.resolve(f(r)); }).catch(ctx.reject);
-                });
-            };
             Computation.prototype.run = function (ctx) {
                 var _this = this;
-                var context = ctx ? ctx : new Computation.Context();
+                var context = ctx ? ctx : new ContextImpl();
                 return {
                     progress: context.progressStream,
-                    result: new Core.Promise(function (resolve, reject) {
-                        try {
-                            context.__push(resolve, reject);
-                            _this.computation(context);
-                        }
-                        catch (e) {
-                            context.reject(e);
-                        }
-                    })
+                    result: new LiteMol.Promise(function (resolve, reject) { return __awaiter(_this, void 0, void 0, function () {
+                        var result, e_1;
+                        return __generator(this, function (_a) {
+                            switch (_a.label) {
+                                case 0:
+                                    _a.trys.push([0, 2, , 3]);
+                                    context.__push(resolve, reject);
+                                    return [4 /*yield*/, this.computation(context)];
+                                case 1:
+                                    result = _a.sent();
+                                    context.resolve(result);
+                                    return [3 /*break*/, 3];
+                                case 2:
+                                    e_1 = _a.sent();
+                                    context.reject(e_1);
+                                    return [3 /*break*/, 3];
+                                case 3: return [2 /*return*/];
+                            }
+                        });
+                    }); })
                 };
             };
             return Computation;
         }());
         Core.Computation = Computation;
         (function (Computation) {
-            function create(computation) {
-                return new Computation(computation);
-            }
-            Computation.create = create;
             function resolve(a) {
-                return create(function (ctx) { return ctx.resolve(a); });
+                return computation(function () { return LiteMol.Promise.resolve(a); });
             }
             Computation.resolve = resolve;
-            function schedule(ctx, f, afterMs) {
-                if (afterMs === void 0) { afterMs = 0; }
-                return new LiteMol.Core.Promise(function (res) { return ctx.schedule(function () {
-                    try {
-                        res(f());
-                    }
-                    finally {
-                        res(undefined);
-                    }
-                }, afterMs); });
+            function createContext() {
+                return new ContextImpl();
             }
-            Computation.schedule = schedule;
-            var Context = (function () {
-                function Context() {
-                    var _this = this;
-                    this._abortRequested = false;
-                    this._abortRequest = function () { return _this._abortRequested = true; };
-                    this.progressTick = new Core.Rx.Subject();
-                    this.progress = { message: 'Working...', current: 0, max: 0, isIndeterminate: false, requestAbort: void 0 };
-                    this.progressStream = new Core.Rx.BehaviorSubject(this.progress);
-                    this.promiseStack = [];
-                    this.resolve = this._resolve.bind(this);
-                    this.reject = this._reject.bind(this);
-                    this.progressTick.throttle(1000 / 30).subscribe(function (p) {
-                        _this.progressStream.onNext({
-                            message: p.message,
-                            isIndeterminate: p.isIndeterminate,
-                            current: p.current,
-                            max: p.max,
-                            requestAbort: p.requestAbort
-                        });
-                    });
-                }
-                Context.prototype.schedule = function (action, afterMs) {
-                    var _this = this;
-                    if (afterMs === void 0) { afterMs = 0; }
-                    setTimeout(function () {
-                        try {
-                            action();
-                        }
-                        catch (e) {
-                            _this.reject(e);
-                        }
-                    }, afterMs);
-                };
-                Object.defineProperty(Context.prototype, "abortRequested", {
-                    get: function () {
-                        return this._abortRequested;
-                    },
-                    enumerable: true,
-                    configurable: true
-                });
-                Context.prototype.setRequestAbort = function (abort) {
-                    this.progress.requestAbort = abort;
-                };
-                Object.defineProperty(Context.prototype, "abortRequest", {
-                    get: function () { return this._abortRequest; },
-                    enumerable: true,
-                    configurable: true
-                });
-                Context.prototype.update = function (msg, abort, current, max) {
-                    if (current === void 0) { current = NaN; }
-                    if (max === void 0) { max = NaN; }
-                    this.progress.message = msg;
-                    this.progress.requestAbort = abort;
-                    if (isNaN(current)) {
-                        this.progress.isIndeterminate = true;
-                    }
-                    else {
-                        this.progress.isIndeterminate = false;
-                        this.progress.current = current;
-                        this.progress.max = max;
-                    }
-                    this.progressTick.onNext(this.progress);
-                };
-                Context.prototype.__push = function (resolve, reject) {
-                    this.promiseStack.push({ resolve: resolve, reject: reject });
-                };
-                Context.prototype._resolve = function (result) {
-                    var top = this.promiseStack.pop();
-                    if (!top) {
-                        throw 'Bug in code somewhere, Computation.resolve/reject called too many times.';
-                    }
-                    top.resolve(result);
-                    if (!this.promiseStack.length) {
-                        this.progressTick.onCompleted();
-                        this.progressStream.onCompleted();
-                    }
-                };
-                Context.prototype._reject = function (err) {
-                    var top = this.promiseStack.pop();
-                    if (!top) {
-                        throw 'Bug in code somewhere, Computation.resolve/reject called too many times.';
-                    }
-                    top.reject(err);
-                    if (!this.promiseStack.length) {
-                        this.progressTick.onCompleted();
-                        this.progressStream.onCompleted();
-                    }
-                };
-                Context.prototype.abort = function () {
-                    this.reject('Aborted.');
-                };
-                return Context;
-            }());
-            Computation.Context = Context;
+            Computation.createContext = createContext;
+            Computation.Aborted = 'Aborted';
         })(Computation = Core.Computation || (Core.Computation = {}));
+        var ContextImpl = (function () {
+            function ContextImpl() {
+                var _this = this;
+                this._abortRequested = false;
+                this._abortRequester = function () { _this._abortRequested = true; };
+                this.progressTick = new Core.Rx.Subject();
+                this._progress = { message: 'Working...', current: 0, max: 0, isIndeterminate: true, requestAbort: void 0 };
+                this.progressStream = new Core.Rx.BehaviorSubject(this._progress);
+                this.promiseStack = [];
+                this.resolve = this._resolve.bind(this);
+                this.reject = this._reject.bind(this);
+                this.progressTick.throttle(1000 / 30).subscribe(function (p) {
+                    _this.progressStream.onNext({
+                        message: p.message,
+                        isIndeterminate: p.isIndeterminate,
+                        current: p.current,
+                        max: p.max,
+                        requestAbort: p.requestAbort
+                    });
+                });
+            }
+            Object.defineProperty(ContextImpl.prototype, "isAbortRequested", {
+                get: function () {
+                    return this._abortRequested;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            ContextImpl.prototype.checkAborted = function () {
+                if (this._abortRequested)
+                    throw Computation.Aborted;
+            };
+            ContextImpl.prototype.abort = function () {
+                this.reject(Computation.Aborted);
+            };
+            Object.defineProperty(ContextImpl.prototype, "progress", {
+                get: function () { return this.progressTick; },
+                enumerable: true,
+                configurable: true
+            });
+            ContextImpl.prototype.updateProgress = function (msg, abort, current, max) {
+                if (current === void 0) { current = NaN; }
+                if (max === void 0) { max = NaN; }
+                this.checkAborted();
+                this._progress.message = msg;
+                if (typeof abort === 'boolean') {
+                    this._progress.requestAbort = abort ? this._abortRequester : void 0;
+                }
+                else {
+                    if (abort)
+                        this._abortRequester = abort;
+                    this._progress.requestAbort = abort ? this._abortRequester : void 0;
+                }
+                if (isNaN(current)) {
+                    this._progress.isIndeterminate = true;
+                }
+                else {
+                    this._progress.isIndeterminate = false;
+                    this._progress.current = current;
+                    this._progress.max = max;
+                }
+                this.progressTick.onNext(this._progress);
+                return new LiteMol.Promise(function (res) { return setTimeout(res, 0); });
+            };
+            ContextImpl.prototype.__push = function (resolve, reject) {
+                this.promiseStack.push({ resolve: resolve, reject: reject });
+            };
+            ContextImpl.prototype._resolve = function (result) {
+                var top = this.promiseStack.pop();
+                if (!top) {
+                    throw 'Bug in code somewhere, Computation.resolve/reject called too many times.';
+                }
+                top.resolve(result);
+                if (!this.promiseStack.length) {
+                    this.progressTick.onCompleted();
+                    this.progressStream.onCompleted();
+                }
+            };
+            ContextImpl.prototype._reject = function (err) {
+                var top = this.promiseStack.pop();
+                if (!top) {
+                    throw 'Bug in code somewhere, Computation.resolve/reject called too many times.';
+                }
+                top.reject(err);
+                if (!this.promiseStack.length) {
+                    this.progressTick.onCompleted();
+                    this.progressStream.onCompleted();
+                }
+            };
+            return ContextImpl;
+        }());
     })(Core = LiteMol.Core || (LiteMol.Core = {}));
 })(LiteMol || (LiteMol = {}));
 /*
@@ -13368,121 +13392,73 @@ var LiteMol;
         (function (Formats) {
             var Molecule;
             (function (Molecule) {
+                function parseCIF(type, parse) {
+                    var _this = this;
+                    return function (data, params) { return Core.computation(function (ctx) { return __awaiter(_this, void 0, void 0, function () {
+                        var file, result, mol;
+                        return __generator(this, function (_a) {
+                            switch (_a.label) {
+                                case 0: return [4 /*yield*/, ctx.updateProgress('Parsing...')];
+                                case 1:
+                                    _a.sent();
+                                    file = parse(data, params);
+                                    if (file.isError) {
+                                        throw file.toString();
+                                    }
+                                    result = file.result;
+                                    if (!result.dataBlocks.length) {
+                                        throw "The " + type + " data does not contain a data block.";
+                                    }
+                                    return [4 /*yield*/, ctx.updateProgress('Creating representation...')];
+                                case 2:
+                                    _a.sent();
+                                    mol = Molecule.mmCIF.ofDataBlock(result.dataBlocks[0]);
+                                    return [2 /*return*/, Formats.ParserResult.success(mol, result.dataBlocks.length > 1 ? ["The input data contains multiple data blocks, only the first one was parsed. To parse all data blocks, use the function 'mmCIF.ofDataBlock' separately for each block."] : void 0)];
+                            }
+                        });
+                    }); }); };
+                }
                 var SupportedFormats;
                 (function (SupportedFormats) {
+                    var _this = this;
                     SupportedFormats.mmCIF = {
                         name: 'mmCIF',
                         shortcuts: ['mmcif', 'cif'],
                         extensions: ['.cif'],
-                        parse: function (data) {
-                            return Core.Computation.create(function (ctx) {
-                                ctx.update('Parsing...');
-                                ctx.schedule(function () {
-                                    var file = Formats.CIF.Text.parse(data);
-                                    if (file.isError) {
-                                        ctx.reject(file.toString());
-                                        return;
-                                    }
-                                    var result = file.result;
-                                    if (!result.dataBlocks.length) {
-                                        ctx.reject("The CIF data does not contain a data block.");
-                                        return;
-                                    }
-                                    ctx.update('Creating representation...');
-                                    ctx.schedule(function () {
-                                        try {
-                                            var mol = Molecule.mmCIF.ofDataBlock(result.dataBlocks[0]);
-                                            ctx.resolve(Formats.ParserResult.success(mol, result.dataBlocks.length > 1 ? ["The input data contains multiple data blocks, only the first one was parsed. To parse all data blocks, use the function 'mmCIF.ofDataBlock' separately for each block."] : void 0));
-                                        }
-                                        catch (e) {
-                                            ctx.reject("" + e);
-                                        }
-                                    });
-                                });
-                            });
-                        }
+                        parse: parseCIF('CIF', Formats.CIF.Text.parse)
                     };
                     SupportedFormats.mmBCIF = {
                         name: 'mmCIF (Binary)',
                         shortcuts: ['mmbcif', 'bcif', 'binarycif'],
                         extensions: ['.bcif'],
                         isBinary: true,
-                        parse: function (data) {
-                            return Core.Computation.create(function (ctx) {
-                                ctx.update('Parsing...');
-                                ctx.schedule(function () {
-                                    var file = Formats.CIF.Binary.parse(data);
-                                    if (file.isError) {
-                                        ctx.reject(file.toString());
-                                        return;
-                                    }
-                                    var result = file.result;
-                                    if (!result.dataBlocks.length) {
-                                        ctx.reject("The BinaryCIF data does not contain a data block.");
-                                        return;
-                                    }
-                                    ctx.update('Creating representation...');
-                                    ctx.schedule(function () {
-                                        try {
-                                            var mol = Molecule.mmCIF.ofDataBlock(result.dataBlocks[0]);
-                                            ctx.resolve(Formats.ParserResult.success(mol, result.dataBlocks.length > 1 ? ["The input data contains multiple data blocks, only the first one was parsed. To parse all data blocks, use the function 'mmCIF.ofDataBlock' separately for each block."] : void 0));
-                                        }
-                                        catch (e) {
-                                            ctx.reject("" + e);
-                                        }
-                                    });
-                                });
-                            });
-                        }
+                        parse: parseCIF('BinaryCIF', Formats.CIF.Binary.parse)
                     };
                     SupportedFormats.PDB = {
                         name: 'PDB',
                         shortcuts: ['pdb', 'ent'],
                         extensions: ['.pdb', '.ent'],
-                        parse: function (data, options) {
-                            return Core.Computation.create(function (ctx) {
-                                ctx.update('Parsing...');
-                                ctx.schedule(function () {
-                                    var file = Molecule.PDB.toCifFile((options && options.id) || 'PDB', data);
-                                    if (file.isError) {
-                                        ctx.reject(file.toString());
-                                        return;
-                                    }
-                                    var result = file.result;
-                                    if (!result.dataBlocks.length) {
-                                        ctx.reject("The PDB data does not contain a data block.");
-                                        return;
-                                    }
-                                    ctx.update('Creating representation...');
-                                    ctx.schedule(function () {
-                                        try {
-                                            var mol = Molecule.mmCIF.ofDataBlock(result.dataBlocks[0]);
-                                            ctx.resolve(Formats.ParserResult.success(mol));
-                                        }
-                                        catch (e) {
-                                            ctx.reject("" + e);
-                                        }
-                                    });
-                                });
-                            });
-                        }
+                        parse: parseCIF('PDB', function (d, p) { return Molecule.PDB.toCifFile((p && p.id) || 'PDB', d); })
                     };
                     SupportedFormats.SDF = {
                         name: 'SDF',
                         shortcuts: ['sdf', 'mol'],
                         extensions: ['.sdf', '.mol'],
                         parse: function (data, options) {
-                            return Core.Computation.create(function (ctx) {
-                                ctx.update('Parsing...');
-                                ctx.schedule(function () {
-                                    var mol = Molecule.SDF.parse(data, (options && options.id) || undefined);
-                                    if (mol.isError) {
-                                        ctx.reject(mol.toString());
-                                        return;
+                            return Core.computation(function (ctx) { return __awaiter(_this, void 0, void 0, function () {
+                                var mol;
+                                return __generator(this, function (_a) {
+                                    switch (_a.label) {
+                                        case 0: return [4 /*yield*/, ctx.updateProgress('Parsing...')];
+                                        case 1:
+                                            _a.sent();
+                                            mol = Molecule.SDF.parse(data, (options && options.id) || undefined);
+                                            if (mol.isError)
+                                                throw mol.toString();
+                                            return [2 /*return*/, Formats.ParserResult.success(mol.result)];
                                     }
-                                    ctx.resolve(Formats.ParserResult.success(mol.result));
                                 });
-                            });
+                            }); });
                         }
                     };
                     SupportedFormats.All = [SupportedFormats.mmCIF, SupportedFormats.mmBCIF, SupportedFormats.PDB, SupportedFormats.SDF];
@@ -14158,15 +14134,17 @@ var LiteMol;
             var Density;
             (function (Density) {
                 function parse(data, name, parser) {
-                    return Core.Computation.create(function (ctx) {
-                        ctx.update("Parsing " + name + "...");
-                        try {
-                            ctx.resolve(parser(data));
-                        }
-                        catch (e) {
-                            ctx.reject('' + e);
-                        }
-                    });
+                    var _this = this;
+                    return Core.computation(function (ctx) { return __awaiter(_this, void 0, void 0, function () {
+                        return __generator(this, function (_a) {
+                            switch (_a.label) {
+                                case 0: return [4 /*yield*/, ctx.updateProgress("Parsing " + name + "...")];
+                                case 1:
+                                    _a.sent();
+                                    return [2 /*return*/, parser(data)];
+                            }
+                        });
+                    }); });
                 }
                 var SupportedFormats;
                 (function (SupportedFormats) {
@@ -14832,18 +14810,23 @@ var LiteMol;
                 }
                 Surface.computeNormalsImmediate = computeNormalsImmediate;
                 function computeNormals(surface) {
-                    return Core.Computation.create(function (ctx) {
-                        if (surface.normals) {
-                            ctx.resolve(surface);
-                            return;
-                        }
-                        ;
-                        ctx.update('Computing normals...');
-                        ctx.schedule(function () {
-                            computeNormalsImmediate(surface);
-                            ctx.resolve(surface);
+                    var _this = this;
+                    return Core.computation(function (ctx) { return __awaiter(_this, void 0, void 0, function () {
+                        return __generator(this, function (_a) {
+                            switch (_a.label) {
+                                case 0:
+                                    if (surface.normals) {
+                                        return [2 /*return*/, surface];
+                                    }
+                                    ;
+                                    return [4 /*yield*/, ctx.updateProgress('Computing normals...')];
+                                case 1:
+                                    _a.sent();
+                                    computeNormalsImmediate(surface);
+                                    return [2 /*return*/, surface];
+                            }
                         });
-                    });
+                    }); });
                 }
                 Surface.computeNormals = computeNormals;
                 function addVertex(src, i, dst, j) {
@@ -14876,72 +14859,93 @@ var LiteMol;
                  * Resets normals. Might replace vertex array.
                  */
                 function laplacianSmooth(surface, iterCount) {
+                    var _this = this;
                     if (iterCount === void 0) { iterCount = 1; }
                     if (iterCount < 1)
                         iterCount = 0;
                     if (iterCount === 0)
                         return Core.Computation.resolve(surface);
-                    return Core.Computation.create(function (ctx) {
-                        ctx.update('Smoothing surface...');
-                        var counts = new Int32Array(surface.vertexCount), triCount = surface.triangleIndices.length;
-                        var tris = surface.triangleIndices;
-                        for (var i = 0; i < triCount; i++) {
-                            counts[tris[i]] += 2;
-                        }
-                        var vs = new Float32Array(surface.vertices.length);
-                        var next = function (i) {
-                            if (i >= iterCount) {
-                                ctx.resolve(surface);
-                                return;
+                    return Core.computation(function (ctx) { return __awaiter(_this, void 0, void 0, function () {
+                        var counts, triCount, tris, i, vs, i, j, _b, t;
+                        return __generator(this, function (_a) {
+                            switch (_a.label) {
+                                case 0: return [4 /*yield*/, ctx.updateProgress('Smoothing surface...', true)];
+                                case 1:
+                                    _a.sent();
+                                    counts = new Int32Array(surface.vertexCount), triCount = surface.triangleIndices.length;
+                                    tris = surface.triangleIndices;
+                                    for (i = 0; i < triCount; i++) {
+                                        counts[tris[i]] += 2;
+                                    }
+                                    vs = new Float32Array(surface.vertices.length);
+                                    return [4 /*yield*/, ctx.updateProgress('Smoothing surface...', true)];
+                                case 2:
+                                    _a.sent();
+                                    i = 0;
+                                    _a.label = 3;
+                                case 3:
+                                    if (!(i < iterCount))
+                                        return [3 /*break*/, 6];
+                                    if (i > 0) {
+                                        for (j = 0, _b = vs.length; j < _b; j++)
+                                            vs[j] = 0;
+                                    }
+                                    surface.normals = void 0;
+                                    laplacianSmoothIter(surface, counts, vs);
+                                    t = surface.vertices;
+                                    surface.vertices = vs;
+                                    vs = t;
+                                    return [4 /*yield*/, ctx.updateProgress('Smoothing surface...', true, i + 1, iterCount)];
+                                case 4:
+                                    _a.sent();
+                                    _a.label = 5;
+                                case 5:
+                                    i++;
+                                    return [3 /*break*/, 3];
+                                case 6: return [2 /*return*/, surface];
                             }
-                            if (i > 0) {
-                                for (var j = 0, _b = vs.length; j < _b; j++)
-                                    vs[j] = 0;
-                            }
-                            surface.normals = void 0;
-                            laplacianSmoothIter(surface, counts, vs);
-                            var t = surface.vertices;
-                            surface.vertices = vs;
-                            vs = t;
-                            ctx.update('Smoothing surface...', ctx.abortRequest, i + 1, iterCount);
-                            ctx.schedule(function () { return next(i + 1); });
-                        };
-                        next(0);
-                    });
+                        });
+                    }); });
                 }
                 Surface.laplacianSmooth = laplacianSmooth;
                 function computeBoundingSphere(surface) {
-                    return Core.Computation.create(function (ctx) {
-                        if (surface.boundingSphere) {
-                            ctx.resolve(surface);
-                            return;
-                        }
-                        ctx.update('Computing bounding sphere...');
-                        ctx.schedule(function () {
-                            var vertices = surface.vertices;
-                            var x = 0, y = 0, z = 0;
-                            for (var i = 0, _c = surface.vertices.length; i < _c; i += 3) {
-                                x += vertices[i];
-                                y += vertices[i + 1];
-                                z += vertices[i + 2];
+                    var _this = this;
+                    return Core.computation(function (ctx) { return __awaiter(_this, void 0, void 0, function () {
+                        var vertices, x, y, z, i, _c, r, i, _c, dx, dy, dz;
+                        return __generator(this, function (_a) {
+                            switch (_a.label) {
+                                case 0:
+                                    if (surface.boundingSphere) {
+                                        return [2 /*return*/, surface];
+                                    }
+                                    return [4 /*yield*/, ctx.updateProgress('Computing bounding sphere...')];
+                                case 1:
+                                    _a.sent();
+                                    vertices = surface.vertices;
+                                    x = 0, y = 0, z = 0;
+                                    for (i = 0, _c = surface.vertices.length; i < _c; i += 3) {
+                                        x += vertices[i];
+                                        y += vertices[i + 1];
+                                        z += vertices[i + 2];
+                                    }
+                                    x /= surface.vertexCount;
+                                    y /= surface.vertexCount;
+                                    z /= surface.vertexCount;
+                                    r = 0;
+                                    for (i = 0, _c = vertices.length; i < _c; i += 3) {
+                                        dx = x - vertices[i];
+                                        dy = y - vertices[i + 1];
+                                        dz = z - vertices[i + 2];
+                                        r = Math.max(r, dx * dx + dy * dy + dz * dz);
+                                    }
+                                    surface.boundingSphere = {
+                                        center: { x: x, y: y, z: z },
+                                        radius: Math.sqrt(r)
+                                    };
+                                    return [2 /*return*/, surface];
                             }
-                            x /= surface.vertexCount;
-                            y /= surface.vertexCount;
-                            z /= surface.vertexCount;
-                            var r = 0;
-                            for (var i = 0, _c = vertices.length; i < _c; i += 3) {
-                                var dx = x - vertices[i];
-                                var dy = y - vertices[i + 1];
-                                var dz = z - vertices[i + 2];
-                                r = Math.max(r, dx * dx + dy * dy + dz * dz);
-                            }
-                            surface.boundingSphere = {
-                                center: { x: x, y: y, z: z },
-                                radius: Math.sqrt(r)
-                            };
-                            ctx.resolve(surface);
                         });
-                    });
+                    }); });
                 }
                 Surface.computeBoundingSphere = computeBoundingSphere;
                 function transformImmediate(surface, t) {
@@ -14962,13 +14966,14 @@ var LiteMol;
                 }
                 Surface.transformImmediate = transformImmediate;
                 function transform(surface, t) {
-                    return Core.Computation.create(function (ctx) {
-                        ctx.update('Updating surface...');
-                        ctx.schedule(function () {
+                    var _this = this;
+                    return Core.computation(function (ctx) { return __awaiter(_this, void 0, void 0, function () {
+                        return __generator(this, function (_a) {
+                            ctx.updateProgress('Updating surface...');
                             transformImmediate(surface, t);
-                            ctx.resolve(surface);
+                            return [2 /*return*/, surface];
                         });
-                    });
+                    }); });
                 }
                 Surface.transform = transform;
             })(Surface = Geometry.Surface || (Geometry.Surface = {}));
@@ -14987,54 +14992,30 @@ var LiteMol;
             var MarchingCubes;
             (function (MarchingCubes) {
                 "use strict";
-                // export function computeCubes(parameters: MarchingCubesParameters): MarchingCubesResult {
-                //     let params = <MarchingCubesParameters>Core.Utils.extend({}, parameters);
-                //     if (!params.bottomLeft) params.bottomLeft = [0, 0, 0];
-                //     if (!params.topRight) params.topRight = params.scalarField.dimensions;
-                //      let state = new MarchingCubesState(params),
-                //         minX = params.bottomLeft[0], minY = params.bottomLeft[1], minZ = params.bottomLeft[2],
-                //         maxX = params.topRight[0] - 1, maxY = params.topRight[1] - 1, maxZ = params.topRight[2] - 1;
-                //     for (let k = minZ; k < maxZ; k++) {
-                //         for (let j = minY; j < maxY; j++) {
-                //             for (let i = minX; i < maxX; i++) {
-                //                 state.processCell(i, j, k);
-                //             }
-                //         }
-                //     }
-                //     let vertices = state.vertexBuffer.compact();
-                //     let triangles = state.triangleBuffer.compact();
-                //     state.vertexBuffer = null;
-                //     state.verticesOnEdges = null;
-                //     return new MarchingCubesResult(<Float32Array><any>vertices, <Uint32Array><any>triangles, state.annotate ? state.annotationBuffer.compact() : null);
-                // }
                 function compute(parameters) {
-                    return Core.Computation.create(function (ctx) {
-                        var comp = new MarchingCubesComputation(parameters, ctx);
-                        comp.start();
-                    });
+                    var _this = this;
+                    return Core.computation(function (ctx) { return __awaiter(_this, void 0, void 0, function () {
+                        var comp;
+                        return __generator(this, function (_a) {
+                            switch (_a.label) {
+                                case 0:
+                                    comp = new MarchingCubesComputation(parameters, ctx);
+                                    return [4 /*yield*/, comp.run()];
+                                case 1: return [2 /*return*/, _a.sent()];
+                            }
+                        });
+                    }); });
                 }
                 MarchingCubes.compute = compute;
                 var MarchingCubesComputation = (function () {
                     function MarchingCubesComputation(parameters, ctx) {
-                        var _this = this;
                         this.ctx = ctx;
-                        this.chunkSize = 80 * 80 * 80;
-                        this.done = 0;
-                        this.k = 0;
                         this.minX = 0;
                         this.minY = 0;
                         this.minZ = 0;
                         this.maxX = 0;
                         this.maxY = 0;
                         this.maxZ = 0;
-                        this._slice = function () {
-                            try {
-                                _this.slice();
-                            }
-                            catch (e) {
-                                _this.ctx.reject('' + e);
-                            }
-                        };
                         var params = Core.Utils.extend({}, parameters);
                         if (!params.bottomLeft)
                             params.bottomLeft = [0, 0, 0];
@@ -15047,32 +15028,47 @@ var LiteMol;
                         this.maxX = params.topRight[0] - 1;
                         this.maxY = params.topRight[1] - 1;
                         this.maxZ = params.topRight[2] - 1;
-                        this.k = this.minZ;
                         this.size = (this.maxX - this.minX) * (this.maxY - this.minY) * (this.maxZ - this.minZ);
                         this.sliceSize = (this.maxX - this.minX) * (this.maxY - this.minY);
                     }
-                    MarchingCubesComputation.prototype.nextSlice = function () {
-                        if (this.ctx.abortRequested) {
-                            this.ctx.abort();
-                            return;
-                        }
-                        this.done += this.sliceSize;
-                        this.ctx.update('Computing surface...', this.ctx.abortRequest, this.done, this.size);
-                        if (this.k >= this.maxZ) {
-                            this.finish();
-                        }
-                        else {
-                            this.ctx.schedule(this._slice);
-                        }
+                    MarchingCubesComputation.prototype.doSlices = function () {
+                        return __awaiter(this, void 0, void 0, function () {
+                            var timeFrame, done, started, k, t;
+                            return __generator(this, function (_a) {
+                                switch (_a.label) {
+                                    case 0:
+                                        timeFrame = 100;
+                                        done = 0;
+                                        started = Core.Utils.PerformanceMonitor.currentTime();
+                                        k = this.minZ;
+                                        _a.label = 1;
+                                    case 1:
+                                        if (!(k < this.maxZ))
+                                            return [3 /*break*/, 4];
+                                        this.slice(k);
+                                        done += this.sliceSize;
+                                        t = Core.Utils.PerformanceMonitor.currentTime();
+                                        if (!(t - started > timeFrame))
+                                            return [3 /*break*/, 3];
+                                        return [4 /*yield*/, this.ctx.updateProgress('Computing surface...', true, done, this.size)];
+                                    case 2:
+                                        _a.sent();
+                                        started = t;
+                                        _a.label = 3;
+                                    case 3:
+                                        k++;
+                                        return [3 /*break*/, 1];
+                                    case 4: return [2 /*return*/];
+                                }
+                            });
+                        });
                     };
-                    MarchingCubesComputation.prototype.slice = function () {
+                    MarchingCubesComputation.prototype.slice = function (k) {
                         for (var j = this.minY; j < this.maxY; j++) {
                             for (var i = this.minX; i < this.maxX; i++) {
-                                this.state.processCell(i, j, this.k);
+                                this.state.processCell(i, j, k);
                             }
                         }
-                        this.k++;
-                        this.nextSlice();
                     };
                     MarchingCubesComputation.prototype.finish = function () {
                         var vertices = Core.Utils.ChunkedArray.compact(this.state.vertexBuffer);
@@ -15086,11 +15082,26 @@ var LiteMol;
                             triangleIndices: triangles,
                             annotation: this.state.annotate ? Core.Utils.ChunkedArray.compact(this.state.annotationBuffer) : void 0
                         };
-                        this.ctx.resolve(ret);
+                        return ret;
                     };
-                    MarchingCubesComputation.prototype.start = function () {
-                        this.ctx.update('Computing surface...', this.ctx.abortRequest, 0, this.size);
-                        this.ctx.schedule(this._slice);
+                    MarchingCubesComputation.prototype.run = function () {
+                        return __awaiter(this, void 0, void 0, function () {
+                            var slices;
+                            return __generator(this, function (_a) {
+                                switch (_a.label) {
+                                    case 0: return [4 /*yield*/, this.ctx.updateProgress('Computing surface...', true, 0, this.size)];
+                                    case 1:
+                                        _a.sent();
+                                        return [4 /*yield*/, this.doSlices()];
+                                    case 2:
+                                        slices = _a.sent();
+                                        return [4 /*yield*/, this.ctx.updateProgress('Finalizing...')];
+                                    case 3:
+                                        _a.sent();
+                                        return [2 /*return*/, this.finish()];
+                                }
+                            });
+                        });
                     };
                     return MarchingCubesComputation;
                 }());
@@ -15654,7 +15665,6 @@ var LiteMol;
                 }());
                 var MolecularIsoFieldComputation = (function () {
                     function MolecularIsoFieldComputation(inputParameters, ctx) {
-                        var _this = this;
                         this.inputParameters = inputParameters;
                         this.ctx = ctx;
                         this.minX = Number.MAX_VALUE;
@@ -15674,16 +15684,6 @@ var LiteMol;
                         this.proximityMap = new Int32Array(0);
                         this.minIndex = { i: 0, j: 0, k: 0 };
                         this.maxIndex = { i: 0, j: 0, k: 0 };
-                        this.currentAtom = 0;
-                        this.chunkSize = 10000;
-                        this._addChunk = function () {
-                            try {
-                                _this.addChunk();
-                            }
-                            catch (e) {
-                                _this.ctx.reject(e);
-                            }
-                        };
                         this.parameters = new MolecularIsoSurfaceParametersWrapper(inputParameters.parameters);
                         var positions = inputParameters.positions;
                         this.x = positions.x;
@@ -15777,28 +15777,39 @@ var LiteMol;
                             }
                         }
                     };
-                    MolecularIsoFieldComputation.prototype.addChunk = function () {
-                        var b = this.atomIndices.length;
-                        var currentChunk = 0;
-                        for (; this.currentAtom < b; this.currentAtom++) {
-                            var aI = this.atomIndices[this.currentAtom];
-                            var r = this.parameters.atomRadius(aI) + this.parameters.probeRadius;
-                            currentChunk++;
-                            if (r < 0)
-                                continue;
-                            this.addBall(aI, r);
-                            if (currentChunk >= this.chunkSize) {
-                                if (this.ctx.abortRequested) {
-                                    this.ctx.abort();
-                                    return;
+                    MolecularIsoFieldComputation.prototype.processChunks = function () {
+                        return __awaiter(this, void 0, void 0, function () {
+                            var chunkSize, currentAtom, _b, aI, r;
+                            return __generator(this, function (_a) {
+                                switch (_a.label) {
+                                    case 0:
+                                        chunkSize = 10000;
+                                        return [4 /*yield*/, this.ctx.updateProgress('Creating field...', true)];
+                                    case 1:
+                                        _a.sent();
+                                        currentAtom = 0, _b = this.atomIndices.length;
+                                        _a.label = 2;
+                                    case 2:
+                                        if (!(currentAtom < _b))
+                                            return [3 /*break*/, 5];
+                                        aI = this.atomIndices[currentAtom];
+                                        r = this.parameters.atomRadius(aI) + this.parameters.probeRadius;
+                                        if (r >= 0) {
+                                            this.addBall(aI, r);
+                                        }
+                                        if (!((currentAtom + 1) % chunkSize === 0))
+                                            return [3 /*break*/, 4];
+                                        return [4 /*yield*/, this.ctx.updateProgress('Creating field...', true, currentAtom, _b)];
+                                    case 3:
+                                        _a.sent();
+                                        _a.label = 4;
+                                    case 4:
+                                        currentAtom++;
+                                        return [3 /*break*/, 2];
+                                    case 5: return [2 /*return*/];
                                 }
-                                this.ctx.update('Creating field...', this.ctx.abortRequest, this.currentAtom, this.atomIndices.length);
-                                this.ctx.schedule(this._addChunk);
-                                return;
-                            }
-                        }
-                        this.ctx.update('Creating field...', void 0, this.currentAtom, this.atomIndices.length);
-                        this.finish();
+                            });
+                        });
                     };
                     MolecularIsoFieldComputation.prototype.finish = function () {
                         // help the gc
@@ -15820,51 +15831,69 @@ var LiteMol;
                             inputParameters: this.inputParameters,
                             parameters: this.parameters
                         };
-                        this.ctx.resolve(ret);
+                        return ret;
                     };
-                    MolecularIsoFieldComputation.prototype.start = function () {
-                        var _this = this;
-                        this.ctx.update('Initializing...');
-                        this.ctx.schedule(function () {
-                            try {
-                                _this.findBounds();
-                                _this.initData();
-                            }
-                            catch (e) {
-                                _this.ctx.reject(e);
-                                return;
-                            }
-                            if (_this.ctx.abortRequested) {
-                                _this.ctx.abort();
-                                return;
-                            }
-                            _this.ctx.update('Creating field...', _this.ctx.abortRequest, 0, _this.atomIndices.length);
-                            _this.ctx.schedule(_this._addChunk);
+                    MolecularIsoFieldComputation.prototype.run = function () {
+                        return __awaiter(this, void 0, void 0, function () {
+                            var chunks;
+                            return __generator(this, function (_a) {
+                                switch (_a.label) {
+                                    case 0: return [4 /*yield*/, this.ctx.updateProgress('Initializing...')];
+                                    case 1:
+                                        _a.sent();
+                                        this.findBounds();
+                                        this.initData();
+                                        return [4 /*yield*/, this.processChunks()];
+                                    case 2:
+                                        chunks = _a.sent();
+                                        return [4 /*yield*/, this.ctx.updateProgress('Finalizing...', void 0, this.atomIndices.length, this.atomIndices.length)];
+                                    case 3:
+                                        _a.sent();
+                                        return [2 /*return*/, this.finish()];
+                                }
+                            });
                         });
                     };
                     return MolecularIsoFieldComputation;
                 }());
-                function createResultResultData(field, surface) {
-                    return Core.Computation.resolve({
-                        surface: surface,
-                        usedParameters: field.parameters
-                    });
-                }
                 function createMolecularIsoFieldAsync(parameters) {
-                    return Core.Computation.create(function (ctx) {
-                        var field = new MolecularIsoFieldComputation(parameters, ctx);
-                        field.start();
-                    });
+                    var _this = this;
+                    return Core.computation(function (ctx) { return __awaiter(_this, void 0, void 0, function () {
+                        var field;
+                        return __generator(this, function (_a) {
+                            switch (_a.label) {
+                                case 0:
+                                    field = new MolecularIsoFieldComputation(parameters, ctx);
+                                    return [4 /*yield*/, field.run()];
+                                case 1: return [2 /*return*/, _a.sent()];
+                            }
+                        });
+                    }); });
                 }
                 MolecularSurface.createMolecularIsoFieldAsync = createMolecularIsoFieldAsync;
                 function computeMolecularSurfaceAsync(parameters) {
-                    return createMolecularIsoFieldAsync(parameters)
-                        .bind(function (f) {
-                        return Geometry.MarchingCubes.compute(f.data)
-                            .bind(function (s) { return Geometry.Surface.transform(s, f.transform); })
-                            .bind(function (s) { return Geometry.Surface.laplacianSmooth(s, (f.inputParameters.parameters && f.inputParameters.parameters.smoothingIterations) || 1)
-                            .bind(function (s) { return createResultResultData(f, s); }); });
-                    });
+                    var _this = this;
+                    return Core.computation(function (ctx) { return __awaiter(_this, void 0, void 0, function () {
+                        var field, surface, smoothing;
+                        return __generator(this, function (_a) {
+                            switch (_a.label) {
+                                case 0: return [4 /*yield*/, createMolecularIsoFieldAsync(parameters).run(ctx).result];
+                                case 1:
+                                    field = _a.sent();
+                                    return [4 /*yield*/, Geometry.MarchingCubes.compute(field.data).run(ctx).result];
+                                case 2:
+                                    surface = _a.sent();
+                                    return [4 /*yield*/, Geometry.Surface.transform(surface, field.transform).run(ctx).result];
+                                case 3:
+                                    surface = _a.sent();
+                                    smoothing = (parameters.parameters && parameters.parameters.smoothingIterations) || 1;
+                                    return [4 /*yield*/, Geometry.Surface.laplacianSmooth(surface, smoothing).run(ctx).result];
+                                case 4:
+                                    surface = _a.sent();
+                                    return [2 /*return*/, { surface: surface, usedParameters: field.parameters }];
+                            }
+                        });
+                    }); });
                 }
                 MolecularSurface.computeMolecularSurfaceAsync = computeMolecularSurfaceAsync;
             })(MolecularSurface = Geometry.MolecularSurface || (Geometry.MolecularSurface = {}));

@@ -3,12 +3,7 @@
  */
 
 namespace LiteMol.Visualization.Molecule.Cartoons.Geometry {
-    
-    
-    
-
     export class Data extends GeometryBase {
-
         geometry: THREE.BufferGeometry = <any>void 0;
         pickGeometry: THREE.BufferGeometry = <any>void 0;
 
@@ -19,11 +14,10 @@ namespace LiteMol.Visualization.Molecule.Cartoons.Geometry {
             this.geometry.dispose();
             this.pickGeometry.dispose();
         }
-
     }
     
     export interface Context {
-        computation: Core.Computation.Context<Model>,
+        computation: Core.Computation.Context,
         
         model: Core.Structure.MoleculeModel,
         atomIndices: number[],
@@ -44,14 +38,13 @@ namespace LiteMol.Visualization.Molecule.Cartoons.Geometry {
         geom: Data        
     }
 
-    export function create(
+    export async function create(
         model: Core.Structure.MoleculeModel,
         atomIndices: number[],
         linearSegments: number,
         parameters: any,
         isTrace: boolean,
-        computation: Core.Computation.Context<Model>,
-        done: (g: Data) => void) {
+        computation: Core.Computation.Context): LiteMol.Promise<Data> {
         
         let params = <CartoonsGeometryParams>Core.Utils.extend({}, parameters, CartoonsGeometryParams.Default);
         let ctx: Context = {
@@ -74,22 +67,22 @@ namespace LiteMol.Visualization.Molecule.Cartoons.Geometry {
             geom: new Data()
         };
         
-        ctx.computation.update('Building units...');
-        
-        ctx.computation.schedule(() => {
-            
-            ctx.units = CartoonAsymUnit.buildUnits(ctx.model, ctx.atomIndices, ctx.linearSegments);
-            buildUnitsChunk(0, ctx, () => {
-                if (ctx.strandTemplate) ctx.strandTemplate.geometry.dispose();
-                ctx.geom.vertexMap = ctx.state.vertexMap.getMap();
-                createGeometry(ctx);                
-                let ret = ctx.geom;
-                for (let k of Object.keys(ctx)) {
-                    if (!Object.prototype.hasOwnProperty.call(ctx, k)) continue;
-                    (ctx as any)[k] = void 0;
-                }                    
-                done(ret);          
-            });
-        });
+        await ctx.computation.updateProgress('Building units...');
+    
+        ctx.units = CartoonAsymUnit.buildUnits(ctx.model, ctx.atomIndices, ctx.linearSegments);
+
+        await buildUnitsAsync(ctx);
+
+        if (ctx.strandTemplate) ctx.strandTemplate.geometry.dispose();
+        ctx.geom.vertexMap = ctx.state.vertexMap.getMap();
+        await ctx.computation.updateProgress('Creating geometry...');
+        createGeometry(ctx);                
+        let ret = ctx.geom;
+        // help the GC
+        for (let k of Object.keys(ctx)) {
+            if (!Object.prototype.hasOwnProperty.call(ctx, k)) continue;
+            (ctx as any)[k] = void 0;
+        }                    
+        return ret;          
     }
 }

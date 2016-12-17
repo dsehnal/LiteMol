@@ -162,10 +162,10 @@ namespace LiteMol.Visualization.Molecule.Cartoons {
             props?: Model.Props   
         }): Core.Computation<Model> {
                 
-            return Core.Computation.create<Model>(ctx => {  
+            return Core.computation<Model>(async ctx => {  
                 let linearSegments = 0, radialSements = 0;
                 
-                ctx.update('Computing cartoons...');
+                await ctx.updateProgress('Computing cartoons...');
                 
                 params = Core.Utils.extend({}, params, DefaultCartoonsModelParameters);                
                 switch (params.tessalation) {
@@ -179,35 +179,34 @@ namespace LiteMol.Visualization.Molecule.Cartoons {
                 }
                 
                 
-                Geometry.create(model, atomIndices, linearSegments, {
+                let cartoons = await Geometry.create(model, atomIndices, linearSegments, {
                     radialSegmentCount: radialSements,
                     tessalation: params.tessalation
-                }, params.drawingType === CartoonsModelType.AlphaTrace, ctx, cartoons => {
-                                                    
-                    let ret = new Model();
-                    ret.cartoons = cartoons;
-                    ret.queryContext = queryContext;   
-                    ret.material = MaterialsHelper.getMeshMaterial();
-                    ret.pickMaterial = MaterialsHelper.getPickMaterial();     
-                    if (props) ret.props = props;
-            
-                    ret.entity = entity;
-                    ret.cartoons.geometry.computeBoundingSphere();
-                    ret.centroid = ret.cartoons.geometry.boundingSphere.center;
-                    ret.radius = ret.cartoons.geometry.boundingSphere.radius;
+                }, params.drawingType === CartoonsModelType.AlphaTrace, ctx)
+                                                                
+                let ret = new Model();
+                ret.cartoons = cartoons;
+                ret.queryContext = queryContext;   
+                ret.material = MaterialsHelper.getMeshMaterial();
+                ret.pickMaterial = MaterialsHelper.getPickMaterial();     
+                if (props) ret.props = props;
+        
+                ret.entity = entity;
+                ret.cartoons.geometry.computeBoundingSphere();
+                ret.centroid = ret.cartoons.geometry.boundingSphere.center;
+                ret.radius = ret.cartoons.geometry.boundingSphere.radius;
 
-                    let obj = ret.createObjects();           
-                    ret.object = obj.main;
-                    ret.pickObject = obj.pick;
-                    ret.pickBufferAttributes = [(<any>ret.cartoons.pickGeometry.attributes).pColor];
-                    
-                    ret.model = model;
-                    ret.applyTheme(theme);
+                let obj = ret.createObjects();           
+                ret.object = obj.main;
+                ret.pickObject = obj.pick;
+                ret.pickBufferAttributes = [(<any>ret.cartoons.pickGeometry.attributes).pColor];
+                
+                ret.model = model;
+                ret.applyTheme(theme);
 
-                    ret.disposeList.push(ret.cartoons, ret.material, ret.pickMaterial);
-                    
-                    ctx.resolve(ret);
-                });
+                ret.disposeList.push(ret.cartoons, ret.material, ret.pickMaterial);
+                
+                return ret;
             });
         }
     }

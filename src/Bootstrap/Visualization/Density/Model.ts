@@ -47,7 +47,7 @@ namespace LiteMol.Bootstrap.Visualization.Density {
         style: Style): Task<Entity.Density.Visual> {
 
         let name = style.taskType === 'Background' ? parent.props.label : `Density Surface (${parent.props.label})`;
-        return Task.create<Entity.Density.Visual>(name, style.taskType || 'Normal', ctx => {
+        return Task.create<Entity.Density.Visual>(name, style.taskType || 'Normal', async ctx => {
             let params = style.params!;
             
             let source = Tree.Node.findClosestNodeOfType(parent, [Entity.Density.Data]) as Entity.Density.Data;
@@ -86,30 +86,29 @@ namespace LiteMol.Bootstrap.Visualization.Density {
                 ? data.valuesInfo.mean + data.valuesInfo.sigma * params.isoValue
                 : params.isoValue!;
             
-            let surface = Geom.MarchingCubes.compute({
-                isoLevel: isoValue,
-                scalarField: data.data,
-                bottomLeft: min,
-                topRight: max
-            }).bind(s => Geom.Surface.transform(s, <number[]><any>fromFrac.elements)
-                .bind(s => Geom.Surface.laplacianSmooth(s, params.smoothing))).run();
-                 
-            surface.progress.subscribe(p => ctx.update(`Density Surface (${source.props.label}): ${Utils.formatProgress(p)}`, p.requestAbort));
-            
-            surface.result.then(s => {    
-                let theme = style.theme!.template!.provider(source, Theme.getProps(style.theme!));
-                                
-                ctx.update('Creating visual...');
-                ctx.schedule(() => {               
-                    let surface = LiteMol.Visualization.Surface.Model.create(source, { surface: s, theme, parameters: { isWireframe: style.params!.isWireframe } }).run();                    
-                    surface.progress.subscribe(p => ctx.update(`Density Surface (${source.props.label}): ${Utils.formatProgress(p)}`, p.requestAbort));
-                    surface.result.then(model => {                                                            
-                        let label = `Surface, ${Utils.round(params.isoValue!, 2)}${isSigma ? ' \u03C3' : ''}`;                    
-                        let visual = Entity.Density.Visual.create(transform, { label, model, style, isSelectable: !style.isNotSelectable });
-                        ctx.resolve(visual);
-                    }).catch(ctx.reject);
-                }, 0);
-            }).catch(ctx.reject);
+            let compCtx = Core.Computation.createContext();
+            compCtx.progress.subscribe(p => ctx.update(`Density Surface (${source.props.label}): ${Utils.formatProgress(p)}`, p.requestAbort));
+
+            let surface = await Geom.MarchingCubes.compute({
+                    isoLevel: isoValue,
+                    scalarField: data.data,
+                    bottomLeft: min,
+                    topRight: max
+                }).run(compCtx).result;
+            surface = await Geom.Surface.transform(surface, <number[]><any>fromFrac.elements).run(compCtx).result;
+            surface = await Geom.Surface.laplacianSmooth(surface, params.smoothing).run(compCtx).result;
+                             
+            let theme = style.theme!.template!.provider(source, Theme.getProps(style.theme!));
+                            
+            ctx.update('Creating visual...');
+            ctx.schedule(async () => {               
+                let modelComp = LiteMol.Visualization.Surface.Model.create(source, { surface, theme, parameters: { isWireframe: style.params!.isWireframe } }).run();                    
+                modelComp.progress.subscribe(p => ctx.update(`Density Surface (${source.props.label}): ${Utils.formatProgress(p)}`, p.requestAbort));
+                let model = await modelComp.result;                                                       
+                    let label = `Surface, ${Utils.round(params.isoValue!, 2)}${isSigma ? ' \u03C3' : ''}`;                    
+                    let visual = Entity.Density.Visual.create(transform, { label, model, style, isSelectable: !style.isNotSelectable });
+                    ctx.resolve(visual);
+            }, 0);
         });
     }    
 }

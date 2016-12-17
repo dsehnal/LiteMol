@@ -5,14 +5,10 @@
 namespace LiteMol.Core.Formats.Density {
     
     function parse(data: string | ArrayBuffer, name: string, parser: (data: string | ArrayBuffer) => ParserResult<Data>) {
-        return Computation.create(ctx => {
-            ctx.update(`Parsing ${name}...`);
-            try {
-                ctx.resolve(parser(data));
-            } catch (e) {
-                ctx.reject('' + e);
-            }
-        })
+        return computation(async ctx => {
+            await ctx.updateProgress(`Parsing ${name}...`);        
+            return parser(data);
+        }) 
     }
 
     export namespace SupportedFormats {

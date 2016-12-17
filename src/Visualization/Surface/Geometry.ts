@@ -5,12 +5,12 @@
 namespace LiteMol.Visualization.Surface {
     "use strict";
 
-    import Data = Core.Geometry.Surface;
-    import ChunkedArray = Core.Utils.ChunkedArray;
+    import Data = Core.Geometry.Surface
+    import ChunkedArray = Core.Utils.ChunkedArray
 
     interface Context {
         data: Data,
-        computation: Core.Computation.Context<Model>,
+        computation: Core.Computation.Context,
         geom: Geometry,
 
         vertexCount: number,
@@ -91,74 +91,62 @@ namespace LiteMol.Visualization.Surface {
         return map.getMap();
     }
 
-    function computeVertexMap(ctx: Context, next: () => void) {
-        ctx.computation.update('Computing selection map...');
-
-        ctx.computation.schedule(() => {
-            if (ctx.data.annotation) {
-                ctx.geom.elementToVertexMap = createVertexMap(ctx);
-            } else {
-                ctx.geom.elementToVertexMap = createFullMap(ctx);
-            }
-            next();
-        }, 1000 / 15);
+    async function computeVertexMap(ctx: Context) {
+        await ctx.computation.updateProgress('Computing selection map...');
+        if (ctx.data.annotation) {
+            ctx.geom.elementToVertexMap = createVertexMap(ctx);
+        } else {
+            ctx.geom.elementToVertexMap = createFullMap(ctx);
+        }
     }
 
-    function computePickPlatesChunk(start: number, ctx: Context, next: () => void) {
-        let chunkSize = 100000;
+    async function computePickPlatesChunks(ctx: Context) {
+        const chunkSize = 100000;
 
         let tri = ctx.data.triangleIndices;
         let ids = ctx.data.annotation!;
 
-        if (start >= ctx.triCount) {
-            next();
-            return;
-        }
+        for (let start = 0; start < ctx.triCount; start += chunkSize) {
 
-        let pickPlatesVertices = ctx.pickPlatesVertices!;
-        let pickPlatesTris = ctx.pickPlatesTris!;
-        let pickPlatesColors = ctx.pickPlatesColors!;
-        let vs = ctx.data.vertices;
-        let color = { r: 0.45, g: 0.45, b: 0.45 };
-        let pickTris = ctx.pickTris!;
+            let pickPlatesVertices = ctx.pickPlatesVertices!;
+            let pickPlatesTris = ctx.pickPlatesTris!;
+            let pickPlatesColors = ctx.pickPlatesColors!;
+            let vs = ctx.data.vertices;
+            let color = { r: 0.45, g: 0.45, b: 0.45 };
+            let pickTris = ctx.pickTris!;
 
-        ctx.computation.update('Creating selection geometry...', ctx.computation.abortRequest, start, ctx.triCount);
-        if (ctx.computation.abortRequested) {
-            ctx.computation.abort();
-            return;
-        }
+            await ctx.computation.updateProgress('Creating selection geometry...', true, start, ctx.triCount);
+            
+            let platesVertexCount = 0;
+            for (let i = start, _b = Math.min(start + chunkSize, ctx.triCount); i < _b; i++) {
+                let a = tri[3 * i], b = tri[3 * i + 1], c = tri[3 * i + 2];
+                let aI = ids[a], bI = ids[b], cI = ids[c];
 
-        let platesVertexCount = 0;
-        for (let i = start, _b = Math.min(start + chunkSize, ctx.triCount); i < _b; i++) {
-            let a = tri[3 * i], b = tri[3 * i + 1], c = tri[3 * i + 2];
-            let aI = ids[a], bI = ids[b], cI = ids[c];
+                if (aI === bI && bI === cI) {
+                    ChunkedArray.add3(pickTris, a, b, c);
+                    continue;
+                }
 
-            if (aI === bI && bI === cI) {
-                ChunkedArray.add3(pickTris, a, b, c);
-                continue;
+                let s = aI === bI ? aI : bI;
+
+                ChunkedArray.add3(pickPlatesVertices, vs[3 * a], vs[3 * a + 1], vs[3 * a + 2]);
+                ChunkedArray.add3(pickPlatesVertices, vs[3 * b], vs[3 * b + 1], vs[3 * b + 2]);
+                ChunkedArray.add3(pickPlatesVertices, vs[3 * c], vs[3 * c + 1], vs[3 * c + 2]);
+
+                ChunkedArray.add3(pickPlatesTris, platesVertexCount++, platesVertexCount++, platesVertexCount++);
+
+                if (s < 0) {
+                    color.r = 0; color.g = 0; color.b = 0;
+                } else {
+                    Selection.Picking.assignPickColor(s, color);
+                }
+
+                ChunkedArray.add4(pickPlatesColors, color.r, color.g, color.b, 0.0);
+                ChunkedArray.add4(pickPlatesColors, color.r, color.g, color.b, 0.0);
+                ChunkedArray.add4(pickPlatesColors, color.r, color.g, color.b, 0.0);
             }
-
-            let s = aI === bI ? aI : bI;
-
-            ChunkedArray.add3(pickPlatesVertices, vs[3 * a], vs[3 * a + 1], vs[3 * a + 2]);
-            ChunkedArray.add3(pickPlatesVertices, vs[3 * b], vs[3 * b + 1], vs[3 * b + 2]);
-            ChunkedArray.add3(pickPlatesVertices, vs[3 * c], vs[3 * c + 1], vs[3 * c + 2]);
-
-            ChunkedArray.add3(pickPlatesTris, platesVertexCount++, platesVertexCount++, platesVertexCount++);
-
-            if (s < 0) {
-                color.r = 0; color.g = 0; color.b = 0;
-            } else {
-                Selection.Picking.assignPickColor(s, color);
-            }
-
-            ChunkedArray.add4(pickPlatesColors, color.r, color.g, color.b, 0.0);
-            ChunkedArray.add4(pickPlatesColors, color.r, color.g, color.b, 0.0);
-            ChunkedArray.add4(pickPlatesColors, color.r, color.g, color.b, 0.0);
+            ctx.platesVertexCount += platesVertexCount;
         }
-        ctx.platesVertexCount += platesVertexCount;
-
-        ctx.computation.schedule(() => computePickPlatesChunk(start + chunkSize, ctx, next));
     }
 
     function assignPickColors(ctx: Context) {
@@ -254,33 +242,26 @@ namespace LiteMol.Visualization.Surface {
         geometry.addAttribute('vState', ctx.geom.vertexStateBuffer);
     }
 
-    function computePickGeometry(ctx: Context, next: () => void) {
+    async function computePickGeometry(ctx: Context) {
+        await ctx.computation.updateProgress('Creating selection geometry...');
 
-        ctx.computation.update('Creating selection geometry...');
+        ctx.pickColorBuffer = new Float32Array(ctx.vertexCount * 4);
+        if (!ctx.data.annotation) {
+            createFullPickGeometry(ctx);
+            return;
+        } else {
+            assignPickColors(ctx);
+            ctx.pickPlatesVertices = ChunkedArray.forVertex3D(Math.max(ctx.vertexCount / 10, 10));
+            ctx.pickPlatesTris = ChunkedArray.forIndexBuffer(Math.max(ctx.triCount / 10, 10));
+            ctx.pickPlatesColors = ChunkedArray.create<number>(s => new Float32Array(s), Math.max(ctx.vertexCount / 10, 10), 4);
+            ctx.platesVertexCount = 0;
 
-        ctx.computation.schedule(() => {
-            ctx.pickColorBuffer = new Float32Array(ctx.vertexCount * 4);
-            if (!ctx.data.annotation) {
-                createFullPickGeometry(ctx);
-                next();
-            } else {
-
-                assignPickColors(ctx);
-                ctx.pickPlatesVertices = ChunkedArray.forVertex3D(Math.max(ctx.vertexCount / 10, 10));
-                ctx.pickPlatesTris = ChunkedArray.forIndexBuffer(Math.max(ctx.triCount / 10, 10));
-                ctx.pickPlatesColors = ChunkedArray.create<number>(s => new Float32Array(s), Math.max(ctx.vertexCount / 10, 10), 4);
-                ctx.platesVertexCount = 0;
-
-                computePickPlatesChunk(0, ctx, () => {
-                    createPickGeometry(ctx);
-                    next();
-                });
-            }
-        });
+            await computePickPlatesChunks(ctx)
+            createPickGeometry(ctx);
+        }
     }
 
-    export function buildGeometry(data: Data, computation: Core.Computation.Context<Model>, isWireframe: boolean, done: (g: Geometry) => void) {
-
+    export async function buildGeometry(data: Data, computation: Core.Computation.Context, isWireframe: boolean): LiteMol.Promise<Geometry> {
         let ctx: Context = {
             data,
             computation,
@@ -289,26 +270,16 @@ namespace LiteMol.Visualization.Surface {
             triCount: (data.triangleIndices.length / 3) | 0
         };
 
-        computation.update('Creating geometry...');
-        let surface = Core.Geometry.Surface.computeNormals(data)
-            .bind(s => {
-                return Core.Geometry.Surface.computeBoundingSphere(s)
-            }).run(<any>computation)
+        await computation.updateProgress('Creating geometry...');
+        await Core.Geometry.Surface.computeNormals(data).run(computation).result;
+        await Core.Geometry.Surface.computeBoundingSphere(data).run(computation).result;
 
-            // surface.progress.subscribe(p => computaion);    
-            //  surface.progress.
-            .result.then(() => {
-                computation.schedule(() => {
-                    computeVertexMap(ctx, () => {
-                        computePickGeometry(ctx, () => {
-                            createGeometry(isWireframe, ctx);
-                            ctx.geom.vertexToElementMap = ctx.data.annotation!;
-                            done(ctx.geom);
-                        })
-                    })
-                });
-            })
-            .catch(computation.reject);
+        await computeVertexMap(ctx);
+        await computePickGeometry(ctx);
+
+        createGeometry(isWireframe, ctx);
+        ctx.geom.vertexToElementMap = ctx.data.annotation!;
+        return ctx.geom;
     }
 
     export class Geometry extends GeometryBase {

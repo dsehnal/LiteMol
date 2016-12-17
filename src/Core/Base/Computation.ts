@@ -5,30 +5,21 @@
 namespace LiteMol.Core {
     "use strict";
           
-    export class Computation<A> {                                
-        bind<B>(next: (r: A) => Computation<B>): Computation<B> {            
-            return Computation.create(ctx => {
-                this.run(ctx as any).result.then(a => {
-                    next(a).run(ctx as any).result.then(ctx.resolve).catch(ctx.reject);
-                }).catch(ctx.reject);
-            });    
-        }
+    export function computation<A>(c: (ctx: Computation.Context) => Promise<A>) {
+        return new Computation(c);
+    }
         
-        map<B>(f: (r: A) => B) {
-            return Computation.create(ctx => {
-                this.run(ctx).result.then(r => ctx.resolve(f(r))).catch(ctx.reject);
-            })
-        }
-                
-        run(ctx?: Computation.Context<A>): Computation.RunningComputation<A>  {     
-            let context = ctx ? ctx : new Computation.Context<A>();    
+    export class Computation<A> {                                                
+        run(ctx?: Computation.Context): Computation.Running<A>  {     
+            let context = ctx ? ctx as ContextImpl : new ContextImpl();    
             
             return {
                 progress: context.progressStream,
-                result: new Promise<A>((resolve, reject) => {
+                result: new Promise<A>(async (resolve, reject) => {
                     try {
                         context.__push(resolve, reject);
-                        this.computation(context);
+                        let result = await this.computation(context);
+                        context.resolve(result);
                     } catch (e) {
                         context.reject(e);
                     }
@@ -36,134 +27,134 @@ namespace LiteMol.Core {
             };
         }
                 
-        constructor(private computation: (ctx: Computation.Context<A>) => void) {
+        constructor(private computation: (ctx: Computation.Context) => Promise<A>) {
             
         }
     }
     
-    export module Computation {
-                
-        export function create<A>(computation: (ctx: Context<A>) => void) {
-            return new Computation(computation);
-        }   
-        
+    export module Computation {        
         export function resolve<A>(a: A) {
-            return create(ctx => ctx.resolve(a));
+            return computation(() => Promise.resolve(a));
         }
 
-        export function schedule<T>(ctx: Context<any>, f: () => T, afterMs = 0) {
-            return new LiteMol.Core.Promise<T>(res => ctx.schedule(() => {
-                try {
-                    res(f());
-                } finally {
-                    res(undefined);
-                }
-            }, afterMs));
-        } 
+        export function createContext(): Computation.Context {
+            return new ContextImpl();
+        }
+
+        export const Aborted = 'Aborted';
                 
-        export interface ProgressInfo {
+        export interface Progress {
             message: string;
             isIndeterminate: boolean;
             current: number;
             max: number;
             requestAbort?: () => void;
         }
+
+        export interface Context {
+            progress: Rx.Observable<Progress>,
+            
+            /**
+             * Checks if the computation was aborted. If so, throws.
+             * Otherwise, updates the progress.
+             */
+            updateProgress(msg: string, abort?: boolean | (() => void), current?: number, max?: number): void
+        }
+
+        export interface Running<A> {
+            progress: Rx.Observable<Progress>,
+            result: Promise<A>
+        }
+    }
                     
-        export class Context<A> {        
-            schedule(action: () => void, afterMs = 0) {
-                setTimeout(() => {
-                    try {
-                        action();
-                    } catch (e) {
-                        this.reject(e);
-                    }
-                }, afterMs);
+    class ContextImpl implements Computation.Context {            
+        private _abortRequested = false;
+        get isAbortRequested() {
+            return this._abortRequested;
+        }
+
+        private checkAborted() {
+            if (this._abortRequested) throw Computation.Aborted;
+        }
+                    
+        private _abortRequester = () => { this._abortRequested = true };
+
+        abort() {
+            this.reject(Computation.Aborted);
+        }
+        
+        private progressTick = new Rx.Subject<Computation.Progress>();
+        private _progress: Computation.Progress = { message: 'Working...', current: 0, max: 0, isIndeterminate: true, requestAbort: void 0 };
+        progressStream = new Rx.BehaviorSubject<Computation.Progress>(this._progress);
+
+        get progress() { return this.progressTick; }
+        
+        updateProgress(msg: string, abort: boolean | (() => void), current = NaN, max = NaN): Promise<void> {         
+            this.checkAborted();
+
+            this._progress.message = msg;
+            if (typeof abort === 'boolean') {
+                this._progress.requestAbort = abort ? this._abortRequester : void 0;
+            } else {
+                if (abort) this._abortRequester = abort;
+                this._progress.requestAbort = abort ? this._abortRequester : void 0;
             }
             
-            private _abortRequested = false;
-            get abortRequested() {
-                return this._abortRequested;
-            }
-            
-            
-            setRequestAbort(abort?: () => void) {
-                this.progress.requestAbort = abort;
-            }
-            
-            private _abortRequest = () => this._abortRequested = true;        
-            get abortRequest() { return this._abortRequest; } 
-            
-            private progressTick = new Rx.Subject<ProgressInfo>();
-            private progress: ProgressInfo = { message: 'Working...', current: 0, max: 0, isIndeterminate: false, requestAbort: void 0 };
-            progressStream = new Rx.BehaviorSubject<ProgressInfo>(this.progress);
-            update(msg: string, abort?: () => void, current = NaN, max = NaN) {
-                
-                this.progress.message = msg;
-                this.progress.requestAbort = abort;
-                
-                if (isNaN(current)) {
-                    this.progress.isIndeterminate = true; 
-                } else {
-                    this.progress.isIndeterminate = false;         
-                    this.progress.current = current;
-                    this.progress.max = max; 
-                }            
-                
-                this.progressTick.onNext(this.progress);           
-            }
-            
-            private promiseStack: { resolve: (r: A) => void, reject: (err: any) => void }[] = [];
-            __push(resolve: (r: A) => void, reject: (err: any) => void) {
-                this.promiseStack.push({ resolve, reject });
+            if (isNaN(current)) {
+                this._progress.isIndeterminate = true; 
+            } else {
+                this._progress.isIndeterminate = false;         
+                this._progress.current = current;
+                this._progress.max = max; 
             }            
             
-            private _resolve(result: A) {
-                let top = this.promiseStack.pop();
-                if (!top) {
-                    throw 'Bug in code somewhere, Computation.resolve/reject called too many times.'
-                }
-                top.resolve(result);
-                if (!this.promiseStack.length) {
-                    this.progressTick.onCompleted();
-                    this.progressStream.onCompleted();
-                }
+            this.progressTick.onNext(this._progress);
+
+            return new Promise<void>(res => setTimeout(res, 0));
+        }
+        
+        private promiseStack: { resolve: (r: any) => void, reject: (err: any) => void }[] = [];
+        __push(resolve: (r: any) => void, reject: (err: any) => void) {
+            this.promiseStack.push({ resolve, reject });
+        }            
+        
+        private _resolve(result: any) {
+            let top = this.promiseStack.pop();
+            if (!top) {
+                throw 'Bug in code somewhere, Computation.resolve/reject called too many times.'
             }
-            
-            private _reject(err: any) {
-                let top = this.promiseStack.pop();
-                if (!top) {
-                    throw 'Bug in code somewhere, Computation.resolve/reject called too many times.'
-                }
-                top.reject(err);
-                if (!this.promiseStack.length) {
-                    this.progressTick.onCompleted();
-                    this.progressStream.onCompleted();
-                }
-            }
-            
-            resolve = this._resolve.bind(this);
-            reject = this._reject.bind(this);
-            
-            abort() {
-                this.reject('Aborted.');
-            }
-                            
-            constructor() {            
-                this.progressTick.throttle(1000 / 30).subscribe(p => {
-                    this.progressStream.onNext({ 
-                        message: p.message, 
-                        isIndeterminate: p.isIndeterminate, 
-                        current: p.current, 
-                        max: p.max, 
-                        requestAbort: p.requestAbort
-                    });
-                })
+            top.resolve(result);
+            if (!this.promiseStack.length) {
+                this.progressTick.onCompleted();
+                this.progressStream.onCompleted();
             }
         }
         
-        export interface RunningComputation<A> {
-            progress: Rx.Observable<ProgressInfo>,
-            result: Promise<A>
-        }                  
-    }
+        private _reject(err: any) {
+            let top = this.promiseStack.pop();
+            if (!top) {
+                throw 'Bug in code somewhere, Computation.resolve/reject called too many times.'
+            }
+            top.reject(err);
+            if (!this.promiseStack.length) {
+                this.progressTick.onCompleted();
+                this.progressStream.onCompleted();
+            }
+        }
+        
+        resolve = this._resolve.bind(this);
+        reject = this._reject.bind(this);            
+                                    
+        constructor() {            
+            this.progressTick.throttle(1000 / 30).subscribe(p => {
+                this.progressStream.onNext({ 
+                    message: p.message, 
+                    isIndeterminate: p.isIndeterminate, 
+                    current: p.current, 
+                    max: p.max, 
+                    requestAbort: p.requestAbort
+                });
+            })
+        }
+    }  
 }

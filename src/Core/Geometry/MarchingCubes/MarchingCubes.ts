@@ -18,77 +18,49 @@ namespace LiteMol.Core.Geometry.MarchingCubes {
         annotationField?: Formats.Density.Field3D;
     }
 
-    // export function computeCubes(parameters: MarchingCubesParameters): MarchingCubesResult {
-
-    //     let params = <MarchingCubesParameters>Core.Utils.extend({}, parameters);
-
-    //     if (!params.bottomLeft) params.bottomLeft = [0, 0, 0];
-    //     if (!params.topRight) params.topRight = params.scalarField.dimensions;
-
-    //      let state = new MarchingCubesState(params),
-    //         minX = params.bottomLeft[0], minY = params.bottomLeft[1], minZ = params.bottomLeft[2],
-    //         maxX = params.topRight[0] - 1, maxY = params.topRight[1] - 1, maxZ = params.topRight[2] - 1;
-
-    //     for (let k = minZ; k < maxZ; k++) {
-    //         for (let j = minY; j < maxY; j++) {
-    //             for (let i = minX; i < maxX; i++) {
-    //                 state.processCell(i, j, k);
-    //             }
-    //         }
-    //     }
-
-    //     let vertices = state.vertexBuffer.compact();
-    //     let triangles = state.triangleBuffer.compact();
-
-    //     state.vertexBuffer = null;
-    //     state.verticesOnEdges = null;
-
-    //     return new MarchingCubesResult(<Float32Array><any>vertices, <Uint32Array><any>triangles, state.annotate ? state.annotationBuffer.compact() : null);
-    // }
-
     export function compute(parameters: MarchingCubesParameters): Computation<Surface> {
-        return Computation.create(ctx => {
+        return computation(async ctx => {
             let comp = new MarchingCubesComputation(parameters, ctx);
-            comp.start();
+            return await comp.run();
         });
     }
 
     class MarchingCubesComputation {
 
-        private chunkSize = 80 * 80 * 80;
         private size: number;
         private sliceSize: number;
-        private done = 0;
-
-        private k = 0;
+        
         private minX = 0; private minY = 0; private minZ = 0;
         private maxX = 0; private maxY = 0; private maxZ = 0;
         private state: MarchingCubesState;
 
-        private nextSlice() {
-            if (this.ctx.abortRequested) {
-                this.ctx.abort();
-                return;
-            }
+        private async doSlices() {
 
-            this.done += this.sliceSize;
-            this.ctx.update('Computing surface...', this.ctx.abortRequest, this.done, this.size);
+            const timeFrame = 100;
 
-            if (this.k >= this.maxZ) {
-                this.finish();
-            } else {
-                this.ctx.schedule(this._slice);
+            let done = 0;
+            let started = Utils.PerformanceMonitor.currentTime();
+
+            for (let k = this.minZ; k < this.maxZ; k++) {
+                this.slice(k);
+
+                done += this.sliceSize;
+
+                let t = Utils.PerformanceMonitor.currentTime();
+
+                if (t - started > timeFrame) {
+                    await this.ctx.updateProgress('Computing surface...', true, done, this.size);
+                    started = t;
+                }
             }
         }
 
-        private slice() {
+        private slice(k: number) {
             for (let j = this.minY; j < this.maxY; j++) {
                 for (let i = this.minX; i < this.maxX; i++) {
-                    this.state.processCell(i, j, this.k);
+                    this.state.processCell(i, j, k);
                 }
             }
-            this.k++;
-            this.nextSlice();
         }
 
         private finish() {
@@ -106,25 +78,20 @@ namespace LiteMol.Core.Geometry.MarchingCubes {
                 annotation: this.state.annotate ? Utils.ChunkedArray.compact(this.state.annotationBuffer) : void 0
             }
 
-            this.ctx.resolve(ret);
+            return ret;
         }
 
-        private _slice = () => {
-            try {
-                this.slice();
-            } catch (e) {
-                this.ctx.reject('' + e);
-            }
-        }
 
-        start() {
-            this.ctx.update('Computing surface...', this.ctx.abortRequest, 0, this.size);
-            this.ctx.schedule(this._slice);
+        async run() {            
+            await this.ctx.updateProgress('Computing surface...', true, 0, this.size);
+            let slices = await this.doSlices();
+            await this.ctx.updateProgress('Finalizing...');
+            return this.finish();
         }
 
         constructor(
             parameters: MarchingCubesParameters,
-            private ctx: Computation.Context<Surface>) {
+            private ctx: Computation.Context) {
 
             let params = <MarchingCubesParameters>Core.Utils.extend({}, parameters);
 
@@ -135,7 +102,6 @@ namespace LiteMol.Core.Geometry.MarchingCubes {
                 this.minX = params.bottomLeft[0]; this.minY = params.bottomLeft[1]; this.minZ = params.bottomLeft[2];
             this.maxX = params.topRight[0] - 1; this.maxY = params.topRight[1] - 1; this.maxZ = params.topRight[2] - 1;
 
-            this.k = this.minZ;
             this.size = (this.maxX - this.minX) * (this.maxY - this.minY) * (this.maxZ - this.minZ);
             this.sliceSize = (this.maxX - this.minX) * (this.maxY - this.minY);
         }

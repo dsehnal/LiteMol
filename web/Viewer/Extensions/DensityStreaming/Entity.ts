@@ -170,7 +170,7 @@ namespace LiteMol.Extensions.DensityStreaming {
         
         let uri = `${server}${params.source}/${sourceId ? sourceId : params.id}`;
 
-        return new LiteMol.Core.Promise<DensityAction>((res, rej) => {
+        return new Promise<DensityAction>((res, rej) => {
             Bootstrap.Utils.ajaxGetString(uri, 'DensityServer')
                 .run(ctx)
                 .then(s => {
@@ -190,7 +190,7 @@ namespace LiteMol.Extensions.DensityStreaming {
     }
 
     function doEmdbId(m: Entity.Molecule.Molecule, ctx: Bootstrap.Context, params: CreateParams, id: string) {
-        return new LiteMol.Core.Promise<DensityAction>((res, rej) => {
+        return new Promise<DensityAction>((res, rej) => {
             id = id.trim();
             Bootstrap.Utils.ajaxGetString(`https://www.ebi.ac.uk/pdbe/api/emdb/entry/map/EMD-${id}`, 'EMDB API')
                 .run(ctx)
@@ -214,7 +214,7 @@ namespace LiteMol.Extensions.DensityStreaming {
     }
 
     function doEmd(m: Entity.Molecule.Molecule, ctx: Bootstrap.Context, params: CreateParams) {
-        return new LiteMol.Core.Promise((res, rej) => {
+        return new Promise((res, rej) => {
             let id = params.id.trim().toLowerCase();
             Bootstrap.Utils.ajaxGetString(`https://www.ebi.ac.uk/pdbe/api/pdb/entry/summary/${id}`, 'PDB API')
                 .run(ctx)

@@ -612,7 +612,7 @@ var LiteMol;
             function fetch(plugin, ids, createVisuals) {
                 var _this = this;
                 if (createVisuals === void 0) { createVisuals = false; }
-                return new Promise(function (res, rej) { return __awaiter(_this, void 0, void 0, function () {
+                return new LiteMol.Promise(function (res, rej) { return __awaiter(_this, void 0, void 0, function () {
                     var _this = this;
                     var ts, rs, notOK, _i, notOK_1, r;
                     return __generator(this, function (_a) {
@@ -634,7 +634,7 @@ var LiteMol;
                                 })
                                     .map(function (_a) {
                                     var id = _a.id, t = _a.t;
-                                    return new Promise(function (res) { return __awaiter(_this, void 0, void 0, function () {
+                                    return new LiteMol.Promise(function (res) { return __awaiter(_this, void 0, void 0, function () {
                                         var e_1;
                                         return __generator(this, function (_a) {
                                             switch (_a.label) {
@@ -654,7 +654,7 @@ var LiteMol;
                                         });
                                     }); });
                                 });
-                                return [4 /*yield*/, Promise.all(ts)];
+                                return [4 /*yield*/, LiteMol.Promise.all(ts)];
                             case 1:
                                 rs = _a.sent();
                                 notOK = rs.filter(function (r) { return !r.ok; });
@@ -753,7 +753,7 @@ var LiteMol;
             });
             // So that we can use await..
             function schedule(ctx, f) {
-                return new Promise(function (res) { return ctx.schedule(function () {
+                return new LiteMol.Promise(function (res) { return ctx.schedule(function () {
                     try {
                         res(f());
                     }

@@ -202,7 +202,7 @@ var LiteMol;
                     };
                 }
                 function doEmdbPdbId(ctx, a, t, id) {
-                    return new LiteMol.Core.Promise(function (res, rej) {
+                    return new LiteMol.Promise(function (res, rej) {
                         id = id.trim().toLowerCase();
                         Bootstrap.Utils.ajaxGetString("https://www.ebi.ac.uk/pdbe/api/pdb/entry/summary/" + id, 'PDB API')
                             .run(ctx)
@@ -233,7 +233,7 @@ var LiteMol;
                     });
                 }
                 function doEmdbId(ctx, a, t, id) {
-                    return new LiteMol.Core.Promise(function (res, rej) {
+                    return new LiteMol.Promise(function (res, rej) {
                         id = id.trim();
                         Bootstrap.Utils.ajaxGetString("https://www.ebi.ac.uk/pdbe/api/emdb/entry/map/EMD-" + id, 'EMDB API')
                             .run(ctx)

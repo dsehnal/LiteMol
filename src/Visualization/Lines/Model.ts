@@ -53,7 +53,7 @@ namespace LiteMol.Visualization.Lines {
             theme: Theme,
             props?: Model.Props   
         }): Core.Computation<Model> {
-            return Core.Computation.create(ctx => {
+            return Core.computation(async ctx => {
                 let ret = new Model();
 
                 ret.material = new THREE.MeshBasicMaterial({ wireframe: true });
@@ -73,7 +73,7 @@ namespace LiteMol.Visualization.Lines {
                 ret.applyTheme(theme);
                 
                 ret.pickBufferAttributes = [];                    
-                ctx.resolve(ret);
+                return ret;
             });
         }
     }

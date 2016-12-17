@@ -73,58 +73,58 @@ namespace LiteMol.Bootstrap.Utils {
         return str.join('');
     }
 
-    type Context = Core.Computation.Context<string | ArrayBuffer>;
+    type Context = Core.Computation.Context
 
-    function processFile(ctx: Context, asArrayBuffer: boolean, compressed: boolean, e: any)  {
-        try {
-            let data = (e.target as FileReader).result;
+    async function processFile(ctx: Context, asArrayBuffer: boolean, compressed: boolean, e: any)  {
+        let data = (e.target as FileReader).result;
 
-            if (compressed) {
-                ctx.update('Decompressing...');
-                ctx.schedule(() => {
-                    let decompressed = decompress(data);
-                    if (asArrayBuffer) {
-                        ctx.resolve(decompressed.buffer);
-                    } else {
-                        ctx.resolve(toString(decompressed));
-                    }
-                }, 1000 / 30);
+        if (compressed) {
+            await ctx.updateProgress('Decompressing...');
+            
+            let decompressed = decompress(data);
+            if (asArrayBuffer) {
+                return decompressed.buffer;
             } else {
-                ctx.resolve(data);
+                return toString(decompressed);
             }
-        } catch (e) {
-            ctx.reject(e);
+        } else {
+            return data;
         }
     }
 
-    function handleProgress(ctx: Context, action: string, data: XMLHttpRequest | FileReader, asArrayBuffer: boolean, onLoad: (e: any) => void) {
-        ctx.update(action);                
-        data.onerror = e => {
-            let error = (<FileReader>e.target).error;
-            ctx.reject(error ? error : 'Failed.');
-        };
-        data.onabort = () => ctx.abort();
-        
-        let abort = () => data.abort();
-        data.onprogress = e => {
-            if (e.lengthComputable) {
-                ctx.update(action, abort, e.loaded, e.total);
-            } else {
-                ctx.update(`${action} ${(e.loaded / 1024 / 1024).toFixed(2)} MB`, abort);
-            }
-        }        
-        data.onload = onLoad;
+    function readData(ctx: Context, action: string, data: XMLHttpRequest | FileReader, asArrayBuffer: boolean): Promise<any> {
+        ctx.updateProgress(action, true);  
+        return new Promise<any>((resolve, reject) => {           
+            data.onerror = e => {
+                let error = (<FileReader>e.target).error;
+                reject(error ? error : 'Failed.');
+            };
+
+            data.onabort = () => reject(Core.Computation.Aborted);
+            
+            data.onprogress = e => {
+                if (e.lengthComputable) {
+                    ctx.updateProgress(action, true, e.loaded, e.total);
+                } else {
+                    ctx.updateProgress(`${action} ${(e.loaded / 1024 / 1024).toFixed(2)} MB`, true);
+                }
+            }        
+            data.onload = e => resolve(e);
+        });
     }
 
     function readFromFileInternal(file: File, asArrayBuffer: boolean): Task<string | ArrayBuffer> {
-        return Task.fromComputation('Open File', 'Background', Core.Computation.create(ctx => {            
+        return Task.fromComputation('Open File', 'Background', Core.computation<string | ArrayBuffer>(async ctx => {
             let reader = new FileReader();            
             let isCompressed = /\.gz$/i.test(file.name);   
-                     
-            handleProgress(ctx, 'Reading...', reader, asArrayBuffer, (e: any) => processFile(ctx, asArrayBuffer, isCompressed, e));   
-                     
+                        
             if (isCompressed || asArrayBuffer) reader.readAsArrayBuffer(file);
             else reader.readAsBinaryString(file);
+            
+            ctx.updateProgress('Reading...', () => reader.abort());
+            let e = await readData(ctx, 'Reading...', reader, asArrayBuffer);
+            let result = processFile(ctx, asArrayBuffer, isCompressed, e);   
+            return result;
         }));
     }
     
@@ -150,7 +150,7 @@ namespace LiteMol.Bootstrap.Utils {
         }
     }
     
-    function processAjax(ctx: Context, asArrayBuffer: boolean, decompressGzip: boolean, e: any) {
+    async function processAjax(ctx: Context, asArrayBuffer: boolean, decompressGzip: boolean, e: any) {
         let req = (e.target as XMLHttpRequest);
         if (req.status >= 200 && req.status < 400) {
             if (asArrayBuffer) {
@@ -158,44 +158,43 @@ namespace LiteMol.Bootstrap.Utils {
                 RequestPool.deposit(e.target);
 
                 if (decompressGzip) {
-                    ctx.update('Decompressing...');
-                    ctx.schedule(() => {
-                        let gzip = new LiteMolZlib.Gunzip(new Uint8Array(buff));
-                        let data = gzip.decompress();
-                        ctx.resolve(data.buffer);
-                    });
+                    await ctx.updateProgress('Decompressing...');
+                    let gzip = new LiteMolZlib.Gunzip(new Uint8Array(buff));
+                    let data = gzip.decompress();
+                    return data.buffer;
                 } else {
-                    ctx.resolve(buff);
+                    return buff;
                 }
             }
             else  {
                 let text = e.target.responseText;
                 RequestPool.deposit(e.target);
-                ctx.resolve(text);
+                return text;
             }
         } else {
             let status = req.statusText;        
             RequestPool.deposit(e.target);
-            ctx.reject(status);            
+            throw status;            
         }
     }
     
     function ajaxGetInternal(title:string|undefined, url: string, asArrayBuffer: boolean, decompressGzip: boolean): Task<string | ArrayBuffer>  {
         
-        return Task.fromComputation(title ? title : 'Download', 'Background', Core.Computation.create(ctx => {
+        return Task.fromComputation(title ? title : 'Download', 'Background', Core.computation(async ctx => {
             if (!asArrayBuffer && decompressGzip) {
-                ctx.reject('Decompress is only available when downloading binary data.');
-                return;
+                throw 'Decompress is only available when downloading binary data.';
             }
                         
             let xhttp = RequestPool.get();
-            ctx.update('Waiting for server...', () => xhttp.abort());
-                   
-            handleProgress(ctx, 'Downloading...', xhttp, asArrayBuffer, (e: any) => processAjax(ctx, asArrayBuffer, decompressGzip, e));
-                       
+                    
             xhttp.open('get', url, true);
             xhttp.responseType = asArrayBuffer ? "arraybuffer" : "text";
             xhttp.send();
+            
+            ctx.updateProgress('Waiting for server...', () => xhttp.abort());
+            let e = await readData(ctx, 'Downloading...', xhttp, asArrayBuffer);
+            let result = await processAjax(ctx, asArrayBuffer, decompressGzip, e)
+            return result;
         }));
     } 
 }

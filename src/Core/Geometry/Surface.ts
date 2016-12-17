@@ -78,19 +78,15 @@ namespace LiteMol.Core.Geometry {
             surface.normals = normals;
         }
      
-        export function computeNormals(surface: Surface): Computation<Surface> {
-            
-            return Computation.create<Surface>(ctx => {
+        export function computeNormals(surface: Surface): Computation<Surface> {            
+            return computation<Surface>(async ctx => {
                 if (surface.normals) {
-                    ctx.resolve(surface);
-                    return;
+                    return surface;
                 };                
                      
-                ctx.update('Computing normals...');                                
-                ctx.schedule(() => {
-                    computeNormalsImmediate(surface);                    
-                    ctx.resolve(surface);    
-                });
+                await ctx.updateProgress('Computing normals...');                                
+                computeNormalsImmediate(surface);                    
+                return surface;
             });        
         }
         
@@ -141,8 +137,8 @@ namespace LiteMol.Core.Geometry {
             if (iterCount < 1) iterCount = 0;            
             if (iterCount === 0) return Computation.resolve(surface);
             
-            return Computation.create<Surface>(ctx => {                
-                ctx.update('Smoothing surface...');
+            return computation(async ctx => {                
+                await ctx.updateProgress('Smoothing surface...', true);
                 
                 let counts = new Int32Array(surface.vertexCount),
                     triCount = surface.triangleIndices.length;
@@ -153,13 +149,9 @@ namespace LiteMol.Core.Geometry {
                 }
                 
                 let vs = new Float32Array(surface.vertices.length);
-                
-                let next = (i: number) => {
-                    if (i >= iterCount) {
-                        ctx.resolve(surface);
-                        return;
-                    }
-                                        
+
+                await ctx.updateProgress('Smoothing surface...', true);
+                for (let i = 0; i < iterCount; i++) {                        
                     if (i > 0) {
                         for (let j = 0, _b = vs.length; j < _b; j++) vs[j] = 0;
                     }
@@ -169,45 +161,41 @@ namespace LiteMol.Core.Geometry {
                     surface.vertices = <any>vs;
                     vs = <any>t;
                     
-                    ctx.update('Smoothing surface...', ctx.abortRequest, i + 1, iterCount);
-                    ctx.schedule(() => next(i + 1));          
+                    await ctx.updateProgress('Smoothing surface...', true, i + 1, iterCount);
                 }                            
-                next(0);
+                return surface;
             });
         }
         
-        export function computeBoundingSphere(surface: Surface): Computation<Surface> {
-            
-            return Computation.create<Surface>(ctx => {
+        export function computeBoundingSphere(surface: Surface): Computation<Surface> {            
+            return computation<Surface>(async ctx => {
                 if (surface.boundingSphere) {
-                    ctx.resolve(surface);
-                    return;
+                    return surface;
                 }                
-                ctx.update('Computing bounding sphere...');                
-                ctx.schedule(() => {      
-                    let vertices = surface.vertices;          
-                    let x = 0, y = 0, z = 0;
-                    for (let i = 0, _c = surface.vertices.length; i < _c; i += 3) {
-                        x += vertices[i];
-                        y += vertices[i + 1];
-                        z += vertices[i + 2];
-                    }
-                    x /= surface.vertexCount;
-                    y /= surface.vertexCount;
-                    z /= surface.vertexCount;
-                    let r = 0;
-                    for (let i = 0, _c = vertices.length; i < _c; i += 3) {
-                        let dx = x - vertices[i];
-                        let dy = y - vertices[i + 1];
-                        let dz = z - vertices[i + 2];
-                        r = Math.max(r, dx * dx + dy * dy + dz * dz);
-                    }
-                    surface.boundingSphere = {
-                        center: {x, y, z},
-                        radius: Math.sqrt(r)
-                    }
-                    ctx.resolve(surface);
-                });
+                await ctx.updateProgress('Computing bounding sphere...');                
+                  
+                let vertices = surface.vertices;          
+                let x = 0, y = 0, z = 0;
+                for (let i = 0, _c = surface.vertices.length; i < _c; i += 3) {
+                    x += vertices[i];
+                    y += vertices[i + 1];
+                    z += vertices[i + 2];
+                }
+                x /= surface.vertexCount;
+                y /= surface.vertexCount;
+                z /= surface.vertexCount;
+                let r = 0;
+                for (let i = 0, _c = vertices.length; i < _c; i += 3) {
+                    let dx = x - vertices[i];
+                    let dy = y - vertices[i + 1];
+                    let dz = z - vertices[i + 2];
+                    r = Math.max(r, dx * dx + dy * dy + dz * dz);
+                }
+                surface.boundingSphere = {
+                    center: {x, y, z},
+                    radius: Math.sqrt(r)
+                }
+                return surface;
             });
         }
 
@@ -229,14 +217,11 @@ namespace LiteMol.Core.Geometry {
         }
         
         export function transform(surface: Surface, t: number[]): Computation<Surface> {            
-            return Computation.create<Surface>(ctx => {
-                ctx.update('Updating surface...');                
-                ctx.schedule(() => {
-                    transformImmediate(surface, t);
-                    ctx.resolve(surface);
-                });
+            return computation<Surface>(async ctx => {
+                ctx.updateProgress('Updating surface...');                
+                transformImmediate(surface, t);
+                return surface;
             });
-        }
-           
+        }           
     }
 }

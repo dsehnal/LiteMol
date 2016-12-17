@@ -55,7 +55,7 @@ namespace LiteMol.Core.Geometry.MolecularSurface {
             
     class MolecularIsoFieldComputation {
 
-        constructor(private inputParameters: MolecularSurfaceInputParameters, private ctx: Computation.Context<MolecularIsoField>) {
+        constructor(private inputParameters: MolecularSurfaceInputParameters, private ctx: Computation.Context) {
             this.parameters = new MolecularIsoSurfaceParametersWrapper(inputParameters.parameters);
             let positions = inputParameters.positions;
             this.x = positions.x;
@@ -193,45 +193,26 @@ namespace LiteMol.Core.Geometry.MolecularSurface {
             }
         }
 
-        private currentAtom = 0;
-        private chunkSize = 10000;
-        private addChunk() {
-            let b = this.atomIndices.length;
+
+        private async processChunks() {
+            const chunkSize = 10000;
             
-            let currentChunk = 0;
-            for (; this.currentAtom < b; this.currentAtom++) {
-                let aI = this.atomIndices[this.currentAtom];
+            await this.ctx.updateProgress('Creating field...', true);
+            for (let currentAtom = 0, _b = this.atomIndices.length; currentAtom < _b; currentAtom++) {
+                let aI = this.atomIndices[currentAtom];
                 let r = this.parameters.atomRadius(aI) + this.parameters.probeRadius;
-                
-                currentChunk++;
-                
-                if (r < 0) continue;
-                this.addBall(aI, r);
-                
-                if (currentChunk >= this.chunkSize) {
-                    if (this.ctx.abortRequested) {
-                        this.ctx.abort();
-                        return;
-                    }
-                    
-                    this.ctx.update('Creating field...', this.ctx.abortRequest, this.currentAtom, this.atomIndices.length);
-                    this.ctx.schedule(this._addChunk);
-                    return;
+                                
+                if (r >= 0) {
+                    this.addBall(aI, r);
+                }
+
+                if ((currentAtom + 1) % chunkSize === 0) {
+                    await this.ctx.updateProgress('Creating field...', true, currentAtom, _b);
                 }
             }
             
-            this.ctx.update('Creating field...', void 0, this.currentAtom, this.atomIndices.length);
-            this.finish();
         }
-        
-        private _addChunk = () => {
-            try {
-                this.addChunk(); 
-            } catch (e) {
-                this.ctx.reject(e);
-            }
-        }
-        
+                
         private finish() {
             
             // help the gc
@@ -256,30 +237,16 @@ namespace LiteMol.Core.Geometry.MolecularSurface {
                 parameters: this.parameters
             };
             
-            this.ctx.resolve(ret);
+            return ret;
         }
 
-        start() {           
-            
-            this.ctx.update('Initializing...');
-
-            this.ctx.schedule(() => {
-                try {
-                    this.findBounds();
-                    this.initData();
-                } catch (e) {
-                    this.ctx.reject(e);
-                    return;
-                }
-                
-                if (this.ctx.abortRequested) {
-                    this.ctx.abort();
-                    return;
-                }
-                
-                this.ctx.update('Creating field...', this.ctx.abortRequest, 0, this.atomIndices.length);
-                this.ctx.schedule(this._addChunk);              
-            });
+        async run() {
+            await this.ctx.updateProgress('Initializing...');
+            this.findBounds();
+            this.initData();
+            let chunks = await this.processChunks();  
+            await this.ctx.updateProgress('Finalizing...', void 0, this.atomIndices.length, this.atomIndices.length);
+            return this.finish();
         }
     }
     
@@ -287,18 +254,11 @@ namespace LiteMol.Core.Geometry.MolecularSurface {
         surface: Surface,
         usedParameters: MolecularIsoSurfaceParameters          
     }
-    
-    function createResultResultData(field: MolecularIsoField, surface: Surface) {                
-         return Computation.resolve<MolecularIsoSurfaceGeometryData>({
-                surface,
-                usedParameters: field.parameters 
-         });
-    }
-        
+            
     export function createMolecularIsoFieldAsync(parameters: MolecularSurfaceInputParameters): Computation<MolecularIsoField> {        
-        return Computation.create(ctx => {
+        return computation(async ctx => {
             let field = new MolecularIsoFieldComputation(parameters, ctx);
-            field.start();
+            return await field.run();
         });
     }
     
@@ -308,14 +268,15 @@ namespace LiteMol.Core.Geometry.MolecularSurface {
         atomIndices: number[],
         parameters?: MolecularIsoSurfaceParameters
     } 
-    
+
     export function computeMolecularSurfaceAsync(parameters: MolecularSurfaceInputParameters): Computation<MolecularIsoSurfaceGeometryData> {
-        
-        return createMolecularIsoFieldAsync(parameters)
-                .bind(f => 
-                    MarchingCubes.compute(f.data)
-                        .bind(s => Surface.transform(s, f.transform))
-                            .bind(s => Surface.laplacianSmooth(s, (f.inputParameters.parameters && f.inputParameters.parameters.smoothingIterations) || 1)
-                                .bind(s => createResultResultData(f, s))));
+        return computation<MolecularIsoSurfaceGeometryData>(async ctx => {
+            let field = await createMolecularIsoFieldAsync(parameters).run(ctx).result;
+            let surface = await MarchingCubes.compute(field.data).run(ctx).result;
+            surface = await Surface.transform(surface, field.transform).run(ctx).result;
+            let smoothing = (parameters.parameters && parameters.parameters.smoothingIterations) || 1;
+            surface = await Surface.laplacianSmooth(surface, smoothing).run(ctx).result;
+            return { surface, usedParameters: field.parameters };
+        });
     }
 }

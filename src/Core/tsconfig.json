@@ -11,7 +11,8 @@
     "lib": [
       "es5",
       "es2015.collection",
-      "dom"
+      "dom",
+      "es2015.promise"
     ],
     "target": "es5",
     "out": "LiteMol-core-temp.js"

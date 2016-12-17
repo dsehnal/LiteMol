@@ -10,8 +10,7 @@ namespace LiteMol.Extensions.DensityStreaming {
     import Transformer = Bootstrap.Entity.Transformer
     import Utils = Bootstrap.Utils
     import Interactivity = Bootstrap.Interactivity
-    import Promise = Core.Promise
-    
+        
     export type FieldSource = 'X-ray' | 'EMD'
     export type DataType = 'EM' | '2FO-FC' | 'FO-FC'
     export type FieldType = '2Fo-Fc' | 'Fo-Fc(-ve)' | 'Fo-Fc(+ve)' | 'EMD'
@@ -217,7 +216,7 @@ namespace LiteMol.Extensions.DensityStreaming {
             return Entity.Transformer.Density.CreateVisual.create({ style }, { ref: v.ref }).update(this.context, v).run(this.context);
         }
 
-        private async invalidate(inputStyles: CreateStreamingParams): LiteMol.Core.Promise<boolean> {
+        private async invalidate(inputStyles: CreateStreamingParams): Promise<boolean> {
             for (let t of this.types) {
                 this.params.styles[t] = inputStyles[t];
             }
@@ -252,7 +251,7 @@ namespace LiteMol.Extensions.DensityStreaming {
             return true;
         }
 
-        async invalidateStyles(styles: CreateStreamingParams): LiteMol.Core.Promise<boolean> {
+        async invalidateStyles(styles: CreateStreamingParams): Promise<boolean> {
             try {
                 return this.invalidate(styles);
             } catch (e) {

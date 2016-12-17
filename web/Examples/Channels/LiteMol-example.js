@@ -24,7 +24,7 @@ var LiteMol;
             (function (State) {
                 var Transformer = LiteMol.Bootstrap.Entity.Transformer;
                 function showDefaultVisuals(plugin, data, channelCount) {
-                    return new Promise(function (res) {
+                    return new LiteMol.Promise(function (res) {
                         return showChannelVisuals(plugin, data.Channels.Tunnels.slice(0, channelCount), true).then(function () {
                             var cavity = data.Cavities.Cavities[0];
                             if (cavity) {
@@ -34,7 +34,7 @@ var LiteMol;
                     });
                 }
                 function loadData(plugin, pdbId, url) {
-                    return new Promise(function (res, rej) {
+                    return new LiteMol.Promise(function (res, rej) {
                         plugin.clear();
                         var model = plugin.createTransform()
                             .add(plugin.root, Transformer.Data.Download, { url: "https://www.ebi.ac.uk/pdbe/static/entry/" + pdbId + "_updated.cif", type: 'String', id: pdbId })
@@ -119,7 +119,7 @@ var LiteMol;
                         }
                     }
                     if (needsApply) {
-                        return new Promise(function (res, rej) {
+                        return new LiteMol.Promise(function (res, rej) {
                             plugin.applyTransform(t).then(function () {
                                 for (var _i = 0, elements_2 = elements; _i < elements_2.length; _i++) {
                                     var element = elements_2[_i];
@@ -130,7 +130,7 @@ var LiteMol;
                         });
                     }
                     else {
-                        return new Promise(function (res, rej) {
+                        return new LiteMol.Promise(function (res, rej) {
                             for (var _i = 0, elements_3 = elements; _i < elements_3.length; _i++) {
                                 var element = elements_3[_i];
                                 element.__isBusy = false;
@@ -149,7 +149,7 @@ var LiteMol;
                 State.showChannelVisuals = showChannelVisuals;
                 function createOriginsSurface(origins) {
                     if (origins.__surface)
-                        return Promise.resolve(origins.__surface);
+                        return LiteMol.Promise.resolve(origins.__surface);
                     var s = LiteMol.Visualization.Primitive.Builder.create();
                     var id = 0;
                     for (var _i = 0, _a = origins.Points; _i < _a.length; _i++) {
@@ -162,19 +162,19 @@ var LiteMol;
                     if (!origins.__id)
                         origins.__id = LiteMol.Bootstrap.Utils.generateUUID();
                     if (!origins.Points.length || !!origins.__isVisible === visible)
-                        return Promise.resolve();
+                        return LiteMol.Promise.resolve();
                     origins.__isVisible = visible;
                     if (!visible) {
                         plugin.command(LiteMol.Bootstrap.Command.Tree.RemoveNode, origins.__id);
                         origins.__isBusy = false;
-                        return Promise.resolve();
+                        return LiteMol.Promise.resolve();
                     }
                     if (!origins.__color) {
                         // the colors should probably be initialized when the data is loaded
                         // so that they are deterministic...
                         origins.__color = nextColor();
                     }
-                    return new Promise(function (res, rej) {
+                    return new LiteMol.Promise(function (res, rej) {
                         createOriginsSurface(origins).then(function (surface) {
                             var t = plugin.createTransform()
                                 .add('mole-data', State.CreateSurface, {

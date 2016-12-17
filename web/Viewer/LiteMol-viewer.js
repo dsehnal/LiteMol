@@ -487,7 +487,7 @@ var LiteMol;
                 if (server[server.length - 1] !== '/')
                     server += '/';
                 var uri = "" + server + params.source + "/" + (sourceId ? sourceId : params.id);
-                return new LiteMol.Core.Promise(function (res, rej) {
+                return new LiteMol.Promise(function (res, rej) {
                     LiteMol.Bootstrap.Utils.ajaxGetString(uri, 'DensityServer')
                         .run(ctx)
                         .then(function (s) {
@@ -507,7 +507,7 @@ var LiteMol;
                 });
             }
             function doEmdbId(m, ctx, params, id) {
-                return new LiteMol.Core.Promise(function (res, rej) {
+                return new LiteMol.Promise(function (res, rej) {
                     id = id.trim();
                     LiteMol.Bootstrap.Utils.ajaxGetString("https://www.ebi.ac.uk/pdbe/api/emdb/entry/map/EMD-" + id, 'EMDB API')
                         .run(ctx)
@@ -531,7 +531,7 @@ var LiteMol;
                 });
             }
             function doEmd(m, ctx, params) {
-                return new LiteMol.Core.Promise(function (res, rej) {
+                return new LiteMol.Promise(function (res, rej) {
                     var id = params.id.trim().toLowerCase();
                     LiteMol.Bootstrap.Utils.ajaxGetString("https://www.ebi.ac.uk/pdbe/api/pdb/entry/summary/" + id, 'PDB API')
                         .run(ctx)
@@ -784,7 +784,7 @@ var LiteMol;
                     return Entity.Transformer.Density.CreateVisual.create({ style: style }, { ref: v.ref }).update(this.context, v).run(this.context);
                 };
                 Behaviour.prototype.invalidate = function (inputStyles) {
-                    return __awaiter(this, void 0, LiteMol.Core.Promise, function () {
+                    return __awaiter(this, void 0, LiteMol.Promise, function () {
                         var _this = this;
                         var _i, _a, t, styles, refs, _loop_1, this_1, _b, _c, t, _d, refs_1, r, _e;
                         return __generator(this, function (_f) {
@@ -856,7 +856,7 @@ var LiteMol;
                     });
                 };
                 Behaviour.prototype.invalidateStyles = function (styles) {
-                    return __awaiter(this, void 0, LiteMol.Core.Promise, function () {
+                    return __awaiter(this, void 0, LiteMol.Promise, function () {
                         return __generator(this, function (_a) {
                             try {
                                 return [2 /*return*/, this.invalidate(styles)];
@@ -1143,7 +1143,7 @@ var LiteMol;
                     };
                 }
                 function doEmdbPdbId(ctx, a, t, id) {
-                    return new LiteMol.Core.Promise(function (res, rej) {
+                    return new LiteMol.Promise(function (res, rej) {
                         id = id.trim().toLowerCase();
                         Bootstrap.Utils.ajaxGetString("https://www.ebi.ac.uk/pdbe/api/pdb/entry/summary/" + id, 'PDB API')
                             .run(ctx)
@@ -1174,7 +1174,7 @@ var LiteMol;
                     });
                 }
                 function doEmdbId(ctx, a, t, id) {
-                    return new LiteMol.Core.Promise(function (res, rej) {
+                    return new LiteMol.Promise(function (res, rej) {
                         id = id.trim();
                         Bootstrap.Utils.ajaxGetString("https://www.ebi.ac.uk/pdbe/api/emdb/entry/map/EMD-" + id, 'EMDB API')
                             .run(ctx)

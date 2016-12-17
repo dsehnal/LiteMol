@@ -4833,11 +4833,13 @@ declare namespace __LiteMolRx {
 }
 declare namespace LiteMol.Core {
     export import Rx = __LiteMolRx;
-    type Promise<T> = __Promise.Promise<T>;
-    const Promise: typeof __Promise.Promise;
     namespace Formats {
         export import CIF = CIFTools;
     }
+}
+declare namespace LiteMol {
+    type Promise<T> = __Promise.Promise<T>;
+    const Promise: typeof __Promise.Promise;
 }
 declare namespace LiteMol.Core {
     var VERSION: {
@@ -4846,46 +4848,33 @@ declare namespace LiteMol.Core {
     };
 }
 declare namespace LiteMol.Core {
+    function computation<A>(c: (ctx: Computation.Context) => Promise<A>): Computation<A>;
     class Computation<A> {
         private computation;
-        bind<B>(next: (r: A) => Computation<B>): Computation<B>;
-        map<B>(f: (r: A) => B): Computation<{}>;
-        run(ctx?: Computation.Context<A>): Computation.RunningComputation<A>;
-        constructor(computation: (ctx: Computation.Context<A>) => void);
+        run(ctx?: Computation.Context): Computation.Running<A>;
+        constructor(computation: (ctx: Computation.Context) => Promise<A>);
     }
     module Computation {
-        function create<A>(computation: (ctx: Context<A>) => void): Computation<A>;
-        function resolve<A>(a: A): Computation<{}>;
-        function schedule<T>(ctx: Context<any>, f: () => T, afterMs?: number): __Promise.Promise<T>;
-        interface ProgressInfo {
+        function resolve<A>(a: A): Computation<A>;
+        function createContext(): Computation.Context;
+        const Aborted = "Aborted";
+        interface Progress {
             message: string;
             isIndeterminate: boolean;
             current: number;
             max: number;
             requestAbort?: () => void;
         }
-        class Context<A> {
-            schedule(action: () => void, afterMs?: number): void;
-            private _abortRequested;
-            readonly abortRequested: boolean;
-            setRequestAbort(abort?: () => void): void;
-            private _abortRequest;
-            readonly abortRequest: () => boolean;
-            private progressTick;
-            private progress;
-            progressStream: Rx.BehaviorSubject<ProgressInfo>;
-            update(msg: string, abort?: () => void, current?: number, max?: number): void;
-            private promiseStack;
-            __push(resolve: (r: A) => void, reject: (err: any) => void): void;
-            private _resolve(result);
-            private _reject(err);
-            resolve: any;
-            reject: any;
-            abort(): void;
-            constructor();
+        interface Context {
+            progress: Rx.Observable<Progress>;
+            /**
+             * Checks if the computation was aborted. If so, throws.
+             * Otherwise, updates the progress.
+             */
+            updateProgress(msg: string, abort?: boolean | (() => void), current?: number, max?: number): void;
         }
-        interface RunningComputation<A> {
-            progress: Rx.Observable<ProgressInfo>;
+        interface Running<A> {
+            progress: Rx.Observable<Progress>;
             result: Promise<A>;
         }
     }
@@ -4979,11 +4968,12 @@ declare namespace LiteMol.Core.Formats {
         shortcuts: string[];
         extensions: string[];
         isBinary?: boolean;
-        parse: (data: string | ArrayBuffer, params?: {
-            id?: string;
-        }) => Computation<ParserResult<any>>;
+        parse: (data: string | ArrayBuffer, params?: FormatInfo.Params) => Computation<ParserResult<any>>;
     }
     namespace FormatInfo {
+        type Params = {
+            id?: string;
+        };
         function is(o: any): o is FormatInfo;
         function fromShortcut(all: FormatInfo[], name: string): FormatInfo | undefined;
         function formatRegExp(info: FormatInfo): RegExp;
@@ -12559,7 +12549,7 @@ declare namespace LiteMol.Visualization.Selection {
 }
 declare namespace LiteMol.Visualization.Surface {
     import Data = Core.Geometry.Surface;
-    function buildGeometry(data: Data, computation: Core.Computation.Context<Model>, isWireframe: boolean, done: (g: Geometry) => void): void;
+    function buildGeometry(data: Data, computation: Core.Computation.Context, isWireframe: boolean): LiteMol.Promise<Geometry>;
     class Geometry extends GeometryBase {
         geometry: THREE.BufferGeometry;
         vertexToElementMap: number[];
@@ -12660,7 +12650,7 @@ declare namespace LiteMol.Visualization.Molecule.BallsAndSticks {
     }
 }
 declare namespace LiteMol.Visualization.Molecule.BallsAndSticks {
-    function buildGeometry(model: Core.Structure.MoleculeModel, parameters: Parameters, atomIndices: number[], ctx: Core.Computation.Context<Model>, done: (geom: BallsAndSticksGeometry) => void): void;
+    function buildGeometry(model: Core.Structure.MoleculeModel, parameters: Parameters, atomIndices: number[], ctx: Core.Computation.Context): LiteMol.Promise<BallsAndSticksGeometry>;
     class BallsAndSticksGeometry extends GeometryBase {
         atomsGeometry: THREE.BufferGeometry;
         bondsGeometry: THREE.BufferGeometry;
@@ -12680,7 +12670,7 @@ declare namespace LiteMol.Visualization.Molecule.Cartoons.Geometry {
         dispose(): void;
     }
     interface Context {
-        computation: Core.Computation.Context<Model>;
+        computation: Core.Computation.Context;
         model: Core.Structure.MoleculeModel;
         atomIndices: number[];
         linearSegments: number;
@@ -12706,7 +12696,7 @@ declare namespace LiteMol.Visualization.Molecule.Cartoons.Geometry {
         builder: Builder;
         geom: Data;
     }
-    function create(model: Core.Structure.MoleculeModel, atomIndices: number[], linearSegments: number, parameters: any, isTrace: boolean, computation: Core.Computation.Context<Model>, done: (g: Data) => void): void;
+    function create(model: Core.Structure.MoleculeModel, atomIndices: number[], linearSegments: number, parameters: any, isTrace: boolean, computation: Core.Computation.Context): LiteMol.Promise<Data>;
 }
 declare namespace LiteMol.Visualization.Molecule.Cartoons.Geometry {
     import ChunkedArray = Core.Utils.ChunkedArray;
@@ -12812,7 +12802,7 @@ declare namespace LiteMol.Visualization.Molecule.Cartoons.Geometry {
         constructor(params: CartoonsGeometryParams, residueCount: number);
     }
     function buildUnit(unit: CartoonAsymUnit, ctx: Context): void;
-    function buildUnitsChunk(start: number, ctx: Context, done: () => void): void;
+    function buildUnitsAsync(ctx: Context): LiteMol.Promise<void>;
     function createGeometry(ctx: Context): void;
     class Builder {
         constructor();
@@ -15477,7 +15467,6 @@ declare namespace LiteMol.Bootstrap {
 declare namespace LiteMol.Bootstrap {
     export import Immutable = __LiteMolImmutable;
     export import Rx = Core.Rx;
-    export import Promise = Core.Promise;
     export import Zlib = LiteMolZlib;
 }
 declare namespace LiteMol.Bootstrap.Utils {
@@ -15531,7 +15520,7 @@ declare namespace LiteMol.Bootstrap.Utils {
 declare namespace LiteMol.Bootstrap.Utils {
     function formatTime(d: Date): string;
     function round(n: number, d: number): number;
-    function formatProgress(p: Core.Computation.ProgressInfo): string;
+    function formatProgress(p: Core.Computation.Progress): string;
     function generateUUID(): string;
 }
 declare namespace LiteMol.Bootstrap.Utils {

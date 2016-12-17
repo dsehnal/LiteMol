@@ -16,7 +16,7 @@ namespace LiteMol.Bootstrap.Utils {
         return Math.round(f * n) / f;
     }
             
-    export function formatProgress(p: Core.Computation.ProgressInfo) {
+    export function formatProgress(p: Core.Computation.Progress) {
         if (p.isIndeterminate) return p.message;
         let x = (100 * p.current / p.max).toFixed(2);
         return `${p.message} ${x}%`;
