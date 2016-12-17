@@ -42,6 +42,7 @@ namespace LiteMol.Core {
         }
 
         export const Aborted = 'Aborted';
+        export const UpdateProgressDelta = 100;
                 
         export interface Progress {
             message: string;

@@ -11319,6 +11319,7 @@ var LiteMol;
             }
             Computation.createContext = createContext;
             Computation.Aborted = 'Aborted';
+            Computation.UpdateProgressDelta = 100;
         })(Computation = Core.Computation || (Core.Computation = {}));
         var ContextImpl = (function () {
             function ContextImpl() {
@@ -14931,7 +14932,7 @@ var LiteMol;
                     if (iterCount === 0)
                         return Core.Computation.resolve(surface);
                     return Core.computation(function (ctx) { return __awaiter(_this, void 0, void 0, function () {
-                        var counts, triCount, tris, i, vs, i, j, _b, t;
+                        var counts, triCount, tris, i, vs, started, i, j, _b, t, time;
                         return __generator(this, function (_a) {
                             switch (_a.label) {
                                 case 0: return [4 /*yield*/, ctx.updateProgress('Smoothing surface...', true)];
@@ -14943,6 +14944,7 @@ var LiteMol;
                                         counts[tris[i]] += 2;
                                     }
                                     vs = new Float32Array(surface.vertices.length);
+                                    started = Core.Utils.PerformanceMonitor.currentTime();
                                     return [4 /*yield*/, ctx.updateProgress('Smoothing surface...', true)];
                                 case 2:
                                     _a.sent();
@@ -14960,6 +14962,10 @@ var LiteMol;
                                     t = surface.vertices;
                                     surface.vertices = vs;
                                     vs = t;
+                                    time = Core.Utils.PerformanceMonitor.currentTime();
+                                    if (!(time - started > Core.Computation.UpdateProgressDelta))
+                                        return [3 /*break*/, 5];
+                                    started = time;
                                     return [4 /*yield*/, ctx.updateProgress('Smoothing surface...', true, i + 1, iterCount)];
                                 case 4:
                                     _a.sent();
@@ -15098,11 +15104,10 @@ var LiteMol;
                     }
                     MarchingCubesComputation.prototype.doSlices = function () {
                         return __awaiter(this, void 0, void 0, function () {
-                            var timeFrame, done, started, k, t;
+                            var done, started, k, t;
                             return __generator(this, function (_a) {
                                 switch (_a.label) {
                                     case 0:
-                                        timeFrame = 100;
                                         done = 0;
                                         started = Core.Utils.PerformanceMonitor.currentTime();
                                         k = this.minZ;
@@ -15113,7 +15118,7 @@ var LiteMol;
                                         this.slice(k);
                                         done += this.sliceSize;
                                         t = Core.Utils.PerformanceMonitor.currentTime();
-                                        if (!(t - started > timeFrame))
+                                        if (!(t - started > Core.Computation.UpdateProgressDelta))
                                             return [3 /*break*/, 3];
                                         return [4 /*yield*/, this.ctx.updateProgress('Computing surface...', true, done, this.size)];
                                     case 2:
@@ -15844,11 +15849,12 @@ var LiteMol;
                     };
                     MolecularIsoFieldComputation.prototype.processChunks = function () {
                         return __awaiter(this, void 0, void 0, function () {
-                            var chunkSize, currentAtom, _b, aI, r;
+                            var chunkSize, started, currentAtom, _b, aI, r, t;
                             return __generator(this, function (_a) {
                                 switch (_a.label) {
                                     case 0:
                                         chunkSize = 10000;
+                                        started = Core.Utils.PerformanceMonitor.currentTime();
                                         return [4 /*yield*/, this.ctx.updateProgress('Creating field...', true)];
                                     case 1:
                                         _a.sent();
@@ -15864,6 +15870,10 @@ var LiteMol;
                                         }
                                         if (!((currentAtom + 1) % chunkSize === 0))
                                             return [3 /*break*/, 4];
+                                        t = Core.Utils.PerformanceMonitor.currentTime();
+                                        if (!(t - started > Core.Computation.UpdateProgressDelta))
+                                            return [3 /*break*/, 4];
+                                        started = t;
                                         return [4 /*yield*/, this.ctx.updateProgress('Creating field...', true, currentAtom, _b)];
                                     case 3:
                                         _a.sent();
@@ -57365,60 +57375,78 @@ var LiteMol;
                     });
                 });
             }
+            var chunkSize = 100000;
+            function computePickPlatesChunk(start, ctx) {
+                return __awaiter(this, void 0, void 0, function () {
+                    var tri, ids, pickPlatesVertices, pickPlatesTris, pickPlatesColors, vs, color, pickTris, platesVertexCount, i, _b, a, b, c, aI, bI, cI, s;
+                    return __generator(this, function (_a) {
+                        tri = ctx.data.triangleIndices;
+                        ids = ctx.data.annotation;
+                        pickPlatesVertices = ctx.pickPlatesVertices;
+                        pickPlatesTris = ctx.pickPlatesTris;
+                        pickPlatesColors = ctx.pickPlatesColors;
+                        vs = ctx.data.vertices;
+                        color = { r: 0.45, g: 0.45, b: 0.45 };
+                        pickTris = ctx.pickTris;
+                        platesVertexCount = 0;
+                        for (i = start, _b = Math.min(start + chunkSize, ctx.triCount); i < _b; i++) {
+                            a = tri[3 * i], b = tri[3 * i + 1], c = tri[3 * i + 2];
+                            aI = ids[a], bI = ids[b], cI = ids[c];
+                            if (aI === bI && bI === cI) {
+                                ChunkedArray.add3(pickTris, a, b, c);
+                                continue;
+                            }
+                            s = aI === bI ? aI : bI;
+                            ChunkedArray.add3(pickPlatesVertices, vs[3 * a], vs[3 * a + 1], vs[3 * a + 2]);
+                            ChunkedArray.add3(pickPlatesVertices, vs[3 * b], vs[3 * b + 1], vs[3 * b + 2]);
+                            ChunkedArray.add3(pickPlatesVertices, vs[3 * c], vs[3 * c + 1], vs[3 * c + 2]);
+                            ChunkedArray.add3(pickPlatesTris, platesVertexCount++, platesVertexCount++, platesVertexCount++);
+                            if (s < 0) {
+                                color.r = 0;
+                                color.g = 0;
+                                color.b = 0;
+                            }
+                            else {
+                                Visualization.Selection.Picking.assignPickColor(s, color);
+                            }
+                            ChunkedArray.add4(pickPlatesColors, color.r, color.g, color.b, 0.0);
+                            ChunkedArray.add4(pickPlatesColors, color.r, color.g, color.b, 0.0);
+                            ChunkedArray.add4(pickPlatesColors, color.r, color.g, color.b, 0.0);
+                        }
+                        ctx.platesVertexCount += platesVertexCount;
+                        return [2 /*return*/];
+                    });
+                });
+            }
             function computePickPlatesChunks(ctx) {
                 return __awaiter(this, void 0, void 0, function () {
-                    var chunkSize, tri, ids, start, pickPlatesVertices, pickPlatesTris, pickPlatesColors, vs, color, pickTris, platesVertexCount, i, _b, a, b, c, aI, bI, cI, s;
+                    var tri, ids, started, start, time;
                     return __generator(this, function (_a) {
                         switch (_a.label) {
                             case 0:
-                                chunkSize = 100000;
                                 tri = ctx.data.triangleIndices;
                                 ids = ctx.data.annotation;
+                                started = LiteMol.Core.Utils.PerformanceMonitor.currentTime();
                                 start = 0;
                                 _a.label = 1;
                             case 1:
                                 if (!(start < ctx.triCount))
-                                    return [3 /*break*/, 4];
-                                pickPlatesVertices = ctx.pickPlatesVertices;
-                                pickPlatesTris = ctx.pickPlatesTris;
-                                pickPlatesColors = ctx.pickPlatesColors;
-                                vs = ctx.data.vertices;
-                                color = { r: 0.45, g: 0.45, b: 0.45 };
-                                pickTris = ctx.pickTris;
+                                    return [3 /*break*/, 5];
+                                time = LiteMol.Core.Utils.PerformanceMonitor.currentTime();
+                                if (!(time - started > LiteMol.Core.Computation.UpdateProgressDelta))
+                                    return [3 /*break*/, 3];
+                                started = time;
                                 return [4 /*yield*/, ctx.computation.updateProgress('Creating selection geometry...', true, start, ctx.triCount)];
                             case 2:
                                 _a.sent();
-                                platesVertexCount = 0;
-                                for (i = start, _b = Math.min(start + chunkSize, ctx.triCount); i < _b; i++) {
-                                    a = tri[3 * i], b = tri[3 * i + 1], c = tri[3 * i + 2];
-                                    aI = ids[a], bI = ids[b], cI = ids[c];
-                                    if (aI === bI && bI === cI) {
-                                        ChunkedArray.add3(pickTris, a, b, c);
-                                        continue;
-                                    }
-                                    s = aI === bI ? aI : bI;
-                                    ChunkedArray.add3(pickPlatesVertices, vs[3 * a], vs[3 * a + 1], vs[3 * a + 2]);
-                                    ChunkedArray.add3(pickPlatesVertices, vs[3 * b], vs[3 * b + 1], vs[3 * b + 2]);
-                                    ChunkedArray.add3(pickPlatesVertices, vs[3 * c], vs[3 * c + 1], vs[3 * c + 2]);
-                                    ChunkedArray.add3(pickPlatesTris, platesVertexCount++, platesVertexCount++, platesVertexCount++);
-                                    if (s < 0) {
-                                        color.r = 0;
-                                        color.g = 0;
-                                        color.b = 0;
-                                    }
-                                    else {
-                                        Visualization.Selection.Picking.assignPickColor(s, color);
-                                    }
-                                    ChunkedArray.add4(pickPlatesColors, color.r, color.g, color.b, 0.0);
-                                    ChunkedArray.add4(pickPlatesColors, color.r, color.g, color.b, 0.0);
-                                    ChunkedArray.add4(pickPlatesColors, color.r, color.g, color.b, 0.0);
-                                }
-                                ctx.platesVertexCount += platesVertexCount;
                                 _a.label = 3;
                             case 3:
+                                computePickPlatesChunk(start, ctx);
+                                _a.label = 4;
+                            case 4:
                                 start += chunkSize;
                                 return [3 /*break*/, 1];
-                            case 4: return [2 /*return*/];
+                            case 5: return [2 /*return*/];
                         }
                     });
                 });
@@ -58466,11 +58494,12 @@ var LiteMol;
                     };
                     BallsAndSticksGeometryBuilder.addAtoms = function (state, ctx) {
                         return __awaiter(this, void 0, void 0, function () {
-                            var chunkSize, start, _l, i, _b;
+                            var chunkSize, started, start, _l, i, _b, t;
                             return __generator(this, function (_a) {
                                 switch (_a.label) {
                                     case 0:
                                         chunkSize = 1250;
+                                        started = LiteMol.Core.Utils.PerformanceMonitor.currentTime();
                                         start = 0, _l = state.atomIndices.length;
                                         _a.label = 1;
                                     case 1:
@@ -58479,6 +58508,10 @@ var LiteMol;
                                         for (i = start, _b = Math.min(start + chunkSize, state.atomIndices.length); i < _b; i++) {
                                             BallsAndSticksGeometryBuilder.addAtom(state.atomIndices[i], state);
                                         }
+                                        t = LiteMol.Core.Utils.PerformanceMonitor.currentTime();
+                                        if (!(t - started > LiteMol.Core.Computation.UpdateProgressDelta))
+                                            return [3 /*break*/, 3];
+                                        started = t;
                                         return [4 /*yield*/, ctx.updateProgress('Adding atoms...', true, start, _l)];
                                     case 2:
                                         _a.sent();
@@ -58493,11 +58526,12 @@ var LiteMol;
                     };
                     BallsAndSticksGeometryBuilder.addBondsChunks = function (state, bs, ctx) {
                         return __awaiter(this, void 0, void 0, function () {
-                            var chunkSize, start, i, _b;
+                            var chunkSize, started, start, i, _b, t;
                             return __generator(this, function (_a) {
                                 switch (_a.label) {
                                     case 0:
                                         chunkSize = 1250;
+                                        started = LiteMol.Core.Utils.PerformanceMonitor.currentTime();
                                         start = 0;
                                         _a.label = 1;
                                     case 1:
@@ -58506,6 +58540,10 @@ var LiteMol;
                                         for (i = start, _b = Math.min(start + chunkSize, bs.bondCount); i < _b; i++) {
                                             BallsAndSticksGeometryBuilder.addBond(i, state, bs);
                                         }
+                                        t = LiteMol.Core.Utils.PerformanceMonitor.currentTime();
+                                        if (!(t - started > LiteMol.Core.Computation.UpdateProgressDelta))
+                                            return [3 /*break*/, 3];
+                                        started = t;
                                         return [4 /*yield*/, ctx.updateProgress('Adding bonds...', true, start, bs.bondCount)];
                                     case 2:
                                         _a.sent();
@@ -59465,27 +59503,33 @@ var LiteMol;
                     Geometry.buildUnit = buildUnit;
                     function buildUnitsAsync(ctx) {
                         return __awaiter(this, void 0, LiteMol.Promise, function () {
-                            var chunkSize, unitIndex, residuesDone;
+                            var chunkSize, started, unitIndex, residuesDone, t;
                             return __generator(this, function (_a) {
                                 switch (_a.label) {
                                     case 0:
                                         chunkSize = 10000;
+                                        started = LiteMol.Core.Utils.PerformanceMonitor.currentTime();
                                         unitIndex = 0;
                                         _a.label = 1;
                                     case 1:
                                         if (!(unitIndex < ctx.units.length))
-                                            return [3 /*break*/, 3];
+                                            return [3 /*break*/, 4];
                                         residuesDone = 0;
                                         while (residuesDone < chunkSize && unitIndex < ctx.units.length) {
                                             buildUnit(ctx.units[unitIndex], ctx);
                                             residuesDone += ctx.units[unitIndex].residueCount;
                                             unitIndex++;
                                         }
+                                        t = LiteMol.Core.Utils.PerformanceMonitor.currentTime();
+                                        if (!(t - started > LiteMol.Core.Computation.UpdateProgressDelta))
+                                            return [3 /*break*/, 3];
+                                        started = t;
                                         return [4 /*yield*/, ctx.computation.updateProgress('Building units...', true, unitIndex, ctx.units.length)];
                                     case 2:
                                         _a.sent();
-                                        return [3 /*break*/, 1];
-                                    case 3: return [2 /*return*/];
+                                        _a.label = 3;
+                                    case 3: return [3 /*break*/, 1];
+                                    case 4: return [2 /*return*/];
                                 }
                             });
                         });

@@ -1537,6 +1537,7 @@ declare namespace LiteMol.Core {
         function resolve<A>(a: A): Computation<A>;
         function createContext(): Computation.Context;
         const Aborted = "Aborted";
+        const UpdateProgressDelta = 100;
         interface Progress {
             message: string;
             isIndeterminate: boolean;

@@ -171,7 +171,6 @@ namespace LiteMol.Visualization.Molecule.BallsAndSticks {
     }
 
     class BondModelState {
-
         atomsVector = new THREE.Vector3();
         center = new THREE.Vector3();
         rotationAxis = new THREE.Vector3();
@@ -300,7 +299,6 @@ namespace LiteMol.Visualization.Molecule.BallsAndSticks {
     }
 
     class BondsBuildState {
-
         model = this.state.model;
         atomIndices = this.state.atomIndices;
         info = BallsAndSticksHelper.analyze(this.state.model, this.state.atomIndices);
@@ -330,7 +328,6 @@ namespace LiteMol.Visualization.Molecule.BallsAndSticks {
     }
 
     class BallsAndSticksGeometryBuilder {
-
         atomsGeometry: THREE.BufferGeometry;
         bondsGeometry: THREE.BufferGeometry;
 
@@ -465,7 +462,6 @@ namespace LiteMol.Visualization.Molecule.BallsAndSticks {
 
 
         private static addBondPart(state: BondModelState) {
-
             state.atomsVector.subVectors(state.a, state.b);
 
             let length = state.atomsVector.length();
@@ -545,23 +541,32 @@ namespace LiteMol.Visualization.Molecule.BallsAndSticks {
 
         private static async addAtoms(state: BuildState, ctx: Core.Computation.Context) {
             const chunkSize = 1250;
+            let started = Core.Utils.PerformanceMonitor.currentTime();
 
             for (let start = 0, _l = state.atomIndices.length; start < _l; start += chunkSize) {
                 for (let i = start, _b = Math.min(start + chunkSize, state.atomIndices.length); i < _b; i++) {
                     BallsAndSticksGeometryBuilder.addAtom(state.atomIndices[i], state);
                 }
-                await ctx.updateProgress('Adding atoms...', true, start, _l);
+                let t = Core.Utils.PerformanceMonitor.currentTime();
+                if (t - started > Core.Computation.UpdateProgressDelta) {
+                    started = t;
+                    await ctx.updateProgress('Adding atoms...', true, start, _l);
+                }
             }
         }
 
         private static async addBondsChunks(state: BuildState, bs: BondsBuildState, ctx: Core.Computation.Context) {
             const chunkSize = 1250;
-
+            let started = Core.Utils.PerformanceMonitor.currentTime();
             for (let start = 0; start < bs.bondCount; start += chunkSize) {
                 for (let i = start, _b = Math.min(start + chunkSize, bs.bondCount); i < _b; i++) {
                     BallsAndSticksGeometryBuilder.addBond(i, state, bs);
                 }
-                await ctx.updateProgress('Adding bonds...', true, start, bs.bondCount);
+                let t = Core.Utils.PerformanceMonitor.currentTime();
+                if (t - started > Core.Computation.UpdateProgressDelta) {
+                    started = t;
+                    await ctx.updateProgress('Adding bonds...', true, start, bs.bondCount);
+                }
             }
         }
 

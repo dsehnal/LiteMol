@@ -196,6 +196,7 @@ namespace LiteMol.Core.Geometry.MolecularSurface {
 
         private async processChunks() {
             const chunkSize = 10000;
+            let started = Utils.PerformanceMonitor.currentTime();
             
             await this.ctx.updateProgress('Creating field...', true);
             for (let currentAtom = 0, _b = this.atomIndices.length; currentAtom < _b; currentAtom++) {
@@ -207,7 +208,11 @@ namespace LiteMol.Core.Geometry.MolecularSurface {
                 }
 
                 if ((currentAtom + 1) % chunkSize === 0) {
-                    await this.ctx.updateProgress('Creating field...', true, currentAtom, _b);
+                    let t = Utils.PerformanceMonitor.currentTime();
+                    if (t - started > Computation.UpdateProgressDelta) {
+                        started = t;
+                        await this.ctx.updateProgress('Creating field...', true, currentAtom, _b);
+                    }
                 }
             }
             

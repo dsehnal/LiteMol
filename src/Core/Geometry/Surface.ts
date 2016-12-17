@@ -149,7 +149,7 @@ namespace LiteMol.Core.Geometry {
                 }
                 
                 let vs = new Float32Array(surface.vertices.length);
-
+                let started = Utils.PerformanceMonitor.currentTime();
                 await ctx.updateProgress('Smoothing surface...', true);
                 for (let i = 0; i < iterCount; i++) {                        
                     if (i > 0) {
@@ -161,7 +161,11 @@ namespace LiteMol.Core.Geometry {
                     surface.vertices = <any>vs;
                     vs = <any>t;
                     
-                    await ctx.updateProgress('Smoothing surface...', true, i + 1, iterCount);
+                    let time = Utils.PerformanceMonitor.currentTime();
+                    if (time - started > Computation.UpdateProgressDelta) {
+                        started = time;
+                        await ctx.updateProgress('Smoothing surface...', true, i + 1, iterCount);
+                    }
                 }                            
                 return surface;
             });

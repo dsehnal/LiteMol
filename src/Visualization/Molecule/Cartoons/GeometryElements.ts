@@ -889,7 +889,7 @@ namespace LiteMol.Visualization.Molecule.Cartoons.Geometry {
 
     export async function buildUnitsAsync(ctx: Context): LiteMol.Promise<void> {
         const chunkSize = 10000; // residues
-
+        let started = Core.Utils.PerformanceMonitor.currentTime();
         let unitIndex = 0;
         while (unitIndex < ctx.units.length) {
             let residuesDone = 0;
@@ -900,7 +900,11 @@ namespace LiteMol.Visualization.Molecule.Cartoons.Geometry {
                 unitIndex++;
             }
 
-            await ctx.computation.updateProgress('Building units...', true, unitIndex, ctx.units.length);
+            let t = Core.Utils.PerformanceMonitor.currentTime();
+            if (t - started > Core.Computation.UpdateProgressDelta) {
+                started = t;
+                await ctx.computation.updateProgress('Building units...', true, unitIndex, ctx.units.length);
+            }
         }
     }
 

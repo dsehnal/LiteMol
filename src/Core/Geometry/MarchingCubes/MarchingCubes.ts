@@ -35,9 +35,6 @@ namespace LiteMol.Core.Geometry.MarchingCubes {
         private state: MarchingCubesState;
 
         private async doSlices() {
-
-            const timeFrame = 100;
-
             let done = 0;
             let started = Utils.PerformanceMonitor.currentTime();
 
@@ -48,7 +45,7 @@ namespace LiteMol.Core.Geometry.MarchingCubes {
 
                 let t = Utils.PerformanceMonitor.currentTime();
 
-                if (t - started > timeFrame) {
+                if (t - started > Computation.UpdateProgressDelta) {
                     await this.ctx.updateProgress('Computing surface...', true, done, this.size);
                     started = t;
                 }

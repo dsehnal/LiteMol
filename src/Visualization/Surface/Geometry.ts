@@ -100,52 +100,62 @@ namespace LiteMol.Visualization.Surface {
         }
     }
 
-    async function computePickPlatesChunks(ctx: Context) {
-        const chunkSize = 100000;
-
+    const chunkSize = 100000;
+    async function computePickPlatesChunk(start: number, ctx: Context) {
         let tri = ctx.data.triangleIndices;
         let ids = ctx.data.annotation!;
 
-        for (let start = 0; start < ctx.triCount; start += chunkSize) {
+        let pickPlatesVertices = ctx.pickPlatesVertices!;
+        let pickPlatesTris = ctx.pickPlatesTris!;
+        let pickPlatesColors = ctx.pickPlatesColors!;
+        let vs = ctx.data.vertices;
+        let color = { r: 0.45, g: 0.45, b: 0.45 };
+        let pickTris = ctx.pickTris!;
+        
+        let platesVertexCount = 0;
+        for (let i = start, _b = Math.min(start + chunkSize, ctx.triCount); i < _b; i++) {
+            let a = tri[3 * i], b = tri[3 * i + 1], c = tri[3 * i + 2];
+            let aI = ids[a], bI = ids[b], cI = ids[c];
 
-            let pickPlatesVertices = ctx.pickPlatesVertices!;
-            let pickPlatesTris = ctx.pickPlatesTris!;
-            let pickPlatesColors = ctx.pickPlatesColors!;
-            let vs = ctx.data.vertices;
-            let color = { r: 0.45, g: 0.45, b: 0.45 };
-            let pickTris = ctx.pickTris!;
-
-            await ctx.computation.updateProgress('Creating selection geometry...', true, start, ctx.triCount);
-            
-            let platesVertexCount = 0;
-            for (let i = start, _b = Math.min(start + chunkSize, ctx.triCount); i < _b; i++) {
-                let a = tri[3 * i], b = tri[3 * i + 1], c = tri[3 * i + 2];
-                let aI = ids[a], bI = ids[b], cI = ids[c];
-
-                if (aI === bI && bI === cI) {
-                    ChunkedArray.add3(pickTris, a, b, c);
-                    continue;
-                }
-
-                let s = aI === bI ? aI : bI;
-
-                ChunkedArray.add3(pickPlatesVertices, vs[3 * a], vs[3 * a + 1], vs[3 * a + 2]);
-                ChunkedArray.add3(pickPlatesVertices, vs[3 * b], vs[3 * b + 1], vs[3 * b + 2]);
-                ChunkedArray.add3(pickPlatesVertices, vs[3 * c], vs[3 * c + 1], vs[3 * c + 2]);
-
-                ChunkedArray.add3(pickPlatesTris, platesVertexCount++, platesVertexCount++, platesVertexCount++);
-
-                if (s < 0) {
-                    color.r = 0; color.g = 0; color.b = 0;
-                } else {
-                    Selection.Picking.assignPickColor(s, color);
-                }
-
-                ChunkedArray.add4(pickPlatesColors, color.r, color.g, color.b, 0.0);
-                ChunkedArray.add4(pickPlatesColors, color.r, color.g, color.b, 0.0);
-                ChunkedArray.add4(pickPlatesColors, color.r, color.g, color.b, 0.0);
+            if (aI === bI && bI === cI) {
+                ChunkedArray.add3(pickTris, a, b, c);
+                continue;
             }
-            ctx.platesVertexCount += platesVertexCount;
+
+            let s = aI === bI ? aI : bI;
+
+            ChunkedArray.add3(pickPlatesVertices, vs[3 * a], vs[3 * a + 1], vs[3 * a + 2]);
+            ChunkedArray.add3(pickPlatesVertices, vs[3 * b], vs[3 * b + 1], vs[3 * b + 2]);
+            ChunkedArray.add3(pickPlatesVertices, vs[3 * c], vs[3 * c + 1], vs[3 * c + 2]);
+
+            ChunkedArray.add3(pickPlatesTris, platesVertexCount++, platesVertexCount++, platesVertexCount++);
+
+            if (s < 0) {
+                color.r = 0; color.g = 0; color.b = 0;
+            } else {
+                Selection.Picking.assignPickColor(s, color);
+            }
+
+            ChunkedArray.add4(pickPlatesColors, color.r, color.g, color.b, 0.0);
+            ChunkedArray.add4(pickPlatesColors, color.r, color.g, color.b, 0.0);
+            ChunkedArray.add4(pickPlatesColors, color.r, color.g, color.b, 0.0);
+        }
+        ctx.platesVertexCount += platesVertexCount;
+    }
+
+    async function computePickPlatesChunks(ctx: Context) {
+        let tri = ctx.data.triangleIndices;
+        let ids = ctx.data.annotation!;
+        let started = Core.Utils.PerformanceMonitor.currentTime();
+
+        for (let start = 0; start < ctx.triCount; start += chunkSize) {
+            let time = Core.Utils.PerformanceMonitor.currentTime();
+            if (time - started > Core.Computation.UpdateProgressDelta) {
+                started = time;
+                await ctx.computation.updateProgress('Creating selection geometry...', true, start, ctx.triCount);
+            }
+
+            computePickPlatesChunk(start, ctx);            
         }
     }
 

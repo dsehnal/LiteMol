@@ -11254,6 +11254,7 @@ var LiteMol;
             }
             Computation.createContext = createContext;
             Computation.Aborted = 'Aborted';
+            Computation.UpdateProgressDelta = 100;
         })(Computation = Core.Computation || (Core.Computation = {}));
         var ContextImpl = (function () {
             function ContextImpl() {
@@ -14866,7 +14867,7 @@ var LiteMol;
                     if (iterCount === 0)
                         return Core.Computation.resolve(surface);
                     return Core.computation(function (ctx) { return __awaiter(_this, void 0, void 0, function () {
-                        var counts, triCount, tris, i, vs, i, j, _b, t;
+                        var counts, triCount, tris, i, vs, started, i, j, _b, t, time;
                         return __generator(this, function (_a) {
                             switch (_a.label) {
                                 case 0: return [4 /*yield*/, ctx.updateProgress('Smoothing surface...', true)];
@@ -14878,6 +14879,7 @@ var LiteMol;
                                         counts[tris[i]] += 2;
                                     }
                                     vs = new Float32Array(surface.vertices.length);
+                                    started = Core.Utils.PerformanceMonitor.currentTime();
                                     return [4 /*yield*/, ctx.updateProgress('Smoothing surface...', true)];
                                 case 2:
                                     _a.sent();
@@ -14895,6 +14897,10 @@ var LiteMol;
                                     t = surface.vertices;
                                     surface.vertices = vs;
                                     vs = t;
+                                    time = Core.Utils.PerformanceMonitor.currentTime();
+                                    if (!(time - started > Core.Computation.UpdateProgressDelta))
+                                        return [3 /*break*/, 5];
+                                    started = time;
                                     return [4 /*yield*/, ctx.updateProgress('Smoothing surface...', true, i + 1, iterCount)];
                                 case 4:
                                     _a.sent();
@@ -15033,11 +15039,10 @@ var LiteMol;
                     }
                     MarchingCubesComputation.prototype.doSlices = function () {
                         return __awaiter(this, void 0, void 0, function () {
-                            var timeFrame, done, started, k, t;
+                            var done, started, k, t;
                             return __generator(this, function (_a) {
                                 switch (_a.label) {
                                     case 0:
-                                        timeFrame = 100;
                                         done = 0;
                                         started = Core.Utils.PerformanceMonitor.currentTime();
                                         k = this.minZ;
@@ -15048,7 +15053,7 @@ var LiteMol;
                                         this.slice(k);
                                         done += this.sliceSize;
                                         t = Core.Utils.PerformanceMonitor.currentTime();
-                                        if (!(t - started > timeFrame))
+                                        if (!(t - started > Core.Computation.UpdateProgressDelta))
                                             return [3 /*break*/, 3];
                                         return [4 /*yield*/, this.ctx.updateProgress('Computing surface...', true, done, this.size)];
                                     case 2:
@@ -15779,11 +15784,12 @@ var LiteMol;
                     };
                     MolecularIsoFieldComputation.prototype.processChunks = function () {
                         return __awaiter(this, void 0, void 0, function () {
-                            var chunkSize, currentAtom, _b, aI, r;
+                            var chunkSize, started, currentAtom, _b, aI, r, t;
                             return __generator(this, function (_a) {
                                 switch (_a.label) {
                                     case 0:
                                         chunkSize = 10000;
+                                        started = Core.Utils.PerformanceMonitor.currentTime();
                                         return [4 /*yield*/, this.ctx.updateProgress('Creating field...', true)];
                                     case 1:
                                         _a.sent();
@@ -15799,6 +15805,10 @@ var LiteMol;
                                         }
                                         if (!((currentAtom + 1) % chunkSize === 0))
                                             return [3 /*break*/, 4];
+                                        t = Core.Utils.PerformanceMonitor.currentTime();
+                                        if (!(t - started > Core.Computation.UpdateProgressDelta))
+                                            return [3 /*break*/, 4];
+                                        started = t;
                                         return [4 /*yield*/, this.ctx.updateProgress('Creating field...', true, currentAtom, _b)];
                                     case 3:
                                         _a.sent();
