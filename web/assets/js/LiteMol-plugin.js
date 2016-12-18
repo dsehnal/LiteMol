@@ -65422,7 +65422,7 @@ var LiteMol;
 (function (LiteMol) {
     var Bootstrap;
     (function (Bootstrap) {
-        Bootstrap.VERSION = { number: "1.2.12", date: "Dec 13 2016" };
+        Bootstrap.VERSION = { number: "1.3.0", date: "Dec 18 2016" };
     })(Bootstrap = LiteMol.Bootstrap || (LiteMol.Bootstrap = {}));
 })(LiteMol || (LiteMol = {}));
 /*
@@ -65531,7 +65531,6 @@ var LiteMol;
                 });
             }
             function readData(ctx, action, data, asArrayBuffer) {
-                ctx.updateProgress(action, true);
                 return new LiteMol.Promise(function (resolve, reject) {
                     data.onerror = function (e) {
                         var error = e.target.error;
@@ -65562,7 +65561,7 @@ var LiteMol;
                                     reader.readAsArrayBuffer(file);
                                 else
                                     reader.readAsBinaryString(file);
-                                ctx.updateProgress('Reading...', function () { return reader.abort(); });
+                                ctx.updateProgress('Opening file...', function () { return reader.abort(); });
                                 return [4 /*yield*/, readData(ctx, 'Reading...', reader, asArrayBuffer)];
                             case 1:
                                 e = _a.sent();

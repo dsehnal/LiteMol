@@ -50,7 +50,7 @@ var LiteMol;
 (function (LiteMol) {
     var Viewer;
     (function (Viewer) {
-        Viewer.VERSION = { number: "1.2.0", date: "Dec 13 2016" };
+        Viewer.VERSION = { number: "1.2.1", date: "Dec 18 2016" };
     })(Viewer = LiteMol.Viewer || (LiteMol.Viewer = {}));
 })(LiteMol || (LiteMol = {}));
 /*
@@ -1807,7 +1807,7 @@ var LiteMol;
                 var Parse = LiteMol.Bootstrap.Tree.Transformer.create({
                     id: 'pdbe-sequence-annotations-parse',
                     name: 'PDBe Sequence Annotations',
-                    description: 'Parse sequence annotaions JSON.',
+                    description: 'Parse sequence annotation JSON.',
                     from: [Entity.Data.String],
                     to: [SequenceAnnotation.Annotations],
                     defaultParams: function () { return ({}); }

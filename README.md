@@ -157,6 +157,8 @@ or the LiteMol [mailing list](https://listserver.ebi.ac.uk/mailman/listinfo/lite
 
 Makes sure to check out the [documentation](docs) and [examples](examples).
 
+Breaking changes are outline in the [BREAKING-CHANGES](BREAKING-CHANGES.md) document.
+
 Contributing
 =======
 

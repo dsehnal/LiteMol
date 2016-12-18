@@ -1,4 +1,11 @@
-﻿# 1.2.13
+﻿# 1.3.0
+* Breaking: Updated Task to be backed by a computation rather than a Promise.
+  - Tasks are not created by providing a computation object or a Promise and their context object 
+    is the same as as the uderlaying Computation's one.
+* Tree.Transform function are now implemented using Computation rather than a Task.
+* Removed 'Child' task type.
+
+# 1.2.13
 * Visual.Style.computationType is now taskType. 
 
 # 1.2.12

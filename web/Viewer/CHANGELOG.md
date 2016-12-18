@@ -1,3 +1,6 @@
+# 1.2.1
+* Performance updates thanks to rewrite of the Computation/Task API.
+
 # 1.2.0
 * Support for density streaming vie DensityServer. 
 

@@ -93,7 +93,6 @@ namespace LiteMol.Bootstrap.Utils {
     }
 
     function readData(ctx: Context, action: string, data: XMLHttpRequest | FileReader, asArrayBuffer: boolean): Promise<any> {
-        ctx.updateProgress(action, true);  
         return new Promise<any>((resolve, reject) => {           
             data.onerror = e => {
                 let error = (<FileReader>e.target).error;
@@ -121,7 +120,7 @@ namespace LiteMol.Bootstrap.Utils {
             if (isCompressed || asArrayBuffer) reader.readAsArrayBuffer(file);
             else reader.readAsBinaryString(file);
             
-            ctx.updateProgress('Reading...', () => reader.abort());
+            ctx.updateProgress('Opening file...', () => reader.abort());
             let e = await readData(ctx, 'Reading...', reader, asArrayBuffer);
             let result = processFile(ctx, asArrayBuffer, isCompressed, e);   
             return result;

@@ -238,7 +238,7 @@ namespace LiteMol.Viewer.PDBe.SequenceAnnotation {
     const Parse = Bootstrap.Tree.Transformer.create<Entity.Data.String, Annotations, { }>({
             id: 'pdbe-sequence-annotations-parse',
             name: 'PDBe Sequence Annotations',
-            description: 'Parse sequence annotaions JSON.',
+            description: 'Parse sequence annotation JSON.',
             from: [Entity.Data.String],
             to: [Annotations],
             defaultParams: () => ({})
