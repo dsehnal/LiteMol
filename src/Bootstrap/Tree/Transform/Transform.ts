@@ -11,8 +11,8 @@ namespace LiteMol.Bootstrap.Tree {
         transformer: Transformer<A, B, P>,
         params: P,
         isUpdate?: boolean,
-        apply(context: Context, a: A): Task<B>
-        update(context: Context, b: B): Task<B>
+        apply(context: Context, a: A): Core.Computation<B>
+        update(context: Context, b: B): Core.Computation<B>
     }  
     
     export namespace Transform {
@@ -33,12 +33,10 @@ namespace LiteMol.Bootstrap.Tree {
         
         export type Source = Instance | Instance[] | Builder;       
         
-        class TransformImpl<A extends Node, B extends Node, P> implements Transform<A, B, P> {
-            
-            private resolveAdd(ctx: Task.Context<B>, a: A, b: B) {                
+        class TransformImpl<A extends Node, B extends Node, P> implements Transform<A, B, P> {            
+            private resolveAdd(a: A, b: B): B {                
                 if (b === Node.Null) {
-                    ctx.resolve(b);
-                    return;
+                    return b;
                 }            
                 b.ref = this.props.ref!;
                 if (this.props.isHidden) b.isHidden = true;
@@ -46,13 +44,12 @@ namespace LiteMol.Bootstrap.Tree {
                     b.parent = a;
                     Tree.add(b);
                 } 
-                ctx.resolve(b);
+                return b;
             }
             
-            private resolveUpdate(ctx: Task.Context<B>, b: B, newB: B) {
+            private resolveUpdate(context: Context, b: B, newB: B): B {
                 if (newB === Node.Null) {
-                    ctx.resolve(newB);
-                    return;
+                    return newB;
                 }
                 
                 let a = b.parent;
@@ -61,27 +58,25 @@ namespace LiteMol.Bootstrap.Tree {
                 newB.tag = b.tag;
                 newB.state = b.state;
                 if (this.props.isHidden) newB.isHidden = true;
-                Tree.update<any>(ctx.context.tree, b, newB); 
-                ctx.resolve(newB);
+                Tree.update<any>(context.tree, b, newB); 
+                return newB;
             }
                         
-            apply(context: Context, a: A): Task<B> {       
-                
-                return Task.create<B>(this.transformer.info.name, 'Child', ctx => {
+            apply(context: Context, a: A): Core.Computation<B> {
+                return Core.computation<B>(async ctx => new Promise(async (res, rej) => {
                     Event.Tree.TransformStarted.dispatch(context, this);
-                    this.transformer.apply(context, a, this).run(ctx.context).then(b => {
-                        this.resolveAdd(ctx, a, b);
+                    this.transformer.apply(context, a, this).run(context).then(b => {
+                        res(this.resolveAdd(a, b));
                         Event.Tree.TransformFinished.dispatch(context, { transform: this });
                     }).catch(e => { 
-                        ctx.reject(e);
+                        rej(e);
                         Event.Tree.TransformFinished.dispatch(context, { transform: this, error: e });
                     })
-                });
+                }));
             }
             
-            update(context: Context, b: B): Task<B> {                
-                return Task.create<B>(this.transformer.info.name, 'Child', ctx => {
-                    
+            update(context: Context, b: B): Core.Computation<B> {                
+                return Core.computation<B>(ctx => new Promise((res, rej) => {                    
                     this.isUpdate = true;
                     this.props.ref = b.transform.props.ref;
                     
@@ -90,15 +85,14 @@ namespace LiteMol.Bootstrap.Tree {
                                           
                     this.transformer.update(context, b, this).run(context)
                         .then(newB => {
-                            this.resolveUpdate(ctx, b, newB);
+                            res(this.resolveUpdate(context, b, newB));
                             Event.Tree.TransformFinished.dispatch(context, { transform: this });
                         }).catch(e => {
-                            ctx.reject(e);
+                            rej(e);
                             Event.Tree.TransformFinished.dispatch(context, { transform: this, error: e });
                         });
-                });
+                }));
             }
-            
             
             isUpdate = false;
             
@@ -112,19 +106,7 @@ namespace LiteMol.Bootstrap.Tree {
             if (!p.ref) p.ref = Utils.generateUUID();
             return new TransformImpl(params, p, transformer);
         }
-         
-        export function updateInstance<A extends Node, B extends Node, P>(ctx: Context, instance: Instance) {
-            let xs = ctx.select(instance.selector);            
-            let tasks = xs.map(x => () => instance.transform.update(ctx, <any>x));
-            return Task.sequence(ctx, 'Update transform', 'Child', tasks, true);
-        } 
-         
-        export function applyInstance<A extends Node, B extends Node, P>(ctx: Context, instance: Instance) {
-            let xs = ctx.select(instance.selector);            
-            let tasks = xs.map(x => () => instance.transform.apply(ctx, <any>x));
-            return Task.sequence(ctx, 'Apply transform', 'Child', tasks, true);
-        }
-        
+                 
         function isInstance(arg: any): arg is Instance {
             return !!arg.selector;
         }
@@ -132,35 +114,37 @@ namespace LiteMol.Bootstrap.Tree {
         function isBuilder(arg: any): arg is Builder {
             return !!arg.compile;
         }
-        
-        export function apply(ctx: Context, source: Source) {            
+
+        export function execute(ctx: Context, source: Source, isUpdate: boolean) {            
             let instances: Instance[];
-            
+
             try {
                 if (isInstance(source)) instances = [source];
                 else if (isBuilder(source)) instances = source.compile();
                 else instances = source;
             } catch (e) {
-                return Task.reject('Apply transforms', 'Child', e);
+                return Core.Computation.reject<void>(e);
             }
-            
-            let tasks = instances.map(i => () => applyInstance(ctx, i));
-            return Task.sequence(ctx, 'Apply transforms', 'Child', tasks, true);           
+
+            return Core.computation<void>(async () => {
+                for (let i of instances) {
+                    let xs = ctx.select(i.selector);
+                    for (let x of xs) {
+                        try {
+                            await (isUpdate ? i.transform.update(ctx, x) : i.transform.apply(ctx, x)).run();
+                        } catch (e) {
+                        }
+                    }
+                }
+            });
+        }
+        
+        export function apply(ctx: Context, source: Source) {            
+            return execute(ctx, source, false);
         }
         
         export function update(ctx: Context, source: Source) {            
-            let instances: Instance[];
-            
-            try {
-                if (isInstance(source)) instances = [source];
-                else if (isBuilder(source)) instances = source.compile();
-                else instances = source;
-            } catch (e) {
-                return Task.reject('Apply transforms', 'Child', e);
-            }
-            
-            let tasks = instances.map(i => () => updateInstance(ctx, i));
-            return Task.sequence(ctx, 'Apply transforms', 'Child', tasks, true);           
+            return execute(ctx, source, true);
         }
     }
 }

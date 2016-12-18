@@ -74,7 +74,7 @@ namespace LiteMol.Bootstrap.Components.Transform {
             
             try {
                 let task = this.isUpdate ? transform.update(this.context, this.entity) : transform.apply(this.context, this.entity);            
-                task.run(this.context).then(() => this.setState({ isBusy: false })).catch(() => this.setState({ isBusy: false }));
+                task.run().then(() => this.setState({ isBusy: false })).catch(() => this.setState({ isBusy: false }));
             } catch(e) {
                 this.setState({ isBusy: false });
             }

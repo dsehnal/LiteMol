@@ -19,30 +19,27 @@ namespace LiteMol.Bootstrap.Entity.Transformer.Density {
         to: [Entity.Density.Data],
         isUpdatable: true,
         defaultParams: () => ({ format: LiteMol.Core.Formats.Density.SupportedFormats.CCP4, normalize: false })
-    }, (ctx, a, t) => {
-        return Task.fromComputation(`Parse Density (${a.props.label})`, 'Normal', t.params.format!.parse(a.props.data))
-            .setReportTime(true)
-            .bind(`Create Density (${a.props.label})`, 'Silent', data => {
-                if (data.isError) {
-                    return Task.reject(`Create Density (${a.props.label})`, 'Background', data.toString());
-                }
-                if (t.params.normalize) {
-                    data.result.normalize();
-                }
-                let e = Entity.Density.Data.create(t, { label: t.params.id ? t.params.id : 'Density Data', data: data.result, description: t.params.normalize ? 'Normalized' : '' });
-                return Task.resolve(`Create Density (${a.props.label})`, 'Background', e);
-            });
+    }, (bigCtx, a, t) => {
+        return Task.create<Entity.Density.Data>(`Create Density (${a.props.label})`, 'Background', async ctx => {
+            let data = await Task.fromComputation(`Parse Density (${a.props.label})`, 'Normal', t.params.format!.parse(a.props.data)).setReportTime(true).run(bigCtx);
+            if (data.isError) {
+                throw data.toString();
+            }
+            if (t.params.normalize) {
+                data.result.normalize();
+            }
+            let e = Entity.Density.Data.create(t, { label: t.params.id ? t.params.id : 'Density Data', data: data.result, description: t.params.normalize ? 'Normalized' : '' });
+            return e;
+        });
     }, (ctx, b, t) => {
         if (b.props.data.isNormalized === t.params.normalize) return Task.resolve('Density', 'Background', Tree.Node.Null);
 
-        return Task.create<Entity.Density.Data>('Update Density', 'Normal', ctx => {
-            ctx.update('Updating...');
-            ctx.schedule(() => {
-                let data = b.props.data;
-                if (data.isNormalized) Core.Formats.Density.Data.denormalize(data);
-                else Core.Formats.Density.Data.normalize(data);
-                ctx.resolve(Entity.Density.Data.create(t, { label: t.params.id ? t.params.id : 'Density Data', data, description: t.params.normalize ? 'Normalized' : '' }));
-            });
+        return Task.create<Entity.Density.Data>('Update Density', 'Normal', async ctx => {
+            await ctx.updateProgress('Updating...');
+            let data = b.props.data;
+            if (data.isNormalized) Core.Formats.Density.Data.denormalize(data);
+            else Core.Formats.Density.Data.normalize(data);
+            return Entity.Density.Data.create(t, { label: t.params.id ? t.params.id : 'Density Data', data, description: t.params.normalize ? 'Normalized' : '' });
         });
     });
 
@@ -59,16 +56,14 @@ namespace LiteMol.Bootstrap.Entity.Transformer.Density {
         to: [Entity.Density.Data],
         isUpdatable: false,
         defaultParams: () => ({ blockIndex: 0 })
-    }, (ctx, a, t) => {
-        return Task.create<Entity.Density.Data>('Create Density', 'Normal', ctx => {
-            ctx.update('Parsing...');
-            ctx.schedule(() => {
-                let data = Core.Formats.Density.CIF.parse(a.props.dictionary.dataBlocks[t.params.blockIndex]);
-                if (data.isError) {
-                    return Task.reject(`Create Density (${a.props.label})`, 'Background', data.toString());
-                }
-                ctx.resolve(Entity.Density.Data.create(t, { label: t.params.id ? t.params.id : 'Density Data', data: data.result, description: data.result.attributes['name'] }));
-            });
+    }, (bigCtx, a, t) => {
+        return Task.create<Entity.Density.Data>('Create Density', 'Normal', async ctx => {
+            await ctx.updateProgress('Parsing...');
+            let data = Core.Formats.Density.CIF.parse(a.props.dictionary.dataBlocks[t.params.blockIndex]);
+            if (data.isError) {
+                throw data.toString();
+            }
+            return Entity.Density.Data.create(t, { label: t.params.id ? t.params.id : 'Density Data', data: data.result, description: data.result.attributes['name'] });        
         }).setReportTime(true);
     });
 

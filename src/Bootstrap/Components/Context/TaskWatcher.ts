@@ -38,7 +38,7 @@ namespace LiteMol.Bootstrap.Components.Context {
             this.setState({ tasks });            
         }
         
-        private started(task: Task<any>) {
+        private started(task: Task.Info) {
             this.setState({
                 tasks: this.latestState.tasks!.set(task.id, { name: task.name, message: 'Running...' })
             });

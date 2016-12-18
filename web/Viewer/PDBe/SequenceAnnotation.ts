@@ -221,7 +221,7 @@ namespace LiteMol.Viewer.PDBe.SequenceAnnotation {
             defaultParams: () => ({ }),
             isUpdatable: true
         }, (context, a, t) => { 
-            return Bootstrap.Task.create<Annotation>(`Sequence Annotation`, 'Background', ctx => {                
+            return Bootstrap.Task.create<Annotation>(`Sequence Annotation`, 'Background', async ctx => {                
                 let data = t.params.data;                
                 let query =
                     Query.or.apply(null, data.mappings.map((m: any) =>
@@ -230,7 +230,7 @@ namespace LiteMol.Viewer.PDBe.SequenceAnnotation {
                             { seqNumber: m.start.residue_number, insCode: getInsCode(m.start.author_insertion_code) },
                             { seqNumber: m.end.residue_number, insCode: getInsCode(m.end.author_insertion_code) })))
                         .union();                                    
-                ctx.resolve(Annotation.create(t, { label: data.identifier, description: t.params.id, query, color: t.params.color! }));
+                return Annotation.create(t, { label: data.identifier, description: t.params.id, query, color: t.params.color! });
             });
         }       
     );
@@ -243,12 +243,10 @@ namespace LiteMol.Viewer.PDBe.SequenceAnnotation {
             to: [Annotations],
             defaultParams: () => ({})
         }, (context, a, t) => { 
-            return Bootstrap.Task.create<Annotations>(`Sequence Annotations`, 'Normal', ctx => {
-                ctx.update('Parsing...');
-                ctx.schedule(() => {
-                    let data = JSON.parse(a.props.data);               
-                    ctx.resolve(Annotations.create(t, { label: 'Sequence Annotations', data }))
-                });
+            return Bootstrap.Task.create<Annotations>(`Sequence Annotations`, 'Normal', async ctx => {
+                await ctx.updateProgress('Parsing...');                
+                let data = JSON.parse(a.props.data);               
+                return Annotations.create(t, { label: 'Sequence Annotations', data });
             }).setReportTime(true);
         }       
     );

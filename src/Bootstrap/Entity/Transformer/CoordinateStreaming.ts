@@ -37,13 +37,13 @@ namespace LiteMol.Bootstrap.Entity.Transformer.Molecule.CoordinateStreaming {
         to: [Entity.Molecule.Model],
         defaultParams: () => void 0,
     }, (ctx, a, t) => {
-        return Task.create<Entity.Molecule.Model>('Load', 'Silent', ctx => {
+        return Task.create<Entity.Molecule.Model>('Load', 'Silent', async ctx => {
             let cif = Core.Formats.CIF.Binary.parse(t.params.data!);
             if (cif.isError) return;
 
             let model = Core.Formats.Molecule.mmCIF.ofDataBlock(cif.result.dataBlocks[0]).models[0];
             if (t.params.transform) Core.Structure.Operator.applyToModelUnsafe(t.params.transform, model);
-            ctx.resolve(Entity.Molecule.Model.create(t, { label: 'part', model }));
+            return Entity.Molecule.Model.create(t, { label: 'part', model });
         });
     });
 
@@ -53,7 +53,7 @@ namespace LiteMol.Bootstrap.Entity.Transformer.Molecule.CoordinateStreaming {
         radius: number
     }
 
-    export const InitStreaming = Tree.Transformer.create<Entity.Root, Entity.Action, InitStreamingParams>({
+    export const InitStreaming = Tree.Transformer.action<Entity.Root, Entity.Action, InitStreamingParams>({
         id: 'streaming-init',
         name: 'Coordinate Streaming',
         description: 'Download a smaller version of the molecule required to display cartoon representation and stream the rest of the coordinates as required.',
@@ -61,20 +61,12 @@ namespace LiteMol.Bootstrap.Entity.Transformer.Molecule.CoordinateStreaming {
         to: [Entity.Action],
         validateParams: p => !(p.id || '').trim().length ? ['Enter id'] : !(p.server || '').trim().length ? ['Specify server'] : void 0,
         defaultParams: ctx => ({ id: ctx.settings.get('molecule.coordinateStreaming.defaultId') || '', server: ctx.settings.get('molecule.coordinateStreaming.defaultServer') || '', radius: ctx.settings.get('molecule.coordinateStreaming.defaultRadius') || 0 }),
-    }, (context, a, t) => {
-
-        return Task.create<Entity.Action>('Macromolecule', 'Normal', ctx => {
-
-            let action = Tree.Transform.build()
-                .add(a, Data.Download, { url: Bootstrap.Behaviour.Molecule.CoordinateStreaming.getBaseUrl(t.params.id!, t.params.server!), type: 'Binary', id: t.params.id })
-                .then(Data.ParseBinaryCif, { id: t.params.id }, { isBinding: true })
-                .then(Molecule.CreateFromMmCif, { blockIndex: 0 }, { isBinding: true })
-                .then(Molecule.CreateModel, { modelIndex: 0 }, { isBinding: false })
-                .then(CreateBehaviour, { server: t.params.server, radius: t.params.radius });
-
-            Tree.Transform.apply(context, action).run(context)
-                .then(r => ctx.resolve(Tree.Node.Null))
-                .catch(ctx.reject);
-        });
+    }, (context, a, t) => { 
+        return Tree.Transform.build()
+            .add(a, Data.Download, { url: Bootstrap.Behaviour.Molecule.CoordinateStreaming.getBaseUrl(t.params.id!, t.params.server!), type: 'Binary', id: t.params.id })
+            .then(Data.ParseBinaryCif, { id: t.params.id }, { isBinding: true })
+            .then(Molecule.CreateFromMmCif, { blockIndex: 0 }, { isBinding: true })
+            .then(Molecule.CreateModel, { modelIndex: 0 }, { isBinding: false })
+            .then(CreateBehaviour, { server: t.params.server, radius: t.params.radius });
     });
 }

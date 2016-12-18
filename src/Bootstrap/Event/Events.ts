@@ -15,7 +15,7 @@ namespace LiteMol.Bootstrap.Event {
     }
     
     export namespace Task {
-        export const Started = create<Bootstrap.Task<any>>('bs.Tasks.Started', Lane.Task);
+        export const Started = create<Bootstrap.Task.Info>('bs.Tasks.Started', Lane.Task);
         export const Completed = create<number>('bs.Tasks.Completed', Lane.Task);
         export const StateUpdated = create<Bootstrap.Task.State>('bs.Tasks.StateUpdated', Lane.Busy);        
     }

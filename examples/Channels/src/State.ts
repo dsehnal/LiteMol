@@ -148,7 +148,7 @@ namespace LiteMol.Example.Channels.State {
         for (let p of origins.Points) {
             s.add({ type: 'Sphere', id: id++, radius: 1.69, center: { x: p.X, y: p.Y, z: p.Z } });
         }
-        return s.buildSurface().run().result;        
+        return s.buildSurface().run();        
     }
 
     export function showOriginsSurface(plugin: Plugin.Controller, origins: any, visible: boolean): Promise<any> {
@@ -206,13 +206,9 @@ namespace LiteMol.Example.Channels.State {
             theme: <any>void 0
         };
 
-        return Bootstrap.Task.create<Bootstrap.Entity.Visual.Surface>(`Create Surface`, 'Silent', ctx => {
-            LiteMol.Visualization.Surface.Model.create(t.params.tag, { surface: t.params.surface!, theme, parameters: { isWireframe: t.params.isWireframe! } }).run().result
-                .then(model => {
-                    let e = Bootstrap.Entity.Visual.Surface.create(t, { label: t.params.label!, model, style, isSelectable: true, tag: t.params.tag });
-                    ctx.resolve(e);
-                })
-                .catch(e => ctx.reject(e));
+        return Bootstrap.Task.create<Bootstrap.Entity.Visual.Surface>(`Create Surface`, 'Silent', async ctx => {
+            let model = await LiteMol.Visualization.Surface.Model.create(t.params.tag, { surface: t.params.surface!, theme, parameters: { isWireframe: t.params.isWireframe! } }).run(ctx);
+            return Bootstrap.Entity.Visual.Surface.create(t, { label: t.params.label!, model, style, isSelectable: true, tag: t.params.tag });
         });
     }
     );

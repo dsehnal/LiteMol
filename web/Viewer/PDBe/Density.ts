@@ -154,56 +154,43 @@ namespace LiteMol.Viewer.PDBe.Data {
         };
     }
 
-    function doEmdbPdbId(ctx: Bootstrap.Context, a: Entity.Root, t: Transform<Entity.Root, Entity.Action, DownloadDensityParams>, id: string) {
-        return new Promise((res, rej) => {
-            id = id.trim().toLowerCase();
-            Bootstrap.Utils.ajaxGetString(`https://www.ebi.ac.uk/pdbe/api/pdb/entry/summary/${id}`, 'PDB API')
-                .run(ctx)
-                .then(s => {
-                    try {
-                        let json = JSON.parse(s);
-                        let emdbId: string;
-                        let e = json[id];
-                        if (e && e[0] && e[0].related_structures) {
-                            let emdb = e[0].related_structures.filter((s: any) => s.resource === 'EMDB');
-                            if (!emdb.length) {
-                                res(fail(a, `No related EMDB entry found for '${id}'.`));
-                                return;        
-                            }
-                            emdbId = emdb[0].accession.split('-')[1]; 
-                        } else {
-                            res(fail(a, `No related EMDB entry found for '${id}'.`));
-                            return;
-                        }
-                        res(doEmdbId(ctx, a, t, emdbId));
-                    } catch (e) {
-                        res(fail(a, 'PDBe API call failed.'))
-                    }
-                })
-                .catch(e => res(fail(a, 'PDBe API call failed.')));
-        });
+    async function doEmdbPdbId(ctx: Bootstrap.Context, a: Entity.Root, t: Transform<Entity.Root, Entity.Action, DownloadDensityParams>, id: string) {
+        id = id.trim().toLowerCase();
+        let s = await Bootstrap.Utils.ajaxGetString(`https://www.ebi.ac.uk/pdbe/api/pdb/entry/summary/${id}`, 'PDB API').run(ctx)
+                
+        try {
+            let json = JSON.parse(s);
+            let emdbId: string;
+            let e = json[id];
+            if (e && e[0] && e[0].related_structures) {
+                let emdb = e[0].related_structures.filter((s: any) => s.resource === 'EMDB');
+                if (!emdb.length) {
+                    return fail(a, `No related EMDB entry found for '${id}'.`);
+                }
+                emdbId = emdb[0].accession.split('-')[1]; 
+            } else {
+                return fail(a, `No related EMDB entry found for '${id}'.`);
+            }
+            return doEmdbId(ctx, a, t, emdbId);
+        } catch (e) {
+            return fail(a, 'PDBe API call failed.');
+        }
     }
 
-    function doEmdbId(ctx: Bootstrap.Context, a: Entity.Root, t: Transform<Entity.Root, Entity.Action, DownloadDensityParams>, id: string) {
-        return new Promise((res, rej) => {
-            id = id.trim();
-            Bootstrap.Utils.ajaxGetString(`https://www.ebi.ac.uk/pdbe/api/emdb/entry/map/EMD-${id}`, 'EMDB API')
-                .run(ctx)
-                .then(s => {
-                    try {
-                        let json = JSON.parse(s);
-                        let contour: number | undefined = void 0;
-                        let e = json['EMD-' + id];
-                        if (e && e[0] && e[0].map && e[0].map.contour_level && e[0].map.contour_level.value !== void 0) {
-                            contour = +e[0].map.contour_level.value;
-                        }
-                        res(doEmdb(a, t, id, contour));
-                    } catch (e) {
-                        res(fail(a, 'EMDB API call failed.'))
-                    }
-                })
-                .catch(e => res(fail(a, 'EMDB API call failed.')));
-        });
+    async function doEmdbId(ctx: Bootstrap.Context, a: Entity.Root, t: Transform<Entity.Root, Entity.Action, DownloadDensityParams>, id: string) {
+        id = id.trim();
+        let s = await Bootstrap.Utils.ajaxGetString(`https://www.ebi.ac.uk/pdbe/api/emdb/entry/map/EMD-${id}`, 'EMDB API').run(ctx)
+        try {
+            let json = JSON.parse(s);
+            let contour: number | undefined = void 0;
+            let e = json['EMD-' + id];
+            if (e && e[0] && e[0].map && e[0].map.contour_level && e[0].map.contour_level.value !== void 0) {
+                contour = +e[0].map.contour_level.value;
+            }
+            return doEmdb(a, t, id, contour);
+        } catch (e) {
+            return fail(a, 'EMDB API call failed.');
+        }
     }
 
     // this creates the electron density based on the spec you sent me

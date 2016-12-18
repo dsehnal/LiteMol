@@ -57,7 +57,7 @@ namespace LiteMol.Extensions.DensityStreaming {
 
         private stop() {
             if (this.download) {
-                this.download.discard();
+                this.download.tryAbort();
                 this.download = void 0;
             }
         }
@@ -86,7 +86,7 @@ namespace LiteMol.Extensions.DensityStreaming {
         }
 
         private updateStyleTaskTypes() {
-            let taskType: Bootstrap.Task.Type = this.params.radius > 10 ? 'Background' : 'Silent';
+            let taskType: Bootstrap.Task.Type = this.params.radius > 15 ? 'Background' : 'Silent';
             for (let t of this.types) {
                 this.params.styles[t]!.taskType = taskType;
             }
@@ -104,7 +104,7 @@ namespace LiteMol.Extensions.DensityStreaming {
         }
 
         private apply(b: Bootstrap.Tree.Transform.Builder) {
-            return Bootstrap.Tree.Transform.apply(this.context, b).run(this.context);
+            return Bootstrap.Tree.Transform.apply(this.context, b).run();
         }
 
         private async createXray(data: Core.Formats.CIF.File) {
@@ -158,7 +158,7 @@ namespace LiteMol.Extensions.DensityStreaming {
                 .then(Transformer.Density.CreateFromData, { id: 'EMD', data: emd.result })
                 .then(Transformer.Density.CreateVisual, { style: styles['EMD'] }, { ref: ref + 'EMD' });
             
-            Bootstrap.Tree.Transform.apply(this.context, action).run(this.context)
+            Bootstrap.Tree.Transform.apply(this.context, action).run()
                 .then(() => this.groupDone(ref, true))
                 .catch(() => this.groupDone(ref, false));
         }
@@ -205,9 +205,9 @@ namespace LiteMol.Extensions.DensityStreaming {
                 + `/${a.map(v => Math.round(1000 * v) / 1000).join(',')}`
                 + `/${b.map(v => Math.round(1000 * v) / 1000).join(',')}`;
             
-            this.download = Utils.ajaxGetArrayBuffer(url, 'Density').run(this.context);
+            this.download = Utils.ajaxGetArrayBuffer(url, 'Density').runWithContext(this.context);
 
-            this.download.then(data => {
+            this.download.result.then(data => {
                 this.clear();
 
                 this.dataBox = box;
@@ -221,7 +221,7 @@ namespace LiteMol.Extensions.DensityStreaming {
         }
 
         private updateVisual(v: Entity.Density.Visual, style: Bootstrap.Visualization.Density.Style) {
-            return Entity.Transformer.Density.CreateVisual.create({ style }, { ref: v.ref }).update(this.context, v).run(this.context);
+            return Entity.Transformer.Density.CreateVisual.create({ style }, { ref: v.ref }).update(this.context, v).run();
         }
 
         private async invalidate(inputStyles: CreateStreamingParams): Promise<boolean> {

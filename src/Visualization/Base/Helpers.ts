@@ -6,7 +6,6 @@ namespace LiteMol.Visualization {
 
     
     export function checkWebGL() {
-
         var canvas = document.createElement('canvas');
 
         try {

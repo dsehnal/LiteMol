@@ -23,7 +23,7 @@ namespace LiteMol.Bootstrap {
         Command.Entity.SetVisibility.getStream(context).subscribe(e => Entity.setVisibility(e.data.entity, e.data.visible));
         Command.Entity.ToggleExpanded.getStream(context).subscribe(e => Entity.toggleExpanded(e.data));
         Command.Tree.RemoveNode.getStream(context).subscribe(e => context.select(e.data).forEach(n => Tree.remove(n)));
-        Command.Tree.ApplyTransform.getStream(context).subscribe(e => { (e.data.isUpdate ? e.data.transform.update(context, e.data.node) : e.data.transform.apply(context, e.data.node)).run(context) });
+        Command.Tree.ApplyTransform.getStream(context).subscribe(e => { (e.data.isUpdate ? e.data.transform.update(context, e.data.node) : e.data.transform.apply(context, e.data.node)).run() });
                 
         Event.Tree.NodeAdded.getStream(context).subscribe(e => {
             let vis = (e.data.parent as Entity.Any).state.visibility;

@@ -110,7 +110,7 @@ namespace LiteMol.Plugin {
          */
         applyTransform(transform: Bootstrap.Tree.Transform.Source) {
             const ctx = this.context;
-            return Bootstrap.Tree.Transform.apply(ctx, transform).run(ctx);
+            return Bootstrap.Tree.Transform.apply(ctx, transform).run();
         }
 
         /**

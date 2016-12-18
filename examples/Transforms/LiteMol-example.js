@@ -751,17 +751,6 @@ var LiteMol;
                 },
                 customSpecification: Transforms.PluginSpec
             });
-            // So that we can use await..
-            function schedule(ctx, f) {
-                return new LiteMol.Promise(function (res) { return ctx.schedule(function () {
-                    try {
-                        res(f());
-                    }
-                    finally {
-                        res(undefined);
-                    }
-                }); });
-            }
             function process() {
                 return __awaiter(this, void 0, void 0, function () {
                     var _this = this;
@@ -789,22 +778,24 @@ var LiteMol;
                                     var data, transforms;
                                     return __generator(this, function (_a) {
                                         switch (_a.label) {
-                                            case 0:
-                                                ctx.update('Downloading data...');
-                                                return [4 /*yield*/, Transforms.fetch(pluginSuperposed, ids)];
+                                            case 0: return [4 /*yield*/, ctx.updateProgress('Downloading data...')];
                                             case 1:
                                                 _a.sent();
-                                                ctx.update('Creating superposition data...');
-                                                return [4 /*yield*/, schedule(ctx, function () { return Transforms.getSuperpositionData(pluginSuperposed); })];
+                                                return [4 /*yield*/, Transforms.fetch(pluginSuperposed, ids)];
                                             case 2:
-                                                data = _a.sent();
-                                                ctx.update('Finding transforms...');
-                                                transforms = LiteMol.Comparison.Structure.superimposeByIndices(data);
-                                                ctx.update('Finishing...');
-                                                return [4 /*yield*/, schedule(ctx, function () { return Transforms.applyTransforms(pluginSuperposed, data, transforms); })];
+                                                _a.sent();
+                                                return [4 /*yield*/, ctx.updateProgress('Creating superposition data...')];
                                             case 3:
                                                 _a.sent();
-                                                ctx.resolve({});
+                                                data = Transforms.getSuperpositionData(pluginSuperposed);
+                                                return [4 /*yield*/, ctx.updateProgress('Finding transforms...')];
+                                            case 4:
+                                                _a.sent();
+                                                transforms = LiteMol.Comparison.Structure.superimposeByIndices(data);
+                                                return [4 /*yield*/, ctx.updateProgress('Finishing...')];
+                                            case 5:
+                                                _a.sent();
+                                                Transforms.applyTransforms(pluginSuperposed, data, transforms);
                                                 return [2 /*return*/];
                                         }
                                     });

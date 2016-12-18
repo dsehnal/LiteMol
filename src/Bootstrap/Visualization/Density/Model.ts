@@ -52,8 +52,7 @@ namespace LiteMol.Bootstrap.Visualization.Density {
             
             let source = Tree.Node.findClosestNodeOfType(parent, [Entity.Density.Data]) as Entity.Density.Data;
             if (!source) {
-                ctx.reject('Cannot create density visual on ' + parent.props.label);
-                return;
+                throw 'Cannot create density visual on ' + parent.props.label;
             }
             
             let data = source.props.data;
@@ -77,8 +76,7 @@ namespace LiteMol.Bootstrap.Visualization.Density {
             }
                         
             if (!(min[0] - max[0]) || !(min[1] - max[1]) || !(min[2] - max[2]) ) {
-                ctx.reject({ warn: true, message: 'Empty box.' });
-                return;
+                throw { warn: true, message: 'Empty box.' };
             }
             
             let isSigma = params.isoValueType === void 0 || params.isoValueType === IsoValueType.Sigma;
@@ -86,29 +84,21 @@ namespace LiteMol.Bootstrap.Visualization.Density {
                 ? data.valuesInfo.mean + data.valuesInfo.sigma * params.isoValue
                 : params.isoValue!;
             
-            let compCtx = Core.Computation.createContext();
-            compCtx.progress.subscribe(p => ctx.update(`Density Surface (${source.props.label}): ${Utils.formatProgress(p)}`, p.requestAbort));
-
             let surface = await Geom.MarchingCubes.compute({
                     isoLevel: isoValue,
                     scalarField: data.data,
                     bottomLeft: min,
                     topRight: max
-                }).run(compCtx).result;
-            surface = await Geom.Surface.transform(surface, <number[]><any>fromFrac.elements).run(compCtx).result;
-            surface = await Geom.Surface.laplacianSmooth(surface, params.smoothing).run(compCtx).result;
+                }).run(ctx);
+            surface = await Geom.Surface.transform(surface, <number[]><any>fromFrac.elements).run(ctx);
+            surface = await Geom.Surface.laplacianSmooth(surface, params.smoothing).run(ctx);
                              
             let theme = style.theme!.template!.provider(source, Theme.getProps(style.theme!));
                             
-            ctx.update('Creating visual...');
-            ctx.schedule(async () => {               
-                let modelComp = LiteMol.Visualization.Surface.Model.create(source, { surface, theme, parameters: { isWireframe: style.params!.isWireframe } }).run();                    
-                modelComp.progress.subscribe(p => ctx.update(`Density Surface (${source.props.label}): ${Utils.formatProgress(p)}`, p.requestAbort));
-                let model = await modelComp.result;                                                       
-                    let label = `Surface, ${Utils.round(params.isoValue!, 2)}${isSigma ? ' \u03C3' : ''}`;                    
-                    let visual = Entity.Density.Visual.create(transform, { label, model, style, isSelectable: !style.isNotSelectable });
-                    ctx.resolve(visual);
-            }, 0);
+            await ctx.updateProgress('Creating visual...');
+            let model = await LiteMol.Visualization.Surface.Model.create(source, { surface, theme, parameters: { isWireframe: style.params!.isWireframe } }).run(ctx);                    
+            let label = `Surface, ${Utils.round(params.isoValue!, 2)}${isSigma ? ' \u03C3' : ''}`;                    
+            return Entity.Density.Visual.create(transform, { label, model, style, isSelectable: !style.isNotSelectable });
         });
     }    
 }

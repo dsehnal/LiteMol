@@ -1530,11 +1530,13 @@ declare namespace LiteMol.Core {
     function computation<A>(c: (ctx: Computation.Context) => Promise<A>): Computation<A>;
     class Computation<A> {
         private computation;
-        run(ctx?: Computation.Context): Computation.Running<A>;
+        run(ctx?: Computation.Context): __Promise.Promise<A>;
+        runWithContext(ctx?: Computation.Context): Computation.Running<A>;
         constructor(computation: (ctx: Computation.Context) => Promise<A>);
     }
     module Computation {
         function resolve<A>(a: A): Computation<A>;
+        function reject<A>(reason: any): Computation<A>;
         function createContext(): Computation.Context;
         const Aborted = "Aborted";
         const UpdateProgressDelta = 100;
@@ -1547,6 +1549,7 @@ declare namespace LiteMol.Core {
         }
         interface Context {
             progress: Rx.Observable<Progress>;
+            requestAbort(): void;
             /**
              * Checks if the computation was aborted. If so, throws.
              * Otherwise, updates the progress.

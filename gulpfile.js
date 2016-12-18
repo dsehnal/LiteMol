@@ -50,6 +50,11 @@ function Uglify() {
     return plugins.merge(CSS(true).concat([plugin, core]));
 }
 
+function Viewer() {
+    console.log('Building Viewer');
+    return buildts('./src/Viewer');
+}
+
 function ViewerAndExamples() {       
    console.log('Building Viewer and Examples');
    
@@ -158,6 +163,8 @@ gulp.task('Docs-pack', ['Docs-generate'], function() {
 });
 
 gulp.task('Docs', ['Docs-pack'], function() { });
+
+gulp.task('Viewer', [], Viewer);
 
 gulp.task('CSS', [], function () { return CSS(false); });
 gulp.task('CSS-min', [], function () { return CSS(true); });

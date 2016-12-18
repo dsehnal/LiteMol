@@ -3281,7 +3281,7 @@ declare namespace LiteMol.Plugin {
         /**
          * Applies a state trasnform.
          */
-        applyTransform(transform: Bootstrap.Tree.Transform.Source): Bootstrap.Task.Running<{}>;
+        applyTransform(transform: Bootstrap.Tree.Transform.Source): __Promise.Promise<void>;
         /**
          * Remove all entities.
          */
@@ -3304,7 +3304,7 @@ declare namespace LiteMol.Plugin {
          *
          * Default format is mmCIF.
          */
-        loadMolecule(source: ControllerLoadMoleculeInfo): Bootstrap.Task.Running<{}>;
+        loadMolecule(source: ControllerLoadMoleculeInfo): __Promise.Promise<void>;
         /**
          * Destroys the the plugin instance.
          * The controller becomes unusable as a result.
@@ -4851,11 +4851,13 @@ declare namespace LiteMol.Core {
     function computation<A>(c: (ctx: Computation.Context) => Promise<A>): Computation<A>;
     class Computation<A> {
         private computation;
-        run(ctx?: Computation.Context): Computation.Running<A>;
+        run(ctx?: Computation.Context): __Promise.Promise<A>;
+        runWithContext(ctx?: Computation.Context): Computation.Running<A>;
         constructor(computation: (ctx: Computation.Context) => Promise<A>);
     }
     module Computation {
         function resolve<A>(a: A): Computation<A>;
+        function reject<A>(reason: any): Computation<A>;
         function createContext(): Computation.Context;
         const Aborted = "Aborted";
         const UpdateProgressDelta = 100;
@@ -4868,6 +4870,7 @@ declare namespace LiteMol.Core {
         }
         interface Context {
             progress: Rx.Observable<Progress>;
+            requestAbort(): void;
             /**
              * Checks if the computation was aborted. If so, throws.
              * Otherwise, updates the progress.
@@ -15595,59 +15598,39 @@ declare namespace LiteMol.Bootstrap.Service {
     }
 }
 declare namespace LiteMol.Bootstrap {
-    let serialTaskId: number;
+    import Computation = Core.Computation;
     class Task<A> {
         name: string;
         type: Task.Type;
-        private task;
-        private _id;
+        private computation;
+        private info;
         readonly id: number;
-        reportTime: boolean;
-        bind<B>(name: string, type: Task.Type, next: (r: A) => Task<B>): Task<B>;
-        map<B>(name: string, type: Task.Type, f: (r: A) => B): Task<B>;
-        run(context: Context): Task.Running<A>;
+        readonly reportTime: boolean;
+        run(context: Context): __Promise.Promise<A>;
+        runWithContext(context: Context): Task.Running<A>;
         setReportTime(report: boolean): this;
-        constructor(name: string, type: Task.Type, task: (ctx: Task.Context<A>) => void);
+        constructor(name: string, type: Task.Type, computation: Computation<A>);
     }
     module Task {
-        class Running<T> {
-            private promise;
-            private ctx;
-            then(action: (r: T) => void): __Promise.Promise<void>;
-            catch(action: (e: any) => void): __Promise.Promise<void>;
-            discard(): void;
-            constructor(p: (resolve: (v: T) => void, reject: (err: any) => void, setCtx: (ctx: Context<T>) => void) => void);
+        type Type = 'Normal' | 'Background' | 'Silent';
+        interface Info {
+            id: number;
+            type: Type;
+            name: string;
+            reportTime: boolean;
         }
-        type Type = 'Normal' | 'Background' | 'Silent' | 'Child';
-        function create<A>(name: string, type: Type, task: (ctx: Context<A>) => void): Task<A>;
-        function resolve<A>(name: string, type: Type, value: A): Task<A>;
-        function reject<A>(name: string, type: Type, reason: any): Task<A>;
-        function fromComputation<A>(name: string, type: Type, computation: Core.Computation<A>): Task<A>;
-        function sequencePromises<A>(promises: (() => Promise<A>)[], ignoreErrors?: boolean): Promise<A[]>;
-        function sequence<A>(context: Bootstrap.Context, name: string, type: Type, tasks: (() => Task<A>)[], ignoreErrors?: boolean): Task<A[]>;
-        function guardedPromise<A>(context: Bootstrap.Context, promise: (resolve: (r: A) => void, reject: (err: any) => void) => void): __Promise.Promise<A>;
-        function split(context: Bootstrap.Context, tasks: {
-            stateUpdate: () => void;
-            action: () => void;
-        }[]): Promise<void>;
-        function isPromise(t: any): t is Promise<any>;
-        class Context<A> {
-            context: Bootstrap.Context;
-            task: Task<A>;
-            private _resolve;
-            private _reject;
-            private schedulingTime;
-            private scheduleId;
-            private abort;
-            private discarded;
-            discard(): void;
-            update(message: string, abort?: () => void): void;
-            schedule(action: () => void, timeout?: number): void;
-            private resolve_task(result);
-            private reject_task(err);
-            resolve: (r: A) => void;
-            reject: (e: any) => void;
-            constructor(context: Bootstrap.Context, task: Task<A>, _resolve: (r: A) => void, _reject: (err: any) => void);
+        class Running<T> {
+            private context;
+            private computation;
+            private info;
+            private computationCtx;
+            result: Promise<T>;
+            tryAbort(): void;
+            private progressUpdated(progress);
+            private resolved();
+            private rejected(err);
+            private run();
+            constructor(context: Bootstrap.Context, computation: Computation<T>, info: Info);
         }
         interface State {
             taskId: number;
@@ -15656,6 +15639,11 @@ declare namespace LiteMol.Bootstrap {
             message: string;
             abort?: () => void;
         }
+        function create<A>(name: string, type: Type, computation: (ctx: Computation.Context) => Promise<A>): Task<A>;
+        function resolve<A>(name: string, type: Type, value: A): Task<A>;
+        function reject<A>(name: string, type: Type, reason: any): Task<A>;
+        function fromComputation<A>(name: string, type: Type, computation: Core.Computation<A>): Task<A>;
+        function isPromise(t: any): t is Promise<any>;
     }
 }
 declare namespace LiteMol.Bootstrap {
@@ -15683,7 +15671,7 @@ declare namespace LiteMol.Bootstrap.Event {
         const LayoutChanged: Type<{}>;
     }
     namespace Task {
-        const Started: Type<Task<any>>;
+        const Started: Type<Bootstrap.Task.Info>;
         const Completed: Type<number>;
         const StateUpdated: Type<Bootstrap.Task.State>;
     }
@@ -15918,8 +15906,8 @@ declare namespace LiteMol.Bootstrap.Tree {
         transformer: Transformer<A, B, P>;
         params: P;
         isUpdate?: boolean;
-        apply(context: Context, a: A): Task<B>;
-        update(context: Context, b: B): Task<B>;
+        apply(context: Context, a: A): Core.Computation<B>;
+        update(context: Context, b: B): Core.Computation<B>;
     }
     namespace Transform {
         type Any = Transform<Node, Node, any>;
@@ -15934,10 +15922,9 @@ declare namespace LiteMol.Bootstrap.Tree {
         }
         type Source = Instance | Instance[] | Builder;
         function create<A extends Node, B extends Node, P>(params: P, props: Props, transformer: Transformer<A, B, P>): Transform<A, B, P>;
-        function updateInstance<A extends Node, B extends Node, P>(ctx: Context, instance: Instance): Task<Node[]>;
-        function applyInstance<A extends Node, B extends Node, P>(ctx: Context, instance: Instance): Task<Node[]>;
-        function apply(ctx: Context, source: Source): Task<{}>;
-        function update(ctx: Context, source: Source): Task<{}>;
+        function execute(ctx: Context, source: Source, isUpdate: boolean): Core.Computation<void>;
+        function apply(ctx: Context, source: Source): Core.Computation<void>;
+        function update(ctx: Context, source: Source): Core.Computation<void>;
     }
 }
 declare namespace LiteMol.Bootstrap.Tree.Transform {
@@ -16452,11 +16439,6 @@ declare namespace LiteMol.Bootstrap.Entity.Transformer.Basic {
         isCollapsed?: boolean;
     }
     const CreateGroup: Transformer<Any, Root, CreateGroupParams>;
-    interface GroupEntry<A extends Any, GlobalParams, CurrentParams> {
-        params: (initial: GlobalParams, e: A) => CurrentParams;
-        transformer: Transformer<A, Any, CurrentParams>;
-    }
-    function group<A extends Any, P>(info: Transformer.Info<A, Entity.Group, P>, transformers: GroupEntry<A, P, any>[]): Transformer<A, Entity.Group, P>;
 }
 declare namespace LiteMol.Bootstrap.Entity.Transformer.Molecule {
     interface DownloadMoleculeSourceParams {

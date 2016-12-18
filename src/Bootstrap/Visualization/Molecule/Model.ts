@@ -91,30 +91,19 @@ namespace LiteMol.Bootstrap.Visualization.Molecule {
         transform: Tree.Transform<Entity.Molecule.Model | Entity.Molecule.Selection, Entity.Molecule.Visual, any>,
         style: Style<any>): Task<Entity.Molecule.Visual> {            
             
-        return Task.create<Entity.Molecule.Visual>(`Visual (${source.props.label})`, style.taskType || 'Normal', ctx => {         
+        return Task.create<Entity.Molecule.Visual>(`Visual (${source.props.label})`, style.taskType || 'Normal', async ctx => {                     
+            let label = TypeDescriptions[style.type!].label;             
+            await ctx.updateProgress(`Creating ${label}...`);           
             
-            let label = TypeDescriptions[style.type!].label;
-             
-            ctx.update(`Creating ${label}...`);
+            let theme = style.theme!.template!.provider(Utils.Molecule.findModel(source)!, Theme.getProps(style.theme!));
+            let mc = createModel(source, style, theme);    
             
+            if (!mc) {
+                throw 'Invalid input parameters.';  
+            } 
             
-            
-            ctx.schedule(() => {  
-                let theme = style.theme!.template!.provider(Utils.Molecule.findModel(source)!, Theme.getProps(style.theme!));
-                let mc = createModel(source, style, theme);    
-                
-                if (!mc) {
-                    ctx.reject('Invalid input parameters.');  
-                    return;
-                } 
-                
-                let comp = mc.run();
-                comp.progress.subscribe(p => ctx.update(label + ': ' +Utils.formatProgress(p), p.requestAbort));
-                comp.result.then(model => {                                 
-                    let visual = Entity.Molecule.Visual.create(transform, { label, model, style, isSelectable: !style.isNotSelectable });        
-                    ctx.resolve(visual);
-                }).catch(ctx.reject);
-            }, 0);
+            let model = await mc.run(ctx);
+            return Entity.Molecule.Visual.create(transform, { label, model, style, isSelectable: !style.isNotSelectable });        
         });
     }
     
@@ -123,13 +112,13 @@ namespace LiteMol.Bootstrap.Visualization.Molecule {
         transform: Tree.Transform<Entity.Molecule.Model | Entity.Molecule.Selection, Entity.Molecule.Visual, any>,
         style: Style<SurfaceParams>): Task<Entity.Molecule.Visual> {
 
-        return Task.create<Entity.Molecule.Visual>(`Molecular Surface (${source.props.label})`, style.taskType || 'Normal', ctx => {
+        return Task.create<Entity.Molecule.Visual>(`Molecular Surface (${source.props.label})`, style.taskType || 'Normal', async ctx => {
             let model = Utils.Molecule.findModel(source)!.props.model;
             let atomIndices = Entity.isMoleculeModel(source) ? source.props.model.atoms.indices : source.props.indices;
             let params = style.params!;
             let label = TypeDescriptions[style.type!].label;
                    
-            let data = LiteMol.Core.Geometry.MolecularSurface.computeMolecularSurfaceAsync({
+            let data = await LiteMol.Core.Geometry.MolecularSurface.computeMolecularSurfaceAsync({
                 positions: model.atoms,
                 atomIndices,
                 parameters:  {
@@ -139,23 +128,13 @@ namespace LiteMol.Bootstrap.Visualization.Molecule {
                     smoothingIterations: 2 * params.smoothing,
                     interactive: true
                 }                
-            }).run();
+            }).run(ctx);
             
-            data.progress.subscribe(p => ctx.update(label + ': ' + Utils.formatProgress(p), p.requestAbort));
-            
-            data.result.then(data => {    
-                let theme = style.theme!.template!.provider(Utils.Molecule.findModel(source)!, Theme.getProps(style.theme!));                
-                ctx.update('Creating visual...');
-                ctx.schedule(() => {               
-                    let surface = LiteMol.Visualization.Surface.Model.create(source, { surface: data.surface, theme, parameters: { isWireframe: style.params!.isWireframe } }).run();                    
-                    surface.progress.subscribe(p => ctx.update(label + ': ' + Utils.formatProgress(p), p.requestAbort));
-                    surface.result.then(model => {                                                            
-                        let label = `Surface, ${Utils.round(params.probeRadius!, 2)} \u212B probe`;                    
-                        let visual = Entity.Molecule.Visual.create(transform, { label, model, style, isSelectable: !style.isNotSelectable });
-                        ctx.resolve(visual);
-                    }).catch(ctx.reject);
-                }, 0);
-            }).catch(ctx.reject);
+            let theme = style.theme!.template!.provider(Utils.Molecule.findModel(source)!, Theme.getProps(style.theme!));                
+            await ctx.updateProgress('Creating visual...');
+            let surfaceModel = await LiteMol.Visualization.Surface.Model.create(source, { surface: data.surface, theme, parameters: { isWireframe: style.params!.isWireframe } }).run(ctx);                    
+            let eLabel = `Surface, ${Utils.round(params.probeRadius!, 2)} \u212B probe`;                    
+            return Entity.Molecule.Visual.create(transform, { label: eLabel, model: surfaceModel, style, isSelectable: !style.isNotSelectable });
         });
     }
     

@@ -230,13 +230,11 @@ namespace LiteMol.Viewer.ValidatorDB {
             to: [Report],
             defaultParams: () => ({})
         }, (context, a, t) => { 
-            return Bootstrap.Task.create<Report>(`ValidatorDB Report (${t.params.id})`, 'Normal', ctx => {
-                ctx.update('Parsing...');
-                ctx.schedule(() => {
-                    let data = JSON.parse(a.props.data);
-                    let report = Api.createReport(data || {});                    
-                    ctx.resolve(Report.create(t, { label: 'Ligand Validation Report', behaviour: new Interactivity.Behaviour(context, report) }))
-                });
+            return Bootstrap.Task.create<Report>(`ValidatorDB Report (${t.params.id})`, 'Normal', async ctx => {
+                await ctx.updateProgress('Parsing...');                
+                let data = JSON.parse(a.props.data);
+                let report = Api.createReport(data || {});                    
+                return Report.create(t, { label: 'Ligand Validation Report', behaviour: new Interactivity.Behaviour(context, report) });
             }).setReportTime(true);
         }       
     );
@@ -266,11 +264,10 @@ namespace LiteMol.Viewer.ValidatorDB {
         to: [Entity.Action],
         defaultParams: () => ({})  
     }, (context, a, t) => {        
-            return Bootstrap.Task.create<Entity.Action>('Validation Coloring', 'Background', ctx => {            
+            return Bootstrap.Task.create<Entity.Action>('Validation Coloring', 'Background', async ctx => {            
             let molecule = Bootstrap.Tree.Node.findAncestor(a, Bootstrap.Entity.Molecule.Molecule);
             if (!molecule)  {
-                ctx.reject('No suitable parent found.');
-                return;
+                throw 'No suitable parent found.';
             } 
                 
             let themes = new Map<number, Visualization.Theme>();      
@@ -286,7 +283,7 @@ namespace LiteMol.Viewer.ValidatorDB {
                 Bootstrap.Command.Visual.UpdateBasicTheme.dispatch(context, { visual: v as any, theme });
             }                                   
             context.logger.message('Validation coloring applied.');
-            ctx.resolve(Bootstrap.Tree.Node.Null);
+            return Bootstrap.Tree.Node.Null;
         });
     });
 }

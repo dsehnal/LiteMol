@@ -8,9 +8,13 @@ namespace LiteMol.Core {
     export function computation<A>(c: (ctx: Computation.Context) => Promise<A>) {
         return new Computation(c);
     }
-        
-    export class Computation<A> {                                                
-        run(ctx?: Computation.Context): Computation.Running<A>  {     
+
+    export class Computation<A> {       
+        run(ctx?: Computation.Context) {
+            return this.runWithContext(ctx).result;
+        }
+
+        runWithContext(ctx?: Computation.Context): Computation.Running<A>  {     
             let context = ctx ? ctx as ContextImpl : new ContextImpl();    
             
             return {
@@ -18,7 +22,7 @@ namespace LiteMol.Core {
                 result: new Promise<A>(async (resolve, reject) => {
                     try {
                         context.started();
-                        let result = await this.computation(contextView(context));
+                        let result = await this.computation(context);
                         resolve(result);
                     } catch (e) {
                         reject(e);
@@ -29,13 +33,18 @@ namespace LiteMol.Core {
             };
         }
                 
-        constructor(private computation: (ctx: Computation.Context) => Promise<A>) {            
+        constructor(private computation: (ctx: Computation.Context) => Promise<A>) {
+            
         }
     }
     
     export module Computation {        
         export function resolve<A>(a: A) {
-            return computation(() => Promise.resolve(a));
+            return computation<A>(() => Promise.resolve(a));
+        }
+
+        export function reject<A>(reason: any) {
+            return computation<A>(() => Promise.reject(reason));
         }
 
         export function createContext(): Computation.Context {
@@ -55,6 +64,7 @@ namespace LiteMol.Core {
 
         export interface Context {
             progress: Rx.Observable<Progress>,
+            requestAbort(): void,
             
             /**
              * Checks if the computation was aborted. If so, throws.
@@ -68,22 +78,6 @@ namespace LiteMol.Core {
             result: Promise<A>
         }
     }
-
-    function contextView(ctx: Computation.Context): Computation.Context {
-        if (ctx instanceof ContextView) return ctx;
-        return new ContextView(ctx);
-    }
-
-    class ContextView implements Computation.Context {
-
-        get progress() { return this.ctx.progress; }
-
-        updateProgress(msg: string, abort: boolean | (() => void), current = NaN, max = NaN) {
-            this.ctx.updateProgress(msg, abort, current, max);
-        }
-
-        constructor(private ctx: Computation.Context) { }
-    }
                     
     class ContextImpl implements Computation.Context {            
         private _abortRequested = false;
@@ -96,6 +90,14 @@ namespace LiteMol.Core {
         }
                     
         private _abortRequester = () => { this._abortRequested = true };
+
+        requestAbort() {
+            try {
+                if (this._abortRequester) {
+                    this._abortRequester.call(null);
+                }
+            } catch (e) { }
+        }
 
         private progressTick = new Rx.Subject<Computation.Progress>();
         private _progress: Computation.Progress = { message: 'Working...', current: 0, max: 0, isIndeterminate: true, requestAbort: void 0 };

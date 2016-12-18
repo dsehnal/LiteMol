@@ -276,11 +276,11 @@ namespace LiteMol.Core.Geometry.MolecularSurface {
 
     export function computeMolecularSurfaceAsync(parameters: MolecularSurfaceInputParameters): Computation<MolecularIsoSurfaceGeometryData> {
         return computation<MolecularIsoSurfaceGeometryData>(async ctx => {
-            let field = await createMolecularIsoFieldAsync(parameters).run(ctx).result;
-            let surface = await MarchingCubes.compute(field.data).run(ctx).result;
-            surface = await Surface.transform(surface, field.transform).run(ctx).result;
+            let field = await createMolecularIsoFieldAsync(parameters).run(ctx);
+            let surface = await MarchingCubes.compute(field.data).run(ctx);
+            surface = await Surface.transform(surface, field.transform).run(ctx);
             let smoothing = (parameters.parameters && parameters.parameters.smoothingIterations) || 1;
-            surface = await Surface.laplacianSmooth(surface, smoothing).run(ctx).result;
+            surface = await Surface.laplacianSmooth(surface, smoothing).run(ctx);
             return { surface, usedParameters: field.parameters };
         });
     }

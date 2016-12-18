@@ -80,8 +80,8 @@ namespace LiteMol.Bootstrap.Tree {
                 let validationFailed = this.validate(a, t);
                 if (validationFailed) return validationFailed;  
                 
-                Event.Tree.TransformerApply.dispatch(context, { a, t });            
-                                
+                Event.Tree.TransformerApply.dispatch(context, { a, t });        
+
                 return this.transform(context, a, t);                                 
             }
             
@@ -144,10 +144,10 @@ namespace LiteMol.Bootstrap.Tree {
             actionContext: T,
             error: any, 
             context: Context, 
-            task: Task.Context<Entity.Action>,
+            reject: (e: any) => void,
             onError?: string | ((ctx: Context, actionCtx: T | undefined, error: any) => void)) {
             try {
-                task.reject(error);
+                reject(error);
             } finally {
                 if (onError) {
                     if (typeof onError === 'string') {
@@ -159,40 +159,38 @@ namespace LiteMol.Bootstrap.Tree {
             }
         }
 
-        function resolveAction<T>(
+        async function resolveAction<T>(
             src: ActionWithContext<T>, 
-            context: Context, task: Task.Context<Entity.Action>,
+            context: Context, resolve: (e: Entity.Action) => void, reject: (e: any) => void,
             onDone?: string | ((ctx: Context, actionCtx: T | undefined) => void), 
             onError?: string | ((ctx: Context, actionCtx: T | undefined, error: any) => void)) {
 
-            Tree.Transform.apply(context, src.action)
-                .run(context)
-                .then(r => {
-                    try {
-                        task.resolve(Tree.Node.Null)
-                    } finally {
-                        if (onDone) {
-                            if (typeof onDone === 'string') {
-                                context.logger.message(onDone);
-                            } else {
-                                setTimeout(() => onDone.call(null, context, src.context), 0);
-                            }
+            try {
+                let r = await Tree.Transform.apply(context, src.action).run();
+                try {
+                    resolve(Tree.Node.Null)
+                } finally {
+                    if (onDone) {
+                        if (typeof onDone === 'string') {
+                            context.logger.message(onDone);
+                        } else {
+                            setTimeout(() => onDone.call(null, context, src.context), 0);
                         }
                     }
-                })
-                .catch(e => {
-                    try {
-                        task.reject(e);
-                    } finally {
-                        if (onError) {
-                            if (typeof onError === 'string') {
-                                context.logger.error(onError);
-                            } else {
-                                setTimeout(() => onError.call(null, context, src.context, e), 0);
-                            }                                    
-                        }
+                }
+            } catch (e) {
+                try {
+                    reject(e);
+                } finally {
+                    if (onError) {
+                        if (typeof onError === 'string') {
+                            context.logger.error(onError);
+                        } else {
+                            setTimeout(() => onError.call(null, context, src.context, e), 0);
+                        }                                    
                     }
-                });
+                }
+            }
         }
 
         export function action<A extends Node, B extends Node, P>(
@@ -200,10 +198,14 @@ namespace LiteMol.Bootstrap.Tree {
             builder: (ctx: Context, a: A, t: Transform<A, B, P>) => Transform.Source,
             onDone?: string, onError?: string): Transformer<A, B, P> {
             return create(info, (context, a, t) => {
-                return Task.create<Entity.Action>(info.name, 'Background', ctx => {
-                    let src = builder(context, a, t);
-                    resolveAction<undefined>({ action: src, context: void 0 }, context, ctx, onDone, onError);
-                });
+                return Task.create<Entity.Action>(info.name, 'Background', ctx => new Promise((res, rej) => {
+                    try {
+                        let src = builder(context, a, t);
+                        resolveAction<undefined>({ action: src, context: void 0 }, context, res, rej, onDone, onError);
+                    } catch (e) {
+                        rej(e);
+                    }
+                }));
             }) 
         }
 
@@ -213,16 +215,20 @@ namespace LiteMol.Bootstrap.Tree {
             onDone?: (ctx: Context, actionCtx: T | undefined) => void, 
             onError?: (ctx: Context, actionCtx: T | undefined, error: any) => void): Transformer<A, B, P> {
             return create(info, (context, a, t) => {
-                return Task.create<Entity.Action>(info.name, 'Background', ctx => {
-                    let src = builder(context, a, t);
-                    if (Task.isPromise(src)) {
-                        src
-                            .then(s => resolveAction<T>(s, context, ctx, onDone, onError))
-                            .catch(e => rejectAction<undefined>(void 0, e, context, ctx, onError));
-                    } else {
-                        resolveAction<T>(src, context, ctx, onDone, onError)
-                    }                       
-                });
+                return Task.create<Entity.Action>(info.name, 'Background', ctx =>  new Promise((res, rej) =>{
+                    try {
+                        let src = builder(context, a, t);
+                        if (Task.isPromise(src)) {
+                            src
+                                .then(s => resolveAction<T>(s, context, res, rej, onDone, onError))
+                                .catch(e => rejectAction<undefined>(void 0, e, context, rej, onError));
+                        } else {
+                            resolveAction<T>(src, context, res, rej, onDone, onError)
+                        }    
+                    } catch (e) {
+                        rej(e);
+                    }                   
+                }));
             }) 
         }
     }

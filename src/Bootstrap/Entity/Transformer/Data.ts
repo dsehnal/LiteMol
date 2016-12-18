@@ -35,11 +35,12 @@ namespace LiteMol.Bootstrap.Entity.Transformer.Data {
         defaultParams: () => ({ id: '', description: '', type: 'String', url: '', responseCompression: Utils.DataCompressionMethod.None })
     }, (ctx, a, t) => {
         let params = t.params;
-        return Utils.ajaxGet({ url: params.url!, type: getDataType(params.type), compression: params.responseCompression, title: params.title }).setReportTime(true)
-            .map<Entity.Data.String | Entity.Data.Binary>('ToEntity', 'Child', data => {
-                if (params.type === 'String') return Entity.Data.String.create(<any>t, { label: params.id ? params.id : params.url!, description: params.description, data: data as string });
-                else return Entity.Data.Binary.create(<any>t, { label: params.id ? params.id : params.url!, description: params.description, data: data as ArrayBuffer });
-            });
+
+        return Task.create('Download', 'Silent', async () => {
+            let data = await Utils.ajaxGet({ url: params.url!, type: getDataType(params.type), compression: params.responseCompression, title: params.title }).setReportTime(true).run(ctx);
+            if (params.type === 'String') return Entity.Data.String.create(<any>t, { label: params.id ? params.id : params.url!, description: params.description, data: data as string });
+            else return Entity.Data.Binary.create(<any>t, { label: params.id ? params.id : params.url!, description: params.description, data: data as ArrayBuffer });
+        });
     });
 
     export interface OpenFileParams {
@@ -58,12 +59,12 @@ namespace LiteMol.Bootstrap.Entity.Transformer.Data {
         validateParams: p => !p.file ? ['Select a file'] : void 0,
         defaultParams: () => ({ type: 'String', file: void 0 })
     }, (ctx, a, t) => {
-        let params = t.params;
-        return Utils.readFromFile(params.file!, getDataType(params.type)).setReportTime(true)
-            .map<Entity.Data.String | Entity.Data.Binary>('ToEntity', 'Child', data => {
-                if (params.type === 'String') return Entity.Data.String.create(<any>t, { label: params.id ? params.id : params.file!.name, description: params.description, data: data as string });
-                else return Entity.Data.Binary.create(<any>t, { label: params.id ? params.id : params.file!.name, description: params.description, data: data as ArrayBuffer });
-            });
+        return Task.create('Download', 'Silent', async taskCtx => {
+            let params = t.params;
+            let data = await Utils.readFromFile(params.file!, getDataType(params.type)).setReportTime(true).run(ctx);            
+            if (params.type === 'String') return Entity.Data.String.create(<any>t, { label: params.id ? params.id : params.file!.name, description: params.description, data: data as string });
+            else return Entity.Data.Binary.create(<any>t, { label: params.id ? params.id : params.file!.name, description: params.description, data: data as ArrayBuffer });
+        });
     });
 
     export interface ParseCifParams { id?: string, description?: string }
@@ -74,17 +75,14 @@ namespace LiteMol.Bootstrap.Entity.Transformer.Data {
         from: [Entity.Data.String],
         to: [Entity.Data.CifDictionary],
         defaultParams: () => ({})
-    }, (ctx, a, t) => {
-        return Task.create<Entity.Data.CifDictionary>(`CIF Parse (${a.props.label})`, 'Normal', ctx => {
-            ctx.update('Parsing...');
-            ctx.schedule(() => {
-                let d = Core.Formats.CIF.Text.parse(a.props.data);
-                if (d.isError) {
-                    ctx.reject(d.toString());
-                    return;
-                }
-                ctx.resolve(Entity.Data.CifDictionary.create(t, { label: t.params.id ? t.params.id : 'CIF Dictionary', description: t.params.description, dictionary: d.result! }));
-            });
+    }, (bigCtx, a, t) => {
+        return Task.create<Entity.Data.CifDictionary>(`CIF Parse (${a.props.label})`, 'Normal', async ctx => {
+            await ctx.updateProgress('Parsing...');
+            let d = Core.Formats.CIF.Text.parse(a.props.data);
+            if (d.isError) {
+                throw d.toString();
+            }
+            return Entity.Data.CifDictionary.create(t, { label: t.params.id ? t.params.id : 'CIF Dictionary', description: t.params.description, dictionary: d.result! });
         }).setReportTime(true);
     });
 
@@ -96,17 +94,14 @@ namespace LiteMol.Bootstrap.Entity.Transformer.Data {
         from: [Entity.Data.Binary],
         to: [Entity.Data.CifDictionary],
         defaultParams: () => ({})
-    }, (ctx, a, t) => {
-        return Task.create<Entity.Data.CifDictionary>(`BinaryCIF Parse (${a.props.label})`, 'Normal', ctx => {
-            ctx.update('Parsing...');
-            ctx.schedule(() => {
-                let d = Core.Formats.CIF.Binary.parse(a.props.data);
-                if (d.isError) {
-                    ctx.reject(d.toString());
-                    return;
-                }
-                ctx.resolve(Entity.Data.CifDictionary.create(t, { label: t.params.id ? t.params.id : 'CIF Dictionary', description: t.params.description, dictionary: d.result! }));
-            });
+    }, (bigCtx, a, t) => {
+        return Task.create<Entity.Data.CifDictionary>(`BinaryCIF Parse (${a.props.label})`, 'Normal', async ctx => {
+            await ctx.updateProgress('Parsing...');
+            let d = Core.Formats.CIF.Binary.parse(a.props.data);
+            if (d.isError) {
+                throw d.toString();
+            }
+            return Entity.Data.CifDictionary.create(t, { label: t.params.id ? t.params.id : 'CIF Dictionary', description: t.params.description, dictionary: d.result! });
         }).setReportTime(true);
     }
     );
@@ -119,13 +114,11 @@ namespace LiteMol.Bootstrap.Entity.Transformer.Data {
         from: [Entity.Data.String],
         to: [Entity.Data.Json],
         defaultParams: () => ({})
-    }, (ctx, a, t) => {
-        return Task.create<Entity.Data.Json>(`JSON Parse (${a.props.label})`, 'Normal', ctx => {
-            ctx.update('Parsing...');
-            ctx.schedule(() => {
-                let data = JSON.parse(a.props.data);
-                ctx.resolve(Entity.Data.Json.create(t, { label: t.params.id ? t.params.id : 'JSON Data', description: t.params.description, data }));
-            });
+    }, (bigCtx, a, t) => {
+        return Task.create<Entity.Data.Json>(`JSON Parse (${a.props.label})`, 'Normal', async ctx => {
+            await ctx.updateProgress('Parsing...');            
+            let data = JSON.parse(a.props.data);
+            return Entity.Data.Json.create(t, { label: t.params.id ? t.params.id : 'JSON Data', description: t.params.description, data });
         }).setReportTime(true);
     });
 

@@ -62,7 +62,7 @@ namespace LiteMol.Bootstrap.Behaviour.Density {
                 style.taskType = 'Silent';
             }
             
-            let task: Task<any>;
+            let task: Core.Computation<any>;
             
             let visual = this.getVisual();       
             if (!visual) {
@@ -72,8 +72,7 @@ namespace LiteMol.Bootstrap.Behaviour.Density {
             }
             else task = Entity.Transformer.Density.CreateVisual.create({ style }, { ref: this.ref, isHidden: true }).update(this.context, visual);
             
-            //this.isBusy = true;
-            task.run(this.context);   
+            task.run();   
         }
 
         updateTheme(ti: Visualization.Theme.Instance) {

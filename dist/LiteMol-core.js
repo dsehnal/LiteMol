@@ -11215,6 +11215,9 @@ var LiteMol;
                 this.computation = computation;
             }
             Computation.prototype.run = function (ctx) {
+                return this.runWithContext(ctx).result;
+            };
+            Computation.prototype.runWithContext = function (ctx) {
                 var _this = this;
                 var context = ctx ? ctx : new ContextImpl();
                 return {
@@ -11226,7 +11229,7 @@ var LiteMol;
                                 case 0:
                                     _a.trys.push([0, 2, 3, 4]);
                                     context.started();
-                                    return [4 /*yield*/, this.computation(contextView(context))];
+                                    return [4 /*yield*/, this.computation(context)];
                                 case 1:
                                     result = _a.sent();
                                     resolve(result);
@@ -11252,6 +11255,10 @@ var LiteMol;
                 return computation(function () { return LiteMol.Promise.resolve(a); });
             }
             Computation.resolve = resolve;
+            function reject(reason) {
+                return computation(function () { return LiteMol.Promise.reject(reason); });
+            }
+            Computation.reject = reject;
             function createContext() {
                 return new ContextImpl();
             }
@@ -11259,27 +11266,6 @@ var LiteMol;
             Computation.Aborted = 'Aborted';
             Computation.UpdateProgressDelta = 100;
         })(Computation = Core.Computation || (Core.Computation = {}));
-        function contextView(ctx) {
-            if (ctx instanceof ContextView)
-                return ctx;
-            return new ContextView(ctx);
-        }
-        var ContextView = (function () {
-            function ContextView(ctx) {
-                this.ctx = ctx;
-            }
-            Object.defineProperty(ContextView.prototype, "progress", {
-                get: function () { return this.ctx.progress; },
-                enumerable: true,
-                configurable: true
-            });
-            ContextView.prototype.updateProgress = function (msg, abort, current, max) {
-                if (current === void 0) { current = NaN; }
-                if (max === void 0) { max = NaN; }
-                this.ctx.updateProgress(msg, abort, current, max);
-            };
-            return ContextView;
-        }());
         var ContextImpl = (function () {
             function ContextImpl() {
                 var _this = this;
@@ -11309,6 +11295,14 @@ var LiteMol;
             ContextImpl.prototype.checkAborted = function () {
                 if (this._abortRequested)
                     throw Computation.Aborted;
+            };
+            ContextImpl.prototype.requestAbort = function () {
+                try {
+                    if (this._abortRequester) {
+                        this._abortRequester.call(null);
+                    }
+                }
+                catch (e) { }
             };
             Object.defineProperty(ContextImpl.prototype, "progress", {
                 get: function () { return this.progressTick; },
@@ -15894,17 +15888,17 @@ var LiteMol;
                         var field, surface, smoothing;
                         return __generator(this, function (_a) {
                             switch (_a.label) {
-                                case 0: return [4 /*yield*/, createMolecularIsoFieldAsync(parameters).run(ctx).result];
+                                case 0: return [4 /*yield*/, createMolecularIsoFieldAsync(parameters).run(ctx)];
                                 case 1:
                                     field = _a.sent();
-                                    return [4 /*yield*/, Geometry.MarchingCubes.compute(field.data).run(ctx).result];
+                                    return [4 /*yield*/, Geometry.MarchingCubes.compute(field.data).run(ctx)];
                                 case 2:
                                     surface = _a.sent();
-                                    return [4 /*yield*/, Geometry.Surface.transform(surface, field.transform).run(ctx).result];
+                                    return [4 /*yield*/, Geometry.Surface.transform(surface, field.transform).run(ctx)];
                                 case 3:
                                     surface = _a.sent();
                                     smoothing = (parameters.parameters && parameters.parameters.smoothingIterations) || 1;
-                                    return [4 /*yield*/, Geometry.Surface.laplacianSmooth(surface, smoothing).run(ctx).result];
+                                    return [4 /*yield*/, Geometry.Surface.laplacianSmooth(surface, smoothing).run(ctx)];
                                 case 4:
                                     surface = _a.sent();
                                     return [2 /*return*/, { surface: surface, usedParameters: field.parameters }];

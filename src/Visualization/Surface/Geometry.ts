@@ -281,8 +281,8 @@ namespace LiteMol.Visualization.Surface {
         };
 
         await computation.updateProgress('Creating geometry...');
-        await Core.Geometry.Surface.computeNormals(data).run(computation).result;
-        await Core.Geometry.Surface.computeBoundingSphere(data).run(computation).result;
+        await Core.Geometry.Surface.computeNormals(data).run(computation);
+        await Core.Geometry.Surface.computeBoundingSphere(data).run(computation);
 
         await computeVertexMap(ctx);
         await computePickGeometry(ctx);

@@ -11280,6 +11280,9 @@ var LiteMol;
                 this.computation = computation;
             }
             Computation.prototype.run = function (ctx) {
+                return this.runWithContext(ctx).result;
+            };
+            Computation.prototype.runWithContext = function (ctx) {
                 var _this = this;
                 var context = ctx ? ctx : new ContextImpl();
                 return {
@@ -11291,7 +11294,7 @@ var LiteMol;
                                 case 0:
                                     _a.trys.push([0, 2, 3, 4]);
                                     context.started();
-                                    return [4 /*yield*/, this.computation(contextView(context))];
+                                    return [4 /*yield*/, this.computation(context)];
                                 case 1:
                                     result = _a.sent();
                                     resolve(result);
@@ -11317,6 +11320,10 @@ var LiteMol;
                 return computation(function () { return LiteMol.Promise.resolve(a); });
             }
             Computation.resolve = resolve;
+            function reject(reason) {
+                return computation(function () { return LiteMol.Promise.reject(reason); });
+            }
+            Computation.reject = reject;
             function createContext() {
                 return new ContextImpl();
             }
@@ -11324,27 +11331,6 @@ var LiteMol;
             Computation.Aborted = 'Aborted';
             Computation.UpdateProgressDelta = 100;
         })(Computation = Core.Computation || (Core.Computation = {}));
-        function contextView(ctx) {
-            if (ctx instanceof ContextView)
-                return ctx;
-            return new ContextView(ctx);
-        }
-        var ContextView = (function () {
-            function ContextView(ctx) {
-                this.ctx = ctx;
-            }
-            Object.defineProperty(ContextView.prototype, "progress", {
-                get: function () { return this.ctx.progress; },
-                enumerable: true,
-                configurable: true
-            });
-            ContextView.prototype.updateProgress = function (msg, abort, current, max) {
-                if (current === void 0) { current = NaN; }
-                if (max === void 0) { max = NaN; }
-                this.ctx.updateProgress(msg, abort, current, max);
-            };
-            return ContextView;
-        }());
         var ContextImpl = (function () {
             function ContextImpl() {
                 var _this = this;
@@ -11374,6 +11360,14 @@ var LiteMol;
             ContextImpl.prototype.checkAborted = function () {
                 if (this._abortRequested)
                     throw Computation.Aborted;
+            };
+            ContextImpl.prototype.requestAbort = function () {
+                try {
+                    if (this._abortRequester) {
+                        this._abortRequester.call(null);
+                    }
+                }
+                catch (e) { }
             };
             Object.defineProperty(ContextImpl.prototype, "progress", {
                 get: function () { return this.progressTick; },
@@ -15959,17 +15953,17 @@ var LiteMol;
                         var field, surface, smoothing;
                         return __generator(this, function (_a) {
                             switch (_a.label) {
-                                case 0: return [4 /*yield*/, createMolecularIsoFieldAsync(parameters).run(ctx).result];
+                                case 0: return [4 /*yield*/, createMolecularIsoFieldAsync(parameters).run(ctx)];
                                 case 1:
                                     field = _a.sent();
-                                    return [4 /*yield*/, Geometry.MarchingCubes.compute(field.data).run(ctx).result];
+                                    return [4 /*yield*/, Geometry.MarchingCubes.compute(field.data).run(ctx)];
                                 case 2:
                                     surface = _a.sent();
-                                    return [4 /*yield*/, Geometry.Surface.transform(surface, field.transform).run(ctx).result];
+                                    return [4 /*yield*/, Geometry.Surface.transform(surface, field.transform).run(ctx)];
                                 case 3:
                                     surface = _a.sent();
                                     smoothing = (parameters.parameters && parameters.parameters.smoothingIterations) || 1;
-                                    return [4 /*yield*/, Geometry.Surface.laplacianSmooth(surface, smoothing).run(ctx).result];
+                                    return [4 /*yield*/, Geometry.Surface.laplacianSmooth(surface, smoothing).run(ctx)];
                                 case 4:
                                     surface = _a.sent();
                                     return [2 /*return*/, { surface: surface, usedParameters: field.parameters }];
@@ -57580,10 +57574,10 @@ var LiteMol;
                                 return [4 /*yield*/, computation.updateProgress('Creating geometry...')];
                             case 1:
                                 _a.sent();
-                                return [4 /*yield*/, LiteMol.Core.Geometry.Surface.computeNormals(data).run(computation).result];
+                                return [4 /*yield*/, LiteMol.Core.Geometry.Surface.computeNormals(data).run(computation)];
                             case 2:
                                 _a.sent();
-                                return [4 /*yield*/, LiteMol.Core.Geometry.Surface.computeBoundingSphere(data).run(computation).result];
+                                return [4 /*yield*/, LiteMol.Core.Geometry.Surface.computeBoundingSphere(data).run(computation)];
                             case 3:
                                 _a.sent();
                                 return [4 /*yield*/, computeVertexMap(ctx)];
@@ -66233,269 +66227,96 @@ var LiteMol;
     var Bootstrap;
     (function (Bootstrap) {
         "use strict";
-        Bootstrap.serialTaskId = 0;
+        var Computation = LiteMol.Core.Computation;
         var Task = (function () {
-            function Task(name, type, task) {
+            function Task(name, type, computation) {
                 this.name = name;
                 this.type = type;
-                this.task = task;
-                this._id = Bootstrap.serialTaskId++;
-                this.reportTime = false;
+                this.computation = computation;
+                this.info = {
+                    id: serialTaskId++,
+                    name: name,
+                    type: type,
+                    reportTime: false
+                };
             }
             Object.defineProperty(Task.prototype, "id", {
-                get: function () { return this._id; },
+                get: function () { return this.info.id; },
                 enumerable: true,
                 configurable: true
             });
-            Task.prototype.bind = function (name, type, next) {
-                var _this = this;
-                return Task.create(name, type, function (ctx) {
-                    _this.run(ctx.context).then(function (a) {
-                        next(a).run(ctx.context).then(ctx.resolve).catch(ctx.reject);
-                    }).catch(ctx.reject);
-                });
-            };
-            Task.prototype.map = function (name, type, f) {
-                var _this = this;
-                return Task.create(name, type, function (ctx) {
-                    _this.run(ctx.context).then(function (r) { return ctx.resolve(f(r)); }).catch(ctx.reject);
-                });
-            };
+            Object.defineProperty(Task.prototype, "reportTime", {
+                get: function () { return this.info.reportTime; },
+                enumerable: true,
+                configurable: true
+            });
             Task.prototype.run = function (context) {
-                var _this = this;
-                return new Task.Running(function (resolve, reject, setCtx) {
-                    Bootstrap.Event.Task.Started.dispatch(context, _this);
-                    context.performance.start('task' + _this.id);
-                    var ctx = new Task.Context(context, _this, resolve, reject);
-                    setCtx(ctx);
-                    try {
-                        _this.task(new Task.Context(context, _this, resolve, reject));
-                    }
-                    catch (e) {
-                        ctx.reject(e);
-                    }
-                });
+                return this.runWithContext(context).result;
+            };
+            Task.prototype.runWithContext = function (context) {
+                return new Task.Running(context, this.computation, this.info);
             };
             Task.prototype.setReportTime = function (report) {
-                this.reportTime = report;
+                this.info.reportTime = report;
                 return this;
             };
             return Task;
         }());
         Bootstrap.Task = Task;
+        var serialTaskId = 0;
         (function (Task) {
             var Running = (function () {
-                function Running(p) {
-                    var _this = this;
-                    this.promise = new LiteMol.Promise(function (res, rej) { return p(res, rej, function (ctx) { return _this.ctx = ctx; }); });
-                }
-                Running.prototype.then = function (action) {
-                    return this.promise.then(action);
-                };
-                Running.prototype.catch = function (action) {
-                    return this.promise.catch(action);
-                };
-                Running.prototype.discard = function () {
-                    this.ctx.discard();
-                };
-                return Running;
-            }());
-            Task.Running = Running;
-            function create(name, type, task) {
-                return new Task(name, type, task);
-            }
-            Task.create = create;
-            function resolve(name, type, value) {
-                return create(name, type, function (ctx) {
-                    ctx.resolve(value);
-                });
-            }
-            Task.resolve = resolve;
-            function reject(name, type, reason) {
-                return create(name, 'Normal', function (ctx) {
-                    ctx.reject(reason);
-                });
-            }
-            Task.reject = reject;
-            function fromComputation(name, type, computation) {
-                return create(name, type, function (ctx) {
-                    var comp = computation.run();
-                    comp.progress.subscribe(function (p) { return ctx.update(Bootstrap.Utils.formatProgress(p), p.requestAbort); });
-                    comp.result.then(function (r) { return ctx.resolve(r); }).catch(function (e) { return ctx.reject(e); });
-                });
-            }
-            Task.fromComputation = fromComputation;
-            function sequencePromises(promises, ignoreErrors) {
-                if (ignoreErrors === void 0) { ignoreErrors = false; }
-                return new LiteMol.Promise(function (resolve, reject) {
-                    var ret = [];
-                    var next = function (i) {
-                        if (i >= promises.length) {
-                            resolve(ret);
-                            return;
-                        }
-                        promises[i]().then(function (r) { ret.push(r); next(i + 1); }).catch(function (e) {
-                            if (ignoreErrors) {
-                                next(i + 1);
-                            }
-                            else {
-                                reject(e);
-                            }
-                        });
-                    };
-                    next(0);
-                });
-            }
-            Task.sequencePromises = sequencePromises;
-            function sequence(context, name, type, tasks, ignoreErrors) {
-                if (ignoreErrors === void 0) { ignoreErrors = false; }
-                return create(name, type, function (ctx) {
-                    var ret = [];
-                    var next = function (i) {
-                        if (i >= tasks.length) {
-                            ctx.resolve(ret);
-                            return;
-                        }
-                        tasks[i]().run(context).then(function (r) { ret.push(r); next(i + 1); }).catch(function (e) {
-                            if (ignoreErrors) {
-                                next(i + 1);
-                            }
-                            else {
-                                ctx.reject(e);
-                            }
-                        });
-                    };
-                    next(0);
-                });
-            }
-            Task.sequence = sequence;
-            function guardedPromise(context, promise) {
-                return new LiteMol.Promise(function (resolve, reject) {
-                    try {
-                        promise(resolve, reject);
-                    }
-                    catch (e) {
-                        context.logger.error("Error (Generic): " + e);
-                    }
-                });
-            }
-            Task.guardedPromise = guardedPromise;
-            function split(context, tasks) {
-                return guardedPromise(context, function (resolve, reject) {
-                    var next = function (i) {
-                        if (i >= tasks.length) {
-                            resolve(void 0);
-                            return;
-                        }
-                        var t = tasks[i];
-                        t.stateUpdate();
-                        context.dispatcher.schedule(function () {
-                            t.action();
-                            next(i + 1);
-                        }, reject);
-                    };
-                    next(0);
-                });
-            }
-            Task.split = split;
-            function isPromise(t) {
-                return t.then && t.catch;
-            }
-            Task.isPromise = isPromise;
-            var Context = (function () {
-                function Context(context, task, _resolve, _reject) {
+                function Running(context, computation, info) {
                     this.context = context;
-                    this.task = task;
-                    this._resolve = _resolve;
-                    this._reject = _reject;
-                    this.schedulingTime = 0;
-                    this.scheduleId = 0;
-                    this.abort = void 0;
-                    this.discarded = false;
-                    this.resolve = this.resolve_task.bind(this);
-                    this.reject = this.reject_task.bind(this);
+                    this.computation = computation;
+                    this.info = info;
+                    this.run();
                 }
-                Context.prototype.discard = function () {
-                    try {
-                        if (this.abort) {
-                            this.abort();
-                        }
-                    }
-                    catch (e) {
-                    }
-                    this.discarded = true;
+                Running.prototype.tryAbort = function () {
+                    this.computationCtx.requestAbort();
                 };
-                Context.prototype.update = function (message, abort) {
+                Running.prototype.progressUpdated = function (progress) {
                     Bootstrap.Event.Task.StateUpdated.dispatch(this.context, {
-                        taskId: this.task.id,
-                        type: this.task.type,
-                        name: this.task.name,
-                        message: message,
-                        abort: abort
+                        taskId: this.info.id,
+                        type: this.info.type,
+                        name: this.info.name,
+                        message: Bootstrap.Utils.formatProgress(progress),
+                        abort: progress.requestAbort
                     });
-                    this.abort = abort;
                 };
-                Context.prototype.schedule = function (action, timeout) {
-                    var _this = this;
-                    var sId = this.scheduleId++;
-                    var pId = 'task' + this.task.id + '-' + sId;
-                    this.context.performance.start(pId);
-                    this.context.dispatcher.schedule(function () {
-                        _this.context.performance.end(pId);
-                        _this.schedulingTime += _this.context.performance.time(pId);
-                        action();
-                    }, function (e) {
-                        _this.context.performance.end(pId);
-                        _this.reject(e);
-                    }, timeout);
-                };
-                Context.prototype.resolve_task = function (result) {
-                    this.abort = void 0;
-                    if (this.discarded) {
-                        this.reject('Discarded.');
-                        return;
-                    }
+                Running.prototype.resolved = function () {
                     try {
-                        this.context.performance.end('task' + this.task.id);
-                        if (this.task.reportTime) {
-                            var time = this.context.performance.time('task' + this.task.id) - this.schedulingTime;
-                            if (this.task.type !== 'Silent')
-                                this.context.logger.info(this.task.name + " finished in " + LiteMol.Core.Utils.PerformanceMonitor.format(time) + ".");
+                        this.context.performance.end('task' + this.info.id);
+                        if (this.info.reportTime) {
+                            var time = this.context.performance.time('task' + this.info.id);
+                            if (this.info.type !== 'Silent')
+                                this.context.logger.info(this.info.name + " finished in " + LiteMol.Core.Utils.PerformanceMonitor.format(time) + ".");
                         }
                     }
                     finally {
-                        this._resolve(result);
-                        Bootstrap.Event.Task.Completed.dispatch(this.context, this.task.id);
+                        Bootstrap.Event.Task.Completed.dispatch(this.context, this.info.id);
                     }
                 };
-                Context.prototype.reject_task = function (err) {
-                    this.abort = void 0;
-                    this.context.performance.end('task' + this.task.id);
-                    this.context.performance.formatTime('task' + this.task.id);
+                Running.prototype.rejected = function (err) {
+                    this.context.performance.end('task' + this.info.id);
+                    this.context.performance.formatTime('task' + this.info.id);
                     try {
-                        if (!this.discarded) {
-                            if (this.task.type === 'Silent') {
-                                if (err.warn)
-                                    this.context.logger.warning("Warning (" + this.task.name + "): " + err.message);
-                                else
-                                    console.error("Error (" + this.task.name + "): " + err, err);
-                            }
-                            else if (this.task.type !== 'Child') {
-                                if (err.warn) {
-                                    this.context.logger.warning("Warning (" + this.task.name + "): " + err.message);
-                                }
-                                else {
-                                    var e = '' + err;
-                                    if (e.indexOf('Aborted') >= 0)
-                                        this.context.logger.info(this.task.name + ": Aborted.");
-                                    else
-                                        this.context.logger.error("Error (" + this.task.name + "): " + err);
-                                }
+                        if (this.info.type === 'Silent') {
+                            if (err.warn)
+                                this.context.logger.warning("Warning (" + this.info.name + "): " + err.message);
+                            else
+                                console.error("Error (" + this.info.name + "): " + err, err);
+                        }
+                        else {
+                            if (err.warn) {
+                                this.context.logger.warning("Warning (" + this.info.name + "): " + err.message);
                             }
                             else {
                                 var e = '' + err;
-                                if (!err.warn && e.indexOf('Aborted') < 0)
-                                    console.log(err);
+                                if (e.indexOf('Aborted') >= 0)
+                                    this.context.logger.info(this.info.name + ": Aborted.");
+                                else
+                                    this.context.logger.error("Error (" + this.info.name + "): " + err);
                             }
                         }
                     }
@@ -66503,13 +66324,41 @@ var LiteMol;
                         console.log(e);
                     }
                     finally {
-                        this._reject(err);
-                        Bootstrap.Event.Task.Completed.dispatch(this.context, this.task.id);
+                        Bootstrap.Event.Task.Completed.dispatch(this.context, this.info.id);
                     }
                 };
-                return Context;
+                Running.prototype.run = function () {
+                    var _this = this;
+                    this.computationCtx = Computation.createContext();
+                    this.computationCtx.progress.subscribe(function (p) { return _this.progressUpdated(p); });
+                    Bootstrap.Event.Task.Started.dispatch(this.context, this.info);
+                    this.context.performance.start('task' + this.info.id);
+                    this.result = this.computation.run(this.computationCtx);
+                    this.result.then(function () { return _this.resolved(); }).catch(function (e) { return _this.rejected(e); });
+                };
+                return Running;
             }());
-            Task.Context = Context;
+            Task.Running = Running;
+            function create(name, type, computation) {
+                return new Task(name, type, LiteMol.Core.computation(computation));
+            }
+            Task.create = create;
+            function resolve(name, type, value) {
+                return new Task(name, type, Computation.resolve(value));
+            }
+            Task.resolve = resolve;
+            function reject(name, type, reason) {
+                return new Task(name, type, Computation.reject(reason));
+            }
+            Task.reject = reject;
+            function fromComputation(name, type, computation) {
+                return new Task(name, type, computation);
+            }
+            Task.fromComputation = fromComputation;
+            function isPromise(t) {
+                return t.then && t.catch;
+            }
+            Task.isPromise = isPromise;
         })(Task = Bootstrap.Task || (Bootstrap.Task = {}));
     })(Bootstrap = LiteMol.Bootstrap || (LiteMol.Bootstrap = {}));
 })(LiteMol || (LiteMol = {}));
@@ -67208,9 +67057,9 @@ var LiteMol;
                     }, transform);
                 }
                 Transformer.internal = internal;
-                function rejectAction(actionContext, error, context, task, onError) {
+                function rejectAction(actionContext, error, context, reject, onError) {
                     try {
-                        task.reject(error);
+                        reject(error);
                     }
                     finally {
                         if (onError) {
@@ -67223,62 +67072,83 @@ var LiteMol;
                         }
                     }
                 }
-                function resolveAction(src, context, task, onDone, onError) {
-                    Tree.Transform.apply(context, src.action)
-                        .run(context)
-                        .then(function (r) {
-                        try {
-                            task.resolve(Tree.Node.Null);
-                        }
-                        finally {
-                            if (onDone) {
-                                if (typeof onDone === 'string') {
-                                    context.logger.message(onDone);
-                                }
-                                else {
-                                    setTimeout(function () { return onDone.call(null, context, src.context); }, 0);
-                                }
+                function resolveAction(src, context, resolve, reject, onDone, onError) {
+                    return __awaiter(this, void 0, void 0, function () {
+                        var r, e_1;
+                        return __generator(this, function (_a) {
+                            switch (_a.label) {
+                                case 0:
+                                    _a.trys.push([0, 2, , 3]);
+                                    return [4 /*yield*/, Tree.Transform.apply(context, src.action).run()];
+                                case 1:
+                                    r = _a.sent();
+                                    try {
+                                        resolve(Tree.Node.Null);
+                                    }
+                                    finally {
+                                        if (onDone) {
+                                            if (typeof onDone === 'string') {
+                                                context.logger.message(onDone);
+                                            }
+                                            else {
+                                                setTimeout(function () { return onDone.call(null, context, src.context); }, 0);
+                                            }
+                                        }
+                                    }
+                                    return [3 /*break*/, 3];
+                                case 2:
+                                    e_1 = _a.sent();
+                                    try {
+                                        reject(e_1);
+                                    }
+                                    finally {
+                                        if (onError) {
+                                            if (typeof onError === 'string') {
+                                                context.logger.error(onError);
+                                            }
+                                            else {
+                                                setTimeout(function () { return onError.call(null, context, src.context, e_1); }, 0);
+                                            }
+                                        }
+                                    }
+                                    return [3 /*break*/, 3];
+                                case 3: return [2 /*return*/];
                             }
-                        }
-                    })
-                        .catch(function (e) {
-                        try {
-                            task.reject(e);
-                        }
-                        finally {
-                            if (onError) {
-                                if (typeof onError === 'string') {
-                                    context.logger.error(onError);
-                                }
-                                else {
-                                    setTimeout(function () { return onError.call(null, context, src.context, e); }, 0);
-                                }
-                            }
-                        }
+                        });
                     });
                 }
                 function action(info, builder, onDone, onError) {
                     return create(info, function (context, a, t) {
-                        return Bootstrap.Task.create(info.name, 'Background', function (ctx) {
-                            var src = builder(context, a, t);
-                            resolveAction({ action: src, context: void 0 }, context, ctx, onDone, onError);
-                        });
+                        return Bootstrap.Task.create(info.name, 'Background', function (ctx) { return new LiteMol.Promise(function (res, rej) {
+                            try {
+                                var src = builder(context, a, t);
+                                resolveAction({ action: src, context: void 0 }, context, res, rej, onDone, onError);
+                            }
+                            catch (e) {
+                                rej(e);
+                            }
+                        }); });
                     });
                 }
                 Transformer.action = action;
                 function actionWithContext(info, builder, onDone, onError) {
                     return create(info, function (context, a, t) {
-                        return Bootstrap.Task.create(info.name, 'Background', function (ctx) {
-                            var src = builder(context, a, t);
-                            if (Bootstrap.Task.isPromise(src)) {
-                                src
-                                    .then(function (s) { return resolveAction(s, context, ctx, onDone, onError); })
-                                    .catch(function (e) { return rejectAction(void 0, e, context, ctx, onError); });
+                        return Bootstrap.Task.create(info.name, 'Background', function (ctx) { return new LiteMol.Promise(function (res, rej) {
+                            try {
+                                var src = builder(context, a, t);
+                                if (Bootstrap.Task.isPromise(src)) {
+                                    src
+                                        .then(function (s) { return resolveAction(s, context, res, rej, onDone, onError); })
+                                        .catch(function (e) { return rejectAction(void 0, e, context, rej, onError); });
+                                }
+                                else {
+                                    resolveAction(src, context, res, rej, onDone, onError);
+                                }
                             }
-                            else {
-                                resolveAction(src, context, ctx, onDone, onError);
+                            catch (e) {
+                                rej(e);
                             }
-                        });
+                        }); });
                     });
                 }
                 Transformer.actionWithContext = actionWithContext;
@@ -67305,10 +67175,9 @@ var LiteMol;
                         this.transformer = transformer;
                         this.isUpdate = false;
                     }
-                    TransformImpl.prototype.resolveAdd = function (ctx, a, b) {
+                    TransformImpl.prototype.resolveAdd = function (a, b) {
                         if (b === Tree.Node.Null) {
-                            ctx.resolve(b);
-                            return;
+                            return b;
                         }
                         b.ref = this.props.ref;
                         if (this.props.isHidden)
@@ -67317,12 +67186,11 @@ var LiteMol;
                             b.parent = a;
                             Tree.add(b);
                         }
-                        ctx.resolve(b);
+                        return b;
                     };
-                    TransformImpl.prototype.resolveUpdate = function (ctx, b, newB) {
+                    TransformImpl.prototype.resolveUpdate = function (context, b, newB) {
                         if (newB === Tree.Node.Null) {
-                            ctx.resolve(newB);
-                            return;
+                            return newB;
                         }
                         var a = b.parent;
                         newB.ref = this.props.ref;
@@ -67331,25 +67199,34 @@ var LiteMol;
                         newB.state = b.state;
                         if (this.props.isHidden)
                             newB.isHidden = true;
-                        Tree.update(ctx.context.tree, b, newB);
-                        ctx.resolve(newB);
+                        Tree.update(context.tree, b, newB);
+                        return newB;
                     };
                     TransformImpl.prototype.apply = function (context, a) {
                         var _this = this;
-                        return Bootstrap.Task.create(this.transformer.info.name, 'Child', function (ctx) {
-                            Bootstrap.Event.Tree.TransformStarted.dispatch(context, _this);
-                            _this.transformer.apply(context, a, _this).run(ctx.context).then(function (b) {
-                                _this.resolveAdd(ctx, a, b);
-                                Bootstrap.Event.Tree.TransformFinished.dispatch(context, { transform: _this });
-                            }).catch(function (e) {
-                                ctx.reject(e);
-                                Bootstrap.Event.Tree.TransformFinished.dispatch(context, { transform: _this, error: e });
+                        return LiteMol.Core.computation(function (ctx) { return __awaiter(_this, void 0, void 0, function () {
+                            var _this = this;
+                            return __generator(this, function (_a) {
+                                return [2 /*return*/, new LiteMol.Promise(function (res, rej) { return __awaiter(_this, void 0, void 0, function () {
+                                        var _this = this;
+                                        return __generator(this, function (_a) {
+                                            Bootstrap.Event.Tree.TransformStarted.dispatch(context, this);
+                                            this.transformer.apply(context, a, this).run(context).then(function (b) {
+                                                res(_this.resolveAdd(a, b));
+                                                Bootstrap.Event.Tree.TransformFinished.dispatch(context, { transform: _this });
+                                            }).catch(function (e) {
+                                                rej(e);
+                                                Bootstrap.Event.Tree.TransformFinished.dispatch(context, { transform: _this, error: e });
+                                            });
+                                            return [2 /*return*/];
+                                        });
+                                    }); })];
                             });
-                        });
+                        }); });
                     };
                     TransformImpl.prototype.update = function (context, b) {
                         var _this = this;
-                        return Bootstrap.Task.create(this.transformer.info.name, 'Child', function (ctx) {
+                        return LiteMol.Core.computation(function (ctx) { return new LiteMol.Promise(function (res, rej) {
                             _this.isUpdate = true;
                             _this.props.ref = b.transform.props.ref;
                             Bootstrap.Event.Tree.TransformStarted.dispatch(context, _this);
@@ -67357,13 +67234,13 @@ var LiteMol;
                                 _this.props.isBinding = true;
                             _this.transformer.update(context, b, _this).run(context)
                                 .then(function (newB) {
-                                _this.resolveUpdate(ctx, b, newB);
+                                res(_this.resolveUpdate(context, b, newB));
                                 Bootstrap.Event.Tree.TransformFinished.dispatch(context, { transform: _this });
                             }).catch(function (e) {
-                                ctx.reject(e);
+                                rej(e);
                                 Bootstrap.Event.Tree.TransformFinished.dispatch(context, { transform: _this, error: e });
                             });
-                        });
+                        }); });
                     };
                     return TransformImpl;
                 }());
@@ -67374,25 +67251,14 @@ var LiteMol;
                     return new TransformImpl(params, p, transformer);
                 }
                 Transform.create = create;
-                function updateInstance(ctx, instance) {
-                    var xs = ctx.select(instance.selector);
-                    var tasks = xs.map(function (x) { return function () { return instance.transform.update(ctx, x); }; });
-                    return Bootstrap.Task.sequence(ctx, 'Update transform', 'Child', tasks, true);
-                }
-                Transform.updateInstance = updateInstance;
-                function applyInstance(ctx, instance) {
-                    var xs = ctx.select(instance.selector);
-                    var tasks = xs.map(function (x) { return function () { return instance.transform.apply(ctx, x); }; });
-                    return Bootstrap.Task.sequence(ctx, 'Apply transform', 'Child', tasks, true);
-                }
-                Transform.applyInstance = applyInstance;
                 function isInstance(arg) {
                     return !!arg.selector;
                 }
                 function isBuilder(arg) {
                     return !!arg.compile;
                 }
-                function apply(ctx, source) {
+                function execute(ctx, source, isUpdate) {
+                    var _this = this;
                     var instances;
                     try {
                         if (isInstance(source))
@@ -67403,27 +67269,54 @@ var LiteMol;
                             instances = source;
                     }
                     catch (e) {
-                        return Bootstrap.Task.reject('Apply transforms', 'Child', e);
+                        return LiteMol.Core.Computation.reject(e);
                     }
-                    var tasks = instances.map(function (i) { return function () { return applyInstance(ctx, i); }; });
-                    return Bootstrap.Task.sequence(ctx, 'Apply transforms', 'Child', tasks, true);
+                    return LiteMol.Core.computation(function () { return __awaiter(_this, void 0, void 0, function () {
+                        var _i, instances_1, i, xs, _a, xs_2, x, e_2;
+                        return __generator(this, function (_b) {
+                            switch (_b.label) {
+                                case 0:
+                                    _i = 0, instances_1 = instances;
+                                    _b.label = 1;
+                                case 1:
+                                    if (!(_i < instances_1.length))
+                                        return [3 /*break*/, 8];
+                                    i = instances_1[_i];
+                                    xs = ctx.select(i.selector);
+                                    _a = 0, xs_2 = xs;
+                                    _b.label = 2;
+                                case 2:
+                                    if (!(_a < xs_2.length))
+                                        return [3 /*break*/, 7];
+                                    x = xs_2[_a];
+                                    _b.label = 3;
+                                case 3:
+                                    _b.trys.push([3, 5, , 6]);
+                                    return [4 /*yield*/, (isUpdate ? i.transform.update(ctx, x) : i.transform.apply(ctx, x)).run()];
+                                case 4:
+                                    _b.sent();
+                                    return [3 /*break*/, 6];
+                                case 5:
+                                    e_2 = _b.sent();
+                                    return [3 /*break*/, 6];
+                                case 6:
+                                    _a++;
+                                    return [3 /*break*/, 2];
+                                case 7:
+                                    _i++;
+                                    return [3 /*break*/, 1];
+                                case 8: return [2 /*return*/];
+                            }
+                        });
+                    }); });
+                }
+                Transform.execute = execute;
+                function apply(ctx, source) {
+                    return execute(ctx, source, false);
                 }
                 Transform.apply = apply;
                 function update(ctx, source) {
-                    var instances;
-                    try {
-                        if (isInstance(source))
-                            instances = [source];
-                        else if (isBuilder(source))
-                            instances = source.compile();
-                        else
-                            instances = source;
-                    }
-                    catch (e) {
-                        return Bootstrap.Task.reject('Apply transforms', 'Child', e);
-                    }
-                    var tasks = instances.map(function (i) { return function () { return updateInstance(ctx, i); }; });
-                    return Bootstrap.Task.sequence(ctx, 'Apply transforms', 'Child', tasks, true);
+                    return execute(ctx, source, true);
                 }
                 Transform.update = update;
             })(Transform = Tree.Transform || (Tree.Transform = {}));
@@ -68310,57 +68203,65 @@ var LiteMol;
                     }
                 }
                 function createStandardVisual(source, transform, style) {
-                    return Bootstrap.Task.create("Visual (" + source.props.label + ")", style.taskType || 'Normal', function (ctx) {
-                        var label = Molecule.TypeDescriptions[style.type].label;
-                        ctx.update("Creating " + label + "...");
-                        ctx.schedule(function () {
-                            var theme = style.theme.template.provider(Bootstrap.Utils.Molecule.findModel(source), Visualization.Theme.getProps(style.theme));
-                            var mc = createModel(source, style, theme);
-                            if (!mc) {
-                                ctx.reject('Invalid input parameters.');
-                                return;
+                    var _this = this;
+                    return Bootstrap.Task.create("Visual (" + source.props.label + ")", style.taskType || 'Normal', function (ctx) { return __awaiter(_this, void 0, void 0, function () {
+                        var label, theme, mc, model;
+                        return __generator(this, function (_a) {
+                            switch (_a.label) {
+                                case 0:
+                                    label = Molecule.TypeDescriptions[style.type].label;
+                                    return [4 /*yield*/, ctx.updateProgress("Creating " + label + "...")];
+                                case 1:
+                                    _a.sent();
+                                    theme = style.theme.template.provider(Bootstrap.Utils.Molecule.findModel(source), Visualization.Theme.getProps(style.theme));
+                                    mc = createModel(source, style, theme);
+                                    if (!mc) {
+                                        throw 'Invalid input parameters.';
+                                    }
+                                    return [4 /*yield*/, mc.run(ctx)];
+                                case 2:
+                                    model = _a.sent();
+                                    return [2 /*return*/, Bootstrap.Entity.Molecule.Visual.create(transform, { label: label, model: model, style: style, isSelectable: !style.isNotSelectable })];
                             }
-                            var comp = mc.run();
-                            comp.progress.subscribe(function (p) { return ctx.update(label + ': ' + Bootstrap.Utils.formatProgress(p), p.requestAbort); });
-                            comp.result.then(function (model) {
-                                var visual = Bootstrap.Entity.Molecule.Visual.create(transform, { label: label, model: model, style: style, isSelectable: !style.isNotSelectable });
-                                ctx.resolve(visual);
-                            }).catch(ctx.reject);
-                        }, 0);
-                    });
+                        });
+                    }); });
                 }
                 function createSurface(source, transform, style) {
-                    return Bootstrap.Task.create("Molecular Surface (" + source.props.label + ")", style.taskType || 'Normal', function (ctx) {
-                        var model = Bootstrap.Utils.Molecule.findModel(source).props.model;
-                        var atomIndices = Bootstrap.Entity.isMoleculeModel(source) ? source.props.model.atoms.indices : source.props.indices;
-                        var params = style.params;
-                        var label = Molecule.TypeDescriptions[style.type].label;
-                        var data = LiteMol.Core.Geometry.MolecularSurface.computeMolecularSurfaceAsync({
-                            positions: model.atoms,
-                            atomIndices: atomIndices,
-                            parameters: {
-                                atomRadius: Bootstrap.Utils.vdwRadiusFromElementSymbol(model),
-                                density: params.density,
-                                probeRadius: params.probeRadius,
-                                smoothingIterations: 2 * params.smoothing,
-                                interactive: true
+                    var _this = this;
+                    return Bootstrap.Task.create("Molecular Surface (" + source.props.label + ")", style.taskType || 'Normal', function (ctx) { return __awaiter(_this, void 0, void 0, function () {
+                        var model, atomIndices, params, label, data, theme, surfaceModel, eLabel;
+                        return __generator(this, function (_a) {
+                            switch (_a.label) {
+                                case 0:
+                                    model = Bootstrap.Utils.Molecule.findModel(source).props.model;
+                                    atomIndices = Bootstrap.Entity.isMoleculeModel(source) ? source.props.model.atoms.indices : source.props.indices;
+                                    params = style.params;
+                                    label = Molecule.TypeDescriptions[style.type].label;
+                                    return [4 /*yield*/, LiteMol.Core.Geometry.MolecularSurface.computeMolecularSurfaceAsync({
+                                            positions: model.atoms,
+                                            atomIndices: atomIndices,
+                                            parameters: {
+                                                atomRadius: Bootstrap.Utils.vdwRadiusFromElementSymbol(model),
+                                                density: params.density,
+                                                probeRadius: params.probeRadius,
+                                                smoothingIterations: 2 * params.smoothing,
+                                                interactive: true
+                                            }
+                                        }).run(ctx)];
+                                case 1:
+                                    data = _a.sent();
+                                    theme = style.theme.template.provider(Bootstrap.Utils.Molecule.findModel(source), Visualization.Theme.getProps(style.theme));
+                                    return [4 /*yield*/, ctx.updateProgress('Creating visual...')];
+                                case 2:
+                                    _a.sent();
+                                    return [4 /*yield*/, LiteMol.Visualization.Surface.Model.create(source, { surface: data.surface, theme: theme, parameters: { isWireframe: style.params.isWireframe } }).run(ctx)];
+                                case 3:
+                                    surfaceModel = _a.sent();
+                                    eLabel = "Surface, " + Bootstrap.Utils.round(params.probeRadius, 2) + " \u212B probe";
+                                    return [2 /*return*/, Bootstrap.Entity.Molecule.Visual.create(transform, { label: eLabel, model: surfaceModel, style: style, isSelectable: !style.isNotSelectable })];
                             }
-                        }).run();
-                        data.progress.subscribe(function (p) { return ctx.update(label + ': ' + Bootstrap.Utils.formatProgress(p), p.requestAbort); });
-                        data.result.then(function (data) {
-                            var theme = style.theme.template.provider(Bootstrap.Utils.Molecule.findModel(source), Visualization.Theme.getProps(style.theme));
-                            ctx.update('Creating visual...');
-                            ctx.schedule(function () {
-                                var surface = LiteMol.Visualization.Surface.Model.create(source, { surface: data.surface, theme: theme, parameters: { isWireframe: style.params.isWireframe } }).run();
-                                surface.progress.subscribe(function (p) { return ctx.update(label + ': ' + Bootstrap.Utils.formatProgress(p), p.requestAbort); });
-                                surface.result.then(function (model) {
-                                    var label = "Surface, " + Bootstrap.Utils.round(params.probeRadius, 2) + " \u212B probe";
-                                    var visual = Bootstrap.Entity.Molecule.Visual.create(transform, { label: label, model: model, style: style, isSelectable: !style.isNotSelectable });
-                                    ctx.resolve(visual);
-                                }).catch(ctx.reject);
-                            }, 0);
-                        }).catch(ctx.reject);
-                    });
+                        });
+                    }); });
                 }
                 function create(source, transform, style) {
                     if (style.type === 'Surface')
@@ -68415,16 +68316,14 @@ var LiteMol;
                     var _this = this;
                     var name = style.taskType === 'Background' ? parent.props.label : "Density Surface (" + parent.props.label + ")";
                     return Bootstrap.Task.create(name, style.taskType || 'Normal', function (ctx) { return __awaiter(_this, void 0, void 0, function () {
-                        var _this = this;
-                        var params, source, data, basis, fromFrac, toFrac, min, max, offsets, isSigma, isoValue, compCtx, surface, theme;
+                        var params, source, data, basis, fromFrac, toFrac, min, max, offsets, isSigma, isoValue, surface, theme, model, label;
                         return __generator(this, function (_a) {
                             switch (_a.label) {
                                 case 0:
                                     params = style.params;
                                     source = Bootstrap.Tree.Node.findClosestNodeOfType(parent, [Bootstrap.Entity.Density.Data]);
                                     if (!source) {
-                                        ctx.reject('Cannot create density visual on ' + parent.props.label);
-                                        return [2 /*return*/];
+                                        throw 'Cannot create density visual on ' + parent.props.label;
                                     }
                                     data = source.props.data;
                                     basis = data.basis;
@@ -68441,49 +68340,35 @@ var LiteMol;
                                         max = data.dataDimensions;
                                     }
                                     if (!(min[0] - max[0]) || !(min[1] - max[1]) || !(min[2] - max[2])) {
-                                        ctx.reject({ warn: true, message: 'Empty box.' });
-                                        return [2 /*return*/];
+                                        throw { warn: true, message: 'Empty box.' };
                                     }
                                     isSigma = params.isoValueType === void 0 || params.isoValueType === Density.IsoValueType.Sigma;
                                     isoValue = isSigma
                                         ? data.valuesInfo.mean + data.valuesInfo.sigma * params.isoValue
                                         : params.isoValue;
-                                    compCtx = LiteMol.Core.Computation.createContext();
-                                    compCtx.progress.subscribe(function (p) { return ctx.update("Density Surface (" + source.props.label + "): " + Bootstrap.Utils.formatProgress(p), p.requestAbort); });
                                     return [4 /*yield*/, Geom.MarchingCubes.compute({
                                             isoLevel: isoValue,
                                             scalarField: data.data,
                                             bottomLeft: min,
                                             topRight: max
-                                        }).run(compCtx).result];
+                                        }).run(ctx)];
                                 case 1:
                                     surface = _a.sent();
-                                    return [4 /*yield*/, Geom.Surface.transform(surface, fromFrac.elements).run(compCtx).result];
+                                    return [4 /*yield*/, Geom.Surface.transform(surface, fromFrac.elements).run(ctx)];
                                 case 2:
                                     surface = _a.sent();
-                                    return [4 /*yield*/, Geom.Surface.laplacianSmooth(surface, params.smoothing).run(compCtx).result];
+                                    return [4 /*yield*/, Geom.Surface.laplacianSmooth(surface, params.smoothing).run(ctx)];
                                 case 3:
                                     surface = _a.sent();
                                     theme = style.theme.template.provider(source, Visualization.Theme.getProps(style.theme));
-                                    ctx.update('Creating visual...');
-                                    ctx.schedule(function () { return __awaiter(_this, void 0, void 0, function () {
-                                        var modelComp, model, label, visual;
-                                        return __generator(this, function (_a) {
-                                            switch (_a.label) {
-                                                case 0:
-                                                    modelComp = LiteMol.Visualization.Surface.Model.create(source, { surface: surface, theme: theme, parameters: { isWireframe: style.params.isWireframe } }).run();
-                                                    modelComp.progress.subscribe(function (p) { return ctx.update("Density Surface (" + source.props.label + "): " + Bootstrap.Utils.formatProgress(p), p.requestAbort); });
-                                                    return [4 /*yield*/, modelComp.result];
-                                                case 1:
-                                                    model = _a.sent();
-                                                    label = "Surface, " + Bootstrap.Utils.round(params.isoValue, 2) + (isSigma ? ' \u03C3' : '');
-                                                    visual = Bootstrap.Entity.Density.Visual.create(transform, { label: label, model: model, style: style, isSelectable: !style.isNotSelectable });
-                                                    ctx.resolve(visual);
-                                                    return [2 /*return*/];
-                                            }
-                                        });
-                                    }); }, 0);
-                                    return [2 /*return*/];
+                                    return [4 /*yield*/, ctx.updateProgress('Creating visual...')];
+                                case 4:
+                                    _a.sent();
+                                    return [4 /*yield*/, LiteMol.Visualization.Surface.Model.create(source, { surface: surface, theme: theme, parameters: { isWireframe: style.params.isWireframe } }).run(ctx)];
+                                case 5:
+                                    model = _a.sent();
+                                    label = "Surface, " + Bootstrap.Utils.round(params.isoValue, 2) + (isSigma ? ' \u03C3' : '');
+                                    return [2 /*return*/, Bootstrap.Entity.Density.Visual.create(transform, { label: label, model: model, style: style, isSelectable: !style.isNotSelectable })];
                             }
                         });
                     }); });
@@ -68885,30 +68770,6 @@ var LiteMol;
                         }
                         return Bootstrap.Task.resolve('Group', 'Silent', group);
                     });
-                    function group(info, transformers) {
-                        return Transformer.create(info, function (context, source, parent) {
-                            return Bootstrap.Task.create(info.name, 'Background', function (ctx) {
-                                var group = Basic.CreateGroup.create({ label: info.name }).apply(context, source);
-                                group.run(context).then(function (g) {
-                                    var promises = transformers.map(function (t) { return function () { return Bootstrap.Task.guardedPromise(context, function (resolve, reject) {
-                                        var params = t.params(parent.params, source);
-                                        if (!params) {
-                                            resolve(void 0);
-                                            return;
-                                        }
-                                        var transform = t.transformer.create(params, { isBinding: true });
-                                        transform.apply(context, g).run(context).then(function (b) {
-                                            resolve(b);
-                                        }).catch(reject);
-                                    }); }; });
-                                    Bootstrap.Task.sequencePromises(promises, true).then(function () {
-                                        ctx.resolve(g);
-                                    }).catch(ctx.reject);
-                                });
-                            });
-                        });
-                    }
-                    Basic.group = group;
                 })(Basic = Transformer_1.Basic || (Transformer_1.Basic = {}));
             })(Transformer = Entity.Transformer || (Entity.Transformer = {}));
         })(Entity = Bootstrap.Entity || (Bootstrap.Entity = {}));
@@ -68928,6 +68789,7 @@ var LiteMol;
                 var Molecule;
                 (function (Molecule) {
                     "use strict";
+                    var _this = this;
                     function downloadMoleculeSource(params) {
                         return Bootstrap.Tree.Transformer.action({
                             id: 'molecule-download-molecule-' + params.sourceId,
@@ -68971,20 +68833,26 @@ var LiteMol;
                         to: [Entity.Molecule.Molecule],
                         defaultParams: function (ctx) { return ({ format: LiteMol.Core.Formats.Molecule.SupportedFormats.mmCIF }); }
                     }, function (ctx, a, t) {
-                        return Bootstrap.Task.fromComputation("Create Molecule (" + a.props.label + ")", 'Normal', t.params.format.parse(a.props.data, { id: t.params.customId }))
-                            .setReportTime(true)
-                            .bind("Create Molecule (" + a.props.label + ")", 'Silent', function (r) {
-                            if (r.isError)
-                                return Bootstrap.Task.reject("Create Molecule (" + a.props.label + ")", 'Background', r.toString());
-                            if (r.warnings && r.warnings.length > 0) {
-                                for (var _i = 0, _a = r.warnings; _i < _a.length; _i++) {
-                                    var w = _a[_i];
-                                    ctx.logger.warning(w);
+                        return Bootstrap.Task.create("Create Molecule (" + a.props.label + ")", 'Silent', function () { return __awaiter(_this, void 0, void 0, function () {
+                            var r, _i, _a, w;
+                            return __generator(this, function (_b) {
+                                switch (_b.label) {
+                                    case 0: return [4 /*yield*/, Bootstrap.Task.fromComputation("Create Molecule (" + a.props.label + ")", 'Normal', t.params.format.parse(a.props.data, { id: t.params.customId }))
+                                            .setReportTime(true).run(ctx)];
+                                    case 1:
+                                        r = _b.sent();
+                                        if (r.isError)
+                                            throw r.toString();
+                                        if (r.warnings && r.warnings.length > 0) {
+                                            for (_i = 0, _a = r.warnings; _i < _a.length; _i++) {
+                                                w = _a[_i];
+                                                ctx.logger.warning(w);
+                                            }
+                                        }
+                                        return [2 /*return*/, Entity.Molecule.Molecule.create(t, { label: r.result.id, molecule: r.result })];
                                 }
-                            }
-                            var e = Entity.Molecule.Molecule.create(t, { label: r.result.id, molecule: r.result });
-                            return Bootstrap.Task.resolve("Create Molecule (" + a.props.label + ")", 'Background', e);
-                        });
+                            });
+                        }); });
                     });
                     Molecule.CreateFromMmCif = Bootstrap.Tree.Transformer.create({
                         id: 'molecule-create-from-mmcif',
@@ -68994,19 +68862,23 @@ var LiteMol;
                         to: [Entity.Molecule.Molecule],
                         defaultParams: function (ctx) { return ({ blockIndex: 0 }); }
                     }, function (ctx, a, t) {
-                        return Bootstrap.Task.create("Create Molecule (" + a.props.label + ")", 'Normal', function (ctx) {
-                            ctx.update('Creating...');
-                            var index = t.params.blockIndex | 0;
-                            var b = a.props.dictionary.dataBlocks[index];
-                            if (!b) {
-                                ctx.reject("The source contains only " + a.props.dictionary.dataBlocks.length + " data block(s), tried to access the " + (index + 1) + "-th.");
-                                return;
-                            }
-                            ctx.schedule(function () {
-                                var molecule = LiteMol.Core.Formats.Molecule.mmCIF.ofDataBlock(b);
-                                ctx.resolve(Entity.Molecule.Molecule.create(t, { label: molecule.id, molecule: molecule }));
+                        return Bootstrap.Task.create("Create Molecule (" + a.props.label + ")", 'Normal', function (ctx) { return __awaiter(_this, void 0, void 0, function () {
+                            var index, b, molecule;
+                            return __generator(this, function (_a) {
+                                switch (_a.label) {
+                                    case 0: return [4 /*yield*/, ctx.updateProgress('Creating...')];
+                                    case 1:
+                                        _a.sent();
+                                        index = t.params.blockIndex | 0;
+                                        b = a.props.dictionary.dataBlocks[index];
+                                        if (!b) {
+                                            throw "The source contains only " + a.props.dictionary.dataBlocks.length + " data block(s), tried to access the " + (index + 1) + "-th.";
+                                        }
+                                        molecule = LiteMol.Core.Formats.Molecule.mmCIF.ofDataBlock(b);
+                                        return [2 /*return*/, Entity.Molecule.Molecule.create(t, { label: molecule.id, molecule: molecule })];
+                                }
                             });
-                        }).setReportTime(true);
+                        }); }).setReportTime(true);
                     });
                     Molecule.CreateModel = Bootstrap.Tree.Transformer.create({
                         id: 'molecule-create-model',
@@ -69017,20 +68889,22 @@ var LiteMol;
                         isUpdatable: true,
                         defaultParams: function (ctx) { return ({ modelIndex: 0 }); }
                     }, function (ctx, a, t) {
-                        return Bootstrap.Task.create("Create Model (" + a.props.label + ")", 'Background', function (ctx) {
-                            var params = t.params;
-                            var index = params.modelIndex | 0;
-                            var model = a.props.molecule.models[index];
-                            if (!model) {
-                                ctx.reject("The molecule contains only " + a.props.molecule.models.length + " model(s), tried to access the " + (index + 1) + "-th.");
-                                return;
-                            }
-                            ctx.resolve(Entity.Molecule.Model.create(t, {
-                                label: 'Model ' + model.modelId,
-                                description: model.atoms.count + " atom" + (model.atoms.count !== 1 ? 's' : ''),
-                                model: model
-                            }));
-                        });
+                        return Bootstrap.Task.create("Create Model (" + a.props.label + ")", 'Background', function (ctx) { return __awaiter(_this, void 0, void 0, function () {
+                            var params, index, model;
+                            return __generator(this, function (_a) {
+                                params = t.params;
+                                index = params.modelIndex | 0;
+                                model = a.props.molecule.models[index];
+                                if (!model) {
+                                    throw "The molecule contains only " + a.props.molecule.models.length + " model(s), tried to access the " + (index + 1) + "-th.";
+                                }
+                                return [2 /*return*/, Entity.Molecule.Model.create(t, {
+                                        label: 'Model ' + model.modelId,
+                                        description: model.atoms.count + " atom" + (model.atoms.count !== 1 ? 's' : ''),
+                                        model: model
+                                    })];
+                            });
+                        }); });
                     });
                     Molecule.CreateSelection = Bootstrap.Tree.Transformer.create({
                         id: 'molecule-create-selection',
@@ -69052,17 +68926,19 @@ var LiteMol;
                             }
                         },
                     }, function (ctx, a, t) {
-                        return Bootstrap.Task.create("Create Selection (" + a.props.label + ")", 'Background', function (ctx) {
-                            var params = t.params;
-                            var query = LiteMol.Core.Structure.Query.Builder.toQuery(params.queryString);
-                            var queryCtx = t.params.inFullContext ? Bootstrap.Utils.Molecule.findModel(a).props.model.queryContext : Bootstrap.Utils.Molecule.findQueryContext(a);
-                            var indices = query(queryCtx).unionAtomIndices();
-                            if (!indices.length) {
-                                ctx.reject({ warn: true, message: "Empty selection" + (t.params.name ? ' (' + t.params.name + ')' : '') + "." });
-                                return;
-                            }
-                            ctx.resolve(Entity.Molecule.Selection.create(t, { label: params.name ? params.name : 'Selection', description: indices.length + " atom" + (indices.length !== 1 ? 's' : ''), indices: indices }));
-                        }).setReportTime(!t.params.silent);
+                        return Bootstrap.Task.create("Create Selection (" + a.props.label + ")", 'Background', function (ctx) { return __awaiter(_this, void 0, void 0, function () {
+                            var params, query, queryCtx, indices;
+                            return __generator(this, function (_a) {
+                                params = t.params;
+                                query = LiteMol.Core.Structure.Query.Builder.toQuery(params.queryString);
+                                queryCtx = t.params.inFullContext ? Bootstrap.Utils.Molecule.findModel(a).props.model.queryContext : Bootstrap.Utils.Molecule.findQueryContext(a);
+                                indices = query(queryCtx).unionAtomIndices();
+                                if (!indices.length) {
+                                    throw { warn: true, message: "Empty selection" + (t.params.name ? ' (' + t.params.name + ')' : '') + "." };
+                                }
+                                return [2 /*return*/, Entity.Molecule.Selection.create(t, { label: params.name ? params.name : 'Selection', description: indices.length + " atom" + (indices.length !== 1 ? 's' : ''), indices: indices })];
+                            });
+                        }); }).setReportTime(!t.params.silent);
                     });
                     Molecule.CreateSelectionFromQuery = Bootstrap.Tree.Transformer.create({
                         id: 'molecule-create-selection',
@@ -69072,17 +68948,19 @@ var LiteMol;
                         to: [Entity.Molecule.Selection],
                         defaultParams: function (ctx) { return void 0; },
                     }, function (ctx, a, t) {
-                        return Bootstrap.Task.create("Create Selection (" + a.props.label + ")", 'Background', function (ctx) {
-                            var params = t.params;
-                            var query = LiteMol.Core.Structure.Query.Builder.toQuery(params.query);
-                            var queryCtx = t.params.inFullContext ? Bootstrap.Utils.Molecule.findModel(a).props.model.queryContext : Bootstrap.Utils.Molecule.findQueryContext(a);
-                            var indices = query(queryCtx).unionAtomIndices();
-                            if (!indices.length) {
-                                ctx.reject({ warn: true, message: "Empty selection" + (t.params.name ? ' (' + t.params.name + ')' : '') + "." });
-                                return;
-                            }
-                            ctx.resolve(Entity.Molecule.Selection.create(t, { label: params.name ? params.name : 'Selection', description: indices.length + " atom" + (indices.length !== 1 ? 's' : ''), indices: indices }));
-                        }).setReportTime(!t.params.silent);
+                        return Bootstrap.Task.create("Create Selection (" + a.props.label + ")", 'Background', function (ctx) { return __awaiter(_this, void 0, void 0, function () {
+                            var params, query, queryCtx, indices;
+                            return __generator(this, function (_a) {
+                                params = t.params;
+                                query = LiteMol.Core.Structure.Query.Builder.toQuery(params.query);
+                                queryCtx = t.params.inFullContext ? Bootstrap.Utils.Molecule.findModel(a).props.model.queryContext : Bootstrap.Utils.Molecule.findQueryContext(a);
+                                indices = query(queryCtx).unionAtomIndices();
+                                if (!indices.length) {
+                                    throw { warn: true, message: "Empty selection" + (t.params.name ? ' (' + t.params.name + ')' : '') + "." };
+                                }
+                                return [2 /*return*/, Entity.Molecule.Selection.create(t, { label: params.name ? params.name : 'Selection', description: indices.length + " atom" + (indices.length !== 1 ? 's' : ''), indices: indices })];
+                            });
+                        }); }).setReportTime(!t.params.silent);
                     });
                     Molecule.CreateAssembly = Bootstrap.Tree.Transformer.create({
                         id: 'molecule-create-assemly',
@@ -69104,27 +68982,31 @@ var LiteMol;
                         isUpdatable: true,
                         isApplicable: function (m) { return !!(m && m.props.model.assemblyInfo && m.props.model.assemblyInfo.assemblies.length); }
                     }, function (ctx, a, t) {
-                        return Bootstrap.Task.create("Create Model (" + a.props.label + ")", 'Background', function (ctx) {
-                            var i = a.props.model.assemblyInfo;
-                            if (!i || !i.assemblies.length) {
-                                ctx.reject('Assembly info not available.');
-                                return;
-                            }
-                            var gen = i.assemblies.filter(function (a) { return a.name === t.params.name; })[0];
-                            if (!gen) {
-                                ctx.reject("No assembly called '" + t.params.name + "' found.");
-                                return;
-                            }
-                            ctx.update('Creating...');
-                            ctx.schedule(function () {
-                                var asm = LiteMol.Core.Structure.buildAssembly(a.props.model, gen);
-                                ctx.resolve(Entity.Molecule.Model.create(t, {
-                                    label: 'Assembly ' + gen.name,
-                                    description: asm.atoms.count + " atom" + (asm.atoms.count !== 1 ? 's' : ''),
-                                    model: asm
-                                }));
+                        return Bootstrap.Task.create("Create Model (" + a.props.label + ")", 'Background', function (ctx) { return __awaiter(_this, void 0, void 0, function () {
+                            var i, gen, asm;
+                            return __generator(this, function (_a) {
+                                switch (_a.label) {
+                                    case 0:
+                                        i = a.props.model.assemblyInfo;
+                                        if (!i || !i.assemblies.length) {
+                                            throw 'Assembly info not available.';
+                                        }
+                                        gen = i.assemblies.filter(function (a) { return a.name === t.params.name; })[0];
+                                        if (!gen) {
+                                            throw "No assembly called '" + t.params.name + "' found.";
+                                        }
+                                        return [4 /*yield*/, ctx.updateProgress('Creating...')];
+                                    case 1:
+                                        _a.sent();
+                                        asm = LiteMol.Core.Structure.buildAssembly(a.props.model, gen);
+                                        return [2 /*return*/, Entity.Molecule.Model.create(t, {
+                                                label: 'Assembly ' + gen.name,
+                                                description: asm.atoms.count + " atom" + (asm.atoms.count !== 1 ? 's' : ''),
+                                                model: asm
+                                            })];
+                                }
                             });
-                        });
+                        }); });
                     });
                     Molecule.CreateSymmetryMates = Bootstrap.Tree.Transformer.create({
                         id: 'molecule-create-symmetry-mates',
@@ -69136,23 +69018,28 @@ var LiteMol;
                         isUpdatable: true,
                         isApplicable: function (m) { return !!(m && m.props.model.symmetryInfo); }
                     }, function (ctx, a, t) {
-                        return Bootstrap.Task.create("Create Model (" + a.props.label + ")", 'Background', function (ctx) {
-                            var i = a.props.model.symmetryInfo;
-                            if (!i) {
-                                ctx.reject('Spacegroup info info not available.');
-                                return;
-                            }
-                            var radius = Math.max(t.params.radius, 0);
-                            ctx.update('Creating...');
-                            ctx.schedule(function () {
-                                var symm = t.params.type === 'Mates' ? LiteMol.Core.Structure.buildSymmetryMates(a.props.model, radius) : LiteMol.Core.Structure.buildPivotGroupSymmetry(a.props.model, radius);
-                                ctx.resolve(Entity.Molecule.Model.create(t, {
-                                    label: 'Symmetry',
-                                    model: symm,
-                                    description: symm.atoms.count + " atom" + (symm.atoms.count !== 1 ? 's' : '') + ", " + t.params.type + " " + Bootstrap.Utils.round(radius, 1) + " \u212B"
-                                }));
+                        return Bootstrap.Task.create("Create Model (" + a.props.label + ")", 'Background', function (ctx) { return __awaiter(_this, void 0, void 0, function () {
+                            var i, radius, symm;
+                            return __generator(this, function (_a) {
+                                switch (_a.label) {
+                                    case 0:
+                                        i = a.props.model.symmetryInfo;
+                                        if (!i) {
+                                            throw 'Spacegroup info info not available.';
+                                        }
+                                        radius = Math.max(t.params.radius, 0);
+                                        return [4 /*yield*/, ctx.updateProgress('Creating...')];
+                                    case 1:
+                                        _a.sent();
+                                        symm = t.params.type === 'Mates' ? LiteMol.Core.Structure.buildSymmetryMates(a.props.model, radius) : LiteMol.Core.Structure.buildPivotGroupSymmetry(a.props.model, radius);
+                                        return [2 /*return*/, Entity.Molecule.Model.create(t, {
+                                                label: 'Symmetry',
+                                                model: symm,
+                                                description: symm.atoms.count + " atom" + (symm.atoms.count !== 1 ? 's' : '') + ", " + t.params.type + " " + Bootstrap.Utils.round(radius, 1) + " \u212B"
+                                            })];
+                                }
                             });
-                        });
+                        }); });
                     });
                     Molecule.ModelTransform3D = Bootstrap.Tree.Transformer.create({
                         id: 'molecule-model-transform3d',
@@ -69164,25 +69051,30 @@ var LiteMol;
                         defaultParams: function (ctx, e) { return ({ transform: LiteMol.Core.Geometry.LinearAlgebra.Matrix4.identity() }); },
                         isUpdatable: false
                     }, function (ctx, a, t) {
-                        return Bootstrap.Task.create("Transform 3D (" + a.props.label + ")", 'Normal', function (ctx) {
-                            ctx.update('Transforming...');
-                            ctx.schedule(function () {
-                                var m = a.props.model;
-                                var tCtx = { t: t.params.transform, v: { x: 0, y: 0, z: 0 } };
-                                var transformed = LiteMol.Core.Structure.MoleculeModel.withTransformedXYZ(m, tCtx, function (ctx, x, y, z, out) {
-                                    var v = ctx.v;
-                                    v.x = x;
-                                    v.y = y;
-                                    v.z = z;
-                                    LiteMol.Core.Geometry.LinearAlgebra.Matrix4.transformVector3(out, v, ctx.t);
-                                });
-                                ctx.resolve(Entity.Molecule.Model.create(t, {
-                                    label: a.props.label,
-                                    description: t.params.description ? t.params.description : 'Transformed',
-                                    model: transformed
-                                }));
+                        return Bootstrap.Task.create("Transform 3D (" + a.props.label + ")", 'Normal', function (ctx) { return __awaiter(_this, void 0, void 0, function () {
+                            var m, tCtx, transformed;
+                            return __generator(this, function (_a) {
+                                switch (_a.label) {
+                                    case 0: return [4 /*yield*/, ctx.updateProgress('Transforming...')];
+                                    case 1:
+                                        _a.sent();
+                                        m = a.props.model;
+                                        tCtx = { t: t.params.transform, v: { x: 0, y: 0, z: 0 } };
+                                        transformed = LiteMol.Core.Structure.MoleculeModel.withTransformedXYZ(m, tCtx, function (ctx, x, y, z, out) {
+                                            var v = ctx.v;
+                                            v.x = x;
+                                            v.y = y;
+                                            v.z = z;
+                                            LiteMol.Core.Geometry.LinearAlgebra.Matrix4.transformVector3(out, v, ctx.t);
+                                        });
+                                        return [2 /*return*/, Entity.Molecule.Model.create(t, {
+                                                label: a.props.label,
+                                                description: t.params.description ? t.params.description : 'Transformed',
+                                                model: transformed
+                                            })];
+                                }
                             });
-                        });
+                        }); });
                     });
                     Molecule.CreateVisual = Bootstrap.Tree.Transformer.create({
                         id: 'molecule-create-visual',
@@ -69211,11 +69103,10 @@ var LiteMol;
                         var theme = ti.template.provider(a, Bootstrap.Visualization.Theme.getProps(ti));
                         model.applyTheme(theme);
                         b.props.style = t.params.style;
-                        //Entity.forceUpdate(b);
                         Entity.nodeUpdated(b);
                         return Bootstrap.Task.resolve(t.transformer.info.name, 'Background', Bootstrap.Tree.Node.Null);
                     });
-                    Molecule.CreateMacromoleculeVisual = Bootstrap.Tree.Transformer.create({
+                    Molecule.CreateMacromoleculeVisual = Bootstrap.Tree.Transformer.action({
                         id: 'molecule-create-macromolecule-visual',
                         name: 'Macromolecule Visual',
                         description: 'Create a visual of a molecule that is split into polymer, HET, and water parts.',
@@ -69224,29 +69115,25 @@ var LiteMol;
                         validateParams: function (p) { return !p.polymer && !p.het && !p.water ? ['Select at least one component'] : void 0; },
                         defaultParams: function (ctx) { return ({ polymer: true, het: true, water: true }); },
                     }, function (context, a, t) {
-                        return Bootstrap.Task.create('Macromolecule', 'Normal', function (ctx) {
-                            var g = Bootstrap.Tree.Transform.build().add(a, Transformer.Basic.CreateGroup, { label: 'Group', description: 'Macromolecule' }, { ref: t.params.groupRef });
-                            if (t.params.polymer) {
-                                var polymer = g.then(Molecule.CreateSelectionFromQuery, { query: LiteMol.Core.Structure.Query.nonHetPolymer(), name: 'Polymer', silent: true }, { isBinding: true });
-                                polymer.then(Molecule.CreateVisual, { style: Bootstrap.Visualization.Molecule.Default.ForType.get('Cartoons') }, { ref: t.params.polymerRef });
-                            }
-                            if (t.params.het) {
-                                var het = g.then(Molecule.CreateSelectionFromQuery, { query: LiteMol.Core.Structure.Query.hetGroups(), name: 'HET', silent: true }, { isBinding: true });
-                                het.then(Molecule.CreateVisual, { style: Bootstrap.Visualization.Molecule.Default.ForType.get('BallsAndSticks') }, { ref: t.params.hetRef });
-                            }
-                            if (t.params.water) {
-                                var style = {
-                                    type: 'BallsAndSticks',
-                                    params: { useVDW: false, atomRadius: 0.23, bondRadius: 0.09, detail: 'Automatic' },
-                                    theme: { template: Bootstrap.Visualization.Molecule.Default.ElementSymbolThemeTemplate, colors: Bootstrap.Visualization.Molecule.Default.ElementSymbolThemeTemplate.colors, transparency: { alpha: 0.25 } }
-                                };
-                                var water = g.then(Molecule.CreateSelectionFromQuery, { query: LiteMol.Core.Structure.Query.entities({ type: 'water' }), name: 'Water', silent: true }, { isBinding: true });
-                                water.then(Molecule.CreateVisual, { style: style }, { ref: t.params.waterRef });
-                            }
-                            Bootstrap.Tree.Transform.apply(context, g).run(context)
-                                .then(function (r) { return ctx.resolve(Bootstrap.Tree.Node.Null); })
-                                .catch(ctx.reject);
-                        });
+                        var g = Bootstrap.Tree.Transform.build().add(a, Transformer.Basic.CreateGroup, { label: 'Group', description: 'Macromolecule' }, { ref: t.params.groupRef });
+                        if (t.params.polymer) {
+                            var polymer = g.then(Molecule.CreateSelectionFromQuery, { query: LiteMol.Core.Structure.Query.nonHetPolymer(), name: 'Polymer', silent: true }, { isBinding: true });
+                            polymer.then(Molecule.CreateVisual, { style: Bootstrap.Visualization.Molecule.Default.ForType.get('Cartoons') }, { ref: t.params.polymerRef });
+                        }
+                        if (t.params.het) {
+                            var het = g.then(Molecule.CreateSelectionFromQuery, { query: LiteMol.Core.Structure.Query.hetGroups(), name: 'HET', silent: true }, { isBinding: true });
+                            het.then(Molecule.CreateVisual, { style: Bootstrap.Visualization.Molecule.Default.ForType.get('BallsAndSticks') }, { ref: t.params.hetRef });
+                        }
+                        if (t.params.water) {
+                            var style = {
+                                type: 'BallsAndSticks',
+                                params: { useVDW: false, atomRadius: 0.23, bondRadius: 0.09, detail: 'Automatic' },
+                                theme: { template: Bootstrap.Visualization.Molecule.Default.ElementSymbolThemeTemplate, colors: Bootstrap.Visualization.Molecule.Default.ElementSymbolThemeTemplate.colors, transparency: { alpha: 0.25 } }
+                            };
+                            var water = g.then(Molecule.CreateSelectionFromQuery, { query: LiteMol.Core.Structure.Query.entities({ type: 'water' }), name: 'Water', silent: true }, { isBinding: true });
+                            water.then(Molecule.CreateVisual, { style: style }, { ref: t.params.waterRef });
+                        }
+                        return g;
                     });
                 })(Molecule = Transformer.Molecule || (Transformer.Molecule = {}));
             })(Transformer = Entity.Transformer || (Entity.Transformer = {}));
@@ -69267,6 +69154,7 @@ var LiteMol;
                 var Data;
                 (function (Data) {
                     "use strict";
+                    var _this = this;
                     function getDataType(type) {
                         if (type === void 0 || type === null)
                             return 'String';
@@ -69288,13 +69176,21 @@ var LiteMol;
                         defaultParams: function () { return ({ id: '', description: '', type: 'String', url: '', responseCompression: Bootstrap.Utils.DataCompressionMethod.None }); }
                     }, function (ctx, a, t) {
                         var params = t.params;
-                        return Bootstrap.Utils.ajaxGet({ url: params.url, type: getDataType(params.type), compression: params.responseCompression, title: params.title }).setReportTime(true)
-                            .map('ToEntity', 'Child', function (data) {
-                            if (params.type === 'String')
-                                return Entity.Data.String.create(t, { label: params.id ? params.id : params.url, description: params.description, data: data });
-                            else
-                                return Entity.Data.Binary.create(t, { label: params.id ? params.id : params.url, description: params.description, data: data });
-                        });
+                        return Bootstrap.Task.create('Download', 'Silent', function () { return __awaiter(_this, void 0, void 0, function () {
+                            var data;
+                            return __generator(this, function (_a) {
+                                switch (_a.label) {
+                                    case 0: return [4 /*yield*/, Bootstrap.Utils.ajaxGet({ url: params.url, type: getDataType(params.type), compression: params.responseCompression, title: params.title }).setReportTime(true).run(ctx)];
+                                    case 1:
+                                        data = _a.sent();
+                                        if (params.type === 'String')
+                                            return [2 /*return*/, Entity.Data.String.create(t, { label: params.id ? params.id : params.url, description: params.description, data: data })];
+                                        else
+                                            return [2 /*return*/, Entity.Data.Binary.create(t, { label: params.id ? params.id : params.url, description: params.description, data: data })];
+                                        return [2 /*return*/];
+                                }
+                            });
+                        }); });
                     });
                     Data.OpenFile = Bootstrap.Tree.Transformer.create({
                         id: 'data-open-file',
@@ -69305,14 +69201,23 @@ var LiteMol;
                         validateParams: function (p) { return !p.file ? ['Select a file'] : void 0; },
                         defaultParams: function () { return ({ type: 'String', file: void 0 }); }
                     }, function (ctx, a, t) {
-                        var params = t.params;
-                        return Bootstrap.Utils.readFromFile(params.file, getDataType(params.type)).setReportTime(true)
-                            .map('ToEntity', 'Child', function (data) {
-                            if (params.type === 'String')
-                                return Entity.Data.String.create(t, { label: params.id ? params.id : params.file.name, description: params.description, data: data });
-                            else
-                                return Entity.Data.Binary.create(t, { label: params.id ? params.id : params.file.name, description: params.description, data: data });
-                        });
+                        return Bootstrap.Task.create('Download', 'Silent', function (taskCtx) { return __awaiter(_this, void 0, void 0, function () {
+                            var params, data;
+                            return __generator(this, function (_a) {
+                                switch (_a.label) {
+                                    case 0:
+                                        params = t.params;
+                                        return [4 /*yield*/, Bootstrap.Utils.readFromFile(params.file, getDataType(params.type)).setReportTime(true).run(ctx)];
+                                    case 1:
+                                        data = _a.sent();
+                                        if (params.type === 'String')
+                                            return [2 /*return*/, Entity.Data.String.create(t, { label: params.id ? params.id : params.file.name, description: params.description, data: data })];
+                                        else
+                                            return [2 /*return*/, Entity.Data.Binary.create(t, { label: params.id ? params.id : params.file.name, description: params.description, data: data })];
+                                        return [2 /*return*/];
+                                }
+                            });
+                        }); });
                     });
                     Data.ParseCif = Bootstrap.Tree.Transformer.create({
                         id: 'data-parse-cif',
@@ -69321,18 +69226,22 @@ var LiteMol;
                         from: [Entity.Data.String],
                         to: [Entity.Data.CifDictionary],
                         defaultParams: function () { return ({}); }
-                    }, function (ctx, a, t) {
-                        return Bootstrap.Task.create("CIF Parse (" + a.props.label + ")", 'Normal', function (ctx) {
-                            ctx.update('Parsing...');
-                            ctx.schedule(function () {
-                                var d = LiteMol.Core.Formats.CIF.Text.parse(a.props.data);
-                                if (d.isError) {
-                                    ctx.reject(d.toString());
-                                    return;
+                    }, function (bigCtx, a, t) {
+                        return Bootstrap.Task.create("CIF Parse (" + a.props.label + ")", 'Normal', function (ctx) { return __awaiter(_this, void 0, void 0, function () {
+                            var d;
+                            return __generator(this, function (_a) {
+                                switch (_a.label) {
+                                    case 0: return [4 /*yield*/, ctx.updateProgress('Parsing...')];
+                                    case 1:
+                                        _a.sent();
+                                        d = LiteMol.Core.Formats.CIF.Text.parse(a.props.data);
+                                        if (d.isError) {
+                                            throw d.toString();
+                                        }
+                                        return [2 /*return*/, Entity.Data.CifDictionary.create(t, { label: t.params.id ? t.params.id : 'CIF Dictionary', description: t.params.description, dictionary: d.result })];
                                 }
-                                ctx.resolve(Entity.Data.CifDictionary.create(t, { label: t.params.id ? t.params.id : 'CIF Dictionary', description: t.params.description, dictionary: d.result }));
                             });
-                        }).setReportTime(true);
+                        }); }).setReportTime(true);
                     });
                     Data.ParseBinaryCif = Bootstrap.Tree.Transformer.create({
                         id: 'data-parse-binary-cif',
@@ -69341,18 +69250,22 @@ var LiteMol;
                         from: [Entity.Data.Binary],
                         to: [Entity.Data.CifDictionary],
                         defaultParams: function () { return ({}); }
-                    }, function (ctx, a, t) {
-                        return Bootstrap.Task.create("BinaryCIF Parse (" + a.props.label + ")", 'Normal', function (ctx) {
-                            ctx.update('Parsing...');
-                            ctx.schedule(function () {
-                                var d = LiteMol.Core.Formats.CIF.Binary.parse(a.props.data);
-                                if (d.isError) {
-                                    ctx.reject(d.toString());
-                                    return;
+                    }, function (bigCtx, a, t) {
+                        return Bootstrap.Task.create("BinaryCIF Parse (" + a.props.label + ")", 'Normal', function (ctx) { return __awaiter(_this, void 0, void 0, function () {
+                            var d;
+                            return __generator(this, function (_a) {
+                                switch (_a.label) {
+                                    case 0: return [4 /*yield*/, ctx.updateProgress('Parsing...')];
+                                    case 1:
+                                        _a.sent();
+                                        d = LiteMol.Core.Formats.CIF.Binary.parse(a.props.data);
+                                        if (d.isError) {
+                                            throw d.toString();
+                                        }
+                                        return [2 /*return*/, Entity.Data.CifDictionary.create(t, { label: t.params.id ? t.params.id : 'CIF Dictionary', description: t.params.description, dictionary: d.result })];
                                 }
-                                ctx.resolve(Entity.Data.CifDictionary.create(t, { label: t.params.id ? t.params.id : 'CIF Dictionary', description: t.params.description, dictionary: d.result }));
                             });
-                        }).setReportTime(true);
+                        }); }).setReportTime(true);
                     });
                     Data.ParseJson = Bootstrap.Tree.Transformer.create({
                         id: 'data-parse-json',
@@ -69361,14 +69274,19 @@ var LiteMol;
                         from: [Entity.Data.String],
                         to: [Entity.Data.Json],
                         defaultParams: function () { return ({}); }
-                    }, function (ctx, a, t) {
-                        return Bootstrap.Task.create("JSON Parse (" + a.props.label + ")", 'Normal', function (ctx) {
-                            ctx.update('Parsing...');
-                            ctx.schedule(function () {
-                                var data = JSON.parse(a.props.data);
-                                ctx.resolve(Entity.Data.Json.create(t, { label: t.params.id ? t.params.id : 'JSON Data', description: t.params.description, data: data }));
+                    }, function (bigCtx, a, t) {
+                        return Bootstrap.Task.create("JSON Parse (" + a.props.label + ")", 'Normal', function (ctx) { return __awaiter(_this, void 0, void 0, function () {
+                            var data;
+                            return __generator(this, function (_a) {
+                                switch (_a.label) {
+                                    case 0: return [4 /*yield*/, ctx.updateProgress('Parsing...')];
+                                    case 1:
+                                        _a.sent();
+                                        data = JSON.parse(a.props.data);
+                                        return [2 /*return*/, Entity.Data.Json.create(t, { label: t.params.id ? t.params.id : 'JSON Data', description: t.params.description, data: data })];
+                                }
                             });
-                        }).setReportTime(true);
+                        }); }).setReportTime(true);
                     });
                     Data.FromData = Bootstrap.Tree.Transformer.create({
                         id: 'data-from-data',
@@ -69403,6 +69321,7 @@ var LiteMol;
                 var Density;
                 (function (Density) {
                     "use strict";
+                    var _this = this;
                     Density.ParseData = Bootstrap.Tree.Transformer.create({
                         id: 'density-parse-binary',
                         name: 'Density Data',
@@ -69411,33 +69330,44 @@ var LiteMol;
                         to: [Entity.Density.Data],
                         isUpdatable: true,
                         defaultParams: function () { return ({ format: LiteMol.Core.Formats.Density.SupportedFormats.CCP4, normalize: false }); }
-                    }, function (ctx, a, t) {
-                        return Bootstrap.Task.fromComputation("Parse Density (" + a.props.label + ")", 'Normal', t.params.format.parse(a.props.data))
-                            .setReportTime(true)
-                            .bind("Create Density (" + a.props.label + ")", 'Silent', function (data) {
-                            if (data.isError) {
-                                return Bootstrap.Task.reject("Create Density (" + a.props.label + ")", 'Background', data.toString());
-                            }
-                            if (t.params.normalize) {
-                                data.result.normalize();
-                            }
-                            var e = Entity.Density.Data.create(t, { label: t.params.id ? t.params.id : 'Density Data', data: data.result, description: t.params.normalize ? 'Normalized' : '' });
-                            return Bootstrap.Task.resolve("Create Density (" + a.props.label + ")", 'Background', e);
-                        });
+                    }, function (bigCtx, a, t) {
+                        return Bootstrap.Task.create("Create Density (" + a.props.label + ")", 'Background', function (ctx) { return __awaiter(_this, void 0, void 0, function () {
+                            var data, e;
+                            return __generator(this, function (_a) {
+                                switch (_a.label) {
+                                    case 0: return [4 /*yield*/, Bootstrap.Task.fromComputation("Parse Density (" + a.props.label + ")", 'Normal', t.params.format.parse(a.props.data)).setReportTime(true).run(bigCtx)];
+                                    case 1:
+                                        data = _a.sent();
+                                        if (data.isError) {
+                                            throw data.toString();
+                                        }
+                                        if (t.params.normalize) {
+                                            data.result.normalize();
+                                        }
+                                        e = Entity.Density.Data.create(t, { label: t.params.id ? t.params.id : 'Density Data', data: data.result, description: t.params.normalize ? 'Normalized' : '' });
+                                        return [2 /*return*/, e];
+                                }
+                            });
+                        }); });
                     }, function (ctx, b, t) {
                         if (b.props.data.isNormalized === t.params.normalize)
                             return Bootstrap.Task.resolve('Density', 'Background', Bootstrap.Tree.Node.Null);
-                        return Bootstrap.Task.create('Update Density', 'Normal', function (ctx) {
-                            ctx.update('Updating...');
-                            ctx.schedule(function () {
-                                var data = b.props.data;
-                                if (data.isNormalized)
-                                    LiteMol.Core.Formats.Density.Data.denormalize(data);
-                                else
-                                    LiteMol.Core.Formats.Density.Data.normalize(data);
-                                ctx.resolve(Entity.Density.Data.create(t, { label: t.params.id ? t.params.id : 'Density Data', data: data, description: t.params.normalize ? 'Normalized' : '' }));
+                        return Bootstrap.Task.create('Update Density', 'Normal', function (ctx) { return __awaiter(_this, void 0, void 0, function () {
+                            var data;
+                            return __generator(this, function (_a) {
+                                switch (_a.label) {
+                                    case 0: return [4 /*yield*/, ctx.updateProgress('Updating...')];
+                                    case 1:
+                                        _a.sent();
+                                        data = b.props.data;
+                                        if (data.isNormalized)
+                                            LiteMol.Core.Formats.Density.Data.denormalize(data);
+                                        else
+                                            LiteMol.Core.Formats.Density.Data.normalize(data);
+                                        return [2 /*return*/, Entity.Density.Data.create(t, { label: t.params.id ? t.params.id : 'Density Data', data: data, description: t.params.normalize ? 'Normalized' : '' })];
+                                }
                             });
-                        });
+                        }); });
                     });
                     Density.CreateFromCif = Bootstrap.Tree.Transformer.create({
                         id: 'density-create-from-cif',
@@ -69447,17 +69377,22 @@ var LiteMol;
                         to: [Entity.Density.Data],
                         isUpdatable: false,
                         defaultParams: function () { return ({ blockIndex: 0 }); }
-                    }, function (ctx, a, t) {
-                        return Bootstrap.Task.create('Create Density', 'Normal', function (ctx) {
-                            ctx.update('Parsing...');
-                            ctx.schedule(function () {
-                                var data = LiteMol.Core.Formats.Density.CIF.parse(a.props.dictionary.dataBlocks[t.params.blockIndex]);
-                                if (data.isError) {
-                                    return Bootstrap.Task.reject("Create Density (" + a.props.label + ")", 'Background', data.toString());
+                    }, function (bigCtx, a, t) {
+                        return Bootstrap.Task.create('Create Density', 'Normal', function (ctx) { return __awaiter(_this, void 0, void 0, function () {
+                            var data;
+                            return __generator(this, function (_a) {
+                                switch (_a.label) {
+                                    case 0: return [4 /*yield*/, ctx.updateProgress('Parsing...')];
+                                    case 1:
+                                        _a.sent();
+                                        data = LiteMol.Core.Formats.Density.CIF.parse(a.props.dictionary.dataBlocks[t.params.blockIndex]);
+                                        if (data.isError) {
+                                            throw data.toString();
+                                        }
+                                        return [2 /*return*/, Entity.Density.Data.create(t, { label: t.params.id ? t.params.id : 'Density Data', data: data.result, description: data.result.attributes['name'] })];
                                 }
-                                ctx.resolve(Entity.Density.Data.create(t, { label: t.params.id ? t.params.id : 'Density Data', data: data.result, description: data.result.attributes['name'] }));
                             });
-                        }).setReportTime(true);
+                        }); }).setReportTime(true);
                     });
                     Density.CreateFromData = Bootstrap.Tree.Transformer.create({
                         id: 'density-create-from-data',
@@ -69563,6 +69498,7 @@ var LiteMol;
                     var CoordinateStreaming;
                     (function (CoordinateStreaming) {
                         "use strict";
+                        var _this = this;
                         CoordinateStreaming.CreateBehaviour = Bootstrap.Tree.Transformer.create({
                             id: 'streaming-create-behaviour',
                             name: 'Coordinate Streaming',
@@ -69581,17 +69517,20 @@ var LiteMol;
                             to: [Entity.Molecule.Model],
                             defaultParams: function () { return void 0; },
                         }, function (ctx, a, t) {
-                            return Bootstrap.Task.create('Load', 'Silent', function (ctx) {
-                                var cif = LiteMol.Core.Formats.CIF.Binary.parse(t.params.data);
-                                if (cif.isError)
-                                    return;
-                                var model = LiteMol.Core.Formats.Molecule.mmCIF.ofDataBlock(cif.result.dataBlocks[0]).models[0];
-                                if (t.params.transform)
-                                    LiteMol.Core.Structure.Operator.applyToModelUnsafe(t.params.transform, model);
-                                ctx.resolve(Entity.Molecule.Model.create(t, { label: 'part', model: model }));
-                            });
+                            return Bootstrap.Task.create('Load', 'Silent', function (ctx) { return __awaiter(_this, void 0, void 0, function () {
+                                var cif, model;
+                                return __generator(this, function (_a) {
+                                    cif = LiteMol.Core.Formats.CIF.Binary.parse(t.params.data);
+                                    if (cif.isError)
+                                        return [2 /*return*/];
+                                    model = LiteMol.Core.Formats.Molecule.mmCIF.ofDataBlock(cif.result.dataBlocks[0]).models[0];
+                                    if (t.params.transform)
+                                        LiteMol.Core.Structure.Operator.applyToModelUnsafe(t.params.transform, model);
+                                    return [2 /*return*/, Entity.Molecule.Model.create(t, { label: 'part', model: model })];
+                                });
+                            }); });
                         });
-                        CoordinateStreaming.InitStreaming = Bootstrap.Tree.Transformer.create({
+                        CoordinateStreaming.InitStreaming = Bootstrap.Tree.Transformer.action({
                             id: 'streaming-init',
                             name: 'Coordinate Streaming',
                             description: 'Download a smaller version of the molecule required to display cartoon representation and stream the rest of the coordinates as required.',
@@ -69600,17 +69539,12 @@ var LiteMol;
                             validateParams: function (p) { return !(p.id || '').trim().length ? ['Enter id'] : !(p.server || '').trim().length ? ['Specify server'] : void 0; },
                             defaultParams: function (ctx) { return ({ id: ctx.settings.get('molecule.coordinateStreaming.defaultId') || '', server: ctx.settings.get('molecule.coordinateStreaming.defaultServer') || '', radius: ctx.settings.get('molecule.coordinateStreaming.defaultRadius') || 0 }); },
                         }, function (context, a, t) {
-                            return Bootstrap.Task.create('Macromolecule', 'Normal', function (ctx) {
-                                var action = Bootstrap.Tree.Transform.build()
-                                    .add(a, Transformer.Data.Download, { url: Bootstrap.Behaviour.Molecule.CoordinateStreaming.getBaseUrl(t.params.id, t.params.server), type: 'Binary', id: t.params.id })
-                                    .then(Transformer.Data.ParseBinaryCif, { id: t.params.id }, { isBinding: true })
-                                    .then(Molecule.CreateFromMmCif, { blockIndex: 0 }, { isBinding: true })
-                                    .then(Molecule.CreateModel, { modelIndex: 0 }, { isBinding: false })
-                                    .then(CoordinateStreaming.CreateBehaviour, { server: t.params.server, radius: t.params.radius });
-                                Bootstrap.Tree.Transform.apply(context, action).run(context)
-                                    .then(function (r) { return ctx.resolve(Bootstrap.Tree.Node.Null); })
-                                    .catch(ctx.reject);
-                            });
+                            return Bootstrap.Tree.Transform.build()
+                                .add(a, Transformer.Data.Download, { url: Bootstrap.Behaviour.Molecule.CoordinateStreaming.getBaseUrl(t.params.id, t.params.server), type: 'Binary', id: t.params.id })
+                                .then(Transformer.Data.ParseBinaryCif, { id: t.params.id }, { isBinding: true })
+                                .then(Molecule.CreateFromMmCif, { blockIndex: 0 }, { isBinding: true })
+                                .then(Molecule.CreateModel, { modelIndex: 0 }, { isBinding: false })
+                                .then(CoordinateStreaming.CreateBehaviour, { server: t.params.server, radius: t.params.radius });
                         });
                     })(CoordinateStreaming = Molecule.CoordinateStreaming || (Molecule.CoordinateStreaming = {}));
                 })(Molecule = Transformer.Molecule || (Transformer.Molecule = {}));
@@ -70036,7 +69970,7 @@ var LiteMol;
                                 .then(Transforms.Molecule.CreateVisual, { style: ambStyle }, { ref: ambRef });
                             action.then(Transforms.Molecule.CreateSelectionFromQuery, { query: ligandQ, name: 'Ligand', silent: true, inFullContext: true }, { isBinding: true })
                                 .then(Transforms.Molecule.CreateVisual, { style: ligandStyle });
-                            Bootstrap.Tree.Transform.apply(context, action).run(context);
+                            Bootstrap.Tree.Transform.apply(context, action).run();
                         });
                     };
                 }
@@ -70158,8 +70092,7 @@ var LiteMol;
                         }
                         else
                             task = Bootstrap.Entity.Transformer.Density.CreateVisual.create({ style: style }, { ref: this.ref, isHidden: true }).update(this.context, visual);
-                        //this.isBusy = true;
-                        task.run(this.context);
+                        task.run();
                     };
                     ShowDynamicDensity.prototype.updateTheme = function (ti) {
                         this.params.style.theme = ti;
@@ -70234,7 +70167,7 @@ var LiteMol;
                     }
                     CoordinateStreaming.prototype.remove = function () {
                         if (this.download) {
-                            this.download.discard();
+                            this.download.tryAbort();
                             this.download = void 0;
                         }
                         Bootstrap.Command.Tree.RemoveNode.dispatch(this.context, this.ref);
@@ -70273,14 +70206,14 @@ var LiteMol;
                             + "atomSitesOnly=1&"
                             + "encoding=bcif&"
                             + "lowPrecisionCoords=1";
-                        this.download = Bootstrap.Utils.ajaxGetArrayBuffer(url).run(this.context);
+                        this.download = Bootstrap.Utils.ajaxGetArrayBuffer(url).runWithContext(this.context);
                         var cached = this.cache.get(url);
                         if (cached) {
                             this.create(cached, transform);
                         }
                         else {
                             this.context.performance.start(this.ref);
-                            this.download.then(function (data) {
+                            this.download.result.then(function (data) {
                                 _this.cache.add(url, data);
                                 _this.context.performance.end(_this.ref);
                                 _this.context.logger.info("Streaming done in " + _this.context.performance.formatTime(_this.ref));
@@ -70291,7 +70224,7 @@ var LiteMol;
                     CoordinateStreaming.prototype.create = function (data, transform) {
                         var action = Bootstrap.Tree.Transform.build().add(this.behaviour, Bootstrap.Entity.Transformer.Molecule.CoordinateStreaming.CreateModel, { data: data, transform: transform }, { ref: this.ref, isHidden: true })
                             .then(Transforms.Molecule.CreateVisual, { style: this.style });
-                        Bootstrap.Tree.Transform.apply(this.context, action).run(this.context);
+                        Bootstrap.Tree.Transform.apply(this.context, action).run();
                     };
                     CoordinateStreaming.prototype.dispose = function () {
                         this.remove();
@@ -70779,7 +70712,7 @@ var LiteMol;
                         this.setState({ isDirty: false, isBusy: true });
                         try {
                             var task = this.isUpdate ? transform.update(this.context, this.entity) : transform.apply(this.context, this.entity);
-                            task.run(this.context).then(function () { return _this.setState({ isBusy: false }); }).catch(function () { return _this.setState({ isBusy: false }); });
+                            task.run().then(function () { return _this.setState({ isBusy: false }); }).catch(function () { return _this.setState({ isBusy: false }); });
                         }
                         catch (e) {
                             this.setState({ isBusy: false });
@@ -71430,7 +71363,7 @@ var LiteMol;
             Bootstrap.Command.Entity.SetVisibility.getStream(context).subscribe(function (e) { return Bootstrap.Entity.setVisibility(e.data.entity, e.data.visible); });
             Bootstrap.Command.Entity.ToggleExpanded.getStream(context).subscribe(function (e) { return Bootstrap.Entity.toggleExpanded(e.data); });
             Bootstrap.Command.Tree.RemoveNode.getStream(context).subscribe(function (e) { return context.select(e.data).forEach(function (n) { return Bootstrap.Tree.remove(n); }); });
-            Bootstrap.Command.Tree.ApplyTransform.getStream(context).subscribe(function (e) { (e.data.isUpdate ? e.data.transform.update(context, e.data.node) : e.data.transform.apply(context, e.data.node)).run(context); });
+            Bootstrap.Command.Tree.ApplyTransform.getStream(context).subscribe(function (e) { (e.data.isUpdate ? e.data.transform.update(context, e.data.node) : e.data.transform.apply(context, e.data.node)).run(); });
             Bootstrap.Event.Tree.NodeAdded.getStream(context).subscribe(function (e) {
                 var vis = e.data.parent.state.visibility;
                 var visible = vis !== 2 /* None */;
@@ -79145,7 +79078,7 @@ var LiteMol;
              */
             Controller.prototype.applyTransform = function (transform) {
                 var ctx = this.context;
-                return LiteMol.Bootstrap.Tree.Transform.apply(ctx, transform).run(ctx);
+                return LiteMol.Bootstrap.Tree.Transform.apply(ctx, transform).run();
             };
             /**
              * Remove all entities.

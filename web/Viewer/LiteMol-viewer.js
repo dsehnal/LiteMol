@@ -1,11 +1,3 @@
-var __assign = (this && this.__assign) || Object.assign || function(t) {
-    for (var s, i = 1, n = arguments.length; i < n; i++) {
-        s = arguments[i];
-        for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
-            t[p] = s[p];
-    }
-    return t;
-};
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
@@ -40,6 +32,14 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         } catch (e) { op = [6, e]; y = 0; } finally { f = t = 0; }
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
+};
+var __assign = (this && this.__assign) || Object.assign || function(t) {
+    for (var s, i = 1, n = arguments.length; i < n; i++) {
+        s = arguments[i];
+        for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+            t[p] = s[p];
+    }
+    return t;
 };
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
@@ -84,6 +84,7 @@ var LiteMol;
     (function (Viewer) {
         var ValidatorDB;
         (function (ValidatorDB) {
+            var _this = this;
             var Entity = LiteMol.Bootstrap.Entity;
             var Transformer = LiteMol.Bootstrap.Entity.Transformer;
             ValidatorDB.Report = Entity.create({ name: 'Ligand Validation Report', typeClass: 'Behaviour', shortName: 'VR', description: 'Represents ValidatorDB ligand validation report.' });
@@ -296,14 +297,19 @@ var LiteMol;
                 to: [ValidatorDB.Report],
                 defaultParams: function () { return ({}); }
             }, function (context, a, t) {
-                return LiteMol.Bootstrap.Task.create("ValidatorDB Report (" + t.params.id + ")", 'Normal', function (ctx) {
-                    ctx.update('Parsing...');
-                    ctx.schedule(function () {
-                        var data = JSON.parse(a.props.data);
-                        var report = Api.createReport(data || {});
-                        ctx.resolve(ValidatorDB.Report.create(t, { label: 'Ligand Validation Report', behaviour: new Interactivity.Behaviour(context, report) }));
+                return LiteMol.Bootstrap.Task.create("ValidatorDB Report (" + t.params.id + ")", 'Normal', function (ctx) { return __awaiter(_this, void 0, void 0, function () {
+                    var data, report;
+                    return __generator(this, function (_a) {
+                        switch (_a.label) {
+                            case 0: return [4 /*yield*/, ctx.updateProgress('Parsing...')];
+                            case 1:
+                                _a.sent();
+                                data = JSON.parse(a.props.data);
+                                report = Api.createReport(data || {});
+                                return [2 /*return*/, ValidatorDB.Report.create(t, { label: 'Ligand Validation Report', behaviour: new Interactivity.Behaviour(context, report) })];
+                        }
                     });
-                }).setReportTime(true);
+                }); }).setReportTime(true);
             });
             ValidatorDB.DownloadAndCreate = LiteMol.Bootstrap.Tree.Transformer.action({
                 id: 'validatordb-download-and-create',
@@ -328,29 +334,31 @@ var LiteMol;
                 to: [Entity.Action],
                 defaultParams: function () { return ({}); }
             }, function (context, a, t) {
-                return LiteMol.Bootstrap.Task.create('Validation Coloring', 'Background', function (ctx) {
-                    var molecule = LiteMol.Bootstrap.Tree.Node.findAncestor(a, LiteMol.Bootstrap.Entity.Molecule.Molecule);
-                    if (!molecule) {
-                        ctx.reject('No suitable parent found.');
-                        return;
-                    }
-                    var themes = new Map();
-                    var visuals = context.select(LiteMol.Bootstrap.Tree.Selection.byValue(molecule).subtree().ofType(LiteMol.Bootstrap.Entity.Molecule.Visual));
-                    for (var _i = 0, visuals_1 = visuals; _i < visuals_1.length; _i++) {
-                        var v = visuals_1[_i];
-                        var model = LiteMol.Bootstrap.Utils.Molecule.findModel(v);
-                        if (!model)
-                            continue;
-                        var theme = themes.get(model.id);
-                        if (!theme) {
-                            theme = Theme.create(model, a.props.behaviour.report);
-                            themes.set(model.id, theme);
+                return LiteMol.Bootstrap.Task.create('Validation Coloring', 'Background', function (ctx) { return __awaiter(_this, void 0, void 0, function () {
+                    var molecule, themes, visuals, _i, visuals_1, v, model, theme;
+                    return __generator(this, function (_a) {
+                        molecule = LiteMol.Bootstrap.Tree.Node.findAncestor(a, LiteMol.Bootstrap.Entity.Molecule.Molecule);
+                        if (!molecule) {
+                            throw 'No suitable parent found.';
                         }
-                        LiteMol.Bootstrap.Command.Visual.UpdateBasicTheme.dispatch(context, { visual: v, theme: theme });
-                    }
-                    context.logger.message('Validation coloring applied.');
-                    ctx.resolve(LiteMol.Bootstrap.Tree.Node.Null);
-                });
+                        themes = new Map();
+                        visuals = context.select(LiteMol.Bootstrap.Tree.Selection.byValue(molecule).subtree().ofType(LiteMol.Bootstrap.Entity.Molecule.Visual));
+                        for (_i = 0, visuals_1 = visuals; _i < visuals_1.length; _i++) {
+                            v = visuals_1[_i];
+                            model = LiteMol.Bootstrap.Utils.Molecule.findModel(v);
+                            if (!model)
+                                continue;
+                            theme = themes.get(model.id);
+                            if (!theme) {
+                                theme = Theme.create(model, a.props.behaviour.report);
+                                themes.set(model.id, theme);
+                            }
+                            LiteMol.Bootstrap.Command.Visual.UpdateBasicTheme.dispatch(context, { visual: v, theme: theme });
+                        }
+                        context.logger.message('Validation coloring applied.');
+                        return [2 /*return*/, LiteMol.Bootstrap.Tree.Node.Null];
+                    });
+                }); });
             });
         })(ValidatorDB = Viewer.ValidatorDB || (Viewer.ValidatorDB = {}));
     })(Viewer = LiteMol.Viewer || (LiteMol.Viewer = {}));
@@ -365,6 +373,7 @@ var LiteMol;
         var DensityStreaming;
         (function (DensityStreaming) {
             'use strict';
+            var _this = this;
             var Entity = LiteMol.Bootstrap.Entity;
             var Transformer = LiteMol.Bootstrap.Entity.Transformer;
             var Tree = LiteMol.Bootstrap.Tree;
@@ -399,11 +408,30 @@ var LiteMol;
                 var params = t.params;
                 if (oldParams.radius !== params.radius)
                     return void 0;
-                return LiteMol.Bootstrap.Task.create('Density', 'Background', function (ctx) {
-                    ctx.update('Updating styles...');
-                    var update = function () { Entity.nodeUpdated(b); ctx.resolve(Tree.Node.Null); };
-                    b.props.behaviour.invalidateStyles(params).then(update).catch(update);
-                });
+                return LiteMol.Bootstrap.Task.create('Density', 'Background', function (ctx) { return __awaiter(_this, void 0, void 0, function () {
+                    var e_1;
+                    return __generator(this, function (_a) {
+                        switch (_a.label) {
+                            case 0: return [4 /*yield*/, ctx.updateProgress('Updating styles...')];
+                            case 1:
+                                _a.sent();
+                                _a.label = 2;
+                            case 2:
+                                _a.trys.push([2, 4, 5, 6]);
+                                return [4 /*yield*/, b.props.behaviour.invalidateStyles(params)];
+                            case 3:
+                                _a.sent();
+                                return [3 /*break*/, 6];
+                            case 4:
+                                e_1 = _a.sent();
+                                return [3 /*break*/, 6];
+                            case 5:
+                                Entity.nodeUpdated(b);
+                                return [2 /*return*/, Tree.Node.Null];
+                            case 6: return [2 /*return*/];
+                        }
+                    });
+                }); });
             });
             DensityStreaming.Create = LiteMol.Bootstrap.Tree.Transformer.actionWithContext({
                 id: 'density-streaming-create',
@@ -484,84 +512,96 @@ var LiteMol;
                 };
             }
             function doCS(m, ctx, params, sourceId, contourLevel) {
-                var server = params.server.trim();
-                if (server[server.length - 1] !== '/')
-                    server += '/';
-                var uri = "" + server + params.source + "/" + (sourceId ? sourceId : params.id);
-                return new LiteMol.Promise(function (res, rej) {
-                    LiteMol.Bootstrap.Utils.ajaxGetString(uri, 'DensityServer')
-                        .run(ctx)
-                        .then(function (s) {
-                        try {
-                            var json = JSON.parse(s);
-                            if (!json.isAvailable) {
-                                res(fail(m, "Density streaming is not available for '" + params.source + "/" + params.id + "'."));
-                                return;
-                            }
-                            res(doAction(m, params, { maxQueryRegion: json.maxQueryRegion, data: json.dataInfo }, sourceId, contourLevel));
+                return __awaiter(this, void 0, void 0, function () {
+                    var server, uri, s, json;
+                    return __generator(this, function (_a) {
+                        switch (_a.label) {
+                            case 0:
+                                server = params.server.trim();
+                                if (server[server.length - 1] !== '/')
+                                    server += '/';
+                                uri = "" + server + params.source + "/" + (sourceId ? sourceId : params.id);
+                                return [4 /*yield*/, LiteMol.Bootstrap.Utils.ajaxGetString(uri, 'DensityServer').run(ctx)];
+                            case 1:
+                                s = _a.sent();
+                                try {
+                                    json = JSON.parse(s);
+                                    if (!json.isAvailable) {
+                                        return [2 /*return*/, fail(m, "Density streaming is not available for '" + params.source + "/" + params.id + "'.")];
+                                    }
+                                    return [2 /*return*/, doAction(m, params, { maxQueryRegion: json.maxQueryRegion, data: json.dataInfo }, sourceId, contourLevel)];
+                                }
+                                catch (e) {
+                                    return [2 /*return*/, fail(e, 'DensityServer API call failed.')];
+                                }
+                                return [2 /*return*/];
                         }
-                        catch (e) {
-                            res(fail(e, 'DensityServer API call failed.'));
-                        }
-                    })
-                        .catch(function (e) { return res(fail(e, 'DensityServer API call failed.')); });
+                    });
                 });
             }
             function doEmdbId(m, ctx, params, id) {
-                return new LiteMol.Promise(function (res, rej) {
-                    id = id.trim();
-                    LiteMol.Bootstrap.Utils.ajaxGetString("https://www.ebi.ac.uk/pdbe/api/emdb/entry/map/EMD-" + id, 'EMDB API')
-                        .run(ctx)
-                        .then(function (s) {
-                        try {
-                            var json = JSON.parse(s);
-                            var contour = void 0;
-                            var e = json['EMD-' + id];
-                            if (e && e[0] && e[0].map && e[0].map.contour_level && e[0].map.contour_level.value !== void 0) {
-                                contour = +e[0].map.contour_level.value;
-                            }
-                            doCS(m, ctx, params, id, contour)
-                                .then(function (a) { return res(a); })
-                                .catch(function () { return res(fail(m, 'Something went terribly wrong.')); });
+                return __awaiter(this, void 0, void 0, function () {
+                    var s, json, contour, e, e_2;
+                    return __generator(this, function (_a) {
+                        switch (_a.label) {
+                            case 0:
+                                id = id.trim();
+                                return [4 /*yield*/, LiteMol.Bootstrap.Utils.ajaxGetString("https://www.ebi.ac.uk/pdbe/api/emdb/entry/map/EMD-" + id, 'EMDB API').run(ctx)];
+                            case 1:
+                                s = _a.sent();
+                                _a.label = 2;
+                            case 2:
+                                _a.trys.push([2, 4, , 5]);
+                                json = JSON.parse(s);
+                                contour = void 0;
+                                e = json['EMD-' + id];
+                                if (e && e[0] && e[0].map && e[0].map.contour_level && e[0].map.contour_level.value !== void 0) {
+                                    contour = +e[0].map.contour_level.value;
+                                }
+                                return [4 /*yield*/, doCS(m, ctx, params, id, contour)];
+                            case 3: return [2 /*return*/, _a.sent()];
+                            case 4:
+                                e_2 = _a.sent();
+                                return [2 /*return*/, fail(m, 'EMDB API call failed.')];
+                            case 5: return [2 /*return*/];
                         }
-                        catch (e) {
-                            res(fail(m, 'EMDB API call failed.'));
-                        }
-                    })
-                        .catch(function (e) { return res(fail(m, 'EMDB API call failed.')); });
+                    });
                 });
             }
             function doEmd(m, ctx, params) {
-                return new LiteMol.Promise(function (res, rej) {
-                    var id = params.id.trim().toLowerCase();
-                    LiteMol.Bootstrap.Utils.ajaxGetString("https://www.ebi.ac.uk/pdbe/api/pdb/entry/summary/" + id, 'PDB API')
-                        .run(ctx)
-                        .then(function (s) {
-                        try {
-                            var json = JSON.parse(s);
-                            var emdbId = void 0;
-                            var e = json[id];
-                            if (e && e[0] && e[0].related_structures) {
-                                var emdb = e[0].related_structures.filter(function (s) { return s.resource === 'EMDB'; });
-                                if (!emdb.length) {
-                                    res(fail(m, "No related EMDB entry found for '" + id + "'."));
-                                    return;
+                return __awaiter(this, void 0, void 0, function () {
+                    var id, s, json, emdbId, e, emdb, e_3;
+                    return __generator(this, function (_a) {
+                        switch (_a.label) {
+                            case 0:
+                                id = params.id.trim().toLowerCase();
+                                return [4 /*yield*/, LiteMol.Bootstrap.Utils.ajaxGetString("https://www.ebi.ac.uk/pdbe/api/pdb/entry/summary/" + id, 'PDB API').run(ctx)];
+                            case 1:
+                                s = _a.sent();
+                                _a.label = 2;
+                            case 2:
+                                _a.trys.push([2, 4, , 5]);
+                                json = JSON.parse(s);
+                                emdbId = void 0;
+                                e = json[id];
+                                if (e && e[0] && e[0].related_structures) {
+                                    emdb = e[0].related_structures.filter(function (s) { return s.resource === 'EMDB'; });
+                                    if (!emdb.length) {
+                                        return [2 /*return*/, fail(m, "No related EMDB entry found for '" + id + "'.")];
+                                    }
+                                    emdbId = emdb[0].accession.split('-')[1];
                                 }
-                                emdbId = emdb[0].accession.split('-')[1];
-                            }
-                            else {
-                                res(fail(m, "No related EMDB entry found for '" + id + "'."));
-                                return;
-                            }
-                            doEmdbId(m, ctx, params, emdbId)
-                                .then(function (a) { return res(a); })
-                                .catch(function () { return res(fail(m, 'Something went terribly wrong.')); });
+                                else {
+                                    return [2 /*return*/, fail(m, "No related EMDB entry found for '" + id + "'.")];
+                                }
+                                return [4 /*yield*/, doEmdbId(m, ctx, params, emdbId)];
+                            case 3: return [2 /*return*/, _a.sent()];
+                            case 4:
+                                e_3 = _a.sent();
+                                return [2 /*return*/, fail(m, 'PDBe API call failed.')];
+                            case 5: return [2 /*return*/];
                         }
-                        catch (e) {
-                            res(fail(m, 'PDBe API call failed.'));
-                        }
-                    })
-                        .catch(function (e) { return res(fail(m, 'PDBe API call failed.')); });
+                    });
                 });
             }
         })(DensityStreaming = Extensions.DensityStreaming || (Extensions.DensityStreaming = {}));
@@ -619,7 +659,7 @@ var LiteMol;
                 };
                 Behaviour.prototype.stop = function () {
                     if (this.download) {
-                        this.download.discard();
+                        this.download.tryAbort();
                         this.download = void 0;
                     }
                 };
@@ -650,7 +690,7 @@ var LiteMol;
                     }
                 };
                 Behaviour.prototype.updateStyleTaskTypes = function () {
-                    var taskType = this.params.radius > 10 ? 'Background' : 'Silent';
+                    var taskType = this.params.radius > 15 ? 'Background' : 'Silent';
                     for (var _i = 0, _a = this.types; _i < _a.length; _i++) {
                         var t = _a[_i];
                         this.params.styles[t].taskType = taskType;
@@ -669,11 +709,11 @@ var LiteMol;
                     return true;
                 };
                 Behaviour.prototype.apply = function (b) {
-                    return LiteMol.Bootstrap.Tree.Transform.apply(this.context, b).run(this.context);
+                    return LiteMol.Bootstrap.Tree.Transform.apply(this.context, b).run();
                 };
                 Behaviour.prototype.createXray = function (data) {
                     return __awaiter(this, void 0, void 0, function () {
-                        var twoFB, oneFB, twoF, oneF, action, ref, group, styles, twoFoFc, foFc, a, b, c, e_1;
+                        var twoFB, oneFB, twoF, oneF, action, ref, group, styles, twoFoFc, foFc, a, b, c, e_4;
                         return __generator(this, function (_a) {
                             switch (_a.label) {
                                 case 0:
@@ -711,8 +751,8 @@ var LiteMol;
                                     this.groupDone(ref, true);
                                     return [3 /*break*/, 6];
                                 case 5:
-                                    e_1 = _a.sent();
-                                    this.context.logger.error('[Density] ' + e_1);
+                                    e_4 = _a.sent();
+                                    this.context.logger.error('[Density] ' + e_4);
                                     return [3 /*break*/, 6];
                                 case 6: return [2 /*return*/];
                             }
@@ -734,7 +774,7 @@ var LiteMol;
                     action.add(this.behaviour, Transformer.Basic.CreateGroup, { label: 'Density' }, { ref: ref, isHidden: true })
                         .then(Transformer.Density.CreateFromData, { id: 'EMD', data: emd.result })
                         .then(Transformer.Density.CreateVisual, { style: styles['EMD'] }, { ref: ref + 'EMD' });
-                    LiteMol.Bootstrap.Tree.Transform.apply(this.context, action).run(this.context)
+                    LiteMol.Bootstrap.Tree.Transform.apply(this.context, action).run()
                         .then(function () { return _this.groupDone(ref, true); })
                         .catch(function () { return _this.groupDone(ref, false); });
                 };
@@ -775,8 +815,8 @@ var LiteMol;
                         + ("/" + this.params.id)
                         + ("/" + a.map(function (v) { return Math.round(1000 * v) / 1000; }).join(','))
                         + ("/" + b.map(function (v) { return Math.round(1000 * v) / 1000; }).join(','));
-                    this.download = Utils.ajaxGetArrayBuffer(url, 'Density').run(this.context);
-                    this.download.then(function (data) {
+                    this.download = Utils.ajaxGetArrayBuffer(url, 'Density').runWithContext(this.context);
+                    this.download.result.then(function (data) {
                         _this.clear();
                         _this.dataBox = box;
                         var cif = LiteMol.Core.Formats.CIF.Binary.parse(data);
@@ -790,7 +830,7 @@ var LiteMol;
                     });
                 };
                 Behaviour.prototype.updateVisual = function (v, style) {
-                    return Entity.Transformer.Density.CreateVisual.create({ style: style }, { ref: v.ref }).update(this.context, v).run(this.context);
+                    return Entity.Transformer.Density.CreateVisual.create({ style: style }, { ref: v.ref }).update(this.context, v).run();
                 };
                 Behaviour.prototype.invalidate = function (inputStyles) {
                     return __awaiter(this, void 0, LiteMol.Promise, function () {
@@ -1153,56 +1193,64 @@ var LiteMol;
                     };
                 }
                 function doEmdbPdbId(ctx, a, t, id) {
-                    return new LiteMol.Promise(function (res, rej) {
-                        id = id.trim().toLowerCase();
-                        Bootstrap.Utils.ajaxGetString("https://www.ebi.ac.uk/pdbe/api/pdb/entry/summary/" + id, 'PDB API')
-                            .run(ctx)
-                            .then(function (s) {
-                            try {
-                                var json = JSON.parse(s);
-                                var emdbId = void 0;
-                                var e = json[id];
-                                if (e && e[0] && e[0].related_structures) {
-                                    var emdb = e[0].related_structures.filter(function (s) { return s.resource === 'EMDB'; });
-                                    if (!emdb.length) {
-                                        res(fail(a, "No related EMDB entry found for '" + id + "'."));
-                                        return;
+                    return __awaiter(this, void 0, void 0, function () {
+                        var s, json, emdbId, e, emdb;
+                        return __generator(this, function (_a) {
+                            switch (_a.label) {
+                                case 0:
+                                    id = id.trim().toLowerCase();
+                                    return [4 /*yield*/, Bootstrap.Utils.ajaxGetString("https://www.ebi.ac.uk/pdbe/api/pdb/entry/summary/" + id, 'PDB API').run(ctx)];
+                                case 1:
+                                    s = _a.sent();
+                                    try {
+                                        json = JSON.parse(s);
+                                        emdbId = void 0;
+                                        e = json[id];
+                                        if (e && e[0] && e[0].related_structures) {
+                                            emdb = e[0].related_structures.filter(function (s) { return s.resource === 'EMDB'; });
+                                            if (!emdb.length) {
+                                                return [2 /*return*/, fail(a, "No related EMDB entry found for '" + id + "'.")];
+                                            }
+                                            emdbId = emdb[0].accession.split('-')[1];
+                                        }
+                                        else {
+                                            return [2 /*return*/, fail(a, "No related EMDB entry found for '" + id + "'.")];
+                                        }
+                                        return [2 /*return*/, doEmdbId(ctx, a, t, emdbId)];
                                     }
-                                    emdbId = emdb[0].accession.split('-')[1];
-                                }
-                                else {
-                                    res(fail(a, "No related EMDB entry found for '" + id + "'."));
-                                    return;
-                                }
-                                res(doEmdbId(ctx, a, t, emdbId));
+                                    catch (e) {
+                                        return [2 /*return*/, fail(a, 'PDBe API call failed.')];
+                                    }
+                                    return [2 /*return*/];
                             }
-                            catch (e) {
-                                res(fail(a, 'PDBe API call failed.'));
-                            }
-                        })
-                            .catch(function (e) { return res(fail(a, 'PDBe API call failed.')); });
+                        });
                     });
                 }
                 function doEmdbId(ctx, a, t, id) {
-                    return new LiteMol.Promise(function (res, rej) {
-                        id = id.trim();
-                        Bootstrap.Utils.ajaxGetString("https://www.ebi.ac.uk/pdbe/api/emdb/entry/map/EMD-" + id, 'EMDB API')
-                            .run(ctx)
-                            .then(function (s) {
-                            try {
-                                var json = JSON.parse(s);
-                                var contour = void 0;
-                                var e = json['EMD-' + id];
-                                if (e && e[0] && e[0].map && e[0].map.contour_level && e[0].map.contour_level.value !== void 0) {
-                                    contour = +e[0].map.contour_level.value;
-                                }
-                                res(doEmdb(a, t, id, contour));
+                    return __awaiter(this, void 0, void 0, function () {
+                        var s, json, contour, e;
+                        return __generator(this, function (_a) {
+                            switch (_a.label) {
+                                case 0:
+                                    id = id.trim();
+                                    return [4 /*yield*/, Bootstrap.Utils.ajaxGetString("https://www.ebi.ac.uk/pdbe/api/emdb/entry/map/EMD-" + id, 'EMDB API').run(ctx)];
+                                case 1:
+                                    s = _a.sent();
+                                    try {
+                                        json = JSON.parse(s);
+                                        contour = void 0;
+                                        e = json['EMD-' + id];
+                                        if (e && e[0] && e[0].map && e[0].map.contour_level && e[0].map.contour_level.value !== void 0) {
+                                            contour = +e[0].map.contour_level.value;
+                                        }
+                                        return [2 /*return*/, doEmdb(a, t, id, contour)];
+                                    }
+                                    catch (e) {
+                                        return [2 /*return*/, fail(a, 'EMDB API call failed.')];
+                                    }
+                                    return [2 /*return*/];
                             }
-                            catch (e) {
-                                res(fail(a, 'EMDB API call failed.'));
-                            }
-                        })
-                            .catch(function (e) { return res(fail(a, 'EMDB API call failed.')); });
+                        });
                     });
                 }
                 // this creates the electron density based on the spec you sent me
@@ -1273,6 +1321,7 @@ var LiteMol;
         (function (PDBe) {
             var Validation;
             (function (Validation) {
+                var _this = this;
                 var Entity = LiteMol.Bootstrap.Entity;
                 var Transformer = LiteMol.Bootstrap.Entity.Transformer;
                 Validation.Report = Entity.create({ name: 'PDBe Molecule Validation Report', typeClass: 'Behaviour', shortName: 'VR', description: 'Represents PDBe validation report.' });
@@ -1457,15 +1506,20 @@ var LiteMol;
                     to: [Validation.Report],
                     defaultParams: function () { return ({}); }
                 }, function (context, a, t) {
-                    return LiteMol.Bootstrap.Task.create("Validation Report (" + t.params.id + ")", 'Normal', function (ctx) {
-                        ctx.update('Parsing...');
-                        ctx.schedule(function () {
-                            var data = JSON.parse(a.props.data);
-                            var model = data[t.params.id];
-                            var report = Api.createReport(model || {});
-                            ctx.resolve(Validation.Report.create(t, { label: 'Validation Report', behaviour: new Interactivity.Behaviour(context, report) }));
+                    return LiteMol.Bootstrap.Task.create("Validation Report (" + t.params.id + ")", 'Normal', function (ctx) { return __awaiter(_this, void 0, void 0, function () {
+                        var data, model, report;
+                        return __generator(this, function (_a) {
+                            switch (_a.label) {
+                                case 0: return [4 /*yield*/, ctx.updateProgress('Parsing...')];
+                                case 1:
+                                    _a.sent();
+                                    data = JSON.parse(a.props.data);
+                                    model = data[t.params.id];
+                                    report = Api.createReport(model || {});
+                                    return [2 /*return*/, Validation.Report.create(t, { label: 'Validation Report', behaviour: new Interactivity.Behaviour(context, report) })];
+                            }
                         });
-                    }).setReportTime(true);
+                    }); }).setReportTime(true);
                 });
                 Validation.DownloadAndCreate = LiteMol.Bootstrap.Tree.Transformer.action({
                     id: 'pdbe-validation-download-and-create',
@@ -1489,29 +1543,31 @@ var LiteMol;
                     to: [Entity.Action],
                     defaultParams: function () { return ({}); }
                 }, function (context, a, t) {
-                    return LiteMol.Bootstrap.Task.create('Validation Coloring', 'Background', function (ctx) {
-                        var molecule = LiteMol.Bootstrap.Tree.Node.findAncestor(a, LiteMol.Bootstrap.Entity.Molecule.Molecule);
-                        if (!molecule) {
-                            ctx.reject('No suitable parent found.');
-                            return;
-                        }
-                        var themes = new Map();
-                        var visuals = context.select(LiteMol.Bootstrap.Tree.Selection.byValue(molecule).subtree().ofType(LiteMol.Bootstrap.Entity.Molecule.Visual));
-                        for (var _i = 0, visuals_2 = visuals; _i < visuals_2.length; _i++) {
-                            var v = visuals_2[_i];
-                            var model = LiteMol.Bootstrap.Utils.Molecule.findModel(v);
-                            if (!model)
-                                continue;
-                            var theme = themes.get(model.id);
-                            if (!theme) {
-                                theme = Theme.create(model, a.props.behaviour.report);
-                                themes.set(model.id, theme);
+                    return LiteMol.Bootstrap.Task.create('Validation Coloring', 'Background', function (ctx) { return __awaiter(_this, void 0, void 0, function () {
+                        var molecule, themes, visuals, _i, visuals_2, v, model, theme;
+                        return __generator(this, function (_a) {
+                            molecule = LiteMol.Bootstrap.Tree.Node.findAncestor(a, LiteMol.Bootstrap.Entity.Molecule.Molecule);
+                            if (!molecule) {
+                                throw 'No suitable parent found.';
                             }
-                            LiteMol.Bootstrap.Command.Visual.UpdateBasicTheme.dispatch(context, { visual: v, theme: theme });
-                        }
-                        context.logger.message('Validation coloring applied.');
-                        ctx.resolve(LiteMol.Bootstrap.Tree.Node.Null);
-                    });
+                            themes = new Map();
+                            visuals = context.select(LiteMol.Bootstrap.Tree.Selection.byValue(molecule).subtree().ofType(LiteMol.Bootstrap.Entity.Molecule.Visual));
+                            for (_i = 0, visuals_2 = visuals; _i < visuals_2.length; _i++) {
+                                v = visuals_2[_i];
+                                model = LiteMol.Bootstrap.Utils.Molecule.findModel(v);
+                                if (!model)
+                                    continue;
+                                theme = themes.get(model.id);
+                                if (!theme) {
+                                    theme = Theme.create(model, a.props.behaviour.report);
+                                    themes.set(model.id, theme);
+                                }
+                                LiteMol.Bootstrap.Command.Visual.UpdateBasicTheme.dispatch(context, { visual: v, theme: theme });
+                            }
+                            context.logger.message('Validation coloring applied.');
+                            return [2 /*return*/, LiteMol.Bootstrap.Tree.Node.Null];
+                        });
+                    }); });
                 });
             })(Validation = PDBe.Validation || (PDBe.Validation = {}));
         })(PDBe = Viewer.PDBe || (Viewer.PDBe = {}));
@@ -1528,6 +1584,7 @@ var LiteMol;
         (function (PDBe) {
             var SequenceAnnotation;
             (function (SequenceAnnotation) {
+                var _this = this;
                 var Entity = LiteMol.Bootstrap.Entity;
                 var Transformer = LiteMol.Bootstrap.Entity.Transformer;
                 var Query = LiteMol.Core.Structure.Query;
@@ -1735,14 +1792,17 @@ var LiteMol;
                     defaultParams: function () { return ({}); },
                     isUpdatable: true
                 }, function (context, a, t) {
-                    return LiteMol.Bootstrap.Task.create("Sequence Annotation", 'Background', function (ctx) {
-                        var data = t.params.data;
-                        var query = Query.or.apply(null, data.mappings.map(function (m) {
-                            return Query.sequence(m.entity_id.toString(), m.struct_asym_id, { seqNumber: m.start.residue_number, insCode: getInsCode(m.start.author_insertion_code) }, { seqNumber: m.end.residue_number, insCode: getInsCode(m.end.author_insertion_code) });
-                        }))
-                            .union();
-                        ctx.resolve(SequenceAnnotation.Annotation.create(t, { label: data.identifier, description: t.params.id, query: query, color: t.params.color }));
-                    });
+                    return LiteMol.Bootstrap.Task.create("Sequence Annotation", 'Background', function (ctx) { return __awaiter(_this, void 0, void 0, function () {
+                        var data, query;
+                        return __generator(this, function (_a) {
+                            data = t.params.data;
+                            query = Query.or.apply(null, data.mappings.map(function (m) {
+                                return Query.sequence(m.entity_id.toString(), m.struct_asym_id, { seqNumber: m.start.residue_number, insCode: getInsCode(m.start.author_insertion_code) }, { seqNumber: m.end.residue_number, insCode: getInsCode(m.end.author_insertion_code) });
+                            }))
+                                .union();
+                            return [2 /*return*/, SequenceAnnotation.Annotation.create(t, { label: data.identifier, description: t.params.id, query: query, color: t.params.color })];
+                        });
+                    }); });
                 });
                 var Parse = LiteMol.Bootstrap.Tree.Transformer.create({
                     id: 'pdbe-sequence-annotations-parse',
@@ -1752,13 +1812,18 @@ var LiteMol;
                     to: [SequenceAnnotation.Annotations],
                     defaultParams: function () { return ({}); }
                 }, function (context, a, t) {
-                    return LiteMol.Bootstrap.Task.create("Sequence Annotations", 'Normal', function (ctx) {
-                        ctx.update('Parsing...');
-                        ctx.schedule(function () {
-                            var data = JSON.parse(a.props.data);
-                            ctx.resolve(SequenceAnnotation.Annotations.create(t, { label: 'Sequence Annotations', data: data }));
+                    return LiteMol.Bootstrap.Task.create("Sequence Annotations", 'Normal', function (ctx) { return __awaiter(_this, void 0, void 0, function () {
+                        var data;
+                        return __generator(this, function (_a) {
+                            switch (_a.label) {
+                                case 0: return [4 /*yield*/, ctx.updateProgress('Parsing...')];
+                                case 1:
+                                    _a.sent();
+                                    data = JSON.parse(a.props.data);
+                                    return [2 /*return*/, SequenceAnnotation.Annotations.create(t, { label: 'Sequence Annotations', data: data })];
+                            }
                         });
-                    }).setReportTime(true);
+                    }); }).setReportTime(true);
                 });
                 var CreateBehaviour = LiteMol.Bootstrap.Tree.Transformer.create({
                     id: 'pdbe-sequence-annotations-create-behaviour',

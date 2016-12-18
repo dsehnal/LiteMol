@@ -74,7 +74,7 @@ namespace LiteMol.Bootstrap.Behaviour.Molecule {
                 action.then(Transforms.Molecule.CreateSelectionFromQuery, { query: ligandQ, name: 'Ligand', silent: true, inFullContext: true }, { isBinding: true })
                     .then(Transforms.Molecule.CreateVisual, { style: ligandStyle });
                     
-                Tree.Transform.apply(context, action).run(context);                
+                Tree.Transform.apply(context, action).run();                
             });               
         }
     }

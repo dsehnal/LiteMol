@@ -49,36 +49,4 @@ namespace LiteMol.Bootstrap.Entity.Transformer.Basic {
         }  
         return Task.resolve('Group', 'Silent', group);
     }); 
-    
-    
-    export interface GroupEntry<A extends Any, GlobalParams, CurrentParams> {
-        params: (initial: GlobalParams, e: A) => CurrentParams; // can be undefined in which case 
-        transformer: Transformer<A, Any, CurrentParams>
-    }
-    
-    export function group<A extends Any, P>(info: Transformer.Info<A, Entity.Group, P>, transformers: GroupEntry<A, P, any>[]): Transformer<A, Entity.Group, P> {        
-        return Transformer.create<A, Entity.Group, P>(info, (context, source, parent) => {            
-            return Task.create(info.name, 'Background', ctx => {
-                let group = CreateGroup.create({ label: info.name }).apply(context, source);                
-                group.run(context).then(g => {
-                    let promises = transformers.map(t => () => Task.guardedPromise<{} | undefined>(context, (resolve, reject) => {
-                        
-                        let params = t.params(parent.params, source);
-                        if (!params) {
-                            resolve(void 0);
-                            return;
-                        }
-                        
-                        let transform = t.transformer.create(params, { isBinding: true });
-                        transform.apply(context, <any>g).run(context).then(b => {
-                            resolve(b);
-                        }).catch(reject);                         
-                    }));                       
-                    Task.sequencePromises(promises, true).then(() => {
-                        ctx.resolve(g);
-                    }).catch(ctx.reject);
-                });         
-            })
-        }); 
-    }
 }

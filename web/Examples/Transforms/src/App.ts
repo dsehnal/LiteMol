@@ -24,17 +24,6 @@ namespace LiteMol.Example.Transforms {
         customSpecification: PluginSpec
     });
     
-    // So that we can use await..
-    function schedule<T>(ctx: Bootstrap.Task.Context<any>, f: () => T) {
-        return new Promise<T>(res => ctx.schedule(() => {
-            try {
-                res(f());
-            } finally {
-                res(undefined);
-            }
-        }));
-    }
-
     async function process() {
         let ids = (document.getElementById('pdbIDs') as HTMLInputElement).value.split(',').map(id => id.trim());
 
@@ -50,15 +39,14 @@ namespace LiteMol.Example.Transforms {
 
         // wrap the process in a task to show progress in the build-in UI
         let task = Bootstrap.Task.create('Transforms', 'Normal', async ctx => {
-            ctx.update('Downloading data...');
+            await ctx.updateProgress('Downloading data...');
             await fetch(pluginSuperposed, ids);            
-            ctx.update('Creating superposition data...');
-            let data = await schedule(ctx, () => getSuperpositionData(pluginSuperposed));
-            ctx.update('Finding transforms...');
+            await ctx.updateProgress('Creating superposition data...');
+            let data = getSuperpositionData(pluginSuperposed);
+            await ctx.updateProgress('Finding transforms...');
             let transforms = Comparison.Structure.superimposeByIndices(data);
-            ctx.update('Finishing...');
-            await schedule(ctx, () => applyTransforms(pluginSuperposed, data, transforms));
-            ctx.resolve({});
+            await ctx.updateProgress('Finishing...');
+            applyTransforms(pluginSuperposed, data, transforms);
         });
 
         task.run(pluginSuperposed.context);

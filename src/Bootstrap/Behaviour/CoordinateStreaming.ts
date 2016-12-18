@@ -24,7 +24,7 @@ namespace LiteMol.Bootstrap.Behaviour.Molecule {
         
         private remove() {
             if (this.download) {
-                this.download.discard();
+                this.download.tryAbort();
                 this.download = void 0;
             }
             Command.Tree.RemoveNode.dispatch(this.context, this.ref);
@@ -78,14 +78,14 @@ namespace LiteMol.Bootstrap.Behaviour.Molecule {
                 + `encoding=bcif&`
                 + `lowPrecisionCoords=1`;
              
-            this.download = Utils.ajaxGetArrayBuffer(url).run(this.context);
+            this.download = Utils.ajaxGetArrayBuffer(url).runWithContext(this.context);
                        
             let cached = this.cache.get(url); 
             if (cached) {
                 this.create(cached, transform);
             } else {                        
                 this.context.performance.start(this.ref);
-                this.download.then(data => {            
+                this.download.result.then(data => {            
                     this.cache.add(url, data);
                     this.context.performance.end(this.ref);
                     this.context.logger.info(`Streaming done in ${this.context.performance.formatTime(this.ref)}`);
@@ -98,7 +98,7 @@ namespace LiteMol.Bootstrap.Behaviour.Molecule {
         private create(data: ArrayBuffer, transform: number[] | undefined) {
             let action = Tree.Transform.build().add(this.behaviour, Entity.Transformer.Molecule.CoordinateStreaming.CreateModel, { data, transform }, { ref: this.ref, isHidden: true })
                     .then(Transforms.Molecule.CreateVisual, { style: this.style });
-            Tree.Transform.apply(this.context, action).run(this.context);
+            Tree.Transform.apply(this.context, action).run();
         }
           
         dispose() {
