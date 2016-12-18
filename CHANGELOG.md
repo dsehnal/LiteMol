@@ -5,12 +5,10 @@ This a global changelog that outlines overal changes in LiteMol.
 Each component also has its separate changelog 
 ([Core](src/Core/CHANGELOG.md), [Visualization](src/Visualization/CHANGELOG.md), [Bootstrap](src/Bootstrap/CHANGELOG.md), [Plugin](src/Plugin/CHANGELOG.md), [Viewer](src/Viewer/CHANGELOG.md)).
 
-Breaking changes are discussed in a [separate document](BREAKING-CHANGES.md).
-
 Dec 18 2016
 -----------
 
-Breaking changes.
+Breaking changes discussed in [#12](https://github.com/dsehnal/LiteMol/issues/12).
 
 * Rewrote ``Computation`` and ``Task`` API.
 * Use ``async/await`` if favor of callbacks almost everywhere.
