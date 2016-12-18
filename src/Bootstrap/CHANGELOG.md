@@ -4,6 +4,7 @@
     is the same as as the uderlaying Computation's one.
 * Tree.Transform function are now implemented using Computation rather than a Task.
 * Removed 'Child' task type.
+* Opening a compressed text file now uses UTF8 encoding.
 
 # 1.2.13
 * Visual.Style.computationType is now taskType. 

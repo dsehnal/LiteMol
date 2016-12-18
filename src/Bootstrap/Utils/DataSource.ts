@@ -41,36 +41,10 @@ namespace LiteMol.Bootstrap.Utils {
         return <Task<string | ArrayBuffer>>ajaxGetInternal(params.title, params.url, params.type === 'Binary', params.compression === DataCompressionMethod.Gzip);
     }
 
-    const __chars = function () {
-
-        let data: string[] = [];
-        for (let i = 0; i < 256; i++) data[i] = String.fromCharCode(i);
-        return data;
-
-    } ();
 
     function decompress(buffer: ArrayBuffer) {
         let gzip = new LiteMolZlib.Gunzip(new Uint8Array(buffer));
         return gzip.decompress();
-    }
-
-    function toString(data: Uint8Array) {
-        let chars = __chars;
-
-        let str: string[] = [], chunk: string[] = [], chunkSize = 512;
-
-        for (let o = 0, _l = data.length; o < _l; o += chunkSize) {
-            let k = 0;
-            for (let i = o, _i = Math.min(o + chunkSize, _l); i < _i; i++) {
-                chunk[k++] = chars[data[i]]
-            }
-            if (k < chunkSize) {
-                str[str.length] = chunk.splice(0, k).join('');
-            } else {
-                str[str.length] = chunk.join('');
-            }
-        }
-        return str.join('');
     }
 
     type Context = Core.Computation.Context
@@ -85,7 +59,7 @@ namespace LiteMol.Bootstrap.Utils {
             if (asArrayBuffer) {
                 return decompressed.buffer;
             } else {
-                return toString(decompressed);
+                return Core.Formats.CIF.Binary.MessagePack.utf8Read(decompressed, 0, decompressed.length);
             }
         } else {
             return data;
