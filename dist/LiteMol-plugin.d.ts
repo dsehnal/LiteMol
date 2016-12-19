@@ -3820,7 +3820,7 @@ declare namespace CIFTools.Binary {
         function by(f: Provider): Encoder;
         function byteArray(data: Encoding.FloatArray | Encoding.IntArray): Result;
         function fixedPoint(factor: number): Provider;
-        function intervalQuantizaiton(min: number, max: number, numSteps: number): Provider;
+        function intervalQuantizaiton(min: number, max: number, numSteps: number, arrayType?: new (size: number) => Encoding.IntArray): Provider;
         function runLength(data: Encoding.IntArray): Result;
         function delta(data: Int8Array | Int16Array | Int32Array): Result;
         /**
@@ -3831,7 +3831,7 @@ declare namespace CIFTools.Binary {
     }
 }
 declare namespace CIFTools.Binary {
-    const VERSION: string;
+    const VERSION = "0.3.0";
     type Encoding = Encoding.ByteArray | Encoding.FixedPoint | Encoding.RunLength | Encoding.Delta | Encoding.IntervalQuantization | Encoding.IntegerPacking | Encoding.StringArray;
     interface EncodedFile {
         version: string;

@@ -3077,7 +3077,7 @@ var CIFTools;
             }
             function utf8Read(data, offset, length) {
                 var chars = __chars;
-                var str = [], chunk = [], chunkSize = 5, chunkOffset = 0;
+                var str = void 0, chunk = [], chunkSize = 512, chunkOffset = 0;
                 for (var i = offset, end = offset + length; i < end; i++) {
                     var byte = data[i];
                     // One byte character
@@ -3101,10 +3101,13 @@ var CIFTools;
                     else
                         throwError("Invalid byte " + byte.toString(16));
                     if (chunkOffset === chunkSize) {
+                        str = str || [];
                         str[str.length] = chunk.join('');
                         chunkOffset = 0;
                     }
                 }
+                if (!str)
+                    return chunk.slice(0, chunkOffset).join('');
                 if (chunkOffset > 0) {
                     str[str.length] = chunk.slice(0, chunkOffset).join('');
                 }
