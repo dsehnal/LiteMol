@@ -311,7 +311,7 @@ namespace LiteMol.Bootstrap.Entity.Transformer.Molecule {
         customController: (ctx, t, e) => new Components.Transform.MoleculeVisual(ctx, t, e) as Components.Transform.Controller<any>
     }, (ctx, a, t) => {
         let params = t.params;
-        return Visualization.Molecule.create(a, t, params.style).setReportTime(t.params.style.taskType === 'Normal');
+        return Visualization.Molecule.create(a, t, params.style).setReportTime(Visualization.Style.getTaskType(t.params.style) === 'Normal');
     }, (ctx, b, t) => {
 
         let oldParams = b.transform.params as CreateVisualParams;
@@ -328,8 +328,7 @@ namespace LiteMol.Bootstrap.Entity.Transformer.Molecule {
         b.props.style = t.params.style;
         Entity.nodeUpdated(b);
         return Task.resolve(t.transformer.info.name, 'Background', Tree.Node.Null);
-    }
-    );
+    });
 
     export interface CreateMacromoleculeVisualParams {
         groupRef?: string,

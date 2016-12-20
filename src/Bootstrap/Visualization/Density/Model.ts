@@ -47,7 +47,7 @@ namespace LiteMol.Bootstrap.Visualization.Density {
         style: Style): Task<Entity.Density.Visual> {
 
         let name = style.taskType === 'Background' ? parent.props.label : `Density Surface (${parent.props.label})`;
-        return Task.create<Entity.Density.Visual>(name, style.taskType || 'Normal', async ctx => {
+        return Task.create<Entity.Density.Visual>(name, Visualization.Style.getTaskType(style), async ctx => {
             let params = style.params!;
             
             let source = Tree.Node.findClosestNodeOfType(parent, [Entity.Density.Data]) as Entity.Density.Data;

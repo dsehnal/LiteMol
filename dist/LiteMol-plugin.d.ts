@@ -16076,7 +16076,6 @@ declare namespace LiteMol.Bootstrap.Visualization {
         theme: Theme.Instance;
         params: Params;
     }
-    type AnyStyle = Style<any, any>;
     import TransparencyDescription = LiteMol.Visualization.Theme.Transparency;
     namespace Style {
         interface Props<T> {
@@ -16084,6 +16083,8 @@ declare namespace LiteMol.Bootstrap.Visualization {
             type: T;
             theme: Theme.Instance;
         }
+        function getTaskType(style: Any): Task.Type;
+        type Any = Style<any, any>;
         function create<Type>(style: Style<Type, any>): Style<Type, any>;
     }
     namespace Theme {
@@ -16837,7 +16838,7 @@ declare namespace LiteMol.Bootstrap.Components.Transform {
 declare namespace LiteMol.Bootstrap.Components.Transform {
     import Vis = Bootstrap.Visualization;
     class MoleculeVisual extends Controller<Bootstrap.Entity.Transformer.Molecule.CreateVisualParams> {
-        updateTemplate(key: string, all: Map<string, Bootstrap.Visualization.AnyStyle>): void;
+        updateTemplate(key: string, all: Map<string, Bootstrap.Visualization.Style.Any>): void;
         updateStyleParams(params: any): void;
         updateStyleTheme(theme: Partial<Vis.Theme.Instance>): void;
         updateThemeColor(name: string, value: LiteMol.Visualization.Color): void;

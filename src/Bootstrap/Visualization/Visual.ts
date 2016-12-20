@@ -20,9 +20,7 @@ namespace LiteMol.Bootstrap.Visualization {
         theme: Theme.Instance
         params: Params
     }
-    
-    export type AnyStyle = Style<any, any>
-    
+        
     import TransparencyDescription = LiteMol.Visualization.Theme.Transparency;
     
     export namespace Style {        
@@ -31,6 +29,13 @@ namespace LiteMol.Bootstrap.Visualization {
             type: T,
             theme: Theme.Instance
         }
+
+        export function getTaskType(style: Any): Task.Type {
+            return !style.taskType ? 'Normal' : style.taskType;
+        }
+
+        
+        export type Any = Style<any, any>
         
         export function create<Type>(style: Style<Type, any>) {
             return style;

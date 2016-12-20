@@ -91,7 +91,7 @@ namespace LiteMol.Bootstrap.Visualization.Molecule {
         transform: Tree.Transform<Entity.Molecule.Model | Entity.Molecule.Selection, Entity.Molecule.Visual, any>,
         style: Style<any>): Task<Entity.Molecule.Visual> {            
             
-        return Task.create<Entity.Molecule.Visual>(`Visual (${source.props.label})`, style.taskType || 'Normal', async ctx => {                     
+        return Task.create<Entity.Molecule.Visual>(`Visual (${source.props.label})`, Visualization.Style.getTaskType(style), async ctx => {                     
             let label = TypeDescriptions[style.type!].label;             
             await ctx.updateProgress(`Creating ${label}...`);           
             
@@ -112,7 +112,7 @@ namespace LiteMol.Bootstrap.Visualization.Molecule {
         transform: Tree.Transform<Entity.Molecule.Model | Entity.Molecule.Selection, Entity.Molecule.Visual, any>,
         style: Style<SurfaceParams>): Task<Entity.Molecule.Visual> {
 
-        return Task.create<Entity.Molecule.Visual>(`Molecular Surface (${source.props.label})`, style.taskType || 'Normal', async ctx => {
+        return Task.create<Entity.Molecule.Visual>(`Molecular Surface (${source.props.label})`, Visualization.Style.getTaskType(style), async ctx => {
             let model = Utils.Molecule.findModel(source)!.props.model;
             let atomIndices = Entity.isMoleculeModel(source) ? source.props.model.atoms.indices : source.props.indices;
             let params = style.params!;

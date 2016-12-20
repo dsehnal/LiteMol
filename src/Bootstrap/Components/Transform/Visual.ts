@@ -9,7 +9,7 @@ namespace LiteMol.Bootstrap.Components.Transform {
     import Vis = Bootstrap.Visualization;
     
     export class MoleculeVisual extends Controller<Bootstrap.Entity.Transformer.Molecule.CreateVisualParams> {          
-        updateTemplate(key: string, all: Map<string, Bootstrap.Visualization.AnyStyle>) {                                                
+        updateTemplate(key: string, all: Map<string, Bootstrap.Visualization.Style.Any>) {                                                
             let s = all.get(key)!; 
             let latestTheme = this.latestState && this.latestState.params!.style!.theme;                 
             let params = s.params;

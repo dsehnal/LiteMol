@@ -67849,6 +67849,10 @@ var LiteMol;
             var visualSerialId = 0;
             var Style;
             (function (Style) {
+                function getTaskType(style) {
+                    return !style.taskType ? 'Normal' : style.taskType;
+                }
+                Style.getTaskType = getTaskType;
                 function create(style) {
                     return style;
                 }
@@ -68197,7 +68201,7 @@ var LiteMol;
                 }
                 function createStandardVisual(source, transform, style) {
                     var _this = this;
-                    return Bootstrap.Task.create("Visual (" + source.props.label + ")", style.taskType || 'Normal', function (ctx) { return __awaiter(_this, void 0, void 0, function () {
+                    return Bootstrap.Task.create("Visual (" + source.props.label + ")", Visualization.Style.getTaskType(style), function (ctx) { return __awaiter(_this, void 0, void 0, function () {
                         var label, theme, mc, model;
                         return __generator(this, function (_a) {
                             switch (_a.label) {
@@ -68221,7 +68225,7 @@ var LiteMol;
                 }
                 function createSurface(source, transform, style) {
                     var _this = this;
-                    return Bootstrap.Task.create("Molecular Surface (" + source.props.label + ")", style.taskType || 'Normal', function (ctx) { return __awaiter(_this, void 0, void 0, function () {
+                    return Bootstrap.Task.create("Molecular Surface (" + source.props.label + ")", Visualization.Style.getTaskType(style), function (ctx) { return __awaiter(_this, void 0, void 0, function () {
                         var model, atomIndices, params, label, data, theme, surfaceModel, eLabel;
                         return __generator(this, function (_a) {
                             switch (_a.label) {
@@ -68308,7 +68312,7 @@ var LiteMol;
                 function create(parent, transform, style) {
                     var _this = this;
                     var name = style.taskType === 'Background' ? parent.props.label : "Density Surface (" + parent.props.label + ")";
-                    return Bootstrap.Task.create(name, style.taskType || 'Normal', function (ctx) { return __awaiter(_this, void 0, void 0, function () {
+                    return Bootstrap.Task.create(name, Visualization.Style.getTaskType(style), function (ctx) { return __awaiter(_this, void 0, void 0, function () {
                         var params, source, data, basis, fromFrac, toFrac, min, max, offsets, isSigma, isoValue, surface, theme, model, label;
                         return __generator(this, function (_a) {
                             switch (_a.label) {
@@ -69081,7 +69085,7 @@ var LiteMol;
                         customController: function (ctx, t, e) { return new Bootstrap.Components.Transform.MoleculeVisual(ctx, t, e); }
                     }, function (ctx, a, t) {
                         var params = t.params;
-                        return Bootstrap.Visualization.Molecule.create(a, t, params.style).setReportTime(t.params.style.taskType === 'Normal');
+                        return Bootstrap.Visualization.Molecule.create(a, t, params.style).setReportTime(Bootstrap.Visualization.Style.getTaskType(t.params.style) === 'Normal');
                     }, function (ctx, b, t) {
                         var oldParams = b.transform.params;
                         if (oldParams.style.type !== t.params.style.type || !Bootstrap.Utils.deepEqual(oldParams.style.params, t.params.style.params))
@@ -69411,7 +69415,7 @@ var LiteMol;
                         customController: function (ctx, t, e) { return new Bootstrap.Components.Transform.DensityVisual(ctx, t, e); },
                     }, function (ctx, a, t) {
                         var params = t.params;
-                        return Bootstrap.Visualization.Density.create(a, t, params.style).setReportTime(t.params.style.taskType === 'Normal');
+                        return Bootstrap.Visualization.Density.create(a, t, params.style).setReportTime(Bootstrap.Visualization.Style.getTaskType(t.params.style) === 'Normal');
                     }, function (ctx, b, t) {
                         var oldParams = b.transform.params;
                         if (oldParams.style.type !== t.params.style.type || !Bootstrap.Utils.deepEqual(oldParams.style.params, t.params.style.params))
