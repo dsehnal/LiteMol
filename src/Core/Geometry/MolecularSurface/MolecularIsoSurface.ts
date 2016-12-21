@@ -76,7 +76,7 @@ namespace LiteMol.Core.Geometry.MolecularSurface {
         nX = 0; nY = 0; nZ = 0;
         dX = 0.1; dY = 0.1; dZ = 0.1;
 
-        field = new Float32Array(0); maxField = new Float32Array(0); proximityMap = new Int32Array(0);
+        field = new Float32Array(0); distanceField = new Float32Array(0); proximityMap = new Int32Array(0);
         minIndex = { i: 0, j: 0, k: 0 }; maxIndex = { i: 0, j: 0, k: 0 };
 
         private findBounds() {
@@ -122,12 +122,12 @@ namespace LiteMol.Core.Geometry.MolecularSurface {
 
             this.field = new Float32Array(len);
 
-            this.maxField = new Float32Array(len);
+            this.distanceField = new Float32Array(len);
             this.proximityMap = new Int32Array(len);
 
-            let mv = -Number.MAX_VALUE;
+            let mv = Number.POSITIVE_INFINITY;
             for (let j = 0, _b = this.proximityMap.length; j < _b; j++) {
-                this.maxField[j] = mv;
+                this.distanceField[j] = mv;
                 this.proximityMap[j] = -1;
             }
         }
@@ -176,9 +176,9 @@ namespace LiteMol.Core.Geometry.MolecularSurface {
 
                         let v = strSq / (0.000001 + xx) - 1;
                         //let offset = nX * (k * nY + j) + i;
-                        if (v > this.maxField[offset]) {
+                        if (xx < this.distanceField[offset]) {
                             this.proximityMap[offset] = aI;
-                            this.maxField[offset] = v;
+                            this.distanceField[offset] = xx;
                         }
 
                         //if (xx >= maxRsq) continue;
@@ -217,12 +217,8 @@ namespace LiteMol.Core.Geometry.MolecularSurface {
             }
             
         }
-                
-        private finish() {
-            
-            // help the gc
-            this.maxField = <any>null;
 
+        private finish() {            
             let t = Geometry.LinearAlgebra.Matrix4.empty();
             Geometry.LinearAlgebra.Matrix4.fromTranslation(t, [this.minX, this.minY, this.minZ]);
             t[0] = this.dX;
@@ -241,6 +237,10 @@ namespace LiteMol.Core.Geometry.MolecularSurface {
                 inputParameters: this.inputParameters,
                 parameters: this.parameters
             };
+            
+            // help the gc
+            this.distanceField = <any>null;
+            this.proximityMap = <any>null;
             
             return ret;
         }
@@ -266,8 +266,7 @@ namespace LiteMol.Core.Geometry.MolecularSurface {
             return await field.run();
         });
     }
-    
-    
+        
     export interface MolecularSurfaceInputParameters {
         positions: Core.Structure.PositionTableSchema,
         atomIndices: number[],

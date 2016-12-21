@@ -46,7 +46,7 @@ namespace LiteMol.Visualization.Surface {
         }
 
         highlightElement(pickId: number, highlight: boolean): boolean {
-            return this.applySelection([pickId], highlight ? Selection.Action.Highlight : Selection.Action.RemoveHighlight);
+            return this.applySelection(this.getPickElements(pickId), highlight ? Selection.Action.Highlight : Selection.Action.RemoveHighlight);
         }
                 
         protected highlightInternal(isOn: boolean) {
@@ -218,7 +218,7 @@ namespace LiteMol.Visualization.Surface {
 
                 ret.applyTheme(theme);
                 
-                ret.pickBufferAttributes = [(<any>ret.geometry.pickGeometry.attributes).pColor];                    
+                ret.pickBufferAttributes = [(<any>ret.geometry.pickGeometry.attributes).pColor, (<any>ret.geometry.pickPlatesGeometry.attributes).pColor];                    
                 return ret;
             });
         }

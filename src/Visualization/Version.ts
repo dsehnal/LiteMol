@@ -3,5 +3,5 @@
  */
 
 namespace LiteMol.Visualization {
-    export var VERSION = { number: "1.5.4", date: "Dec 17 2016" };
+    export var VERSION = { number: "1.5.5", date: "Dec 21 2016" };
 } 

@@ -11277,7 +11277,7 @@ var LiteMol;
 (function (LiteMol) {
     var Core;
     (function (Core) {
-        Core.VERSION = { number: "2.5.0", date: "Dec 17 2016" };
+        Core.VERSION = { number: "2.5.1", date: "Dec 21 2016" };
     })(Core = LiteMol.Core || (LiteMol.Core = {}));
 })(LiteMol || (LiteMol = {}));
 /*
@@ -15768,7 +15768,7 @@ var LiteMol;
                         this.dY = 0.1;
                         this.dZ = 0.1;
                         this.field = new Float32Array(0);
-                        this.maxField = new Float32Array(0);
+                        this.distanceField = new Float32Array(0);
                         this.proximityMap = new Int32Array(0);
                         this.minIndex = { i: 0, j: 0, k: 0 };
                         this.maxIndex = { i: 0, j: 0, k: 0 };
@@ -15815,11 +15815,11 @@ var LiteMol;
                     MolecularIsoFieldComputation.prototype.initData = function () {
                         var len = this.nX * this.nY * this.nZ;
                         this.field = new Float32Array(len);
-                        this.maxField = new Float32Array(len);
+                        this.distanceField = new Float32Array(len);
                         this.proximityMap = new Int32Array(len);
-                        var mv = -Number.MAX_VALUE;
+                        var mv = Number.POSITIVE_INFINITY;
                         for (var j = 0, _b = this.proximityMap.length; j < _b; j++) {
-                            this.maxField[j] = mv;
+                            this.distanceField[j] = mv;
                             this.proximityMap[j] = -1;
                         }
                     };
@@ -15851,9 +15851,9 @@ var LiteMol;
                                     var tX = cx + i * this.dX, xx = yy + tX * tX, offset = oY + i;
                                     var v = strSq / (0.000001 + xx) - 1;
                                     //let offset = nX * (k * nY + j) + i;
-                                    if (v > this.maxField[offset]) {
+                                    if (xx < this.distanceField[offset]) {
                                         this.proximityMap[offset] = aI;
-                                        this.maxField[offset] = v;
+                                        this.distanceField[offset] = xx;
                                     }
                                     //if (xx >= maxRsq) continue;
                                     //let v = strength / Math.sqrt(0.000001 + zz) - 1;
@@ -15905,8 +15905,6 @@ var LiteMol;
                         });
                     };
                     MolecularIsoFieldComputation.prototype.finish = function () {
-                        // help the gc
-                        this.maxField = null;
                         var t = Geometry.LinearAlgebra.Matrix4.empty();
                         Geometry.LinearAlgebra.Matrix4.fromTranslation(t, [this.minX, this.minY, this.minZ]);
                         t[0] = this.dX;
@@ -15924,6 +15922,9 @@ var LiteMol;
                             inputParameters: this.inputParameters,
                             parameters: this.parameters
                         };
+                        // help the gc
+                        this.distanceField = null;
+                        this.proximityMap = null;
                         return ret;
                     };
                     MolecularIsoFieldComputation.prototype.run = function () {
@@ -55054,7 +55055,7 @@ var LiteMol;
 (function (LiteMol) {
     var Visualization;
     (function (Visualization) {
-        Visualization.VERSION = { number: "1.5.4", date: "Dec 17 2016" };
+        Visualization.VERSION = { number: "1.5.5", date: "Dec 21 2016" };
     })(Visualization = LiteMol.Visualization || (LiteMol.Visualization = {}));
 })(LiteMol || (LiteMol = {}));
 var LiteMol;
@@ -56241,20 +56242,6 @@ var LiteMol;
                 this.isInside = false;
                 this.isButtonDown = false;
             }
-            // mousePositionDocument(e: PointerEvent) {
-            //     let posx = 0;
-            //     let posy = 0;
-            //     if (e.pageX || e.pageY) {
-            //         posx = e.pageX;
-            //         posy = e.pageY;
-            //     }
-            //     else if (e.clientX || e.clientY) {
-            //         posx = e.clientX + document.body.scrollLeft + document.documentElement.scrollLeft;
-            //         posy = e.clientY + document.body.scrollTop + document.documentElement.scrollTop;
-            //     }
-            //     this.position.x = posx;
-            //     this.position.y = posy;
-            // }
             MouseInfo.prototype.updateRect = function () {
                 var rect = this.domElement.getBoundingClientRect();
                 this.rect.bottom = rect.bottom;
@@ -56283,24 +56270,6 @@ var LiteMol;
                 if (!this.isDirty) {
                     return;
                 }
-                // let curleft = 0, curtop = 0;
-                // if (element.offsetParent) {
-                //     do {
-                //         curleft += element.offsetLeft;
-                //         curtop += element.offsetTop;
-                //     } while (element = element.offsetParent);
-                // }
-                // this.exactPosition.x = this.position.x - curleft;
-                // this.exactPosition.y = this.position.y - curtop;
-                // let xPosition = 0, yPosition = 0;
-                // while (element) {
-                //     xPosition += (element.offsetLeft - element.scrollLeft + element.clientLeft);
-                //     yPosition += (element.offsetTop - element.scrollTop + element.clientTop);
-                //     if (element === document.body && document.documentElement) element = document.documentElement;
-                //     else element = element.offsetParent;
-                // }
-                // this.exactPosition.x = this.position.x - xPosition;
-                // this.exactPosition.y = this.position.y - yPosition;
                 var x = Math.round((this.position.x - this.rect.left) / (this.rect.right - this.rect.left) * this.renderState.width) | 0;
                 var y = Math.round((this.position.y - this.rect.top) / (this.rect.bottom - this.rect.top) * this.renderState.height) | 0;
                 this.exactPosition.x = x;
@@ -56361,8 +56330,6 @@ var LiteMol;
                 this.options = options;
                 this.parentElement = element;
                 this.scene = new Visualization.THREE.Scene();
-                //this.scene.fog = new THREE.FogExp2(0x0, 0.0045);
-                //this.scene.fog = new THREE.Fog(0x0, 0, 40);
                 this.pickScene = new Visualization.THREE.Scene();
                 this.pickTarget = new Visualization.THREE.WebGLRenderTarget(1, 1, { format: Visualization.THREE.RGBAFormat, minFilter: Visualization.THREE.LinearFilter });
                 this.pickTarget.generateMipmaps = false;
@@ -57414,7 +57381,11 @@ var LiteMol;
                                 ChunkedArray.add3(pickTris, a, b, c);
                                 continue;
                             }
-                            s = aI === bI ? aI : bI;
+                            s = -1;
+                            if (aI === bI || aI === cI)
+                                s = aI;
+                            else if (bI === cI)
+                                s = bI;
                             ChunkedArray.add3(pickPlatesVertices, vs[3 * a], vs[3 * a + 1], vs[3 * a + 2]);
                             ChunkedArray.add3(pickPlatesVertices, vs[3 * b], vs[3 * b + 1], vs[3 * b + 2]);
                             ChunkedArray.add3(pickPlatesVertices, vs[3 * c], vs[3 * c + 1], vs[3 * c + 2]);
@@ -57676,7 +57647,7 @@ var LiteMol;
                     return true;
                 };
                 Model.prototype.highlightElement = function (pickId, highlight) {
-                    return this.applySelection([pickId], highlight ? 3 /* Highlight */ : 4 /* RemoveHighlight */);
+                    return this.applySelection(this.getPickElements(pickId), highlight ? 3 /* Highlight */ : 4 /* RemoveHighlight */);
                 };
                 Model.prototype.highlightInternal = function (isOn) {
                     return Visualization.Selection.applyActionToBuffer(this.geometry.vertexStateBuffer, isOn ? 3 /* Highlight */ : 4 /* RemoveHighlight */);
@@ -57817,7 +57788,7 @@ var LiteMol;
                                     ret.object = obj.main;
                                     ret.pickObject = obj.pick;
                                     ret.applyTheme(theme);
-                                    ret.pickBufferAttributes = [ret.geometry.pickGeometry.attributes.pColor];
+                                    ret.pickBufferAttributes = [ret.geometry.pickGeometry.attributes.pColor, ret.geometry.pickPlatesGeometry.attributes.pColor];
                                     return [2 /*return*/, ret];
                             }
                         });

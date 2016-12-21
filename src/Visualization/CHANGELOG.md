@@ -1,4 +1,7 @@
-﻿# 1.5.4
+﻿# 1.5.5
+* Fixed a  bug in surface highlighting code.
+
+# 1.5.4
 * Updated code to use new Computation API with async/await. As a result, stuff should be faster.
 
 # 1.5.3

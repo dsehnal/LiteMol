@@ -11212,7 +11212,7 @@ var LiteMol;
 (function (LiteMol) {
     var Core;
     (function (Core) {
-        Core.VERSION = { number: "2.5.0", date: "Dec 17 2016" };
+        Core.VERSION = { number: "2.5.1", date: "Dec 21 2016" };
     })(Core = LiteMol.Core || (LiteMol.Core = {}));
 })(LiteMol || (LiteMol = {}));
 /*
@@ -15703,7 +15703,7 @@ var LiteMol;
                         this.dY = 0.1;
                         this.dZ = 0.1;
                         this.field = new Float32Array(0);
-                        this.maxField = new Float32Array(0);
+                        this.distanceField = new Float32Array(0);
                         this.proximityMap = new Int32Array(0);
                         this.minIndex = { i: 0, j: 0, k: 0 };
                         this.maxIndex = { i: 0, j: 0, k: 0 };
@@ -15750,11 +15750,11 @@ var LiteMol;
                     MolecularIsoFieldComputation.prototype.initData = function () {
                         var len = this.nX * this.nY * this.nZ;
                         this.field = new Float32Array(len);
-                        this.maxField = new Float32Array(len);
+                        this.distanceField = new Float32Array(len);
                         this.proximityMap = new Int32Array(len);
-                        var mv = -Number.MAX_VALUE;
+                        var mv = Number.POSITIVE_INFINITY;
                         for (var j = 0, _b = this.proximityMap.length; j < _b; j++) {
-                            this.maxField[j] = mv;
+                            this.distanceField[j] = mv;
                             this.proximityMap[j] = -1;
                         }
                     };
@@ -15786,9 +15786,9 @@ var LiteMol;
                                     var tX = cx + i * this.dX, xx = yy + tX * tX, offset = oY + i;
                                     var v = strSq / (0.000001 + xx) - 1;
                                     //let offset = nX * (k * nY + j) + i;
-                                    if (v > this.maxField[offset]) {
+                                    if (xx < this.distanceField[offset]) {
                                         this.proximityMap[offset] = aI;
-                                        this.maxField[offset] = v;
+                                        this.distanceField[offset] = xx;
                                     }
                                     //if (xx >= maxRsq) continue;
                                     //let v = strength / Math.sqrt(0.000001 + zz) - 1;
@@ -15840,8 +15840,6 @@ var LiteMol;
                         });
                     };
                     MolecularIsoFieldComputation.prototype.finish = function () {
-                        // help the gc
-                        this.maxField = null;
                         var t = Geometry.LinearAlgebra.Matrix4.empty();
                         Geometry.LinearAlgebra.Matrix4.fromTranslation(t, [this.minX, this.minY, this.minZ]);
                         t[0] = this.dX;
@@ -15859,6 +15857,9 @@ var LiteMol;
                             inputParameters: this.inputParameters,
                             parameters: this.parameters
                         };
+                        // help the gc
+                        this.distanceField = null;
+                        this.proximityMap = null;
                         return ret;
                     };
                     MolecularIsoFieldComputation.prototype.run = function () {

@@ -33,21 +33,6 @@ namespace LiteMol.Visualization {
 
         }
         
-        // mousePositionDocument(e: PointerEvent) {
-        //     let posx = 0;
-        //     let posy = 0;
-        //     if (e.pageX || e.pageY) {
-        //         posx = e.pageX;
-        //         posy = e.pageY;
-        //     }
-        //     else if (e.clientX || e.clientY) {
-        //         posx = e.clientX + document.body.scrollLeft + document.documentElement.scrollLeft;
-        //         posy = e.clientY + document.body.scrollTop + document.documentElement.scrollTop;
-        //     }
-        //     this.position.x = posx;
-        //     this.position.y = posy;
-        // }
-
         updateRect() {
             let rect = this.domElement.getBoundingClientRect();
             this.rect.bottom = rect.bottom;
@@ -81,33 +66,10 @@ namespace LiteMol.Visualization {
         isButtonDown: boolean = false;
         
         setExactPosition() {
-
             if (!this.isDirty) {
                 return;
             }
             
-            // let curleft = 0, curtop = 0;
-            // if (element.offsetParent) {
-            //     do {
-            //         curleft += element.offsetLeft;
-            //         curtop += element.offsetTop;
-            //     } while (element = element.offsetParent);
-            // }
-            
-            // this.exactPosition.x = this.position.x - curleft;
-            // this.exactPosition.y = this.position.y - curtop;
-
-            // let xPosition = 0, yPosition = 0;
-
-            // while (element) {
-            //     xPosition += (element.offsetLeft - element.scrollLeft + element.clientLeft);
-            //     yPosition += (element.offsetTop - element.scrollTop + element.clientTop);
-            //     if (element === document.body && document.documentElement) element = document.documentElement;
-            //     else element = element.offsetParent;
-            // }
-            // this.exactPosition.x = this.position.x - xPosition;
-            // this.exactPosition.y = this.position.y - yPosition;
-
             let x = Math.round((this.position.x - this.rect.left) / (this.rect.right - this.rect.left) * this.renderState.width) | 0;
             let y = Math.round((this.position.y - this.rect.top) / (this.rect.bottom - this.rect.top) * this.renderState.height) | 0;
 
@@ -210,8 +172,6 @@ namespace LiteMol.Visualization {
             this.parentElement = element;
 
             this.scene = new THREE.Scene();
-            //this.scene.fog = new THREE.FogExp2(0x0, 0.0045);
-            //this.scene.fog = new THREE.Fog(0x0, 0, 40);
             this.pickScene = new THREE.Scene();
             
 

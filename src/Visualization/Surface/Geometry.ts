@@ -122,7 +122,9 @@ namespace LiteMol.Visualization.Surface {
                 continue;
             }
 
-            let s = aI === bI ? aI : bI;
+            let s = -1;
+            if (aI === bI || aI === cI) s = aI;
+            else if (bI === cI) s = bI;
 
             ChunkedArray.add3(pickPlatesVertices, vs[3 * a], vs[3 * a + 1], vs[3 * a + 2]);
             ChunkedArray.add3(pickPlatesVertices, vs[3 * b], vs[3 * b + 1], vs[3 * b + 2]);

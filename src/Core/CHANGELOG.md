@@ -1,4 +1,7 @@
-﻿# 2.5.0
+﻿# 2.5.1
+* Updated molecular surface vertex annotation code.
+
+# 2.5.0
 * Updated Computation API. As a result, many (especially small) computation should feel a lot more responsive.
 
 # 2.4.11
