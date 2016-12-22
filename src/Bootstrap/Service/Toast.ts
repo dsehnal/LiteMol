@@ -8,7 +8,7 @@ namespace LiteMol.Bootstrap.Service {
 
     export interface Toast {
         title: string,
-        message: string,
+        message: string | {} /* to represent arbitrary UI component. */,
         /**
          * Only one message with a given key can be shown.
          */

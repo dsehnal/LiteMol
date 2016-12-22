@@ -70680,7 +70680,9 @@ var LiteMol;
                         this.setState({ isDirty: false, isBusy: true });
                         try {
                             var task = this.isUpdate ? transform.update(this.context, this.entity) : transform.apply(this.context, this.entity);
-                            task.run().then(function () { return _this.setState({ isBusy: false }); }).catch(function () { return _this.setState({ isBusy: false }); });
+                            var ret = task.run();
+                            ret.then(function () { return _this.setState({ isBusy: false }); }).catch(function () { return _this.setState({ isBusy: false }); });
+                            return ret;
                         }
                         catch (e) {
                             this.setState({ isBusy: false });
@@ -71393,9 +71395,13 @@ var LiteMol;
                     xs.push(t);
             };
             TransformManager.prototype.getController = function (t, e) {
+                if (!e) {
+                    console.warn("Trying to get contoller for undefined entity.");
+                    return void 0;
+                }
                 if (!this.byId.get(t.info.id)) {
-                    console.warn("Trying to get contoller for unregistered transform (" + t.info.id + ")");
-                    return undefined;
+                    console.warn("Trying to get contoller for unregistered transform (" + t.info.id + ").");
+                    return void 0;
                 }
                 var cs = this.controllerCache.get(e.id);
                 if (!cs) {
@@ -78156,10 +78162,12 @@ var LiteMol;
                     ToastEntry.prototype.render = function () {
                         var _this = this;
                         var entry = this.props.entry;
+                        var message = typeof entry.message === 'string'
+                            ? Plugin.React.createElement("div", { dangerouslySetInnerHTML: { __html: entry.message } })
+                            : Plugin.React.createElement("div", null, entry.message);
                         return Plugin.React.createElement("div", { className: 'lm-toast-entry' },
                             Plugin.React.createElement("div", { className: 'lm-toast-title', onClick: function () { return _this.hide(); } }, entry.title),
-                            Plugin.React.createElement("div", { className: 'lm-toast-message' },
-                                Plugin.React.createElement("div", { dangerouslySetInnerHTML: { __html: entry.message } })),
+                            Plugin.React.createElement("div", { className: 'lm-toast-message' }, message),
                             Plugin.React.createElement("div", { className: 'lm-toast-clear' }),
                             Plugin.React.createElement("div", { className: 'lm-toast-hide' },
                                 Plugin.React.createElement(Plugin.Controls.Button, { onClick: function () { return _this.hide(); }, style: 'link', icon: 'abort', title: 'Hide', customClass: 'lm-btn-icon' })));

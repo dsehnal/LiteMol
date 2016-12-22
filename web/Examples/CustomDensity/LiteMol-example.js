@@ -5,6 +5,29 @@ var LiteMol;
 (function (LiteMol) {
     var Custom;
     (function (Custom) {
+        var React = LiteMol.Plugin.React;
+        Custom.DownloadDensityToastMessage = function (ctx) {
+            var download = function (e) {
+                e.preventDefault();
+                var t = ctx.transforms.getController(Custom.DownloadDensity, ctx.select('density-downloader')[0]);
+                LiteMol.Bootstrap.Command.Toast.Hide.dispatch(ctx, { key: 'DownloadDensityToast' });
+                if (t)
+                    t.apply();
+            };
+            return React.createElement("div", null,
+                "Density data available. ",
+                React.createElement("a", { style: { cursor: 'pointer' }, onClick: download }, "Click here"),
+                " to download.");
+        };
+    })(Custom = LiteMol.Custom || (LiteMol.Custom = {}));
+})(LiteMol || (LiteMol = {}));
+/*
+ * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ */
+var LiteMol;
+(function (LiteMol) {
+    var Custom;
+    (function (Custom) {
         var Bootstrap = LiteMol.Bootstrap;
         var Entity = Bootstrap.Entity;
         var Transformer = Bootstrap.Entity.Transformer;
@@ -157,5 +180,14 @@ var LiteMol;
         var action = plugin.createTransform();
         action.add(plugin.context.tree.root, Custom.DownloadAndCreate, { id: id });
         plugin.applyTransform(action);
+        function showToast() {
+            plugin.command(Bootstrap.Command.Toast.Show, {
+                key: 'DownloadDensityToast',
+                title: 'Density',
+                message: Custom.DownloadDensityToastMessage(plugin.context),
+                timeoutMs: 30 * 1000
+            });
+        }
+        showToast();
     })(Custom = LiteMol.Custom || (LiteMol.Custom = {}));
 })(LiteMol || (LiteMol = {}));

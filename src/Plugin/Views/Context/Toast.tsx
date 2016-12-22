@@ -14,12 +14,16 @@ namespace LiteMol.Plugin.Views.Context {
 
         render() {
             let entry = this.props.entry;
+            let message = typeof entry.message === 'string'
+                ? <div dangerouslySetInnerHTML={{ __html: entry.message }} />
+                : <div>{entry.message}</div>;
+
             return <div className='lm-toast-entry'>
                 <div className='lm-toast-title' onClick={() => this.hide() }>
                    {entry.title}
                 </div>
                 <div className='lm-toast-message'>
-                   <div dangerouslySetInnerHTML={{ __html: entry.message }} />
+                   {message}
                 </div>
                 <div className='lm-toast-clear'></div>
                 <div className='lm-toast-hide'>

@@ -87,5 +87,16 @@ namespace LiteMol.Custom {
 
     let action = plugin.createTransform();    
     action.add(plugin.context.tree.root, DownloadAndCreate, { id });
-    plugin.applyTransform(action);        
+    plugin.applyTransform(action);     
+
+    function showToast() {
+        plugin.command(Bootstrap.Command.Toast.Show, {
+            key: 'DownloadDensityToast',
+            title: 'Density',
+            message: DownloadDensityToastMessage(plugin.context),
+            timeoutMs: 30 * 1000
+        });
+    }
+
+    showToast();
 }

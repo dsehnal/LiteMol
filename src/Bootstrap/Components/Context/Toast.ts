@@ -81,7 +81,7 @@ namespace LiteMol.Bootstrap.Components.Context {
             serialNumber: number,
             key?: string,
             title: string,
-            message: string,
+            message: string | { },
             hide: () => void,
             timeout?: number
         }

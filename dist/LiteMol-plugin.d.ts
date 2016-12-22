@@ -15586,7 +15586,7 @@ declare namespace LiteMol.Bootstrap.Service {
 declare namespace LiteMol.Bootstrap.Service {
     interface Toast {
         title: string;
-        message: string;
+        message: string | {};
         /**
          * Only one message with a given key can be shown.
          */
@@ -16821,7 +16821,7 @@ declare namespace LiteMol.Bootstrap.Components.Transform {
         updateParams(params: Partial<P>): void;
         autoUpdateParams(params: Partial<P>): void;
         readonly isUpdate: boolean;
-        apply(): void;
+        apply(): __Promise.Promise<Tree.Node.Any> | undefined;
         setParams(params: P): void;
         constructor(context: Context, transformer: Tree.Transformer.Any, entity: Entity.Any);
     }
@@ -16909,7 +16909,7 @@ declare namespace LiteMol.Bootstrap.Components.Context {
             serialNumber: number;
             key?: string;
             title: string;
-            message: string;
+            message: string | {};
             hide: () => void;
             timeout?: number;
         }
