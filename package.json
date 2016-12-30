@@ -13,6 +13,18 @@
     "url": "https://github.com/dsehnal/LiteMol/issues"
   },
   "homepage": "https://webchemdev.ncbr.muni.cz/LiteMol/",
+  "keywords": [
+    "litemol",
+    "molecule",
+    "macromolecule",
+    "protein",
+    "visualization",
+    "3d visualization",
+    "3d viewer",
+    "electron density viewer",
+    "structural molecular data",
+    "PDBe"
+  ],
   "license": "Apache-2.0",
   "devDependencies": {
     "gulp": "^3.9.1",
