@@ -74,7 +74,10 @@ var ExampleNames = [
 
 function ViewerAndExamples() {       
    console.log('Building Viewer and Examples');   
-   return plugins.merge([buildts('./src/Viewer', './build/Viewer')].concat(ExampleNames.map(e => buildExample(e))));    
+   return plugins.merge([
+       buildts('./src/Viewer', './build/Viewer'),
+       buildts('./examples/BasicNode', './examples/BasicNode/build'),
+    ].concat(ExampleNames.map(e => buildExample(e))));    
 }
 
 function __webAssets() {
