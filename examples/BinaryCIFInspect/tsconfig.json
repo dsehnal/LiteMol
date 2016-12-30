@@ -14,7 +14,7 @@
     "out": "LiteMol-example.js"
   },
   "files": [
-    "../../dist/LiteMol-core.d.ts",
+    "../../dist/js/LiteMol-core.d.ts",
             
     "./src/App.ts"
   ]

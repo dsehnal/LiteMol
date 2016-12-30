@@ -1510,15 +1510,16 @@ declare namespace __LiteMolRx {
         shareReplay(bufferSize?: number, window?: number, scheduler?: IScheduler): Observable<T>;
     }
 }
-declare namespace LiteMol.Core {
-    export import Rx = __LiteMolRx;
-    namespace Formats {
-        export import CIF = CIFTools;
-    }
-}
 declare namespace LiteMol {
     type Promise<T> = __Promise.Promise<T>;
     const Promise: typeof __Promise.Promise;
+}
+declare namespace LiteMol.Core {
+    export import Rx = __LiteMolRx;
+    export import Promise = LiteMol.Promise;
+    namespace Formats {
+        export import CIF = CIFTools;
+    }
 }
 declare namespace LiteMol.Core {
     var VERSION: {

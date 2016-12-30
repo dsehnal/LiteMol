@@ -1,9 +1,9 @@
 {
   "name": "litemol",
-  "version": "1.1.6",
+  "version": "1.0.0",
   "description": "A library/plugin for handling 3D structural molecular data (not only) in the browser.",
   "scripts": {},
-  "main": "",
+  "main": "index.js",
   "author": "David Sehnal <david.sehnal@gmail.com>",
   "repository": {
     "type": "git",
@@ -12,6 +12,7 @@
   "bugs": {
     "url": "https://github.com/dsehnal/LiteMol/issues"
   },
+  "homepage": "https://webchemdev.ncbr.muni.cz/LiteMol/",
   "license": "Apache-2.0",
   "devDependencies": {
     "gulp": "^3.9.1",

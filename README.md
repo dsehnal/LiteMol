@@ -1,4 +1,5 @@
 
+![Version](https://img.shields.io/badge/Version-1.0.0-blue.svg?style=flat)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg?style=flat)](https://github.com/dsehnal/LiteMol/blob/master/LICENSE)
 
 ![Logo](web/assets/img/lm_logo_small.png)
@@ -87,7 +88,7 @@ To build the minified version of the plugin and the stylesheets, use
     gulp
     gulp Dist-min
         
-This will create the files `dist/LiteMol-*.min.js` and `dist/css/LiteMol-plugin*.min.css`.
+This will create the files `dist/js/LiteMol-*.min.js` and `dist/css/LiteMol-plugin*.min.css`.
 
 When embedding the plugin in your pages, do not forget to include the `dist/css` and `dist/fonts` folders with 
 the required style sheets and fonts.
@@ -106,7 +107,7 @@ to
 
 ```HTML
 <link rel="stylesheet" href="../../dist/css/LiteMol-plugin.css?lmversion=10" type="text/css" />
-<script src="../../dist/LiteMol-plugin.js?lmversion=10"></script>
+<script src="../../dist/js/LiteMol-plugin.js?lmversion=10"></script>
 ```
 
 This is needed because the paths are set up so that they work when the examples are accessed from the ``web`` folder.
@@ -209,7 +210,7 @@ What are the simplest steps to load a molecule in LiteMol?
     or [download it as ZIP](https://github.com/dsehnal/LiteMol/archive/master.zip). No building is required, only the `dist` folder in the archive is needed.
 
 - From ``dist`` folder, copy the folders ``css``, ``fonts``, and
-the file ``LiteMol-plugin.js`` (or ``LiteMol-plugin.min.js`` for production).
+the file ``js/LiteMol-plugin.js`` (or ``js/LiteMol-plugin.min.js`` for production).
 
 - Include the CSS and JavaScript in your page:
 

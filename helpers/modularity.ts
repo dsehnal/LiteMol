@@ -114,9 +114,9 @@ function assemble(root: string, spec: ModuleSpec, gulp: any, plugins: any) {
         if (spec.createDist) {
             return plugins.merge([
             js.pipe(gulp.dest('./build')),
-            jsMod.pipe(gulp.dest('./dist')),
+            jsMod.pipe(gulp.dest('./dist/js')),
             
-            dts.pipe(gulp.dest('./dist')),
+            dts.pipe(gulp.dest('./dist/js')),
             dts.pipe(gulp.dest('./build'))]);
         }
 

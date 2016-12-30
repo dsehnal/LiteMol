@@ -38,7 +38,7 @@ to
 
 ```HTML
 <link rel="stylesheet" href="../../dist/css/LiteMol-plugin.css?lmversion=10" type="text/css" />
-<script src="../../dist/LiteMol-plugin.js?lmversion=10"></script>
+<script src="../../dist/js/LiteMol-plugin.js?lmversion=10"></script>
 ```
 
 This is needed because the paths are set up so that they work when the examples are accessed from the ``web`` folder.

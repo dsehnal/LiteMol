@@ -11257,18 +11257,19 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
  */
 var LiteMol;
 (function (LiteMol) {
+    LiteMol.Promise = __LiteMolPromise;
+})(LiteMol || (LiteMol = {}));
+(function (LiteMol) {
     var Core;
     (function (Core) {
         "use strict";
         Core.Rx = __LiteMolRx;
+        Core.Promise = LiteMol.Promise;
         var Formats;
         (function (Formats) {
             Formats.CIF = CIFTools;
         })(Formats = Core.Formats || (Core.Formats = {}));
     })(Core = LiteMol.Core || (LiteMol.Core = {}));
-})(LiteMol || (LiteMol = {}));
-(function (LiteMol) {
-    LiteMol.Promise = __LiteMolPromise;
 })(LiteMol || (LiteMol = {}));
 /*
  * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
@@ -11304,7 +11305,7 @@ var LiteMol;
                 var context = ctx ? ctx : new ContextImpl();
                 return {
                     progress: context.progressStream,
-                    result: new LiteMol.Promise(function (resolve, reject) { return __awaiter(_this, void 0, void 0, function () {
+                    result: new Core.Promise(function (resolve, reject) { return __awaiter(_this, void 0, void 0, function () {
                         var result, e_1;
                         return __generator(this, function (_a) {
                             switch (_a.label) {
@@ -11334,11 +11335,11 @@ var LiteMol;
         Core.Computation = Computation;
         (function (Computation) {
             function resolve(a) {
-                return computation(function () { return LiteMol.Promise.resolve(a); });
+                return computation(function () { return Core.Promise.resolve(a); });
             }
             Computation.resolve = resolve;
             function reject(reason) {
-                return computation(function () { return LiteMol.Promise.reject(reason); });
+                return computation(function () { return Core.Promise.reject(reason); });
             }
             Computation.reject = reject;
             function createContext() {
@@ -11413,7 +11414,7 @@ var LiteMol;
                     this._progress.max = max;
                 }
                 this.progressTick.onNext(this._progress);
-                return new LiteMol.Promise(function (res) { return setTimeout(res, 0); });
+                return new Core.Promise(function (res) { return setTimeout(res, 0); });
             };
             ContextImpl.prototype.started = function () {
                 this.startEndCounter++;

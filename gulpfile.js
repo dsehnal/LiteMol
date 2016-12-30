@@ -16,6 +16,8 @@ var gulp = require('gulp'),
         typedoc: require('gulp-typedoc')
     };
 
+var fs = require('fs');
+
 function build(name) {
     return require(`./src/${name}/build`)(gulp, plugins);
 }
@@ -40,15 +42,15 @@ function CSS(minify) {
 }
 
 function Uglify() {
-    var plugin =  gulp.src(['./dist/LiteMol-plugin.js'])
+    var plugin =  gulp.src(['./dist/js/LiteMol-plugin.js'])
         .pipe(plugins.uglify())
         .pipe(plugins.rename('LiteMol-plugin.min.js'))
-        .pipe(gulp.dest('./dist'));
+        .pipe(gulp.dest('./dist/js'));
 
-    var core = gulp.src(['./dist/LiteMol-core.js'])
+    var core = gulp.src(['./dist/js/LiteMol-core.js'])
         .pipe(plugins.uglify())
         .pipe(plugins.rename('LiteMol-core.min.js'))
-        .pipe(gulp.dest('./dist'));
+        .pipe(gulp.dest('./dist/js'));
 
    
     return plugins.merge(CSS(true).concat([plugin, core]));
@@ -93,7 +95,7 @@ function __webAssets() {
 function __webPluginAssets() {
     var css = gulp.src(['./dist/css/*']).pipe(gulp.dest('./build/web/assets/css'));
     var fonts = gulp.src(['./dist/fonts/*']).pipe(gulp.dest('./build/web/assets/fonts'));
-    var js = gulp.src(['./dist/*.js']).pipe(gulp.dest('./build/web/assets/js'));
+    var js = gulp.src(['./dist/js/*.js']).pipe(gulp.dest('./build/web/assets/js'));
 
     return plugins.merge([css, fonts, js]);
 }
@@ -134,6 +136,21 @@ function WebVersions() {
         .pipe(gulp.dest('./build/web'));
 }
 
+function PackageVersion() {
+    var version = fs.readFileSync('VERSION', 'UTF-8');
+    var json = JSON.parse(fs.readFileSync('package.json'));
+    json.version = version;
+    fs.writeFileSync('package.json', JSON.stringify(json, null, 2), { encoding: 'UTF-8' });
+
+    var readme = fs.readFileSync('README.md', 'UTF-8');
+    var regex = /\!\[Version\]\(([^\(\)]+)\)/;
+    var rmVer = '![Version](https://img.shields.io/badge/Version-' + version + '-blue.svg?style=flat)';
+    readme = readme.replace(regex, rmVer);
+    fs.writeFileSync('README.md', readme, { encoding: 'UTF-8' });
+}
+
+gulp.task('PackageVersion', [], PackageVersion);
+
 // function Tarball() {
 //     console.log('Creating Tarbal');
 //     var tarball = gulp.src(['./dist/*.js', './dist/css/*.css', './dist/fonts/*'], { base: './dist' } )
@@ -147,7 +164,7 @@ function WebVersions() {
 gulp.task('Clean', [], function () {
     return gulp
         .src([
-            './dist/*.min.js', './dist/css/*.min.css',
+            './dist/js/*.min.js', './dist/css/*.min.css',
             './build'
         ], { read: false })
         .pipe(plugins.clean());

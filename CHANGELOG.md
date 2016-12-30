@@ -5,6 +5,11 @@ This a global changelog that outlines overal changes in LiteMol.
 Each component also has its separate changelog 
 ([Core](src/Core/CHANGELOG.md), [Visualization](src/Visualization/CHANGELOG.md), [Bootstrap](src/Bootstrap/CHANGELOG.md), [Plugin](src/Plugin/CHANGELOG.md), [Viewer](src/Viewer/CHANGELOG.md)).
 
+1.0.0
+-----------
+
+* Introduced "global version".
+
 Dec 21 2016
 -----------
 

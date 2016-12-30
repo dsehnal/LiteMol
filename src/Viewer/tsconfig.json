@@ -16,7 +16,7 @@
     "out": "LiteMol-viewer.js"
   },
   "files": [
-    "../../dist/LiteMol-plugin.d.ts",
+    "../../dist/js/LiteMol-plugin.d.ts",
     
     "./Version.ts",
     "./App/DataSources.ts",
