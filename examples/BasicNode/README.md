@@ -1,5 +1,5 @@
-This is a very basic Node.js example that download a CIF file, 
-parses it and does some trivial analysis on it. Tested to work on Node 6.9.
+This is a very basic Node.js example that downloads a CIF file, 
+parses it, and does some trivial analysis on it. Tested to work on Node 6.9.
 
 Usage
 -----
