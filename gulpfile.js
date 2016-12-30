@@ -225,7 +225,8 @@ gulp.task('default', [
     build('Plugin'),
     'ViewerAndExamples-inline',
     'CSS',
-    'Web-inline'
+    'Web-inline',
+    'PackageVersion'
 ], function () {
     console.log('Done');
 });
