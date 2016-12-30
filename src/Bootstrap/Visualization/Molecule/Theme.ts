@@ -6,8 +6,7 @@ namespace LiteMol.Bootstrap.Visualization.Molecule {
     "use strict";
 
     import Vis = LiteMol.Visualization;
-    import MolVis = LiteMol.Visualization.Molecule;  
-
+    
     export const UniformBaseColors = Immutable.Map({ 
         'Uniform': Vis.Theme.Default.UniformColor, 
         'Highlight': Vis.Theme.Default.HighlightColor,

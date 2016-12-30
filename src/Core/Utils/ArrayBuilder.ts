@@ -137,27 +137,27 @@ namespace LiteMol.Core.Utils {
             return <any>ret;
         }
 
-        export function forVertex3D<T>(chunkVertexCount: number = 262144): ChunkedArray<number> {
+        export function forVertex3D(chunkVertexCount: number = 262144): ChunkedArray<number> {
             return create<number>(size => <any>new Float32Array(size), chunkVertexCount, 3)
         }
 
-        export function forIndexBuffer<T>(chunkIndexCount: number = 262144): ChunkedArray<number> {
+        export function forIndexBuffer(chunkIndexCount: number = 262144): ChunkedArray<number> {
             return create<number>(size => <any>new Uint32Array(size), chunkIndexCount, 3)
         }
 
-        export function forTokenIndices<T>(chunkTokenCount: number = 131072): ChunkedArray<number> {
+        export function forTokenIndices(chunkTokenCount: number = 131072): ChunkedArray<number> {
             return create<number>(size => <any>new Int32Array(size), chunkTokenCount, 2)
         }
 
-        export function forIndices<T>(chunkTokenCount: number = 131072): ChunkedArray<number> {
+        export function forIndices(chunkTokenCount: number = 131072): ChunkedArray<number> {
             return create<number>(size => <any>new Int32Array(size), chunkTokenCount, 1)
         }
 
-        export function forInt32<T>(chunkSize: number = 131072): ChunkedArray<number> {
+        export function forInt32(chunkSize: number = 131072): ChunkedArray<number> {
             return create<number>(size => <any>new Int32Array(size), chunkSize, 1)
         }
 
-        export function forFloat32<T>(chunkSize: number = 131072): ChunkedArray<number> {
+        export function forFloat32(chunkSize: number = 131072): ChunkedArray<number> {
             return create<number>(size => <any>new Float32Array(size), chunkSize, 1)
         }
 

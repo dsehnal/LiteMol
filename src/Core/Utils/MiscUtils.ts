@@ -87,7 +87,7 @@ namespace LiteMol.Core.Utils {
             let leadingCall = false;
 
             if (maxWait === 0) {
-                let leadingCall = leading && !timeoutId;
+                leadingCall = leading && !timeoutId;
             } else {
                 if (!maxTimeoutId && !leading) {
                     lastCalled = stamp;

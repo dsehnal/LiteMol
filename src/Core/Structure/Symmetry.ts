@@ -339,7 +339,6 @@ namespace LiteMol.Core.Structure {
                 targetBounds = bounds.target;
 
             let model = ctx.model,
-                atoms = model.atoms,
                 residues = model.residues,
                 chains = model.chains,
                 entities = model.entities;
@@ -848,24 +847,18 @@ namespace LiteMol.Core.Structure {
         function findMateParts(model: MoleculeModel, transforms: SymmetryTransform[]) {
 
             let atoms = model.atoms,
-                residues = model.residues,
                 chains = model.chains,
                 entities = model.entities;
 
             let residueIndices = Utils.ArrayBuilder.create<number>(s => new Int32Array(s), model.residues.count * transforms.length, 1),
                 operatorIndices = Utils.ArrayBuilder.create<number>(s => new Int32Array(s), model.residues.count * transforms.length, 1);
 
-            let v = { x: 0, y: 0, z: 0 },
-                opIndex = 0;
-
             const atomCount = transforms.length * atoms.count;
             const chainCount = transforms.length * chains.count
             const entityCount = model.entities.count;
 
             for (let eI = 0, _eC = entities.count; eI < _eC; eI++) {
-
-                opIndex = 0;
-                for (let t of transforms) {
+                for (let opIndex = 0; opIndex < transforms.length; opIndex++) {
                     for (let cI = entities.chainStartIndex[eI], _cC = entities.chainEndIndex[eI]; cI < _cC; cI++) {
                         for (let rI = chains.residueStartIndex[cI], _rC = chains.residueEndIndex[cI]; rI < _rC; rI++) {
                             Utils.ArrayBuilder.add(residueIndices, rI);
@@ -924,8 +917,7 @@ namespace LiteMol.Core.Structure {
             let info = model.assemblyInfo;
 
             let transforms: SymmetryTransform[] = [];
-            let t = Mat4.empty();
-
+            
             let index = 0;
             for (let op of operators) {
                 var m = Mat4.identity();
@@ -953,31 +945,25 @@ namespace LiteMol.Core.Structure {
 
         function getAssemblyParts(model: MoleculeModel, residueMask: Int8Array, currentTransforms: SymmetryTransform[], state: AssemblyBuildState) {
 
-            let atoms = model.atoms,
-                residues = model.residues,
+            let residues = model.residues,
                 chains = model.chains,
                 entities = model.entities;
 
             let residueIndices = state.residueIndices, //  new Utils.ChunkedArrayBuilder<number>(s => new Int32Array(s), model.residues.count, 1),
                 operatorIndices = state.operatorIndices; // new Utils.ChunkedArrayBuilder<number>(s => new Int32Array(s), model.residues.count, 1);
 
-            let v = { x: 0, y: 0, z: 0 },
-                opIndex = 0;
-
             let atomCount = 0,
                 chainCount = 0,
                 entityCount = 0;
 
             for (let eI = 0, _eC = entities.count; eI < _eC; eI++) {
-                opIndex = state.transformsOffset;  //0;
+                let opIndex = state.transformsOffset;  //0;
                 let chainAdded = false;
-                for (let t of currentTransforms) {
-
+                for (let _ of currentTransforms) {
                     for (let cI = entities.chainStartIndex[eI], _cC = entities.chainEndIndex[eI]; cI < _cC; cI++) {
-
                         let residueAdded = false;
+                        
                         for (let rI = chains.residueStartIndex[cI], _rC = chains.residueEndIndex[cI]; rI < _rC; rI++) {
-
                             if (!residueMask[rI]) continue;
 
                             Utils.ChunkedArray.add(residueIndices, rI);

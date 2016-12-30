@@ -338,22 +338,7 @@ namespace LiteMol.Visualization {
             window.removeEventListener('mouseup', this.eventHandlers.mouseup, false);
             this.events.dispatchEvent(this.endEvent);
         }
-        
-        private mousewheel(event: MouseWheelEvent) {
-            if (this.enabled === false) return;
-            event.preventDefault();
-            //event.stopPropagation();
-            var delta = 0;
-            if (event.wheelDelta) { // WebKit / Opera / Explorer 9
-                delta = event.wheelDelta / 40;
-            } else if (event.detail) { // Firefox
-                delta = - event.detail / 3;
-            }
-            this._zoomStart.y += delta * 0.01;
-            this.events.dispatchEvent(this.startEvent);
-            this.events.dispatchEvent(this.endEvent);
-        }
-        
+                
         private touchstart(event: TouchEvent) {
             //console.log("trouch start");
             if (this.enabled === false) return;

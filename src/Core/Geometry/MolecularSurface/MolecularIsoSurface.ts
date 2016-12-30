@@ -249,7 +249,7 @@ namespace LiteMol.Core.Geometry.MolecularSurface {
             await this.ctx.updateProgress('Initializing...');
             this.findBounds();
             this.initData();
-            let chunks = await this.processChunks();  
+            await this.processChunks();  
             await this.ctx.updateProgress('Finalizing...', void 0, this.atomIndices.length, this.atomIndices.length);
             return this.finish();
         }

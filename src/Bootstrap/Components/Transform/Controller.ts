@@ -79,6 +79,7 @@ namespace LiteMol.Bootstrap.Components.Transform {
                 return ret;
             } catch(e) {
                 this.setState({ isBusy: false });
+                return Core.Computation.reject(e);
             }
         }     
                 

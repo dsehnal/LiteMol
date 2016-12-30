@@ -7,7 +7,6 @@ namespace LiteMol.Viewer.PDBe.Views {
     import React = LiteMol.Plugin.React; // this is to enable the HTML-like syntax
     
     import Controls = LiteMol.Plugin.Controls;
-    import Transformer = Bootstrap.Entity.Transformer; 
     
     export class CreateSequenceAnnotationView extends LiteMol.Plugin.Views.Transform.ControllerBase<
         Bootstrap.Components.Transform.Controller<SequenceAnnotation.CreateSingleProps>,  

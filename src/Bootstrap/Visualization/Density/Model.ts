@@ -5,8 +5,6 @@
 namespace LiteMol.Bootstrap.Visualization.Density {
     "use strict";
 
-    import Vis = LiteMol.Visualization;
-    import MolVis = LiteMol.Visualization.Molecule;
     import Geom = LiteMol.Core.Geometry;
     
     function getOffsets(data: Core.Formats.Density.Data, min: number[], max: number[], toFrac: LiteMol.Visualization.THREE.Matrix4) {

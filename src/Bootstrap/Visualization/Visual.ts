@@ -5,8 +5,6 @@
 namespace LiteMol.Bootstrap.Visualization {
     "use strict";
 
-    let visualSerialId = 0;
-    
     export interface TypeDescription {
         label: string,
         shortLabel: string,

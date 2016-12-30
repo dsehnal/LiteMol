@@ -6,7 +6,6 @@ namespace LiteMol.Viewer {
     
     import Views = Plugin.Views;
     import Bootstrap = LiteMol.Bootstrap;
-    import Entity = Bootstrap.Entity;
     import Transformer = Bootstrap.Entity.Transformer;    
     import LayoutRegion = Bootstrap.Components.LayoutRegion;
     

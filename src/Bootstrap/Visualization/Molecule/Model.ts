@@ -6,7 +6,6 @@ namespace LiteMol.Bootstrap.Visualization.Molecule {
     "use strict";
 
     import Structure = Core.Structure;
-    import Query = Structure.Query;
     import Vis = LiteMol.Visualization;
     import MolVis = LiteMol.Visualization.Molecule;
     
@@ -116,7 +115,6 @@ namespace LiteMol.Bootstrap.Visualization.Molecule {
             let model = Utils.Molecule.findModel(source)!.props.model;
             let atomIndices = Entity.isMoleculeModel(source) ? source.props.model.atoms.indices : source.props.indices;
             let params = style.params!;
-            let label = TypeDescriptions[style.type!].label;
                    
             let data = await LiteMol.Core.Geometry.MolecularSurface.computeMolecularSurfaceAsync({
                 positions: model.atoms,

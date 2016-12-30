@@ -339,9 +339,6 @@ namespace LiteMol.Core.Formats.Molecule.PDB {
                 return ParserResult.success(ret.toCifFile());
             }
         }
-
-        constructor(public id: string, private data: string) {
-        }
     }
 
     export function toCifFile(id:string, data: string) {

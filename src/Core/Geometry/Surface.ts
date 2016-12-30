@@ -52,7 +52,6 @@ namespace LiteMol.Core.Geometry {
             
             let normals = new Float32Array(surface.vertices.length),
                 v = surface.vertices, triangles = surface.triangleIndices,
-                len = triangles.length,
                 f: number, i: number;
             for (i = 0; i < triangles.length; i += 3) {
                 let a = 3 * triangles[i],

@@ -160,7 +160,6 @@ namespace LiteMol.Viewer.ValidatorDB {
     
         function createAtomMapNormal(model: LiteMol.Core.Structure.MoleculeModel, report: Api.Report) {
             let map = new Uint8Array(model.atoms.count);            
-            let mId = model.modelId;
             let { authAsymId, authSeqNumber, atomStartIndex, atomEndIndex } = model.residues;
             let { authName } = model.atoms;
 
@@ -183,7 +182,6 @@ namespace LiteMol.Viewer.ValidatorDB {
         function createAtomMapComputed(model: LiteMol.Core.Structure.MoleculeModel, report: Api.Report) {
             let parent = model.parent!;
             let map = new Uint8Array(model.atoms.count);            
-            let mId = model.modelId;
             let { authSeqNumber, atomStartIndex, atomEndIndex, chainIndex } = model.residues;
             let { sourceChainIndex } = model.chains;
             let { authAsymId } = parent.chains;
@@ -214,8 +212,7 @@ namespace LiteMol.Viewer.ValidatorDB {
             let colors = new Map<string, LiteMol.Visualization.Color>();
             colors.set('Uniform', defaultColor)
             colors.set('Selection', selectionColor)
-            colors.set('Highlight', highlightColor);
-            let residueIndex = model.atoms.residueIndex;            
+            colors.set('Highlight', highlightColor);         
             
             let mapping = Visualization.Theme.createColorMapMapping(i => map[i], colorMap, defaultColor);
             return Visualization.Theme.createMapping(mapping, { colors, interactive: true, transparency: { alpha: 1.0 } });

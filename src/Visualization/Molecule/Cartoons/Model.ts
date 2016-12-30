@@ -92,7 +92,6 @@ namespace LiteMol.Visualization.Molecule.Cartoons {
             let avgColor = { r: 0.1, g: 0.1, b: 0.1 };
             
             let map = this.cartoons.vertexMap;
-            let indices = map.elementIndices;
             let bufferAttribute: THREE.BufferAttribute = (<any>this.cartoons.geometry.attributes).color;
             let buffer = bufferAttribute.array;     
             let vertexRanges = map.vertexRanges       
@@ -134,7 +133,6 @@ namespace LiteMol.Visualization.Molecule.Cartoons {
         }
         
         protected applyThemeInternal(theme: Theme) {
-            let map = this.cartoons.vertexMap;
             this.applyColoring(theme);
             MaterialsHelper.updateMaterial(this.material, theme, this.object);
         }

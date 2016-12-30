@@ -3,8 +3,8 @@
  */
 
 namespace LiteMol.Viewer.PDBe.Data {
-  
-    import Plugin = LiteMol.Plugin;
+    "use strict";
+
     import Bootstrap = LiteMol.Bootstrap;
     import Entity = Bootstrap.Entity;
             
@@ -80,7 +80,7 @@ namespace LiteMol.Viewer.PDBe.Data {
                 })
             });            
         
-        let base = group
+        group
             .then(Transformer.Data.Download, { url: `https://www.ebi.ac.uk/pdbe/coordinates/files/${id}.ccp4`, type: 'Binary', id, description: '2Fo-Fc', title: 'Density' })
             .then(Transformer.Density.ParseData, { format: LiteMol.Core.Formats.Density.SupportedFormats.CCP4, id: '2Fo-Fc', normalize: false }, { isBinding: true, ref: mainRef })
             .then(Transformer.Density.CreateVisualBehaviour, {  

@@ -64,8 +64,6 @@ namespace LiteMol.Bootstrap.Tree {
             return Object.create(Helpers.BuilderPrototype, { compile: { writable: false, configurable: false, value: compile } });
         }
 
-        function emptyIfUndefined<T extends Node.Any>(e: NodeSeq<T> | undefined) { return e ? e : [] }
-
         export function root<T extends Node.Any>() { return build(() => (tree: Tree<T>) => [tree.root]) }
         export function byRef<T extends Node.Any>(...refs: string[]) { return build(() => (tree: Tree<T>) => {
                 let ret: T[] = [];

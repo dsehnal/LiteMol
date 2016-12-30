@@ -11,9 +11,9 @@ namespace LiteMol.Custom {
             let t = ctx.transforms.getController(DownloadDensity, ctx.select('density-downloader')[0]);
             Bootstrap.Command.Toast.Hide.dispatch(ctx, { key: 'DownloadDensityToast' });
             if (t) t.apply();
-        }
+        };
         return <div>
             Density data available. <a style={{cursor: 'pointer'}} onClick={download}>Click here</a> to download.
-        </div>    
+        </div>;
     }
 }

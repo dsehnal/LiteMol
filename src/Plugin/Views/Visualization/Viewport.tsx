@@ -5,7 +5,6 @@
 namespace LiteMol.Plugin.Views.Visualization {
     "use strict";
 
-    import Vis = LiteMol.Visualization;
     export class ViewportControls extends View<Bootstrap.Components.Visualization.Viewport, 
         { showSceneOptions?: boolean, showHelp?: boolean }, {}> {
         
@@ -129,7 +128,6 @@ namespace LiteMol.Plugin.Views.Visualization {
         }
         
         private handleLogo() {
-            let visualCount = 0;    
             this.subscribe(Bootstrap.Event.Tree.NodeAdded.getStream(this.controller.context), e => {
                 if (Bootstrap.Entity.isClass(e.data, Bootstrap.Entity.VisualClass)) {
                     setTimeout(() => this.setState({ showLogo: this.getShowLogo() }), 0);

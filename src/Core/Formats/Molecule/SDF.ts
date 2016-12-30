@@ -23,8 +23,8 @@ namespace LiteMol.Core.Formats.Molecule.SDF {
         let id = lines[0].trim();
         if (!id.length) id = 'SDF';
 
-        let molHeaderInfo = lines[1];
-        let molHeaderComment = lines[2];
+        //let molHeaderInfo = lines[1];
+        //let molHeaderComment = lines[2];
         let cTabInfo = lines[3];        
         let atomCount = +cTabInfo.substr(0, 3);
         let bondCount = +cTabInfo.substr(3, 3);

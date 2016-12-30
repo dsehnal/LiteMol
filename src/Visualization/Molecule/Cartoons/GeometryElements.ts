@@ -817,7 +817,7 @@ namespace LiteMol.Visualization.Molecule.Cartoons.Geometry {
 
     export function buildUnit(unit: CartoonAsymUnit, ctx: Context) {
 
-        let state = ctx.state, params = ctx.params, atoms = ctx.model.atoms, residues = ctx.model.residues;
+        let state = ctx.state, params = ctx.params;
         let builder = ctx.builder;
         for (let index = 0, _max = unit.residueCount; index < _max; index++) {
             state.vertexMap.startElement(unit.residueIndex[index]);
@@ -981,11 +981,10 @@ namespace LiteMol.Visualization.Molecule.Cartoons.Geometry {
         addTube(element: CartoonAsymUnit, state: CartoonsGeometryState, width: number, height: number) {
 
             let verticesDone = state.verticesDone,
-                i = 0, j = 0, t = 0,
+                i = 0, j = 0,
                 radialVector = this.tempVectors[0], normalVector = this.tempVectors[1],
                 tempPos = this.tempVectors[2], a = this.tempVectors[3], b = this.tempVectors[4], u = this.tempVectors[5], v = this.tempVectors[6],
-                addedTriangleCount = 0,
-
+                
                 elementOffsetStart = state.residueIndex * element.linearSegmentCount,
                 elementOffsetEnd = elementOffsetStart + element.linearSegmentCount,
                 elementPoints = element.controlPoints,
@@ -1039,8 +1038,7 @@ namespace LiteMol.Visualization.Molecule.Cartoons.Geometry {
                 t: number,
                 radialVector = this.tempVectors[0], normalVector = this.tempVectors[1],
                 a = this.tempVectors[2], b = this.tempVectors[3], u = this.tempVectors[4], v = this.tempVectors[5], tA = this.tempVectors[6], tB = this.tempVectors[7],
-                addedTriangleCount = 0,
-
+                
                 elementOffsetStart = state.residueIndex * element.linearSegmentCount,
                 elementPoints = element.controlPoints,
                 elementPointsCount = element.linearSegmentCount + 1,
@@ -1091,18 +1089,15 @@ namespace LiteMol.Visualization.Molecule.Cartoons.Geometry {
                 i = 0, j = 0,
                 horizontalVector = this.tempVectors[0], verticalVector = this.tempVectors[1], positionVector = this.tempVectors[2],
                 normalOffset = this.tempVectors[3], normalVector = this.tempVectors[4],
-                temp = this.tempVectors[5], tempNormal = this.tempVectors[6], tA = this.tempVectors[7], tB = this.tempVectors[8],
+                temp = this.tempVectors[5], tA = this.tempVectors[7], tB = this.tempVectors[8],
                 torsionVector = this.tempVectors[9],
-                addedTriangleCount = 0,
-
+                
                 elementOffsetStart = state.residueIndex * element.linearSegmentCount,
                 elementOffsetEnd = elementOffsetStart + element.linearSegmentCount,
                 elementPoints = element.controlPoints,
-                elementPointsCount = element.linearSegmentCount + 1,
                 torsionVectors = element.torsionVectors,
                 normalVectors = element.normalVectors,
-                radialSegmentCount = state.params.radialSegmentCount,
-
+                
                 offsetLength = 0, actualWidth = 0;
 
             normalOffset.set(0, 0, 0);
@@ -1173,8 +1168,7 @@ namespace LiteMol.Visualization.Molecule.Cartoons.Geometry {
 
         addSheetCap(element: CartoonAsymUnit, state: CartoonsGeometryState, isStart: boolean, isEnd: boolean) {
             let params = state.params,
-                addedTriangleCount = 0,
-
+                
                 elementOffsetStart = state.residueIndex * element.linearSegmentCount,
                 elementPoint = this.setVector(element.controlPoints, elementOffsetStart, this.tempVectors[0]);
 
@@ -1216,7 +1210,6 @@ namespace LiteMol.Visualization.Molecule.Cartoons.Geometry {
         private findN3(index: number, arrays: { startIndex: number[]; endIndex: number[]; x: number[]; y: number[]; z: number[]; name: string[] }, target: THREE.Vector3) {
 
             let start = arrays.startIndex[index], end = arrays.endIndex[index];
-            let name = arrays.name;
             let found = false;
 
             for (let i = start; i < end; i++) {

@@ -3,7 +3,6 @@
  */
 
 namespace LiteMol.Viewer.DataSources { 
-    import Plugin = LiteMol.Plugin;
     import Bootstrap = LiteMol.Bootstrap;
     import Entity = Bootstrap.Entity;
 

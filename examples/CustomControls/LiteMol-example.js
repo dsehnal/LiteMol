@@ -71,6 +71,7 @@ var LiteMol;
         (function (PDBe) {
             var Data;
             (function (Data) {
+                "use strict";
                 var Bootstrap = LiteMol.Bootstrap;
                 var Entity = Bootstrap.Entity;
                 var Transformer = Bootstrap.Entity.Transformer;

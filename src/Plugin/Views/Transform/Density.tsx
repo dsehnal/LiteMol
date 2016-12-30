@@ -32,7 +32,6 @@ namespace LiteMol.Plugin.Views.Transform.Density {
     export class ParseData extends Transform.ControllerBase<Bootstrap.Components.Transform.Controller<Transformer.Density.ParseDataParams>, Transformer.Density.ParseDataParams> {        
         protected renderControls() {            
             let params = this.params;
-            let info: any[];
             let normalize = params.normalize!;
             let round = Bootstrap.Utils.round;
             if (this.isUpdate) {
@@ -81,7 +80,6 @@ namespace LiteMol.Plugin.Views.Transform.Density {
         private colors() {                      
             let params = this.params.style!.params as Bootstrap.Visualization.Density.Params;             
             let theme = this.params.style!.theme!;
-            let colorControls: any[];
             
             let uc = theme.colors!.get('Uniform');
             let uniform = <Controls.ToggleColorPicker key={'Uniform'} label='Color' color={uc} onChange={c => this.controller.updateThemeColor('Uniform', c) } />
@@ -92,7 +90,6 @@ namespace LiteMol.Plugin.Views.Transform.Density {
                 //     .map((c, n) => <Controls.ToggleColorPicker  key={n} label={n!} color={c!} onChange={c => this.controller.updateThemeColor(n!, c) } />).toArray();
                     
             controls.push(<TransparencyControl definition={theme.transparency!} onChange={d => this.controller.updateThemeTransparency(d) } />);
-            let visualParams = this.params.style!.params as Bootstrap.Visualization.Density.Params;              
             //controls.push(<Controls.Slider label='Smoothing' onChange={v => this.controller.updateStyleParams({ smoothing: v  })}  min={0} max={10} step={1} value={visualParams.smoothing!} title='Number of laplacian smoothing itrations.' />);
             controls.push(<Controls.Toggle onChange={v => this.controller.updateStyleParams({ isWireframe: v }) } value={params.isWireframe!} label='Wireframe' />)
                     
@@ -105,8 +102,6 @@ namespace LiteMol.Plugin.Views.Transform.Density {
         }
         
         protected renderControls() {            
-            let params = this.params;
-            
             return <div>
                 {this.surface()}
                 {this.colors()}                
@@ -142,7 +137,6 @@ namespace LiteMol.Plugin.Views.Transform.Density {
         private colors() {          
             let params = this.params.style.params;                         
             let theme = this.params.style.theme;
-            let colorControls: any[];
             
             let uc = theme.colors!.get('Uniform');
             let uniform = <Controls.ToggleColorPicker key={'Uniform'} label='Color' color={uc} onChange={c => this.controller.updateThemeColor('Uniform', c) } />
@@ -153,7 +147,6 @@ namespace LiteMol.Plugin.Views.Transform.Density {
                 //     .map((c, n) => <Controls.ToggleColorPicker  key={n} label={n!} color={c!} onChange={c => this.controller.updateThemeColor(n!, c) } />).toArray();
                     
             controls.push(<TransparencyControl definition={theme.transparency!} onChange={d => this.controller.updateThemeTransparency(d) } />);
-            let visualParams = this.params.style!.params as Bootstrap.Visualization.Density.Params;              
             //controls.push(<Controls.Slider label='Smoothing' onChange={v => this.controller.updateStyleParams({ smoothing: v  })}  min={0} max={10} step={1} value={visualParams.smoothing!} title='Number of laplacian smoothing itrations.' />);
             controls.push(<Controls.Toggle onChange={v => this.controller.updateStyleParams({ isWireframe: v }) } value={params.isWireframe!} label='Wireframe' />)
                     

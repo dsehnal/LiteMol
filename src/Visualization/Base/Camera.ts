@@ -135,17 +135,11 @@ namespace LiteMol.Visualization {
         fogEnabled = true;
         fogDelta = 0;
 
-        
         static shouldInUpdateInclude(m: Model) {
             return !isNaN(m.centroid.x) && m.getVisibility();
         }
         
-        static dist(a: Model, b: Model) {
-            let dx = a.centroid.x - b.centroid.x;
-        }
-        
-        private updateFocus(models: Model[]) {
-            
+        private updateFocus(models: Model[]) {            
             if (!models.length) return;
             
             let sorted = models

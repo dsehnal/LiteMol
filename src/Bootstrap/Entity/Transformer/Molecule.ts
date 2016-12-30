@@ -139,8 +139,7 @@ namespace LiteMol.Bootstrap.Entity.Transformer.Molecule {
         validateParams: p => {
             if (!(p.queryString || '').trim().length) return ['Enter query'];
             try {
-                let q = Core.Structure.Query.Builder.toQuery(p.queryString!);
-                return void 0;
+                return Core.Structure.Query.Builder.toQuery(p.queryString) && void 0 || void 0;
             } catch (e) {
                 return ['' + e];
             }

@@ -3193,10 +3193,9 @@ declare namespace LiteMol.Plugin {
     }
 }
 declare namespace LiteMol.Plugin {
-    import Entity = Bootstrap.Entity;
     import Transformer = Bootstrap.Entity.Transformer;
     namespace DataSources {
-        const DownloadMolecule: Bootstrap.Tree.Transformer<Entity.Root, Entity.Action, Transformer.Molecule.DownloadMoleculeSourceParams>;
+        const DownloadMolecule: Bootstrap.Tree.Transformer<Bootstrap.Entity.Root, Bootstrap.Entity.Action, Transformer.Molecule.DownloadMoleculeSourceParams>;
     }
     function getDefaultSpecification(): Specification;
 }
@@ -4921,12 +4920,12 @@ declare namespace LiteMol.Core.Utils {
         function add2<T>(array: ChunkedArray<T>, x: T, y: T): number;
         function add<T>(array: ChunkedArray<T>, x: T): number;
         function compact<T>(array: ChunkedArray<T>): T[];
-        function forVertex3D<T>(chunkVertexCount?: number): ChunkedArray<number>;
-        function forIndexBuffer<T>(chunkIndexCount?: number): ChunkedArray<number>;
-        function forTokenIndices<T>(chunkTokenCount?: number): ChunkedArray<number>;
-        function forIndices<T>(chunkTokenCount?: number): ChunkedArray<number>;
-        function forInt32<T>(chunkSize?: number): ChunkedArray<number>;
-        function forFloat32<T>(chunkSize?: number): ChunkedArray<number>;
+        function forVertex3D(chunkVertexCount?: number): ChunkedArray<number>;
+        function forIndexBuffer(chunkIndexCount?: number): ChunkedArray<number>;
+        function forTokenIndices(chunkTokenCount?: number): ChunkedArray<number>;
+        function forIndices(chunkTokenCount?: number): ChunkedArray<number>;
+        function forInt32(chunkSize?: number): ChunkedArray<number>;
+        function forFloat32(chunkSize?: number): ChunkedArray<number>;
         function forArray<T>(chunkSize?: number): ChunkedArray<T>;
         function create<T>(creator: (size: number) => any, chunkElementCount: number, elementSize: number): ChunkedArray<T>;
     }
@@ -5088,15 +5087,12 @@ declare namespace LiteMol.Core.Formats.Molecule.PDB {
 }
 declare namespace LiteMol.Core.Formats.Molecule.PDB {
     class Parser {
-        id: string;
-        private data;
         private static tokenizeAtom(tokens, tokenizer);
         private static tokenize(id, data);
         static getDotRange(length: number): TokenRange;
         static getNumberRanges(length: number): Map<number, TokenRange>;
         static getQuestionmarkRange(length: number): TokenRange;
         static parse(id: string, data: string): ParserResult<CIF.File>;
-        constructor(id: string, data: string);
     }
     function toCifFile(id: string, data: string): ParserResult<CIF.File>;
 }
@@ -12254,7 +12250,6 @@ declare namespace LiteMol.Visualization {
         fogEnabled: boolean;
         fogDelta: number;
         static shouldInUpdateInclude(m: Model): boolean;
-        static dist(a: Model, b: Model): void;
         private updateFocus(models);
         private focus();
         reset(): void;
@@ -12360,7 +12355,6 @@ declare namespace LiteMol.Visualization {
         private selectInfo;
         private unbindEvents;
         private lighting;
-        private updateSizeInterval;
         parentElement: HTMLElement;
         options: SceneOptions;
         camera: Camera;
@@ -12482,7 +12476,6 @@ declare namespace LiteMol.Visualization {
         private mousedown(event);
         mousemove(event: MouseEvent): void;
         mouseup(event: MouseEvent): void;
-        private mousewheel(event);
         private touchstart(event);
         private touchmove(event);
         private touchend(event);
@@ -12526,7 +12519,6 @@ declare namespace LiteMol.Visualization.Selection {
         Clear = 5,
     }
     class VertexMapBuilder {
-        private elementCount;
         private elementIndices;
         private elementMap;
         private elementRanges;
@@ -15936,11 +15928,11 @@ declare namespace LiteMol.Bootstrap.Tree.Transform {
         compile(): Instance[];
     }
     namespace Builder {
-        class Impl<A extends Node, B extends Node, P> implements Builder {
+        class Impl<To extends Node> implements Builder {
             last: Instance | undefined;
             transforms: Instance[];
             add<A extends Node, B extends Node, P>(s: Selector<A>, t: Transformer<A, B, P>, params: P, props?: Transform.Props): Builder;
-            then<C extends Node, Q>(t: Transformer<B, C, Q>, params: Q, props?: Transform.Props): Builder;
+            then<C extends Node, Q>(t: Transformer<To, C, Q>, params: Q, props?: Transform.Props): Builder;
             compile(): Instance[];
             constructor(last: Instance | undefined, transforms: Instance[]);
         }
@@ -16255,7 +16247,7 @@ declare namespace LiteMol.Bootstrap {
         const SelectionClass: TypeClass;
         const ActionClass: TypeClass;
         const BehaviourClass: TypeClass;
-        function create<E extends Any, T extends AnyType, Props extends CommonProps>(info: TypeInfo, traits?: TypeTraits): T;
+        function create<E extends Entity<E, T, Props>, T extends Type<T, E, Props>, Props extends CommonProps>(info: TypeInfo, traits?: TypeTraits): T;
     }
 }
 declare namespace LiteMol.Bootstrap.Entity {
@@ -16630,7 +16622,6 @@ declare namespace LiteMol.Bootstrap.Utils.Molecule {
         topRight: number[];
     };
     class CentroidHelper {
-        private model;
         center: {
             x: number;
             y: number;
@@ -16688,7 +16679,6 @@ declare namespace LiteMol.Bootstrap.Behaviour.Density {
         private obs;
         private behaviour;
         private ref;
-        private isBusy;
         private remove();
         private getVisual();
         private update(info);
@@ -16705,7 +16695,6 @@ declare namespace LiteMol.Bootstrap.Behaviour.Molecule {
         private obs;
         private target;
         private behaviour;
-        private currentRequest;
         private ref;
         private download;
         private cache;
@@ -16821,7 +16810,7 @@ declare namespace LiteMol.Bootstrap.Components.Transform {
         updateParams(params: Partial<P>): void;
         autoUpdateParams(params: Partial<P>): void;
         readonly isUpdate: boolean;
-        apply(): __Promise.Promise<Tree.Node.Any> | undefined;
+        apply(): Core.Computation<{}> | __Promise.Promise<Tree.Node.Any> | undefined;
         setParams(params: P): void;
         constructor(context: Context, transformer: Tree.Transformer.Any, entity: Entity.Any);
     }

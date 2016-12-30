@@ -53,7 +53,6 @@ namespace LiteMol.Plugin.Views.Transform.Molecule {
     
     export class CreateFromMmCif extends Transform.ControllerBase<Bootstrap.Components.Transform.Controller<Transformer.Molecule.CreateFromMmCifParams>, Transformer.Molecule.CreateFromMmCifParams> {        
         protected renderControls() {            
-            let params = this.params;
             let cif = this.transformSourceEntity as Bootstrap.Entity.Data.CifDictionary;
             let options = cif.props.dictionary.dataBlocks.map((b, i) => ({ b: b.header, i }) );                                    
             return <div>
@@ -174,7 +173,6 @@ namespace LiteMol.Plugin.Views.Transform.Molecule {
             let theme = this.params.style!.theme!;
             
             let isBallsAndSticks = this.params.style!.type === 'BallsAndSticks';
-            let colorControls: any[];
             
             let controls = theme.colors!
                     .filter((c, n) => !isBallsAndSticks ? n !== 'Bond' : true)

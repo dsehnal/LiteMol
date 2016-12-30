@@ -71,6 +71,7 @@ var LiteMol;
         (function (PDBe) {
             var Data;
             (function (Data) {
+                "use strict";
                 var Bootstrap = LiteMol.Bootstrap;
                 var Entity = Bootstrap.Entity;
                 var Transformer = Bootstrap.Entity.Transformer;
@@ -115,6 +116,7 @@ var LiteMol;
         (function (PDBe) {
             var Data;
             (function (Data) {
+                "use strict";
                 var Bootstrap = LiteMol.Bootstrap;
                 var Entity = Bootstrap.Entity;
                 var Transformer = Bootstrap.Entity.Transformer;
@@ -170,7 +172,7 @@ var LiteMol;
                             transparency: { alpha: 1.0 }
                         })
                     });
-                    var base = group
+                    group
                         .then(Transformer.Data.Download, { url: "https://www.ebi.ac.uk/pdbe/coordinates/files/" + id + ".ccp4", type: 'Binary', id: id, description: '2Fo-Fc', title: 'Density' })
                         .then(Transformer.Density.ParseData, { format: LiteMol.Core.Formats.Density.SupportedFormats.CCP4, id: '2Fo-Fc', normalize: false }, { isBinding: true, ref: mainRef })
                         .then(Transformer.Density.CreateVisualBehaviour, {

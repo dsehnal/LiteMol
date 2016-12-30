@@ -19,7 +19,6 @@ namespace LiteMol.Visualization.Primitive {
             let uniqueSpheres = new Map<number, Surface>();
             for (let s of shapes) {
                 if (s.type !== 'Sphere' || uniqueSpheres.has(s.tessalation || 0)) continue;
-                let surf = createSphereSurface({ x: 0, y: 0, z: 0}, 1, s.tessalation || 0);
                 uniqueSpheres.set(s.tessalation || 0, createSphereSurface({ x: 0, y: 0, z: 0}, 1, s.tessalation || 0));
             }
 

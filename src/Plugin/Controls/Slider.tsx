@@ -199,7 +199,7 @@ namespace LiteMol.Plugin.Controls {
         constructor(props: SliderBaseProps) {
             super(props);
 
-            const { range, min, max, step } = props;
+            const { range, min, max } = props;
             const initialValue = range ? Array.apply(null, Array(+range + 1)).map(() => min) : min;
             const defaultValue = ('defaultValue' in props ? props.defaultValue : initialValue);
             const value = (props.value !== undefined ? props.value : defaultValue);
@@ -667,17 +667,17 @@ namespace LiteMol.Plugin.Controls {
             const isIncluded = included || range;
 
             const tracks: JSX.Element[] = [];
-            for (let i = 1; i < bounds.length; ++i) {
-                const trackClassName = classNames({
-                    [`${prefixCls}-track`]: true,
-                    [`${prefixCls}-track-${i}`]: true,
-                });
-                // tracks.push(
-                //     <Track className={trackClassName} vertical={vertical} included={isIncluded}
-                //         offset={offsets[i - 1]} length={offsets[i] - offsets[i - 1]} key={i}
-                //         />
-                // );
-            }
+            // for (let i = 1; i < bounds.length; ++i) {
+            //     const trackClassName = classNames({
+            //         [`${prefixCls}-track`]: true,
+            //         [`${prefixCls}-track-${i}`]: true,
+            //     });
+            //     tracks.push(
+            //         <Track className={trackClassName} vertical={vertical} included={isIncluded}
+            //             offset={offsets[i - 1]} length={offsets[i] - offsets[i - 1]} key={i}
+            //             />
+            //     );
+            // }
 
             const sliderClassName = classNames({
                 [prefixCls!]: true,
@@ -800,17 +800,17 @@ namespace LiteMol.Plugin.Controls {
         return <div className={`${prefixCls}-step`}>{elements}</div>;
     };
 
-    const Track = ({ className, included, vertical, offset, length }: any) => {
-        const style: any = {
-            visibility: included ? 'visible' : 'hidden'
-        };
-        if (vertical) {
-            style.bottom = `${offset}%`;
-            style.height = `${length}%`;
-        } else {
-            style.left = `${offset}%`;
-            style.width = `${length}%`;
-        }
-        return <div className={className} style={style} />;
-    };
+    // const Track = ({ className, included, vertical, offset, length }: any) => {
+    //     const style: any = {
+    //         visibility: included ? 'visible' : 'hidden'
+    //     };
+    //     if (vertical) {
+    //         style.bottom = `${offset}%`;
+    //         style.height = `${length}%`;
+    //     } else {
+    //         style.left = `${offset}%`;
+    //         style.width = `${length}%`;
+    //     }
+    //     return <div className={className} style={style} />;
+    // };
 }

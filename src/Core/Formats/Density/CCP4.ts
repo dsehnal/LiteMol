@@ -177,19 +177,6 @@ namespace LiteMol.Core.Formats.Density.CCP4 {
             return ParserResult.success(data, warnings);
         }
 
-        function normalizeData(data: Float32Array, mean: number, stddev: number) {
-
-            let min = Number.POSITIVE_INFINITY, max = Number.NEGATIVE_INFINITY;
-            for (let i = 0, _l = data.length; i < _l; i++) {
-                let v = (data[i] - mean) / stddev;
-                data[i] = v;
-                if (v < min) min = v;
-                if (v > max) max = v;
-            }
-
-            return { min, max };
-        }
-        
         function readRawData1(view: Float32Array, endian: boolean, extent: number[], headerExtent: number[], indices: number[], mean: number): { data: Float32Array, sigma: number } {
             let data = new Float32Array(extent[0] * extent[1] * extent[2]),
                 coord = [0, 0, 0],

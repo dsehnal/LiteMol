@@ -353,13 +353,13 @@ namespace LiteMol.Core.Formats.Molecule.PDB {
             }
 
             const colCount = 26;
-            let tokens = Utils.ArrayBuilder.forTokenIndices(atomCount * 26);
+            let tokens = Utils.ArrayBuilder.forTokenIndices(atomCount * colCount);
 
             for (let m of this.models) {
                 m.writeCifTokens(m.idToken, tokens, helpers);
             }
 
-            return new CIF.Text.Category(block.data, "_atom_site", 0, 0, ModelData.COLUMNS, tokens.array, atomCount * 26);
+            return new CIF.Text.Category(block.data, "_atom_site", 0, 0, ModelData.COLUMNS, tokens.array, atomCount * colCount);
         }
 
         constructor(public models: ModelData[]) {

@@ -71,6 +71,7 @@ namespace LiteMol.Bootstrap.Tree {
                 if (typeCheck) return Task.reject(info.name, 'Normal', typeCheck);                
                 let paramValidation = this.validateParams(t);
                 if (paramValidation) return Task.reject(info.name, 'Normal', paramValidation); 
+                return void 0;
             }
             
             apply(context: Context, node: A, t: Transform<A, B, P>): Task<B> {                                                
@@ -166,7 +167,7 @@ namespace LiteMol.Bootstrap.Tree {
             onError?: string | ((ctx: Context, actionCtx: T | undefined, error: any) => void)) {
 
             try {
-                let r = await Tree.Transform.apply(context, src.action).run();
+                await Tree.Transform.apply(context, src.action).run();
                 try {
                     resolve(Tree.Node.Null)
                 } finally {

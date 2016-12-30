@@ -265,10 +265,7 @@ namespace LiteMol.Visualization {
         }        
 
         static getMeshMaterial(shading = THREE.SmoothShading, isWireframe = false) {
-
             let shader = MaterialsHelper.shader; 
-            let uniforms = THREE.UniformsUtils.clone(shader.uniforms);
-            //uniforms.diffuse.value = 0xFFFFFF;
             
             let ret = new THREE.ShaderMaterial({
                 uniforms: THREE.UniformsUtils.clone(shader.uniforms),

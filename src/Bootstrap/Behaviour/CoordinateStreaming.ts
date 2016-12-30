@@ -7,7 +7,6 @@ namespace LiteMol.Bootstrap.Behaviour.Molecule {
     "use strict";
     
     
-    import Query = Core.Structure.Query;
     import Transforms = Entity.Transformer;
     
     export class CoordinateStreaming implements Dynamic {
@@ -15,7 +14,6 @@ namespace LiteMol.Bootstrap.Behaviour.Molecule {
         private obs: Rx.IDisposable[] = [];  
         private target: Entity.Molecule.Model | undefined = void 0; 
         private behaviour: Entity.Molecule.CoordinateStreaming.Behaviour = <any>void 0;
-        private currentRequest: Core.Computation<string> | undefined = void 0;
         private ref: string = Utils.generateUUID();
         private download: Task.Running<ArrayBuffer> | undefined = void 0;
         private cache = new CoordinateStreaming.Cache(100);

@@ -35,7 +35,6 @@ namespace LiteMol.Extensions.DensityStreaming {
         Bootstrap.Components.Transform.DensityVisual<CreateStreamingParams, FieldType>, CreateStreamingParams> {
 
         private iso(type: FieldType) {
-            let data = Bootstrap.Tree.Node.findClosestNodeOfType(this.transformSourceEntity, [Bootstrap.Entity.Density.Data]) as Bootstrap.Entity.Density.Data;
             let params = this.params[type]!.params;
             let isSigma = params.isoValueType === Bootstrap.Visualization.Density.IsoValueType.Sigma
             let label = isSigma ? `${type} \u03C3` : type;

@@ -5,8 +5,7 @@
 namespace LiteMol.Visualization {    
     
     
-    export class ModelStore {
-        
+    export class ModelStore {        
         private availableIds: number[] = [];
         private list: Model[] = [];
         private map = new Map<number, Model>();

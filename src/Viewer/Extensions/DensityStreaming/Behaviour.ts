@@ -40,9 +40,7 @@ namespace LiteMol.Extensions.DensityStreaming {
             locked: new Set<string>(),
             toBeRemoved: new Set<string>()
         };
-        private removedGroups = new Set<string>();
         private download: Bootstrap.Task.Running<ArrayBuffer> | undefined = void 0;
-        private isBusy = false;
         private dataBox: Box | undefined = void 0;
 
         private types: FieldType[];
@@ -125,8 +123,8 @@ namespace LiteMol.Extensions.DensityStreaming {
 
                 let styles = this.params.styles; 
 
-                let twoFoFc = group.then(Transformer.Density.CreateFromData, { id: '2Fo-Fc', data: twoF.result }, { ref: ref + '2Fo-Fc-data' })
-                let foFc = group.then(Transformer.Density.CreateFromData, { id: 'Fo-Fc', data: oneF.result }, { ref: ref + 'Fo-Fc-data' });
+                group.then(Transformer.Density.CreateFromData, { id: '2Fo-Fc', data: twoF.result }, { ref: ref + '2Fo-Fc-data' })
+                group.then(Transformer.Density.CreateFromData, { id: 'Fo-Fc', data: oneF.result }, { ref: ref + 'Fo-Fc-data' });
             
                 await this.apply(action);            
                 let a = this.apply(Bootstrap.Tree.Transform.build().add(ref + '2Fo-Fc-data', Transformer.Density.CreateVisual, { style: styles['2Fo-Fc'] }, { ref: ref + '2Fo-Fc' }));
@@ -161,6 +159,8 @@ namespace LiteMol.Extensions.DensityStreaming {
             Bootstrap.Tree.Transform.apply(this.context, action).run()
                 .then(() => this.groupDone(ref, true))
                 .catch(() => this.groupDone(ref, false));
+
+            return true;
         }
 
         private clampBox(box: Box) {

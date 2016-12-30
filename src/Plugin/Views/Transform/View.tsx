@@ -59,7 +59,6 @@ namespace LiteMol.Plugin.Views.Transform {
         }
 
         render() {
-            let ctx = this.controller.context;
             let isUpdate = this.isUpdate;
             let state = this.controller.latestState;
             let issues = state.issues;

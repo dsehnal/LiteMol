@@ -91,7 +91,7 @@ namespace LiteMol.Bootstrap {
             }
         }
         
-        export function create<E extends Any, T extends AnyType, Props extends CommonProps>(info: TypeInfo, traits?: TypeTraits): T {
+        export function create<E extends Entity<E, T, Props>, T extends Type<T, E, Props>, Props extends CommonProps>(info: TypeInfo, traits?: TypeTraits): T {
             return new TypeImpl(Utils.generateUUID(), info, traits ? traits : { }) as T;
         }            
     }    

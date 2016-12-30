@@ -24,10 +24,8 @@ namespace LiteMol.Plugin.Views.Context {
         }
 
         render() {
-
             let entries = this.controller.latestState.entries;
-            let count = entries.count();
-
+            
             return <div className='lm-log-wrap'>
                 <div className='lm-log' ref='log'>
                     <ul className='lm-list-unstyled'>

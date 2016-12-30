@@ -104,8 +104,6 @@ namespace LiteMol.Bootstrap.Utils.Molecule {
     
     export function getBox(molecule: Core.Structure.MoleculeModel, atomIndices: number[], delta: number) {
         let atoms = molecule.atoms,
-            atomCount = atoms.count,
-            cCount = 0,
             x = atoms.x, y = atoms.y, z = atoms.z,
             min = [Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE], max = [-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE];
 
@@ -161,7 +159,7 @@ namespace LiteMol.Bootstrap.Utils.Molecule {
             this.radiusSquared = Math.max(this.radiusSquared, dx * dx + dy * dy + dz * dz);
         }
         
-        constructor(private model: LiteMol.Core.Structure.MoleculeModel) {
+        constructor(model: LiteMol.Core.Structure.MoleculeModel) {
             this.x = model.atoms.x;
             this.y = model.atoms.y;
             this.z = model.atoms.z;

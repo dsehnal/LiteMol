@@ -259,7 +259,6 @@ namespace LiteMol.Core.Structure {
                 if (this._fingerprint) return this._fingerprint;
 
                 let indexList: number[] = this.residueIndices,
-                    struct = this.context.structure,
                     residues = this.context.structure.residues,
                     cName = residues.name, cAsym = residues.asymId, cSeq = residues.seqNumber, insCode = residues.insCode,
                     names:string[] = [];
@@ -281,7 +280,6 @@ namespace LiteMol.Core.Structure {
                 if (this._authFingerprint) return this._authFingerprint;
 
                 let indexList: number[] = this.residueIndices,
-                    struct = this.context.structure,
                     residues = this.context.structure.residues,
                     cName = residues.authName, cAsym = residues.authAsymId, cSeq = residues.authSeqNumber, insCode = residues.insCode,
                     names: string[] = [];
@@ -369,8 +367,7 @@ namespace LiteMol.Core.Structure {
              * Assumes the set is in the given context's mask.
              */
             static ofSet(context: Context, atomIndices: Set<number>) {
-                let array = new Int32Array(atomIndices.size),
-                    index = 0;
+                let array = new Int32Array(atomIndices.size);
 
                 atomIndices.forEach(function (this: any, i: number) { this.array[this.index++] = i }, { array, index: 0 });
                 Array.prototype.sort.call(array, function (a: number, b: number) { return a - b; });

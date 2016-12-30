@@ -31,7 +31,6 @@ namespace LiteMol.Core.Structure.Query {
             return !!e.compile;
         }        
                 
-        declare var global: any;
         export function parse(query: string): Query {                
             if (typeof window === 'undefined') throw 'parse can only be called from a browser.';
                     
@@ -198,8 +197,7 @@ namespace LiteMol.Core.Structure.Query {
             return (ctx: Context) => {
                 let table = tableProvider(ctx.structure),
                     { atomStartIndex, atomEndIndex } = table,
-                    fragments = new FragmentSeqBuilder(ctx),
-                    include = false;
+                    fragments = new FragmentSeqBuilder(ctx);
 
                 if (complement) {
                     let exclude = new Set(indices);
@@ -261,8 +259,8 @@ namespace LiteMol.Core.Structure.Query {
             return (ctx: Context) => {
                 let residues = ctx.structure.residues,
                     chains = ctx.structure.chains,
-                    { seqNumber, insCode, chainIndex, atomStartIndex, atomEndIndex } = residues,
-                    { entityId, asymId, count, residueStartIndex, residueEndIndex } = chains,                                       
+                    { seqNumber, atomStartIndex, atomEndIndex } = residues,
+                    { entityId, count, residueStartIndex, residueEndIndex } = chains,                                       
                     fragments = new FragmentSeqBuilder(ctx);
                
                 let parent = ctx.structure.parent, 
@@ -327,7 +325,7 @@ namespace LiteMol.Core.Structure.Query {
                 
         export function compileNonHetPolymer(): Query {
             return (ctx: Context) => {
-                let { atomStartIndex, atomEndIndex, isHet, entityIndex, count } = ctx.structure.residues,
+                let { atomStartIndex, atomEndIndex } = ctx.structure.residues,
                     { entityType, count: entityCount, residueStartIndex: eRS, residueEndIndex: eRE } = ctx.structure.entities,
                     polymer = Structure.EntityType.Polymer,
                     size = 0; 

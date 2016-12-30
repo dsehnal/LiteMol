@@ -5,7 +5,6 @@
 namespace LiteMol.Plugin {
     "use strict";
     
-    import Entity = Bootstrap.Entity;    
     import Transformer = Bootstrap.Entity.Transformer;
     
     export namespace DataSources {

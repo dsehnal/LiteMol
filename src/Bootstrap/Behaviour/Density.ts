@@ -19,7 +19,6 @@ namespace LiteMol.Bootstrap.Behaviour.Density {
         private obs: Rx.IDisposable[] = [];
         private behaviour: Entity.Density.InteractiveSurface;
         private ref = Utils.generateUUID();
-        private isBusy = false;
         
         private remove() {
             let v = this.getVisual();

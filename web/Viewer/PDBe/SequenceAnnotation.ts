@@ -81,7 +81,7 @@ namespace LiteMol.Viewer.PDBe.SequenceAnnotation {
             }
             
             private setCached(a: Annotation, model: Entity.Molecule.Model, theme: Visualization.Theme) {
-                let e = this.context.entityCache.set(a, `theme-${model.id}`, theme);                
+                this.context.entityCache.set(a, `theme-${model.id}`, theme);                
             }
             
             private highlight() {
@@ -149,9 +149,7 @@ namespace LiteMol.Viewer.PDBe.SequenceAnnotation {
     
         function createResidueMap(model: LiteMol.Core.Structure.MoleculeModel, fs: Query.FragmentSeq) {
             let map = new Uint8Array(model.residues.count);            
-            let mId = model.modelId;
             let residueIndex = model.atoms.residueIndex;
-            let { asymId, entityId, seqNumber, insCode } = model.residues;              
             for (let f of fs.fragments) {
                 for (let i of f.atomIndices) {
                     map[residueIndex[i]] = 1;

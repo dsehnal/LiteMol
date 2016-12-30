@@ -6,8 +6,6 @@
 namespace LiteMol.Bootstrap.Components.Transform {
     "use strict";
  
-    import Transformer = Tree.Transformer.Any
- 
     export class View extends Component<{ update: Controller<any> | undefined, transforms: Controller<any>[] }> {                        
         private update() {
             if (!this.context.currentEntity) {

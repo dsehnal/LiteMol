@@ -46,8 +46,6 @@ namespace LiteMol.Core.Formats.Density.DSN6 {
                 sn5xx = remove(sn5, ''),
                 sn6 = sheaderView.substring(n6 + 'plus'.length, n7).split(' '),
                 sn6xx = remove(sn6, ''),
-                sn7 = sheaderView.substring(n7 + 'sigma'.length, sheaderView.length).split(' '),
-                sn7xx = remove(sn7, ''),
                 warnings: string[] = [];
 
             let mode = 0;
@@ -192,18 +190,12 @@ namespace LiteMol.Core.Formats.Density.DSN6 {
                 cX: number, cY: number, cZ: number,
                 xSize: number, xySize: number,
                 offset = 0, v = 0.1, sigma = 0.0, t = 0.1,
-                xbsize: number,
-                ybsize: number,
-                zbsize: number,
                 mi: number,
                 mj: number,
                 mk: number,
                 x: number,
                 y: number,
                 z: number,
-                xxtra: number,
-                yxtra: number,
-                zxtra: number,
                 minj = 0, maxj = 0, meanj = 0,
                 block_size = 8,
                 block_sizez = 8,

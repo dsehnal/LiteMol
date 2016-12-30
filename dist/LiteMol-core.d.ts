@@ -1600,12 +1600,12 @@ declare namespace LiteMol.Core.Utils {
         function add2<T>(array: ChunkedArray<T>, x: T, y: T): number;
         function add<T>(array: ChunkedArray<T>, x: T): number;
         function compact<T>(array: ChunkedArray<T>): T[];
-        function forVertex3D<T>(chunkVertexCount?: number): ChunkedArray<number>;
-        function forIndexBuffer<T>(chunkIndexCount?: number): ChunkedArray<number>;
-        function forTokenIndices<T>(chunkTokenCount?: number): ChunkedArray<number>;
-        function forIndices<T>(chunkTokenCount?: number): ChunkedArray<number>;
-        function forInt32<T>(chunkSize?: number): ChunkedArray<number>;
-        function forFloat32<T>(chunkSize?: number): ChunkedArray<number>;
+        function forVertex3D(chunkVertexCount?: number): ChunkedArray<number>;
+        function forIndexBuffer(chunkIndexCount?: number): ChunkedArray<number>;
+        function forTokenIndices(chunkTokenCount?: number): ChunkedArray<number>;
+        function forIndices(chunkTokenCount?: number): ChunkedArray<number>;
+        function forInt32(chunkSize?: number): ChunkedArray<number>;
+        function forFloat32(chunkSize?: number): ChunkedArray<number>;
         function forArray<T>(chunkSize?: number): ChunkedArray<T>;
         function create<T>(creator: (size: number) => any, chunkElementCount: number, elementSize: number): ChunkedArray<T>;
     }
@@ -1767,15 +1767,12 @@ declare namespace LiteMol.Core.Formats.Molecule.PDB {
 }
 declare namespace LiteMol.Core.Formats.Molecule.PDB {
     class Parser {
-        id: string;
-        private data;
         private static tokenizeAtom(tokens, tokenizer);
         private static tokenize(id, data);
         static getDotRange(length: number): TokenRange;
         static getNumberRanges(length: number): Map<number, TokenRange>;
         static getQuestionmarkRange(length: number): TokenRange;
         static parse(id: string, data: string): ParserResult<CIF.File>;
-        constructor(id: string, data: string);
     }
     function toCifFile(id: string, data: string): ParserResult<CIF.File>;
 }

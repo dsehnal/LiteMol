@@ -36,7 +36,6 @@ namespace LiteMol.Visualization.Surface {
         return indices;
     }
 
-    let cntr = 0;
     function splice(start: number, end: number, indices: Int32Array, map: Selection.VertexMapBuilder) {
         let currentStart = start;
         let currentEnd = start + 1;
@@ -146,8 +145,6 @@ namespace LiteMol.Visualization.Surface {
     }
 
     async function computePickPlatesChunks(ctx: Context) {
-        let tri = ctx.data.triangleIndices;
-        let ids = ctx.data.annotation!;
         let started = Core.Utils.PerformanceMonitor.currentTime();
 
         for (let start = 0; start < ctx.triCount; start += chunkSize) {
@@ -163,9 +160,7 @@ namespace LiteMol.Visualization.Surface {
 
     function assignPickColors(ctx: Context) {
         let color = { r: 0.45, g: 0.45, b: 0.45 },
-            vs = ctx.data.vertices,
-            ids = ctx.data.annotation!,
-            tri = ctx.data.triangleIndices;
+            ids = ctx.data.annotation!;
 
         ctx.pickTris = ChunkedArray.forIndexBuffer(ctx.triCount);
         let pickColorBuffer = ctx.pickColorBuffer!;

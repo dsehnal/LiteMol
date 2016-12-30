@@ -3,15 +3,12 @@
  */
 
 namespace LiteMol.Viewer.PDBe.Data {
-  
-    import Plugin = LiteMol.Plugin;
+    "use strict";
+
     import Bootstrap = LiteMol.Bootstrap;
     import Entity = Bootstrap.Entity;
             
     import Transformer = Bootstrap.Entity.Transformer;
-    import Tree = Bootstrap.Tree;
-    import Transform = Tree.Transform;     
-    import Visualization = Bootstrap.Visualization;
     
     // straigtforward
     export const DownloadMolecule = Transformer.Molecule.downloadMoleculeSource({ 

@@ -12,7 +12,6 @@ namespace LiteMol.Visualization.Molecule.BallsAndSticks {
         export function addPrecomputedBonds(molecule: Core.Structure.MoleculeModel, atomIndices: number[], builder: ChunkedArray<number>) {
             let mask = Core.Structure.Query.Context.Mask.ofIndices(molecule, atomIndices);
             let stickCount = 0;
-            let residueCount = 0;
 
             let { atomAIndex, atomBIndex, type, count } = molecule.covalentBonds!;
             for (let i = 0; i < count; i++) {
@@ -71,7 +70,6 @@ namespace LiteMol.Visualization.Molecule.BallsAndSticks {
                 ctx = Core.Geometry.SubdivisionTree3D.createContextRadius(tree, bondLength + 1, false),
                 pA = new THREE.Vector3(), pB = new THREE.Vector3(),
                 processed = new Set<number>(),
-                cont = true,
                 buffer = ctx.buffer;
 
             while (startAtomIndex < atomCount) {

@@ -135,8 +135,7 @@ namespace LiteMol.Visualization.Selection {
         }
 
 
-        constructor(private elementCount: number) {
-
+        constructor(elementCount: number) {
             this.elementIndices = ChunkedArray.create<number>(size => new Int32Array(size), elementCount, 1);
             this.elementRanges = new Int32Array(2 * elementCount);
             this.vertexRanges = ChunkedArray.create<number>(size => new Int32Array(size), elementCount, 2);

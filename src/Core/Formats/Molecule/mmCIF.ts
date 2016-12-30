@@ -119,8 +119,7 @@ namespace LiteMol.Core.Formats.Molecule.mmCIF {
             authName: string[] = atoms.addColumn('authName', size => new Array(size)), authNameCol = columns.get('auth_atom_id');
 
 
-        let resSeqNumberCol = columns.get('label_seq_id'),
-            asymIdCol = columns.get('label_asym_id'),
+        let asymIdCol = columns.get('label_asym_id'),
             entityIdCol = columns.get('label_entity_id'),
             insCodeCol = columns.get('pdbx_PDB_ins_code'),
 
@@ -206,10 +205,10 @@ namespace LiteMol.Core.Formats.Molecule.mmCIF {
             residueAtomStartIndex = residues.addColumn('atomStartIndex', size => new Int32Array(size)),
             residueAtomEndIndex = residues.addColumn('atomEndIndex', size => new Int32Array(size)),
             residueChainIndex = residues.addColumn('chainIndex', size => new Int32Array(size)),
-            residueEntityIndex = residues.addColumn('entityIndex', size => new Int32Array(size)),
-            residueSecondaryStructureIndex = residues.addColumn('secondaryStructureIndex', size => new Int32Array(size)),
+            residueEntityIndex = residues.addColumn('entityIndex', size => new Int32Array(size));        
+        residues.addColumn('secondaryStructureIndex', size => new Int32Array(size));
 
-            chainAsymId = chains.addColumn('asymId', size => <string[]>[]),
+        let chainAsymId = chains.addColumn('asymId', size => <string[]>[]),
             chainEntityId = chains.addColumn('entityId', size => <string[]>[]),
             chainAuthAsymId = chains.addColumn('authAsymId', size => <string[]>[]),
             chainAtomStartIndex = chains.addColumn('atomStartIndex', size => new Int32Array(size)),
@@ -541,8 +540,7 @@ namespace LiteMol.Core.Formats.Molecule.mmCIF {
         let residues = structure.residues,
             count = residues.count,
             asymId = residues.asymId, seqNumber = residues.seqNumber, insCode = residues.insCode,
-            inSS = false,
-            currentElement: Structure.SecondaryStructureElement | undefined = void 0, endPivot: Structure.PolyResidueIdentifier,
+            currentElement: Structure.SecondaryStructureElement | undefined = void 0,
             key = '',
             starts = new Map<string, Structure.SecondaryStructureElement>(),
             ends = new Map<string, Structure.SecondaryStructureElement>();
@@ -673,8 +671,7 @@ namespace LiteMol.Core.Formats.Molecule.mmCIF {
 
             let symmetry = _struct_sheet_range.getColumn('symmetry');
             let sheet_id = _struct_sheet_range.getColumn('sheet_id');
-            let id = _struct_sheet_range.getColumn('id');
-
+            
             for (i = 0; i < _struct_sheet_range.rowCount; i++) {
                 input[input.length] = new Structure.SecondaryStructureElement(
                     Structure.SecondaryStructureType.Sheet,

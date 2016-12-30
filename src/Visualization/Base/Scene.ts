@@ -89,8 +89,7 @@ namespace LiteMol.Visualization {
 
         setup(scene: THREE.Scene) {
 
-            let pointLight = new THREE.PointLight(0xAAAAAA, 0.75),
-                pointLightClone = pointLight.clone();
+            let pointLight = new THREE.PointLight(0xAAAAAA, 0.75);
             scene.add(pointLight);
 
             this.lights = [pointLight];
@@ -139,7 +138,6 @@ namespace LiteMol.Visualization {
         private unbindEvents: Array<() => void> = [];
 
         private lighting: ILighting;
-        private updateSizeInterval = <any>void 0;
 
         parentElement: HTMLElement;
         options: SceneOptions;

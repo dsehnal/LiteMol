@@ -55,7 +55,6 @@ namespace LiteMol.Visualization {
         
         export function fromHsv(h: number, s: number, v: number): Color {
             //http://schinckel.net/2012/01/10/hsv-to-rgb-in-javascript/          
-            let r: number, g: number, b: number;
             let rgb:number[], i: number, data:number[] = [];
             if (s === 0) {
                 rgb = [v,v,v];

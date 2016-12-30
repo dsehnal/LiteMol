@@ -229,7 +229,6 @@ var LiteMol;
                 var highlightColor = { r: 1, g: 0, b: 1 };
                 function createAtomMapNormal(model, report) {
                     var map = new Uint8Array(model.atoms.count);
-                    var mId = model.modelId;
                     var _a = model.residues, authAsymId = _a.authAsymId, authSeqNumber = _a.authSeqNumber, atomStartIndex = _a.atomStartIndex, atomEndIndex = _a.atomEndIndex;
                     var authName = model.atoms.authName;
                     for (var rI = 0, _rI = model.residues.count; rI < _rI; rI++) {
@@ -252,7 +251,6 @@ var LiteMol;
                 function createAtomMapComputed(model, report) {
                     var parent = model.parent;
                     var map = new Uint8Array(model.atoms.count);
-                    var mId = model.modelId;
                     var _a = model.residues, authSeqNumber = _a.authSeqNumber, atomStartIndex = _a.atomStartIndex, atomEndIndex = _a.atomEndIndex, chainIndex = _a.chainIndex;
                     var sourceChainIndex = model.chains.sourceChainIndex;
                     var authAsymId = parent.chains.authAsymId;
@@ -283,7 +281,6 @@ var LiteMol;
                     colors.set('Uniform', defaultColor);
                     colors.set('Selection', selectionColor);
                     colors.set('Highlight', highlightColor);
-                    var residueIndex = model.atoms.residueIndex;
                     var mapping = LiteMol.Visualization.Theme.createColorMapMapping(function (i) { return map[i]; }, colorMap, defaultColor);
                     return LiteMol.Visualization.Theme.createMapping(mapping, { colors: colors, interactive: true, transparency: { alpha: 1.0 } });
                 }
@@ -634,9 +631,7 @@ var LiteMol;
                         locked: new Set(),
                         toBeRemoved: new Set()
                     };
-                    this.removedGroups = new Set();
                     this.download = void 0;
-                    this.isBusy = false;
                     this.dataBox = void 0;
                     this.server = params.server;
                     if (this.server[this.server.length - 1] === '/')
@@ -713,7 +708,7 @@ var LiteMol;
                 };
                 Behaviour.prototype.createXray = function (data) {
                     return __awaiter(this, void 0, void 0, function () {
-                        var twoFB, oneFB, twoF, oneF, action, ref, group, styles, twoFoFc, foFc, a, b, c, e_4;
+                        var twoFB, oneFB, twoF, oneF, action, ref, group, styles, a, b, c, e_4;
                         return __generator(this, function (_a) {
                             switch (_a.label) {
                                 case 0:
@@ -731,8 +726,8 @@ var LiteMol;
                                     this.groups.requested.add(ref);
                                     group = action.add(this.behaviour, Transformer.Basic.CreateGroup, { label: 'Density' }, { ref: ref, isHidden: true });
                                     styles = this.params.styles;
-                                    twoFoFc = group.then(Transformer.Density.CreateFromData, { id: '2Fo-Fc', data: twoF.result }, { ref: ref + '2Fo-Fc-data' });
-                                    foFc = group.then(Transformer.Density.CreateFromData, { id: 'Fo-Fc', data: oneF.result }, { ref: ref + 'Fo-Fc-data' });
+                                    group.then(Transformer.Density.CreateFromData, { id: '2Fo-Fc', data: twoF.result }, { ref: ref + '2Fo-Fc-data' });
+                                    group.then(Transformer.Density.CreateFromData, { id: 'Fo-Fc', data: oneF.result }, { ref: ref + 'Fo-Fc-data' });
                                     return [4 /*yield*/, this.apply(action)];
                                 case 1:
                                     _a.sent();
@@ -777,6 +772,7 @@ var LiteMol;
                     LiteMol.Bootstrap.Tree.Transform.apply(this.context, action).run()
                         .then(function () { return _this.groupDone(ref, true); })
                         .catch(function () { return _this.groupDone(ref, false); });
+                    return true;
                 };
                 Behaviour.prototype.clampBox = function (box) {
                     var max = this.params.maxQueryRegion;
@@ -982,7 +978,6 @@ var LiteMol;
                 }
                 StreamingView.prototype.iso = function (type) {
                     var _this = this;
-                    var data = LiteMol.Bootstrap.Tree.Node.findClosestNodeOfType(this.transformSourceEntity, [LiteMol.Bootstrap.Entity.Density.Data]);
                     var params = this.params[type].params;
                     var isSigma = params.isoValueType === LiteMol.Bootstrap.Visualization.Density.IsoValueType.Sigma;
                     var label = isSigma ? type + " \u03C3" : type;
@@ -1027,6 +1022,7 @@ var LiteMol;
         (function (PDBe) {
             var Data;
             (function (Data) {
+                "use strict";
                 var Bootstrap = LiteMol.Bootstrap;
                 var Entity = Bootstrap.Entity;
                 var Transformer = Bootstrap.Entity.Transformer;
@@ -1071,6 +1067,7 @@ var LiteMol;
         (function (PDBe) {
             var Data;
             (function (Data) {
+                "use strict";
                 var Bootstrap = LiteMol.Bootstrap;
                 var Entity = Bootstrap.Entity;
                 var Transformer = Bootstrap.Entity.Transformer;
@@ -1126,7 +1123,7 @@ var LiteMol;
                             transparency: { alpha: 1.0 }
                         })
                     });
-                    var base = group
+                    group
                         .then(Transformer.Data.Download, { url: "https://www.ebi.ac.uk/pdbe/coordinates/files/" + id + ".ccp4", type: 'Binary', id: id, description: '2Fo-Fc', title: 'Density' })
                         .then(Transformer.Density.ParseData, { format: LiteMol.Core.Formats.Density.SupportedFormats.CCP4, id: '2Fo-Fc', normalize: false }, { isBinding: true, ref: mainRef })
                         .then(Transformer.Density.CreateVisualBehaviour, {
@@ -1653,7 +1650,7 @@ var LiteMol;
                             return this.context.entityCache.get(a, "theme-" + model.id);
                         };
                         Behaviour.prototype.setCached = function (a, model, theme) {
-                            var e = this.context.entityCache.set(a, "theme-" + model.id, theme);
+                            this.context.entityCache.set(a, "theme-" + model.id, theme);
                         };
                         Behaviour.prototype.highlight = function () {
                             var e = this.toHighlight;
@@ -1722,13 +1719,11 @@ var LiteMol;
                     var highlightColor = LiteMol.Visualization.Theme.Default.HighlightColor;
                     function createResidueMap(model, fs) {
                         var map = new Uint8Array(model.residues.count);
-                        var mId = model.modelId;
                         var residueIndex = model.atoms.residueIndex;
-                        var _a = model.residues, asymId = _a.asymId, entityId = _a.entityId, seqNumber = _a.seqNumber, insCode = _a.insCode;
-                        for (var _i = 0, _b = fs.fragments; _i < _b.length; _i++) {
-                            var f = _b[_i];
-                            for (var _c = 0, _d = f.atomIndices; _c < _d.length; _c++) {
-                                var i = _d[_c];
+                        for (var _i = 0, _a = fs.fragments; _i < _a.length; _i++) {
+                            var f = _a[_i];
+                            for (var _b = 0, _c = f.atomIndices; _b < _c.length; _b++) {
+                                var i = _c[_b];
                                 map[residueIndex[i]] = 1;
                             }
                         }

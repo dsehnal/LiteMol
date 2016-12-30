@@ -51,11 +51,7 @@ namespace LiteMol.Bootstrap {
             refs.pop();
             if (!refs.length) tree.refs.delete(entity.ref);            
         }
-        
-        function removeRef<T extends Node.Any>(tree: Tree<T>, entity: T) {
-            Node.forEach(entity, e => _removeRef(tree, e))
-        }
-                          
+                                  
         export function add<T extends Node.Any>(node: T) {
             if (!node.parent) throw 'Cannot add a node without a parent.';
             

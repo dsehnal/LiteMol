@@ -81,7 +81,7 @@ namespace LiteMol.Core.Geometry.MarchingCubes {
 
         async run() {            
             await this.ctx.updateProgress('Computing surface...', true, 0, this.size);
-            let slices = await this.doSlices();
+            await this.doSlices();
             await this.ctx.updateProgress('Finalizing...');
             return this.finish();
         }

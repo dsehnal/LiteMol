@@ -5,9 +5,7 @@
 namespace LiteMol.Plugin.Views.Entity {
     "use strict";
     
-    import BTree = Bootstrap.Tree
     import BEntity = Bootstrap.Entity
-    import BNode = Bootstrap.Tree.Node
     
     export const VisibilityControl = (props: { entity: BEntity.Any }) => {
         let e = props.entity;
@@ -75,7 +73,6 @@ namespace LiteMol.Plugin.Views.Entity {
         
         private row(childCount: number) {
             let entity = this.props.node;
-            let state = entity.state;
             let props = entity.props;
             let isRoot = entity.parent === entity;  
                                                 
@@ -145,14 +142,9 @@ namespace LiteMol.Plugin.Views.Entity {
             this.renderedVersion = node.version;
             let isRoot = node.parent === node;        
             
-            // if (node.transform.isBinding && childCount) {
-            //     return this.renderFlat();
-            // }     
             if (this.isFullyBound()) return this.renderFlat();
             
             let state = node.state;
-            let props = node.props;
-            
             
             let childCount = 0;
             let children: any[] = [];
