@@ -10,7 +10,8 @@ Examples
   - `Transforms` [ [source](https://github.com/dsehnal/LiteMol/tree/master/examples/Transforms) | [view live](https://webchemdev.ncbr.muni.cz/LiteMol/Examples/Transforms) ] - This is a more complicated example that shows how to download multiple structures, apply a superposition algorithm, transform using a 4x4 matrix, and visualize them.
   - `Channels` [ [source](https://github.com/dsehnal/LiteMol/tree/master/examples/Channels) | [view live](https://webchemdev.ncbr.muni.cz/LiteMol/Examples/Channels) ] - An advanced examples that shows the results produced by the command line version of [MOLE](https://webchem.ncbr.muni.cz/Platform/App/Mole). It shows how to create custom visuals from JSON data and make them interactive, and how to enable interaction from outside the plugin.
 
-To run the examples locally, simply open the corresponding ``index.html`` from the ``web/Examples`` directory in your
+To run the examples locally, build LiteMol using the ``gulp`` command and 
+simply open the corresponding ``index.html`` from the ``build/web/Examples`` directory in your
 favourite web browser (this is because the paths to the LiteMol CSS and JS are set up so that they can be shared
 when deplyed to the web).  
 
@@ -18,7 +19,7 @@ Alternatively, from the LiteMol root directory use
 
 ```
 npm install -g http-server
-cd web
+cd build/web
 http-server
 ```
 

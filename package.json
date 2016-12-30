@@ -28,7 +28,7 @@
     "gulp-uglify": "^2.0.0",
     "gulp-unique-files": "^0.1.2",
     "merge2": "^1.0.2",
-    "typedoc": "^0.5.1",
+    "typedoc": "^0.5.3",
     "typescript": "^2.1.4"
   }
 }
