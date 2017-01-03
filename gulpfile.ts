@@ -1,28 +1,28 @@
-var gulp = require('gulp'),
-    plugins = {
-        concat: require('gulp-concat'),
-        rename: require('gulp-rename'),
-        replace: require('gulp-replace'),
-        ts: require('gulp-typescript'),
-        merge: require('merge2'),
-        clean: require('gulp-clean'),
-        insert: require('gulp-insert'),
-        unique: require('gulp-unique-files'),
-        sass: require('gulp-sass'),
-        uglify: require('gulp-uglify'),
-        tsc: require('typescript'),
-        tar: require('gulp-tar'),
-        gzip: require('gulp-gzip'),
-        typedoc: require('gulp-typedoc')
-    };
+import * as fs from 'fs'
+import * as gulp from 'gulp'
 
-var fs = require('fs');
+const plugins = {
+    concat: require('gulp-concat'),
+    rename: require('gulp-rename'),
+    replace: require('gulp-replace'),
+    ts: require('gulp-typescript'),
+    merge: require('merge2'),
+    clean: require('gulp-clean'),
+    insert: require('gulp-insert'),
+    unique: require('gulp-unique-files'),
+    sass: require('gulp-sass'),
+    uglify: require('gulp-uglify'),
+    tsc: require('typescript'),
+    tar: require('gulp-tar'),
+    gzip: require('gulp-gzip'),
+    typedoc: require('gulp-typedoc')
+};
 
 function build(name) {
     return require(`./src/${name}/build`)(gulp, plugins);
 }
 
-function buildts(root, out) {
+function buildts(root: string, out?:string) {
     var project = plugins.ts.createProject(root + '/tsconfig.json', { typescript: plugins.tsc });
     var b = project.src().pipe(project());    
     return b.js.pipe(gulp.dest(out ? out : root));
@@ -32,7 +32,7 @@ function buildExample(name) {
     return buildts('./examples/' + name, './build/examples/' + name);
 }
 
-function CSS(minify) {
+function BuildCSS(minify: boolean) {
     var affixes = ['', '-light', '-blue'];
 
     return affixes.map(f => gulp.src(['./src/Plugin/Skin/LiteMol-plugin' + f + '.scss'])
@@ -53,7 +53,7 @@ function Uglify() {
         .pipe(gulp.dest('./dist/js'));
 
    
-    return plugins.merge(CSS(true).concat([plugin, core]));
+    return plugins.merge(BuildCSS(true).concat([plugin, core]));
 }
 
 function Viewer() {
@@ -141,7 +141,7 @@ function WebVersions() {
 
 function PackageVersion() {
     var version = fs.readFileSync('VERSION', 'UTF-8');
-    var json = JSON.parse(fs.readFileSync('package.json'));
+    var json = JSON.parse(fs.readFileSync('package.json', 'UTF-8'));
     json.version = version;
     fs.writeFileSync('package.json', JSON.stringify(json, null, 2), { encoding: 'UTF-8' });
 
@@ -206,8 +206,8 @@ gulp.task('Docs', ['Docs-pack'], function() { });
 
 gulp.task('Viewer', [], Viewer);
 
-gulp.task('CSS', ['Clean'], function () { return CSS(false); });
-gulp.task('CSS-min', ['Clean'], function () { return CSS(true); });
+gulp.task('CSS', ['Clean'], function () { return BuildCSS(false); });
+gulp.task('CSS-min', ['Clean'], function () { return BuildCSS(true); });
 gulp.task('ViewerAndExamples', [], ViewerAndExamples)
 gulp.task('ViewerAndExamples-inline', ['Plugin'], ViewerAndExamples)
 

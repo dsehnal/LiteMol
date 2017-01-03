@@ -77101,9 +77101,6 @@ var LiteMol;
                     return _super.apply(this, arguments) || this;
                 }
                 Object.defineProperty(View.prototype, "controller", {
-                    // protected get latestState() {
-                    //     return this.props.controller.latestState;
-                    // }
                     get: function () {
                         return this.props.controller;
                     },
@@ -77119,24 +77116,6 @@ var LiteMol;
                 return View;
             }(ObserverView));
             Views.View = View;
-            // export abstract class ControlView<Controller extends Bootstrap.Components.Control<any>, CustomProps> 
-            //     extends View<Controller, {}, CustomProps> implements IControlView {
-            //     header = '';
-            //     panelType = 'default';
-            //     // shouldComponentUpdate(nextProps: { controller: Controller }, nextState: {}, nextContext: any) {
-            //     //     return this.props.controller !== nextProps.controller;
-            //     // }
-            //     render() {
-            //         let state = this.controller.latestState;
-            //         if (state.isActive) {
-            //             return <Controls.Panel header={this.header} className={'lm-control lm-panel-' + this.panelType} key={state.currentEntity.id}>
-            //                 {this.renderControl()}
-            //             </Controls.Panel>;                
-            //         } 
-            //         return <div className='lm-empty-control' />;
-            //     }
-            //     protected abstract renderControl(): React.ReactElement<any>;
-            // }
         })(Views = Plugin.Views || (Plugin.Views = {}));
     })(Plugin = LiteMol.Plugin || (LiteMol.Plugin = {}));
 })(LiteMol || (LiteMol = {}));

@@ -1,7 +1,7 @@
-var modularity = require('../../helpers/modularity');
+import modularity from '../modularity'
 
 function build(gulp, plugins) {
     return modularity('./src/Visualization', { name: 'Visualization', dependencies: ['Core'] }, gulp, plugins); 
 } 
 
-module.exports = build;
+export = build

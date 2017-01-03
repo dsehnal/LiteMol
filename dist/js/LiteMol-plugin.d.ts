@@ -2840,6 +2840,7 @@ declare namespace LiteMol.Plugin.Views {
         componentWillUnmount(): void;
     }
     abstract class ObserverView<P, S> extends React.Component<P, S> {
+        __PROPS__: P;
         private subs;
         protected subscribe<T>(stream: Bootstrap.Rx.Observable<T>, obs: (n: T) => void): __LiteMolRx.IDisposable;
         protected unsubscribe(sub: Bootstrap.Rx.IDisposable): void;
@@ -2848,7 +2849,7 @@ declare namespace LiteMol.Plugin.Views {
     abstract class View<Controller extends Bootstrap.Components.Component<any>, State, CustomProps> extends ObserverView<{
         controller: Controller;
     } & CustomProps, State> {
-        protected readonly controller: this['props']['controller'];
+        readonly controller: Controller;
         componentWillMount(): void;
     }
 }

@@ -1,4 +1,4 @@
-var modularity = require('../../helpers/modularity');
+import modularity from '../modularity'
 
 function build(gulp, plugins) {
     return modularity('./src/Plugin', { 
@@ -10,4 +10,4 @@ function build(gulp, plugins) {
     }, gulp, plugins);
 } 
 
-module.exports = build;
+export = build

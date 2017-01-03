@@ -49,7 +49,10 @@ namespace LiteMol.Plugin.Views {
         }        
     }
     
-    export abstract class ObserverView<P, S> extends React.Component<P, S> {        
+    export abstract class ObserverView<P, S> extends React.Component<P, S> {
+
+        public __PROPS__: P;
+
         private subs:Bootstrap.Rx.IDisposable[] = [];
                 
         protected subscribe<T>(stream: Bootstrap.Rx.Observable<T>, obs: (n: T) => void) {
@@ -76,11 +79,7 @@ namespace LiteMol.Plugin.Views {
     export abstract class View<Controller extends Bootstrap.Components.Component<any>, State, CustomProps> 
         extends ObserverView<{ controller: Controller } & CustomProps, State> {
         
-        // protected get latestState() {
-        //     return this.props.controller.latestState;
-        // }
-        
-        protected get controller(): this['props']['controller'] {
+        public get controller(): Controller {
             return this.props.controller;
         }
                                 
@@ -90,29 +89,4 @@ namespace LiteMol.Plugin.Views {
             });    
         }        
     }
-        
-    // export abstract class ControlView<Controller extends Bootstrap.Components.Control<any>, CustomProps> 
-    //     extends View<Controller, {}, CustomProps> implements IControlView {
-                
-    //     header = '';
-    //     panelType = 'default';
-        
-    //     // shouldComponentUpdate(nextProps: { controller: Controller }, nextState: {}, nextContext: any) {
-    //     //     return this.props.controller !== nextProps.controller;
-    //     // }
-               
-    //     render() {
-    //         let state = this.controller.latestState;
-            
-    //         if (state.isActive) {
-    //             return <Controls.Panel header={this.header} className={'lm-control lm-panel-' + this.panelType} key={state.currentEntity.id}>
-    //                 {this.renderControl()}
-    //             </Controls.Panel>;                
-    //         } 
-            
-    //         return <div className='lm-empty-control' />;
-    //     }
-        
-    //     protected abstract renderControl(): React.ReactElement<any>;
-    // }
 }

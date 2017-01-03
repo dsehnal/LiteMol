@@ -1,11 +1,11 @@
 interface ModuleSpec {
     name: string,
-    dependencies: string[],
-    include: string[],
-    priorityLib: string[],
-    isPlugin: boolean,
-    excludeDtsRefs: boolean,
-    createDist: boolean
+    dependencies?: string[],
+    include?: string[],
+    priorityLib?: string[],
+    isPlugin?: boolean,
+    excludeDtsRefs?: boolean,
+    createDist?: boolean
 }
 
 function createPre(spec: ModuleSpec) {
@@ -177,4 +177,4 @@ function build(root: string, spec: ModuleSpec, gulp: any, plugins: any) {
     return spec.name;
 } 
 
-export = build;
+export default build;

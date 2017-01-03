@@ -280,7 +280,7 @@ namespace LiteMol.Plugin.Controls {
                 this.setState({ handle: state.handle } as SliderBaseState);
             }
 
-            const data = { ...this.state, ...state };
+            const data = { ...this.state, ...(state as any) };
             const changedValue = props.range ? data.bounds : data.bounds[1];
             props.onChange!(changedValue);
         }
