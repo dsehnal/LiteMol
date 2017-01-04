@@ -10,8 +10,7 @@ namespace LiteMol.Custom {
     import Transformer = Bootstrap.Entity.Transformer;
  
     export class RepresentationView extends LiteMol.Plugin.Views.Transform.ControllerBase<
-        Bootstrap.Components.Transform.Controller<LiteMol.Custom.CreateRepresentationParams>, // you dont have to use these full type annotations, and just use "any" type instead, but then you will loose code completition. 
-        LiteMol.Custom.CreateRepresentationParams> {
+        Bootstrap.Components.Transform.Controller<LiteMol.Custom.CreateRepresentationParams>> { // you dont have to use these full type annotations, and just use "any" type instead, but then you will loose code completition. 
                         
         private asm() {
 

@@ -2840,7 +2840,6 @@ declare namespace LiteMol.Plugin.Views {
         componentWillUnmount(): void;
     }
     abstract class ObserverView<P, S> extends React.Component<P, S> {
-        __PROPS__: P;
         private subs;
         protected subscribe<T>(stream: Bootstrap.Rx.Observable<T>, obs: (n: T) => void): __LiteMolRx.IDisposable;
         protected unsubscribe(sub: Bootstrap.Rx.IDisposable): void;
@@ -2860,16 +2859,16 @@ declare namespace LiteMol.Plugin.Views {
     }
 }
 declare namespace LiteMol.Plugin.Views.Transform {
-    abstract class ControllerBase<C extends Bootstrap.Components.Transform.Controller<P>, P> extends Views.View<C, {}, {
+    abstract class ControllerBase<C extends Bootstrap.Components.Transform.Controller<any>> extends Views.View<C, {}, {
         customHeader?: string;
         hideBadge?: boolean;
         isAction?: boolean;
         showVisibilityIcon?: boolean;
     }> {
         protected abstract renderControls(): void;
-        readonly params: P;
-        updateParams(p: Partial<P>): void;
-        autoUpdateParams(p: Partial<P>): void;
+        readonly params: C['latestState']['params'];
+        updateParams(p: Partial<C['latestState']['params']>): void;
+        autoUpdateParams(p: Partial<C['latestState']['params']>): void;
         getPersistentState<T>(prop: string, defaultValue: T): any;
         setPersistentState<T>(prop: string, value: T): void;
         readonly transformSourceEntity: Bootstrap.Entity.Any;
@@ -2878,7 +2877,7 @@ declare namespace LiteMol.Plugin.Views.Transform {
         protected applyEnter(e: React.KeyboardEvent): void;
         render(): JSX.Element;
     }
-    class Empty extends Transform.ControllerBase<Bootstrap.Components.Transform.Controller<{}>, {}> {
+    class Empty extends Transform.ControllerBase<Bootstrap.Components.Transform.Controller<{}>> {
         protected renderControls(): JSX.Element;
     }
     class View extends Views.View<Bootstrap.Components.Transform.View, {}, {}> {
@@ -2898,60 +2897,56 @@ declare namespace LiteMol.Plugin.Views.Transform {
 }
 declare namespace LiteMol.Plugin.Views.Transform.Data {
     import Transformer = Bootstrap.Entity.Transformer;
-    class Download extends Transform.ControllerBase<Bootstrap.Components.Transform.Controller<Transformer.Data.DownloadParams>, Transformer.Data.DownloadParams> {
+    class Download extends Transform.ControllerBase<Bootstrap.Components.Transform.Controller<Transformer.Data.DownloadParams>> {
         protected renderControls(): JSX.Element;
     }
-    class OpenFile extends Transform.ControllerBase<Bootstrap.Components.Transform.Controller<Transformer.Data.OpenFileParams>, Transformer.Data.OpenFileParams> {
+    class OpenFile extends Transform.ControllerBase<Bootstrap.Components.Transform.Controller<Transformer.Data.OpenFileParams>> {
         protected renderControls(): JSX.Element;
     }
     class WithIdField extends Transform.ControllerBase<Bootstrap.Components.Transform.Controller<{
         id: string;
-    }>, {
-        id: string;
-    }> {
+    }>> {
         protected renderControls(): JSX.Element;
     }
     class WithUrlIdField extends Transform.ControllerBase<Bootstrap.Components.Transform.Controller<{
         id: string;
-    }>, {
-        id: string;
-    }> {
+    }>> {
         protected renderControls(): JSX.Element;
     }
 }
 declare namespace LiteMol.Plugin.Views.Transform.Molecule {
     import Transformer = Bootstrap.Entity.Transformer;
-    class CreateFromData extends Transform.ControllerBase<Bootstrap.Components.Transform.Controller<Transformer.Molecule.CreateFromDataParams>, Transformer.Molecule.CreateFromDataParams> {
+    class CreateFromData extends Transform.ControllerBase<Bootstrap.Components.Transform.Controller<Transformer.Molecule.CreateFromDataParams>> {
         protected renderControls(): JSX.Element;
     }
-    class DownloadFromUrl extends Transform.ControllerBase<Bootstrap.Components.Transform.Controller<Transformer.Molecule.DownloadMoleculeSourceParams>, Transformer.Molecule.DownloadMoleculeSourceParams> {
+    class DownloadFromUrl extends Transform.ControllerBase<Bootstrap.Components.Transform.Controller<Transformer.Molecule.DownloadMoleculeSourceParams>> {
         protected renderControls(): JSX.Element;
     }
-    class OpenFile extends Transform.ControllerBase<Bootstrap.Components.Transform.Controller<Transformer.Molecule.OpenMoleculeFromFileParams>, Transformer.Molecule.OpenMoleculeFromFileParams> {
+    class OpenFile extends Transform.ControllerBase<Bootstrap.Components.Transform.Controller<Transformer.Molecule.OpenMoleculeFromFileParams>> {
         protected renderControls(): JSX.Element;
     }
-    class InitCoordinateStreaming extends Transform.ControllerBase<Bootstrap.Components.Transform.Controller<Transformer.Molecule.CoordinateStreaming.InitStreamingParams>, Transformer.Molecule.CoordinateStreaming.InitStreamingParams> {
+    class InitCoordinateStreaming extends Transform.ControllerBase<Bootstrap.Components.Transform.Controller<Transformer.Molecule.CoordinateStreaming.InitStreamingParams>> {
         protected renderControls(): JSX.Element;
     }
-    class CreateFromMmCif extends Transform.ControllerBase<Bootstrap.Components.Transform.Controller<Transformer.Molecule.CreateFromMmCifParams>, Transformer.Molecule.CreateFromMmCifParams> {
+    class CreateFromMmCif extends Transform.ControllerBase<Bootstrap.Components.Transform.Controller<Transformer.Molecule.CreateFromMmCifParams>> {
         protected renderControls(): JSX.Element;
     }
-    class CreateModel extends Transform.ControllerBase<Bootstrap.Components.Transform.Controller<Transformer.Molecule.CreateModelParams>, Transformer.Molecule.CreateModelParams> {
+    class CreateModel extends Transform.ControllerBase<Bootstrap.Components.Transform.Controller<Transformer.Molecule.CreateModelParams>> {
         protected renderControls(): JSX.Element;
     }
-    class CreateAssembly extends Transform.ControllerBase<Bootstrap.Components.Transform.Controller<Transformer.Molecule.CreateAssemblyParams>, Transformer.Molecule.CreateAssemblyParams> {
+    class CreateAssembly extends Transform.ControllerBase<Bootstrap.Components.Transform.Controller<Transformer.Molecule.CreateAssemblyParams>> {
         protected renderControls(): JSX.Element | undefined;
     }
-    class CreateSymmetryMates extends Transform.ControllerBase<Bootstrap.Components.Transform.Controller<Transformer.Molecule.CreateSymmetryMatesParams>, Transformer.Molecule.CreateSymmetryMatesParams> {
+    class CreateSymmetryMates extends Transform.ControllerBase<Bootstrap.Components.Transform.Controller<Transformer.Molecule.CreateSymmetryMatesParams>> {
         protected renderControls(): JSX.Element;
     }
-    class CreateSelection extends Transform.ControllerBase<Bootstrap.Components.Transform.Controller<Transformer.Molecule.CreateSelectionParams>, Transformer.Molecule.CreateSelectionParams> {
+    class CreateSelection extends Transform.ControllerBase<Bootstrap.Components.Transform.Controller<Transformer.Molecule.CreateSelectionParams>> {
         protected renderControls(): JSX.Element;
     }
-    class CreateMacromoleculeVisual extends Transform.ControllerBase<Bootstrap.Components.Transform.Controller<Transformer.Molecule.CreateMacromoleculeVisualParams>, Transformer.Molecule.CreateMacromoleculeVisualParams> {
+    class CreateMacromoleculeVisual extends Transform.ControllerBase<Bootstrap.Components.Transform.Controller<Transformer.Molecule.CreateMacromoleculeVisualParams>> {
         protected renderControls(): JSX.Element;
     }
-    class CreateVisual extends Transform.ControllerBase<Bootstrap.Components.Transform.MoleculeVisual, Transformer.Molecule.CreateVisualParams> {
+    class CreateVisual extends Transform.ControllerBase<Bootstrap.Components.Transform.MoleculeVisual> {
         private detail();
         private ballsAndSticks();
         private surface();
@@ -2961,15 +2956,15 @@ declare namespace LiteMol.Plugin.Views.Transform.Molecule {
 }
 declare namespace LiteMol.Plugin.Views.Transform.Density {
     import Transformer = Bootstrap.Entity.Transformer;
-    class ParseData extends Transform.ControllerBase<Bootstrap.Components.Transform.Controller<Transformer.Density.ParseDataParams>, Transformer.Density.ParseDataParams> {
+    class ParseData extends Transform.ControllerBase<Bootstrap.Components.Transform.Controller<Transformer.Density.ParseDataParams>> {
         protected renderControls(): JSX.Element;
     }
-    class CreateVisual extends Transform.ControllerBase<Bootstrap.Components.Transform.DensityVisual<Transformer.Density.CreateVisualParams, 'style'>, Transformer.Density.CreateVisualParams> {
+    class CreateVisual extends Transform.ControllerBase<Bootstrap.Components.Transform.DensityVisual<Transformer.Density.CreateVisualParams, 'style'>> {
         private surface();
         private colors();
         protected renderControls(): JSX.Element;
     }
-    class CreateVisualBehaviour extends Transform.ControllerBase<Bootstrap.Components.Transform.DensityVisual<Transformer.Density.CreateVisualBehaviourParams, 'style'>, Transformer.Density.CreateVisualBehaviourParams> {
+    class CreateVisualBehaviour extends Transform.ControllerBase<Bootstrap.Components.Transform.DensityVisual<Transformer.Density.CreateVisualBehaviourParams, 'style'>> {
         private surface();
         private colors();
         private show();

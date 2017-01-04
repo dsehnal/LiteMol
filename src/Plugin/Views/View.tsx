@@ -50,9 +50,6 @@ namespace LiteMol.Plugin.Views {
     }
     
     export abstract class ObserverView<P, S> extends React.Component<P, S> {
-
-        public __PROPS__: P;
-
         private subs:Bootstrap.Rx.IDisposable[] = [];
                 
         protected subscribe<T>(stream: Bootstrap.Rx.Observable<T>, obs: (n: T) => void) {

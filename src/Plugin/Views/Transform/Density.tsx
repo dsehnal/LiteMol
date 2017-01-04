@@ -7,7 +7,7 @@ namespace LiteMol.Plugin.Views.Transform.Density {
     
     import Transformer = Bootstrap.Entity.Transformer
     
-    const IsoValue = (props: { view: Transform.ControllerBase<any, any>, onChangeValue: (v: number)=> void, onChangeType: (v: Bootstrap.Visualization.Density.IsoValueType)=> void, min: number, max: number, value: number, isSigma: boolean }) => 
+    const IsoValue = (props: { view: Transform.ControllerBase<any>, onChangeValue: (v: number)=> void, onChangeType: (v: Bootstrap.Visualization.Density.IsoValueType)=> void, min: number, max: number, value: number, isSigma: boolean }) => 
         <Controls.ExpandableGroup
             select={<Controls.Slider label={props.isSigma ? 'Iso Value (\u03C3)' : 'Iso Value'} onChange={props.onChangeValue} min={props.min} max={props.max} value={props.value} step={0.001}  />}
             expander={<Controls.ControlGroupExpander isExpanded={props.view.getPersistentState('showIsoValueType', false)} onChange={e => props.view.setPersistentState('showIsoValueType', e) }  />}
@@ -29,7 +29,7 @@ namespace LiteMol.Plugin.Views.Transform.Density {
         return ret;
     }
     
-    export class ParseData extends Transform.ControllerBase<Bootstrap.Components.Transform.Controller<Transformer.Density.ParseDataParams>, Transformer.Density.ParseDataParams> {        
+    export class ParseData extends Transform.ControllerBase<Bootstrap.Components.Transform.Controller<Transformer.Density.ParseDataParams>> {        
         protected renderControls() {            
             let params = this.params;
             let normalize = params.normalize!;
@@ -54,7 +54,7 @@ namespace LiteMol.Plugin.Views.Transform.Density {
         }        
     }
     
-    export class CreateVisual extends Transform.ControllerBase<Bootstrap.Components.Transform.DensityVisual<Transformer.Density.CreateVisualParams, 'style'>, Transformer.Density.CreateVisualParams> {        
+    export class CreateVisual extends Transform.ControllerBase<Bootstrap.Components.Transform.DensityVisual<Transformer.Density.CreateVisualParams, 'style'>> {        
         
         private surface() {           
             let data = Bootstrap.Tree.Node.findClosestNodeOfType(this.transformSourceEntity, [Bootstrap.Entity.Density.Data]) as Bootstrap.Entity.Density.Data;           
@@ -110,7 +110,7 @@ namespace LiteMol.Plugin.Views.Transform.Density {
     }
     
     
-    export class CreateVisualBehaviour extends Transform.ControllerBase<Bootstrap.Components.Transform.DensityVisual<Transformer.Density.CreateVisualBehaviourParams, 'style'>, Transformer.Density.CreateVisualBehaviourParams> {        
+    export class CreateVisualBehaviour extends Transform.ControllerBase<Bootstrap.Components.Transform.DensityVisual<Transformer.Density.CreateVisualBehaviourParams, 'style'>> {        
         
         private surface() {           
             let data = Bootstrap.Tree.Node.findClosestNodeOfType(this.transformSourceEntity, [Bootstrap.Entity.Density.Data]) as Bootstrap.Entity.Density.Data;

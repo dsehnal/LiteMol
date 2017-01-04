@@ -11157,7 +11157,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
         function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
         function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments)).next());
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
 var __generator = (this && this.__generator) || function (thisArg, body) {
@@ -14892,8 +14892,7 @@ var LiteMol;
                                     i = 0;
                                     _a.label = 3;
                                 case 3:
-                                    if (!(i < iterCount))
-                                        return [3 /*break*/, 6];
+                                    if (!(i < iterCount)) return [3 /*break*/, 6];
                                     if (i > 0) {
                                         for (j = 0, _b = vs.length; j < _b; j++)
                                             vs[j] = 0;
@@ -14904,8 +14903,7 @@ var LiteMol;
                                     surface.vertices = vs;
                                     vs = t;
                                     time = Core.Utils.PerformanceMonitor.currentTime();
-                                    if (!(time - started > Core.Computation.UpdateProgressDelta))
-                                        return [3 /*break*/, 5];
+                                    if (!(time - started > Core.Computation.UpdateProgressDelta)) return [3 /*break*/, 5];
                                     started = time;
                                     return [4 /*yield*/, ctx.updateProgress('Smoothing surface...', true, i + 1, iterCount)];
                                 case 4:
@@ -15054,13 +15052,11 @@ var LiteMol;
                                         k = this.minZ;
                                         _a.label = 1;
                                     case 1:
-                                        if (!(k < this.maxZ))
-                                            return [3 /*break*/, 4];
+                                        if (!(k < this.maxZ)) return [3 /*break*/, 4];
                                         this.slice(k);
                                         done += this.sliceSize;
                                         t = Core.Utils.PerformanceMonitor.currentTime();
-                                        if (!(t - started > Core.Computation.UpdateProgressDelta))
-                                            return [3 /*break*/, 3];
+                                        if (!(t - started > Core.Computation.UpdateProgressDelta)) return [3 /*break*/, 3];
                                         return [4 /*yield*/, this.ctx.updateProgress('Computing surface...', true, done, this.size)];
                                     case 2:
                                         _a.sent();
@@ -15801,18 +15797,15 @@ var LiteMol;
                                         currentAtom = 0, _b = this.atomIndices.length;
                                         _a.label = 2;
                                     case 2:
-                                        if (!(currentAtom < _b))
-                                            return [3 /*break*/, 5];
+                                        if (!(currentAtom < _b)) return [3 /*break*/, 5];
                                         aI = this.atomIndices[currentAtom];
                                         r = this.parameters.atomRadius(aI) + this.parameters.probeRadius;
                                         if (r >= 0) {
                                             this.addBall(aI, r);
                                         }
-                                        if (!((currentAtom + 1) % chunkSize === 0))
-                                            return [3 /*break*/, 4];
+                                        if (!((currentAtom + 1) % chunkSize === 0)) return [3 /*break*/, 4];
                                         t = Core.Utils.PerformanceMonitor.currentTime();
-                                        if (!(t - started > Core.Computation.UpdateProgressDelta))
-                                            return [3 /*break*/, 4];
+                                        if (!(t - started > Core.Computation.UpdateProgressDelta)) return [3 /*break*/, 4];
                                         started = t;
                                         return [4 /*yield*/, this.ctx.updateProgress('Creating field...', true, currentAtom, _b)];
                                     case 3:

@@ -7,7 +7,7 @@ namespace LiteMol.Plugin.Views.Transform.Data {
     
     import Transformer = Bootstrap.Entity.Transformer
     
-    export class Download extends Transform.ControllerBase<Bootstrap.Components.Transform.Controller<Transformer.Data.DownloadParams>, Transformer.Data.DownloadParams> {        
+    export class Download extends Transform.ControllerBase<Bootstrap.Components.Transform.Controller<Transformer.Data.DownloadParams>> {        
         protected renderControls() {            
             let params = this.params;
 
@@ -27,7 +27,7 @@ namespace LiteMol.Plugin.Views.Transform.Data {
         }        
     }
     
-    export class OpenFile extends Transform.ControllerBase<Bootstrap.Components.Transform.Controller<Transformer.Data.OpenFileParams>, Transformer.Data.OpenFileParams> {        
+    export class OpenFile extends Transform.ControllerBase<Bootstrap.Components.Transform.Controller<Transformer.Data.OpenFileParams>> {        
         protected renderControls() {            
             let params = this.params;            
             let state = this.controller.latestState;            
@@ -40,7 +40,7 @@ namespace LiteMol.Plugin.Views.Transform.Data {
         }        
     }
                 
-    export class WithIdField extends Transform.ControllerBase<Bootstrap.Components.Transform.Controller<{ id: string }>, { id: string }> {        
+    export class WithIdField extends Transform.ControllerBase<Bootstrap.Components.Transform.Controller<{ id: string }>> {        
         protected renderControls() {            
             let params = this.params;
             return <div>
@@ -49,7 +49,7 @@ namespace LiteMol.Plugin.Views.Transform.Data {
         }        
     }
     
-    export class WithUrlIdField extends Transform.ControllerBase<Bootstrap.Components.Transform.Controller<{ id: string }>, { id: string }> {        
+    export class WithUrlIdField extends Transform.ControllerBase<Bootstrap.Components.Transform.Controller<{ id: string }>> {        
         protected renderControls() {            
             let params = this.params;
             return <div>

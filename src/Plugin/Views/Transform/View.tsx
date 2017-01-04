@@ -5,7 +5,7 @@
 namespace LiteMol.Plugin.Views.Transform {
     "use strict";
 
-    export abstract class ControllerBase<C extends Bootstrap.Components.Transform.Controller<P>, P> extends
+    export abstract class ControllerBase<C extends Bootstrap.Components.Transform.Controller<any>> extends
         Views.View<C, {}, {
             customHeader?: string,
             hideBadge?: boolean,
@@ -15,15 +15,15 @@ namespace LiteMol.Plugin.Views.Transform {
 
         protected abstract renderControls(): void;
 
-        get params(): P {
+        get params(): C['latestState']['params'] {
             return this.controller.latestState.params;
         }
 
-        updateParams(p: Partial<P>) {
+        updateParams(p: Partial<C['latestState']['params']>) {
             this.controller.updateParams(p);
         }
 
-        autoUpdateParams(p: Partial<P>) {
+        autoUpdateParams(p: Partial<C['latestState']['params']>) {
             this.controller.autoUpdateParams(p);
         }
 
@@ -93,7 +93,7 @@ namespace LiteMol.Plugin.Views.Transform {
 
     }
 
-    export class Empty extends Transform.ControllerBase<Bootstrap.Components.Transform.Controller<{}>, {}> {
+    export class Empty extends Transform.ControllerBase<Bootstrap.Components.Transform.Controller<{}>> {
         protected renderControls() {
             return <div>
             </div>

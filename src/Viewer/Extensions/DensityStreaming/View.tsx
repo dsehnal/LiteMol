@@ -10,7 +10,7 @@ namespace LiteMol.Extensions.DensityStreaming {
     import Controls = LiteMol.Plugin.Controls 
     
 
-    export class CreateView extends LiteMol.Plugin.Views.Transform.ControllerBase<Bootstrap.Components.Transform.Controller<CreateParams>, CreateParams> {
+    export class CreateView extends LiteMol.Plugin.Views.Transform.ControllerBase<Bootstrap.Components.Transform.Controller<CreateParams>> {
 
         protected renderControls() {            
             let params = this.params;                                   
@@ -31,8 +31,7 @@ namespace LiteMol.Extensions.DensityStreaming {
         'Fo-Fc(-ve)': { min: -5, max: 0, dataKey: 'FO-FC' },
     }
 
-    export class StreamingView extends LiteMol.Plugin.Views.Transform.ControllerBase<
-        Bootstrap.Components.Transform.DensityVisual<CreateStreamingParams, FieldType>, CreateStreamingParams> {
+    export class StreamingView extends LiteMol.Plugin.Views.Transform.ControllerBase<Bootstrap.Components.Transform.DensityVisual<CreateStreamingParams, FieldType>> {
 
         private iso(type: FieldType) {
             let params = this.params[type]!.params;

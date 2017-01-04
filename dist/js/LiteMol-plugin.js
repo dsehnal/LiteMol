@@ -11222,7 +11222,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
         function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
         function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments)).next());
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
 var __generator = (this && this.__generator) || function (thisArg, body) {
@@ -14957,8 +14957,7 @@ var LiteMol;
                                     i = 0;
                                     _a.label = 3;
                                 case 3:
-                                    if (!(i < iterCount))
-                                        return [3 /*break*/, 6];
+                                    if (!(i < iterCount)) return [3 /*break*/, 6];
                                     if (i > 0) {
                                         for (j = 0, _b = vs.length; j < _b; j++)
                                             vs[j] = 0;
@@ -14969,8 +14968,7 @@ var LiteMol;
                                     surface.vertices = vs;
                                     vs = t;
                                     time = Core.Utils.PerformanceMonitor.currentTime();
-                                    if (!(time - started > Core.Computation.UpdateProgressDelta))
-                                        return [3 /*break*/, 5];
+                                    if (!(time - started > Core.Computation.UpdateProgressDelta)) return [3 /*break*/, 5];
                                     started = time;
                                     return [4 /*yield*/, ctx.updateProgress('Smoothing surface...', true, i + 1, iterCount)];
                                 case 4:
@@ -15119,13 +15117,11 @@ var LiteMol;
                                         k = this.minZ;
                                         _a.label = 1;
                                     case 1:
-                                        if (!(k < this.maxZ))
-                                            return [3 /*break*/, 4];
+                                        if (!(k < this.maxZ)) return [3 /*break*/, 4];
                                         this.slice(k);
                                         done += this.sliceSize;
                                         t = Core.Utils.PerformanceMonitor.currentTime();
-                                        if (!(t - started > Core.Computation.UpdateProgressDelta))
-                                            return [3 /*break*/, 3];
+                                        if (!(t - started > Core.Computation.UpdateProgressDelta)) return [3 /*break*/, 3];
                                         return [4 /*yield*/, this.ctx.updateProgress('Computing surface...', true, done, this.size)];
                                     case 2:
                                         _a.sent();
@@ -15866,18 +15862,15 @@ var LiteMol;
                                         currentAtom = 0, _b = this.atomIndices.length;
                                         _a.label = 2;
                                     case 2:
-                                        if (!(currentAtom < _b))
-                                            return [3 /*break*/, 5];
+                                        if (!(currentAtom < _b)) return [3 /*break*/, 5];
                                         aI = this.atomIndices[currentAtom];
                                         r = this.parameters.atomRadius(aI) + this.parameters.probeRadius;
                                         if (r >= 0) {
                                             this.addBall(aI, r);
                                         }
-                                        if (!((currentAtom + 1) % chunkSize === 0))
-                                            return [3 /*break*/, 4];
+                                        if (!((currentAtom + 1) % chunkSize === 0)) return [3 /*break*/, 4];
                                         t = Core.Utils.PerformanceMonitor.currentTime();
-                                        if (!(t - started > Core.Computation.UpdateProgressDelta))
-                                            return [3 /*break*/, 4];
+                                        if (!(t - started > Core.Computation.UpdateProgressDelta)) return [3 /*break*/, 4];
                                         started = t;
                                         return [4 /*yield*/, this.ctx.updateProgress('Creating field...', true, currentAtom, _b)];
                                     case 3:
@@ -54989,17 +54982,22 @@ THREE.MorphBlendMesh.prototype.update = function ( delta ) {
 return THREE;
 })();
 
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
         function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
         function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments)).next());
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
 var __generator = (this && this.__generator) || function (thisArg, body) {
@@ -57373,11 +57371,9 @@ var LiteMol;
                                 start = 0;
                                 _a.label = 1;
                             case 1:
-                                if (!(start < ctx.triCount))
-                                    return [3 /*break*/, 5];
+                                if (!(start < ctx.triCount)) return [3 /*break*/, 5];
                                 time = LiteMol.Core.Utils.PerformanceMonitor.currentTime();
-                                if (!(time - started > LiteMol.Core.Computation.UpdateProgressDelta))
-                                    return [3 /*break*/, 3];
+                                if (!(time - started > LiteMol.Core.Computation.UpdateProgressDelta)) return [3 /*break*/, 3];
                                 started = time;
                                 return [4 /*yield*/, ctx.computation.updateProgress('Creating selection geometry...', true, start, ctx.triCount)];
                             case 2:
@@ -57480,8 +57476,7 @@ var LiteMol;
                             case 1:
                                 _a.sent();
                                 ctx.pickColorBuffer = new Float32Array(ctx.vertexCount * 4);
-                                if (!!ctx.data.annotation)
-                                    return [3 /*break*/, 2];
+                                if (!!ctx.data.annotation) return [3 /*break*/, 2];
                                 createFullPickGeometry(ctx);
                                 return [2 /*return*/];
                             case 2:
@@ -58445,14 +58440,12 @@ var LiteMol;
                                         start = 0, _l = state.atomIndices.length;
                                         _a.label = 1;
                                     case 1:
-                                        if (!(start < _l))
-                                            return [3 /*break*/, 4];
+                                        if (!(start < _l)) return [3 /*break*/, 4];
                                         for (i = start, _b = Math.min(start + chunkSize, state.atomIndices.length); i < _b; i++) {
                                             BallsAndSticksGeometryBuilder.addAtom(state.atomIndices[i], state);
                                         }
                                         t = LiteMol.Core.Utils.PerformanceMonitor.currentTime();
-                                        if (!(t - started > LiteMol.Core.Computation.UpdateProgressDelta))
-                                            return [3 /*break*/, 3];
+                                        if (!(t - started > LiteMol.Core.Computation.UpdateProgressDelta)) return [3 /*break*/, 3];
                                         started = t;
                                         return [4 /*yield*/, ctx.updateProgress('Adding atoms...', true, start, _l)];
                                     case 2:
@@ -58477,14 +58470,12 @@ var LiteMol;
                                         start = 0;
                                         _a.label = 1;
                                     case 1:
-                                        if (!(start < bs.bondCount))
-                                            return [3 /*break*/, 4];
+                                        if (!(start < bs.bondCount)) return [3 /*break*/, 4];
                                         for (i = start, _b = Math.min(start + chunkSize, bs.bondCount); i < _b; i++) {
                                             BallsAndSticksGeometryBuilder.addBond(i, state, bs);
                                         }
                                         t = LiteMol.Core.Utils.PerformanceMonitor.currentTime();
-                                        if (!(t - started > LiteMol.Core.Computation.UpdateProgressDelta))
-                                            return [3 /*break*/, 3];
+                                        if (!(t - started > LiteMol.Core.Computation.UpdateProgressDelta)) return [3 /*break*/, 3];
                                         started = t;
                                         return [4 /*yield*/, ctx.updateProgress('Adding bonds...', true, start, bs.bondCount)];
                                     case 2:
@@ -59454,8 +59445,7 @@ var LiteMol;
                                         unitIndex = 0;
                                         _a.label = 1;
                                     case 1:
-                                        if (!(unitIndex < ctx.units.length))
-                                            return [3 /*break*/, 4];
+                                        if (!(unitIndex < ctx.units.length)) return [3 /*break*/, 4];
                                         residuesDone = 0;
                                         while (residuesDone < chunkSize && unitIndex < ctx.units.length) {
                                             buildUnit(ctx.units[unitIndex], ctx);
@@ -59463,8 +59453,7 @@ var LiteMol;
                                             unitIndex++;
                                         }
                                         t = LiteMol.Core.Utils.PerformanceMonitor.currentTime();
-                                        if (!(t - started > LiteMol.Core.Computation.UpdateProgressDelta))
-                                            return [3 /*break*/, 3];
+                                        if (!(t - started > LiteMol.Core.Computation.UpdateProgressDelta)) return [3 /*break*/, 3];
                                         started = t;
                                         return [4 /*yield*/, ctx.computation.updateProgress('Building units...', true, unitIndex, ctx.units.length)];
                                     case 2:
@@ -65316,7 +65305,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
         function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
         function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments)).next());
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
 var __generator = (this && this.__generator) || function (thisArg, body) {
@@ -65346,11 +65335,16 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 /*
  * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
@@ -65424,8 +65418,7 @@ var LiteMol;
                         switch (_a.label) {
                             case 0:
                                 data = e.target.result;
-                                if (!compressed)
-                                    return [3 /*break*/, 2];
+                                if (!compressed) return [3 /*break*/, 2];
                                 return [4 /*yield*/, ctx.updateProgress('Decompressing...')];
                             case 1:
                                 _a.sent();
@@ -65513,14 +65506,11 @@ var LiteMol;
                         switch (_a.label) {
                             case 0:
                                 req = e.target;
-                                if (!(req.status >= 200 && req.status < 400))
-                                    return [3 /*break*/, 6];
-                                if (!asArrayBuffer)
-                                    return [3 /*break*/, 4];
+                                if (!(req.status >= 200 && req.status < 400)) return [3 /*break*/, 6];
+                                if (!asArrayBuffer) return [3 /*break*/, 4];
                                 buff = e.target.response;
                                 RequestPool.deposit(e.target);
-                                if (!decompressGzip)
-                                    return [3 /*break*/, 2];
+                                if (!decompressGzip) return [3 /*break*/, 2];
                                 return [4 /*yield*/, ctx.updateProgress('Decompressing...')];
                             case 1:
                                 _a.sent();
@@ -67188,15 +67178,13 @@ var LiteMol;
                                     _i = 0, instances_1 = instances;
                                     _b.label = 1;
                                 case 1:
-                                    if (!(_i < instances_1.length))
-                                        return [3 /*break*/, 8];
+                                    if (!(_i < instances_1.length)) return [3 /*break*/, 8];
                                     i = instances_1[_i];
                                     xs = ctx.select(i.selector);
                                     _a = 0, xs_2 = xs;
                                     _b.label = 2;
                                 case 2:
-                                    if (!(_a < xs_2.length))
-                                        return [3 /*break*/, 7];
+                                    if (!(_a < xs_2.length)) return [3 /*break*/, 7];
                                     x = xs_2[_a];
                                     _b.label = 3;
                                 case 3:
@@ -76010,11 +75998,16 @@ var __LiteMolReactDOM;
 })();
 
 
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 var __assign = (this && this.__assign) || Object.assign || function(t) {
     for (var s, i = 1, n = arguments.length; i < n; i++) {
         s = arguments[i];

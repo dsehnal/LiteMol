@@ -7,7 +7,7 @@ namespace LiteMol.Plugin.Views.Transform.Molecule {
     
     import Transformer = Bootstrap.Entity.Transformer
 
-    export class CreateFromData extends Transform.ControllerBase<Bootstrap.Components.Transform.Controller<Transformer.Molecule.CreateFromDataParams>, Transformer.Molecule.CreateFromDataParams> {        
+    export class CreateFromData extends Transform.ControllerBase<Bootstrap.Components.Transform.Controller<Transformer.Molecule.CreateFromDataParams>> {        
         protected renderControls() {            
             let params = this.params;
             return <div>
@@ -17,7 +17,7 @@ namespace LiteMol.Plugin.Views.Transform.Molecule {
         }        
     }
     
-    export class DownloadFromUrl extends Transform.ControllerBase<Bootstrap.Components.Transform.Controller<Transformer.Molecule.DownloadMoleculeSourceParams>, Transformer.Molecule.DownloadMoleculeSourceParams> {        
+    export class DownloadFromUrl extends Transform.ControllerBase<Bootstrap.Components.Transform.Controller<Transformer.Molecule.DownloadMoleculeSourceParams>> {        
         protected renderControls() {            
             let params = this.params;
             return <div>
@@ -28,7 +28,7 @@ namespace LiteMol.Plugin.Views.Transform.Molecule {
         }        
     }
 
-    export class OpenFile extends Transform.ControllerBase<Bootstrap.Components.Transform.Controller<Transformer.Molecule.OpenMoleculeFromFileParams>, Transformer.Molecule.OpenMoleculeFromFileParams> {        
+    export class OpenFile extends Transform.ControllerBase<Bootstrap.Components.Transform.Controller<Transformer.Molecule.OpenMoleculeFromFileParams>> {        
         protected renderControls() {            
             let params = this.params;            
             let state = this.controller.latestState;        
@@ -41,7 +41,7 @@ namespace LiteMol.Plugin.Views.Transform.Molecule {
         }        
     }
     
-    export class InitCoordinateStreaming extends Transform.ControllerBase<Bootstrap.Components.Transform.Controller<Transformer.Molecule.CoordinateStreaming.InitStreamingParams>, Transformer.Molecule.CoordinateStreaming.InitStreamingParams> {        
+    export class InitCoordinateStreaming extends Transform.ControllerBase<Bootstrap.Components.Transform.Controller<Transformer.Molecule.CoordinateStreaming.InitStreamingParams>> {        
         protected renderControls() {            
             let params = this.params;
             return <div>
@@ -51,7 +51,7 @@ namespace LiteMol.Plugin.Views.Transform.Molecule {
         }        
     }
     
-    export class CreateFromMmCif extends Transform.ControllerBase<Bootstrap.Components.Transform.Controller<Transformer.Molecule.CreateFromMmCifParams>, Transformer.Molecule.CreateFromMmCifParams> {        
+    export class CreateFromMmCif extends Transform.ControllerBase<Bootstrap.Components.Transform.Controller<Transformer.Molecule.CreateFromMmCifParams>> {        
         protected renderControls() {            
             let cif = this.transformSourceEntity as Bootstrap.Entity.Data.CifDictionary;
             let options = cif.props.dictionary.dataBlocks.map((b, i) => ({ b: b.header, i }) );                                    
@@ -62,7 +62,7 @@ namespace LiteMol.Plugin.Views.Transform.Molecule {
         }        
     }
     
-    export class CreateModel extends Transform.ControllerBase<Bootstrap.Components.Transform.Controller<Transformer.Molecule.CreateModelParams>, Transformer.Molecule.CreateModelParams> {        
+    export class CreateModel extends Transform.ControllerBase<Bootstrap.Components.Transform.Controller<Transformer.Molecule.CreateModelParams>> {        
         protected renderControls() {          
             let modelCount = (this.transformSourceEntity as Bootstrap.Entity.Molecule.Molecule).props.molecule.models.length;
             return <div>
@@ -72,7 +72,7 @@ namespace LiteMol.Plugin.Views.Transform.Molecule {
         }        
     }
     
-    export class CreateAssembly extends Transform.ControllerBase<Bootstrap.Components.Transform.Controller<Transformer.Molecule.CreateAssemblyParams>, Transformer.Molecule.CreateAssemblyParams> {        
+    export class CreateAssembly extends Transform.ControllerBase<Bootstrap.Components.Transform.Controller<Transformer.Molecule.CreateAssemblyParams>> {        
         protected renderControls() {            
             let params = this.params;
             //let model = this.isUpdate ? Bootstrap.Utils.Molecule.findModel(this.transformSourceEntity) : this.entity as Bootstrap.Entity.Molecule.Model;
@@ -87,7 +87,7 @@ namespace LiteMol.Plugin.Views.Transform.Molecule {
         }        
     }
     
-    export class CreateSymmetryMates extends Transform.ControllerBase<Bootstrap.Components.Transform.Controller<Transformer.Molecule.CreateSymmetryMatesParams>, Transformer.Molecule.CreateSymmetryMatesParams> {        
+    export class CreateSymmetryMates extends Transform.ControllerBase<Bootstrap.Components.Transform.Controller<Transformer.Molecule.CreateSymmetryMatesParams>> {        
         protected renderControls() {            
             let params = this.params;
             let options: (typeof params.type)[] = ['Mates', 'Interaction'];           
@@ -100,7 +100,7 @@ namespace LiteMol.Plugin.Views.Transform.Molecule {
         }        
     }
     
-    export class CreateSelection extends Transform.ControllerBase<Bootstrap.Components.Transform.Controller<Transformer.Molecule.CreateSelectionParams>, Transformer.Molecule.CreateSelectionParams> {        
+    export class CreateSelection extends Transform.ControllerBase<Bootstrap.Components.Transform.Controller<Transformer.Molecule.CreateSelectionParams>> {        
         protected renderControls() {            
             let params = this.params;
             return <div>
@@ -111,7 +111,7 @@ namespace LiteMol.Plugin.Views.Transform.Molecule {
         }        
     }
     
-    export class CreateMacromoleculeVisual extends Transform.ControllerBase<Bootstrap.Components.Transform.Controller<Transformer.Molecule.CreateMacromoleculeVisualParams>, Transformer.Molecule.CreateMacromoleculeVisualParams> {        
+    export class CreateMacromoleculeVisual extends Transform.ControllerBase<Bootstrap.Components.Transform.Controller<Transformer.Molecule.CreateMacromoleculeVisualParams>> {        
         protected renderControls() {            
             let params = this.params;
             return <div>
@@ -122,7 +122,7 @@ namespace LiteMol.Plugin.Views.Transform.Molecule {
         }        
     }
         
-    export class CreateVisual extends Transform.ControllerBase<Bootstrap.Components.Transform.MoleculeVisual, Transformer.Molecule.CreateVisualParams> {        
+    export class CreateVisual extends Transform.ControllerBase<Bootstrap.Components.Transform.MoleculeVisual> {        
         
         private detail() {
             let p = this.params.style!.params as Bootstrap.Visualization.Molecule.DetailParams;

@@ -8,9 +8,7 @@ namespace LiteMol.Viewer.PDBe.Views {
     
     import Controls = LiteMol.Plugin.Controls;
     
-    export class CreateSequenceAnnotationView extends LiteMol.Plugin.Views.Transform.ControllerBase<
-        Bootstrap.Components.Transform.Controller<SequenceAnnotation.CreateSingleProps>,  
-        SequenceAnnotation.CreateSingleProps> {
+    export class CreateSequenceAnnotationView extends LiteMol.Plugin.Views.Transform.ControllerBase<Bootstrap.Components.Transform.Controller<SequenceAnnotation.CreateSingleProps>> {
         
         protected renderControls() {            
             let params = this.params;                                                           
@@ -20,9 +18,7 @@ namespace LiteMol.Viewer.PDBe.Views {
         }        
     }
 
-    export class DownloadBinaryCIFFromCoordinateServerView extends LiteMol.Plugin.Views.Transform.ControllerBase<
-        Bootstrap.Components.Transform.Controller<Data.DownloadBinaryCIFFromCoordinateServerParams>,  
-        Data.DownloadBinaryCIFFromCoordinateServerParams> {
+    export class DownloadBinaryCIFFromCoordinateServerView extends LiteMol.Plugin.Views.Transform.ControllerBase<Bootstrap.Components.Transform.Controller<Data.DownloadBinaryCIFFromCoordinateServerParams>> {
         
         protected renderControls() {            
             let params = this.params;                                                           
@@ -35,9 +31,7 @@ namespace LiteMol.Viewer.PDBe.Views {
         }        
     }
 
-    export class DownloadDensityView extends LiteMol.Plugin.Views.Transform.ControllerBase<
-        Bootstrap.Components.Transform.Controller<Data.DownloadDensityParams>,  
-        Data.DownloadDensityParams> {
+    export class DownloadDensityView extends LiteMol.Plugin.Views.Transform.ControllerBase<Bootstrap.Components.Transform.Controller<Data.DownloadDensityParams>> {
 
         private getId() {
             let id = this.params.id;
