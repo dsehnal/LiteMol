@@ -35,16 +35,22 @@ function analyze(data: string) {
 
     try {
         let model = LiteMol.Formats.Molecule.mmCIF.ofDataBlock(parsed.result.dataBlocks[0]).models[0];
+        
+        // or in async funcion
+        // let model = await LiteMol.Formats.Molecule.SupportedFormats.mmCIF.parse(data).run(); // returns a ParserResult<Molecule> object
 
         let ps = model.positions;
+        let atoms = model.data.atoms;
         let { x } = ps;
         let sum = 0;
         for (let i = 0, l = model.positions.count; i < l; i++) {
-            sum += x[i] + ps.getRow(i).y;
+            let row = ps.getRow(i);
+            sum += x[i]; // access thru array
+            sum += row.y + row.z; // access thru mutable row reader
         }
         console.log(parsed.result.dataBlocks[0].header);
         console.log('Atom Count: ', model.positions.count);
-        console.log('Sum of X and Y coords: ', sum);
+        console.log('Sum of X Y Z coords: ', sum);
     } catch (e) {
         console.log('Parse error: ' + e);
     }

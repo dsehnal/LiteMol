@@ -1572,7 +1572,7 @@ declare namespace LiteMol.Core.Utils {
     type DataTable<Schema> = DataTable.Base<Schema> & DataTable.Columns<Schema>;
     module DataTable {
         type Columns<Schema> = {
-            [P in keyof Schema]: Schema[P][];
+            readonly [P in keyof Schema]: Schema[P][];
         };
         interface ColumnDescriptor<Schema> {
             name: keyof Schema;

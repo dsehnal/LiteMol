@@ -8,7 +8,7 @@ namespace LiteMol.Core.Utils {
     export type DataTable<Schema> = DataTable.Base<Schema> & DataTable.Columns<Schema>
 
     export module DataTable { 
-        export type Columns<Schema> = { [P in keyof Schema]: Schema[P][]; }
+        export type Columns<Schema> = { readonly [P in keyof Schema]: Schema[P][]; }
 
         export interface ColumnDescriptor<Schema> {
             name: keyof Schema, 
@@ -45,18 +45,18 @@ namespace LiteMol.Core.Utils {
             return new BuilderImpl(count);
         }
 
-        class Row  {
-            constructor(table: Base<any>, indexer: { index: number }) {
-                for (let _c of table.columns) {
-                    (function(c: ColumnDescriptor<any>, row: Row, idx: { index: number }, data: any[]) {                        
-                        Object.defineProperty(row, c.name, { enumerable: true, configurable: false, get: function() { return data[idx.index] } });
-                    })(_c, this, indexer, (table as any)[_c.name]);
-                }
+        function rowReader(table: Base<any>, indexer: { index: number }) {
+            let row = Object.create(null);
+            for (let _c of table.columns) {
+                (function(c: ColumnDescriptor<any>, row: any, idx: { index: number }, data: any[]) {                        
+                    Object.defineProperty(row, c.name, { enumerable: true, configurable: false, get: function() { return data[idx.index] } });
+                })(_c, row, indexer, (table as any)[_c.name]);
             }
+            return row;
         }
 
         class TableImpl implements Base<any> {
-            private __row: Row;
+            private __row: any;
             private __rowIndexer: { index: number } = { index: 0 };
 
             count: number;
@@ -103,7 +103,7 @@ namespace LiteMol.Core.Utils {
                     this.columns[this.columns.length] = col;
                 }
 
-                this.__row = new Row(this, this.__rowIndexer);
+                this.__row = rowReader(this, this.__rowIndexer);
             }
         }
 
@@ -127,7 +127,7 @@ namespace LiteMol.Core.Utils {
              * This functions clones the table and defines all its column inside the constructor, hopefully making the JS engine 
              * use internal class instead of dictionary representation.
              */
-            seal<Schema>(): DataTable<Schema> {
+            seal(): DataTable<any> {
                 return new TableImpl(this.count, this.columns, this) as any;
             }
 

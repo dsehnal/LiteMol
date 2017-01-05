@@ -73,7 +73,7 @@ var ExampleNames = [
 ];
 
 function ViewerAndExamples() {       
-   console.log('Building Viewer and Examples');   
+   console.log('Building Viewer and Examples');
    return plugins.merge([
        buildts('./src/Viewer', './build/Viewer'),
        buildts('./examples/BasicNode', './examples/BasicNode/build'),

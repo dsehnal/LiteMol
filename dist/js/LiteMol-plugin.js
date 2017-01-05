@@ -11567,17 +11567,16 @@ var LiteMol;
                     return new BuilderImpl(count);
                 }
                 DataTable.builder = builder;
-                var Row = (function () {
-                    function Row(table, indexer) {
-                        for (var _i = 0, _a = table.columns; _i < _a.length; _i++) {
-                            var _c = _a[_i];
-                            (function (c, row, idx, data) {
-                                Object.defineProperty(row, c.name, { enumerable: true, configurable: false, get: function () { return data[idx.index]; } });
-                            })(_c, this, indexer, table[_c.name]);
-                        }
+                function rowReader(table, indexer) {
+                    var row = Object.create(null);
+                    for (var _i = 0, _a = table.columns; _i < _a.length; _i++) {
+                        var _c = _a[_i];
+                        (function (c, row, idx, data) {
+                            Object.defineProperty(row, c.name, { enumerable: true, configurable: false, get: function () { return data[idx.index]; } });
+                        })(_c, row, indexer, table[_c.name]);
                     }
-                    return Row;
-                }());
+                    return row;
+                }
                 var TableImpl = (function () {
                     function TableImpl(count, srcColumns, srcData) {
                         this.__rowIndexer = { index: 0 };
@@ -11596,7 +11595,7 @@ var LiteMol;
                             Object.defineProperty(this, col.name, { enumerable: true, configurable: false, writable: false, value: data });
                             this.columns[this.columns.length] = col;
                         }
-                        this.__row = new Row(this, this.__rowIndexer);
+                        this.__row = rowReader(this, this.__rowIndexer);
                     }
                     TableImpl.prototype.getBuilder = function (count) {
                         var b = new BuilderImpl(count);
