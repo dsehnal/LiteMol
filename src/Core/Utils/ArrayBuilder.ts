@@ -3,6 +3,7 @@
  */
 
 namespace LiteMol.Core.Utils {
+    "use strict";
 
     export function integerSetToSortedTypedArray(set: Set<number>) {
         let array = new Int32Array(set.size);

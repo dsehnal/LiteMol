@@ -28,6 +28,7 @@
     "Base/Computation.ts",
     // UTILS
     "Utils/MiscUtils.ts",
+    "Utils/DataTable.ts",
     "Utils/ArrayBuilder.ts",
     "Utils/PerformanceMonitor.ts",
     // FORMATS
