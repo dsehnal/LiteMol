@@ -12,6 +12,10 @@ namespace LiteMol.Core.Structure {
     
     export namespace Query {
         
+        export function apply(q: Source, m: Molecule.Model) {
+            return Builder.toQuery(q)(m.queryContext);
+        }
+
         export type Source = Query | string | Builder
           
         /**
@@ -38,13 +42,13 @@ namespace LiteMol.Core.Structure {
              * Determine if the context contains all atoms of the input model.
              */
             get isComplete() {
-                return this.mask.size === this.structure.atoms.count;
+                return this.mask.size === this.structure.data.atoms.count;
             }
 
             /**
              * The structure this context is based on.
              */
-            structure: MoleculeModel;
+            structure: Molecule.Model;
 
             /**
              * Get a kd-tree for the atoms in the current context.
@@ -74,7 +78,7 @@ namespace LiteMol.Core.Structure {
             /**
              * Create a new context based on the provide structure.
              */
-            static ofStructure(structure: MoleculeModel) {
+            static ofStructure(structure: Molecule.Model) {
                 return new Context(structure, Context.Mask.ofStructure(structure));
             }
 
@@ -88,11 +92,11 @@ namespace LiteMol.Core.Structure {
             /**
              * Create a new context from a sequence of fragments.
              */
-            static ofAtomIndices(structure: MoleculeModel, atomIndices: number[]) {                
+            static ofAtomIndices(structure: Molecule.Model, atomIndices: number[]) {                
                 return new Context(structure, Context.Mask.ofIndices(structure, atomIndices));
             }
 
-            constructor(structure: MoleculeModel, mask: Context.Mask) {
+            constructor(structure: Molecule.Model, mask: Context.Mask) {
                 this.structure = structure;
                 this.mask = mask;
             }
@@ -100,9 +104,9 @@ namespace LiteMol.Core.Structure {
             private makeTree() {
                 let data = new Int32Array(this.mask.size),
                     dataCount = 0,
-                    {x, y, z} = this.structure.atoms;
+                    {x, y, z} = this.structure.positions;
 
-                for (let i = 0, _b = this.structure.atoms.count; i < _b; i++) {
+                for (let i = 0, _b = this.structure.positions.count; i < _b; i++) {
                     if (this.mask.has(i)) data[dataCount++] = i;
                 }
                 this.lazyTree = Geometry.SubdivisionTree3D.create<number>(<any>data, (i, add) => add(x[i], y[i], z[i]));
@@ -130,19 +134,19 @@ namespace LiteMol.Core.Structure {
                     constructor(public size: number) { }
                 }
                 
-                export function ofStructure(structure: MoleculeModel): Mask {
-                    return new AllMask(structure.atoms.count);
+                export function ofStructure(structure: Molecule.Model): Mask {
+                    return new AllMask(structure.data.atoms.count);
                 }
                         
-                export function ofIndices(structure: MoleculeModel, atomIndices: number[]): Mask {
-                    let f = atomIndices.length / structure.atoms.count;
+                export function ofIndices(structure: Molecule.Model, atomIndices: number[]): Mask {
+                    let f = atomIndices.length / structure.data.atoms.count;
                     if (f < 0.25) {
                         let set = new Set<number>();
                         for (let i of atomIndices) set.add(i);
                         return set;
                     }
                     
-                    let mask = new Int8Array(structure.atoms.count);                
+                    let mask = new Int8Array(structure.data.atoms.count);                
                     for (let i of atomIndices) {
                         mask[i] = 1;
                     }
@@ -156,7 +160,7 @@ namespace LiteMol.Core.Structure {
                         sizeEstimate += f.atomCount;
                     }
                     
-                    let count = seq.context.structure.atoms.count;
+                    let count = seq.context.structure.data.atoms.count;
                     
                     if (sizeEstimate / count < 0.25) {
                         // create set;
@@ -246,8 +250,8 @@ namespace LiteMol.Core.Structure {
              * Determines if a fragment is HET based on the tag.
              */
             get isHet() {
-                let residue = (<any>this.context.structure.atoms).residueIndex[this.tag];
-                return (<any>this.context.structure.residues).isHet[residue];
+                let residue = (<any>this.context.structure.data.atoms).residueIndex[this.tag];
+                return (<any>this.context.structure.data.residues).isHet[residue];
             }
 
 
@@ -259,7 +263,7 @@ namespace LiteMol.Core.Structure {
                 if (this._fingerprint) return this._fingerprint;
 
                 let indexList: number[] = this.residueIndices,
-                    residues = this.context.structure.residues,
+                    residues = this.context.structure.data.residues,
                     cName = residues.name, cAsym = residues.asymId, cSeq = residues.seqNumber, insCode = residues.insCode,
                     names:string[] = [];
                 
@@ -280,7 +284,7 @@ namespace LiteMol.Core.Structure {
                 if (this._authFingerprint) return this._authFingerprint;
 
                 let indexList: number[] = this.residueIndices,
-                    residues = this.context.structure.residues,
+                    residues = this.context.structure.data.residues,
                     cName = residues.authName, cAsym = residues.authAsymId, cSeq = residues.authSeqNumber, insCode = residues.insCode,
                     names: string[] = [];
 
@@ -311,9 +315,9 @@ namespace LiteMol.Core.Structure {
                 let residueIndices = new Set<number>(),
                     chainIndices = new Set<number>(),
                     entityIndices = new Set<number>(),
-                    rIndices = this.context.structure.atoms.residueIndex,
-                    cIndices = this.context.structure.residues.chainIndex,
-                    eIndices = this.context.structure.chains.entityIndex;
+                    rIndices = this.context.structure.data.atoms.residueIndex,
+                    cIndices = this.context.structure.data.residues.chainIndex,
+                    eIndices = this.context.structure.data.chains.entityIndex;
 
                 for (let i of this.atomIndices) { residueIndices.add(rIndices[i]); }
                 this._residueIndices = Utils.integerSetToSortedTypedArray(residueIndices);
@@ -442,7 +446,7 @@ namespace LiteMol.Core.Structure {
                 if (!this.length) return [];
                 if (this.length === 1) return this.fragments[0].atomIndices;
 
-                let map = <number[]><any>new Int8Array(this.context.structure.atoms.count),
+                let map = <number[]><any>new Int8Array(this.context.structure.data.atoms.count),
                     atomCount = 0;
 
                 for (let f of this.fragments) {

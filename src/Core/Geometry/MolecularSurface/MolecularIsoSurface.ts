@@ -268,7 +268,7 @@ namespace LiteMol.Core.Geometry.MolecularSurface {
     }
         
     export interface MolecularSurfaceInputParameters {
-        positions: Core.Structure.PositionTableSchema,
+        positions: Core.Structure.PositionTable,
         atomIndices: number[],
         parameters?: MolecularIsoSurfaceParameters
     } 

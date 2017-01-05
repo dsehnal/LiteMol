@@ -5,53 +5,59 @@
 namespace LiteMol.Core.Utils {
     "use strict";
 
-    export type DataTable<Schema> = DataTable.Base<Schema> & { [P in keyof Schema]: Schema[P][]; }
+    export type DataTable<Schema> = DataTable.Base<Schema> & DataTable.Columns<Schema>
 
-    export module DataTable {        
-        export interface ColumnDescriptor {
-            name: string, 
+    export module DataTable { 
+        export type Columns<Schema> = { [P in keyof Schema]: Schema[P][]; }
+
+        export interface ColumnDescriptor<Schema> {
+            name: keyof Schema, 
             creator: (size: number) => any
         }
 
         export interface Base<Schema> {
             count: number,
             indices: number[],
-            columns: ColumnDescriptor[],
-            getBuilder(count: number): Builder,
+            columns: ColumnDescriptor<Schema>[],
+            getBuilder(count: number): Builder<Schema>,
             getRawData(): any[][],
-            getRow(i: number): Schema;
+            /**
+             * Get a MUTABLE representation of a row.
+             * Calling getRow() with differnt 'i' will change update old reference.
+             */
+            getRow(i: number): Schema
         }
 
-        export interface Builder {
+        export interface Builder<Schema> {
             count: number,
-            columns: ColumnDescriptor[],
-            addColumn<T>(name: string, creator: (size: number) => T): T,
+            columns: ColumnDescriptor<Schema>[],
+            addColumn<T>(name: keyof Schema, creator: (size: number) => T): T,
             getRawData(): any[][],
 
             /**
              * This functions clones the table and defines all its column inside the constructor, hopefully making the JS engine 
              * use internal class instead of dictionary representation.
              */
-            seal<Schema>(): DataTable<Schema>
+            seal(): DataTable<Schema>
         }
 
-        export function createBuilder(count: number): Builder {
+        export function builder<Schema>(count: number): Builder<Schema> {
             return new BuilderImpl(count);
         }
 
         class Row  {
-            public __index: number = 0;
-            constructor(table: Base<any>) {
+            constructor(table: Base<any>, indexer: { index: number }) {
                 for (let _c of table.columns) {
-                    (function(c: ColumnDescriptor, el: Row, data: any[]) {                        
-                        Object.defineProperty(el, c.name, { enumerable: true, configurable: false, writable: false, get: function() { return data[el.__index] } });
-                    })(_c, this, (table as any)[_c.name]);
+                    (function(c: ColumnDescriptor<any>, row: Row, idx: { index: number }, data: any[]) {                        
+                        Object.defineProperty(row, c.name, { enumerable: true, configurable: false, get: function() { return data[idx.index] } });
+                    })(_c, this, indexer, (table as any)[_c.name]);
                 }
             }
         }
 
         class TableImpl implements Base<any> {
             private __row: Row;
+            private __rowIndexer: { index: number } = { index: 0 };
 
             count: number;
 
@@ -59,9 +65,9 @@ namespace LiteMol.Core.Utils {
             * Indices <0 .. count - 1>
             */
             indices: number[];
-            columns: ColumnDescriptor[];
+            columns: ColumnDescriptor<any>[];
             
-            getBuilder(count: number): Builder {
+            getBuilder(count: number): Builder<any> {
                 let b = new BuilderImpl(count);
                 for (let c of this.columns) {
                     b.addColumn(c.name, c.creator);
@@ -73,12 +79,12 @@ namespace LiteMol.Core.Utils {
                 return this.columns.map(c => (<any>this)[c.name]);
             }
 
-            getRow(i: number) {
-                this.__row.__index = i;
+            getRow(i: number): any {
+                this.__rowIndexer.index = i;
                 return this.__row;
             }
 
-            constructor(count: number, srcColumns: ColumnDescriptor[], srcData: { [name: string]: any }) {
+            constructor(count: number, srcColumns: ColumnDescriptor<any>[], srcData: { [name: string]: any }) {
                 this.count = count;
                 this.indices = <any>new Int32Array(count);
                 this.columns = [];
@@ -97,14 +103,14 @@ namespace LiteMol.Core.Utils {
                     this.columns[this.columns.length] = col;
                 }
 
-                this.__row = new Row(this);
+                this.__row = new Row(this, this.__rowIndexer);
             }
         }
 
-        class BuilderImpl implements Builder {
+        class BuilderImpl implements Builder<any> {
             count: number;
 
-            columns: ColumnDescriptor[] = [];
+            columns: ColumnDescriptor<any>[] = [];
 
             addColumn<T>(name: string, creator: (size: number) => T): T {
                 let c = creator(this.count);
@@ -122,7 +128,7 @@ namespace LiteMol.Core.Utils {
              * use internal class instead of dictionary representation.
              */
             seal<Schema>(): DataTable<Schema> {
-                return new TableImpl(this.count, this.columns, this) as DataTable<Schema>;
+                return new TableImpl(this.count, this.columns, this) as any;
             }
 
             constructor(count: number) {

@@ -33,21 +33,22 @@ function analyze(data: string) {
         return;
     } 
 
-    let _atom_site = parsed.result.dataBlocks[0].getCategory('_atom_site');
-    if (!_atom_site) {
-        console.log('No _atom_site.');
-        return;
-    }
+    try {
+        let model = LiteMol.Formats.Molecule.mmCIF.ofDataBlock(parsed.result.dataBlocks[0]).models[0];
 
-    let Cartn_x = _atom_site.getColumn('Cartn_x');
-    let xs = 0;
-    for (let i = 0, l = _atom_site.rowCount; i < l; i++) {
-        xs += Cartn_x.getFloat(i);
+        let ps = model.positions;
+        let { x } = ps;
+        let sum = 0;
+        for (let i = 0, l = model.positions.count; i < l; i++) {
+            sum += x[i] + ps.getRow(i).y;
+        }
+        console.log(parsed.result.dataBlocks[0].header);
+        console.log('Atom Count: ', model.positions.count);
+        console.log('Sum of X and Y coords: ', sum);
+    } catch (e) {
+        console.log('Parse error: ' + e);
     }
-    console.log(parsed.result.dataBlocks[0].header);
-    console.log('Atom Count: ', _atom_site.rowCount);
-    console.log('Sum of X coords: ', xs);
-}
+} 
 
 (async function () {
     let data = await download('https://www.ebi.ac.uk/pdbe/static/entry/1cbs_updated.cif');

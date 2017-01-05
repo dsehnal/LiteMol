@@ -5,109 +5,109 @@
 namespace LiteMol.Core.Structure {
     "use strict";
 
-    export class DataTableColumnDescriptor {
-        constructor(public name: string, public creator: (size: number) => any) {
-        }
+    import DataTable = Utils.DataTable
+    
+    export interface Position {
+        x: number,
+        y: number,
+        z: number
     }
 
-    export class DataTable {
-
-        count: number;
-
-        /*
-         * Indices <0 .. count - 1>
-         */
-        indices: number[];
-        columns: DataTableColumnDescriptor[];
-
-        getBuilder(count: number) {
-            let b = new DataTableBuilder(count);
-            for (let c of this.columns) {
-                b.addColumn(c.name, c.creator);
-            }
-            return b;
-        }
-
-        getRawData(): any[][] {
-            return this.columns.map(c => (<any>this)[c.name]);
-        }
-
-        constructor(count: number, srcColumns: DataTableColumnDescriptor[], srcData: { [name: string]: any }) {
-            this.count = count;
-            this.indices = <any>new Int32Array(count);
-            this.columns = [];
-
-            for (let i = 0; i < count; i++) {
-                this.indices[i] = i;
-            }
-
-            for (let col of srcColumns) {
-
-                let data = srcData[col.name];
-                if (Utils.ChunkedArray.is(data)) {
-                    data = Utils.ChunkedArray.compact(data);
-                }
-                Object.defineProperty(this, col.name, { enumerable: true, configurable: false, writable: false, value: data });
-                this.columns[this.columns.length] = col;
-            }
-        }
+    export interface Atom {
+        id: number,
+        name: string,
+        authName: string,
+        elementSymbol: string,
+        altLoc: string | null,
+        occupancy: number,
+        tempFactor: number,
+        residueIndex: number,
+        chainIndex: number,
+        entityIndex: number,
+        rowIndex: number
     }
 
-    export class DataTableBuilder {
-        count: number;
+    export interface Residue {
+        name: string,
+        seqNumber: number,
+        asymId: string,
+        authName: string,
+        authSeqNumber: number,
+        authAsymId: string,
+        insCode: string | null,
+        entityId: string,
 
-        columns: DataTableColumnDescriptor[] = [];
+        isHet: number,
 
-        addColumn<T>(name: string, creator: (size: number) => T): T {
-            let c = creator(this.count);
-            Object.defineProperty(this, name, { enumerable: true, configurable: false, writable: false, value: c });
-            this.columns[this.columns.length] = new DataTableColumnDescriptor(name, creator);
-            return c;
-        }
+        atomStartIndex: number,
+        atomEndIndex: number,
 
-        getRawData(): any[][] {
-            return this.columns.map(c => (<any>this)[c.name]);
-        }
+        chainIndex: number,
+        entityIndex: number,
 
-        /**
-         * This functions clones the table and defines all its column inside the constructor, hopefully making the JS engine 
-         * use internal class instead of dictionary representation.
-         */
-        seal<TTable extends DataTable>(): TTable {
-            return <TTable>new DataTable(this.count, this.columns, this);
-        }
-
-        constructor(count: number) {
-            this.count = count;
-        }
+        secondaryStructureIndex: number
     }
 
-    export enum EntityType {
-        Polymer = 0,
-        NonPolymer = 1,
-        Water = 2,
-        Unknown = 3
+    export interface Chain {
+        asymId: string,
+        authAsymId: string,
+        entityId: string,
+
+        atomStartIndex: number,
+        atomEndIndex: number,
+        residueStartIndex: number,
+        residueEndIndex: number,
+
+        entityIndex: number,
+
+        // used by computed molecules (symmetry, assembly)
+        sourceChainIndex: number,
+        operatorIndex: number
     }
 
-    export const enum BondType {
-        Unknown = 0,
+    export interface Entity {
+        entityId: string,
 
-        Single = 1,
-        Double = 2,
-        Triple = 3,
-        Aromatic = 4,
+        atomStartIndex: number,
+        atomEndIndex: number,
+        residueStartIndex: number,
+        residueEndIndex: number,
+        chainStartIndex: number,
+        chainEndIndex: number,
+        type: Entity.Type
+    }
 
-        Metallic = 5,
-        Ion = 6,
-        Hydrogen = 7,
-        DisulfideBridge = 8
+    export namespace Entity {
+        export type Type = 'polymer' | 'non-polymer' | 'water' | 'unknown'
+    }
+
+    export interface Bond {
+        atomAIndex: number,
+        atomBIndex: number,
+        type: Bond.Type
+    }
+
+    export namespace Bond {
+        export const enum Type {
+            Unknown = 0,
+
+            Single = 1,
+            Double = 2,
+            Triple = 3,
+            Aromatic = 4,
+
+            Metallic = 5,
+            Ion = 6,
+            Hydrogen = 7,
+            DisulfideBridge = 8
+        }
     }
 
     export class ComponentBondInfoEntry {
 
-        map: Map<string, Map<string, BondType>> = new Map<string, Map<string, BondType>>();
+        map: Map<string, Map<string, Bond.Type>> = new Map<string, Map<string, Bond.Type>>();
 
-        add(a: string, b: string, order: BondType, swap = true) {
+        add(a: string, b: string, order: Bond.Type, swap = true) {
 
             let e = this.map.get(a);
             if (e !== void 0) {
@@ -116,7 +116,7 @@ namespace LiteMol.Core.Structure {
                     e.set(b, order);
                 }
             } else {
-                let map = new Map<string, BondType>();
+                let map = new Map<string, Bond.Type>();
                 map.set(b, order);
                 this.map.set(a, map);
             }
@@ -235,193 +235,119 @@ namespace LiteMol.Core.Structure {
         }
     }
 
-    export interface PositionTableSchema extends DataTable {
-        x: number[];
-        y: number[];
-        z: number[];
-    }
-
-    export interface DefaultAtomTableSchema extends DataTable {
-        id: number[];
-        name: string[];
-        authName: string[];
-        elementSymbol: string[];
-        x: number[];
-        y: number[];
-        z: number[];
-        altLoc: (string | null)[];
-        occupancy: number[];
-        tempFactor: number[];
-
-        rowIndex: number[];
-
-        residueIndex: number[];
-        chainIndex: number[];
-        entityIndex: number[];
-    }
-
-    export interface DefaultResidueTableSchema extends DataTable {
-        name: string[];
-        seqNumber: number[];
-        asymId: string[];
-        authName: string[];
-        authSeqNumber: number[];
-        authAsymId: string[];
-        insCode: (string | null)[];
-        entityId: string[];
-
-        isHet: number[];
-
-        atomStartIndex: number[];
-        atomEndIndex: number[];
-
-        chainIndex: number[];
-        entityIndex: number[];
-
-        secondaryStructureIndex: number[];
-    }
-
-    export interface DefaultChainTableSchema extends DataTable {
-        asymId: string[];
-        authAsymId: string[];
-        entityId: string[];
-
-        atomStartIndex: number[];
-        atomEndIndex: number[];
-        residueStartIndex: number[];
-        residueEndIndex: number[];
-
-        entityIndex: number[];
-
-        // used by computed molecules (symmetry, assembly)
-        sourceChainIndex?: number[];
-        operatorIndex?: number[];
-    }
-
-    export interface DefaultEntityTableSchema extends DataTable {
-        entityId: string[];
-        entityType: EntityType[];
-
-        atomStartIndex: number[];
-        atomEndIndex: number[];
-        residueStartIndex: number[];
-        residueEndIndex: number[];
-        chainStartIndex: number[];
-        chainEndIndex: number[];
-        type: string[];
-    }
-
-    export interface DefaultBondTableSchema extends DataTable {
-        atomAIndex: number[];
-        atomBIndex: number[];
-        type: BondType[];
-    }
+    export type PositionTable = DataTable<Position>
+    export type AtomTable = DataTable<Atom>
+    export type ResidueTable = DataTable<Residue>
+    export type ChainTable = DataTable<Chain>
+    export type EntityTable = DataTable<Entity>
+    export type BondTable = DataTable<Bond>
 
     /**
      * Default Builders
      */
+    export namespace Tables {
 
-    export namespace DefaultDataTables {
-        export function forAtoms(count: number) {
-            let builder = new DataTableBuilder(count);
+        export function positions(count: number) {
+            let builder = DataTable.builder<Position>(count);
             let columns = {
-                id: builder.addColumn("id", size => new Int32Array(size)),
-                x: builder.addColumn("x", size => new Float32Array(size)),
-                y: builder.addColumn("y", size => new Float32Array(size)),
-                z: builder.addColumn("z", size => new Float32Array(size)),
-                altLoc: builder.addColumn("altLoc", size => []),
-                rowIndex: builder.addColumn("rowIndex", size => new Int32Array(size)),
-                residueIndex: builder.addColumn("residueIndex", size => new Int32Array(size)),
-                chainIndex: builder.addColumn("chainIndex", size => new Int32Array(size)),
-                entityIndex: builder.addColumn("entityIndex", size => new Int32Array(size)),
-                name: <string[]>builder.addColumn("name", size => []),
-                elementSymbol: <string[]>builder.addColumn("elementSymbol", size => []),
-                occupancy: builder.addColumn("occupancy", size => new Float32Array(size)),
-                tempFactor: builder.addColumn("tempFactor", size => new Float32Array(size)),
-                authName: <string[]>builder.addColumn("authName", size => [])
+                x: builder.addColumn('x', size => new Float32Array(size)),
+                y: builder.addColumn('y', size => new Float32Array(size)),
+                z: builder.addColumn('z', size => new Float32Array(size))
             }
-            return { table: builder.seal<DefaultAtomTableSchema>(), columns };
+            return { table: builder.seal(), columns };
         }
 
-        export function forResidues(count: number) {
-            let builder = new DataTableBuilder(count);
+
+        export function atoms(count: number) {
+            let builder = DataTable.builder<Atom>(count);
             let columns = {
-                name: builder.addColumn("name", size => <string[]>[]),
-                seqNumber: builder.addColumn("seqNumber", size => new Int32Array(size)),
-                asymId: builder.addColumn("asymId", size => <string[]>[]),
-                authName: builder.addColumn("authName", size => <string[]>[]),
-                authSeqNumber: builder.addColumn("authSeqNumber", size => new Int32Array(size)),
-                authAsymId: builder.addColumn("authAsymId", size => <string[]>[]),
-                insCode: builder.addColumn("insCode", size => <(string | null)[]>[]),
-                entityId: builder.addColumn("entityId", size => <string[]>[]),
-                isHet: builder.addColumn("isHet", size => new Int8Array(size)),
-                atomStartIndex: builder.addColumn("atomStartIndex", size => new Int32Array(size)),
-                atomEndIndex: builder.addColumn("atomEndIndex", size => new Int32Array(size)),
-                chainIndex: builder.addColumn("chainIndex", size => new Int32Array(size)),
-                entityIndex: builder.addColumn("entityIndex", size => new Int32Array(size)),
-                secondaryStructureIndex: builder.addColumn("secondaryStructureIndex", size => new Int32Array(size)),
+                id: builder.addColumn('id', size => new Int32Array(size)),
+                altLoc: builder.addColumn('altLoc', size => []),
+                residueIndex: builder.addColumn('residueIndex', size => new Int32Array(size)),
+                chainIndex: builder.addColumn('chainIndex', size => new Int32Array(size)),
+                entityIndex: builder.addColumn('entityIndex', size => new Int32Array(size)),
+                name: <string[]>builder.addColumn('name', size => []),
+                elementSymbol: <string[]>builder.addColumn('elementSymbol', size => []),
+                occupancy: builder.addColumn('occupancy', size => new Float32Array(size)),
+                tempFactor: builder.addColumn('tempFactor', size => new Float32Array(size)),
+                authName: <string[]>builder.addColumn('authName', size => []),
+                rowIndex: builder.addColumn('rowIndex', size => new Int32Array(size)),
             }
-            return { table: builder.seal<DefaultResidueTableSchema>(), columns };
+            return { table: builder.seal(), columns };
         }
 
-        export function forChains(count: number) {
-            let builder = new DataTableBuilder(count);
+        export function residues(count: number) {
+            let builder = DataTable.builder<Residue>(count);
             let columns = {
-                asymId: builder.addColumn("asymId", size => <string[]>[]),
-                entityId: builder.addColumn("entityId", size => <string[]>[]),
-                authAsymId: builder.addColumn("authAsymId", size => <string[]>[]),
-                atomStartIndex: builder.addColumn("atomStartIndex", size => new Int32Array(size)),
-                atomEndIndex: builder.addColumn("atomEndIndex", size => new Int32Array(size)),
-                residueStartIndex: builder.addColumn("residueStartIndex", size => new Int32Array(size)),
-                residueEndIndex: builder.addColumn("residueEndIndex", size => new Int32Array(size)),
-                entityIndex: builder.addColumn("entityIndex", size => new Int32Array(size)),
+                name: builder.addColumn('name', size => <string[]>[]),
+                seqNumber: builder.addColumn('seqNumber', size => new Int32Array(size)),
+                asymId: builder.addColumn('asymId', size => <string[]>[]),
+                authName: builder.addColumn('authName', size => <string[]>[]),
+                authSeqNumber: builder.addColumn('authSeqNumber', size => new Int32Array(size)),
+                authAsymId: builder.addColumn('authAsymId', size => <string[]>[]),
+                insCode: builder.addColumn('insCode', size => <(string | null)[]>[]),
+                entityId: builder.addColumn('entityId', size => <string[]>[]),
+                isHet: builder.addColumn('isHet', size => new Int8Array(size)),
+                atomStartIndex: builder.addColumn('atomStartIndex', size => new Int32Array(size)),
+                atomEndIndex: builder.addColumn('atomEndIndex', size => new Int32Array(size)),
+                chainIndex: builder.addColumn('chainIndex', size => new Int32Array(size)),
+                entityIndex: builder.addColumn('entityIndex', size => new Int32Array(size)),
+                secondaryStructureIndex: builder.addColumn('secondaryStructureIndex', size => new Int32Array(size)),
             }
-            return { table: builder.seal<DefaultChainTableSchema>(), columns };
+            return { table: builder.seal(), columns };
         }
 
-        export function forEntities(count: number) {
-            let builder = new DataTableBuilder(count);
+        export function chains(count: number) {
+            let builder = DataTable.builder<Chain>(count);
             let columns = {
-                entityId: builder.addColumn("entityId", size => <string[]>[]),
-                entityType: builder.addColumn("entityType", size => <Structure.EntityType[]>[]),
-                type: builder.addColumn("type", size => <string[]>[]),
-                atomStartIndex: builder.addColumn("atomStartIndex", size => new Int32Array(size)),
-                atomEndIndex: builder.addColumn("atomEndIndex", size => new Int32Array(size)),
-                residueStartIndex: builder.addColumn("residueStartIndex", size => new Int32Array(size)),
-                residueEndIndex: builder.addColumn("residueEndIndex", size => new Int32Array(size)),
-                chainStartIndex: builder.addColumn("chainStartIndex", size => new Int32Array(size)),
-                chainEndIndex: builder.addColumn("chainEndIndex", size => new Int32Array(size))
+                asymId: builder.addColumn('asymId', size => <string[]>[]),
+                entityId: builder.addColumn('entityId', size => <string[]>[]),
+                authAsymId: builder.addColumn('authAsymId', size => <string[]>[]),
+                atomStartIndex: builder.addColumn('atomStartIndex', size => new Int32Array(size)),
+                atomEndIndex: builder.addColumn('atomEndIndex', size => new Int32Array(size)),
+                residueStartIndex: builder.addColumn('residueStartIndex', size => new Int32Array(size)),
+                residueEndIndex: builder.addColumn('residueEndIndex', size => new Int32Array(size)),
+                entityIndex: builder.addColumn('entityIndex', size => new Int32Array(size)),
             }
-            return { table: builder.seal<DefaultEntityTableSchema>(), columns };
+            return { table: builder.seal(), columns };
         }
 
-        export function forBonds(count: number) {
-            let builder = new DataTableBuilder(count);
+        export function entities(count: number) {
+            let builder = DataTable.builder<Entity>(count);
             let columns = {
-                atomAIndex: builder.addColumn("atomAIndex", size => new Int32Array(size)),
-                atomBIndex: builder.addColumn("atomBIndex", size => new Int32Array(size)),
-                type: builder.addColumn("type", size => new Int8Array(size))
+                entityId: builder.addColumn('entityId', size => <string[]>[]),
+                type: builder.addColumn('type', size => <string[]>[]),
+                atomStartIndex: builder.addColumn('atomStartIndex', size => new Int32Array(size)),
+                atomEndIndex: builder.addColumn('atomEndIndex', size => new Int32Array(size)),
+                residueStartIndex: builder.addColumn('residueStartIndex', size => new Int32Array(size)),
+                residueEndIndex: builder.addColumn('residueEndIndex', size => new Int32Array(size)),
+                chainStartIndex: builder.addColumn('chainStartIndex', size => new Int32Array(size)),
+                chainEndIndex: builder.addColumn('chainEndIndex', size => new Int32Array(size))
             }
-            return { table: builder.seal<DefaultBondTableSchema>(), columns };
+            return { table: builder.seal(), columns };
         }
 
-    }
+        export function bonds(count: number) {
+            let builder = DataTable.builder<Bond>(count);
+            let columns = {
+                atomAIndex: builder.addColumn('atomAIndex', size => new Int32Array(size)),
+                atomBIndex: builder.addColumn('atomBIndex', size => new Int32Array(size)),
+                type: builder.addColumn('type', size => new Int8Array(size))
+            }
+            return { table: builder.seal(), columns };
+        }
 
-    export enum MoleculeModelSource {
-        File,
-        Computed
     }
 
     export class Operator {
-
         apply(v: Geometry.LinearAlgebra.ObjectVec3) {
             Geometry.LinearAlgebra.Matrix4.transformVector3(v, v, this.matrix)
         }
 
-        static applyToModelUnsafe(matrix: number[], m: MoleculeModel) {
+        static applyToModelUnsafe(matrix: number[], m: Molecule.Model) {
             let v = { x: 0.1, y: 0.1, z: 0.1 };
-            let {x, y, z} = m.atoms;
-            for (let i = 0, _b = m.atoms.count; i < _b; i++) {
+            let {x, y, z} = m.positions;
+            for (let i = 0, _b = m.positions.count; i < _b; i++) {
                 v.x = x[i]; v.y = y[i]; v.z = z[i];
                 Geometry.LinearAlgebra.Matrix4.transformVector3(v, v, matrix);
                 x[i] = v.x; y[i] = v.y; z[i] = v.z;
@@ -433,142 +359,98 @@ namespace LiteMol.Core.Structure {
         }
     }
 
-    export interface MoleculeModelData {
-        id: string,
-        modelId: string,
-        atoms: DefaultAtomTableSchema,
-        residues: DefaultResidueTableSchema,
-        chains: DefaultChainTableSchema,
-        entities: DefaultEntityTableSchema,
-        covalentBonds?: DefaultBondTableSchema,
-        nonCovalentbonds?: DefaultBondTableSchema,
-        componentBonds?: ComponentBondInfo,
-        secondaryStructure: SecondaryStructureElement[],
-        symmetryInfo?: SymmetryInfo,
-        assemblyInfo?: AssemblyInfo,
-        parent?: MoleculeModel,
-        source: MoleculeModelSource,
-        operators?: Operator[]
+    export interface Molecule {
+        readonly properties: Molecule.Properties,
+        readonly id: string,
+        readonly models: Molecule.Model[]
     }
 
-    export class MoleculeModel implements MoleculeModelData {
-
-        private _queryContext: Query.Context | undefined = void 0;
-
-        id: string;
-        modelId: string;
-        atoms: DefaultAtomTableSchema;
-        residues: DefaultResidueTableSchema;
-        chains: DefaultChainTableSchema;
-        entities: DefaultEntityTableSchema;
-        covalentBonds?: DefaultBondTableSchema;
-        nonCovalentbonds?: DefaultBondTableSchema;
-        componentBonds?: ComponentBondInfo;
-        secondaryStructure: SecondaryStructureElement[];
-        symmetryInfo?: SymmetryInfo;
-        assemblyInfo?: AssemblyInfo;
-        parent?: MoleculeModel;
-        source: MoleculeModelSource;
-        operators?: Operator[];
-
-        get queryContext() {
-            if (this._queryContext) return this._queryContext;
-            this._queryContext = Query.Context.ofStructure(this);
-            return this._queryContext;
+    export namespace Molecule {
+        export function create(id: string, models: Model[], properties: Properties = {}): Molecule {
+            return { id, models, properties };
+        }
+        
+        export interface Properties {
+            experimentMethod?: string
         }
 
-        query(q: Query.Source) {
-            return Query.Builder.toQuery(q)(this.queryContext);
+        export interface Bonds {
+            covalent?: BondTable,
+            nonCovalent?: BondTable,
+            computed?: BondTable
+            readonly component?: ComponentBondInfo,
+        }
+        
+        export interface Model extends Model.Base {
+            readonly queryContext: Query.Context
         }
 
-        constructor(data: MoleculeModelData) {
-            this.id = data.id;
-            this.modelId = data.modelId;
-            this.atoms = data.atoms;
-            this.residues = data.residues;
-            this.chains = data.chains;
-            this.entities = data.entities;
-            this.covalentBonds = data.covalentBonds;
-            this.nonCovalentbonds = data.nonCovalentbonds;
-            this.componentBonds = data.componentBonds;
-            this.secondaryStructure = data.secondaryStructure;
-            this.symmetryInfo = data.symmetryInfo;
-            this.assemblyInfo = data.assemblyInfo;
-            this.parent = data.parent;
-            this.source = data.source;
-            this.operators = data.operators;
-        }
-    }
+        export namespace Model {
+            export function create(model: Base): Model {
+                let ret = Utils.extend({}, model);
+                let queryContext: Query.Context | undefined = void 0
+                Object.defineProperty(ret, 'queryContext', { enumerable: true, configurable: false, get: function() { 
+                    if (queryContext) return queryContext;
+                    queryContext = Query.Context.ofStructure(ret as Model);
+                    return queryContext;
+                }});
+                return ret as Model;
+            }
 
-    export interface MoleculeProperties {
-        experimentMethod?: string
-    }
+            export enum Source {
+                File,
+                Computed
+            }
 
-    // TODO: refactor this into using a tree structure similar to what the plugin is using, query is then a transformation of the tree
-    export class Molecule {
+            export interface Base {
+                readonly id: string,
+                readonly modelId: string,
 
-        properties: MoleculeProperties;
+                readonly positions: PositionTable,
+                readonly data: Data,
+                
+                readonly source: Source,
+                readonly parent?: Model,
+                readonly operators?: Operator[],
+            }
 
-        constructor(
-            public id: string,
-            public models: MoleculeModel[],
-            properties: MoleculeProperties = {}) {
-            this.properties = properties;
-        }
-    }
+            export interface Data {
+                readonly atoms: AtomTable,
+                readonly residues: ResidueTable,
+                readonly chains: ChainTable,
+                readonly entities: EntityTable,
+                readonly bonds: Bonds,
+                readonly secondaryStructure: SecondaryStructureElement[],
+                readonly symmetryInfo?: SymmetryInfo,
+                readonly assemblyInfo?: AssemblyInfo,
+            }
 
-    export namespace MoleculeModel {
+            export function withTransformedXYZ<T>(
+                model: Model, ctx: T, 
+                transform: (ctx: T, x: number, y: number, z: number, out: Geometry.LinearAlgebra.ObjectVec3) => void) {
 
-        function cloneAtomsXYZ(model: MoleculeModel): DefaultAtomTableSchema {
+                let {x,y,z} = model.positions;
+                let tAtoms = model.positions.getBuilder(model.positions.count).seal();
+                let {x:tX, y:tY, z:tZ} = tAtoms;
+                let t = { x: 0.0, y: 0.0, z: 0.0 };
 
-            let data: { [name: string]: any } = { };
-            let atoms = model.atoms;
-
-            for (let c of atoms.columns) {
-                if (c.name === 'x' || c.name === 'y' || c.name === 'z') {
-                    data[c.name] = c.creator(atoms.count);
-                } else {
-                    data[c.name] = (<any>atoms)[c.name];
+                for (let i = 0, _l = model.positions.count; i < _l; i++) {
+                    transform(ctx, x[i], y[i], z[i], t);
+                    tX[i] = t.x;
+                    tY[i] = t.y;
+                    tZ[i] = t.z;
                 }
+
+                return create({
+                    id: model.id,
+                    modelId: model.modelId,
+                    data: model.data, 
+                    positions: tAtoms,
+                    parent: model.parent,
+                    source: model.source,
+                    operators: model.operators
+                });
             }
-
-            return <DefaultAtomTableSchema>new DataTable(atoms.count, atoms.columns, data);
         }
-
-        export function withTransformedXYZ<T>(
-            model: MoleculeModel, ctx: T, 
-            transform: (ctx: T, x: number, y: number, z: number, out: Geometry.LinearAlgebra.ObjectVec3) => void) {
-
-            let {x,y,z} = model.atoms;
-            let tAtoms = cloneAtomsXYZ(model);
-            let {x:tX, y:tY, z:tZ} = tAtoms;
-            let t = { x: 0.0, y: 0.0, z: 0.0 };
-
-            for (let i = 0, _l = model.atoms.count; i < _l; i++) {
-                transform(ctx, x[i], y[i], z[i], t);
-                tX[i] = t.x;
-                tY[i] = t.y;
-                tZ[i] = t.z;
-            }
-
-            return new MoleculeModel({
-                id: model.id,
-                modelId: model.modelId,
-                atoms: tAtoms,
-                residues: model.residues,
-                chains: model.chains,
-                entities: model.entities,
-                covalentBonds: model.covalentBonds,
-                nonCovalentbonds: model.nonCovalentbonds,
-                componentBonds: model.componentBonds,
-                secondaryStructure: model.secondaryStructure,
-                symmetryInfo: model.symmetryInfo,
-                assemblyInfo: model.assemblyInfo,
-                parent: model.parent,
-                source: model.source,
-                operators: model.operators
-            });
-        }
-
     }
 }

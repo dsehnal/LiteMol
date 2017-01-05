@@ -54,19 +54,19 @@ namespace LiteMol.Core.Structure.Query {
     export interface AsymIdSchema extends EntityIdSchema { asymId?: string; authAsymId?: string; }
     export interface ResidueIdSchema extends AsymIdSchema { name?: string; seqNumber?: number; authName?: string; authSeqNumber?: number; insCode?: string | null; }
     
-    export function atomsByElement(...elements: string[]) { return Builder.build(() => Compiler.compileAtoms(elements, m => m.atoms.elementSymbol)); }
-    export function atomsByName(...names: string[]) { return Builder.build(() => Compiler.compileAtoms(names, m => m.atoms.name)); }
-    export function atomsById(...ids: number[]) { return Builder.build(() => Compiler.compileAtoms(ids, m => m.atoms.id)); }  
+    export function atomsByElement(...elements: string[]) { return Builder.build(() => Compiler.compileAtoms(elements, m => m.data.atoms.elementSymbol)); }
+    export function atomsByName(...names: string[]) { return Builder.build(() => Compiler.compileAtoms(names, m => m.data.atoms.name)); }
+    export function atomsById(...ids: number[]) { return Builder.build(() => Compiler.compileAtoms(ids, m => m.data.atoms.id)); }  
 
-    export function residues(...ids: ResidueIdSchema[]) { return Builder.build(() => Compiler.compileAtomRanges(false, ids, m => m.residues)); }
-    export function chains(...ids: AsymIdSchema[]) { return Builder.build(() => Compiler.compileAtomRanges(false, ids, m => m.chains)); }
-    export function entities(...ids: EntityIdSchema[]) { return Builder.build(() => Compiler.compileAtomRanges(false, ids, m => m.entities)); }
-    export function notEntities(...ids: EntityIdSchema[]) { return Builder.build(() => Compiler.compileAtomRanges(true, ids, m => m.entities)); }
+    export function residues(...ids: ResidueIdSchema[]) { return Builder.build(() => Compiler.compileAtomRanges(false, ids, m => m.data.residues)); }
+    export function chains(...ids: AsymIdSchema[]) { return Builder.build(() => Compiler.compileAtomRanges(false, ids, m => m.data.chains)); }
+    export function entities(...ids: EntityIdSchema[]) { return Builder.build(() => Compiler.compileAtomRanges(false, ids, m => m.data.entities)); }
+    export function notEntities(...ids: EntityIdSchema[]) { return Builder.build(() => Compiler.compileAtomRanges(true, ids, m => m.data.entities)); }
     export function everything() { return Builder.build(() => Compiler.compileEverything()); }
 
-    export function entitiesFromIndices(indices: number[]) { return Builder.build(() => Compiler.compileFromIndices(false, indices, m => m.entities)); }
-    export function chainsFromIndices(indices: number[]) { return Builder.build(() => Compiler.compileFromIndices(false, indices, m => m.chains)); }
-    export function residuesFromIndices(indices: number[]) { return Builder.build(() => Compiler.compileFromIndices(false, indices, m => m.residues)); }
+    export function entitiesFromIndices(indices: number[]) { return Builder.build(() => Compiler.compileFromIndices(false, indices, m => m.data.entities)); }
+    export function chainsFromIndices(indices: number[]) { return Builder.build(() => Compiler.compileFromIndices(false, indices, m => m.data.chains)); }
+    export function residuesFromIndices(indices: number[]) { return Builder.build(() => Compiler.compileFromIndices(false, indices, m => m.data.residues)); }
     export function atomsFromIndices(indices: number[]) { return Builder.build(() => Compiler.compileAtomIndices(indices)); }
 
     export function sequence(entityId: string, asymId: string | AsymIdSchema, startId: ResidueIdSchema, endId: ResidueIdSchema) { return Builder.build(() => Compiler.compileSequence(entityId, asymId, startId, endId)); }
@@ -140,14 +140,14 @@ namespace LiteMol.Core.Structure.Query {
 
 
                 if (ctx.isComplete) {
-                    let atoms = ctx.structure.atoms.indices;
+                    let atoms = ctx.structure.data.atoms.indices;
                     return new FragmentSeq(ctx, [new Fragment(ctx, atoms[0], atoms)]);
                 }
 
                 let indices = new Int32Array(ctx.atomCount);
                 let offset = 0;
 
-                for (let i of ctx.structure.atoms.indices) {
+                for (let i of ctx.structure.data.atoms.indices) {
                     if (ctx.hasAtom(i)) indices[offset++] = i;
                 }
 
@@ -156,7 +156,7 @@ namespace LiteMol.Core.Structure.Query {
             };
         }
 
-        export function compileAtoms(elements: string[] | number[], sel: (model: Structure.MoleculeModel) => string[] | number[]) {
+        export function compileAtoms(elements: string[] | number[], sel: (model: Structure.Molecule.Model) => string[] | number[]) {
             return (ctx: Context) => {
 
                 let set = new Set<any>(elements),
@@ -192,7 +192,7 @@ namespace LiteMol.Core.Structure.Query {
 
         export function compileFromIndices(
             complement: boolean, indices: number[],
-            tableProvider: (molecule: Structure.MoleculeModel) => { atomStartIndex: number[]; atomEndIndex: number[] } & Structure.DataTable): Query {
+            tableProvider: (molecule: Structure.Molecule.Model) => { atomStartIndex: number[]; atomEndIndex: number[] } & Utils.DataTable<any>): Query {
 
             return (ctx: Context) => {
                 let table = tableProvider(ctx.structure),
@@ -220,7 +220,7 @@ namespace LiteMol.Core.Structure.Query {
         
         export function compileAtomRanges(
             complement: boolean, ids: ResidueIdSchema[],
-            tableProvider: (molecule: Structure.MoleculeModel) => { atomStartIndex: number[]; atomEndIndex: number[] } & Structure.DataTable): Query {
+            tableProvider: (molecule: Structure.Molecule.Model) => { atomStartIndex: number[]; atomEndIndex: number[] } & Utils.DataTable<any>): Query {
 
             return (ctx: Context) => {
                 let table = tableProvider(ctx.structure),
@@ -257,24 +257,23 @@ namespace LiteMol.Core.Structure.Query {
         export function compileSequence(seqEntityId: string, seqAsymId: string | AsymIdSchema, start: ResidueIdSchema, end: ResidueIdSchema): Query {
             
             return (ctx: Context) => {
-                let residues = ctx.structure.residues,
-                    chains = ctx.structure.chains,
+                let { residues, chains } = ctx.structure.data,
                     { seqNumber, atomStartIndex, atomEndIndex } = residues,
                     { entityId, count, residueStartIndex, residueEndIndex } = chains,                                       
                     fragments = new FragmentSeqBuilder(ctx);
                
                 let parent = ctx.structure.parent, 
-                    { sourceChainIndex } = ctx.structure.chains,                    
+                    { sourceChainIndex } = chains,                    
                     isComputed = parent && sourceChainIndex;
 
                 let targetAsymId: AsymIdSchema = typeof seqAsymId === 'string' ? { asymId: seqAsymId } : seqAsymId;
-                let optTargetAsymId = new OptimizedId(targetAsymId, isComputed ? parent!.chains : ctx.structure.chains);
+                let optTargetAsymId = new OptimizedId(targetAsymId, isComputed ? parent!.data.chains : chains);
 
                 //optAsymId.isSatisfied();
                 
                 for (let cI = 0; cI < count; cI++) {
                     if (entityId[cI] !== seqEntityId 
-                        || !optTargetAsymId.isSatisfied(isComputed ? sourceChainIndex![cI] : cI)) {
+                        || !optTargetAsymId.isSatisfied(isComputed ? sourceChainIndex[cI] : cI)) {
                         continue;
                     }
 
@@ -307,9 +306,9 @@ namespace LiteMol.Core.Structure.Query {
         
         export function compileHetGroups(): Query {
             return (ctx: Context) => {
-                let { atomStartIndex, atomEndIndex, isHet, entityIndex, count } = ctx.structure.residues,
-                    entityType = ctx.structure.entities.entityType,
-                    water = Structure.EntityType.Water,
+                let { atomStartIndex, atomEndIndex, isHet, entityIndex, count } = ctx.structure.data.residues,
+                    entityType = ctx.structure.data.entities.type,
+                    water = 'water',
                     fragments = new FragmentSeqBuilder(ctx);
                 
                 for (let i = 0; i < count; i++) {
@@ -325,9 +324,9 @@ namespace LiteMol.Core.Structure.Query {
                 
         export function compileNonHetPolymer(): Query {
             return (ctx: Context) => {
-                let { atomStartIndex, atomEndIndex } = ctx.structure.residues,
-                    { entityType, count: entityCount, residueStartIndex: eRS, residueEndIndex: eRE } = ctx.structure.entities,
-                    polymer = Structure.EntityType.Polymer,
+                let { atomStartIndex, atomEndIndex } = ctx.structure.data.residues,
+                    { type: entityType, count: entityCount, residueStartIndex: eRS, residueEndIndex: eRE } = ctx.structure.data.entities,
+                    polymer = 'polymer',
                     size = 0; 
                 
                 for (let eI = 0; eI < entityCount; eI++) {
@@ -359,9 +358,9 @@ namespace LiteMol.Core.Structure.Query {
 
         export function compileAtomsInBox(min: { x: number; y: number; z: number }, max: { x: number; y: number; z: number }): Query {
             return (ctx: Context) => {
-                let atoms = ctx.structure.atoms,
-                    xs = atoms.x, ys = atoms.y, zs = atoms.z,
-                    count = atoms.count,
+                let positions = ctx.structure.positions,
+                    xs = positions.x, ys = positions.y, zs = positions.z,
+                    count = positions.count,
                     fragment: number[] = [];
                 
                 for (let i = 0; i < count; i++) {
@@ -382,72 +381,7 @@ namespace LiteMol.Core.Structure.Query {
             };
         }
 
-        ////function updateBox(f: Fragment,
-        ////    arrays: { x: number[]; y: number[]; z: number[] },
-        ////    deltas: { dx: number; dy: number; dz: number },
-        ////    min: { x: number; y: number; z: number }, max: { x: number; y: number; z: number }) {
-
-        ////    min.x = min.y = min.z = Number.MAX_VALUE;
-        ////    max.x = max.y = max.z = -Number.MAX_VALUE;
-
-        ////    for (let i of f.atomIndices) {
-        ////        let x = arrays.x[i], y = arrays.y[i], z = arrays.z[i];
-
-        ////        if (x > max.x) max.x = x;
-        ////        if (y > max.y) max.y = y;
-        ////        if (z > max.z) max.z = z;
-
-        ////        if (x > min.x) min.x = x;
-        ////        if (y > min.y) min.y = y;
-        ////        if (z > min.z) min.z = z;
-        ////    }
-        ////    min.x -= deltas.dx;
-        ////    min.y -= deltas.dy;
-        ////    min.z -= deltas.dz;
-        ////    max.x += deltas.dx;
-        ////    max.y += deltas.dy;
-        ////    max.z += deltas.dz;
-        ////}
-
-        ////export function compileExtendBox(what: Query, deltas: { dx: number; dy: number; dz: number }) {
-        ////    return (ctx: Context) => {
-
-        ////        let ret = new HashFragmentSeqBuilder(ctx);
-
-        ////        let min = { x: 0.1, y: 0.1, z: 0.1 },
-        ////            max = { x: 0.1, y: 0.1, z: 0.1 },
-        ////            atoms = { x: ctx.structure.atoms.x, y: ctx.structure.atoms.y, z: ctx.structure.atoms.z },
-        ////            xs = atoms.x, ys = atoms.y, zs = atoms.z,
-
-        ////        for (let f of what(ctx).fragments) {
-
-        ////            updateBox(f, atoms, deltas, min, max);
-                    
-        ////            let fragment: number[] = [];
-
-        ////            for (let i of f.atomIndices) {
-        ////                if (!ctx.hasAtom(i)) continue;
-
-        ////                let x = xs[i], y = ys[i], z = zs[i];
-
-        ////                if (x >= min.x && x <= max.x
-        ////                    && y >= min.y && y <= max.y
-        ////                    && z >= min.z && z <= max.z) {
-        ////                    fragment[fragment.length] = i;
-        ////                }
-        ////            }
-
-        ////            if (fragment.length > 0) {
-        ////                //ret.add(Fragment.of)
-        ////            }
-        ////        }
-
-        ////        return ret.getSeq();
-        ////    };
-        ////}
-        
-        export function compileInside(what: Source, where: Source): Query {
-            
+        export function compileInside(what: Source, where: Source): Query {            
             let _what = Builder.toQuery(what);
             let _where = Builder.toQuery(where)
             return (ctx: Context) => {
@@ -509,14 +443,14 @@ namespace LiteMol.Core.Structure.Query {
                 let mask = Context.Mask.ofFragments(_what(ctx)),
                     count = 0, offset = 0;
 
-                for (let i = 0, _b = ctx.structure.atoms.count; i < _b; i++) {
+                for (let i = 0, _b = ctx.structure.data.atoms.count; i < _b; i++) {
                     if (ctx.hasAtom(i) && !mask.has(i)) count++;
                 }
 
                 if (!count) return FragmentSeq.empty(ctx);
 
                 let atoms = new Int32Array(count);
-                for (let i = 0, _b = ctx.structure.atoms.count; i < _b; i++) {
+                for (let i = 0, _b = ctx.structure.data.atoms.count; i < _b; i++) {
                     if (ctx.hasAtom(i) && !mask.has(i)) atoms[offset++] = i;
                 }
 
@@ -563,26 +497,27 @@ namespace LiteMol.Core.Structure.Query {
             return (ctx: Context) => {
 
                 let structure = ctx.structure,
-                    atomNames = structure.atoms.name,
+                    entities = structure.data.entities,
+                    atomNames = structure.data.atoms.name,
                     indices: number[] = [],
                     indexCount = 0;
 
                 const allowedNames = new Set<string>(names);
 
                 if (complement) {
-                    for (let ei = 0; ei < structure.entities.count; ei++) {
-                        if (structure.entities.entityType[ei] !== Structure.EntityType.Polymer) continue;
+                    for (let ei = 0; ei < structure.data.entities.count; ei++) {
+                        if (entities.type[ei] !== 'polymer') continue;
 
-                        let start = structure.entities.atomStartIndex[ei], end = structure.entities.atomEndIndex[ei];
+                        let start = entities.atomStartIndex[ei], end = entities.atomEndIndex[ei];
                         for (let i = start; i < end; i++) {
                             if (ctx.hasAtom(i) && !allowedNames.has(atomNames[i])) indices[indexCount++] = i;
                         }
                     }
                 } else {
-                    for (let ei = 0; ei < structure.entities.count; ei++) {
-                        if (structure.entities.entityType[ei] !== Structure.EntityType.Polymer) continue;
+                    for (let ei = 0; ei < entities.count; ei++) {
+                        if (entities.type[ei] !== 'polymer') continue;
 
-                        let start = structure.entities.atomStartIndex[ei], end = structure.entities.atomEndIndex[ei];
+                        let start = entities.atomStartIndex[ei], end = entities.atomEndIndex[ei];
                         for (let i = start; i < end; i++) {
                             if (ctx.hasAtom(i) && allowedNames.has(atomNames[i])) indices[indexCount++] = i;
                         }
@@ -605,9 +540,9 @@ namespace LiteMol.Core.Structure.Query {
                     radiusCtx = Geometry.SubdivisionTree3D.createContextRadius(tree, radius, false),
                     buffer = radiusCtx.buffer, 
                     ret = new HashFragmentSeqBuilder(ctx),
-                    x = ctx.structure.atoms.x, y = ctx.structure.atoms.y, z = ctx.structure.atoms.z,
-                    residueIndex = ctx.structure.atoms.residueIndex,
-                    atomStart = ctx.structure.residues.atomStartIndex, atomEnd = ctx.structure.residues.atomEndIndex, 
+                    { x, y, z } = ctx.structure.positions,
+                    residueIndex = ctx.structure.data.atoms.residueIndex,
+                    atomStart = ctx.structure.data.residues.atomStartIndex, atomEnd = ctx.structure.data.residues.atomEndIndex, 
                     residues = new Set<number>(),
                     treeData = tree.data;
                 
@@ -645,13 +580,12 @@ namespace LiteMol.Core.Structure.Query {
         }
 
         export function compileWholeResidues(where: Source) {
-
             let _where = Builder.toQuery(where);
             return (ctx: Context) => {
                 let src = _where(ctx),
                     ret = new HashFragmentSeqBuilder(ctx),
-                    residueIndex = ctx.structure.atoms.residueIndex,
-                    atomStart = ctx.structure.residues.atomStartIndex, atomEnd = ctx.structure.residues.atomEndIndex,
+                    residueIndex = ctx.structure.data.atoms.residueIndex,
+                    atomStart = ctx.structure.data.residues.atomStartIndex, atomEnd = ctx.structure.data.residues.atomEndIndex,
                     residues = new Set<number>();
 
                 for (let f of src.fragments) {

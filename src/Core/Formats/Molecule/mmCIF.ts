@@ -6,7 +6,7 @@ namespace LiteMol.Core.Formats.Molecule.mmCIF {
     "use strict";
 
 
-    type StructureWrapper = { residues: Structure.DefaultResidueTableSchema, chains: Structure.DefaultChainTableSchema, entities: Structure.DefaultEntityTableSchema };
+    type StructureWrapper = { residues: Structure.ResidueTable, chains: Structure.ChainTable, entities: Structure.EntityTable };
 
     namespace Defaults {
         export const ElementSymbol = 'X';
@@ -94,15 +94,16 @@ namespace LiteMol.Core.Formats.Molecule.mmCIF {
         return <any>ret;
     }
 
-    function buildModelAtomTable(startRow: number, rowCount: number, columns: AtomSiteColumns): { atoms: Structure.DefaultAtomTableSchema; modelId: string; endRow: number } {
+    function buildModelAtomTable(startRow: number, rowCount: number, columns: AtomSiteColumns): { atoms: Structure.AtomTable, positions: Structure.PositionTable, modelId: string, endRow: number } {
 
         let endRow = getModelEndRow(startRow, rowCount, columns.get('pdbx_PDB_model_num')!);
 
-        let atoms = new Structure.DataTableBuilder(endRow - startRow),
+        let atoms = Utils.DataTable.builder<Structure.Atom>(endRow - startRow),
+            positions = Utils.DataTable.builder<Structure.Position>(endRow - startRow),
             id = atoms.addColumn('id', size => new Int32Array(size)), idCol = columns.get('id'),
-            pX = atoms.addColumn('x', size => new Float32Array(size)), pXCol = columns.get('Cartn_x'),
-            pY = atoms.addColumn('y', size => new Float32Array(size)), pYCol = columns.get('Cartn_y'),
-            pZ = atoms.addColumn('z', size => new Float32Array(size)), pZCol = columns.get('Cartn_z'),
+            pX = positions.addColumn('x', size => new Float32Array(size)), pXCol = columns.get('Cartn_x'),
+            pY = positions.addColumn('y', size => new Float32Array(size)), pYCol = columns.get('Cartn_y'),
+            pZ = positions.addColumn('z', size => new Float32Array(size)), pZCol = columns.get('Cartn_z'),
 
             altLoc: (string | null)[] = atoms.addColumn('altLoc', size => new Array(size)), altLocCol = columns.get('label_alt_id'),
 
@@ -175,13 +176,14 @@ namespace LiteMol.Core.Formats.Molecule.mmCIF {
         let modelId = !modelNumCol.isDefined ? Defaults.ModelId : modelNumCol.getString(startRow) || Defaults.ModelId;
 
         return {
-            atoms: <Structure.DefaultAtomTableSchema>atoms.seal(),
+            atoms: atoms.seal(),
+            positions: positions.seal(),
             modelId,
             endRow
         };
     }
 
-    function buildStructure(columns: AtomSiteColumns, atoms: Structure.DefaultAtomTableSchema): StructureWrapper {
+    function buildStructure(columns: AtomSiteColumns, atoms: Structure.AtomTable): StructureWrapper {
 
         let count = atoms.count,
 
@@ -189,9 +191,9 @@ namespace LiteMol.Core.Formats.Molecule.mmCIF {
             chainIndexCol = atoms.chainIndex,
             entityIndexCol = atoms.entityIndex,
 
-            residues = new Structure.DataTableBuilder(atoms.residueIndex[atoms.count - 1] + 1),
-            chains = new Structure.DataTableBuilder(atoms.chainIndex[atoms.count - 1] + 1),
-            entities = new Structure.DataTableBuilder(atoms.entityIndex[atoms.count - 1] + 1),
+            residues = Utils.DataTable.builder<Structure.Residue>(atoms.residueIndex[atoms.count - 1] + 1),
+            chains = Utils.DataTable.builder<Structure.Chain>(atoms.chainIndex[atoms.count - 1] + 1),
+            entities = Utils.DataTable.builder<Structure.Entity>(atoms.entityIndex[atoms.count - 1] + 1),
 
             residueName = residues.addColumn('name', size => <string[]>new Array(size)),
             residueSeqNumber = residues.addColumn('seqNumber', size => new Int32Array(size)),
@@ -218,7 +220,6 @@ namespace LiteMol.Core.Formats.Molecule.mmCIF {
             chainEntityIndex = chains.addColumn('entityIndex', size => new Int32Array(size)),
 
             entityId = entities.addColumn('entityId', size => <string[]>[]),
-            entityTypeEnum = entities.addColumn('entityType', size => <Structure.EntityType[]>[]),
             entityType = entities.addColumn('type', size => <string[]>[]),
             entityAtomStartIndex = entities.addColumn('atomStartIndex', size => new Int32Array(size)),
             entityAtomEndIndex = entities.addColumn('atomEndIndex', size => new Int32Array(size)),
@@ -289,7 +290,6 @@ namespace LiteMol.Core.Formats.Molecule.mmCIF {
 
             if (entityIndexCol[i] !== entityIndexCol[entityStart]) {
                 entityId[currentEntity] = entityCol.getString(entityStart) || Defaults.EntityId;
-                entityTypeEnum[currentEntity] = Structure.EntityType.Unknown;
                 entityType[currentEntity] = 'unknown';
                 entityAtomStartIndex[currentEntity] = entityStart;
                 entityAtomEndIndex[currentEntity] = i;
@@ -308,7 +308,6 @@ namespace LiteMol.Core.Formats.Molecule.mmCIF {
 
         // entity
         entityId[currentEntity] = entityCol.getString(entityStart) || Defaults.EntityId;
-        entityTypeEnum[currentEntity] = Structure.EntityType.Unknown;
         entityType[currentEntity] = 'unknown';
         entityAtomStartIndex[currentEntity] = entityStart;
         entityAtomEndIndex[currentEntity] = i;
@@ -342,47 +341,40 @@ namespace LiteMol.Core.Formats.Molecule.mmCIF {
         residueIsHet[currentResidue] = isHetCol.stringEquals(residueStart, 'HETATM') ? 1 : 0;
 
         return {
-            residues: <Structure.DefaultResidueTableSchema>residues.seal(),
-            chains: <Structure.DefaultChainTableSchema>chains.seal(),
-            entities: <Structure.DefaultEntityTableSchema>entities.seal()
+            residues: residues.seal(),
+            chains: chains.seal(),
+            entities: entities.seal()
         };
     }
 
-    function assignEntityTypes(category: CIF.Category | undefined, entities: Structure.DefaultEntityTableSchema) {
-
+    function assignEntityTypes(category: CIF.Category | undefined, entities: Structure.EntityTable) {
         let i: number;
-
-        for (i = 0; i < entities.count; i++) {
-            entities.entityType[i] = Structure.EntityType.Unknown;
-        }
 
         if (!category) {
             return;
         }
 
-        let dataEnum: { [id: string]: Structure.EntityType } = {},
-            data: { [id: string]: string } = {},
-            et: Structure.EntityType,
+        let data: { [id: string]: Structure.Entity.Type } = {},
             typeCol = category.getColumn('type'), idCol = category.getColumn('id');
         for (i = 0; i < category.rowCount; i++) {
-
             let t = (typeCol.getString(i) || '').toLowerCase();
-            switch (t) {
-                case 'polymer': et = Structure.EntityType.Polymer; break;
-                case 'non-polymer': et = Structure.EntityType.NonPolymer; break;
-                case 'water': et = Structure.EntityType.Water; break;
-                default: et = Structure.EntityType.Unknown; break;
-            }
             let eId = idCol.getString(i) || Defaults.EntityId;
-            dataEnum[eId] = et;
-            data[eId] = t !== '' ? t : 'unknown';
+            switch (t) {
+                case 'polymer':
+                case 'non-polymer':
+                case 'water': 
+                    data[eId] = t;
+                    break;
+                default: 
+                    data[eId] = 'unknown'; 
+                    break;
+            }
         }
 
         for (i = 0; i < entities.count; i++) {
-            et = dataEnum[entities.entityId[i]];
-            if (et !== undefined) {
-                entities.entityType[i] = et;
-                entities.type[i] = data[entities.entityId[i]];
+            let et = data[entities.entityId[i]];
+            if (et !== void 0) {
+                entities.type[i] = et;
             }
         }
     }
@@ -394,10 +386,8 @@ namespace LiteMol.Core.Formats.Molecule.mmCIF {
 
     const aminoAcidNames: { [id: string]: boolean } = { 'ALA': true, 'ARG': true, 'ASP': true, 'CYS': true, 'GLN': true, 'GLU': true, 'GLY': true, 'HIS': true, 'ILE': true, 'LEU': true, 'LYS': true, 'MET': true, 'PHE': true, 'PRO': true, 'SER': true, 'THR': true, 'TRP': true, 'TYR': true, 'VAL': true, 'ASN': true, 'PYL': true, 'SEC': true };
 
-    function isResidueAminoSeq(atoms: Structure.DefaultAtomTableSchema, residues: Structure.DefaultResidueTableSchema, entities: Structure.DefaultEntityTableSchema, index: number) {
-
-
-        if (entities.entityType[residues.entityIndex[index]] !== Structure.EntityType.Polymer) return false;
+    function isResidueAminoSeq(atoms: Structure.AtomTable, residues: Structure.ResidueTable, entities: Structure.EntityTable, index: number) {
+        if (entities.type[residues.entityIndex[index]] !== 'polymer') return false;
 
         //if (mmCif.aminoAcidNames[residues.name[index]]) return true;
 
@@ -420,9 +410,9 @@ namespace LiteMol.Core.Formats.Molecule.mmCIF {
         return (ca && o) || (ca && !residues.isHet[index]);
     }
 
-    function isResidueNucleotide(atoms: Structure.DefaultAtomTableSchema, residues: Structure.DefaultResidueTableSchema, entities: Structure.DefaultEntityTableSchema, index: number) {
+    function isResidueNucleotide(atoms: Structure.AtomTable, residues: Structure.ResidueTable, entities: Structure.EntityTable, index: number) {
 
-        if (aminoAcidNames[residues.name[index]] || entities.entityType[residues.entityIndex[index]] !== Structure.EntityType.Polymer) return false;
+        if (aminoAcidNames[residues.name[index]] || entities.type[residues.entityIndex[index]] !== 'polymer') return false;
 
         let o5 = false, c3 = false, n3 = false, p = false,
             names = atoms.name, assigned = 0;
@@ -454,7 +444,7 @@ namespace LiteMol.Core.Formats.Molecule.mmCIF {
         return o5 && c3 && n3 && p;
     }
 
-    function analyzeSecondaryStructure(atoms: Structure.DataTable, residues: Structure.DefaultResidueTableSchema, entities: Structure.DefaultEntityTableSchema, start: number, end: number, elements: Structure.SecondaryStructureElement[]) {
+    function analyzeSecondaryStructure(atoms: Structure.AtomTable, residues: Structure.ResidueTable, entities: Structure.EntityTable, start: number, end: number, elements: Structure.SecondaryStructureElement[]) {
         let asymId = residues.asymId,
             entityIndex = residues.entityIndex,
             currentType = Structure.SecondaryStructureType.None,
@@ -502,7 +492,7 @@ namespace LiteMol.Core.Formats.Molecule.mmCIF {
         }
     }
 
-    function splitNonconsecutiveSecondaryStructure(residues: Structure.DefaultResidueTableSchema, elements: Structure.SecondaryStructureElement[]) {
+    function splitNonconsecutiveSecondaryStructure(residues: Structure.ResidueTable, elements: Structure.SecondaryStructureElement[]) {
 
         let ret: Structure.SecondaryStructureElement[] = []
         let authSeqNumber = residues.authSeqNumber;
@@ -617,7 +607,7 @@ namespace LiteMol.Core.Formats.Molecule.mmCIF {
         }
     }
 
-    function getSecondaryStructureInfo(data: CIF.DataBlock, atoms: Structure.DataTable, structure: StructureWrapper): Structure.SecondaryStructureElement[] {
+    function getSecondaryStructureInfo(data: CIF.DataBlock, atoms: Structure.AtomTable, structure: StructureWrapper): Structure.SecondaryStructureElement[] {
 
         let input: Structure.SecondaryStructureElement[] = [],
             elements: Structure.SecondaryStructureElement[] = [];
@@ -714,7 +704,7 @@ namespace LiteMol.Core.Formats.Molecule.mmCIF {
         return splitNonconsecutiveSecondaryStructure(residues, elements);
     }
 
-    function assignSecondaryStructureIndex(residues: Structure.DefaultResidueTableSchema, ss: Structure.SecondaryStructureElement[]) {
+    function assignSecondaryStructureIndex(residues: Structure.ResidueTable, ss: Structure.SecondaryStructureElement[]) {
         let ssIndex = residues.secondaryStructureIndex;
 
         let index = 0;
@@ -883,17 +873,17 @@ namespace LiteMol.Core.Formats.Molecule.mmCIF {
                 entry = info.newEntry(id);
             }
 
-            let t: Structure.BondType;
+            let t: Structure.Bond.Type;
 
             switch (order.toLowerCase()) {
-                case 'sing': t = Structure.BondType.Single; break;
+                case 'sing': t = Structure.Bond.Type.Single; break;
                 case 'doub':
                 case 'delo':
-                    t = Structure.BondType.Double;
+                    t = Structure.Bond.Type.Double;
                     break;
-                case 'trip': t = Structure.BondType.Triple; break;
-                case 'quad': t = Structure.BondType.Aromatic; break;
-                default: t = Structure.BondType.Unknown; break;
+                case 'trip': t = Structure.Bond.Type.Triple; break;
+                case 'quad': t = Structure.Bond.Type.Aromatic; break;
+                default: t = Structure.Bond.Type.Unknown; break;
             }
 
             entry.add(nameA, nameB, t);
@@ -902,9 +892,9 @@ namespace LiteMol.Core.Formats.Molecule.mmCIF {
         return info;
     }
 
-    function getModel(startRow: number, data: CIF.DataBlock, atomSiteColumns: AtomSiteColumns): { model: Structure.MoleculeModel; endRow: number } {
+    function getModel(startRow: number, data: CIF.DataBlock, atomSiteColumns: AtomSiteColumns): { model: Structure.Molecule.Model; endRow: number } {
 
-        let { atoms, modelId, endRow } = buildModelAtomTable(startRow, data.getCategory('_atom_site')!.rowCount, atomSiteColumns),
+        let { atoms, positions, modelId, endRow } = buildModelAtomTable(startRow, data.getCategory('_atom_site')!.rowCount, atomSiteColumns),
             structure = buildStructure(atomSiteColumns, atoms),
             entry = data.getCategory('_entry'),
             id: string;
@@ -917,25 +907,30 @@ namespace LiteMol.Core.Formats.Molecule.mmCIF {
         assignSecondaryStructureIndex(structure.residues, ss);
 
         return {
-            model: new Structure.MoleculeModel({
+            model: Structure.Molecule.Model.create({
                 id,
                 modelId,
-                atoms,
-                residues: structure.residues,
-                chains: structure.chains,
-                entities: structure.entities,
-                componentBonds: getComponentBonds(data.getCategory('_chem_comp_bond')),
-                secondaryStructure: ss,
-                symmetryInfo: getSymmetryInfo(data),
-                assemblyInfo: getAssemblyInfo(data),
-                source: Structure.MoleculeModelSource.File
+                data: { 
+                    atoms,
+                    residues: structure.residues,
+                    chains: structure.chains,
+                    entities: structure.entities,
+                    bonds: { 
+                        component: getComponentBonds(data.getCategory('_chem_comp_bond'))
+                    },
+                    secondaryStructure: ss,
+                    symmetryInfo: getSymmetryInfo(data),
+                    assemblyInfo: getAssemblyInfo(data),
+                },
+                positions,
+                source: Structure.Molecule.Model.Source.File
             }),
             endRow
         };
     }
 
     export function ofDataBlock(data: CIF.DataBlock): Structure.Molecule {
-        let models: Structure.MoleculeModel[] = [],
+        let models: Structure.Molecule.Model[] = [],
             atomSite = data.getCategory('_atom_site'),
             startRow = 0;
 
@@ -962,6 +957,6 @@ namespace LiteMol.Core.Formats.Molecule.mmCIF {
             experimentMethod = _exptl.getColumn('method').getString(0) || void 0;
         }
 
-        return new Structure.Molecule(id, models, { experimentMethod });
+        return Structure.Molecule.create(id, models, { experimentMethod });
     }
 }
