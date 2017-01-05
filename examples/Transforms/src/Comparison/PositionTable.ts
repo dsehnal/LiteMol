@@ -5,7 +5,7 @@
 namespace LiteMol.Comparison.Base {
     "use strict";
 
-    import PositionTableSchema = Core.Structure.PositionTableSchema;
+    import PositionTableSchema = Core.Structure.PositionTable;
     import ObjectVec3 = Core.Geometry.LinearAlgebra.ObjectVec3;
 
     export namespace PositionTable {        

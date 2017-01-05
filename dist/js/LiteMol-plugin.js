@@ -11560,6 +11560,100 @@ var LiteMol;
     (function (Core) {
         var Utils;
         (function (Utils) {
+            "use strict";
+            var DataTable;
+            (function (DataTable) {
+                function builder(count) {
+                    return new BuilderImpl(count);
+                }
+                DataTable.builder = builder;
+                var Row = (function () {
+                    function Row(table, indexer) {
+                        for (var _i = 0, _a = table.columns; _i < _a.length; _i++) {
+                            var _c = _a[_i];
+                            (function (c, row, idx, data) {
+                                Object.defineProperty(row, c.name, { enumerable: true, configurable: false, get: function () { return data[idx.index]; } });
+                            })(_c, this, indexer, table[_c.name]);
+                        }
+                    }
+                    return Row;
+                }());
+                var TableImpl = (function () {
+                    function TableImpl(count, srcColumns, srcData) {
+                        this.__rowIndexer = { index: 0 };
+                        this.count = count;
+                        this.indices = new Int32Array(count);
+                        this.columns = [];
+                        for (var i = 0; i < count; i++) {
+                            this.indices[i] = i;
+                        }
+                        for (var _i = 0, srcColumns_1 = srcColumns; _i < srcColumns_1.length; _i++) {
+                            var col = srcColumns_1[_i];
+                            var data = srcData[col.name];
+                            if (Utils.ChunkedArray.is(data)) {
+                                data = Utils.ChunkedArray.compact(data);
+                            }
+                            Object.defineProperty(this, col.name, { enumerable: true, configurable: false, writable: false, value: data });
+                            this.columns[this.columns.length] = col;
+                        }
+                        this.__row = new Row(this, this.__rowIndexer);
+                    }
+                    TableImpl.prototype.getBuilder = function (count) {
+                        var b = new BuilderImpl(count);
+                        for (var _i = 0, _a = this.columns; _i < _a.length; _i++) {
+                            var c = _a[_i];
+                            b.addColumn(c.name, c.creator);
+                        }
+                        return b;
+                    };
+                    TableImpl.prototype.getRawData = function () {
+                        var _this = this;
+                        return this.columns.map(function (c) { return _this[c.name]; });
+                    };
+                    TableImpl.prototype.getRow = function (i) {
+                        this.__rowIndexer.index = i;
+                        return this.__row;
+                    };
+                    return TableImpl;
+                }());
+                var BuilderImpl = (function () {
+                    function BuilderImpl(count) {
+                        this.columns = [];
+                        this.count = count;
+                    }
+                    BuilderImpl.prototype.addColumn = function (name, creator) {
+                        var c = creator(this.count);
+                        Object.defineProperty(this, name, { enumerable: true, configurable: false, writable: false, value: c });
+                        this.columns[this.columns.length] = { name: name, creator: creator };
+                        return c;
+                    };
+                    BuilderImpl.prototype.getRawData = function () {
+                        var _this = this;
+                        return this.columns.map(function (c) { return _this[c.name]; });
+                    };
+                    /**
+                     * This functions clones the table and defines all its column inside the constructor, hopefully making the JS engine
+                     * use internal class instead of dictionary representation.
+                     */
+                    BuilderImpl.prototype.seal = function () {
+                        return new TableImpl(this.count, this.columns, this);
+                    };
+                    return BuilderImpl;
+                }());
+            })(DataTable = Utils.DataTable || (Utils.DataTable = {}));
+        })(Utils = Core.Utils || (Core.Utils = {}));
+    })(Core = LiteMol.Core || (LiteMol.Core = {}));
+})(LiteMol || (LiteMol = {}));
+/*
+ * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ */
+var LiteMol;
+(function (LiteMol) {
+    var Core;
+    (function (Core) {
+        var Utils;
+        (function (Utils) {
+            "use strict";
             function integerSetToSortedTypedArray(set) {
                 var array = new Int32Array(set.size);
                 set.forEach(function (v) { this.array[this.index++] = v; }, { array: array, index: 0 });
@@ -12081,7 +12175,7 @@ var LiteMol;
                     }
                     function buildModelAtomTable(startRow, rowCount, columns) {
                         var endRow = getModelEndRow(startRow, rowCount, columns.get('pdbx_PDB_model_num'));
-                        var atoms = new Core.Structure.DataTableBuilder(endRow - startRow), id = atoms.addColumn('id', function (size) { return new Int32Array(size); }), idCol = columns.get('id'), pX = atoms.addColumn('x', function (size) { return new Float32Array(size); }), pXCol = columns.get('Cartn_x'), pY = atoms.addColumn('y', function (size) { return new Float32Array(size); }), pYCol = columns.get('Cartn_y'), pZ = atoms.addColumn('z', function (size) { return new Float32Array(size); }), pZCol = columns.get('Cartn_z'), altLoc = atoms.addColumn('altLoc', function (size) { return new Array(size); }), altLocCol = columns.get('label_alt_id'), rowIndex = atoms.addColumn('rowIndex', function (size) { return new Int32Array(size); }), residueIndex = atoms.addColumn('residueIndex', function (size) { return new Int32Array(size); }), chainIndex = atoms.addColumn('chainIndex', function (size) { return new Int32Array(size); }), entityIndex = atoms.addColumn('entityIndex', function (size) { return new Int32Array(size); }), name = atoms.addColumn('name', function (size) { return new Array(size); }), nameCol = columns.get('label_atom_id'), elementSymbol = atoms.addColumn('elementSymbol', function (size) { return new Array(size); }), elementSymbolCol = columns.get('type_symbol'), occupancy = atoms.addColumn('occupancy', function (size) { return new Float32Array(size); }), occupancyCol = columns.get('occupancy'), tempFactor = atoms.addColumn('tempFactor', function (size) { return new Float32Array(size); }), tempFactorCol = columns.get('B_iso_or_equiv'), authName = atoms.addColumn('authName', function (size) { return new Array(size); }), authNameCol = columns.get('auth_atom_id');
+                        var atoms = Core.Utils.DataTable.builder(endRow - startRow), positions = Core.Utils.DataTable.builder(endRow - startRow), id = atoms.addColumn('id', function (size) { return new Int32Array(size); }), idCol = columns.get('id'), pX = positions.addColumn('x', function (size) { return new Float32Array(size); }), pXCol = columns.get('Cartn_x'), pY = positions.addColumn('y', function (size) { return new Float32Array(size); }), pYCol = columns.get('Cartn_y'), pZ = positions.addColumn('z', function (size) { return new Float32Array(size); }), pZCol = columns.get('Cartn_z'), altLoc = atoms.addColumn('altLoc', function (size) { return new Array(size); }), altLocCol = columns.get('label_alt_id'), rowIndex = atoms.addColumn('rowIndex', function (size) { return new Int32Array(size); }), residueIndex = atoms.addColumn('residueIndex', function (size) { return new Int32Array(size); }), chainIndex = atoms.addColumn('chainIndex', function (size) { return new Int32Array(size); }), entityIndex = atoms.addColumn('entityIndex', function (size) { return new Int32Array(size); }), name = atoms.addColumn('name', function (size) { return new Array(size); }), nameCol = columns.get('label_atom_id'), elementSymbol = atoms.addColumn('elementSymbol', function (size) { return new Array(size); }), elementSymbolCol = columns.get('type_symbol'), occupancy = atoms.addColumn('occupancy', function (size) { return new Float32Array(size); }), occupancyCol = columns.get('occupancy'), tempFactor = atoms.addColumn('tempFactor', function (size) { return new Float32Array(size); }), tempFactorCol = columns.get('B_iso_or_equiv'), authName = atoms.addColumn('authName', function (size) { return new Array(size); }), authNameCol = columns.get('auth_atom_id');
                         var asymIdCol = columns.get('label_asym_id'), entityIdCol = columns.get('label_entity_id'), insCodeCol = columns.get('pdbx_PDB_ins_code'), authResSeqNumberCol = columns.get('auth_seq_id'), modelNumCol = columns.get('pdbx_PDB_model_num'), numChains = 0, numResidues = 0, numEntities = 0;
                         var prev = startRow;
                         for (var row = startRow; row < endRow; row++) {
@@ -12120,14 +12214,15 @@ var LiteMol;
                         var modelId = !modelNumCol.isDefined ? Defaults.ModelId : modelNumCol.getString(startRow) || Defaults.ModelId;
                         return {
                             atoms: atoms.seal(),
+                            positions: positions.seal(),
                             modelId: modelId,
                             endRow: endRow
                         };
                     }
                     function buildStructure(columns, atoms) {
-                        var count = atoms.count, residueIndexCol = atoms.residueIndex, chainIndexCol = atoms.chainIndex, entityIndexCol = atoms.entityIndex, residues = new Core.Structure.DataTableBuilder(atoms.residueIndex[atoms.count - 1] + 1), chains = new Core.Structure.DataTableBuilder(atoms.chainIndex[atoms.count - 1] + 1), entities = new Core.Structure.DataTableBuilder(atoms.entityIndex[atoms.count - 1] + 1), residueName = residues.addColumn('name', function (size) { return new Array(size); }), residueSeqNumber = residues.addColumn('seqNumber', function (size) { return new Int32Array(size); }), residueAsymId = residues.addColumn('asymId', function (size) { return new Array(size); }), residueAuthName = residues.addColumn('authName', function (size) { return new Array(size); }), residueAuthSeqNumber = residues.addColumn('authSeqNumber', function (size) { return new Int32Array(size); }), residueAuthAsymId = residues.addColumn('authAsymId', function (size) { return new Array(size); }), residueInsertionCode = residues.addColumn('insCode', function (size) { return new Array(size); }), residueEntityId = residues.addColumn('entityId', function (size) { return new Array(size); }), residueIsHet = residues.addColumn('isHet', function (size) { return new Int8Array(size); }), residueAtomStartIndex = residues.addColumn('atomStartIndex', function (size) { return new Int32Array(size); }), residueAtomEndIndex = residues.addColumn('atomEndIndex', function (size) { return new Int32Array(size); }), residueChainIndex = residues.addColumn('chainIndex', function (size) { return new Int32Array(size); }), residueEntityIndex = residues.addColumn('entityIndex', function (size) { return new Int32Array(size); });
+                        var count = atoms.count, residueIndexCol = atoms.residueIndex, chainIndexCol = atoms.chainIndex, entityIndexCol = atoms.entityIndex, residues = Core.Utils.DataTable.builder(atoms.residueIndex[atoms.count - 1] + 1), chains = Core.Utils.DataTable.builder(atoms.chainIndex[atoms.count - 1] + 1), entities = Core.Utils.DataTable.builder(atoms.entityIndex[atoms.count - 1] + 1), residueName = residues.addColumn('name', function (size) { return new Array(size); }), residueSeqNumber = residues.addColumn('seqNumber', function (size) { return new Int32Array(size); }), residueAsymId = residues.addColumn('asymId', function (size) { return new Array(size); }), residueAuthName = residues.addColumn('authName', function (size) { return new Array(size); }), residueAuthSeqNumber = residues.addColumn('authSeqNumber', function (size) { return new Int32Array(size); }), residueAuthAsymId = residues.addColumn('authAsymId', function (size) { return new Array(size); }), residueInsertionCode = residues.addColumn('insCode', function (size) { return new Array(size); }), residueEntityId = residues.addColumn('entityId', function (size) { return new Array(size); }), residueIsHet = residues.addColumn('isHet', function (size) { return new Int8Array(size); }), residueAtomStartIndex = residues.addColumn('atomStartIndex', function (size) { return new Int32Array(size); }), residueAtomEndIndex = residues.addColumn('atomEndIndex', function (size) { return new Int32Array(size); }), residueChainIndex = residues.addColumn('chainIndex', function (size) { return new Int32Array(size); }), residueEntityIndex = residues.addColumn('entityIndex', function (size) { return new Int32Array(size); });
                         residues.addColumn('secondaryStructureIndex', function (size) { return new Int32Array(size); });
-                        var chainAsymId = chains.addColumn('asymId', function (size) { return []; }), chainEntityId = chains.addColumn('entityId', function (size) { return []; }), chainAuthAsymId = chains.addColumn('authAsymId', function (size) { return []; }), chainAtomStartIndex = chains.addColumn('atomStartIndex', function (size) { return new Int32Array(size); }), chainAtomEndIndex = chains.addColumn('atomEndIndex', function (size) { return new Int32Array(size); }), chainResidueStartIndex = chains.addColumn('residueStartIndex', function (size) { return new Int32Array(size); }), chainResidueEndIndex = chains.addColumn('residueEndIndex', function (size) { return new Int32Array(size); }), chainEntityIndex = chains.addColumn('entityIndex', function (size) { return new Int32Array(size); }), entityId = entities.addColumn('entityId', function (size) { return []; }), entityTypeEnum = entities.addColumn('entityType', function (size) { return []; }), entityType = entities.addColumn('type', function (size) { return []; }), entityAtomStartIndex = entities.addColumn('atomStartIndex', function (size) { return new Int32Array(size); }), entityAtomEndIndex = entities.addColumn('atomEndIndex', function (size) { return new Int32Array(size); }), entityResidueStartIndex = entities.addColumn('residueStartIndex', function (size) { return new Int32Array(size); }), entityResidueEndIndex = entities.addColumn('residueEndIndex', function (size) { return new Int32Array(size); }), entityChainStartIndex = entities.addColumn('chainStartIndex', function (size) { return new Int32Array(size); }), entityChainEndIndex = entities.addColumn('chainEndIndex', function (size) { return new Int32Array(size); }), resNameCol = columns.get('label_comp_id'), resSeqNumberCol = columns.get('label_seq_id'), asymIdCol = columns.get('label_asym_id'), authResNameCol = columns.get('auth_comp_id'), authResSeqNumberCol = columns.get('auth_seq_id'), authAsymIdCol = columns.get('auth_asym_id'), isHetCol = columns.get('group_PDB'), entityCol = columns.get('label_entity_id'), insCodeCol = columns.get('pdbx_PDB_ins_code'), residueStart = 0, chainStart = 0, entityStart = 0, entityChainStart = 0, entityResidueStart = 0, chainResidueStart = 0, currentResidue = 0, currentChain = 0, currentEntity = 0;
+                        var chainAsymId = chains.addColumn('asymId', function (size) { return []; }), chainEntityId = chains.addColumn('entityId', function (size) { return []; }), chainAuthAsymId = chains.addColumn('authAsymId', function (size) { return []; }), chainAtomStartIndex = chains.addColumn('atomStartIndex', function (size) { return new Int32Array(size); }), chainAtomEndIndex = chains.addColumn('atomEndIndex', function (size) { return new Int32Array(size); }), chainResidueStartIndex = chains.addColumn('residueStartIndex', function (size) { return new Int32Array(size); }), chainResidueEndIndex = chains.addColumn('residueEndIndex', function (size) { return new Int32Array(size); }), chainEntityIndex = chains.addColumn('entityIndex', function (size) { return new Int32Array(size); }), entityId = entities.addColumn('entityId', function (size) { return []; }), entityType = entities.addColumn('type', function (size) { return []; }), entityAtomStartIndex = entities.addColumn('atomStartIndex', function (size) { return new Int32Array(size); }), entityAtomEndIndex = entities.addColumn('atomEndIndex', function (size) { return new Int32Array(size); }), entityResidueStartIndex = entities.addColumn('residueStartIndex', function (size) { return new Int32Array(size); }), entityResidueEndIndex = entities.addColumn('residueEndIndex', function (size) { return new Int32Array(size); }), entityChainStartIndex = entities.addColumn('chainStartIndex', function (size) { return new Int32Array(size); }), entityChainEndIndex = entities.addColumn('chainEndIndex', function (size) { return new Int32Array(size); }), resNameCol = columns.get('label_comp_id'), resSeqNumberCol = columns.get('label_seq_id'), asymIdCol = columns.get('label_asym_id'), authResNameCol = columns.get('auth_comp_id'), authResSeqNumberCol = columns.get('auth_seq_id'), authAsymIdCol = columns.get('auth_asym_id'), isHetCol = columns.get('group_PDB'), entityCol = columns.get('label_entity_id'), insCodeCol = columns.get('pdbx_PDB_ins_code'), residueStart = 0, chainStart = 0, entityStart = 0, entityChainStart = 0, entityResidueStart = 0, chainResidueStart = 0, currentResidue = 0, currentChain = 0, currentEntity = 0;
                         var i = 0;
                         for (i = 0; i < count; i++) {
                             if (residueIndexCol[i] !== residueIndexCol[residueStart]) {
@@ -12162,7 +12257,6 @@ var LiteMol;
                             }
                             if (entityIndexCol[i] !== entityIndexCol[entityStart]) {
                                 entityId[currentEntity] = entityCol.getString(entityStart) || Defaults.EntityId;
-                                entityTypeEnum[currentEntity] = Core.Structure.EntityType.Unknown;
                                 entityType[currentEntity] = 'unknown';
                                 entityAtomStartIndex[currentEntity] = entityStart;
                                 entityAtomEndIndex[currentEntity] = i;
@@ -12178,7 +12272,6 @@ var LiteMol;
                         }
                         // entity
                         entityId[currentEntity] = entityCol.getString(entityStart) || Defaults.EntityId;
-                        entityTypeEnum[currentEntity] = Core.Structure.EntityType.Unknown;
                         entityType[currentEntity] = 'unknown';
                         entityAtomStartIndex[currentEntity] = entityStart;
                         entityAtomEndIndex[currentEntity] = i;
@@ -12216,38 +12309,28 @@ var LiteMol;
                     }
                     function assignEntityTypes(category, entities) {
                         var i;
-                        for (i = 0; i < entities.count; i++) {
-                            entities.entityType[i] = Core.Structure.EntityType.Unknown;
-                        }
                         if (!category) {
                             return;
                         }
-                        var dataEnum = {}, data = {}, et, typeCol = category.getColumn('type'), idCol = category.getColumn('id');
+                        var data = {}, typeCol = category.getColumn('type'), idCol = category.getColumn('id');
                         for (i = 0; i < category.rowCount; i++) {
                             var t = (typeCol.getString(i) || '').toLowerCase();
+                            var eId = idCol.getString(i) || Defaults.EntityId;
                             switch (t) {
                                 case 'polymer':
-                                    et = Core.Structure.EntityType.Polymer;
-                                    break;
                                 case 'non-polymer':
-                                    et = Core.Structure.EntityType.NonPolymer;
-                                    break;
                                 case 'water':
-                                    et = Core.Structure.EntityType.Water;
+                                    data[eId] = t;
                                     break;
                                 default:
-                                    et = Core.Structure.EntityType.Unknown;
+                                    data[eId] = 'unknown';
                                     break;
                             }
-                            var eId = idCol.getString(i) || Defaults.EntityId;
-                            dataEnum[eId] = et;
-                            data[eId] = t !== '' ? t : 'unknown';
                         }
                         for (i = 0; i < entities.count; i++) {
-                            et = dataEnum[entities.entityId[i]];
-                            if (et !== undefined) {
-                                entities.entityType[i] = et;
-                                entities.type[i] = data[entities.entityId[i]];
+                            var et = data[entities.entityId[i]];
+                            if (et !== void 0) {
+                                entities.type[i] = et;
                             }
                         }
                     }
@@ -12256,7 +12339,7 @@ var LiteMol;
                     }
                     var aminoAcidNames = { 'ALA': true, 'ARG': true, 'ASP': true, 'CYS': true, 'GLN': true, 'GLU': true, 'GLY': true, 'HIS': true, 'ILE': true, 'LEU': true, 'LYS': true, 'MET': true, 'PHE': true, 'PRO': true, 'SER': true, 'THR': true, 'TRP': true, 'TYR': true, 'VAL': true, 'ASN': true, 'PYL': true, 'SEC': true };
                     function isResidueAminoSeq(atoms, residues, entities, index) {
-                        if (entities.entityType[residues.entityIndex[index]] !== Core.Structure.EntityType.Polymer)
+                        if (entities.type[residues.entityIndex[index]] !== 'polymer')
                             return false;
                         //if (mmCif.aminoAcidNames[residues.name[index]]) return true;
                         var ca = false, o = false, names = atoms.name, assigned = 0;
@@ -12276,7 +12359,7 @@ var LiteMol;
                         return (ca && o) || (ca && !residues.isHet[index]);
                     }
                     function isResidueNucleotide(atoms, residues, entities, index) {
-                        if (aminoAcidNames[residues.name[index]] || entities.entityType[residues.entityIndex[index]] !== Core.Structure.EntityType.Polymer)
+                        if (aminoAcidNames[residues.name[index]] || entities.type[residues.entityIndex[index]] !== 'polymer')
                             return false;
                         var o5 = false, c3 = false, n3 = false, p = false, names = atoms.name, assigned = 0;
                         var start = residues.atomStartIndex[index], end = residues.atomEndIndex[index];
@@ -12656,7 +12739,7 @@ var LiteMol;
                         return info;
                     }
                     function getModel(startRow, data, atomSiteColumns) {
-                        var _a = buildModelAtomTable(startRow, data.getCategory('_atom_site').rowCount, atomSiteColumns), atoms = _a.atoms, modelId = _a.modelId, endRow = _a.endRow, structure = buildStructure(atomSiteColumns, atoms), entry = data.getCategory('_entry'), id;
+                        var _a = buildModelAtomTable(startRow, data.getCategory('_atom_site').rowCount, atomSiteColumns), atoms = _a.atoms, positions = _a.positions, modelId = _a.modelId, endRow = _a.endRow, structure = buildStructure(atomSiteColumns, atoms), entry = data.getCategory('_entry'), id;
                         if (entry && entry.getColumn('id').isDefined)
                             id = entry.getColumn('id').getString(0);
                         else
@@ -12665,18 +12748,23 @@ var LiteMol;
                         var ss = getSecondaryStructureInfo(data, atoms, structure);
                         assignSecondaryStructureIndex(structure.residues, ss);
                         return {
-                            model: new Core.Structure.MoleculeModel({
+                            model: Core.Structure.Molecule.Model.create({
                                 id: id,
                                 modelId: modelId,
-                                atoms: atoms,
-                                residues: structure.residues,
-                                chains: structure.chains,
-                                entities: structure.entities,
-                                componentBonds: getComponentBonds(data.getCategory('_chem_comp_bond')),
-                                secondaryStructure: ss,
-                                symmetryInfo: getSymmetryInfo(data),
-                                assemblyInfo: getAssemblyInfo(data),
-                                source: Core.Structure.MoleculeModelSource.File
+                                data: {
+                                    atoms: atoms,
+                                    residues: structure.residues,
+                                    chains: structure.chains,
+                                    entities: structure.entities,
+                                    bonds: {
+                                        component: getComponentBonds(data.getCategory('_chem_comp_bond'))
+                                    },
+                                    secondaryStructure: ss,
+                                    symmetryInfo: getSymmetryInfo(data),
+                                    assemblyInfo: getAssemblyInfo(data),
+                                },
+                                positions: positions,
+                                source: Core.Structure.Molecule.Model.Source.File
                             }),
                             endRow: endRow
                         };
@@ -12701,7 +12789,7 @@ var LiteMol;
                         if (_exptl) {
                             experimentMethod = _exptl.getColumn('method').getString(0) || void 0;
                         }
-                        return new Core.Structure.Molecule(id, models, { experimentMethod: experimentMethod });
+                        return Core.Structure.Molecule.create(id, models, { experimentMethod: experimentMethod });
                     }
                     mmCIF.ofDataBlock = ofDataBlock;
                 })(mmCIF = Molecule.mmCIF || (Molecule.mmCIF = {}));
@@ -13341,8 +13429,9 @@ var LiteMol;
                             id: customId ? customId : id,
                             atomCount: atomCount,
                             bondCount: bondCount,
-                            atoms: Core.Structure.DefaultDataTables.forAtoms(atomCount).table,
-                            bonds: Core.Structure.DefaultDataTables.forBonds(bondCount).table,
+                            atoms: Core.Structure.Tables.atoms(atomCount).table,
+                            positions: Core.Structure.Tables.positions(atomCount).table,
+                            bonds: Core.Structure.Tables.bonds(bondCount).table,
                             lines: lines,
                             currentLine: 4,
                             error: void 0,
@@ -13351,7 +13440,7 @@ var LiteMol;
                     }
                     function readAtom(i, state) {
                         var line = state.lines[state.currentLine];
-                        var atoms = state.atoms;
+                        var atoms = state.atoms, positions = state.positions;
                         var es = Formats.ShortStringPool.get(state.stringPool, line.substr(31, 3).trim());
                         atoms.id[i] = i;
                         atoms.elementSymbol[i] = es;
@@ -13359,9 +13448,9 @@ var LiteMol;
                         atoms.authName[i] = es;
                         atoms.occupancy[i] = 1.0;
                         atoms.rowIndex[i] = state.currentLine;
-                        atoms.x[i] = Core.Utils.FastNumberParsers.parseFloatSkipTrailingWhitespace(line, 0, 10);
-                        atoms.y[i] = Core.Utils.FastNumberParsers.parseFloatSkipTrailingWhitespace(line, 10, 20);
-                        atoms.z[i] = Core.Utils.FastNumberParsers.parseFloatSkipTrailingWhitespace(line, 20, 30);
+                        positions.x[i] = Core.Utils.FastNumberParsers.parseFloatSkipTrailingWhitespace(line, 0, 10);
+                        positions.y[i] = Core.Utils.FastNumberParsers.parseFloatSkipTrailingWhitespace(line, 10, 20);
+                        positions.z[i] = Core.Utils.FastNumberParsers.parseFloatSkipTrailingWhitespace(line, 20, 30);
                     }
                     function readAtoms(state) {
                         for (var i = 0; i < state.atomCount; i++) {
@@ -13399,7 +13488,7 @@ var LiteMol;
                         }
                     }
                     function buildModel(state) {
-                        var residues = Core.Structure.DefaultDataTables.forResidues(1), chains = Core.Structure.DefaultDataTables.forChains(1), entities = Core.Structure.DefaultDataTables.forEntities(1);
+                        var residues = Core.Structure.Tables.residues(1), chains = Core.Structure.Tables.chains(1), entities = Core.Structure.Tables.entities(1);
                         residues.columns.isHet[0] = 1;
                         residues.columns.insCode[0] = null;
                         residues.columns.name[0]
@@ -13423,24 +13512,27 @@ var LiteMol;
                                 = 0;
                         entities.columns.chainEndIndex[0] = 1;
                         entities.columns.type[0] = 'non-polymer';
-                        entities.columns.entityType[0] = Core.Structure.EntityType.NonPolymer;
                         var ssR = new Core.Structure.PolyResidueIdentifier('X', 0, null);
                         var ss = [new Core.Structure.SecondaryStructureElement(0 /* None */, ssR, ssR)];
                         ss[0].startResidueIndex = 0;
                         ss[0].endResidueIndex = 1;
-                        return new Core.Structure.MoleculeModel({
+                        return Core.Structure.Molecule.Model.create({
                             id: state.id,
                             modelId: '1',
-                            atoms: state.atoms,
-                            residues: residues.table,
-                            chains: chains.table,
-                            entities: entities.table,
-                            covalentBonds: state.bonds,
-                            componentBonds: void 0,
-                            secondaryStructure: ss,
-                            symmetryInfo: void 0,
-                            assemblyInfo: void 0,
-                            source: Core.Structure.MoleculeModelSource.File
+                            data: {
+                                atoms: state.atoms,
+                                residues: residues.table,
+                                chains: chains.table,
+                                entities: entities.table,
+                                bonds: {
+                                    covalent: state.bonds,
+                                },
+                                secondaryStructure: ss,
+                                symmetryInfo: void 0,
+                                assemblyInfo: void 0,
+                            },
+                            positions: state.positions,
+                            source: Core.Structure.Molecule.Model.Source.File
                         });
                     }
                     function parse(data, id) {
@@ -13452,7 +13544,7 @@ var LiteMol;
                             if (state.error) {
                                 return Formats.ParserResult.error(state.error, state.currentLine + 1);
                             }
-                            var molecule = new Core.Structure.Molecule(id ? id : state.id, [model]);
+                            var molecule = Core.Structure.Molecule.create(id ? id : state.id, [model]);
                             return Formats.ParserResult.success(molecule);
                         }
                         catch (e) {
@@ -15983,79 +16075,7 @@ var LiteMol;
         var Structure;
         (function (Structure) {
             "use strict";
-            var DataTableColumnDescriptor = (function () {
-                function DataTableColumnDescriptor(name, creator) {
-                    this.name = name;
-                    this.creator = creator;
-                }
-                return DataTableColumnDescriptor;
-            }());
-            Structure.DataTableColumnDescriptor = DataTableColumnDescriptor;
-            var DataTable = (function () {
-                function DataTable(count, srcColumns, srcData) {
-                    this.count = count;
-                    this.indices = new Int32Array(count);
-                    this.columns = [];
-                    for (var i = 0; i < count; i++) {
-                        this.indices[i] = i;
-                    }
-                    for (var _i = 0, srcColumns_1 = srcColumns; _i < srcColumns_1.length; _i++) {
-                        var col = srcColumns_1[_i];
-                        var data = srcData[col.name];
-                        if (Core.Utils.ChunkedArray.is(data)) {
-                            data = Core.Utils.ChunkedArray.compact(data);
-                        }
-                        Object.defineProperty(this, col.name, { enumerable: true, configurable: false, writable: false, value: data });
-                        this.columns[this.columns.length] = col;
-                    }
-                }
-                DataTable.prototype.getBuilder = function (count) {
-                    var b = new DataTableBuilder(count);
-                    for (var _i = 0, _a = this.columns; _i < _a.length; _i++) {
-                        var c = _a[_i];
-                        b.addColumn(c.name, c.creator);
-                    }
-                    return b;
-                };
-                DataTable.prototype.getRawData = function () {
-                    var _this = this;
-                    return this.columns.map(function (c) { return _this[c.name]; });
-                };
-                return DataTable;
-            }());
-            Structure.DataTable = DataTable;
-            var DataTableBuilder = (function () {
-                function DataTableBuilder(count) {
-                    this.columns = [];
-                    this.count = count;
-                }
-                DataTableBuilder.prototype.addColumn = function (name, creator) {
-                    var c = creator(this.count);
-                    Object.defineProperty(this, name, { enumerable: true, configurable: false, writable: false, value: c });
-                    this.columns[this.columns.length] = new DataTableColumnDescriptor(name, creator);
-                    return c;
-                };
-                DataTableBuilder.prototype.getRawData = function () {
-                    var _this = this;
-                    return this.columns.map(function (c) { return _this[c.name]; });
-                };
-                /**
-                 * This functions clones the table and defines all its column inside the constructor, hopefully making the JS engine
-                 * use internal class instead of dictionary representation.
-                 */
-                DataTableBuilder.prototype.seal = function () {
-                    return new DataTable(this.count, this.columns, this);
-                };
-                return DataTableBuilder;
-            }());
-            Structure.DataTableBuilder = DataTableBuilder;
-            var EntityType;
-            (function (EntityType) {
-                EntityType[EntityType["Polymer"] = 0] = "Polymer";
-                EntityType[EntityType["NonPolymer"] = 1] = "NonPolymer";
-                EntityType[EntityType["Water"] = 2] = "Water";
-                EntityType[EntityType["Unknown"] = 3] = "Unknown";
-            })(EntityType = Structure.EntityType || (Structure.EntityType = {}));
+            var DataTable = Core.Utils.DataTable;
             var ComponentBondInfoEntry = (function () {
                 function ComponentBondInfoEntry(id) {
                     this.id = id;
@@ -16219,97 +16239,98 @@ var LiteMol;
             /**
              * Default Builders
              */
-            var DefaultDataTables;
-            (function (DefaultDataTables) {
-                function forAtoms(count) {
-                    var builder = new DataTableBuilder(count);
+            var Tables;
+            (function (Tables) {
+                function positions(count) {
+                    var builder = DataTable.builder(count);
                     var columns = {
-                        id: builder.addColumn("id", function (size) { return new Int32Array(size); }),
-                        x: builder.addColumn("x", function (size) { return new Float32Array(size); }),
-                        y: builder.addColumn("y", function (size) { return new Float32Array(size); }),
-                        z: builder.addColumn("z", function (size) { return new Float32Array(size); }),
-                        altLoc: builder.addColumn("altLoc", function (size) { return []; }),
-                        rowIndex: builder.addColumn("rowIndex", function (size) { return new Int32Array(size); }),
-                        residueIndex: builder.addColumn("residueIndex", function (size) { return new Int32Array(size); }),
-                        chainIndex: builder.addColumn("chainIndex", function (size) { return new Int32Array(size); }),
-                        entityIndex: builder.addColumn("entityIndex", function (size) { return new Int32Array(size); }),
-                        name: builder.addColumn("name", function (size) { return []; }),
-                        elementSymbol: builder.addColumn("elementSymbol", function (size) { return []; }),
-                        occupancy: builder.addColumn("occupancy", function (size) { return new Float32Array(size); }),
-                        tempFactor: builder.addColumn("tempFactor", function (size) { return new Float32Array(size); }),
-                        authName: builder.addColumn("authName", function (size) { return []; })
+                        x: builder.addColumn('x', function (size) { return new Float32Array(size); }),
+                        y: builder.addColumn('y', function (size) { return new Float32Array(size); }),
+                        z: builder.addColumn('z', function (size) { return new Float32Array(size); })
                     };
                     return { table: builder.seal(), columns: columns };
                 }
-                DefaultDataTables.forAtoms = forAtoms;
-                function forResidues(count) {
-                    var builder = new DataTableBuilder(count);
+                Tables.positions = positions;
+                function atoms(count) {
+                    var builder = DataTable.builder(count);
                     var columns = {
-                        name: builder.addColumn("name", function (size) { return []; }),
-                        seqNumber: builder.addColumn("seqNumber", function (size) { return new Int32Array(size); }),
-                        asymId: builder.addColumn("asymId", function (size) { return []; }),
-                        authName: builder.addColumn("authName", function (size) { return []; }),
-                        authSeqNumber: builder.addColumn("authSeqNumber", function (size) { return new Int32Array(size); }),
-                        authAsymId: builder.addColumn("authAsymId", function (size) { return []; }),
-                        insCode: builder.addColumn("insCode", function (size) { return []; }),
-                        entityId: builder.addColumn("entityId", function (size) { return []; }),
-                        isHet: builder.addColumn("isHet", function (size) { return new Int8Array(size); }),
-                        atomStartIndex: builder.addColumn("atomStartIndex", function (size) { return new Int32Array(size); }),
-                        atomEndIndex: builder.addColumn("atomEndIndex", function (size) { return new Int32Array(size); }),
-                        chainIndex: builder.addColumn("chainIndex", function (size) { return new Int32Array(size); }),
-                        entityIndex: builder.addColumn("entityIndex", function (size) { return new Int32Array(size); }),
-                        secondaryStructureIndex: builder.addColumn("secondaryStructureIndex", function (size) { return new Int32Array(size); }),
+                        id: builder.addColumn('id', function (size) { return new Int32Array(size); }),
+                        altLoc: builder.addColumn('altLoc', function (size) { return []; }),
+                        residueIndex: builder.addColumn('residueIndex', function (size) { return new Int32Array(size); }),
+                        chainIndex: builder.addColumn('chainIndex', function (size) { return new Int32Array(size); }),
+                        entityIndex: builder.addColumn('entityIndex', function (size) { return new Int32Array(size); }),
+                        name: builder.addColumn('name', function (size) { return []; }),
+                        elementSymbol: builder.addColumn('elementSymbol', function (size) { return []; }),
+                        occupancy: builder.addColumn('occupancy', function (size) { return new Float32Array(size); }),
+                        tempFactor: builder.addColumn('tempFactor', function (size) { return new Float32Array(size); }),
+                        authName: builder.addColumn('authName', function (size) { return []; }),
+                        rowIndex: builder.addColumn('rowIndex', function (size) { return new Int32Array(size); }),
                     };
                     return { table: builder.seal(), columns: columns };
                 }
-                DefaultDataTables.forResidues = forResidues;
-                function forChains(count) {
-                    var builder = new DataTableBuilder(count);
+                Tables.atoms = atoms;
+                function residues(count) {
+                    var builder = DataTable.builder(count);
                     var columns = {
-                        asymId: builder.addColumn("asymId", function (size) { return []; }),
-                        entityId: builder.addColumn("entityId", function (size) { return []; }),
-                        authAsymId: builder.addColumn("authAsymId", function (size) { return []; }),
-                        atomStartIndex: builder.addColumn("atomStartIndex", function (size) { return new Int32Array(size); }),
-                        atomEndIndex: builder.addColumn("atomEndIndex", function (size) { return new Int32Array(size); }),
-                        residueStartIndex: builder.addColumn("residueStartIndex", function (size) { return new Int32Array(size); }),
-                        residueEndIndex: builder.addColumn("residueEndIndex", function (size) { return new Int32Array(size); }),
-                        entityIndex: builder.addColumn("entityIndex", function (size) { return new Int32Array(size); }),
+                        name: builder.addColumn('name', function (size) { return []; }),
+                        seqNumber: builder.addColumn('seqNumber', function (size) { return new Int32Array(size); }),
+                        asymId: builder.addColumn('asymId', function (size) { return []; }),
+                        authName: builder.addColumn('authName', function (size) { return []; }),
+                        authSeqNumber: builder.addColumn('authSeqNumber', function (size) { return new Int32Array(size); }),
+                        authAsymId: builder.addColumn('authAsymId', function (size) { return []; }),
+                        insCode: builder.addColumn('insCode', function (size) { return []; }),
+                        entityId: builder.addColumn('entityId', function (size) { return []; }),
+                        isHet: builder.addColumn('isHet', function (size) { return new Int8Array(size); }),
+                        atomStartIndex: builder.addColumn('atomStartIndex', function (size) { return new Int32Array(size); }),
+                        atomEndIndex: builder.addColumn('atomEndIndex', function (size) { return new Int32Array(size); }),
+                        chainIndex: builder.addColumn('chainIndex', function (size) { return new Int32Array(size); }),
+                        entityIndex: builder.addColumn('entityIndex', function (size) { return new Int32Array(size); }),
+                        secondaryStructureIndex: builder.addColumn('secondaryStructureIndex', function (size) { return new Int32Array(size); }),
                     };
                     return { table: builder.seal(), columns: columns };
                 }
-                DefaultDataTables.forChains = forChains;
-                function forEntities(count) {
-                    var builder = new DataTableBuilder(count);
+                Tables.residues = residues;
+                function chains(count) {
+                    var builder = DataTable.builder(count);
                     var columns = {
-                        entityId: builder.addColumn("entityId", function (size) { return []; }),
-                        entityType: builder.addColumn("entityType", function (size) { return []; }),
-                        type: builder.addColumn("type", function (size) { return []; }),
-                        atomStartIndex: builder.addColumn("atomStartIndex", function (size) { return new Int32Array(size); }),
-                        atomEndIndex: builder.addColumn("atomEndIndex", function (size) { return new Int32Array(size); }),
-                        residueStartIndex: builder.addColumn("residueStartIndex", function (size) { return new Int32Array(size); }),
-                        residueEndIndex: builder.addColumn("residueEndIndex", function (size) { return new Int32Array(size); }),
-                        chainStartIndex: builder.addColumn("chainStartIndex", function (size) { return new Int32Array(size); }),
-                        chainEndIndex: builder.addColumn("chainEndIndex", function (size) { return new Int32Array(size); })
+                        asymId: builder.addColumn('asymId', function (size) { return []; }),
+                        entityId: builder.addColumn('entityId', function (size) { return []; }),
+                        authAsymId: builder.addColumn('authAsymId', function (size) { return []; }),
+                        atomStartIndex: builder.addColumn('atomStartIndex', function (size) { return new Int32Array(size); }),
+                        atomEndIndex: builder.addColumn('atomEndIndex', function (size) { return new Int32Array(size); }),
+                        residueStartIndex: builder.addColumn('residueStartIndex', function (size) { return new Int32Array(size); }),
+                        residueEndIndex: builder.addColumn('residueEndIndex', function (size) { return new Int32Array(size); }),
+                        entityIndex: builder.addColumn('entityIndex', function (size) { return new Int32Array(size); }),
                     };
                     return { table: builder.seal(), columns: columns };
                 }
-                DefaultDataTables.forEntities = forEntities;
-                function forBonds(count) {
-                    var builder = new DataTableBuilder(count);
+                Tables.chains = chains;
+                function entities(count) {
+                    var builder = DataTable.builder(count);
                     var columns = {
-                        atomAIndex: builder.addColumn("atomAIndex", function (size) { return new Int32Array(size); }),
-                        atomBIndex: builder.addColumn("atomBIndex", function (size) { return new Int32Array(size); }),
-                        type: builder.addColumn("type", function (size) { return new Int8Array(size); })
+                        entityId: builder.addColumn('entityId', function (size) { return []; }),
+                        type: builder.addColumn('type', function (size) { return []; }),
+                        atomStartIndex: builder.addColumn('atomStartIndex', function (size) { return new Int32Array(size); }),
+                        atomEndIndex: builder.addColumn('atomEndIndex', function (size) { return new Int32Array(size); }),
+                        residueStartIndex: builder.addColumn('residueStartIndex', function (size) { return new Int32Array(size); }),
+                        residueEndIndex: builder.addColumn('residueEndIndex', function (size) { return new Int32Array(size); }),
+                        chainStartIndex: builder.addColumn('chainStartIndex', function (size) { return new Int32Array(size); }),
+                        chainEndIndex: builder.addColumn('chainEndIndex', function (size) { return new Int32Array(size); })
                     };
                     return { table: builder.seal(), columns: columns };
                 }
-                DefaultDataTables.forBonds = forBonds;
-            })(DefaultDataTables = Structure.DefaultDataTables || (Structure.DefaultDataTables = {}));
-            var MoleculeModelSource;
-            (function (MoleculeModelSource) {
-                MoleculeModelSource[MoleculeModelSource["File"] = 0] = "File";
-                MoleculeModelSource[MoleculeModelSource["Computed"] = 1] = "Computed";
-            })(MoleculeModelSource = Structure.MoleculeModelSource || (Structure.MoleculeModelSource = {}));
+                Tables.entities = entities;
+                function bonds(count) {
+                    var builder = DataTable.builder(count);
+                    var columns = {
+                        atomAIndex: builder.addColumn('atomAIndex', function (size) { return new Int32Array(size); }),
+                        atomBIndex: builder.addColumn('atomBIndex', function (size) { return new Int32Array(size); }),
+                        type: builder.addColumn('type', function (size) { return new Int8Array(size); })
+                    };
+                    return { table: builder.seal(), columns: columns };
+                }
+                Tables.bonds = bonds;
+            })(Tables = Structure.Tables || (Structure.Tables = {}));
             var Operator = (function () {
                 function Operator(matrix, id, isIdentity) {
                     this.matrix = matrix;
@@ -16321,8 +16342,8 @@ var LiteMol;
                 };
                 Operator.applyToModelUnsafe = function (matrix, m) {
                     var v = { x: 0.1, y: 0.1, z: 0.1 };
-                    var _a = m.atoms, x = _a.x, y = _a.y, z = _a.z;
-                    for (var i = 0, _b = m.atoms.count; i < _b; i++) {
+                    var _a = m.positions, x = _a.x, y = _a.y, z = _a.z;
+                    for (var i = 0, _b = m.positions.count; i < _b; i++) {
                         v.x = x[i];
                         v.y = y[i];
                         v.z = z[i];
@@ -16335,98 +16356,56 @@ var LiteMol;
                 return Operator;
             }());
             Structure.Operator = Operator;
-            var MoleculeModel = (function () {
-                function MoleculeModel(data) {
-                    this._queryContext = void 0;
-                    this.id = data.id;
-                    this.modelId = data.modelId;
-                    this.atoms = data.atoms;
-                    this.residues = data.residues;
-                    this.chains = data.chains;
-                    this.entities = data.entities;
-                    this.covalentBonds = data.covalentBonds;
-                    this.nonCovalentbonds = data.nonCovalentbonds;
-                    this.componentBonds = data.componentBonds;
-                    this.secondaryStructure = data.secondaryStructure;
-                    this.symmetryInfo = data.symmetryInfo;
-                    this.assemblyInfo = data.assemblyInfo;
-                    this.parent = data.parent;
-                    this.source = data.source;
-                    this.operators = data.operators;
-                }
-                Object.defineProperty(MoleculeModel.prototype, "queryContext", {
-                    get: function () {
-                        if (this._queryContext)
-                            return this._queryContext;
-                        this._queryContext = Structure.Query.Context.ofStructure(this);
-                        return this._queryContext;
-                    },
-                    enumerable: true,
-                    configurable: true
-                });
-                MoleculeModel.prototype.query = function (q) {
-                    return Structure.Query.Builder.toQuery(q)(this.queryContext);
-                };
-                return MoleculeModel;
-            }());
-            Structure.MoleculeModel = MoleculeModel;
-            // TODO: refactor this into using a tree structure similar to what the plugin is using, query is then a transformation of the tree
-            var Molecule = (function () {
-                function Molecule(id, models, properties) {
+            var Molecule;
+            (function (Molecule) {
+                function create(id, models, properties) {
                     if (properties === void 0) { properties = {}; }
-                    this.id = id;
-                    this.models = models;
-                    this.properties = properties;
+                    return { id: id, models: models, properties: properties };
                 }
-                return Molecule;
-            }());
-            Structure.Molecule = Molecule;
-            (function (MoleculeModel) {
-                function cloneAtomsXYZ(model) {
-                    var data = {};
-                    var atoms = model.atoms;
-                    for (var _i = 0, _a = atoms.columns; _i < _a.length; _i++) {
-                        var c = _a[_i];
-                        if (c.name === 'x' || c.name === 'y' || c.name === 'z') {
-                            data[c.name] = c.creator(atoms.count);
-                        }
-                        else {
-                            data[c.name] = atoms[c.name];
-                        }
+                Molecule.create = create;
+                var Model;
+                (function (Model) {
+                    function create(model) {
+                        var ret = Core.Utils.extend({}, model);
+                        var queryContext = void 0;
+                        Object.defineProperty(ret, 'queryContext', { enumerable: true, configurable: false, get: function () {
+                                if (queryContext)
+                                    return queryContext;
+                                queryContext = Structure.Query.Context.ofStructure(ret);
+                                return queryContext;
+                            } });
+                        return ret;
                     }
-                    return new DataTable(atoms.count, atoms.columns, data);
-                }
-                function withTransformedXYZ(model, ctx, transform) {
-                    var _a = model.atoms, x = _a.x, y = _a.y, z = _a.z;
-                    var tAtoms = cloneAtomsXYZ(model);
-                    var tX = tAtoms.x, tY = tAtoms.y, tZ = tAtoms.z;
-                    var t = { x: 0.0, y: 0.0, z: 0.0 };
-                    for (var i = 0, _l = model.atoms.count; i < _l; i++) {
-                        transform(ctx, x[i], y[i], z[i], t);
-                        tX[i] = t.x;
-                        tY[i] = t.y;
-                        tZ[i] = t.z;
+                    Model.create = create;
+                    var Source;
+                    (function (Source) {
+                        Source[Source["File"] = 0] = "File";
+                        Source[Source["Computed"] = 1] = "Computed";
+                    })(Source = Model.Source || (Model.Source = {}));
+                    function withTransformedXYZ(model, ctx, transform) {
+                        var _a = model.positions, x = _a.x, y = _a.y, z = _a.z;
+                        var tAtoms = model.positions.getBuilder(model.positions.count).seal();
+                        var tX = tAtoms.x, tY = tAtoms.y, tZ = tAtoms.z;
+                        var t = { x: 0.0, y: 0.0, z: 0.0 };
+                        for (var i = 0, _l = model.positions.count; i < _l; i++) {
+                            transform(ctx, x[i], y[i], z[i], t);
+                            tX[i] = t.x;
+                            tY[i] = t.y;
+                            tZ[i] = t.z;
+                        }
+                        return create({
+                            id: model.id,
+                            modelId: model.modelId,
+                            data: model.data,
+                            positions: tAtoms,
+                            parent: model.parent,
+                            source: model.source,
+                            operators: model.operators
+                        });
                     }
-                    return new MoleculeModel({
-                        id: model.id,
-                        modelId: model.modelId,
-                        atoms: tAtoms,
-                        residues: model.residues,
-                        chains: model.chains,
-                        entities: model.entities,
-                        covalentBonds: model.covalentBonds,
-                        nonCovalentbonds: model.nonCovalentbonds,
-                        componentBonds: model.componentBonds,
-                        secondaryStructure: model.secondaryStructure,
-                        symmetryInfo: model.symmetryInfo,
-                        assemblyInfo: model.assemblyInfo,
-                        parent: model.parent,
-                        source: model.source,
-                        operators: model.operators
-                    });
-                }
-                MoleculeModel.withTransformedXYZ = withTransformedXYZ;
-            })(MoleculeModel = Structure.MoleculeModel || (Structure.MoleculeModel = {}));
+                    Model.withTransformedXYZ = withTransformedXYZ;
+                })(Model = Molecule.Model || (Molecule.Model = {}));
+            })(Molecule = Structure.Molecule || (Structure.Molecule = {}));
         })(Structure = Core.Structure || (Core.Structure = {}));
     })(Core = LiteMol.Core || (LiteMol.Core = {}));
 })(LiteMol || (LiteMol = {}));
@@ -17832,7 +17811,8 @@ var LiteMol;
     (function (Core) {
         var Structure;
         (function (Structure) {
-            "use strict";
+            'use strict';
+            var DataTable = Core.Utils.DataTable;
             var SymmetryHelpers;
             (function (SymmetryHelpers) {
                 var Mat4 = Core.Geometry.LinearAlgebra.Matrix4;
@@ -17927,8 +17907,8 @@ var LiteMol;
                     };
                 }
                 function getBoundingInfo(model, pivotIndices) {
-                    var atoms = model.atoms, residues = model.residues, chains = model.chains, entities = model.entities, x = atoms.x, y = atoms.y, z = atoms.z;
-                    var entityTable = new Structure.DataTableBuilder(entities.count), eX = entityTable.addColumn("x", function (s) { return new Float64Array(s); }), eY = entityTable.addColumn("y", function (s) { return new Float64Array(s); }), eZ = entityTable.addColumn("z", function (s) { return new Float64Array(s); }), eR = entityTable.addColumn("r", function (s) { return new Float64Array(s); }), chainTable = new Structure.DataTableBuilder(chains.count), cX = chainTable.addColumn("x", function (s) { return new Float64Array(s); }), cY = chainTable.addColumn("y", function (s) { return new Float64Array(s); }), cZ = chainTable.addColumn("z", function (s) { return new Float64Array(s); }), cR = chainTable.addColumn("r", function (s) { return new Float64Array(s); }), residueTable = new Structure.DataTableBuilder(residues.count), rX = residueTable.addColumn("x", function (s) { return new Float64Array(s); }), rY = residueTable.addColumn("y", function (s) { return new Float64Array(s); }), rZ = residueTable.addColumn("z", function (s) { return new Float64Array(s); }), rR = residueTable.addColumn("r", function (s) { return new Float64Array(s); });
+                    var atoms = model.data.atoms, residues = model.data.residues, chains = model.data.chains, entities = model.data.entities, _a = model.positions, x = _a.x, y = _a.y, z = _a.z;
+                    var entityTable = DataTable.builder(entities.count), eX = entityTable.addColumn('x', function (s) { return new Float64Array(s); }), eY = entityTable.addColumn('y', function (s) { return new Float64Array(s); }), eZ = entityTable.addColumn('z', function (s) { return new Float64Array(s); }), eR = entityTable.addColumn('r', function (s) { return new Float64Array(s); }), chainTable = DataTable.builder(chains.count), cX = chainTable.addColumn('x', function (s) { return new Float64Array(s); }), cY = chainTable.addColumn('y', function (s) { return new Float64Array(s); }), cZ = chainTable.addColumn('z', function (s) { return new Float64Array(s); }), cR = chainTable.addColumn('r', function (s) { return new Float64Array(s); }), residueTable = DataTable.builder(residues.count), rX = residueTable.addColumn('x', function (s) { return new Float64Array(s); }), rY = residueTable.addColumn('y', function (s) { return new Float64Array(s); }), rZ = residueTable.addColumn('z', function (s) { return new Float64Array(s); }), rR = residueTable.addColumn('r', function (s) { return new Float64Array(s); });
                     var allCenter = newVec(), allRadius = 0, pivotCenter = newVec(), pivotRadius = 0, n = 0, eCenter = newVec(), eRadius = 0, cCenter = newVec(), cRadius = 0, rCenter = newVec(), rRadius = 0;
                     for (var eI = 0, _eC = entities.count; eI < _eC; eI++) {
                         eCenter.x = 0;
@@ -18007,8 +17987,8 @@ var LiteMol;
                         eR[eI] = eRadius;
                     }
                     allRadius = Math.sqrt(allRadius);
-                    for (var _a = 0, pivotIndices_2 = pivotIndices; _a < pivotIndices_2.length; _a++) {
-                        var aI = pivotIndices_2[_a];
+                    for (var _b = 0, pivotIndices_2 = pivotIndices; _b < pivotIndices_2.length; _b++) {
+                        var aI = pivotIndices_2[_b];
                         pivotRadius = Math.max(pivotRadius, indexedVectorDistSq(aI, pivotCenter, rDA));
                     }
                     pivotRadius = Math.sqrt(pivotRadius);
@@ -18047,8 +18027,8 @@ var LiteMol;
                 }
                 function getSymmetryResidues(ctx, transforms) {
                     var bounds = ctx.boundingInfo, radius = ctx.radius, targetBounds = bounds.target;
-                    var model = ctx.model, residues = model.residues, chains = model.chains, entities = model.entities;
-                    var residueIndices = Core.Utils.ChunkedArray.create(function (s) { return new Int32Array(s); }, ctx.model.residues.count, 1), operatorIndices = Core.Utils.ChunkedArray.create(function (s) { return new Int32Array(s); }, ctx.model.residues.count, 1);
+                    var model = ctx.model, residues = model.data.residues, chains = model.data.chains, entities = model.data.entities;
+                    var residueIndices = Core.Utils.ChunkedArray.create(function (s) { return new Int32Array(s); }, residues.count, 1), operatorIndices = Core.Utils.ChunkedArray.create(function (s) { return new Int32Array(s); }, residues.count, 1);
                     var v = { x: 0, y: 0, z: 0 }, opIndex = 0;
                     var atomCount = 0, chainCount = 0, entityCount = 0;
                     for (var eI = 0, _eC = entities.count; eI < _eC; eI++) {
@@ -18093,71 +18073,23 @@ var LiteMol;
                         target[i][tI] = src[i][sI];
                     }
                 }
-                // class PartsSorter {
-                //     private ordering: Int32Array;
-                //     private entityIndex: number[];
-                //     private chainIndex: number[];
-                //     private residues: number[];
-                //     private operators: number[];
-                //     private compare(i: number, j: number) {
-                //         let a = this.residues[i], b = this.residues[j];
-                //         let E = this.entityIndex[a] - this.entityIndex[b];
-                //         if (E !== 0) return E;
-                //         let C = this.chainIndex[a] - this.chainIndex[b];
-                //         if (C !== 0) return C;
-                //         let O = this.operators[i] - this.operators[j];
-                //         if (O !== 0) return O;
-                //         return a - b; 
-                //     }
-                //     apply() {
-                //         let buffer = new Int32Array(this.parts.residues.length);
-                //         for (let i = 0, _b = this.ordering.length; i < _b; i++) buffer[i] = this.residues[this.ordering[i]];
-                //         let t = this.parts.residues; 
-                //         this.parts.residues = <any>buffer;
-                //         buffer = <any>t;    
-                //         for (let i = 0, _b = this.ordering.length; i < _b; i++) buffer[i] = this.operators[this.ordering[i]];
-                //         this.parts.operators = <any>buffer;
-                //     }            
-                //     constructor(model: MoleculeModel, private parts: { residues: number[], operators: number[], atomCount: number; chainCount: number }) {
-                //         this.ordering = new Int32Array(parts.residues.length);
-                //         for (let i = 0, _b = this.ordering.length; i < _b; i++) this.ordering[i] = i;                
-                //         let rs = model.residues;
-                //         this.entityIndex = rs.entityIndex;
-                //         this.chainIndex = rs.chainIndex;
-                //         this.residues = parts.residues;
-                //         this.operators = parts.operators;
-                //         Array.prototype.sort.call(this.ordering, (i: number, j: number) => this.compare(i, j));
-                //         this.apply();         
-                //         //console.log(this.ordering);                             
-                //     }
-                // }        
                 function assemble(model, assemblyParts, transforms) {
-                    // let sorter = new PartsSorter(model, assemblyParts);
-                    // sorter.apply();
-                    // sorter = undefined;
-                    //sorted = undefined;
-                    //let partOrdeding = sorted.ordering;
-                    var residues = model.residues, residueChainIndex = residues.chainIndex, residueEntityIndex = residues.entityIndex, residueAtomStartIndex = residues.atomStartIndex, residueAtomEndIndex = residues.atomEndIndex, atoms = model.atoms, x = atoms.x, y = atoms.y, z = atoms.z;
-                    var atomTable = new Structure.DataTableBuilder(assemblyParts.atomCount), atomX, atomY, atomZ, atomId, atomResidue, atomChain, atomEntity, cols = [];
-                    var entityTableBuilder = model.entities.getBuilder(assemblyParts.entityCount), entityTable = entityTableBuilder, srcEntityData = model.entities.getRawData(), entityData = entityTable.getRawData(), entityChainStart = entityTable.chainStartIndex, entityChainEnd = entityTable.chainEndIndex, entityResidueStart = entityTable.residueStartIndex, entityResidueEnd = entityTable.residueEndIndex, entityAtomStart = entityTable.atomStartIndex, entityAtomEnd = entityTable.atomEndIndex, entityOffset = 0;
-                    var chainTableBuilder = model.chains.getBuilder(assemblyParts.chainCount), chainTable = chainTableBuilder, srcChainData = model.chains.getRawData(), chainData = chainTable.getRawData(), chainResidueStart = chainTable.residueStartIndex, chainResidueEnd = chainTable.residueEndIndex, chainAtomStart = chainTable.atomStartIndex, chainAtomEnd = chainTable.atomEndIndex, chainId = chainTable.asymId, chainAuthId = chainTable.authAsymId, chainEntity = chainTable.entityIndex, chainSourceChainIndex = chainTableBuilder.addColumn('sourceChainIndex', function (s) { return new Int32Array(s); }), chainOperatorIndex = chainTableBuilder.addColumn('operatorIndex', function (s) { return new Int32Array(s); }), chainOffset = 0;
-                    var residueTable = model.residues.getBuilder(assemblyParts.residues.length), srcResidueData = model.residues.getRawData(), residueData = residueTable.getRawData(), residueAtomStart = residueTable.atomStartIndex, residueAtomEnd = residueTable.atomEndIndex, residueAsymId = residueTable.asymId, residueAuthAsymId = residueTable.authAsymId, residueChain = residueTable.chainIndex, residueEntity = residueTable.entityIndex;
-                    for (var _i = 0, _a = model.atoms.columns; _i < _a.length; _i++) {
-                        var col = _a[_i];
+                    var residues = model.data.residues, residueChainIndex = residues.chainIndex, residueEntityIndex = residues.entityIndex, residueAtomStartIndex = residues.atomStartIndex, residueAtomEndIndex = residues.atomEndIndex, atoms = model.data.atoms, _a = model.positions, x = _a.x, y = _a.y, z = _a.z;
+                    var atomTable = DataTable.builder(assemblyParts.atomCount), atomId, atomResidue, atomChain, atomEntity, cols = [];
+                    var positionTable = DataTable.builder(assemblyParts.atomCount), atomX = positionTable.addColumn('x', function (size) { return new Float32Array(size); }), atomY = positionTable.addColumn('y', function (size) { return new Float32Array(size); }), atomZ = positionTable.addColumn('z', function (size) { return new Float32Array(size); });
+                    var entityTableBuilder = model.data.entities.getBuilder(assemblyParts.entityCount), entityTable = entityTableBuilder, srcEntityData = model.data.entities.getRawData(), entityData = entityTable.getRawData(), entityChainStart = entityTable.chainStartIndex, entityChainEnd = entityTable.chainEndIndex, entityResidueStart = entityTable.residueStartIndex, entityResidueEnd = entityTable.residueEndIndex, entityAtomStart = entityTable.atomStartIndex, entityAtomEnd = entityTable.atomEndIndex, entityOffset = 0;
+                    var chainTableBuilder = model.data.chains.getBuilder(assemblyParts.chainCount), chainTable = chainTableBuilder, srcChainData = model.data.chains.getRawData(), chainData = chainTable.getRawData(), chainResidueStart = chainTable.residueStartIndex, chainResidueEnd = chainTable.residueEndIndex, chainAtomStart = chainTable.atomStartIndex, chainAtomEnd = chainTable.atomEndIndex, chainId = chainTable.asymId, chainAuthId = chainTable.authAsymId, chainEntity = chainTable.entityIndex, chainSourceChainIndex = chainTableBuilder.addColumn('sourceChainIndex', function (s) { return new Int32Array(s); }), chainOperatorIndex = chainTableBuilder.addColumn('operatorIndex', function (s) { return new Int32Array(s); }), chainOffset = 0;
+                    var residueTableBuilder = model.data.residues.getBuilder(assemblyParts.residues.length), residueTable = residueTableBuilder, srcResidueData = model.data.residues.getRawData(), residueData = residueTable.getRawData(), residueAtomStart = residueTable.atomStartIndex, residueAtomEnd = residueTable.atomEndIndex, residueAsymId = residueTable.asymId, residueAuthAsymId = residueTable.authAsymId, residueChain = residueTable.chainIndex, residueEntity = residueTable.entityIndex;
+                    for (var _i = 0, _b = model.data.atoms.columns; _i < _b.length; _i++) {
+                        var col = _b[_i];
                         var c = atomTable.addColumn(col.name, col.creator);
-                        if (col.name === "x")
-                            atomX = c;
-                        else if (col.name === "y")
-                            atomY = c;
-                        else if (col.name === "z")
-                            atomZ = c;
-                        else if (col.name === "residueIndex")
+                        if (col.name === 'residueIndex')
                             atomResidue = c;
-                        else if (col.name === "chainIndex")
+                        else if (col.name === 'chainIndex')
                             atomChain = c;
-                        else if (col.name === "entityIndex")
+                        else if (col.name === 'entityIndex')
                             atomEntity = c;
-                        else if (col.name === "id")
+                        else if (col.name === 'id')
                             atomId = c;
                         else {
                             cols[cols.length] = {
@@ -18178,12 +18110,12 @@ var LiteMol;
                     chainEntity[0] = 0;
                     chainResidueStart[0] = 0;
                     chainAtomStart[0] = 0;
-                    currentAsymId = model.chains.asymId[residueChainIndex[rI]];
-                    currentAuthAsymId = model.chains.authAsymId[residueChainIndex[rI]];
+                    currentAsymId = model.data.chains.asymId[residueChainIndex[rI]];
+                    currentAuthAsymId = model.data.chains.authAsymId[residueChainIndex[rI]];
                     var transform = transforms[assemblyOpParts[0]];
                     if (transform && !transform.isIdentity) {
-                        chainId[chainOffset] = model.chains.asymId[residueChainIndex[rI]] + '-' + transform.id;
-                        chainAuthId[chainOffset] = model.chains.authAsymId[residueChainIndex[rI]] + '-' + transform.id;
+                        chainId[chainOffset] = model.data.chains.asymId[residueChainIndex[rI]] + '-' + transform.id;
+                        chainAuthId[chainOffset] = model.data.chains.authAsymId[residueChainIndex[rI]] + '-' + transform.id;
                         chainSourceChainIndex[chainOffset] = residueChainIndex[rI];
                         chainOperatorIndex[chainOffset] = currentOp;
                         currentAsymId = chainId[chainOffset];
@@ -18235,8 +18167,8 @@ var LiteMol;
                             chainAtomStart[chainOffset] = atomOffset;
                             // update the chain identifier if needed
                             if (!transform.isIdentity) {
-                                chainId[chainOffset] = model.chains.asymId[cC] + '-' + transform.id;
-                                chainAuthId[chainOffset] = model.chains.authAsymId[cC] + '-' + transform.id;
+                                chainId[chainOffset] = model.data.chains.asymId[cC] + '-' + transform.id;
+                                chainAuthId[chainOffset] = model.data.chains.authAsymId[cC] + '-' + transform.id;
                             }
                             chainSourceChainIndex[chainOffset] = cC;
                             chainOperatorIndex[chainOffset] = opI;
@@ -18263,8 +18195,8 @@ var LiteMol;
                             atomResidue[atomOffset] = residueOffset;
                             atomChain[atomOffset] = chainOffset;
                             atomEntity[atomOffset] = entityOffset;
-                            for (var _b = 0, cols_1 = cols; _b < cols_1.length; _b++) {
-                                var c = cols_1[_b];
+                            for (var _c = 0, cols_1 = cols; _c < cols_1.length; _c++) {
+                                var c = cols_1[_c];
                                 c.target[atomOffset] = c.src[aI];
                             }
                             atomOffset++;
@@ -18278,29 +18210,30 @@ var LiteMol;
                     // finalize chain
                     chainResidueEnd[chainOffset] = assemblyResidueParts.length;
                     chainAtomEnd[chainOffset] = atomOffset;
-                    var finalAtoms = atomTable.seal(), finalResidues = residueTable.seal(), finalChains = chainTableBuilder.seal(), finalEntities = entityTableBuilder.seal();
-                    // let eIdSet = new Set<number>();
-                    // for (let eId of finalChains.entityIndex) eIdSet.add(eId);
-                    // eIdSet.forEach(x => console.log('ceid', x));
-                    // console.log(assemblyParts.entityCount, finalEntities);
+                    var finalAtoms = atomTable.seal(), finalPositions = positionTable.seal(), finalResidues = residueTableBuilder.seal(), finalChains = chainTableBuilder.seal(), finalEntities = entityTableBuilder.seal();
                     var ss = buildSS(model, assemblyParts, finalResidues);
-                    return new Structure.MoleculeModel({
+                    return Structure.Molecule.Model.create({
                         id: model.id,
                         modelId: model.modelId,
-                        atoms: finalAtoms,
-                        residues: finalResidues,
-                        chains: finalChains,
-                        entities: finalEntities,
-                        componentBonds: model.componentBonds,
-                        secondaryStructure: ss,
+                        data: {
+                            atoms: finalAtoms,
+                            residues: finalResidues,
+                            chains: finalChains,
+                            entities: finalEntities,
+                            bonds: {
+                                component: model.data.bonds.component
+                            },
+                            secondaryStructure: ss,
+                        },
+                        positions: finalPositions,
                         parent: model,
-                        source: Structure.MoleculeModelSource.Computed,
+                        source: Structure.Molecule.Model.Source.Computed,
                         operators: transforms.map(function (t) { return new Structure.Operator(t.transform, t.id, t.isIdentity); })
                     });
                 }
                 function buildSS(parent, assemblyParts, newResidues) {
-                    var index = parent.residues.secondaryStructureIndex;
-                    var ss = parent.secondaryStructure;
+                    var index = parent.data.residues.secondaryStructureIndex;
+                    var ss = parent.data.secondaryStructure;
                     var asymId = newResidues.asymId, seqNumber = newResidues.seqNumber, insCode = newResidues.insCode, secondaryStructureIndex = newResidues.secondaryStructureIndex;
                     var residues = assemblyParts.residues, operators = assemblyParts.operators;
                     var count = residues.length;
@@ -18325,25 +18258,25 @@ var LiteMol;
                     return ret;
                 }
                 function buildPivotGroupSymmetry(model, radius, pivotsQuery) {
-                    var info = model.symmetryInfo;
+                    var info = model.data.symmetryInfo;
                     if (!info
-                        || info.spacegroupName === "P 1"
+                        || info.spacegroupName === 'P 1'
                         || (info.cellSize[0] < 1.1 && info.cellSize[1] < 1.1 && info.cellSize[2] < 1.1)) {
                         return model;
                     }
                     var pivotIndices;
                     if (!pivotsQuery)
-                        pivotIndices = model.atoms.indices;
+                        pivotIndices = model.data.atoms.indices;
                     else
-                        pivotIndices = model.query(pivotsQuery).unionAtomIndices();
+                        pivotIndices = Structure.Query.apply(pivotsQuery, model).unionAtomIndices();
                     var bounds = getBoundingInfo(model, pivotIndices), spacegroup = new Structure.Spacegroup(info), ctx = createSymmetryContext(model, bounds, spacegroup, radius);
                     var transforms = findSuitableTransforms(ctx), residues = getSymmetryResidues(ctx, transforms);
                     return assemble(model, residues, transforms);
                 }
                 SymmetryHelpers.buildPivotGroupSymmetry = buildPivotGroupSymmetry;
                 function findMates(model, radius) {
-                    var bounds = getBoudingSphere(model.atoms, model.atoms.indices);
-                    var spacegroup = new Structure.Spacegroup(model.symmetryInfo);
+                    var bounds = getBoudingSphere(model.positions, model.positions.indices);
+                    var spacegroup = new Structure.Spacegroup(model.data.symmetryInfo);
                     var t = Mat4.empty();
                     var v = { x: 0, y: 0, z: 0 };
                     var transforms = [];
@@ -18365,11 +18298,11 @@ var LiteMol;
                     return transforms;
                 }
                 function findMateParts(model, transforms) {
-                    var atoms = model.atoms, chains = model.chains, entities = model.entities;
-                    var residueIndices = Core.Utils.ArrayBuilder.create(function (s) { return new Int32Array(s); }, model.residues.count * transforms.length, 1), operatorIndices = Core.Utils.ArrayBuilder.create(function (s) { return new Int32Array(s); }, model.residues.count * transforms.length, 1);
+                    var _a = model.data, atoms = _a.atoms, chains = _a.chains, entities = _a.entities, residues = _a.residues;
+                    var residueIndices = Core.Utils.ArrayBuilder.create(function (s) { return new Int32Array(s); }, residues.count * transforms.length, 1), operatorIndices = Core.Utils.ArrayBuilder.create(function (s) { return new Int32Array(s); }, residues.count * transforms.length, 1);
                     var atomCount = transforms.length * atoms.count;
                     var chainCount = transforms.length * chains.count;
-                    var entityCount = model.entities.count;
+                    var entityCount = entities.count;
                     for (var eI = 0, _eC = entities.count; eI < _eC; eI++) {
                         for (var opIndex = 0; opIndex < transforms.length; opIndex++) {
                             for (var cI = entities.chainStartIndex[eI], _cC = entities.chainEndIndex[eI]; cI < _cC; cI++) {
@@ -18390,9 +18323,9 @@ var LiteMol;
                     };
                 }
                 function buildMates(model, radius) {
-                    var info = model.symmetryInfo;
+                    var info = model.data.symmetryInfo;
                     if (!info
-                        || info.spacegroupName === "P 1"
+                        || info.spacegroupName === 'P 1'
                         || (info.cellSize[0] < 1.1 && info.cellSize[1] < 1.1 && info.cellSize[2] < 1.1)) {
                         return model;
                     }
@@ -18413,7 +18346,7 @@ var LiteMol;
                     }
                 }
                 function getAssemblyTransforms(model, operators) {
-                    var info = model.assemblyInfo;
+                    var info = model.data.assemblyInfo;
                     var transforms = [];
                     var index = 0;
                     for (var _i = 0, operators_1 = operators; _i < operators_1.length; _i++) {
@@ -18428,9 +18361,8 @@ var LiteMol;
                     return transforms;
                 }
                 function getAssemblyParts(model, residueMask, currentTransforms, state) {
-                    var residues = model.residues, chains = model.chains, entities = model.entities;
-                    var residueIndices = state.residueIndices, //  new Utils.ChunkedArrayBuilder<number>(s => new Int32Array(s), model.residues.count, 1),
-                    operatorIndices = state.operatorIndices; // new Utils.ChunkedArrayBuilder<number>(s => new Int32Array(s), model.residues.count, 1);
+                    var _a = model.data, chains = _a.chains, entities = _a.entities, residues = _a.residues;
+                    var residueIndices = state.residueIndices, operatorIndices = state.operatorIndices;
                     var atomCount = 0, chainCount = 0, entityCount = 0;
                     for (var eI = 0, _eC = entities.count; eI < _eC; eI++) {
                         var opIndex = state.transformsOffset; //0;
@@ -18472,15 +18404,15 @@ var LiteMol;
                 function buildAssemblyEntry(model, entry, state) {
                     var ops = [], currentOp = [];
                     for (var i_2 = 0; i_2 < entry.operators.length; i_2++)
-                        currentOp[i_2] = "";
+                        currentOp[i_2] = '';
                     createOperators(entry.operators, ops, entry.operators.length - 1, currentOp);
                     var transforms = getAssemblyTransforms(model, ops);
                     state.transformsOffset += state.transforms.length;
                     (_a = state.transforms).push.apply(_a, transforms);
                     var asymIds = new Set();
                     entry.asymIds.forEach(function (id) { return asymIds.add(id); });
-                    var residueAsymIds = model.residues.asymId;
-                    var residueCount = model.residues.count;
+                    var residueAsymIds = model.data.residues.asymId;
+                    var residueCount = model.data.residues.count;
                     var mask = state.mask;
                     for (var i = 0; i < residueCount; i++) {
                         mask[i] = asymIds.has(residueAsymIds[i]);
@@ -18496,9 +18428,9 @@ var LiteMol;
                         entityCount: 0,
                         transforms: [],
                         transformsOffset: 0,
-                        mask: new Int8Array(model.residues.count),
-                        residueIndices: Core.Utils.ChunkedArray.create(function (s) { return new Int32Array(s); }, model.residues.count, 1),
-                        operatorIndices: Core.Utils.ChunkedArray.create(function (s) { return new Int32Array(s); }, model.residues.count, 1)
+                        mask: new Int8Array(model.data.residues.count),
+                        residueIndices: Core.Utils.ChunkedArray.create(function (s) { return new Int32Array(s); }, model.data.residues.count, 1),
+                        operatorIndices: Core.Utils.ChunkedArray.create(function (s) { return new Int32Array(s); }, model.data.residues.count, 1)
                     };
                     for (var _i = 0, _a = assembly.gens; _i < _a.length; _i++) {
                         var a = _a[_i];
@@ -18541,6 +18473,10 @@ var LiteMol;
         (function (Structure) {
             var Query;
             (function (Query) {
+                function apply(q, m) {
+                    return Query.Builder.toQuery(q)(m.queryContext);
+                }
+                Query.apply = apply;
                 /**
                  * The context of a query.
                  *
@@ -18570,7 +18506,7 @@ var LiteMol;
                          * Determine if the context contains all atoms of the input model.
                          */
                         get: function () {
-                            return this.mask.size === this.structure.atoms.count;
+                            return this.mask.size === this.structure.data.atoms.count;
                         },
                         enumerable: true,
                         configurable: true
@@ -18622,8 +18558,8 @@ var LiteMol;
                         return new Context(structure, Context.Mask.ofIndices(structure, atomIndices));
                     };
                     Context.prototype.makeTree = function () {
-                        var data = new Int32Array(this.mask.size), dataCount = 0, _a = this.structure.atoms, x = _a.x, y = _a.y, z = _a.z;
-                        for (var i = 0, _b = this.structure.atoms.count; i < _b; i++) {
+                        var data = new Int32Array(this.mask.size), dataCount = 0, _a = this.structure.positions, x = _a.x, y = _a.y, z = _a.z;
+                        for (var i = 0, _b = this.structure.positions.count; i < _b; i++) {
                             if (this.mask.has(i))
                                 data[dataCount++] = i;
                         }
@@ -18651,11 +18587,11 @@ var LiteMol;
                             return AllMask;
                         }());
                         function ofStructure(structure) {
-                            return new AllMask(structure.atoms.count);
+                            return new AllMask(structure.data.atoms.count);
                         }
                         Mask.ofStructure = ofStructure;
                         function ofIndices(structure, atomIndices) {
-                            var f = atomIndices.length / structure.atoms.count;
+                            var f = atomIndices.length / structure.data.atoms.count;
                             if (f < 0.25) {
                                 var set = new Set();
                                 for (var _i = 0, atomIndices_1 = atomIndices; _i < atomIndices_1.length; _i++) {
@@ -18664,7 +18600,7 @@ var LiteMol;
                                 }
                                 return set;
                             }
-                            var mask = new Int8Array(structure.atoms.count);
+                            var mask = new Int8Array(structure.data.atoms.count);
                             for (var _a = 0, atomIndices_2 = atomIndices; _a < atomIndices_2.length; _a++) {
                                 var i = atomIndices_2[_a];
                                 mask[i] = 1;
@@ -18678,7 +18614,7 @@ var LiteMol;
                                 var f = _a[_i];
                                 sizeEstimate += f.atomCount;
                             }
-                            var count = seq.context.structure.atoms.count;
+                            var count = seq.context.structure.data.atoms.count;
                             if (sizeEstimate / count < 0.25) {
                                 // create set;
                                 var mask = new Set();
@@ -18770,8 +18706,8 @@ var LiteMol;
                          * Determines if a fragment is HET based on the tag.
                          */
                         get: function () {
-                            var residue = this.context.structure.atoms.residueIndex[this.tag];
-                            return this.context.structure.residues.isHet[residue];
+                            var residue = this.context.structure.data.atoms.residueIndex[this.tag];
+                            return this.context.structure.data.residues.isHet[residue];
                         },
                         enumerable: true,
                         configurable: true
@@ -18783,7 +18719,7 @@ var LiteMol;
                         get: function () {
                             if (this._fingerprint)
                                 return this._fingerprint;
-                            var indexList = this.residueIndices, residues = this.context.structure.residues, cName = residues.name, cAsym = residues.asymId, cSeq = residues.seqNumber, insCode = residues.insCode, names = [];
+                            var indexList = this.residueIndices, residues = this.context.structure.data.residues, cName = residues.name, cAsym = residues.asymId, cSeq = residues.seqNumber, insCode = residues.insCode, names = [];
                             for (var _i = 0, indexList_1 = indexList; _i < indexList_1.length; _i++) {
                                 var i = indexList_1[_i];
                                 var name_1 = cName[i] + " " + cAsym[i] + " " + cSeq[i];
@@ -18803,7 +18739,7 @@ var LiteMol;
                         get: function () {
                             if (this._authFingerprint)
                                 return this._authFingerprint;
-                            var indexList = this.residueIndices, residues = this.context.structure.residues, cName = residues.authName, cAsym = residues.authAsymId, cSeq = residues.authSeqNumber, insCode = residues.insCode, names = [];
+                            var indexList = this.residueIndices, residues = this.context.structure.data.residues, cName = residues.authName, cAsym = residues.authAsymId, cSeq = residues.authSeqNumber, insCode = residues.insCode, names = [];
                             for (var _i = 0, indexList_2 = indexList; _i < indexList_2.length; _i++) {
                                 var i = indexList_2[_i];
                                 var name_2 = cName[i] + " " + cAsym[i] + " " + cSeq[i];
@@ -18826,7 +18762,7 @@ var LiteMol;
                     Fragment.prototype.computeIndices = function () {
                         if (this._residueIndices)
                             return;
-                        var residueIndices = new Set(), chainIndices = new Set(), entityIndices = new Set(), rIndices = this.context.structure.atoms.residueIndex, cIndices = this.context.structure.residues.chainIndex, eIndices = this.context.structure.chains.entityIndex;
+                        var residueIndices = new Set(), chainIndices = new Set(), entityIndices = new Set(), rIndices = this.context.structure.data.atoms.residueIndex, cIndices = this.context.structure.data.residues.chainIndex, eIndices = this.context.structure.data.chains.entityIndex;
                         for (var _i = 0, _a = this.atomIndices; _i < _a.length; _i++) {
                             var i = _a[_i];
                             residueIndices.add(rIndices[i]);
@@ -18959,7 +18895,7 @@ var LiteMol;
                             return [];
                         if (this.length === 1)
                             return this.fragments[0].atomIndices;
-                        var map = new Int8Array(this.context.structure.atoms.count), atomCount = 0;
+                        var map = new Int8Array(this.context.structure.data.atoms.count), atomCount = 0;
                         for (var _i = 0, _a = this.fragments; _i < _a.length; _i++) {
                             var f = _a[_i];
                             for (var _c = 0, _d = f.atomIndices; _c < _d.length; _c++) {
@@ -19103,7 +19039,7 @@ var LiteMol;
                     for (var _i = 0; _i < arguments.length; _i++) {
                         elements[_i] = arguments[_i];
                     }
-                    return Builder.build(function () { return Compiler.compileAtoms(elements, function (m) { return m.atoms.elementSymbol; }); });
+                    return Builder.build(function () { return Compiler.compileAtoms(elements, function (m) { return m.data.atoms.elementSymbol; }); });
                 }
                 Query.atomsByElement = atomsByElement;
                 function atomsByName() {
@@ -19111,7 +19047,7 @@ var LiteMol;
                     for (var _i = 0; _i < arguments.length; _i++) {
                         names[_i] = arguments[_i];
                     }
-                    return Builder.build(function () { return Compiler.compileAtoms(names, function (m) { return m.atoms.name; }); });
+                    return Builder.build(function () { return Compiler.compileAtoms(names, function (m) { return m.data.atoms.name; }); });
                 }
                 Query.atomsByName = atomsByName;
                 function atomsById() {
@@ -19119,7 +19055,7 @@ var LiteMol;
                     for (var _i = 0; _i < arguments.length; _i++) {
                         ids[_i] = arguments[_i];
                     }
-                    return Builder.build(function () { return Compiler.compileAtoms(ids, function (m) { return m.atoms.id; }); });
+                    return Builder.build(function () { return Compiler.compileAtoms(ids, function (m) { return m.data.atoms.id; }); });
                 }
                 Query.atomsById = atomsById;
                 function residues() {
@@ -19127,7 +19063,7 @@ var LiteMol;
                     for (var _i = 0; _i < arguments.length; _i++) {
                         ids[_i] = arguments[_i];
                     }
-                    return Builder.build(function () { return Compiler.compileAtomRanges(false, ids, function (m) { return m.residues; }); });
+                    return Builder.build(function () { return Compiler.compileAtomRanges(false, ids, function (m) { return m.data.residues; }); });
                 }
                 Query.residues = residues;
                 function chains() {
@@ -19135,7 +19071,7 @@ var LiteMol;
                     for (var _i = 0; _i < arguments.length; _i++) {
                         ids[_i] = arguments[_i];
                     }
-                    return Builder.build(function () { return Compiler.compileAtomRanges(false, ids, function (m) { return m.chains; }); });
+                    return Builder.build(function () { return Compiler.compileAtomRanges(false, ids, function (m) { return m.data.chains; }); });
                 }
                 Query.chains = chains;
                 function entities() {
@@ -19143,7 +19079,7 @@ var LiteMol;
                     for (var _i = 0; _i < arguments.length; _i++) {
                         ids[_i] = arguments[_i];
                     }
-                    return Builder.build(function () { return Compiler.compileAtomRanges(false, ids, function (m) { return m.entities; }); });
+                    return Builder.build(function () { return Compiler.compileAtomRanges(false, ids, function (m) { return m.data.entities; }); });
                 }
                 Query.entities = entities;
                 function notEntities() {
@@ -19151,16 +19087,16 @@ var LiteMol;
                     for (var _i = 0; _i < arguments.length; _i++) {
                         ids[_i] = arguments[_i];
                     }
-                    return Builder.build(function () { return Compiler.compileAtomRanges(true, ids, function (m) { return m.entities; }); });
+                    return Builder.build(function () { return Compiler.compileAtomRanges(true, ids, function (m) { return m.data.entities; }); });
                 }
                 Query.notEntities = notEntities;
                 function everything() { return Builder.build(function () { return Compiler.compileEverything(); }); }
                 Query.everything = everything;
-                function entitiesFromIndices(indices) { return Builder.build(function () { return Compiler.compileFromIndices(false, indices, function (m) { return m.entities; }); }); }
+                function entitiesFromIndices(indices) { return Builder.build(function () { return Compiler.compileFromIndices(false, indices, function (m) { return m.data.entities; }); }); }
                 Query.entitiesFromIndices = entitiesFromIndices;
-                function chainsFromIndices(indices) { return Builder.build(function () { return Compiler.compileFromIndices(false, indices, function (m) { return m.chains; }); }); }
+                function chainsFromIndices(indices) { return Builder.build(function () { return Compiler.compileFromIndices(false, indices, function (m) { return m.data.chains; }); }); }
                 Query.chainsFromIndices = chainsFromIndices;
-                function residuesFromIndices(indices) { return Builder.build(function () { return Compiler.compileFromIndices(false, indices, function (m) { return m.residues; }); }); }
+                function residuesFromIndices(indices) { return Builder.build(function () { return Compiler.compileFromIndices(false, indices, function (m) { return m.data.residues; }); }); }
                 Query.residuesFromIndices = residuesFromIndices;
                 function atomsFromIndices(indices) { return Builder.build(function () { return Compiler.compileAtomIndices(indices); }); }
                 Query.atomsFromIndices = atomsFromIndices;
@@ -19270,12 +19206,12 @@ var LiteMol;
                     function compileEverything() {
                         return function (ctx) {
                             if (ctx.isComplete) {
-                                var atoms = ctx.structure.atoms.indices;
+                                var atoms = ctx.structure.data.atoms.indices;
                                 return new Query.FragmentSeq(ctx, [new Query.Fragment(ctx, atoms[0], atoms)]);
                             }
                             var indices = new Int32Array(ctx.atomCount);
                             var offset = 0;
-                            for (var _i = 0, _a = ctx.structure.atoms.indices; _i < _a.length; _i++) {
+                            for (var _i = 0, _a = ctx.structure.data.atoms.indices; _i < _a.length; _i++) {
                                 var i = _a[_i];
                                 if (ctx.hasAtom(i))
                                     indices[offset++] = i;
@@ -19370,10 +19306,10 @@ var LiteMol;
                     Compiler.compileAtomRanges = compileAtomRanges;
                     function compileSequence(seqEntityId, seqAsymId, start, end) {
                         return function (ctx) {
-                            var residues = ctx.structure.residues, chains = ctx.structure.chains, seqNumber = residues.seqNumber, atomStartIndex = residues.atomStartIndex, atomEndIndex = residues.atomEndIndex, entityId = chains.entityId, count = chains.count, residueStartIndex = chains.residueStartIndex, residueEndIndex = chains.residueEndIndex, fragments = new Query.FragmentSeqBuilder(ctx);
-                            var parent = ctx.structure.parent, sourceChainIndex = ctx.structure.chains.sourceChainIndex, isComputed = parent && sourceChainIndex;
+                            var _a = ctx.structure.data, residues = _a.residues, chains = _a.chains, seqNumber = residues.seqNumber, atomStartIndex = residues.atomStartIndex, atomEndIndex = residues.atomEndIndex, entityId = chains.entityId, count = chains.count, residueStartIndex = chains.residueStartIndex, residueEndIndex = chains.residueEndIndex, fragments = new Query.FragmentSeqBuilder(ctx);
+                            var parent = ctx.structure.parent, sourceChainIndex = chains.sourceChainIndex, isComputed = parent && sourceChainIndex;
                             var targetAsymId = typeof seqAsymId === 'string' ? { asymId: seqAsymId } : seqAsymId;
-                            var optTargetAsymId = new OptimizedId(targetAsymId, isComputed ? parent.chains : ctx.structure.chains);
+                            var optTargetAsymId = new OptimizedId(targetAsymId, isComputed ? parent.data.chains : chains);
                             //optAsymId.isSatisfied();
                             for (var cI = 0; cI < count; cI++) {
                                 if (entityId[cI] !== seqEntityId
@@ -19405,7 +19341,7 @@ var LiteMol;
                     Compiler.compileSequence = compileSequence;
                     function compileHetGroups() {
                         return function (ctx) {
-                            var _a = ctx.structure.residues, atomStartIndex = _a.atomStartIndex, atomEndIndex = _a.atomEndIndex, isHet = _a.isHet, entityIndex = _a.entityIndex, count = _a.count, entityType = ctx.structure.entities.entityType, water = Structure.EntityType.Water, fragments = new Query.FragmentSeqBuilder(ctx);
+                            var _a = ctx.structure.data.residues, atomStartIndex = _a.atomStartIndex, atomEndIndex = _a.atomEndIndex, isHet = _a.isHet, entityIndex = _a.entityIndex, count = _a.count, entityType = ctx.structure.data.entities.type, water = 'water', fragments = new Query.FragmentSeqBuilder(ctx);
                             for (var i = 0; i < count; i++) {
                                 if (!ctx.hasRange(atomStartIndex[i], atomEndIndex[i]))
                                     continue;
@@ -19421,7 +19357,7 @@ var LiteMol;
                     Compiler.compileHetGroups = compileHetGroups;
                     function compileNonHetPolymer() {
                         return function (ctx) {
-                            var _a = ctx.structure.residues, atomStartIndex = _a.atomStartIndex, atomEndIndex = _a.atomEndIndex, _c = ctx.structure.entities, entityType = _c.entityType, entityCount = _c.count, eRS = _c.residueStartIndex, eRE = _c.residueEndIndex, polymer = Structure.EntityType.Polymer, size = 0;
+                            var _a = ctx.structure.data.residues, atomStartIndex = _a.atomStartIndex, atomEndIndex = _a.atomEndIndex, _c = ctx.structure.data.entities, entityType = _c.type, entityCount = _c.count, eRS = _c.residueStartIndex, eRE = _c.residueEndIndex, polymer = 'polymer', size = 0;
                             for (var eI = 0; eI < entityCount; eI++) {
                                 if (entityType[eI] !== polymer)
                                     continue;
@@ -19451,7 +19387,7 @@ var LiteMol;
                     Compiler.compileNonHetPolymer = compileNonHetPolymer;
                     function compileAtomsInBox(min, max) {
                         return function (ctx) {
-                            var atoms = ctx.structure.atoms, xs = atoms.x, ys = atoms.y, zs = atoms.z, count = atoms.count, fragment = [];
+                            var positions = ctx.structure.positions, xs = positions.x, ys = positions.y, zs = positions.z, count = positions.count, fragment = [];
                             for (var i = 0; i < count; i++) {
                                 if (!ctx.hasAtom(i))
                                     continue;
@@ -19468,54 +19404,6 @@ var LiteMol;
                         };
                     }
                     Compiler.compileAtomsInBox = compileAtomsInBox;
-                    ////function updateBox(f: Fragment,
-                    ////    arrays: { x: number[]; y: number[]; z: number[] },
-                    ////    deltas: { dx: number; dy: number; dz: number },
-                    ////    min: { x: number; y: number; z: number }, max: { x: number; y: number; z: number }) {
-                    ////    min.x = min.y = min.z = Number.MAX_VALUE;
-                    ////    max.x = max.y = max.z = -Number.MAX_VALUE;
-                    ////    for (let i of f.atomIndices) {
-                    ////        let x = arrays.x[i], y = arrays.y[i], z = arrays.z[i];
-                    ////        if (x > max.x) max.x = x;
-                    ////        if (y > max.y) max.y = y;
-                    ////        if (z > max.z) max.z = z;
-                    ////        if (x > min.x) min.x = x;
-                    ////        if (y > min.y) min.y = y;
-                    ////        if (z > min.z) min.z = z;
-                    ////    }
-                    ////    min.x -= deltas.dx;
-                    ////    min.y -= deltas.dy;
-                    ////    min.z -= deltas.dz;
-                    ////    max.x += deltas.dx;
-                    ////    max.y += deltas.dy;
-                    ////    max.z += deltas.dz;
-                    ////}
-                    ////export function compileExtendBox(what: Query, deltas: { dx: number; dy: number; dz: number }) {
-                    ////    return (ctx: Context) => {
-                    ////        let ret = new HashFragmentSeqBuilder(ctx);
-                    ////        let min = { x: 0.1, y: 0.1, z: 0.1 },
-                    ////            max = { x: 0.1, y: 0.1, z: 0.1 },
-                    ////            atoms = { x: ctx.structure.atoms.x, y: ctx.structure.atoms.y, z: ctx.structure.atoms.z },
-                    ////            xs = atoms.x, ys = atoms.y, zs = atoms.z,
-                    ////        for (let f of what(ctx).fragments) {
-                    ////            updateBox(f, atoms, deltas, min, max);
-                    ////            let fragment: number[] = [];
-                    ////            for (let i of f.atomIndices) {
-                    ////                if (!ctx.hasAtom(i)) continue;
-                    ////                let x = xs[i], y = ys[i], z = zs[i];
-                    ////                if (x >= min.x && x <= max.x
-                    ////                    && y >= min.y && y <= max.y
-                    ////                    && z >= min.z && z <= max.z) {
-                    ////                    fragment[fragment.length] = i;
-                    ////                }
-                    ////            }
-                    ////            if (fragment.length > 0) {
-                    ////                //ret.add(Fragment.of)
-                    ////            }
-                    ////        }
-                    ////        return ret.getSeq();
-                    ////    };
-                    ////}
                     function compileInside(what, where) {
                         var _what = Builder.toQuery(what);
                         var _where = Builder.toQuery(where);
@@ -19576,14 +19464,14 @@ var LiteMol;
                         var _what = Builder.toQuery(what);
                         return function (ctx) {
                             var mask = Query.Context.Mask.ofFragments(_what(ctx)), count = 0, offset = 0;
-                            for (var i = 0, _b = ctx.structure.atoms.count; i < _b; i++) {
+                            for (var i = 0, _b = ctx.structure.data.atoms.count; i < _b; i++) {
                                 if (ctx.hasAtom(i) && !mask.has(i))
                                     count++;
                             }
                             if (!count)
                                 return Query.FragmentSeq.empty(ctx);
                             var atoms = new Int32Array(count);
-                            for (var i = 0, _b = ctx.structure.atoms.count; i < _b; i++) {
+                            for (var i = 0, _b = ctx.structure.data.atoms.count; i < _b; i++) {
                                 if (ctx.hasAtom(i) && !mask.has(i))
                                     atoms[offset++] = i;
                             }
@@ -19624,13 +19512,13 @@ var LiteMol;
                     Compiler.compileUnion = compileUnion;
                     function compilePolymerNames(names, complement) {
                         return function (ctx) {
-                            var structure = ctx.structure, atomNames = structure.atoms.name, indices = [], indexCount = 0;
+                            var structure = ctx.structure, entities = structure.data.entities, atomNames = structure.data.atoms.name, indices = [], indexCount = 0;
                             var allowedNames = new Set(names);
                             if (complement) {
-                                for (var ei = 0; ei < structure.entities.count; ei++) {
-                                    if (structure.entities.entityType[ei] !== Structure.EntityType.Polymer)
+                                for (var ei = 0; ei < structure.data.entities.count; ei++) {
+                                    if (entities.type[ei] !== 'polymer')
                                         continue;
-                                    var start = structure.entities.atomStartIndex[ei], end = structure.entities.atomEndIndex[ei];
+                                    var start = entities.atomStartIndex[ei], end = entities.atomEndIndex[ei];
                                     for (var i = start; i < end; i++) {
                                         if (ctx.hasAtom(i) && !allowedNames.has(atomNames[i]))
                                             indices[indexCount++] = i;
@@ -19638,10 +19526,10 @@ var LiteMol;
                                 }
                             }
                             else {
-                                for (var ei = 0; ei < structure.entities.count; ei++) {
-                                    if (structure.entities.entityType[ei] !== Structure.EntityType.Polymer)
+                                for (var ei = 0; ei < entities.count; ei++) {
+                                    if (entities.type[ei] !== 'polymer')
                                         continue;
-                                    var start = structure.entities.atomStartIndex[ei], end = structure.entities.atomEndIndex[ei];
+                                    var start = entities.atomStartIndex[ei], end = entities.atomEndIndex[ei];
                                     for (var i = start; i < end; i++) {
                                         if (ctx.hasAtom(i) && allowedNames.has(atomNames[i]))
                                             indices[indexCount++] = i;
@@ -19657,7 +19545,7 @@ var LiteMol;
                     function compileAmbientResidues(where, radius) {
                         var _where = Builder.toQuery(where);
                         return function (ctx) {
-                            var src = _where(ctx), tree = ctx.tree, radiusCtx = Core.Geometry.SubdivisionTree3D.createContextRadius(tree, radius, false), buffer = radiusCtx.buffer, ret = new Query.HashFragmentSeqBuilder(ctx), x = ctx.structure.atoms.x, y = ctx.structure.atoms.y, z = ctx.structure.atoms.z, residueIndex = ctx.structure.atoms.residueIndex, atomStart = ctx.structure.residues.atomStartIndex, atomEnd = ctx.structure.residues.atomEndIndex, residues = new Set(), treeData = tree.data;
+                            var src = _where(ctx), tree = ctx.tree, radiusCtx = Core.Geometry.SubdivisionTree3D.createContextRadius(tree, radius, false), buffer = radiusCtx.buffer, ret = new Query.HashFragmentSeqBuilder(ctx), _a = ctx.structure.positions, x = _a.x, y = _a.y, z = _a.z, residueIndex = ctx.structure.data.atoms.residueIndex, atomStart = ctx.structure.data.residues.atomStartIndex, atomEnd = ctx.structure.data.residues.atomEndIndex, residues = new Set(), treeData = tree.data;
                             var _loop_1 = function (f) {
                                 residues.clear();
                                 for (var _i = 0, _a = f.atomIndices; _i < _a.length; _i++) {
@@ -19679,8 +19567,8 @@ var LiteMol;
                                 Array.prototype.sort.call(indices, function (a, b) { return a - b; });
                                 ret.add(Query.Fragment.ofArray(ctx, indices[0], indices));
                             };
-                            for (var _i = 0, _a = src.fragments; _i < _a.length; _i++) {
-                                var f = _a[_i];
+                            for (var _i = 0, _c = src.fragments; _i < _c.length; _i++) {
+                                var f = _c[_i];
                                 _loop_1(f);
                             }
                             return ret.getSeq();
@@ -19690,7 +19578,7 @@ var LiteMol;
                     function compileWholeResidues(where) {
                         var _where = Builder.toQuery(where);
                         return function (ctx) {
-                            var src = _where(ctx), ret = new Query.HashFragmentSeqBuilder(ctx), residueIndex = ctx.structure.atoms.residueIndex, atomStart = ctx.structure.residues.atomStartIndex, atomEnd = ctx.structure.residues.atomEndIndex, residues = new Set();
+                            var src = _where(ctx), ret = new Query.HashFragmentSeqBuilder(ctx), residueIndex = ctx.structure.data.atoms.residueIndex, atomStart = ctx.structure.data.residues.atomStartIndex, atomEnd = ctx.structure.data.residues.atomEndIndex, residues = new Set();
                             var _loop_2 = function (f) {
                                 residues.clear();
                                 for (var _i = 0, _a = f.atomIndices; _i < _a.length; _i++) {
@@ -19779,19 +19667,19 @@ var LiteMol;
                      */
                     function value(v) { return function () { return v; }; }
                     Algebraic.value = value;
-                    function atomProp(index, table, value) { return function (ctx, i) { var s = ctx.structure; return value(table(s))[index(s.atoms)[i]]; }; }
-                    Algebraic.residueSeqNumber = atomProp(function (m) { return m.residueIndex; }, function (m) { return m.residues; }, function (t) { return t.seqNumber; });
-                    Algebraic.residueName = atomProp(function (m) { return m.residueIndex; }, function (m) { return m.residues; }, function (t) { return t.name; });
-                    Algebraic.elementSymbol = atomProp(function (m) { return m.indices; }, function (m) { return m.atoms; }, function (t) { return t.elementSymbol; });
-                    Algebraic.atomName = atomProp(function (m) { return m.indices; }, function (m) { return m.atoms; }, function (t) { return t.name; });
-                    Algebraic.entityType = atomProp(function (m) { return m.entityIndex; }, function (m) { return m.entities; }, function (t) { return t.type; });
+                    function atomProp(index, table, value) { return function (ctx, i) { var s = ctx.structure; return value(table(s))[index(s.data.atoms)[i]]; }; }
+                    Algebraic.residueSeqNumber = atomProp(function (m) { return m.residueIndex; }, function (m) { return m.data.residues; }, function (t) { return t.seqNumber; });
+                    Algebraic.residueName = atomProp(function (m) { return m.residueIndex; }, function (m) { return m.data.residues; }, function (t) { return t.name; });
+                    Algebraic.elementSymbol = atomProp(function (m) { return m.indices; }, function (m) { return m.data.atoms; }, function (t) { return t.elementSymbol; });
+                    Algebraic.atomName = atomProp(function (m) { return m.indices; }, function (m) { return m.data.atoms; }, function (t) { return t.name; });
+                    Algebraic.entityType = atomProp(function (m) { return m.entityIndex; }, function (m) { return m.data.entities; }, function (t) { return t.type; });
                     /**
                      * Query
                      */
                     function query(p) {
                         return Query.Builder.build(function () { return function (ctx) {
                             var result = [];
-                            for (var i = 0, _b = ctx.structure.atoms.count; i < _b; i++) {
+                            for (var i = 0, _b = ctx.structure.data.atoms.count; i < _b; i++) {
                                 if (ctx.hasAtom(i) && p(ctx, i))
                                     result[result.length] = i;
                             }
@@ -58004,7 +57892,7 @@ var LiteMol;
                     function addPrecomputedBonds(molecule, atomIndices, builder) {
                         var mask = LiteMol.Core.Structure.Query.Context.Mask.ofIndices(molecule, atomIndices);
                         var stickCount = 0;
-                        var _a = molecule.covalentBonds, atomAIndex = _a.atomAIndex, atomBIndex = _a.atomBIndex, type = _a.type, count = _a.count;
+                        var _a = molecule.data.bonds.covalent, atomAIndex = _a.atomAIndex, atomBIndex = _a.atomBIndex, type = _a.type, count = _a.count;
                         for (var i = 0; i < count; i++) {
                             var a = atomAIndex[i], b = atomBIndex[i];
                             if (!mask.has(a) || !mask.has(b))
@@ -58022,10 +57910,10 @@ var LiteMol;
                         var indices, atomCount = 0;
                         indices = atomIndices;
                         atomCount = indices.length;
-                        var atoms = molecule.atoms, cX = atoms.x, cY = atoms.y, cZ = atoms.z, elementSymbol = atoms.elementSymbol, atomName = atoms.name, altLoc = atoms.altLoc, atomResidueIndex = atoms.residueIndex, atomEntityIndex = atoms.entityIndex, entityType = molecule.entities.entityType, waterType = LiteMol.Core.Structure.EntityType.Water, residueName = molecule.residues.name;
+                        var atoms = molecule.data.atoms, _a = molecule.positions, cX = _a.x, cY = _a.y, cZ = _a.z, elementSymbol = atoms.elementSymbol, atomName = atoms.name, altLoc = atoms.altLoc, atomResidueIndex = atoms.residueIndex, atomEntityIndex = atoms.entityIndex, entityType = molecule.data.entities.type, waterType = 'water', residueName = molecule.data.residues.name;
                         var bondLength = 2;
-                        var compBonds = molecule.componentBonds, builder = ChunkedArray.create(function (size) { return new Int32Array(size); }, (indices.length * 1.33) | 0, 3), residueCount = 1, stickCount = 0, startAtomIndex = 0, endAtomIndex = 0;
-                        if (molecule.covalentBonds) {
+                        var compBonds = molecule.data.bonds.component, builder = ChunkedArray.create(function (size) { return new Int32Array(size); }, (indices.length * 1.33) | 0, 3), residueCount = 1, stickCount = 0, startAtomIndex = 0, endAtomIndex = 0;
+                        if (molecule.data.bonds.covalent) {
                             stickCount = BallsAndSticksHelper.addPrecomputedBonds(molecule, atomIndices, builder);
                             while (startAtomIndex < atomCount) {
                                 var rIndex = atomResidueIndex[indices[startAtomIndex]];
@@ -58168,10 +58056,11 @@ var LiteMol;
                         this.atomTriangleIndices = new Uint32Array(this.atomTemplateIndexBufferLength * this.atomIndices.length);
                         this.atomColors = new Float32Array(this.atomBufferSize);
                         this.atomPickColors = new Float32Array(this.atomTemplateVertexCount * 4 * this.atomIndices.length);
-                        this.atoms = this.model.atoms;
-                        this.cX = this.atoms.x;
-                        this.cY = this.atoms.y;
-                        this.cZ = this.atoms.z;
+                        this.atoms = this.model.data.atoms;
+                        this.positions = this.model.positions;
+                        this.cX = this.positions.x;
+                        this.cY = this.positions.y;
+                        this.cZ = this.positions.z;
                         this.atomSymbols = this.atoms.elementSymbol;
                         this.residueIndex = this.atoms.residueIndex;
                         this.atomsDone = 0;
@@ -58262,7 +58151,7 @@ var LiteMol;
                         this.bondColors = new Float32Array(this.bondBufferSize);
                         this.bondIndices = new Uint32Array(this.state.bondTemplateIndexBufferLength * this.info.stickCount);
                         this.bondRadius = this.state.params.bondRadius;
-                        this.residueIndex = this.model.atoms.residueIndex;
+                        this.residueIndex = this.model.data.atoms.residueIndex;
                         this.currentResidueIndex = this.residueIndex[this.info.bonds[0]];
                         this.bondMapVertexOffsetStart = 0;
                         this.bondMapVertexOffsetEnd = 0;
@@ -58629,7 +58518,7 @@ var LiteMol;
                                             parameters: parameters,
                                             isTrace: isTrace,
                                             params: params,
-                                            state: new Geometry.CartoonsGeometryState(params, model.residues.count),
+                                            state: new Geometry.CartoonsGeometryState(params, model.data.residues.count),
                                             units: void 0,
                                             strandArrays: void 0,
                                             strandTemplate: void 0,
@@ -58859,10 +58748,10 @@ var LiteMol;
                             return hasP;
                         };
                         CartoonAsymUnit.createMask = function (model, atomIndices) {
-                            var ret = new Uint8Array(model.residues.count);
-                            var _a = model.atoms, residueIndex = _a.residueIndex, name = _a.name;
-                            var ssIndex = model.residues.secondaryStructureIndex;
-                            var ss = model.secondaryStructure;
+                            var ret = new Uint8Array(model.data.residues.count);
+                            var _a = model.data.atoms, residueIndex = _a.residueIndex, name = _a.name;
+                            var ssIndex = model.data.residues.secondaryStructureIndex;
+                            var ss = model.data.secondaryStructure;
                             for (var i = 0, _b = atomIndices.length - 1; i < _b; i++) {
                                 var aI = atomIndices[i];
                                 var rStart = i;
@@ -58885,7 +58774,7 @@ var LiteMol;
                         };
                         CartoonAsymUnit.isUnknownSecondaryStructure = function (model) {
                             var hasSeq = false;
-                            for (var _i = 0, _a = model.secondaryStructure; _i < _a.length; _i++) {
+                            for (var _i = 0, _a = model.data.secondaryStructure; _i < _a.length; _i++) {
                                 var e = _a[_i];
                                 if (e.type === 1 /* Helix */
                                     || e.type === 3 /* Sheet */
@@ -58902,8 +58791,8 @@ var LiteMol;
                             if (parent.type !== 4 /* AminoSeq */)
                                 return [parent];
                             var elements = [];
-                            var name = model.atoms.name;
-                            var _a = model.residues, atomStartIndex = _a.atomStartIndex, atomEndIndex = _a.atomEndIndex;
+                            var name = model.data.atoms.name;
+                            var _a = model.data.residues, atomStartIndex = _a.atomStartIndex, atomEndIndex = _a.atomEndIndex;
                             var trace = new Int32Array(parent.endResidueIndex - parent.startResidueIndex), offset = 0;
                             var isOk = true;
                             for (var i = parent.startResidueIndex, _b = parent.endResidueIndex; i < _b; i++) {
@@ -58933,7 +58822,7 @@ var LiteMol;
                         CartoonAsymUnit.zhangSkolnickSStrace = function (model, trace, parent, elements) {
                             var mask = new Int32Array(trace.length);
                             var hasSS = false;
-                            var residueIndex = model.atoms.residueIndex;
+                            var residueIndex = model.data.atoms.residueIndex;
                             for (var i = 0, _l = trace.length; i < _l; i++) {
                                 if (CartoonAsymUnit.zhangSkolnickSSresidue(model, trace, i, CartoonAsymUnit.ZhangHelixDistance, CartoonAsymUnit.ZhangHelixDelta)) {
                                     mask[i] = 1 /* Helix */;
@@ -58983,7 +58872,7 @@ var LiteMol;
                         };
                         CartoonAsymUnit.zhangSkolnickSSresidue = function (model, trace, i, distances, delta) {
                             var len = trace.length;
-                            var _a = model.atoms, x = _a.x, y = _a.y, z = _a.z;
+                            var _a = model.positions, x = _a.x, y = _a.y, z = _a.z;
                             var u = CartoonAsymUnit.ZhangP1, v = CartoonAsymUnit.ZhangP2;
                             for (var j = Math.max(0, i - 2); j <= i; j++) {
                                 for (var k = 2; k < 5; k++) {
@@ -59009,7 +58898,7 @@ var LiteMol;
                             var mask = CartoonAsymUnit.createMask(model, atomIndices);
                             var ss = [];
                             var isUnknownSS = CartoonAsymUnit.isUnknownSecondaryStructure(model);
-                            for (var _i = 0, _a = model.secondaryStructure; _i < _a.length; _i++) {
+                            for (var _i = 0, _a = model.data.secondaryStructure; _i < _a.length; _i++) {
                                 var e = _a[_i];
                                 if (isUnknownSS) {
                                     var approx = CartoonAsymUnit.approximateSecondaryStructure(model, e);
@@ -59023,7 +58912,7 @@ var LiteMol;
                                 }
                             }
                             CartoonAsymUnit.throwIfEmpty(ss);
-                            var previous = ss[0], asymId = model.residues.asymId, authSeqNumber = model.residues.authSeqNumber, currentElements = [], units = [], none = 0 /* None */;
+                            var previous = ss[0], asymId = model.data.residues.asymId, authSeqNumber = model.data.residues.authSeqNumber, currentElements = [], units = [], none = 0 /* None */;
                             if (previous.type === none) {
                                 previous = null;
                             }
@@ -59074,7 +58963,7 @@ var LiteMol;
                             this.normalVectorsBuilder = null;
                         };
                         CartoonAsymUnit.prototype.initPositions = function (state) {
-                            var residues = this.model.residues, atoms = this.model.atoms, arrays = { atomStartIndex: residues.atomStartIndex, atomEndIndex: residues.atomEndIndex, name: atoms.name, x: atoms.x, y: atoms.y, z: atoms.z }, residueType = [], offset = 0, i = 0;
+                            var residues = this.model.data.residues, atoms = this.model.data.atoms, positions = this.model.positions, arrays = { atomStartIndex: residues.atomStartIndex, atomEndIndex: residues.atomEndIndex, name: atoms.name, x: positions.x, y: positions.y, z: positions.z }, residueType = [], offset = 0, i = 0;
                             for (var _i = 0, _a = this.elements; _i < _a.length; _i++) {
                                 var e = _a[_i];
                                 this.structureStarts.add(e.startResidueIndex);
@@ -59357,11 +59246,12 @@ var LiteMol;
                             index: templ.attributes.index.array,
                             geometry: templ
                         };
-                        var atoms = ctx.model.atoms, residues = ctx.model.residues;
+                        var atoms = ctx.model.data.atoms, residues = ctx.model.data.residues;
+                        var positions = ctx.model.positions;
                         ctx.strandArrays = {
                             startIndex: residues.atomStartIndex,
                             endIndex: residues.atomEndIndex,
-                            x: atoms.x, y: atoms.y, z: atoms.z,
+                            x: positions.x, y: positions.y, z: positions.z,
                             name: atoms.name
                         };
                     }
@@ -59708,7 +59598,7 @@ var LiteMol;
                         return _super.apply(this, arguments) || this;
                     }
                     Model.prototype.applySelectionInternal = function (indices, action) {
-                        var buffer = this.cartoons.vertexStateBuffer, array = buffer.array, map = this.cartoons.vertexMap, vertexRanges = map.vertexRanges, changed = false, residueIndex = this.model.atoms.residueIndex;
+                        var buffer = this.cartoons.vertexStateBuffer, array = buffer.array, map = this.cartoons.vertexMap, vertexRanges = map.vertexRanges, changed = false, residueIndex = this.model.data.atoms.residueIndex;
                         for (var a = 0, _a = indices.length; a < _a; a++) {
                             var index = residueIndex[indices[a]];
                             a++;
@@ -59732,7 +59622,7 @@ var LiteMol;
                         return true;
                     };
                     Model.prototype.getPickElements = function (pickId) {
-                        var _c = this.model.residues, atomStartIndex = _c.atomStartIndex, atomEndIndex = _c.atomEndIndex;
+                        var _c = this.model.data.residues, atomStartIndex = _c.atomStartIndex, atomEndIndex = _c.atomEndIndex;
                         var elements = [];
                         for (var i = atomStartIndex[pickId], _b = atomEndIndex[pickId]; i < _b; i++) {
                             if (this.queryContext.hasAtom(i))
@@ -59741,20 +59631,20 @@ var LiteMol;
                         return elements;
                     };
                     Model.prototype.highlightElement = function (pickId, highlight) {
-                        return this.applySelection([this.model.residues.atomStartIndex[pickId]], highlight ? 3 /* Highlight */ : 4 /* RemoveHighlight */);
+                        return this.applySelection([this.model.data.residues.atomStartIndex[pickId]], highlight ? 3 /* Highlight */ : 4 /* RemoveHighlight */);
                     };
                     Model.prototype.highlightInternal = function (isOn) {
                         return Visualization.Selection.applyActionToBuffer(this.cartoons.vertexStateBuffer, isOn ? 3 /* Highlight */ : 4 /* RemoveHighlight */);
                     };
                     Model.prototype.applyColoring = function (theme) {
-                        var _c = this.model.residues, atomStartIndex = _c.atomStartIndex, atomEndIndex = _c.atomEndIndex;
+                        var _c = this.model.data.residues, atomStartIndex = _c.atomStartIndex, atomEndIndex = _c.atomEndIndex;
                         var color = { r: 0.1, g: 0.1, b: 0.1 };
                         var avgColor = { r: 0.1, g: 0.1, b: 0.1 };
                         var map = this.cartoons.vertexMap;
                         var bufferAttribute = this.cartoons.geometry.attributes.color;
                         var buffer = bufferAttribute.array;
                         var vertexRanges = map.vertexRanges;
-                        for (var rI = 0, _bRi = this.model.residues.count; rI < _bRi; rI++) {
+                        for (var rI = 0, _bRi = this.model.data.residues.count; rI < _bRi; rI++) {
                             avgColor.r = 0;
                             avgColor.g = 0;
                             avgColor.b = 0;
@@ -65765,7 +65655,7 @@ var LiteMol;
                             return r;
                         return 1.0;
                     };
-                }(model.atoms.elementSymbol, VDWRadii);
+                }(model.data.atoms.elementSymbol, VDWRadii);
             }
             Utils.vdwRadiusFromElementSymbol = vdwRadiusFromElementSymbol;
             function createVdwRadii() {
@@ -66167,6 +66057,7 @@ var LiteMol;
         Bootstrap.Task = Task;
         var serialTaskId = 0;
         (function (Task) {
+            Task.__DEBUG_MODE__ = false;
             var Running = (function () {
                 function Running(context, computation, info) {
                     this.context = context;
@@ -66202,12 +66093,15 @@ var LiteMol;
                 Running.prototype.rejected = function (err) {
                     this.context.performance.end('task' + this.info.id);
                     this.context.performance.formatTime('task' + this.info.id);
+                    if (Task.__DEBUG_MODE__) {
+                        console.error(err);
+                    }
                     try {
                         if (this.info.type === 'Silent') {
                             if (err.warn)
                                 this.context.logger.warning("Warning (" + this.info.name + "): " + err.message);
                             else
-                                console.error("Error (" + this.info.name + "): " + err, err);
+                                console.error("Error (" + this.info.name + ")", err);
                         }
                         else {
                             if (err.warn) {
@@ -66223,7 +66117,7 @@ var LiteMol;
                         }
                     }
                     catch (e) {
-                        console.log(e);
+                        console.error(e);
                     }
                     finally {
                         Bootstrap.Event.Task.Completed.dispatch(this.context, this.info.id);
@@ -67386,10 +67280,11 @@ var LiteMol;
                 "use strict";
                 function transformMoleculeAtomIndices(model, context, indices) {
                     var m = context.structure;
-                    var _a = m.atoms, residueIndex = _a.residueIndex, chainIndex = _a.chainIndex, entityIndex = _a.entityIndex, name = _a.name, authName = _a.authName, id = _a.id, occupancy = _a.occupancy, tempFactor = _a.tempFactor, elementSymbol = _a.elementSymbol, x = _a.x, y = _a.y, z = _a.z, altLoc = _a.altLoc;
-                    var _b = m.residues, resName = _b.name, resAuthName = _b.authName, seqNumber = _b.seqNumber, authSeqNumber = _b.authSeqNumber, insCode = _b.insCode, isHet = _b.isHet;
-                    var _c = m.chains, asymId = _c.asymId, authAsymId = _c.authAsymId;
-                    var entityId = m.entities.entityId;
+                    var _a = m.data.atoms, residueIndex = _a.residueIndex, chainIndex = _a.chainIndex, entityIndex = _a.entityIndex, name = _a.name, authName = _a.authName, id = _a.id, occupancy = _a.occupancy, tempFactor = _a.tempFactor, elementSymbol = _a.elementSymbol, altLoc = _a.altLoc;
+                    var _b = m.positions, x = _b.x, y = _b.y, z = _b.z;
+                    var _c = m.data.residues, resName = _c.name, resAuthName = _c.authName, seqNumber = _c.seqNumber, authSeqNumber = _c.authSeqNumber, insCode = _c.insCode, isHet = _c.isHet;
+                    var _d = m.data.chains, asymId = _d.asymId, authAsymId = _d.authAsymId;
+                    var entityId = m.data.entities.entityId;
                     var aI = -1, eI = -1, cI = -1, rI = -1;
                     var e, c, r, a;
                     var eP = function () { return e = { index: eI, entityId: entityId[eI] }; };
@@ -67850,7 +67745,7 @@ var LiteMol;
                 var RainbowMapping = (function () {
                     function RainbowMapping(model, _a) {
                         var r = _a.r, g = _a.g, b = _a.b;
-                        this.residueIndex = model.atoms.residueIndex;
+                        this.residueIndex = model.data.atoms.residueIndex;
                         this.r = r;
                         this.g = g;
                         this.b = b;
@@ -67879,7 +67774,7 @@ var LiteMol;
                     'Selection': Vis.Color.fromHex(0x968000),
                 });
                 function makeRainbow(model, groups) {
-                    var rC = model.residues.count;
+                    var rC = model.data.residues.count;
                     var _a = { r: new Float32Array(rC), g: new Float32Array(rC), b: new Float32Array(rC) }, r = _a.r, g = _a.g, b = _a.b;
                     var _b = groups(model), count = _b.count, residueStartIndex = _b.residueStartIndex, residueEndIndex = _b.residueEndIndex;
                     var cC = rainbowPalette.length - 1;
@@ -67914,37 +67809,37 @@ var LiteMol;
                             name: 'Chain ID',
                             description: 'Color the surface by Chain ID.',
                             colors: Molecule.ModelVisualBaseColors,
-                            provider: createPaletteThemeProvider(function (m) { return ({ index: m.atoms.residueIndex, property: m.residues.asymId }); }, Vis.Molecule.Colors.DefaultPallete)
+                            provider: createPaletteThemeProvider(function (m) { return ({ index: m.data.atoms.residueIndex, property: m.data.residues.asymId }); }, Vis.Molecule.Colors.DefaultPallete)
                         }, {
                             name: 'Entity ID',
                             description: 'Color the surface by Entity ID.',
                             colors: Molecule.ModelVisualBaseColors,
-                            provider: createPaletteThemeProvider(function (m) { return ({ index: m.atoms.residueIndex, property: m.residues.entityId }); }, Vis.Molecule.Colors.DefaultPallete)
+                            provider: createPaletteThemeProvider(function (m) { return ({ index: m.data.atoms.residueIndex, property: m.data.residues.entityId }); }, Vis.Molecule.Colors.DefaultPallete)
                         }, {
                             name: 'Entity Type',
                             description: 'Color the surface by Entity Type.',
                             colors: Molecule.ModelVisualBaseColors,
-                            provider: createPaletteThemeProvider(function (m) { return ({ index: m.atoms.entityIndex, property: m.entities.entityType }); }, Vis.Molecule.Colors.DefaultPallete)
+                            provider: createPaletteThemeProvider(function (m) { return ({ index: m.data.atoms.entityIndex, property: m.data.entities.type }); }, Vis.Molecule.Colors.DefaultPallete)
                         }, {
                             name: 'Residue Name',
                             description: 'Color the surface by residue name.',
                             colors: Molecule.ModelVisualBaseColors,
-                            provider: createPaletteThemeProvider(function (m) { return ({ index: m.atoms.residueIndex, property: m.residues.name }); }, Vis.Molecule.Colors.DefaultPallete)
+                            provider: createPaletteThemeProvider(function (m) { return ({ index: m.data.atoms.residueIndex, property: m.data.residues.name }); }, Vis.Molecule.Colors.DefaultPallete)
                         }, {
                             name: 'Element Symbol',
                             description: 'Color the surface by atom elemnt symbol.',
                             colors: Molecule.ModelVisualBaseColors,
-                            provider: createColorMapThemeProvider(function (m) { return ({ index: m.atoms.indices, property: m.atoms.elementSymbol }); }, Vis.Molecule.Colors.DefaultElementColorMap, Vis.Molecule.Colors.DefaultElementColor)
+                            provider: createColorMapThemeProvider(function (m) { return ({ index: m.data.atoms.indices, property: m.data.atoms.elementSymbol }); }, Vis.Molecule.Colors.DefaultElementColorMap, Vis.Molecule.Colors.DefaultElementColor)
                         }, {
                             name: 'Rainbow (Chain)',
                             description: 'Color each chain using rainbow palette.',
                             colors: RainbowBaseColors,
-                            provider: createRainbowProvider(function (m) { return m.chains; })
+                            provider: createRainbowProvider(function (m) { return m.data.chains; })
                         }, {
                             name: 'Rainbow (Entity)',
                             description: 'Color each entity using rainbow palette.',
                             colors: RainbowBaseColors,
-                            provider: createRainbowProvider(function (m) { return m.entities; })
+                            provider: createRainbowProvider(function (m) { return m.data.entities; })
                         }, {
                             name: 'Uniform Color',
                             description: 'Same color everywhere.',
@@ -68085,7 +67980,7 @@ var LiteMol;
                 }
                 function createModel(source, style, theme) {
                     var model = Bootstrap.Utils.Molecule.findModel(source).props.model;
-                    var atomIndices = Bootstrap.Entity.isMoleculeModel(source) ? source.props.model.atoms.indices : source.props.indices;
+                    var atomIndices = Bootstrap.Entity.isMoleculeModel(source) ? source.props.model.data.atoms.indices : source.props.indices;
                     if (!atomIndices.length)
                         return void 0;
                     var tessalation = getTessalation(style.params.detail, atomIndices.length);
@@ -68134,10 +68029,10 @@ var LiteMol;
                             switch (_a.label) {
                                 case 0:
                                     model = Bootstrap.Utils.Molecule.findModel(source).props.model;
-                                    atomIndices = Bootstrap.Entity.isMoleculeModel(source) ? source.props.model.atoms.indices : source.props.indices;
+                                    atomIndices = Bootstrap.Entity.isMoleculeModel(source) ? source.props.model.data.atoms.indices : source.props.indices;
                                     params = style.params;
                                     return [4 /*yield*/, LiteMol.Core.Geometry.MolecularSurface.computeMolecularSurfaceAsync({
-                                            positions: model.atoms,
+                                            positions: model.positions,
                                             atomIndices: atomIndices,
                                             parameters: {
                                                 atomRadius: Bootstrap.Utils.vdwRadiusFromElementSymbol(model),
@@ -68799,7 +68694,7 @@ var LiteMol;
                                 }
                                 return [2 /*return*/, Entity.Molecule.Model.create(t, {
                                         label: 'Model ' + model.modelId,
-                                        description: model.atoms.count + " atom" + (model.atoms.count !== 1 ? 's' : ''),
+                                        description: model.data.atoms.count + " atom" + (model.data.atoms.count !== 1 ? 's' : ''),
                                         model: model
                                     })];
                             });
@@ -68869,7 +68764,7 @@ var LiteMol;
                         defaultParams: function (ctx, e) {
                             var m = Bootstrap.Utils.Molecule.findModel(e);
                             var ret = ({ name: ctx.settings.get('molecule.model.defaultAssemblyName') || '1' });
-                            var asm = m.props.model.assemblyInfo;
+                            var asm = m.props.model.data.assemblyInfo;
                             if (!asm || !asm.assemblies.length)
                                 return ret;
                             if (asm.assemblies.filter(function (a) { return a.name === ret.name; }))
@@ -68878,14 +68773,14 @@ var LiteMol;
                             return ret;
                         },
                         isUpdatable: true,
-                        isApplicable: function (m) { return !!(m && m.props.model.assemblyInfo && m.props.model.assemblyInfo.assemblies.length); }
+                        isApplicable: function (m) { return !!(m && m.props.model.data.assemblyInfo && m.props.model.data.assemblyInfo.assemblies.length); }
                     }, function (ctx, a, t) {
                         return Bootstrap.Task.create("Create Model (" + a.props.label + ")", 'Background', function (ctx) { return __awaiter(_this, void 0, void 0, function () {
                             var i, gen, asm;
                             return __generator(this, function (_a) {
                                 switch (_a.label) {
                                     case 0:
-                                        i = a.props.model.assemblyInfo;
+                                        i = a.props.model.data.assemblyInfo;
                                         if (!i || !i.assemblies.length) {
                                             throw 'Assembly info not available.';
                                         }
@@ -68899,7 +68794,7 @@ var LiteMol;
                                         asm = LiteMol.Core.Structure.buildAssembly(a.props.model, gen);
                                         return [2 /*return*/, Entity.Molecule.Model.create(t, {
                                                 label: 'Assembly ' + gen.name,
-                                                description: asm.atoms.count + " atom" + (asm.atoms.count !== 1 ? 's' : ''),
+                                                description: asm.data.atoms.count + " atom" + (asm.data.atoms.count !== 1 ? 's' : ''),
                                                 model: asm
                                             })];
                                 }
@@ -68914,14 +68809,14 @@ var LiteMol;
                         to: [Entity.Molecule.Model],
                         defaultParams: function (ctx) { return ({ type: 'Interaction', radius: 5.0 }); },
                         isUpdatable: true,
-                        isApplicable: function (m) { return !!(m && m.props.model.symmetryInfo); }
+                        isApplicable: function (m) { return !!(m && m.props.model.data.symmetryInfo); }
                     }, function (ctx, a, t) {
                         return Bootstrap.Task.create("Create Model (" + a.props.label + ")", 'Background', function (ctx) { return __awaiter(_this, void 0, void 0, function () {
                             var i, radius, symm;
                             return __generator(this, function (_a) {
                                 switch (_a.label) {
                                     case 0:
-                                        i = a.props.model.symmetryInfo;
+                                        i = a.props.model.data.symmetryInfo;
                                         if (!i) {
                                             throw 'Spacegroup info info not available.';
                                         }
@@ -68933,7 +68828,7 @@ var LiteMol;
                                         return [2 /*return*/, Entity.Molecule.Model.create(t, {
                                                 label: 'Symmetry',
                                                 model: symm,
-                                                description: symm.atoms.count + " atom" + (symm.atoms.count !== 1 ? 's' : '') + ", " + t.params.type + " " + Bootstrap.Utils.round(radius, 1) + " \u212B"
+                                                description: symm.data.atoms.count + " atom" + (symm.data.atoms.count !== 1 ? 's' : '') + ", " + t.params.type + " " + Bootstrap.Utils.round(radius, 1) + " \u212B"
                                             })];
                                 }
                             });
@@ -68958,7 +68853,7 @@ var LiteMol;
                                         _a.sent();
                                         m = a.props.model;
                                         tCtx = { t: t.params.transform, v: { x: 0, y: 0, z: 0 } };
-                                        transformed = LiteMol.Core.Structure.MoleculeModel.withTransformedXYZ(m, tCtx, function (ctx, x, y, z, out) {
+                                        transformed = LiteMol.Core.Structure.Molecule.Model.withTransformedXYZ(m, tCtx, function (ctx, x, y, z, out) {
                                             var v = ctx.v;
                                             v.x = x;
                                             v.y = y;
@@ -69493,8 +69388,8 @@ var LiteMol;
                 }
                 Molecule.findQueryContext = findQueryContext;
                 function getDistance(mA, startAtomIndexA, endAtomIndexA, mB, startAtomIndexB, endAtomIndexB) {
-                    var _a = mA.atoms, x = _a.x, y = _a.y, z = _a.z;
-                    var bX = mB.atoms.x, bY = mB.atoms.y, bZ = mB.atoms.z;
+                    var _a = mA.positions, x = _a.x, y = _a.y, z = _a.z;
+                    var _c = mB.positions, bX = _c.x, bY = _c.y, bZ = _c.z;
                     var d = Number.POSITIVE_INFINITY;
                     for (var i = startAtomIndexA; i < endAtomIndexA; i++) {
                         for (var j = startAtomIndexB; j < endAtomIndexB; j++) {
@@ -69506,13 +69401,13 @@ var LiteMol;
                 }
                 Molecule.getDistance = getDistance;
                 function getDistanceSet(mA, setA, mB, setB) {
-                    var _a = mA.atoms, x = _a.x, y = _a.y, z = _a.z;
-                    var bX = mB.atoms.x, bY = mB.atoms.y, bZ = mB.atoms.z;
+                    var _a = mA.positions, x = _a.x, y = _a.y, z = _a.z;
+                    var _c = mB.positions, bX = _c.x, bY = _c.y, bZ = _c.z;
                     var d = Number.POSITIVE_INFINITY;
                     for (var _i = 0, setA_1 = setA; _i < setA_1.length; _i++) {
                         var i = setA_1[_i];
-                        for (var _c = 0, setB_1 = setB; _c < setB_1.length; _c++) {
-                            var j = setB_1[_c];
+                        for (var _d = 0, setB_1 = setB; _d < setB_1.length; _d++) {
+                            var j = setB_1[_d];
                             var dx = x[i] - bX[j], dy = y[i] - bY[j], dz = z[i] - bZ[j];
                             d = Math.min(d, dx * dx + dy * dy + dz * dz);
                         }
@@ -69538,16 +69433,16 @@ var LiteMol;
                 }
                 Molecule.getModelAndIndicesFromQuery = getModelAndIndicesFromQuery;
                 function getResidueIndices(m, atom) {
-                    var rI = m.atoms.residueIndex;
+                    var rI = m.data.atoms.residueIndex;
                     var idx = [];
-                    for (var i = m.residues.atomStartIndex[rI[atom]], _b = m.residues.atomEndIndex[rI[atom]]; i < _b; i++) {
+                    for (var i = m.data.residues.atomStartIndex[rI[atom]], _b = m.data.residues.atomEndIndex[rI[atom]]; i < _b; i++) {
                         idx.push(i);
                     }
                     return idx;
                 }
                 Molecule.getResidueIndices = getResidueIndices;
                 function getBox(molecule, atomIndices, delta) {
-                    var atoms = molecule.atoms, x = atoms.x, y = atoms.y, z = atoms.z, min = [Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE], max = [-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE];
+                    var _a = molecule.positions, x = _a.x, y = _a.y, z = _a.z, min = [Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE], max = [-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE];
                     for (var _i = 0, atomIndices_1 = atomIndices; _i < atomIndices_1.length; _i++) {
                         var i = atomIndices_1[_i];
                         min[0] = Math.min(x[i], min[0]);
@@ -69574,9 +69469,9 @@ var LiteMol;
                         this.center = { x: 0, y: 0, z: 0 };
                         this.radiusSquared = 0;
                         this.count = 0;
-                        this.x = model.atoms.x;
-                        this.y = model.atoms.y;
-                        this.z = model.atoms.z;
+                        this.x = model.positions.x;
+                        this.y = model.positions.y;
+                        this.z = model.positions.z;
                     }
                     CentroidHelper.prototype.addAtom = function (i) {
                         this.count++;
@@ -69600,7 +69495,7 @@ var LiteMol;
                     into.x = 0;
                     into.y = 0;
                     into.z = 0;
-                    var _a = m.atoms, x = _a.x, y = _a.y, z = _a.z;
+                    var _a = m.positions, x = _a.x, y = _a.y, z = _a.z;
                     for (var _i = 0, indices_1 = indices; _i < indices_1.length; _i++) {
                         var i = indices_1[_i];
                         into.x += x[i];
@@ -69766,9 +69661,9 @@ var LiteMol;
                 var radius = Bootstrap.Utils.Molecule.getCentroidAndRadius(model, elems, center);
                 if (info.elements.length === 1) {
                     var a = info.elements[0];
-                    center.x = model.atoms.x[a];
-                    center.y = model.atoms.y[a];
-                    center.z = model.atoms.z[a];
+                    center.x = model.positions.x[a];
+                    center.y = model.positions.y[a];
+                    center.z = model.positions.z[a];
                 }
                 context.scene.camera.focusOnPoint(center, Math.max(radius, 7));
             }
@@ -70079,16 +69974,16 @@ var LiteMol;
                             return;
                         }
                         var model = Bootstrap.Utils.Molecule.findModel(info.source).props.model;
-                        var i = model.atoms.residueIndex[info.elements[0]];
-                        var rs = model.residues;
+                        var i = model.data.atoms.residueIndex[info.elements[0]];
+                        var rs = model.data.residues;
                         var authAsymId = rs.authAsymId[i];
                         var transform = void 0;
-                        if (model.source === LiteMol.Core.Structure.MoleculeModelSource.Computed) {
+                        if (model.source === LiteMol.Core.Structure.Molecule.Model.Source.Computed) {
                             var p = model.parent;
                             var cI = rs.chainIndex[i];
-                            var chain = model.chains.sourceChainIndex[cI];
-                            authAsymId = p.chains.authAsymId[chain];
-                            transform = model.operators[model.chains.operatorIndex[cI]].matrix;
+                            var chain = model.data.chains.sourceChainIndex[cI];
+                            authAsymId = p.data.chains.authAsymId[chain];
+                            transform = model.operators[model.data.chains.operatorIndex[cI]].matrix;
                         }
                         var url = this.server + "/"
                             + (model.id.toLocaleLowerCase() + "/ambientResidues?")
@@ -77589,7 +77484,7 @@ var LiteMol;
                             var params = this.params;
                             //let model = this.isUpdate ? Bootstrap.Utils.Molecule.findModel(this.transformSourceEntity) : this.entity as Bootstrap.Entity.Molecule.Model;
                             var model = LiteMol.Bootstrap.Utils.Molecule.findModel(this.transformSourceEntity);
-                            var asm = model.props.model.assemblyInfo;
+                            var asm = model.props.model.data.assemblyInfo;
                             if (!asm)
                                 return void 0;
                             var names = asm.assemblies.map(function (a) { return a.name; });

@@ -12,18 +12,17 @@ namespace LiteMol.Comparison.Structure {
     }
     
     export interface RmsdTransformByIndicesEntry { 
-        model: Structure.MoleculeModel; 
+        model: Structure.Molecule.Model; 
         atomIndices: number[] 
     };
     
-    function makePositionTable(model: Structure.MoleculeModel, indices: number[]) {
-
-        let table = new Structure.DataTableBuilder(indices.length);
+    function makePositionTable(model: Structure.Molecule.Model, indices: number[]) {
+        let table = Core.Utils.DataTable.builder<Core.Structure.Position>(indices.length);
         let x = table.addColumn('x', s => new Float64Array(s));
         let y = table.addColumn('y', s => new Float64Array(s));
         let z = table.addColumn('z', s => new Float64Array(s));
 
-        let xs = model.atoms.x, ys = model.atoms.y, zs = model.atoms.z;
+        let xs = model.positions.x, ys = model.positions.y, zs = model.positions.z;
         
         let i = 0;
 
@@ -34,7 +33,7 @@ namespace LiteMol.Comparison.Structure {
             i++;
         }
 
-        return table.seal<Structure.PositionTableSchema>();
+        return table.seal();
 
     }
 

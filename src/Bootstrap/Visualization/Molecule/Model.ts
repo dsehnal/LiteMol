@@ -29,7 +29,7 @@ namespace LiteMol.Bootstrap.Visualization.Molecule {
         };
     }
     
-    function makeRadiusFunc(model: Structure.MoleculeModel, parameters: BallsAndSticksParams) {
+    function makeRadiusFunc(model: Structure.Molecule.Model, parameters: BallsAndSticksParams) {
         if (!parameters.useVDW) {
             return function (r: number) {
                 return function() { return r; }
@@ -44,7 +44,7 @@ namespace LiteMol.Bootstrap.Visualization.Molecule {
         } (parameters.vdwScaling!, vdw);
     }
     
-    function createBallsAndSticksParams(tessalation: number, model: Structure.MoleculeModel, parameters: BallsAndSticksParams) {        
+    function createBallsAndSticksParams(tessalation: number, model: Structure.Molecule.Model, parameters: BallsAndSticksParams) {        
         return <MolVis.BallsAndSticks.Parameters>{
             tessalation,
             bondRadius: parameters.bondRadius,
@@ -53,7 +53,7 @@ namespace LiteMol.Bootstrap.Visualization.Molecule {
         };
     }
     
-    function createVDWBallsParams(tessalation: number, model: Structure.MoleculeModel) {        
+    function createVDWBallsParams(tessalation: number, model: Structure.Molecule.Model) {        
         return <MolVis.BallsAndSticks.Parameters>{
             tessalation,
             bondRadius: 0,
@@ -65,7 +65,7 @@ namespace LiteMol.Bootstrap.Visualization.Molecule {
     function createModel(source: Entity.Molecule.Model | Entity.Molecule.Selection, style: Style<DetailParams>, theme: Vis.Theme): Core.Computation<Vis.Model> | undefined {
     
         let model = Utils.Molecule.findModel(source)!.props.model;
-        let atomIndices = Entity.isMoleculeModel(source) ? source.props.model.atoms.indices : source.props.indices;
+        let atomIndices = Entity.isMoleculeModel(source) ? source.props.model.data.atoms.indices : source.props.indices;
                     
         if (!atomIndices.length) return void 0;
         
@@ -113,11 +113,11 @@ namespace LiteMol.Bootstrap.Visualization.Molecule {
 
         return Task.create<Entity.Molecule.Visual>(`Molecular Surface (${source.props.label})`, Visualization.Style.getTaskType(style), async ctx => {
             let model = Utils.Molecule.findModel(source)!.props.model;
-            let atomIndices = Entity.isMoleculeModel(source) ? source.props.model.atoms.indices : source.props.indices;
+            let atomIndices = Entity.isMoleculeModel(source) ? source.props.model.data.atoms.indices : source.props.indices;
             let params = style.params!;
                    
             let data = await LiteMol.Core.Geometry.MolecularSurface.computeMolecularSurfaceAsync({
-                positions: model.atoms,
+                positions: model.positions,
                 atomIndices,
                 parameters:  {
                     atomRadius: Utils.vdwRadiusFromElementSymbol(model),

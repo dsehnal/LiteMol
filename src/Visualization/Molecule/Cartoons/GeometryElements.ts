@@ -181,13 +181,13 @@ namespace LiteMol.Visualization.Molecule.Cartoons.Geometry {
         }
 
         static createMask(
-            model: Core.Structure.MoleculeModel,
+            model: Core.Structure.Molecule.Model,
             atomIndices: number[]): boolean[] {
 
-            let ret = new Uint8Array(model.residues.count);
-            let { residueIndex, name } = model.atoms;
-            let ssIndex = model.residues.secondaryStructureIndex;
-            let ss = model.secondaryStructure;
+            let ret = new Uint8Array(model.data.residues.count);
+            let { residueIndex, name } = model.data.atoms;
+            let ssIndex = model.data.residues.secondaryStructureIndex;
+            let ss = model.data.secondaryStructure;
 
             for (let i = 0, _b = atomIndices.length - 1; i < _b; i++) {
                 let aI = atomIndices[i];
@@ -209,9 +209,9 @@ namespace LiteMol.Visualization.Molecule.Cartoons.Geometry {
             return <any>ret;
         }
 
-        private static isUnknownSecondaryStructure(model: Core.Structure.MoleculeModel) {
+        private static isUnknownSecondaryStructure(model: Core.Structure.Molecule.Model) {
             let hasSeq = false;
-            for (let e of model.secondaryStructure) {
+            for (let e of model.data.secondaryStructure) {
                 if (e.type === Core.Structure.SecondaryStructureType.Helix
                     || e.type === Core.Structure.SecondaryStructureType.Sheet
                     || e.type === Core.Structure.SecondaryStructureType.Turn) {
@@ -224,13 +224,13 @@ namespace LiteMol.Visualization.Molecule.Cartoons.Geometry {
             return hasSeq;
         }
 
-        private static approximateSecondaryStructure(model: Core.Structure.MoleculeModel, parent: Core.Structure.SecondaryStructureElement) {
+        private static approximateSecondaryStructure(model: Core.Structure.Molecule.Model, parent: Core.Structure.SecondaryStructureElement) {
             if (parent.type !== Core.Structure.SecondaryStructureType.AminoSeq) return [parent];
 
             let elements: Core.Structure.SecondaryStructureElement[] = [];
 
-            let { name } = model.atoms;
-            let { atomStartIndex, atomEndIndex } = model.residues;
+            let { name } = model.data.atoms;
+            let { atomStartIndex, atomEndIndex } = model.data.residues;
 
             let trace = new Int32Array(parent.endResidueIndex - parent.startResidueIndex), offset = 0;
             let isOk = true;
@@ -265,14 +265,14 @@ namespace LiteMol.Visualization.Molecule.Cartoons.Geometry {
         private static ZhangP2 = new THREE.Vector3(0, 0, 0);
 
         private static zhangSkolnickSStrace(
-            model: Core.Structure.MoleculeModel, 
+            model: Core.Structure.Molecule.Model, 
             trace: Int32Array, 
             parent: Core.Structure.SecondaryStructureElement,
             elements: Core.Structure.SecondaryStructureElement[]) {
 
             let mask = new Int32Array(trace.length);
             let hasSS = false;
-            let { residueIndex } = model.atoms;
+            let { residueIndex } = model.data.atoms;
 
             for (let i = 0, _l = trace.length; i < _l; i++) {
                 if (CartoonAsymUnit.zhangSkolnickSSresidue(model, trace, i, CartoonAsymUnit.ZhangHelixDistance, CartoonAsymUnit.ZhangHelixDelta)) {
@@ -329,9 +329,9 @@ namespace LiteMol.Visualization.Molecule.Cartoons.Geometry {
             }
         }
 
-        private static zhangSkolnickSSresidue(model: Core.Structure.MoleculeModel, trace: Int32Array, i: number, distances: number[], delta: number) {
+        private static zhangSkolnickSSresidue(model: Core.Structure.Molecule.Model, trace: Int32Array, i: number, distances: number[], delta: number) {
             let len = trace.length;
-            let { x, y, z } = model.atoms;
+            let { x, y, z } = model.positions;
             let u = CartoonAsymUnit.ZhangP1, v = CartoonAsymUnit.ZhangP2;
             for (let j = Math.max(0, i - 2); j <= i; j++) {
                 for (let k = 2; k < 5; k++) {
@@ -356,7 +356,7 @@ namespace LiteMol.Visualization.Molecule.Cartoons.Geometry {
         }
 
         static buildUnits(
-            model: Core.Structure.MoleculeModel,
+            model: Core.Structure.Molecule.Model,
             atomIndices: number[],
             linearSegmentCount: number): CartoonAsymUnit[] {
 
@@ -365,7 +365,7 @@ namespace LiteMol.Visualization.Molecule.Cartoons.Geometry {
 
             let isUnknownSS = CartoonAsymUnit.isUnknownSecondaryStructure(model);
 
-            for (let e of model.secondaryStructure) {
+            for (let e of model.data.secondaryStructure) {
                 if (isUnknownSS) {
                     let approx = CartoonAsymUnit.approximateSecondaryStructure(model, e);
                     for (let f of approx) {
@@ -379,8 +379,8 @@ namespace LiteMol.Visualization.Molecule.Cartoons.Geometry {
             CartoonAsymUnit.throwIfEmpty(ss);
 
             let previous: Core.Structure.SecondaryStructureElement | null = ss[0],
-                asymId = model.residues.asymId,
-                authSeqNumber = model.residues.authSeqNumber,
+                asymId = model.data.residues.asymId,
+                authSeqNumber = model.data.residues.authSeqNumber,
                 currentElements: Core.Structure.SecondaryStructureElement[] = [],
                 units: CartoonAsymUnit[] = [],
                 none = Core.Structure.SecondaryStructureType.None;
@@ -451,7 +451,7 @@ namespace LiteMol.Visualization.Molecule.Cartoons.Geometry {
         backboneOnly = false;
 
         constructor(
-            private model: Core.Structure.MoleculeModel,
+            private model: Core.Structure.Molecule.Model,
             private elements: Core.Structure.SecondaryStructureElement[],
             public linearSegmentCount: number) {
 
@@ -486,9 +486,10 @@ namespace LiteMol.Visualization.Molecule.Cartoons.Geometry {
         }
 
         private initPositions(state: CartoonAsymUnitState) {
-            let residues = this.model.residues,
-                atoms = this.model.atoms,
-                arrays = { atomStartIndex: residues.atomStartIndex, atomEndIndex: residues.atomEndIndex, name: atoms.name, x: atoms.x, y: atoms.y, z: atoms.z },
+            let residues = this.model.data.residues,
+                atoms = this.model.data.atoms,
+                positions = this.model.positions,
+                arrays = { atomStartIndex: residues.atomStartIndex, atomEndIndex: residues.atomEndIndex, name: atoms.name, x: positions.x, y: positions.y, z: positions.z },
                 residueType: Core.Structure.SecondaryStructureType[] = [],
                 offset = 0,
                 i = 0;
@@ -806,11 +807,12 @@ namespace LiteMol.Visualization.Molecule.Cartoons.Geometry {
             geometry: templ
         };
 
-        let atoms = ctx.model.atoms, residues = ctx.model.residues;
+        let atoms = ctx.model.data.atoms, residues = ctx.model.data.residues;
+        let positions = ctx.model.positions;
         ctx.strandArrays = {
             startIndex: residues.atomStartIndex,
             endIndex: residues.atomEndIndex,
-            x: atoms.x, y: atoms.y, z: atoms.z,
+            x: positions.x, y: positions.y, z: positions.z,
             name: atoms.name
         };
     }

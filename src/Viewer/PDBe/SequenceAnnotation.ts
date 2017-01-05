@@ -147,9 +147,9 @@ namespace LiteMol.Viewer.PDBe.SequenceAnnotation {
         const selectionColor = Visualization.Theme.Default.SelectionColor;
         const highlightColor = Visualization.Theme.Default.HighlightColor;
     
-        function createResidueMap(model: LiteMol.Core.Structure.MoleculeModel, fs: Query.FragmentSeq) {
-            let map = new Uint8Array(model.residues.count);            
-            let residueIndex = model.atoms.residueIndex;
+        function createResidueMap(model: LiteMol.Core.Structure.Molecule.Model, fs: Query.FragmentSeq) {
+            let map = new Uint8Array(model.data.residues.count);            
+            let residueIndex = model.data.atoms.residueIndex;
             for (let f of fs.fragments) {
                 for (let i of f.atomIndices) {
                     map[residueIndex[i]] = 1;
@@ -173,7 +173,7 @@ namespace LiteMol.Viewer.PDBe.SequenceAnnotation {
             let colorMap = new Map<number, Visualization.Color>();
             colorMap.set(1, color);
             
-            let residueIndex = model.atoms.residueIndex;            
+            let residueIndex = model.data.atoms.residueIndex;            
             let mapping = Visualization.Theme.createColorMapMapping(i => map[residueIndex[i]], colorMap, defaultColor);
             return Visualization.Theme.createMapping(mapping, { colors, interactive: true, transparency: { alpha: 1.0 } });
         }     

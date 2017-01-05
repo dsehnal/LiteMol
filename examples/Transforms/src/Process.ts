@@ -69,7 +69,7 @@ namespace LiteMol.Example.Transforms {
         // Find CA atoms inside polymer entities
         let query = Q.atomsByName('CA').inside(Q.entities({ type: 'polymer' })).union();
         let xs = models
-            .map(m => ({ id: m.ref, model: m.props.model, fragments: m.props.model.query(query) }))
+            .map(m => ({ id: m.ref, model: m.props.model, fragments: Q.apply(query, m.props.model) }))
             .filter(x => !!x.fragments.length)
             .map(x => ({ id: x.id, model: x.model, atomIndices: x.fragments.fragments[0].atomIndices  }));
 

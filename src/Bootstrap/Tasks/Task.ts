@@ -38,6 +38,8 @@ namespace LiteMol.Bootstrap {
 
     let serialTaskId = 0;        
     export module Task {        
+        export let __DEBUG_MODE__ = false;
+
         export type Type = 'Normal' | 'Background' | 'Silent';
         
         export interface Info {
@@ -81,11 +83,15 @@ namespace LiteMol.Bootstrap {
             private rejected(err: any) {                                
                 this.context.performance.end('task' + this.info.id);
                 this.context.performance.formatTime('task' + this.info.id);
+
+                if (__DEBUG_MODE__) {
+                    console.error(err);
+                }
                                 
                 try {
                     if (this.info.type === 'Silent') {
                         if (err.warn)  this.context.logger.warning(`Warning (${this.info.name}): ${err.message}`);
-                        else console.error(`Error (${this.info.name}): ${err}`, err);
+                        else console.error(`Error (${this.info.name})`, err);
                     } else {
                         if (err.warn) {
                             this.context.logger.warning(`Warning (${this.info.name}): ${err.message}`);
@@ -96,7 +102,7 @@ namespace LiteMol.Bootstrap {
                         }
                     }                       
                 } catch (e) {
-                    console.log(e);
+                    console.error(e);
                 } finally {
                     Event.Task.Completed.dispatch(this.context, this.info.id);
                 }

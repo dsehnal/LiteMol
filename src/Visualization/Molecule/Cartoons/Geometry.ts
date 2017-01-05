@@ -19,7 +19,7 @@ namespace LiteMol.Visualization.Molecule.Cartoons.Geometry {
     export interface Context {
         computation: Core.Computation.Context,
         
-        model: Core.Structure.MoleculeModel,
+        model: Core.Structure.Molecule.Model,
         atomIndices: number[],
         linearSegments: number,
         parameters: any,
@@ -39,7 +39,7 @@ namespace LiteMol.Visualization.Molecule.Cartoons.Geometry {
     }
 
     export async function create(
-        model: Core.Structure.MoleculeModel,
+        model: Core.Structure.Molecule.Model,
         atomIndices: number[],
         linearSegments: number,
         parameters: any,
@@ -56,7 +56,7 @@ namespace LiteMol.Visualization.Molecule.Cartoons.Geometry {
             isTrace,
             
             params,
-            state: new CartoonsGeometryState(params, model.residues.count),
+            state: new CartoonsGeometryState(params, model.data.residues.count),
             units: <any>void 0,
             
             strandArrays: <any>void 0,

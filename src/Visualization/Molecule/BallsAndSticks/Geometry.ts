@@ -9,11 +9,11 @@ namespace LiteMol.Visualization.Molecule.BallsAndSticks {
 
         import ChunkedArray = Core.Utils.ChunkedArray;
 
-        export function addPrecomputedBonds(molecule: Core.Structure.MoleculeModel, atomIndices: number[], builder: ChunkedArray<number>) {
+        export function addPrecomputedBonds(molecule: Core.Structure.Molecule.Model, atomIndices: number[], builder: ChunkedArray<number>) {
             let mask = Core.Structure.Query.Context.Mask.ofIndices(molecule, atomIndices);
             let stickCount = 0;
 
-            let { atomAIndex, atomBIndex, type, count } = molecule.covalentBonds!;
+            let { atomAIndex, atomBIndex, type, count } = molecule.data.bonds.covalent!;
             for (let i = 0; i < count; i++) {
                 let a = atomAIndex[i], b = atomBIndex[i];
                 if (!mask.has(a) || !mask.has(b)) continue;
@@ -25,32 +25,32 @@ namespace LiteMol.Visualization.Molecule.BallsAndSticks {
             return stickCount;
         }
 
-        export function analyze(molecule: Core.Structure.MoleculeModel, atomIndices: number[]) {
+        export function analyze(molecule: Core.Structure.Molecule.Model, atomIndices: number[]) {
             let indices: Int32Array,
                 atomCount = 0;
 
             indices = <any>atomIndices;
             atomCount = indices.length;
 
-            let atoms = molecule.atoms,
-                cX = atoms.x, cY = atoms.y, cZ = atoms.z,
+            let atoms = molecule.data.atoms,
+                { x:cX, y:cY, z:cZ } = molecule.positions,
                 elementSymbol = atoms.elementSymbol,
                 atomName = atoms.name,
                 altLoc = atoms.altLoc, atomResidueIndex = atoms.residueIndex,
                 atomEntityIndex = atoms.entityIndex,
-                entityType = molecule.entities.entityType,
-                waterType = Core.Structure.EntityType.Water,
-                residueName = molecule.residues.name;
+                entityType = molecule.data.entities.type,
+                waterType = 'water',
+                residueName = molecule.data.residues.name;
 
             let bondLength = 2;
 
-            let compBonds = molecule.componentBonds,
+            let compBonds = molecule.data.bonds.component,
                 builder = ChunkedArray.create<number>(size => new Int32Array(size), (indices.length * 1.33) | 0, 3),
                 residueCount = 1,
                 stickCount = 0,
                 startAtomIndex = 0, endAtomIndex = 0;
 
-            if (molecule.covalentBonds) {
+            if (molecule.data.bonds.covalent) {
                 stickCount = BallsAndSticksHelper.addPrecomputedBonds(molecule, atomIndices, builder);
                 while (startAtomIndex < atomCount) {
                     let rIndex = atomResidueIndex[indices[startAtomIndex]];
@@ -263,8 +263,9 @@ namespace LiteMol.Visualization.Molecule.BallsAndSticks {
         atomColors = new Float32Array(this.atomBufferSize);
         atomPickColors = new Float32Array(this.atomTemplateVertexCount * 4 * this.atomIndices.length);
 
-        atoms = this.model.atoms;
-        cX = this.atoms.x; cY = this.atoms.y; cZ = this.atoms.z;
+        atoms = this.model.data.atoms;
+        positions = this.model.positions;
+        cX = this.positions.x; cY = this.positions.y; cZ = this.positions.z;
         atomSymbols = this.atoms.elementSymbol;
         residueIndex = this.atoms.residueIndex;
         atomsDone = 0;
@@ -291,7 +292,7 @@ namespace LiteMol.Visualization.Molecule.BallsAndSticks {
 
         bs: BondsBuildState = <any>void 0;
 
-        constructor(public model: Core.Structure.MoleculeModel, public atomIndices: number[], public params: Parameters) {
+        constructor(public model: Core.Structure.Molecule.Model, public atomIndices: number[], public params: Parameters) {
 
         }
     }
@@ -311,7 +312,7 @@ namespace LiteMol.Visualization.Molecule.BallsAndSticks {
 
         bondRadius = this.state.params.bondRadius;
 
-        residueIndex = this.model.atoms.residueIndex;
+        residueIndex = this.model.data.atoms.residueIndex;
         currentResidueIndex = this.residueIndex[this.info.bonds[0]];
         bondMapVertexOffsetStart = 0;
         bondMapVertexOffsetEnd = 0;
@@ -584,7 +585,7 @@ namespace LiteMol.Visualization.Molecule.BallsAndSticks {
             bs.bondMapBuilder.endElement();
         }
 
-        static async build(model: Core.Structure.MoleculeModel,
+        static async build(model: Core.Structure.Molecule.Model,
             parameters: Parameters,
             atomIndices: number[],
             ctx: Core.Computation.Context) {
@@ -619,7 +620,7 @@ namespace LiteMol.Visualization.Molecule.BallsAndSticks {
         }
     }
 
-    export function buildGeometry(model: Core.Structure.MoleculeModel, parameters: Parameters,
+    export function buildGeometry(model: Core.Structure.Molecule.Model, parameters: Parameters,
         atomIndices: number[], ctx: Core.Computation.Context): LiteMol.Promise<BallsAndSticksGeometry> {
         return BallsAndSticksGeometryBuilder.build(model, parameters, atomIndices, ctx);
     }

@@ -131,11 +131,11 @@ namespace LiteMol.Viewer.PDBe.Validation {
         const selectionColor = <LiteMol.Visualization.Color>{ r: 0, g: 0, b: 1 };
         const highlightColor = <LiteMol.Visualization.Color>{ r: 1, g: 0, b: 1 };
     
-        function createResidueMapNormal(model: LiteMol.Core.Structure.MoleculeModel, report: any) {
-            let map = new Uint8Array(model.residues.count);            
+        function createResidueMapNormal(model: LiteMol.Core.Structure.Molecule.Model, report: any) {
+            let map = new Uint8Array(model.data.residues.count);            
             let mId = model.modelId;
-            let { asymId, entityId, seqNumber, insCode } = model.residues;                        
-            for (let i = 0, _b = model.residues.count; i < _b; i++) {                
+            let { asymId, entityId, seqNumber, insCode } = model.data.residues;                        
+            for (let i = 0, _b = model.data.residues.count; i < _b; i++) {                
                 let e = Api.getEntry(report, mId, entityId[i], asymId[i], Api.getResidueId(seqNumber[i], insCode[i]));
                 if (e) {
                     map[i] = Math.min(e.numIssues, 3);
@@ -144,15 +144,15 @@ namespace LiteMol.Viewer.PDBe.Validation {
             return map;            
         }
         
-        function createResidueMapComputed(model: LiteMol.Core.Structure.MoleculeModel, report: any) {
-            let map = new Uint8Array(model.residues.count);            
+        function createResidueMapComputed(model: LiteMol.Core.Structure.Molecule.Model, report: any) {
+            let map = new Uint8Array(model.data.residues.count);            
             let mId = model.modelId;
             let parent = model.parent!;
-            let { entityId, seqNumber, insCode, chainIndex } = model.residues; 
-            let { sourceChainIndex } = model.chains;
-            let { asymId } = parent.chains;
+            let { entityId, seqNumber, insCode, chainIndex } = model.data.residues; 
+            let { sourceChainIndex } = model.data.chains;
+            let { asymId } = parent.data.chains;
                                    
-            for (let i = 0, _b = model.residues.count; i < _b; i++) {     
+            for (let i = 0, _b = model.data.residues.count; i < _b; i++) {     
                 let aId = asymId[sourceChainIndex![chainIndex[i]]];           
                 let e = Api.getEntry(report, mId, entityId[i], aId, Api.getResidueId(seqNumber[i], insCode[i]));
                 if (e) {
@@ -164,7 +164,7 @@ namespace LiteMol.Viewer.PDBe.Validation {
     
         export function create(entity: Bootstrap.Entity.Molecule.Model, report: any) {
             let model = entity.props.model;
-            let map = model.source === Core.Structure.MoleculeModelSource.File 
+            let map = model.source === Core.Structure.Molecule.Model.Source.File 
                 ? createResidueMapNormal(model, report)
                 : createResidueMapComputed(model, report);
             
@@ -172,7 +172,7 @@ namespace LiteMol.Viewer.PDBe.Validation {
             colors.set('Uniform', defaultColor)
             colors.set('Selection', selectionColor)
             colors.set('Highlight', highlightColor);
-            let residueIndex = model.atoms.residueIndex;            
+            let residueIndex = model.data.atoms.residueIndex;            
             
             let mapping = Visualization.Theme.createColorMapMapping(i => map[residueIndex[i]], colorMap, defaultColor);
             return Visualization.Theme.createMapping(mapping, { colors, interactive: true, transparency: { alpha: 1.0 } });

@@ -21,7 +21,7 @@ namespace LiteMol.Visualization.Molecule.Cartoons {
   
     export class Model extends Visualization.Model {
         
-        private model: Core.Structure.MoleculeModel;
+        private model: Core.Structure.Molecule.Model;
         private material: THREE.ShaderMaterial;
         private pickMaterial: THREE.Material;
         private queryContext: Core.Structure.Query.Context;
@@ -35,7 +35,7 @@ namespace LiteMol.Visualization.Molecule.Cartoons {
                 map = this.cartoons.vertexMap,
                 vertexRanges = map.vertexRanges,
                 changed = false,
-                residueIndex = this.model.atoms.residueIndex;
+                residueIndex = this.model.data.atoms.residueIndex;
 
             for (let a = 0, _a = indices.length; a < _a; a++) {
                 
@@ -66,7 +66,7 @@ namespace LiteMol.Visualization.Molecule.Cartoons {
         
         getPickElements(pickId: number): number[] {
             
-            let { atomStartIndex, atomEndIndex } = this.model.residues;
+            let { atomStartIndex, atomEndIndex } = this.model.data.residues;
             let elements: number[] = [];
             
             for (let i = atomStartIndex[pickId], _b = atomEndIndex[pickId]; i < _b; i++) {
@@ -77,7 +77,7 @@ namespace LiteMol.Visualization.Molecule.Cartoons {
         }
         
         highlightElement(pickId: number, highlight: boolean): boolean {
-            return this.applySelection([this.model.residues.atomStartIndex[pickId]], highlight ? Selection.Action.Highlight : Selection.Action.RemoveHighlight);
+            return this.applySelection([this.model.data.residues.atomStartIndex[pickId]], highlight ? Selection.Action.Highlight : Selection.Action.RemoveHighlight);
         }
         
         protected highlightInternal(isOn: boolean) {
@@ -86,7 +86,7 @@ namespace LiteMol.Visualization.Molecule.Cartoons {
         
         private applyColoring(theme: Theme) {
             
-            let {atomStartIndex, atomEndIndex} = this.model.residues;
+            let {atomStartIndex, atomEndIndex} = this.model.data.residues;
             
             let color = { r: 0.1, g: 0.1, b: 0.1 };
             let avgColor = { r: 0.1, g: 0.1, b: 0.1 };
@@ -96,7 +96,7 @@ namespace LiteMol.Visualization.Molecule.Cartoons {
             let buffer = bufferAttribute.array;     
             let vertexRanges = map.vertexRanges       
             
-            for (let rI = 0, _bRi = this.model.residues.count; rI < _bRi; rI++) {
+            for (let rI = 0, _bRi = this.model.data.residues.count; rI < _bRi; rI++) {
                 avgColor.r = 0; avgColor.g = 0; avgColor.b = 0;                
                 let count = 0;
                 
@@ -152,7 +152,7 @@ namespace LiteMol.Visualization.Molecule.Cartoons {
             params,
             props
         }: {
-            model: Core.Structure.MoleculeModel;
+            model: Core.Structure.Molecule.Model;
             queryContext: Core.Structure.Query.Context,
             atomIndices: number[];
             theme: Theme;

@@ -7,7 +7,7 @@ namespace LiteMol.Bootstrap.Utils {
 
 
     let VDWRadii: Map<string, number> = <any>void 0;
-    export function vdwRadiusFromElementSymbol(model: Core.Structure.MoleculeModel) {
+    export function vdwRadiusFromElementSymbol(model: Core.Structure.Molecule.Model) {
         if (!VDWRadii) VDWRadii = createVdwRadii();        
         return function (names: string[], radii: Map<string, number>) {
             return function (i: number) {
@@ -15,7 +15,7 @@ namespace LiteMol.Bootstrap.Utils {
                 if (r !== void 0) return r;
                 return 1.0;
             }
-        } (model.atoms.elementSymbol, VDWRadii);
+        } (model.data.atoms.elementSymbol, VDWRadii);
     }
 
     function createVdwRadii() {

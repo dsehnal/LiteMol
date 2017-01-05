@@ -98,7 +98,7 @@ namespace LiteMol.Bootstrap.Entity {
         export interface MoleculeType extends Entity.Type<MoleculeType, Molecule, MoleculeProps> { }     
         export const Molecule = create<Molecule, MoleculeType, MoleculeProps>({ name: 'Molecule', typeClass: 'Object', shortName: 'M', description: 'A molecule that might contain one or more models.' });
         
-        export interface ModelProps extends CommonProps { model: Core.Structure.MoleculeModel }
+        export interface ModelProps extends CommonProps { model: Core.Structure.Molecule.Model }
         export interface Model extends Entity<Model, ModelType, ModelProps> { }         
         export interface ModelType extends Entity.Type<ModelType, Model, ModelProps> { }     
         export const Model = create<Model, ModelType, ModelProps>( { name: 'Molecule Model', typeClass: 'Object', shortName: 'M_M', description: 'A model of a molecule.' });

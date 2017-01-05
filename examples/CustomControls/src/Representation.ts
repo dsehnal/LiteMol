@@ -23,7 +23,7 @@ namespace LiteMol.Custom {
             to: [Entity.Action],
             defaultParams: (ctx, e) => {
                 let m = Bootstrap.Utils.Molecule.findMolecule(e)!.props.molecule.models[0]; 
-                let asm = m.assemblyInfo;
+                let asm = m.data.assemblyInfo;
                 if (!asm || !asm.assemblies.length) return { source: 'Asymmetric Unit', assemblyNames: [] };
                 return { source: 'Asymmetric Unit', assemblyNames: asm.assemblies.map(a => a.name), modelIndex: 0 };                
             }

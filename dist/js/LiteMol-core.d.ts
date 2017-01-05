@@ -1584,6 +1584,10 @@ declare namespace LiteMol.Core.Utils {
             columns: ColumnDescriptor<Schema>[];
             getBuilder(count: number): Builder<Schema>;
             getRawData(): any[][];
+            /**
+             * Get a MUTABLE representation of a row.
+             * Calling getRow() with differnt 'i' will change update old reference.
+             */
             getRow(i: number): Schema;
         }
         interface Builder<Schema> {
@@ -2205,7 +2209,7 @@ declare namespace LiteMol.Core.Structure {
         name: string;
         authName: string;
         elementSymbol: string;
-        altLoc: (string | null);
+        altLoc: string | null;
         occupancy: number;
         tempFactor: number;
         residueIndex: number;
@@ -2220,7 +2224,7 @@ declare namespace LiteMol.Core.Structure {
         authName: string;
         authSeqNumber: number;
         authAsymId: string;
-        insCode: (string | null);
+        insCode: string | null;
         entityId: string;
         isHet: number;
         atomStartIndex: number;

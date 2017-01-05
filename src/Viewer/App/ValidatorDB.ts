@@ -158,12 +158,12 @@ namespace LiteMol.Viewer.ValidatorDB {
         const selectionColor = <LiteMol.Visualization.Color>{ r: 0, g: 0, b: 1 };
         const highlightColor = <LiteMol.Visualization.Color>{ r: 1, g: 0, b: 1 };
     
-        function createAtomMapNormal(model: LiteMol.Core.Structure.MoleculeModel, report: Api.Report) {
-            let map = new Uint8Array(model.atoms.count);            
-            let { authAsymId, authSeqNumber, atomStartIndex, atomEndIndex } = model.residues;
-            let { authName } = model.atoms;
+        function createAtomMapNormal(model: LiteMol.Core.Structure.Molecule.Model, report: Api.Report) {
+            let map = new Uint8Array(model.data.atoms.count);            
+            let { authAsymId, authSeqNumber, atomStartIndex, atomEndIndex } = model.data.residues;
+            let { authName } = model.data.atoms;
 
-            for (let rI = 0, _rI = model.residues.count; rI < _rI; rI++) {
+            for (let rI = 0, _rI = model.data.residues.count; rI < _rI; rI++) {
                 let repC = report.get(authAsymId[rI]);
                 if (!repC) continue;
                 let repR = repC.get(authSeqNumber[rI]);
@@ -179,15 +179,15 @@ namespace LiteMol.Viewer.ValidatorDB {
             return map;            
         }
         
-        function createAtomMapComputed(model: LiteMol.Core.Structure.MoleculeModel, report: Api.Report) {
+        function createAtomMapComputed(model: LiteMol.Core.Structure.Molecule.Model, report: Api.Report) {
             let parent = model.parent!;
-            let map = new Uint8Array(model.atoms.count);            
-            let { authSeqNumber, atomStartIndex, atomEndIndex, chainIndex } = model.residues;
-            let { sourceChainIndex } = model.chains;
-            let { authAsymId } = parent.chains;
-            let { authName } = model.atoms;
+            let map = new Uint8Array(model.data.atoms.count);            
+            let { authSeqNumber, atomStartIndex, atomEndIndex, chainIndex } = model.data.residues;
+            let { sourceChainIndex } = model.data.chains;
+            let { authAsymId } = parent.data.chains;
+            let { authName } = model.data.atoms;
 
-            for (let rI = 0, _rI = model.residues.count; rI < _rI; rI++) {                
+            for (let rI = 0, _rI = model.data.residues.count; rI < _rI; rI++) {                
                 let repC = report.get(authAsymId[sourceChainIndex![chainIndex[rI]]]);
                 if (!repC) continue;
                 let repR = repC.get(authSeqNumber[rI]);
@@ -205,7 +205,7 @@ namespace LiteMol.Viewer.ValidatorDB {
     
         export function create(entity: Bootstrap.Entity.Molecule.Model, report: any) {
             let model = entity.props.model;
-            let map = model.source === Core.Structure.MoleculeModelSource.File 
+            let map = model.source === Core.Structure.Molecule.Model.Source.File 
                 ? createAtomMapNormal(model, report)
                 : createAtomMapComputed(model, report);
             

@@ -115,7 +115,7 @@ namespace LiteMol.Bootstrap.Entity.Transformer.Molecule {
             }
             return Entity.Molecule.Model.create(t, {
                 label: 'Model ' + model.modelId,
-                description: `${model.atoms.count} atom${model.atoms.count !== 1 ? 's' : ''}`,
+                description: `${model.data.atoms.count} atom${model.data.atoms.count !== 1 ? 's' : ''}`,
                 model
             });
         });
@@ -197,17 +197,17 @@ namespace LiteMol.Bootstrap.Entity.Transformer.Molecule {
         defaultParams: (ctx, e) => {
             let m = Utils.Molecule.findModel(e) !;
             let ret = ({ name: ctx.settings.get('molecule.model.defaultAssemblyName') || '1' });
-            let asm = m.props.model.assemblyInfo;
+            let asm = m.props.model.data.assemblyInfo;
             if (!asm || !asm.assemblies.length) return ret;
             if (asm.assemblies.filter(a => a.name === ret.name)) return ret;
             ret.name = asm.assemblies[0].name;
             return ret;
         },
         isUpdatable: true,
-        isApplicable: m => !!(m && m.props.model.assemblyInfo && m.props.model.assemblyInfo.assemblies.length)
+        isApplicable: m => !!(m && m.props.model.data.assemblyInfo && m.props.model.data.assemblyInfo.assemblies.length)
     }, (ctx, a, t) => {
         return Task.create<Entity.Molecule.Model>(`Create Model (${a.props.label})`, 'Background', async ctx => {
-            let i = a.props.model.assemblyInfo;
+            let i = a.props.model.data.assemblyInfo;
             if (!i || !i.assemblies.length) {
                 throw 'Assembly info not available.';
             }
@@ -219,7 +219,7 @@ namespace LiteMol.Bootstrap.Entity.Transformer.Molecule {
             let asm = Core.Structure.buildAssembly(a.props.model, gen);
             return Entity.Molecule.Model.create(t, {
                 label: 'Assembly ' + gen.name,
-                description: `${asm.atoms.count} atom${asm.atoms.count !== 1 ? 's' : ''}`,
+                description: `${asm.data.atoms.count} atom${asm.data.atoms.count !== 1 ? 's' : ''}`,
                 model: asm
             });
         });
@@ -238,10 +238,10 @@ namespace LiteMol.Bootstrap.Entity.Transformer.Molecule {
         to: [Entity.Molecule.Model],
         defaultParams: ctx => ({ type: 'Interaction', radius: 5.0 }),
         isUpdatable: true,
-        isApplicable: m => !!(m && m.props.model.symmetryInfo)
+        isApplicable: m => !!(m && m.props.model.data.symmetryInfo)
     }, (ctx, a, t) => {
         return Task.create<Entity.Molecule.Model>(`Create Model (${a.props.label})`, 'Background', async ctx => {
-            let i = a.props.model.symmetryInfo;
+            let i = a.props.model.data.symmetryInfo;
             if (!i) {
                 throw 'Spacegroup info info not available.';
             }
@@ -251,7 +251,7 @@ namespace LiteMol.Bootstrap.Entity.Transformer.Molecule {
             return Entity.Molecule.Model.create(t, {
                 label: 'Symmetry',
                 model: symm,
-                description: `${symm.atoms.count} atom${symm.atoms.count !== 1 ? 's' : ''}, ${t.params.type} ${Utils.round(radius, 1)} \u212B`
+                description: `${symm.data.atoms.count} atom${symm.data.atoms.count !== 1 ? 's' : ''}, ${t.params.type} ${Utils.round(radius, 1)} \u212B`
             });
         });
     });
@@ -280,7 +280,7 @@ namespace LiteMol.Bootstrap.Entity.Transformer.Molecule {
             await ctx.updateProgress('Transforming...');
             let m = a.props.model;
             let tCtx = { t: t.params.transform!, v: { x: 0, y: 0, z: 0 } };
-            let transformed = Core.Structure.MoleculeModel.withTransformedXYZ(m, tCtx, (ctx, x, y, z, out) => {
+            let transformed = Core.Structure.Molecule.Model.withTransformedXYZ(m, tCtx, (ctx, x, y, z, out) => {
                 let v = ctx.v;
                 v.x = x; v.y = y; v.z = z;
                 Core.Geometry.LinearAlgebra.Matrix4.transformVector3(out, v, ctx.t);

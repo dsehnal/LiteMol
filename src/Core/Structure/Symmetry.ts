@@ -426,7 +426,7 @@ namespace LiteMol.Core.Structure {
                 atomY = positionTable.addColumn('y', size => new Float32Array(size)), 
                 atomZ = positionTable.addColumn('z', size => new Float32Array(size));
 
-            let entityTableBuilder = DataTable.builder<Entity>(assemblyParts.entityCount),
+            let entityTableBuilder = model.data.entities.getBuilder(assemblyParts.entityCount),
                 entityTable = <EntityTable><any>entityTableBuilder,
                 srcEntityData = model.data.entities.getRawData(), entityData = entityTable.getRawData(),
                 entityChainStart = entityTable.chainStartIndex, entityChainEnd = entityTable.chainEndIndex,
@@ -512,8 +512,7 @@ namespace LiteMol.Core.Structure {
                 transform = transforms[opI];
 
                 cloneRow(srcResidueData, rI, residueData, residueOffset, residueData.length);
-
-
+                
                 let cE = residueEntityIndex[rI],
                     cC = residueChainIndex[rI];
 
@@ -524,7 +523,6 @@ namespace LiteMol.Core.Structure {
                     chainResidueEnd[chainOffset] = residueOffset;
                     chainAtomEnd[chainOffset] = atomOffset;
                     chainOffset += 1;
-
 
                     // update entity
                     entityChainEnd[entityOffset] = chainOffset;
@@ -748,7 +746,6 @@ namespace LiteMol.Core.Structure {
         }
 
         function findMateParts(model: Molecule.Model, transforms: SymmetryTransform[]) {
-
             let { atoms, chains, entities, residues } = model.data;
 
             let residueIndices = Utils.ArrayBuilder.create<number>(s => new Int32Array(s), residues.count * transforms.length, 1),
@@ -778,7 +775,6 @@ namespace LiteMol.Core.Structure {
                 chainCount,
                 entityCount
             };
-
         }
 
         export function buildMates(

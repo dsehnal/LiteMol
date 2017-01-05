@@ -37,13 +37,13 @@ namespace LiteMol.Bootstrap.Utils.Molecule {
         }
     }
     
-    export function getDistance(mA: Structure.MoleculeModel, 
+    export function getDistance(mA: Structure.Molecule.Model, 
         startAtomIndexA: number, endAtomIndexA: number,
-        mB: Structure.MoleculeModel,
+        mB: Structure.Molecule.Model,
         startAtomIndexB: number, endAtomIndexB: number
     ) {
-        let {x,y,z} = mA.atoms;
-        let bX = mB.atoms.x, bY = mB.atoms.y, bZ = mB.atoms.z;
+        let {x,y,z} = mA.positions;
+        let {x:bX,y:bY,z:bZ} = mB.positions;
         let d = Number.POSITIVE_INFINITY;
         
         for (let i = startAtomIndexA; i < endAtomIndexA; i++) {
@@ -57,13 +57,13 @@ namespace LiteMol.Bootstrap.Utils.Molecule {
     }
     
     
-    export function getDistanceSet(mA: Structure.MoleculeModel, 
+    export function getDistanceSet(mA: Structure.Molecule.Model, 
         setA: number[],
-        mB: Structure.MoleculeModel,
+        mB: Structure.Molecule.Model,
         setB: number[]
     ) {
-        let {x,y,z} = mA.atoms;
-        let bX = mB.atoms.x, bY = mB.atoms.y, bZ = mB.atoms.z;
+        let {x,y,z} = mA.positions;
+        let {x:bX,y:bY,z:bZ} = mB.positions;
         let d = Number.POSITIVE_INFINITY;
         
         for (let i of setA) {
@@ -93,18 +93,17 @@ namespace LiteMol.Bootstrap.Utils.Molecule {
         }
     }
     
-    export function getResidueIndices(m: Core.Structure.MoleculeModel, atom: number) {
-        let rI = m.atoms.residueIndex;
+    export function getResidueIndices(m: Core.Structure.Molecule.Model, atom: number) {
+        let rI = m.data.atoms.residueIndex;
         let idx: number[] = [];
-        for (let i = m.residues.atomStartIndex[rI[atom]], _b = m.residues.atomEndIndex[rI[atom]]; i < _b; i++) {
+        for (let i = m.data.residues.atomStartIndex[rI[atom]], _b = m.data.residues.atomEndIndex[rI[atom]]; i < _b; i++) {
             idx.push(i);
         }
         return idx;  
     }
     
-    export function getBox(molecule: Core.Structure.MoleculeModel, atomIndices: number[], delta: number) {
-        let atoms = molecule.atoms,
-            x = atoms.x, y = atoms.y, z = atoms.z,
+    export function getBox(molecule: Core.Structure.Molecule.Model, atomIndices: number[], delta: number) {
+        let { x, y, z } = molecule.positions,
             min = [Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE], max = [-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE];
 
         for (let i of atomIndices) {
@@ -159,18 +158,18 @@ namespace LiteMol.Bootstrap.Utils.Molecule {
             this.radiusSquared = Math.max(this.radiusSquared, dx * dx + dy * dy + dz * dz);
         }
         
-        constructor(model: LiteMol.Core.Structure.MoleculeModel) {
-            this.x = model.atoms.x;
-            this.y = model.atoms.y;
-            this.z = model.atoms.z;
+        constructor(model: LiteMol.Core.Structure.Molecule.Model) {
+            this.x = model.positions.x;
+            this.y = model.positions.y;
+            this.z = model.positions.z;
         }
     }
         
-    export function getCentroidAndRadius(m: Structure.MoleculeModel, indices: number[], into: Geometry.LinearAlgebra.ObjectVec3) {
+    export function getCentroidAndRadius(m: Structure.Molecule.Model, indices: number[], into: Geometry.LinearAlgebra.ObjectVec3) {
         into.x = 0;
         into.y = 0;
         into.z = 0;
-        let {x,y,z} = m.atoms;
+        let {x,y,z} = m.positions;
         for (let i of indices) {
             into.x += x[i];
             into.y += y[i];

@@ -22,7 +22,7 @@ namespace LiteMol.Bootstrap.Visualization.Molecule {
         return function(i: number) { return property[index[i]] };   
     }
     
-    export function createPaletteThemeProvider(provider: (m: Core.Structure.MoleculeModel) => { index: number[], property: any[] }, pallete: LiteMol.Visualization.Color[]) {
+    export function createPaletteThemeProvider(provider: (m: Core.Structure.Molecule.Model) => { index: number[], property: any[] }, pallete: LiteMol.Visualization.Color[]) {
         return function (e: Entity.Any, props?: LiteMol.Visualization.Theme.Props) {
             let model = Utils.Molecule.findModel(e)!.props.model;
             let map = provider(model);
@@ -39,7 +39,7 @@ namespace LiteMol.Bootstrap.Visualization.Molecule {
     }
     
     export function createColorMapThemeProvider(
-        provider: (m: Core.Structure.MoleculeModel) => { index: number[], property: any[] }, colorMap: Map<string, LiteMol.Visualization.Color>, fallbackColor: LiteMol.Visualization.Color) {
+        provider: (m: Core.Structure.Molecule.Model) => { index: number[], property: any[] }, colorMap: Map<string, LiteMol.Visualization.Color>, fallbackColor: LiteMol.Visualization.Color) {
         return function (e: Entity.Any, props?: LiteMol.Visualization.Theme.Props) {            
             let model = Utils.Molecule.findModel(e)!.props.model;
             let map = provider(model);
@@ -62,8 +62,8 @@ namespace LiteMol.Bootstrap.Visualization.Molecule {
             color.b = this.b[i];
         }
 
-        constructor(model: Core.Structure.MoleculeModel, { r, g, b }: { r: Float32Array, g: Float32Array, b: Float32Array }) {
-            this.residueIndex = model.atoms.residueIndex;
+        constructor(model: Core.Structure.Molecule.Model, { r, g, b }: { r: Float32Array, g: Float32Array, b: Float32Array }) {
+            this.residueIndex = model.data.atoms.residueIndex;
             this.r = r;
             this.g = g;
             this.b = b;
@@ -87,8 +87,8 @@ namespace LiteMol.Bootstrap.Visualization.Molecule {
         'Selection': Vis.Color.fromHex(0x968000),
     });  
 
-    function makeRainbow(model: Core.Structure.MoleculeModel, groups: (m: Core.Structure.MoleculeModel) => Core.Structure.DefaultChainTableSchema | Core.Structure.DefaultEntityTableSchema) {
-        let rC = model.residues.count;
+    function makeRainbow(model: Core.Structure.Molecule.Model, groups: (m: Core.Structure.Molecule.Model) => Core.Structure.ChainTable | Core.Structure.EntityTable) {
+        let rC = model.data.residues.count;
         let { r, g, b } = { r: new Float32Array(rC), g: new Float32Array(rC), b: new Float32Array(rC) };
         let { count, residueStartIndex, residueEndIndex } = groups(model);
         let cC = rainbowPalette.length - 1;
@@ -109,7 +109,7 @@ namespace LiteMol.Bootstrap.Visualization.Molecule {
         return { r, g, b };
     }
 
-    function createRainbowProvider(groups: (m: Core.Structure.MoleculeModel) => Core.Structure.DefaultChainTableSchema | Core.Structure.DefaultEntityTableSchema) {
+    function createRainbowProvider(groups: (m: Core.Structure.Molecule.Model) => Core.Structure.ChainTable | Core.Structure.EntityTable) {
         return function (e: Entity.Any, props?: LiteMol.Visualization.Theme.Props) {     
             let model = Utils.Molecule.findModel(e)!.props.model;
             let colors = makeRainbow(model, groups);
@@ -124,37 +124,37 @@ namespace LiteMol.Bootstrap.Visualization.Molecule {
                 name: 'Chain ID',
                 description: 'Color the surface by Chain ID.',
                 colors: ModelVisualBaseColors,
-                provider: createPaletteThemeProvider(m => ({ index: m.atoms.residueIndex, property: m.residues.asymId }), Vis.Molecule.Colors.DefaultPallete)
+                provider: createPaletteThemeProvider(m => ({ index: m.data.atoms.residueIndex, property: m.data.residues.asymId }), Vis.Molecule.Colors.DefaultPallete)
             }, {
                 name: 'Entity ID',
                 description: 'Color the surface by Entity ID.',
                 colors: ModelVisualBaseColors,
-                provider: createPaletteThemeProvider(m => ({ index: m.atoms.residueIndex, property: m.residues.entityId }), Vis.Molecule.Colors.DefaultPallete)
+                provider: createPaletteThemeProvider(m => ({ index: m.data.atoms.residueIndex, property: m.data.residues.entityId }), Vis.Molecule.Colors.DefaultPallete)
             }, {
                 name: 'Entity Type',
                 description: 'Color the surface by Entity Type.',
                 colors: ModelVisualBaseColors,
-                provider: createPaletteThemeProvider(m => ({ index: m.atoms.entityIndex, property: m.entities.entityType }), Vis.Molecule.Colors.DefaultPallete)
+                provider: createPaletteThemeProvider(m => ({ index: m.data.atoms.entityIndex, property: m.data.entities.type }), Vis.Molecule.Colors.DefaultPallete)
             }, {
                 name: 'Residue Name',
                 description: 'Color the surface by residue name.',
                 colors: ModelVisualBaseColors,
-                provider: createPaletteThemeProvider(m => ({ index: m.atoms.residueIndex, property: m.residues.name }), Vis.Molecule.Colors.DefaultPallete)
+                provider: createPaletteThemeProvider(m => ({ index: m.data.atoms.residueIndex, property: m.data.residues.name }), Vis.Molecule.Colors.DefaultPallete)
             }, {
                 name: 'Element Symbol',
                 description: 'Color the surface by atom elemnt symbol.',
                 colors: ModelVisualBaseColors,
-                provider: createColorMapThemeProvider(m => ({ index: m.atoms.indices, property: m.atoms.elementSymbol }), Vis.Molecule.Colors.DefaultElementColorMap, Vis.Molecule.Colors.DefaultElementColor)
+                provider: createColorMapThemeProvider(m => ({ index: m.data.atoms.indices, property: m.data.atoms.elementSymbol }), Vis.Molecule.Colors.DefaultElementColorMap, Vis.Molecule.Colors.DefaultElementColor)
             }, {
                 name: 'Rainbow (Chain)',
                 description: 'Color each chain using rainbow palette.',
                 colors: RainbowBaseColors,
-                provider: createRainbowProvider(m => m.chains)
+                provider: createRainbowProvider(m => m.data.chains)
             }, {
                 name: 'Rainbow (Entity)',
                 description: 'Color each entity using rainbow palette.',
                 colors: RainbowBaseColors,
-                provider: createRainbowProvider(m => m.entities)
+                provider: createRainbowProvider(m => m.data.entities)
             }, {
                 name: 'Uniform Color',
                 description: 'Same color everywhere.',

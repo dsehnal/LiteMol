@@ -64,10 +64,11 @@ namespace LiteMol.Bootstrap.Interactivity.Molecule {
         
         let m = context.structure;
                 
-        let { residueIndex, chainIndex, entityIndex, name, authName, id, occupancy, tempFactor, elementSymbol, x, y, z, altLoc } = m.atoms;
-        let { name:resName, authName:resAuthName, seqNumber, authSeqNumber, insCode, isHet } = m.residues;
-        let { asymId, authAsymId } = m.chains;
-        let { entityId } = m.entities;                                 
+        let { residueIndex, chainIndex, entityIndex, name, authName, id, occupancy, tempFactor, elementSymbol, altLoc } = m.data.atoms;
+        let { x, y, z } = m.positions;
+        let { name:resName, authName:resAuthName, seqNumber, authSeqNumber, insCode, isHet } = m.data.residues;
+        let { asymId, authAsymId } = m.data.chains;
+        let { entityId } = m.data.entities;                                 
         
         let aI = -1, eI = -1, cI = -1, rI = -1;        
         let e: EntityInfo, c: ChainInfo, r: ResidueInfo, a: AtomInfo;

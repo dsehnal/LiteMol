@@ -14,16 +14,16 @@ namespace LiteMol.Comparison.Base {
     }
 
     export interface RmsdTransformInput {
-        a: Structure.PositionTableSchema;
-        b: Structure.PositionTableSchema;
+        a: Structure.PositionTable;
+        b: Structure.PositionTable;
 
         centerA?: LA.ObjectVec3;
         centerB?: LA.ObjectVec3;
     }
 
     export class RmsdTransformState {
-        a: Structure.PositionTableSchema;
-        b: Structure.PositionTableSchema;
+        a: Structure.PositionTable;
+        b: Structure.PositionTable;
 
         centerA: LA.ObjectVec3;
         centerB: LA.ObjectVec3;

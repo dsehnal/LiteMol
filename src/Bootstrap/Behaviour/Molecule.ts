@@ -90,7 +90,7 @@ namespace LiteMol.Bootstrap.Behaviour.Molecule {
     export function DistanceToLastClickedElement(context: Context) {
         let lastInfo: Interactivity.Info = Interactivity.Info.empty;
         let lastSel: string | undefined = void 0;      
-        let lastModel: Core.Structure.MoleculeModel | undefined = void 0;  
+        let lastModel: Core.Structure.Molecule.Model | undefined = void 0;  
         context.behaviours.click.subscribe(info => {              
             if (!Interactivity.Molecule.isMoleculeModelInteractivity(info)) {
                 lastInfo = Interactivity.Info.empty;

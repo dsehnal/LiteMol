@@ -279,7 +279,7 @@ namespace LiteMolPluginInstance {
             // for this check Bootstrap/Visualization/Theme.ts and Visualization/Base/Theme.ts and it should be clear hwo to do that.
             //
             // You can create "validation based" coloring using this approach as it is not implemented in the plugin for now.
-            m => ({ index: m.atoms.chainIndex, property: m.chains.asymId }),  
+            m => ({ index: m.data.atoms.chainIndex, property: m.data.chains.asymId }),  
             colors,
             // this a fallback color used for elements not in the set 
             CoreVis.Color.fromRgb(0, 0, 123))

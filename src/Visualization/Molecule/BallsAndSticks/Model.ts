@@ -21,7 +21,7 @@ namespace LiteMol.Visualization.Molecule.BallsAndSticks {
 
     export class Model extends Visualization.Model {
 
-        private molecule: Core.Structure.MoleculeModel;
+        private molecule: Core.Structure.Molecule.Model;
         private material: THREE.ShaderMaterial;
         private bondsMaterial: THREE.MeshPhongMaterial;
         private pickMaterial: THREE.Material;
@@ -96,7 +96,7 @@ namespace LiteMol.Visualization.Molecule.BallsAndSticks {
             params,
             props
         } : {
-            model: Core.Structure.MoleculeModel,
+            model: Core.Structure.Molecule.Model,
             atomIndices: number[],
             theme: Theme,
             params: Parameters,

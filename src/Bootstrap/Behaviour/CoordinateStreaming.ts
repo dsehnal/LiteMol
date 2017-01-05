@@ -49,18 +49,18 @@ namespace LiteMol.Bootstrap.Behaviour.Molecule {
             
             let model = Utils.Molecule.findModel(info.source)!.props.model;
             
-            let i = model.atoms.residueIndex[info.elements![0]];
-            let rs = model.residues;
+            let i = model.data.atoms.residueIndex[info.elements![0]];
+            let rs = model.data.residues;
             
             let authAsymId = rs.authAsymId[i];
             let transform: number[] | undefined = void 0;
             
-            if (model.source === Core.Structure.MoleculeModelSource.Computed) {
+            if (model.source === Core.Structure.Molecule.Model.Source.Computed) {
                 let p = model.parent!;
                 let cI = rs.chainIndex[i];
-                let chain = model.chains.sourceChainIndex![cI];
-                authAsymId = p.chains.authAsymId[chain];
-                transform = model.operators![model.chains.operatorIndex![cI]].matrix;
+                let chain = model.data.chains.sourceChainIndex[cI];
+                authAsymId = p.data.chains.authAsymId[chain];
+                transform = model.operators![model.data.chains.operatorIndex![cI]].matrix;
             }            
             
             let url = 

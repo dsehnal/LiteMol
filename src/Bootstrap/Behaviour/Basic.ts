@@ -97,9 +97,9 @@ namespace LiteMol.Bootstrap.Behaviour {
         let radius = Utils.Molecule.getCentroidAndRadius(model, elems!, center);      
         if (info.elements!.length === 1) {
             let a = info.elements![0];
-            center.x = model.atoms.x[a];
-            center.y = model.atoms.y[a];
-            center.z = model.atoms.z[a];
+            center.x = model.positions.x[a];
+            center.y = model.positions.y[a];
+            center.z = model.positions.z[a];
         }     
         context.scene.camera.focusOnPoint(center, Math.max(radius, 7));
     }
