@@ -34,7 +34,6 @@ namespace LiteMol.Comparison.Structure {
         }
 
         return table.seal();
-
     }
 
     export function superimposeByIndices(data: RmsdTransformByIndicesEntry[]): RmsdTransformByIndicesResult {

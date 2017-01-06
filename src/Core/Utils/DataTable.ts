@@ -8,12 +8,31 @@ namespace LiteMol.Core.Utils {
     export type DataTable<Schema> = DataTable.Base<Schema> & DataTable.Columns<Schema>
 
     export module DataTable { 
+        export type Definition<Schema> = { [T in keyof Schema]: ((size: number) => Schema[T][]) | undefined }
+
         export type Columns<Schema> = { readonly [P in keyof Schema]: Schema[P][]; }
 
         export interface ColumnDescriptor<Schema> {
             name: keyof Schema, 
             creator: (size: number) => any
         }
+
+        export type TypedArrayContructor = 
+            Float32ArrayConstructor | Float64ArrayConstructor 
+            | Int32ArrayConstructor | Uint32ArrayConstructor
+            | Int16ArrayConstructor | Uint16ArrayConstructor
+            | Int8ArrayConstructor | Uint8ArrayConstructor
+
+        export function typedColumn(t: TypedArrayContructor): (size: number) => number[] {
+            return size => <any>new t(size) as number[];
+        }
+
+        export function customColumn<T>(): (size: number) => T[] {
+            return size => new Array(size) as T[];
+        }
+
+        export const stringColumn: (size: number) => string[] = size => new Array(size);
+        export const stringNullColumn: (size: number) => (string | null)[] = size => new Array(size);
 
         export interface Base<Schema> {
             count: number,
@@ -43,6 +62,18 @@ namespace LiteMol.Core.Utils {
 
         export function builder<Schema>(count: number): Builder<Schema> {
             return new BuilderImpl(count);
+        }
+
+        export function ofDefinition<Schema>(definition: Definition<Schema>, count: number) {
+            let builder = DataTable.builder<Schema>(count);
+            for (let k of Object.keys(definition)) {
+                if (!Object.prototype.hasOwnProperty.call(definition, k)) continue;
+                let col = (definition as any)[k];
+                if (col) {
+                    builder.addColumn(k as any, col);
+                }
+            }
+            return builder.seal();
         }
 
         function rowReader(table: Base<any>, indexer: { index: number }) {

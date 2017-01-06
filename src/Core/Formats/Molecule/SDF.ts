@@ -34,9 +34,9 @@ namespace LiteMol.Core.Formats.Molecule.SDF {
             id: customId ? customId : id,
             atomCount,
             bondCount,
-            atoms: Structure.Tables.atoms(atomCount).table,
-            positions: Structure.Tables.positions(atomCount).table,
-            bonds: Structure.Tables.bonds(bondCount).table,
+            atoms: Utils.DataTable.ofDefinition(Structure.Tables.Atoms, atomCount),
+            positions: Utils.DataTable.ofDefinition(Structure.Tables.Positions, atomCount),
+            bonds: Utils.DataTable.ofDefinition(Structure.Tables.Bonds, bondCount),
             lines,
             currentLine: 4,
             error: void 0,
@@ -93,38 +93,38 @@ namespace LiteMol.Core.Formats.Molecule.SDF {
 
     function buildModel(state: State): Structure.Molecule.Model {
 
-        let residues = Structure.Tables.residues(1),
-            chains = Structure.Tables.chains(1),
-            entities = Structure.Tables.entities(1);
+        let residues = Utils.DataTable.ofDefinition(Structure.Tables.Residues, 1),
+            chains = Utils.DataTable.ofDefinition(Structure.Tables.Chains, 1),
+            entities = Utils.DataTable.ofDefinition(Structure.Tables.Entities, 1);
 
-        residues.columns.isHet[0] = 1;
-        residues.columns.insCode[0] = null;
-        residues.columns.name[0] 
-            = residues.columns.authName[0] 
+        residues.isHet[0] = 1;
+        residues.insCode[0] = null;
+        residues.name[0] 
+            = residues.authName[0] 
             = 'UNK';
 
-        residues.columns.atomEndIndex[0] 
-            = chains.columns.atomEndIndex[0]
-            = entities.columns.atomEndIndex[0]
+        residues.atomEndIndex[0] 
+            = chains.atomEndIndex[0]
+            = entities.atomEndIndex[0]
             = state.atomCount;
             
-        residues.columns.asymId[0] 
-            = residues.columns.authAsymId[0]
-            = chains.columns.asymId[0]
-            = chains.columns.authAsymId[0] 
+        residues.asymId[0] 
+            = residues.authAsymId[0]
+            = chains.asymId[0]
+            = chains.authAsymId[0] 
             = 'X';
 
-        residues.columns.entityId[0]
-            = chains.columns.entityId[0]
-            = entities.columns.entityId[0]
+        residues.entityId[0]
+            = chains.entityId[0]
+            = entities.entityId[0]
             = '1';
         
-        chains.columns.residueEndIndex[0]
-            = entities.columns.residueEndIndex[0] 
+        chains.residueEndIndex[0]
+            = entities.residueEndIndex[0] 
             = 0; 
 
-        entities.columns.chainEndIndex[0] = 1;
-        entities.columns.type[0] = 'non-polymer';
+        entities.chainEndIndex[0] = 1;
+        entities.type[0] = 'non-polymer';
 
         let ssR = new Structure.PolyResidueIdentifier('X', 0, null);
         let ss = [new Structure.SecondaryStructureElement(Structure.SecondaryStructureType.None, ssR, ssR)];
@@ -136,9 +136,9 @@ namespace LiteMol.Core.Formats.Molecule.SDF {
             modelId: '1',
             data: {
                 atoms: state.atoms,
-                residues: residues.table,
-                chains: chains.table,
-                entities: entities.table,
+                residues,
+                chains,
+                entities,
                 bonds: {
                     covalent: state.bonds,
                 },

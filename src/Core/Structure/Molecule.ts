@@ -246,97 +246,78 @@ namespace LiteMol.Core.Structure {
      * Default Builders
      */
     export namespace Tables {
+        const int32 = DataTable.typedColumn(Int32Array);
+        const float32 = DataTable.typedColumn(Float32Array);
+        const str = DataTable.stringColumn;
+        const nullStr = DataTable.stringNullColumn;
 
-        export function positions(count: number) {
-            let builder = DataTable.builder<Position>(count);
-            let columns = {
-                x: builder.addColumn('x', size => new Float32Array(size)),
-                y: builder.addColumn('y', size => new Float32Array(size)),
-                z: builder.addColumn('z', size => new Float32Array(size))
-            }
-            return { table: builder.seal(), columns };
-        }
+        export const Positions: DataTable.Definition<Position> = {
+            x: float32,
+            y: float32,
+            z: float32
+        };
+        
+        export const Atoms: DataTable.Definition<Atom> = {            
+            id: int32,
+            altLoc: str,
+            residueIndex: int32,
+            chainIndex: int32,
+            entityIndex: int32,
+            name: str,
+            elementSymbol: str,
+            occupancy: float32,
+            tempFactor: float32,
+            authName: str,
+            rowIndex: int32
+        };
 
+        export const Residues: DataTable.Definition<Residue> = {                
+            name: str,
+            seqNumber: int32,
+            asymId: str,
+            authName: str,
+            authSeqNumber: int32,
+            authAsymId: str,
+            insCode: nullStr,
+            entityId: str,
+            isHet: DataTable.typedColumn(Int8Array),
+            atomStartIndex: int32,
+            atomEndIndex: int32,
+            chainIndex: int32,
+            entityIndex: int32,
+            secondaryStructureIndex: int32
+        };
 
-        export function atoms(count: number) {
-            let builder = DataTable.builder<Atom>(count);
-            let columns = {
-                id: builder.addColumn('id', size => new Int32Array(size)),
-                altLoc: builder.addColumn('altLoc', size => []),
-                residueIndex: builder.addColumn('residueIndex', size => new Int32Array(size)),
-                chainIndex: builder.addColumn('chainIndex', size => new Int32Array(size)),
-                entityIndex: builder.addColumn('entityIndex', size => new Int32Array(size)),
-                name: <string[]>builder.addColumn('name', size => []),
-                elementSymbol: <string[]>builder.addColumn('elementSymbol', size => []),
-                occupancy: builder.addColumn('occupancy', size => new Float32Array(size)),
-                tempFactor: builder.addColumn('tempFactor', size => new Float32Array(size)),
-                authName: <string[]>builder.addColumn('authName', size => []),
-                rowIndex: builder.addColumn('rowIndex', size => new Int32Array(size)),
-            }
-            return { table: builder.seal(), columns };
-        }
+        export const Chains: DataTable.Definition<Chain> = {  
+            asymId: str,
+            entityId: str,
+            authAsymId: str,
+            atomStartIndex: int32,
+            atomEndIndex: int32,
+            residueStartIndex: int32,
+            residueEndIndex: int32,
+            entityIndex: int32,
 
-        export function residues(count: number) {
-            let builder = DataTable.builder<Residue>(count);
-            let columns = {
-                name: builder.addColumn('name', size => <string[]>[]),
-                seqNumber: builder.addColumn('seqNumber', size => new Int32Array(size)),
-                asymId: builder.addColumn('asymId', size => <string[]>[]),
-                authName: builder.addColumn('authName', size => <string[]>[]),
-                authSeqNumber: builder.addColumn('authSeqNumber', size => new Int32Array(size)),
-                authAsymId: builder.addColumn('authAsymId', size => <string[]>[]),
-                insCode: builder.addColumn('insCode', size => <(string | null)[]>[]),
-                entityId: builder.addColumn('entityId', size => <string[]>[]),
-                isHet: builder.addColumn('isHet', size => new Int8Array(size)),
-                atomStartIndex: builder.addColumn('atomStartIndex', size => new Int32Array(size)),
-                atomEndIndex: builder.addColumn('atomEndIndex', size => new Int32Array(size)),
-                chainIndex: builder.addColumn('chainIndex', size => new Int32Array(size)),
-                entityIndex: builder.addColumn('entityIndex', size => new Int32Array(size)),
-                secondaryStructureIndex: builder.addColumn('secondaryStructureIndex', size => new Int32Array(size)),
-            }
-            return { table: builder.seal(), columns };
-        }
+            sourceChainIndex: void 0,
+            operatorIndex: void 0
+        };
 
-        export function chains(count: number) {
-            let builder = DataTable.builder<Chain>(count);
-            let columns = {
-                asymId: builder.addColumn('asymId', size => <string[]>[]),
-                entityId: builder.addColumn('entityId', size => <string[]>[]),
-                authAsymId: builder.addColumn('authAsymId', size => <string[]>[]),
-                atomStartIndex: builder.addColumn('atomStartIndex', size => new Int32Array(size)),
-                atomEndIndex: builder.addColumn('atomEndIndex', size => new Int32Array(size)),
-                residueStartIndex: builder.addColumn('residueStartIndex', size => new Int32Array(size)),
-                residueEndIndex: builder.addColumn('residueEndIndex', size => new Int32Array(size)),
-                entityIndex: builder.addColumn('entityIndex', size => new Int32Array(size)),
-            }
-            return { table: builder.seal(), columns };
-        }
+        export const Entities: DataTable.Definition<Entity> = {  
+            entityId: str,
+            type: DataTable.customColumn<Entity.Type>(),
+            atomStartIndex: int32,
+            atomEndIndex: int32,
+            residueStartIndex: int32,
+            residueEndIndex: int32,
+            chainStartIndex: int32,
+            chainEndIndex: int32
+        };
 
-        export function entities(count: number) {
-            let builder = DataTable.builder<Entity>(count);
-            let columns = {
-                entityId: builder.addColumn('entityId', size => <string[]>[]),
-                type: builder.addColumn('type', size => <string[]>[]),
-                atomStartIndex: builder.addColumn('atomStartIndex', size => new Int32Array(size)),
-                atomEndIndex: builder.addColumn('atomEndIndex', size => new Int32Array(size)),
-                residueStartIndex: builder.addColumn('residueStartIndex', size => new Int32Array(size)),
-                residueEndIndex: builder.addColumn('residueEndIndex', size => new Int32Array(size)),
-                chainStartIndex: builder.addColumn('chainStartIndex', size => new Int32Array(size)),
-                chainEndIndex: builder.addColumn('chainEndIndex', size => new Int32Array(size))
-            }
-            return { table: builder.seal(), columns };
-        }
-
-        export function bonds(count: number) {
-            let builder = DataTable.builder<Bond>(count);
-            let columns = {
-                atomAIndex: builder.addColumn('atomAIndex', size => new Int32Array(size)),
-                atomBIndex: builder.addColumn('atomBIndex', size => new Int32Array(size)),
-                type: builder.addColumn('type', size => new Int8Array(size))
-            }
-            return { table: builder.seal(), columns };
-        }
-
+        export const Bonds: DataTable.Definition<Bond> = { 
+            atomAIndex: int32,
+            atomBIndex: int32,
+            type: DataTable.typedColumn(Int8Array)
+        };
     }
 
     export class Operator {

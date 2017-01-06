@@ -5,7 +5,6 @@
 namespace LiteMol.Core.Formats.Molecule.mmCIF {
     "use strict";
 
-
     type StructureWrapper = { residues: Structure.ResidueTable, chains: Structure.ChainTable, entities: Structure.EntityTable };
 
     namespace Defaults {
@@ -60,7 +59,6 @@ namespace LiteMol.Core.Formats.Molecule.mmCIF {
         'pdbx_PDB_ins_code' |
         'pdbx_PDB_model_num'
     
-
     const AtomSiteColumns:AtomSiteColumnNames[] = [
         'id',
         'Cartn_x',
@@ -82,7 +80,7 @@ namespace LiteMol.Core.Formats.Molecule.mmCIF {
         'label_entity_id',
         'pdbx_PDB_ins_code',
         'pdbx_PDB_model_num'
-    ]
+    ];
 
     type AtomSiteColumns = { get(name: AtomSiteColumnNames): CIF.Column }
 
@@ -95,29 +93,30 @@ namespace LiteMol.Core.Formats.Molecule.mmCIF {
     }
 
     function buildModelAtomTable(startRow: number, rowCount: number, columns: AtomSiteColumns): { atoms: Structure.AtomTable, positions: Structure.PositionTable, modelId: string, endRow: number } {
-
         let endRow = getModelEndRow(startRow, rowCount, columns.get('pdbx_PDB_model_num')!);
 
-        let atoms = Utils.DataTable.builder<Structure.Atom>(endRow - startRow),
-            positions = Utils.DataTable.builder<Structure.Position>(endRow - startRow),
-            id = atoms.addColumn('id', size => new Int32Array(size)), idCol = columns.get('id'),
-            pX = positions.addColumn('x', size => new Float32Array(size)), pXCol = columns.get('Cartn_x'),
-            pY = positions.addColumn('y', size => new Float32Array(size)), pYCol = columns.get('Cartn_y'),
-            pZ = positions.addColumn('z', size => new Float32Array(size)), pZCol = columns.get('Cartn_z'),
+        let atoms = Utils.DataTable.ofDefinition(Structure.Tables.Atoms, endRow - startRow),
+            positions = Utils.DataTable.ofDefinition(Structure.Tables.Positions, endRow - startRow),
 
-            altLoc: (string | null)[] = atoms.addColumn('altLoc', size => new Array(size)), altLocCol = columns.get('label_alt_id'),
+            pX = positions.x, pXCol = columns.get('Cartn_x'),
+            pY = positions.y, pYCol = columns.get('Cartn_y'),
+            pZ = positions.z, pZCol = columns.get('Cartn_z'),
 
-            rowIndex = atoms.addColumn('rowIndex', size => new Int32Array(size)),
+            id = atoms.id, idCol = columns.get('id'),
 
-            residueIndex = atoms.addColumn('residueIndex', size => new Int32Array(size)),
-            chainIndex = atoms.addColumn('chainIndex', size => new Int32Array(size)),
-            entityIndex = atoms.addColumn('entityIndex', size => new Int32Array(size)),
+            altLoc = atoms.altLoc, altLocCol = columns.get('label_alt_id'),
 
-            name: string[] = atoms.addColumn('name', size => new Array(size)), nameCol = columns.get('label_atom_id'),
-            elementSymbol: string[] = atoms.addColumn('elementSymbol', size => new Array(size)), elementSymbolCol = columns.get('type_symbol'),
-            occupancy = atoms.addColumn('occupancy', size => new Float32Array(size)), occupancyCol = columns.get('occupancy'),
-            tempFactor = atoms.addColumn('tempFactor', size => new Float32Array(size)), tempFactorCol = columns.get('B_iso_or_equiv'),
-            authName: string[] = atoms.addColumn('authName', size => new Array(size)), authNameCol = columns.get('auth_atom_id');
+            rowIndex = atoms.rowIndex,
+
+            residueIndex = atoms.residueIndex,
+            chainIndex = atoms.chainIndex,
+            entityIndex = atoms.entityIndex,
+
+            name = atoms.name, nameCol = columns.get('label_atom_id'),
+            elementSymbol= atoms.elementSymbol, elementSymbolCol = columns.get('type_symbol'),
+            occupancy = atoms.occupancy, occupancyCol = columns.get('occupancy'),
+            tempFactor = atoms.tempFactor, tempFactorCol = columns.get('B_iso_or_equiv'),
+            authName = atoms.authName, authNameCol = columns.get('auth_atom_id');
 
 
         let asymIdCol = columns.get('label_asym_id'),
@@ -175,63 +174,55 @@ namespace LiteMol.Core.Formats.Molecule.mmCIF {
 
         let modelId = !modelNumCol.isDefined ? Defaults.ModelId : modelNumCol.getString(startRow) || Defaults.ModelId;
 
-        return {
-            atoms: atoms.seal(),
-            positions: positions.seal(),
-            modelId,
-            endRow
-        };
+        return { atoms, positions, modelId, endRow };
     }
 
     function buildStructure(columns: AtomSiteColumns, atoms: Structure.AtomTable): StructureWrapper {
-
         let count = atoms.count,
 
             residueIndexCol = atoms.residueIndex,
             chainIndexCol = atoms.chainIndex,
-            entityIndexCol = atoms.entityIndex,
+            entityIndexCol = atoms.entityIndex;
 
-            residues = Utils.DataTable.builder<Structure.Residue>(atoms.residueIndex[atoms.count - 1] + 1),
-            chains = Utils.DataTable.builder<Structure.Chain>(atoms.chainIndex[atoms.count - 1] + 1),
-            entities = Utils.DataTable.builder<Structure.Entity>(atoms.entityIndex[atoms.count - 1] + 1),
+        let residues = Utils.DataTable.ofDefinition(Structure.Tables.Residues, atoms.residueIndex[atoms.count - 1] + 1),
+            chains = Utils.DataTable.ofDefinition(Structure.Tables.Chains, atoms.chainIndex[atoms.count - 1] + 1),
+            entities = Utils.DataTable.ofDefinition(Structure.Tables.Entities, atoms.entityIndex[atoms.count - 1] + 1);
+            
+        let residueName = residues.name,
+            residueSeqNumber = residues.seqNumber,
+            residueAsymId = residues.asymId,
+            residueAuthName = residues.authName,
+            residueAuthSeqNumber = residues.authSeqNumber,
+            residueAuthAsymId = residues.authAsymId,
+            residueInsertionCode = residues.insCode,
+            residueEntityId = residues.entityId,
+            residueIsHet = residues.isHet,
+            residueAtomStartIndex = residues.atomStartIndex,
+            residueAtomEndIndex = residues.atomEndIndex,
+            residueChainIndex = residues.chainIndex,
+            residueEntityIndex = residues.entityIndex;        
 
-            residueName = residues.addColumn('name', size => <string[]>new Array(size)),
-            residueSeqNumber = residues.addColumn('seqNumber', size => new Int32Array(size)),
-            residueAsymId = residues.addColumn('asymId', size => <string[]>new Array(size)),
-            residueAuthName = residues.addColumn('authName', size => <string[]>new Array(size)),
-            residueAuthSeqNumber = residues.addColumn('authSeqNumber', size => new Int32Array(size)),
-            residueAuthAsymId = residues.addColumn('authAsymId', size => <string[]>new Array(size)),
-            residueInsertionCode = residues.addColumn('insCode', size => <(string | null)[]>new Array(size)),
-            residueEntityId = residues.addColumn('entityId', size => <string[]>new Array(size)),
-            residueIsHet = residues.addColumn('isHet', size => new Int8Array(size)),
-            residueAtomStartIndex = residues.addColumn('atomStartIndex', size => new Int32Array(size)),
-            residueAtomEndIndex = residues.addColumn('atomEndIndex', size => new Int32Array(size)),
-            residueChainIndex = residues.addColumn('chainIndex', size => new Int32Array(size)),
-            residueEntityIndex = residues.addColumn('entityIndex', size => new Int32Array(size));        
-        residues.addColumn('secondaryStructureIndex', size => new Int32Array(size));
+        let chainAsymId = chains.asymId,
+            chainEntityId = chains.entityId,
+            chainAuthAsymId = chains.authAsymId,
+            chainAtomStartIndex = chains.atomStartIndex,
+            chainAtomEndIndex = chains.atomEndIndex,
+            chainResidueStartIndex = chains.residueStartIndex,
+            chainResidueEndIndex = chains.residueEndIndex,
+            chainEntityIndex = chains.entityIndex;
 
-        let chainAsymId = chains.addColumn('asymId', size => <string[]>[]),
-            chainEntityId = chains.addColumn('entityId', size => <string[]>[]),
-            chainAuthAsymId = chains.addColumn('authAsymId', size => <string[]>[]),
-            chainAtomStartIndex = chains.addColumn('atomStartIndex', size => new Int32Array(size)),
-            chainAtomEndIndex = chains.addColumn('atomEndIndex', size => new Int32Array(size)),
-            chainResidueStartIndex = chains.addColumn('residueStartIndex', size => new Int32Array(size)),
-            chainResidueEndIndex = chains.addColumn('residueEndIndex', size => new Int32Array(size)),
-            chainEntityIndex = chains.addColumn('entityIndex', size => new Int32Array(size)),
+        let entityId = entities.entityId,
+            entityType = entities.type,
+            entityAtomStartIndex = entities.atomStartIndex,
+            entityAtomEndIndex = entities.atomEndIndex,
+            entityResidueStartIndex = entities.residueStartIndex,
+            entityResidueEndIndex = entities.residueEndIndex,
+            entityChainStartIndex = entities.chainStartIndex,
+            entityChainEndIndex = entities.chainEndIndex;
 
-            entityId = entities.addColumn('entityId', size => <string[]>[]),
-            entityType = entities.addColumn('type', size => <string[]>[]),
-            entityAtomStartIndex = entities.addColumn('atomStartIndex', size => new Int32Array(size)),
-            entityAtomEndIndex = entities.addColumn('atomEndIndex', size => new Int32Array(size)),
-            entityResidueStartIndex = entities.addColumn('residueStartIndex', size => new Int32Array(size)),
-            entityResidueEndIndex = entities.addColumn('residueEndIndex', size => new Int32Array(size)),
-            entityChainStartIndex = entities.addColumn('chainStartIndex', size => new Int32Array(size)),
-            entityChainEndIndex = entities.addColumn('chainEndIndex', size => new Int32Array(size)),
-
-            resNameCol = columns.get('label_comp_id'),
+        let resNameCol = columns.get('label_comp_id'),
             resSeqNumberCol = columns.get('label_seq_id'),
             asymIdCol = columns.get('label_asym_id'),
-
 
             authResNameCol = columns.get('auth_comp_id'),
             authResSeqNumberCol = columns.get('auth_seq_id'),
@@ -240,10 +231,9 @@ namespace LiteMol.Core.Formats.Molecule.mmCIF {
             isHetCol = columns.get('group_PDB'),
 
             entityCol = columns.get('label_entity_id'),
-            insCodeCol = columns.get('pdbx_PDB_ins_code'),
+            insCodeCol = columns.get('pdbx_PDB_ins_code');
 
-
-            residueStart = 0, chainStart = 0, entityStart = 0,
+        let residueStart = 0, chainStart = 0, entityStart = 0,
             entityChainStart = 0, entityResidueStart = 0,
             chainResidueStart = 0,
 
@@ -251,7 +241,6 @@ namespace LiteMol.Core.Formats.Molecule.mmCIF {
 
         let i = 0;
         for (i = 0; i < count; i++) {
-
             if (residueIndexCol[i] !== residueIndexCol[residueStart]) {
                 residueName[currentResidue] = resNameCol.getString(residueStart) || Defaults.ResidueName;
                 residueSeqNumber[currentResidue] = resSeqNumberCol.getInteger(residueStart);
@@ -273,7 +262,6 @@ namespace LiteMol.Core.Formats.Molecule.mmCIF {
             }
 
             if (chainIndexCol[i] !== chainIndexCol[chainStart]) {
-
                 chainAsymId[currentChain] = asymIdCol.getString(chainStart) || Defaults.AsymId;
                 chainAuthAsymId[currentChain] = authAsymIdCol.getString(chainStart) || chainAsymId[currentChain];
                 chainEntityId[currentChain] = entityCol.getString(chainStart) || Defaults.EntityId;
@@ -340,11 +328,7 @@ namespace LiteMol.Core.Formats.Molecule.mmCIF {
         residueEntityIndex[currentResidue] = currentEntity;
         residueIsHet[currentResidue] = isHetCol.stringEquals(residueStart, 'HETATM') ? 1 : 0;
 
-        return {
-            residues: residues.seal(),
-            chains: chains.seal(),
-            entities: entities.seal()
-        };
+        return { residues, chains, entities };
     }
 
     function assignEntityTypes(category: CIF.Category | undefined, entities: Structure.EntityTable) {

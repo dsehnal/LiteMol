@@ -421,10 +421,8 @@ namespace LiteMol.Core.Structure {
                 atomResidue: number[] | undefined, atomChain: number[] | undefined, atomEntity: number[] | undefined,
                 cols: { src: any[]; target: any[] }[] = [];
 
-            let positionTable = DataTable.builder<Position>(assemblyParts.atomCount),
-                atomX = positionTable.addColumn('x', size => new Float32Array(size)), 
-                atomY = positionTable.addColumn('y', size => new Float32Array(size)), 
-                atomZ = positionTable.addColumn('z', size => new Float32Array(size));
+            let positionTable = DataTable.ofDefinition(Tables.Positions, assemblyParts.atomCount),
+                atomX = positionTable.x, atomY = positionTable.y, atomZ = positionTable.z;
 
             let entityTableBuilder = model.data.entities.getBuilder(assemblyParts.entityCount),
                 entityTable = <EntityTable><any>entityTableBuilder,
@@ -616,7 +614,6 @@ namespace LiteMol.Core.Structure {
             chainAtomEnd[chainOffset] = atomOffset;
 
             let finalAtoms = atomTable.seal(),
-                finalPositions = positionTable.seal(),
                 finalResidues = residueTableBuilder.seal(),
                 finalChains = chainTableBuilder.seal(),
                 finalEntities = entityTableBuilder.seal();
@@ -636,7 +633,7 @@ namespace LiteMol.Core.Structure {
                     },
                     secondaryStructure: ss,
                 },
-                positions: finalPositions,
+                positions: positionTable,
                 parent: model,
                 source: Molecule.Model.Source.Computed,
                 operators: transforms.map(t => new Operator(t.transform, t.id, t.isIdentity))

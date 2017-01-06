@@ -1571,6 +1571,9 @@ declare namespace LiteMol.Core.Utils {
 declare namespace LiteMol.Core.Utils {
     type DataTable<Schema> = DataTable.Base<Schema> & DataTable.Columns<Schema>;
     module DataTable {
+        type Definition<Schema> = {
+            [T in keyof Schema]: ((size: number) => Schema[T][]) | undefined;
+        };
         type Columns<Schema> = {
             readonly [P in keyof Schema]: Schema[P][];
         };
@@ -1578,6 +1581,11 @@ declare namespace LiteMol.Core.Utils {
             name: keyof Schema;
             creator: (size: number) => any;
         }
+        type TypedArrayContructor = Float32ArrayConstructor | Float64ArrayConstructor | Int32ArrayConstructor | Uint32ArrayConstructor | Int16ArrayConstructor | Uint16ArrayConstructor | Int8ArrayConstructor | Uint8ArrayConstructor;
+        function typedColumn(t: TypedArrayContructor): (size: number) => number[];
+        function customColumn<T>(): (size: number) => T[];
+        const stringColumn: (size: number) => string[];
+        const stringNullColumn: (size: number) => (string | null)[];
         interface Base<Schema> {
             count: number;
             indices: number[];
@@ -1602,6 +1610,7 @@ declare namespace LiteMol.Core.Utils {
             seal(): DataTable<Schema>;
         }
         function builder<Schema>(count: number): Builder<Schema>;
+        function ofDefinition<Schema>(definition: Definition<Schema>, count: number): DataTable<Schema>;
     }
 }
 declare namespace LiteMol.Core.Utils {
@@ -2371,83 +2380,12 @@ declare namespace LiteMol.Core.Structure {
      * Default Builders
      */
     namespace Tables {
-        function positions(count: number): {
-            table: DataTable<Position>;
-            columns: {
-                x: Float32Array;
-                y: Float32Array;
-                z: Float32Array;
-            };
-        };
-        function atoms(count: number): {
-            table: DataTable<Atom>;
-            columns: {
-                id: Int32Array;
-                altLoc: never[];
-                residueIndex: Int32Array;
-                chainIndex: Int32Array;
-                entityIndex: Int32Array;
-                name: string[];
-                elementSymbol: string[];
-                occupancy: Float32Array;
-                tempFactor: Float32Array;
-                authName: string[];
-                rowIndex: Int32Array;
-            };
-        };
-        function residues(count: number): {
-            table: DataTable<Residue>;
-            columns: {
-                name: string[];
-                seqNumber: Int32Array;
-                asymId: string[];
-                authName: string[];
-                authSeqNumber: Int32Array;
-                authAsymId: string[];
-                insCode: (string | null)[];
-                entityId: string[];
-                isHet: Int8Array;
-                atomStartIndex: Int32Array;
-                atomEndIndex: Int32Array;
-                chainIndex: Int32Array;
-                entityIndex: Int32Array;
-                secondaryStructureIndex: Int32Array;
-            };
-        };
-        function chains(count: number): {
-            table: DataTable<Chain>;
-            columns: {
-                asymId: string[];
-                entityId: string[];
-                authAsymId: string[];
-                atomStartIndex: Int32Array;
-                atomEndIndex: Int32Array;
-                residueStartIndex: Int32Array;
-                residueEndIndex: Int32Array;
-                entityIndex: Int32Array;
-            };
-        };
-        function entities(count: number): {
-            table: DataTable<Entity>;
-            columns: {
-                entityId: string[];
-                type: string[];
-                atomStartIndex: Int32Array;
-                atomEndIndex: Int32Array;
-                residueStartIndex: Int32Array;
-                residueEndIndex: Int32Array;
-                chainStartIndex: Int32Array;
-                chainEndIndex: Int32Array;
-            };
-        };
-        function bonds(count: number): {
-            table: DataTable<Bond>;
-            columns: {
-                atomAIndex: Int32Array;
-                atomBIndex: Int32Array;
-                type: Int8Array;
-            };
-        };
+        const Positions: DataTable.Definition<Position>;
+        const Atoms: DataTable.Definition<Atom>;
+        const Residues: DataTable.Definition<Residue>;
+        const Chains: DataTable.Definition<Chain>;
+        const Entities: DataTable.Definition<Entity>;
+        const Bonds: DataTable.Definition<Bond>;
     }
     class Operator {
         matrix: number[];

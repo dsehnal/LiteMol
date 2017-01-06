@@ -11563,10 +11563,34 @@ var LiteMol;
             "use strict";
             var DataTable;
             (function (DataTable) {
+                function typedColumn(t) {
+                    return function (size) { return new t(size); };
+                }
+                DataTable.typedColumn = typedColumn;
+                function customColumn() {
+                    return function (size) { return new Array(size); };
+                }
+                DataTable.customColumn = customColumn;
+                DataTable.stringColumn = function (size) { return new Array(size); };
+                DataTable.stringNullColumn = function (size) { return new Array(size); };
                 function builder(count) {
                     return new BuilderImpl(count);
                 }
                 DataTable.builder = builder;
+                function ofDefinition(definition, count) {
+                    var builder = DataTable.builder(count);
+                    for (var _i = 0, _a = Object.keys(definition); _i < _a.length; _i++) {
+                        var k = _a[_i];
+                        if (!Object.prototype.hasOwnProperty.call(definition, k))
+                            continue;
+                        var col = definition[k];
+                        if (col) {
+                            builder.addColumn(k, col);
+                        }
+                    }
+                    return builder.seal();
+                }
+                DataTable.ofDefinition = ofDefinition;
                 function rowReader(table, indexer) {
                     var row = Object.create(null);
                     for (var _i = 0, _a = table.columns; _i < _a.length; _i++) {
@@ -12174,7 +12198,7 @@ var LiteMol;
                     }
                     function buildModelAtomTable(startRow, rowCount, columns) {
                         var endRow = getModelEndRow(startRow, rowCount, columns.get('pdbx_PDB_model_num'));
-                        var atoms = Core.Utils.DataTable.builder(endRow - startRow), positions = Core.Utils.DataTable.builder(endRow - startRow), id = atoms.addColumn('id', function (size) { return new Int32Array(size); }), idCol = columns.get('id'), pX = positions.addColumn('x', function (size) { return new Float32Array(size); }), pXCol = columns.get('Cartn_x'), pY = positions.addColumn('y', function (size) { return new Float32Array(size); }), pYCol = columns.get('Cartn_y'), pZ = positions.addColumn('z', function (size) { return new Float32Array(size); }), pZCol = columns.get('Cartn_z'), altLoc = atoms.addColumn('altLoc', function (size) { return new Array(size); }), altLocCol = columns.get('label_alt_id'), rowIndex = atoms.addColumn('rowIndex', function (size) { return new Int32Array(size); }), residueIndex = atoms.addColumn('residueIndex', function (size) { return new Int32Array(size); }), chainIndex = atoms.addColumn('chainIndex', function (size) { return new Int32Array(size); }), entityIndex = atoms.addColumn('entityIndex', function (size) { return new Int32Array(size); }), name = atoms.addColumn('name', function (size) { return new Array(size); }), nameCol = columns.get('label_atom_id'), elementSymbol = atoms.addColumn('elementSymbol', function (size) { return new Array(size); }), elementSymbolCol = columns.get('type_symbol'), occupancy = atoms.addColumn('occupancy', function (size) { return new Float32Array(size); }), occupancyCol = columns.get('occupancy'), tempFactor = atoms.addColumn('tempFactor', function (size) { return new Float32Array(size); }), tempFactorCol = columns.get('B_iso_or_equiv'), authName = atoms.addColumn('authName', function (size) { return new Array(size); }), authNameCol = columns.get('auth_atom_id');
+                        var atoms = Core.Utils.DataTable.ofDefinition(Core.Structure.Tables.Atoms, endRow - startRow), positions = Core.Utils.DataTable.ofDefinition(Core.Structure.Tables.Positions, endRow - startRow), pX = positions.x, pXCol = columns.get('Cartn_x'), pY = positions.y, pYCol = columns.get('Cartn_y'), pZ = positions.z, pZCol = columns.get('Cartn_z'), id = atoms.id, idCol = columns.get('id'), altLoc = atoms.altLoc, altLocCol = columns.get('label_alt_id'), rowIndex = atoms.rowIndex, residueIndex = atoms.residueIndex, chainIndex = atoms.chainIndex, entityIndex = atoms.entityIndex, name = atoms.name, nameCol = columns.get('label_atom_id'), elementSymbol = atoms.elementSymbol, elementSymbolCol = columns.get('type_symbol'), occupancy = atoms.occupancy, occupancyCol = columns.get('occupancy'), tempFactor = atoms.tempFactor, tempFactorCol = columns.get('B_iso_or_equiv'), authName = atoms.authName, authNameCol = columns.get('auth_atom_id');
                         var asymIdCol = columns.get('label_asym_id'), entityIdCol = columns.get('label_entity_id'), insCodeCol = columns.get('pdbx_PDB_ins_code'), authResSeqNumberCol = columns.get('auth_seq_id'), modelNumCol = columns.get('pdbx_PDB_model_num'), numChains = 0, numResidues = 0, numEntities = 0;
                         var prev = startRow;
                         for (var row = startRow; row < endRow; row++) {
@@ -12211,17 +12235,16 @@ var LiteMol;
                             prev = row;
                         }
                         var modelId = !modelNumCol.isDefined ? Defaults.ModelId : modelNumCol.getString(startRow) || Defaults.ModelId;
-                        return {
-                            atoms: atoms.seal(),
-                            positions: positions.seal(),
-                            modelId: modelId,
-                            endRow: endRow
-                        };
+                        return { atoms: atoms, positions: positions, modelId: modelId, endRow: endRow };
                     }
                     function buildStructure(columns, atoms) {
-                        var count = atoms.count, residueIndexCol = atoms.residueIndex, chainIndexCol = atoms.chainIndex, entityIndexCol = atoms.entityIndex, residues = Core.Utils.DataTable.builder(atoms.residueIndex[atoms.count - 1] + 1), chains = Core.Utils.DataTable.builder(atoms.chainIndex[atoms.count - 1] + 1), entities = Core.Utils.DataTable.builder(atoms.entityIndex[atoms.count - 1] + 1), residueName = residues.addColumn('name', function (size) { return new Array(size); }), residueSeqNumber = residues.addColumn('seqNumber', function (size) { return new Int32Array(size); }), residueAsymId = residues.addColumn('asymId', function (size) { return new Array(size); }), residueAuthName = residues.addColumn('authName', function (size) { return new Array(size); }), residueAuthSeqNumber = residues.addColumn('authSeqNumber', function (size) { return new Int32Array(size); }), residueAuthAsymId = residues.addColumn('authAsymId', function (size) { return new Array(size); }), residueInsertionCode = residues.addColumn('insCode', function (size) { return new Array(size); }), residueEntityId = residues.addColumn('entityId', function (size) { return new Array(size); }), residueIsHet = residues.addColumn('isHet', function (size) { return new Int8Array(size); }), residueAtomStartIndex = residues.addColumn('atomStartIndex', function (size) { return new Int32Array(size); }), residueAtomEndIndex = residues.addColumn('atomEndIndex', function (size) { return new Int32Array(size); }), residueChainIndex = residues.addColumn('chainIndex', function (size) { return new Int32Array(size); }), residueEntityIndex = residues.addColumn('entityIndex', function (size) { return new Int32Array(size); });
-                        residues.addColumn('secondaryStructureIndex', function (size) { return new Int32Array(size); });
-                        var chainAsymId = chains.addColumn('asymId', function (size) { return []; }), chainEntityId = chains.addColumn('entityId', function (size) { return []; }), chainAuthAsymId = chains.addColumn('authAsymId', function (size) { return []; }), chainAtomStartIndex = chains.addColumn('atomStartIndex', function (size) { return new Int32Array(size); }), chainAtomEndIndex = chains.addColumn('atomEndIndex', function (size) { return new Int32Array(size); }), chainResidueStartIndex = chains.addColumn('residueStartIndex', function (size) { return new Int32Array(size); }), chainResidueEndIndex = chains.addColumn('residueEndIndex', function (size) { return new Int32Array(size); }), chainEntityIndex = chains.addColumn('entityIndex', function (size) { return new Int32Array(size); }), entityId = entities.addColumn('entityId', function (size) { return []; }), entityType = entities.addColumn('type', function (size) { return []; }), entityAtomStartIndex = entities.addColumn('atomStartIndex', function (size) { return new Int32Array(size); }), entityAtomEndIndex = entities.addColumn('atomEndIndex', function (size) { return new Int32Array(size); }), entityResidueStartIndex = entities.addColumn('residueStartIndex', function (size) { return new Int32Array(size); }), entityResidueEndIndex = entities.addColumn('residueEndIndex', function (size) { return new Int32Array(size); }), entityChainStartIndex = entities.addColumn('chainStartIndex', function (size) { return new Int32Array(size); }), entityChainEndIndex = entities.addColumn('chainEndIndex', function (size) { return new Int32Array(size); }), resNameCol = columns.get('label_comp_id'), resSeqNumberCol = columns.get('label_seq_id'), asymIdCol = columns.get('label_asym_id'), authResNameCol = columns.get('auth_comp_id'), authResSeqNumberCol = columns.get('auth_seq_id'), authAsymIdCol = columns.get('auth_asym_id'), isHetCol = columns.get('group_PDB'), entityCol = columns.get('label_entity_id'), insCodeCol = columns.get('pdbx_PDB_ins_code'), residueStart = 0, chainStart = 0, entityStart = 0, entityChainStart = 0, entityResidueStart = 0, chainResidueStart = 0, currentResidue = 0, currentChain = 0, currentEntity = 0;
+                        var count = atoms.count, residueIndexCol = atoms.residueIndex, chainIndexCol = atoms.chainIndex, entityIndexCol = atoms.entityIndex;
+                        var residues = Core.Utils.DataTable.ofDefinition(Core.Structure.Tables.Residues, atoms.residueIndex[atoms.count - 1] + 1), chains = Core.Utils.DataTable.ofDefinition(Core.Structure.Tables.Chains, atoms.chainIndex[atoms.count - 1] + 1), entities = Core.Utils.DataTable.ofDefinition(Core.Structure.Tables.Entities, atoms.entityIndex[atoms.count - 1] + 1);
+                        var residueName = residues.name, residueSeqNumber = residues.seqNumber, residueAsymId = residues.asymId, residueAuthName = residues.authName, residueAuthSeqNumber = residues.authSeqNumber, residueAuthAsymId = residues.authAsymId, residueInsertionCode = residues.insCode, residueEntityId = residues.entityId, residueIsHet = residues.isHet, residueAtomStartIndex = residues.atomStartIndex, residueAtomEndIndex = residues.atomEndIndex, residueChainIndex = residues.chainIndex, residueEntityIndex = residues.entityIndex;
+                        var chainAsymId = chains.asymId, chainEntityId = chains.entityId, chainAuthAsymId = chains.authAsymId, chainAtomStartIndex = chains.atomStartIndex, chainAtomEndIndex = chains.atomEndIndex, chainResidueStartIndex = chains.residueStartIndex, chainResidueEndIndex = chains.residueEndIndex, chainEntityIndex = chains.entityIndex;
+                        var entityId = entities.entityId, entityType = entities.type, entityAtomStartIndex = entities.atomStartIndex, entityAtomEndIndex = entities.atomEndIndex, entityResidueStartIndex = entities.residueStartIndex, entityResidueEndIndex = entities.residueEndIndex, entityChainStartIndex = entities.chainStartIndex, entityChainEndIndex = entities.chainEndIndex;
+                        var resNameCol = columns.get('label_comp_id'), resSeqNumberCol = columns.get('label_seq_id'), asymIdCol = columns.get('label_asym_id'), authResNameCol = columns.get('auth_comp_id'), authResSeqNumberCol = columns.get('auth_seq_id'), authAsymIdCol = columns.get('auth_asym_id'), isHetCol = columns.get('group_PDB'), entityCol = columns.get('label_entity_id'), insCodeCol = columns.get('pdbx_PDB_ins_code');
+                        var residueStart = 0, chainStart = 0, entityStart = 0, entityChainStart = 0, entityResidueStart = 0, chainResidueStart = 0, currentResidue = 0, currentChain = 0, currentEntity = 0;
                         var i = 0;
                         for (i = 0; i < count; i++) {
                             if (residueIndexCol[i] !== residueIndexCol[residueStart]) {
@@ -12300,11 +12323,7 @@ var LiteMol;
                         residueChainIndex[currentResidue] = currentChain;
                         residueEntityIndex[currentResidue] = currentEntity;
                         residueIsHet[currentResidue] = isHetCol.stringEquals(residueStart, 'HETATM') ? 1 : 0;
-                        return {
-                            residues: residues.seal(),
-                            chains: chains.seal(),
-                            entities: entities.seal()
-                        };
+                        return { residues: residues, chains: chains, entities: entities };
                     }
                     function assignEntityTypes(category, entities) {
                         var i;
@@ -13428,9 +13447,9 @@ var LiteMol;
                             id: customId ? customId : id,
                             atomCount: atomCount,
                             bondCount: bondCount,
-                            atoms: Core.Structure.Tables.atoms(atomCount).table,
-                            positions: Core.Structure.Tables.positions(atomCount).table,
-                            bonds: Core.Structure.Tables.bonds(bondCount).table,
+                            atoms: Core.Utils.DataTable.ofDefinition(Core.Structure.Tables.Atoms, atomCount),
+                            positions: Core.Utils.DataTable.ofDefinition(Core.Structure.Tables.Positions, atomCount),
+                            bonds: Core.Utils.DataTable.ofDefinition(Core.Structure.Tables.Bonds, bondCount),
                             lines: lines,
                             currentLine: 4,
                             error: void 0,
@@ -13487,30 +13506,30 @@ var LiteMol;
                         }
                     }
                     function buildModel(state) {
-                        var residues = Core.Structure.Tables.residues(1), chains = Core.Structure.Tables.chains(1), entities = Core.Structure.Tables.entities(1);
-                        residues.columns.isHet[0] = 1;
-                        residues.columns.insCode[0] = null;
-                        residues.columns.name[0]
-                            = residues.columns.authName[0]
+                        var residues = Core.Utils.DataTable.ofDefinition(Core.Structure.Tables.Residues, 1), chains = Core.Utils.DataTable.ofDefinition(Core.Structure.Tables.Chains, 1), entities = Core.Utils.DataTable.ofDefinition(Core.Structure.Tables.Entities, 1);
+                        residues.isHet[0] = 1;
+                        residues.insCode[0] = null;
+                        residues.name[0]
+                            = residues.authName[0]
                                 = 'UNK';
-                        residues.columns.atomEndIndex[0]
-                            = chains.columns.atomEndIndex[0]
-                                = entities.columns.atomEndIndex[0]
+                        residues.atomEndIndex[0]
+                            = chains.atomEndIndex[0]
+                                = entities.atomEndIndex[0]
                                     = state.atomCount;
-                        residues.columns.asymId[0]
-                            = residues.columns.authAsymId[0]
-                                = chains.columns.asymId[0]
-                                    = chains.columns.authAsymId[0]
+                        residues.asymId[0]
+                            = residues.authAsymId[0]
+                                = chains.asymId[0]
+                                    = chains.authAsymId[0]
                                         = 'X';
-                        residues.columns.entityId[0]
-                            = chains.columns.entityId[0]
-                                = entities.columns.entityId[0]
+                        residues.entityId[0]
+                            = chains.entityId[0]
+                                = entities.entityId[0]
                                     = '1';
-                        chains.columns.residueEndIndex[0]
-                            = entities.columns.residueEndIndex[0]
+                        chains.residueEndIndex[0]
+                            = entities.residueEndIndex[0]
                                 = 0;
-                        entities.columns.chainEndIndex[0] = 1;
-                        entities.columns.type[0] = 'non-polymer';
+                        entities.chainEndIndex[0] = 1;
+                        entities.type[0] = 'non-polymer';
                         var ssR = new Core.Structure.PolyResidueIdentifier('X', 0, null);
                         var ss = [new Core.Structure.SecondaryStructureElement(0 /* None */, ssR, ssR)];
                         ss[0].startResidueIndex = 0;
@@ -13520,9 +13539,9 @@ var LiteMol;
                             modelId: '1',
                             data: {
                                 atoms: state.atoms,
-                                residues: residues.table,
-                                chains: chains.table,
-                                entities: entities.table,
+                                residues: residues,
+                                chains: chains,
+                                entities: entities,
                                 bonds: {
                                     covalent: state.bonds,
                                 },
@@ -16240,95 +16259,71 @@ var LiteMol;
              */
             var Tables;
             (function (Tables) {
-                function positions(count) {
-                    var builder = DataTable.builder(count);
-                    var columns = {
-                        x: builder.addColumn('x', function (size) { return new Float32Array(size); }),
-                        y: builder.addColumn('y', function (size) { return new Float32Array(size); }),
-                        z: builder.addColumn('z', function (size) { return new Float32Array(size); })
-                    };
-                    return { table: builder.seal(), columns: columns };
-                }
-                Tables.positions = positions;
-                function atoms(count) {
-                    var builder = DataTable.builder(count);
-                    var columns = {
-                        id: builder.addColumn('id', function (size) { return new Int32Array(size); }),
-                        altLoc: builder.addColumn('altLoc', function (size) { return []; }),
-                        residueIndex: builder.addColumn('residueIndex', function (size) { return new Int32Array(size); }),
-                        chainIndex: builder.addColumn('chainIndex', function (size) { return new Int32Array(size); }),
-                        entityIndex: builder.addColumn('entityIndex', function (size) { return new Int32Array(size); }),
-                        name: builder.addColumn('name', function (size) { return []; }),
-                        elementSymbol: builder.addColumn('elementSymbol', function (size) { return []; }),
-                        occupancy: builder.addColumn('occupancy', function (size) { return new Float32Array(size); }),
-                        tempFactor: builder.addColumn('tempFactor', function (size) { return new Float32Array(size); }),
-                        authName: builder.addColumn('authName', function (size) { return []; }),
-                        rowIndex: builder.addColumn('rowIndex', function (size) { return new Int32Array(size); }),
-                    };
-                    return { table: builder.seal(), columns: columns };
-                }
-                Tables.atoms = atoms;
-                function residues(count) {
-                    var builder = DataTable.builder(count);
-                    var columns = {
-                        name: builder.addColumn('name', function (size) { return []; }),
-                        seqNumber: builder.addColumn('seqNumber', function (size) { return new Int32Array(size); }),
-                        asymId: builder.addColumn('asymId', function (size) { return []; }),
-                        authName: builder.addColumn('authName', function (size) { return []; }),
-                        authSeqNumber: builder.addColumn('authSeqNumber', function (size) { return new Int32Array(size); }),
-                        authAsymId: builder.addColumn('authAsymId', function (size) { return []; }),
-                        insCode: builder.addColumn('insCode', function (size) { return []; }),
-                        entityId: builder.addColumn('entityId', function (size) { return []; }),
-                        isHet: builder.addColumn('isHet', function (size) { return new Int8Array(size); }),
-                        atomStartIndex: builder.addColumn('atomStartIndex', function (size) { return new Int32Array(size); }),
-                        atomEndIndex: builder.addColumn('atomEndIndex', function (size) { return new Int32Array(size); }),
-                        chainIndex: builder.addColumn('chainIndex', function (size) { return new Int32Array(size); }),
-                        entityIndex: builder.addColumn('entityIndex', function (size) { return new Int32Array(size); }),
-                        secondaryStructureIndex: builder.addColumn('secondaryStructureIndex', function (size) { return new Int32Array(size); }),
-                    };
-                    return { table: builder.seal(), columns: columns };
-                }
-                Tables.residues = residues;
-                function chains(count) {
-                    var builder = DataTable.builder(count);
-                    var columns = {
-                        asymId: builder.addColumn('asymId', function (size) { return []; }),
-                        entityId: builder.addColumn('entityId', function (size) { return []; }),
-                        authAsymId: builder.addColumn('authAsymId', function (size) { return []; }),
-                        atomStartIndex: builder.addColumn('atomStartIndex', function (size) { return new Int32Array(size); }),
-                        atomEndIndex: builder.addColumn('atomEndIndex', function (size) { return new Int32Array(size); }),
-                        residueStartIndex: builder.addColumn('residueStartIndex', function (size) { return new Int32Array(size); }),
-                        residueEndIndex: builder.addColumn('residueEndIndex', function (size) { return new Int32Array(size); }),
-                        entityIndex: builder.addColumn('entityIndex', function (size) { return new Int32Array(size); }),
-                    };
-                    return { table: builder.seal(), columns: columns };
-                }
-                Tables.chains = chains;
-                function entities(count) {
-                    var builder = DataTable.builder(count);
-                    var columns = {
-                        entityId: builder.addColumn('entityId', function (size) { return []; }),
-                        type: builder.addColumn('type', function (size) { return []; }),
-                        atomStartIndex: builder.addColumn('atomStartIndex', function (size) { return new Int32Array(size); }),
-                        atomEndIndex: builder.addColumn('atomEndIndex', function (size) { return new Int32Array(size); }),
-                        residueStartIndex: builder.addColumn('residueStartIndex', function (size) { return new Int32Array(size); }),
-                        residueEndIndex: builder.addColumn('residueEndIndex', function (size) { return new Int32Array(size); }),
-                        chainStartIndex: builder.addColumn('chainStartIndex', function (size) { return new Int32Array(size); }),
-                        chainEndIndex: builder.addColumn('chainEndIndex', function (size) { return new Int32Array(size); })
-                    };
-                    return { table: builder.seal(), columns: columns };
-                }
-                Tables.entities = entities;
-                function bonds(count) {
-                    var builder = DataTable.builder(count);
-                    var columns = {
-                        atomAIndex: builder.addColumn('atomAIndex', function (size) { return new Int32Array(size); }),
-                        atomBIndex: builder.addColumn('atomBIndex', function (size) { return new Int32Array(size); }),
-                        type: builder.addColumn('type', function (size) { return new Int8Array(size); })
-                    };
-                    return { table: builder.seal(), columns: columns };
-                }
-                Tables.bonds = bonds;
+                var int32 = DataTable.typedColumn(Int32Array);
+                var float32 = DataTable.typedColumn(Float32Array);
+                var str = DataTable.stringColumn;
+                var nullStr = DataTable.stringNullColumn;
+                Tables.Positions = {
+                    x: float32,
+                    y: float32,
+                    z: float32
+                };
+                Tables.Atoms = {
+                    id: int32,
+                    altLoc: str,
+                    residueIndex: int32,
+                    chainIndex: int32,
+                    entityIndex: int32,
+                    name: str,
+                    elementSymbol: str,
+                    occupancy: float32,
+                    tempFactor: float32,
+                    authName: str,
+                    rowIndex: int32
+                };
+                Tables.Residues = {
+                    name: str,
+                    seqNumber: int32,
+                    asymId: str,
+                    authName: str,
+                    authSeqNumber: int32,
+                    authAsymId: str,
+                    insCode: nullStr,
+                    entityId: str,
+                    isHet: DataTable.typedColumn(Int8Array),
+                    atomStartIndex: int32,
+                    atomEndIndex: int32,
+                    chainIndex: int32,
+                    entityIndex: int32,
+                    secondaryStructureIndex: int32
+                };
+                Tables.Chains = {
+                    asymId: str,
+                    entityId: str,
+                    authAsymId: str,
+                    atomStartIndex: int32,
+                    atomEndIndex: int32,
+                    residueStartIndex: int32,
+                    residueEndIndex: int32,
+                    entityIndex: int32,
+                    sourceChainIndex: void 0,
+                    operatorIndex: void 0
+                };
+                Tables.Entities = {
+                    entityId: str,
+                    type: DataTable.customColumn(),
+                    atomStartIndex: int32,
+                    atomEndIndex: int32,
+                    residueStartIndex: int32,
+                    residueEndIndex: int32,
+                    chainStartIndex: int32,
+                    chainEndIndex: int32
+                };
+                Tables.Bonds = {
+                    atomAIndex: int32,
+                    atomBIndex: int32,
+                    type: DataTable.typedColumn(Int8Array)
+                };
             })(Tables = Structure.Tables || (Structure.Tables = {}));
             var Operator = (function () {
                 function Operator(matrix, id, isIdentity) {
@@ -18075,7 +18070,7 @@ var LiteMol;
                 function assemble(model, assemblyParts, transforms) {
                     var residues = model.data.residues, residueChainIndex = residues.chainIndex, residueEntityIndex = residues.entityIndex, residueAtomStartIndex = residues.atomStartIndex, residueAtomEndIndex = residues.atomEndIndex, atoms = model.data.atoms, _a = model.positions, x = _a.x, y = _a.y, z = _a.z;
                     var atomTable = DataTable.builder(assemblyParts.atomCount), atomId, atomResidue, atomChain, atomEntity, cols = [];
-                    var positionTable = DataTable.builder(assemblyParts.atomCount), atomX = positionTable.addColumn('x', function (size) { return new Float32Array(size); }), atomY = positionTable.addColumn('y', function (size) { return new Float32Array(size); }), atomZ = positionTable.addColumn('z', function (size) { return new Float32Array(size); });
+                    var positionTable = DataTable.ofDefinition(Structure.Tables.Positions, assemblyParts.atomCount), atomX = positionTable.x, atomY = positionTable.y, atomZ = positionTable.z;
                     var entityTableBuilder = model.data.entities.getBuilder(assemblyParts.entityCount), entityTable = entityTableBuilder, srcEntityData = model.data.entities.getRawData(), entityData = entityTable.getRawData(), entityChainStart = entityTable.chainStartIndex, entityChainEnd = entityTable.chainEndIndex, entityResidueStart = entityTable.residueStartIndex, entityResidueEnd = entityTable.residueEndIndex, entityAtomStart = entityTable.atomStartIndex, entityAtomEnd = entityTable.atomEndIndex, entityOffset = 0;
                     var chainTableBuilder = model.data.chains.getBuilder(assemblyParts.chainCount), chainTable = chainTableBuilder, srcChainData = model.data.chains.getRawData(), chainData = chainTable.getRawData(), chainResidueStart = chainTable.residueStartIndex, chainResidueEnd = chainTable.residueEndIndex, chainAtomStart = chainTable.atomStartIndex, chainAtomEnd = chainTable.atomEndIndex, chainId = chainTable.asymId, chainAuthId = chainTable.authAsymId, chainEntity = chainTable.entityIndex, chainSourceChainIndex = chainTableBuilder.addColumn('sourceChainIndex', function (s) { return new Int32Array(s); }), chainOperatorIndex = chainTableBuilder.addColumn('operatorIndex', function (s) { return new Int32Array(s); }), chainOffset = 0;
                     var residueTableBuilder = model.data.residues.getBuilder(assemblyParts.residues.length), residueTable = residueTableBuilder, srcResidueData = model.data.residues.getRawData(), residueData = residueTable.getRawData(), residueAtomStart = residueTable.atomStartIndex, residueAtomEnd = residueTable.atomEndIndex, residueAsymId = residueTable.asymId, residueAuthAsymId = residueTable.authAsymId, residueChain = residueTable.chainIndex, residueEntity = residueTable.entityIndex;
@@ -18209,7 +18204,7 @@ var LiteMol;
                     // finalize chain
                     chainResidueEnd[chainOffset] = assemblyResidueParts.length;
                     chainAtomEnd[chainOffset] = atomOffset;
-                    var finalAtoms = atomTable.seal(), finalPositions = positionTable.seal(), finalResidues = residueTableBuilder.seal(), finalChains = chainTableBuilder.seal(), finalEntities = entityTableBuilder.seal();
+                    var finalAtoms = atomTable.seal(), finalResidues = residueTableBuilder.seal(), finalChains = chainTableBuilder.seal(), finalEntities = entityTableBuilder.seal();
                     var ss = buildSS(model, assemblyParts, finalResidues);
                     return Structure.Molecule.Model.create({
                         id: model.id,
@@ -18224,7 +18219,7 @@ var LiteMol;
                             },
                             secondaryStructure: ss,
                         },
-                        positions: finalPositions,
+                        positions: positionTable,
                         parent: model,
                         source: Structure.Molecule.Model.Source.Computed,
                         operators: transforms.map(function (t) { return new Structure.Operator(t.transform, t.id, t.isIdentity); })
