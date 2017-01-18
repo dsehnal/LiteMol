@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
 
 namespace LiteMol.Core.Structure {
@@ -900,7 +900,7 @@ namespace LiteMol.Core.Structure {
             state.transformsOffset += state.transforms.length;
             state.transforms.push(...transforms);
 
-            let asymIds = new Set<string>();
+            let asymIds = Utils.FastSet.create();
             entry.asymIds.forEach(id => asymIds.add(id));
 
             let residueAsymIds = model.data.residues.asymId;

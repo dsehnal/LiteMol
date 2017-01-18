@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
 
 namespace LiteMol.Core.Structure {
@@ -141,7 +141,7 @@ namespace LiteMol.Core.Structure {
                 export function ofIndices(structure: Molecule.Model, atomIndices: number[]): Mask {
                     let f = atomIndices.length / structure.data.atoms.count;
                     if (f < 0.25) {
-                        let set = new Set<number>();
+                        let set = Utils.FastSet.create();
                         for (let i of atomIndices) set.add(i);
                         return set;
                     }
@@ -164,7 +164,7 @@ namespace LiteMol.Core.Structure {
                     
                     if (sizeEstimate / count < 0.25) {
                         // create set;
-                        let mask = new Set<number>();
+                        let mask = Utils.FastSet.create();
                         for (let f of seq.fragments) {
                             for (let i of f.atomIndices) {
                                 mask.add(i);
@@ -312,9 +312,9 @@ namespace LiteMol.Core.Structure {
             private computeIndices() {
                 if (this._residueIndices) return;
 
-                let residueIndices = new Set<number>(),
-                    chainIndices = new Set<number>(),
-                    entityIndices = new Set<number>(),
+                let residueIndices = Utils.FastSet.create<number>(),
+                    chainIndices = Utils.FastSet.create<number>(),
+                    entityIndices = Utils.FastSet.create<number>(),
                     rIndices = this.context.structure.data.atoms.residueIndex,
                     cIndices = this.context.structure.data.residues.chainIndex,
                     eIndices = this.context.structure.data.chains.entityIndex;
@@ -370,10 +370,10 @@ namespace LiteMol.Core.Structure {
              * Create a fragment from an integer set.
              * Assumes the set is in the given context's mask.
              */
-            static ofSet(context: Context, atomIndices: Set<number>) {
+            static ofSet(context: Context, atomIndices: Utils.FastSet<number>) {
                 let array = new Int32Array(atomIndices.size);
 
-                atomIndices.forEach(function (this: any, i: number) { this.array[this.index++] = i }, { array, index: 0 });
+                atomIndices.forEach((i, ctx) => { ctx!.array[ctx!.index++] = i }, { array, index: 0 });
                 Array.prototype.sort.call(array, function (a: number, b: number) { return a - b; });
 
                 return new Fragment(context, array[0], <any>array);
@@ -512,7 +512,7 @@ namespace LiteMol.Core.Structure {
         export class HashFragmentSeqBuilder {
 
             private fragments: Fragment[] = [];
-            private byHash = new Map<number, Fragment[]>();
+            private byHash = Utils.FastMap.create<number, Fragment[]>();
             
             add(f: Fragment) {
 

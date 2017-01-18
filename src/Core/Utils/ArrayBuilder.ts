@@ -1,13 +1,13 @@
 ﻿/*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
 
 namespace LiteMol.Core.Utils {
     "use strict";
 
-    export function integerSetToSortedTypedArray(set: Set<number>) {
+    export function integerSetToSortedTypedArray(set: FastSet<number>) {
         let array = new Int32Array(set.size);
-        set.forEach(function (this: any, v: number) { this.array[this.index++] = v; }, { array, index: 0 });
+        set.forEach((v, ctx) => { ctx!.array[ctx!.index++] = v; }, { array, index: 0 });
         Array.prototype.sort.call(array, function (x: number, y: number) { return x - y; });
         return <number[]><any>array;
     }

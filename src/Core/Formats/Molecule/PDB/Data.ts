@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
 
 namespace LiteMol.Core.Formats.Molecule.PDB {
@@ -7,7 +7,7 @@ namespace LiteMol.Core.Formats.Molecule.PDB {
 
     export type TokenRange = { start: number; end: number };
 
-    export type HelperData = { dot: TokenRange; question: TokenRange; numberTokens: Map<number, TokenRange>; data: string };
+    export type HelperData = { dot: TokenRange; question: TokenRange; numberTokens: Utils.FastMap<number, TokenRange>; data: string };
 
     export class MoleculeData {
 
@@ -40,7 +40,7 @@ namespace LiteMol.Core.Formats.Molecule.PDB {
 
         toCifFile(): CIF.File {
 
-            let helpers = {
+            let helpers: HelperData = {
                 dot: Parser.getDotRange(this.data.length),
                 question: Parser.getQuestionmarkRange(this.data.length),
                 numberTokens: Parser.getNumberRanges(this.data.length),

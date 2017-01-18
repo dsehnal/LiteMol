@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
 
 namespace LiteMol.Core.Structure.Query {
@@ -159,7 +159,7 @@ namespace LiteMol.Core.Structure.Query {
         export function compileAtoms(elements: string[] | number[], sel: (model: Structure.Molecule.Model) => string[] | number[]) {
             return (ctx: Context) => {
 
-                let set = new Set<any>(elements),
+                let set = Utils.FastSet.of(elements),
                     data = sel(ctx.structure),
                     fragments = new FragmentSeqBuilder(ctx);
 
@@ -200,7 +200,7 @@ namespace LiteMol.Core.Structure.Query {
                     fragments = new FragmentSeqBuilder(ctx);
 
                 if (complement) {
-                    let exclude = new Set(indices);
+                    let exclude = Utils.FastSet.of(indices);
                     let count = table.count;
                     for (let i = 0; i < count; i++) {
                         if (exclude.has(i)) continue;
@@ -479,7 +479,7 @@ namespace LiteMol.Core.Structure.Query {
             let _what = Builder.toQuery(what);
             return (ctx: Context) => {
                 let src = _what(ctx).fragments,
-                    indices = new Set<number>(),
+                    indices = Utils.FastSet.create(),
                     j = 0, atoms: number[];
 
                 for (let i = 0; i < src.length; i++) {
@@ -502,7 +502,7 @@ namespace LiteMol.Core.Structure.Query {
                     indices: number[] = [],
                     indexCount = 0;
 
-                const allowedNames = new Set<string>(names);
+                const allowedNames = Utils.FastSet.of(names);
 
                 if (complement) {
                     for (let ei = 0; ei < structure.data.entities.count; ei++) {
@@ -543,12 +543,10 @@ namespace LiteMol.Core.Structure.Query {
                     { x, y, z } = ctx.structure.positions,
                     residueIndex = ctx.structure.data.atoms.residueIndex,
                     atomStart = ctx.structure.data.residues.atomStartIndex, atomEnd = ctx.structure.data.residues.atomEndIndex, 
-                    residues = new Set<number>(),
                     treeData = tree.data;
                 
                 for (let f of src.fragments) {
-
-                    residues.clear();
+                    let residues = Utils.FastSet.create<number>();
                     for (let i of f.atomIndices) {
                         residues.add(residueIndex[i]);
                         radiusCtx.nearest(x[i], y[i], z[i], radius);
@@ -559,14 +557,14 @@ namespace LiteMol.Core.Structure.Query {
                     }
                     
                     let atomCount = { count: 0, start: atomStart, end: atomEnd };
-                    residues.forEach(function (this: typeof atomCount, r: number) { this.count += this.end[r] - this.start[r]; }, atomCount);
+                    residues.forEach((r, ctx) => { ctx!.count += ctx!.end[r] - ctx!.start[r]; }, atomCount);
 
                     let indices = new Int32Array(atomCount.count),
                         atomIndices = { indices, offset: 0, start: atomStart, end: atomEnd };
 
-                    residues.forEach(function (this: typeof atomIndices, r: number) {
-                        for (let i = this.start[r], _l = this.end[r]; i < _l; i++) {
-                            this.indices[this.offset++] = i;
+                    residues.forEach((r, ctx) => {
+                        for (let i = ctx!.start[r], _l = ctx!.end[r]; i < _l; i++) {
+                            ctx!.indices[ctx!.offset++] = i;
                         }
                     }, atomIndices);
                     Array.prototype.sort.call(indices, function (a: number, b: number) { return a - b; });
@@ -585,25 +583,24 @@ namespace LiteMol.Core.Structure.Query {
                 let src = _where(ctx),
                     ret = new HashFragmentSeqBuilder(ctx),
                     residueIndex = ctx.structure.data.atoms.residueIndex,
-                    atomStart = ctx.structure.data.residues.atomStartIndex, atomEnd = ctx.structure.data.residues.atomEndIndex,
-                    residues = new Set<number>();
+                    atomStart = ctx.structure.data.residues.atomStartIndex, atomEnd = ctx.structure.data.residues.atomEndIndex;
 
                 for (let f of src.fragments) {
+                    let residues = Utils.FastSet.create<number>();
 
-                    residues.clear();
                     for (let i of f.atomIndices) {
                         residues.add(residueIndex[i]);
                     }
 
                     let atomCount = { count: 0, start: atomStart, end: atomEnd };
-                    residues.forEach(function (this: typeof atomCount, r: number) { this.count += this.end[r] - this.start[r]; }, atomCount);
+                    residues.forEach((r, ctx) => { ctx!.count += ctx!.end[r] - ctx!.start[r]; }, atomCount);
                     
                     let indices = new Int32Array(atomCount.count),
                         atomIndices = { indices, offset: 0, start: atomStart, end: atomEnd };
 
-                    residues.forEach(function (this: typeof atomIndices, r: number) {
-                        for (let i = this.start[r], _l = this.end[r]; i < _l; i++) {
-                            this.indices[this.offset++] = i;
+                    residues.forEach((r, ctx) => {
+                        for (let i = ctx!.start[r], _l = ctx!.end[r]; i < _l; i++) {
+                            ctx!.indices[ctx!.offset++] = i;
                         }
                     }, atomIndices);
                     Array.prototype.sort.call(indices, function (a: number, b: number) { return a - b; });

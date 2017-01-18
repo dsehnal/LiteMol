@@ -1,12 +1,12 @@
 /*
- * Copyright (c) 2016 David Sehnal, licensed under MIT License, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under MIT License, See LICENSE file for more info.
  */
 var CIFTools;
 (function (CIFTools) {
-    CIFTools.VERSION = { number: "1.1.3", date: "Dec 18 2016" };
+    CIFTools.VERSION = { number: "1.1.4", date: "Jan 18 2017" };
 })(CIFTools || (CIFTools = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under MIT License, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under MIT License, See LICENSE file for more info.
  */
 var CIFTools;
 (function (CIFTools) {
@@ -149,7 +149,7 @@ var CIFTools;
     })(Utils = CIFTools.Utils || (CIFTools.Utils = {}));
 })(CIFTools || (CIFTools = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under MIT License, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under MIT License, See LICENSE file for more info.
  */
 /**
  * Efficient integer and float parsers.
@@ -241,7 +241,7 @@ var CIFTools;
     })(Utils = CIFTools.Utils || (CIFTools.Utils = {}));
 })(CIFTools || (CIFTools = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under MIT License, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under MIT License, See LICENSE file for more info.
  */
 var CIFTools;
 (function (CIFTools) {
@@ -390,7 +390,7 @@ var CIFTools;
     })(Utils = CIFTools.Utils || (CIFTools.Utils = {}));
 })(CIFTools || (CIFTools = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under MIT License, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under MIT License, See LICENSE file for more info.
  */
 var CIFTools;
 (function (CIFTools) {
@@ -456,7 +456,7 @@ var CIFTools;
     })(Category = CIFTools.Category || (CIFTools.Category = {}));
 })(CIFTools || (CIFTools = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under MIT License, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under MIT License, See LICENSE file for more info.
  */
 var CIFTools;
 (function (CIFTools) {
@@ -500,10 +500,10 @@ var CIFTools;
     CIFTools.ParserSuccess = ParserSuccess;
 })(CIFTools || (CIFTools = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under MIT License, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under MIT License, See LICENSE file for more info.
  */
 /*
- * Copyright (c) 2016 David Sehnal, licensed under MIT License, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under MIT License, See LICENSE file for more info.
  */
 /*
     On data representation of molecular files
@@ -549,15 +549,15 @@ var CIFTools;
         "use strict";
         var ShortStringPool;
         (function (ShortStringPool) {
-            function create() { return new Map(); }
+            function create() { return Object.create(null); }
             ShortStringPool.create = create;
             function get(pool, str) {
                 if (str.length > 6)
                     return str;
-                var value = pool.get(str);
+                var value = pool[str];
                 if (value !== void 0)
                     return value;
-                pool.set(str, str);
+                pool[str] = str;
                 return str;
             }
             ShortStringPool.get = get;
@@ -769,7 +769,7 @@ var CIFTools;
     })(Text = CIFTools.Text || (CIFTools.Text = {}));
 })(CIFTools || (CIFTools = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under MIT License, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under MIT License, See LICENSE file for more info.
  */
 var CIFTools;
 (function (CIFTools) {
@@ -1282,7 +1282,7 @@ var CIFTools;
     })(Text = CIFTools.Text || (CIFTools.Text = {}));
 })(CIFTools || (CIFTools = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under MIT License, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under MIT License, See LICENSE file for more info.
  */
 var CIFTools;
 (function (CIFTools) {
@@ -1528,7 +1528,7 @@ var CIFTools;
     })(Text = CIFTools.Text || (CIFTools.Text = {}));
 })(CIFTools || (CIFTools = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under MIT License, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under MIT License, See LICENSE file for more info.
  */
 var CIFTools;
 (function (CIFTools) {
@@ -1536,10 +1536,6 @@ var CIFTools;
     (function (Binary) {
         var MessagePack;
         (function (MessagePack) {
-            /*
-             * Adapted from https://github.com/rcsb/mmtf-javascript
-             * by Alexander Rose <alexander.rose@weirdbyte.de>, MIT License, Copyright (c) 2016
-             */
             /**
              * decode all key-value pairs of a map into an object
              * @param  {Integer} length - number of key-value pairs
@@ -1749,7 +1745,7 @@ var CIFTools;
     })(Binary = CIFTools.Binary || (CIFTools.Binary = {}));
 })(CIFTools || (CIFTools = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under MIT License, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under MIT License, See LICENSE file for more info.
  */
 var CIFTools;
 (function (CIFTools) {
@@ -2043,7 +2039,7 @@ var CIFTools;
     })(Binary = CIFTools.Binary || (CIFTools.Binary = {}));
 })(CIFTools || (CIFTools = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under MIT License, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under MIT License, See LICENSE file for more info.
  */
 var CIFTools;
 (function (CIFTools) {
@@ -2166,7 +2162,7 @@ var CIFTools;
     })(Binary = CIFTools.Binary || (CIFTools.Binary = {}));
 })(CIFTools || (CIFTools = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under MIT License, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under MIT License, See LICENSE file for more info.
  */
 var CIFTools;
 (function (CIFTools) {
@@ -2352,7 +2348,7 @@ var CIFTools;
                 var str = encoding.stringData;
                 var offsets = decode({ encoding: encoding.offsetEncoding, data: encoding.offsets });
                 var indices = decode({ encoding: encoding.dataEncoding, data: data });
-                var cache = new Map();
+                var cache = Object.create(null);
                 var result = new Array(indices.length);
                 var offset = 0;
                 for (var _i = 0, indices_1 = indices; _i < indices_1.length; _i++) {
@@ -2361,10 +2357,10 @@ var CIFTools;
                         result[offset++] = null;
                         continue;
                     }
-                    var v = cache.get(i);
+                    var v = cache[i];
                     if (v === void 0) {
                         v = str.substring(offsets[i], offsets[i + 1]);
-                        cache.set(i, v);
+                        cache[i] = v;
                     }
                     result[offset++] = v;
                 }
@@ -2374,7 +2370,7 @@ var CIFTools;
     })(Binary = CIFTools.Binary || (CIFTools.Binary = {}));
 })(CIFTools || (CIFTools = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under MIT License, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under MIT License, See LICENSE file for more info.
  */
 var CIFTools;
 (function (CIFTools) {
@@ -2538,7 +2534,7 @@ var CIFTools;
     })(Binary = CIFTools.Binary || (CIFTools.Binary = {}));
 })(CIFTools || (CIFTools = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under MIT License, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under MIT License, See LICENSE file for more info.
  */
 var CIFTools;
 (function (CIFTools) {
@@ -2581,6 +2577,7 @@ var CIFTools;
             return Encoder;
         }());
         Binary.Encoder = Encoder;
+        var Encoder;
         (function (Encoder) {
             function by(f) {
                 return new Encoder([f]);
@@ -2605,7 +2602,8 @@ var CIFTools;
                 _a[6 /* Uint32 */] = function (v, i, a) { v.setUint32(4 * i, a, true); },
                 _a[32 /* Float32 */] = function (v, i, a) { v.setFloat32(4 * i, a, true); },
                 _a[33 /* Float64 */] = function (v, i, a) { v.setFloat64(8 * i, a, true); },
-                _a);
+                _a
+            );
             var byteSizes = (_b = {},
                 _b[2 /* Int16 */] = 2,
                 _b[5 /* Uint16 */] = 2,
@@ -2613,7 +2611,8 @@ var CIFTools;
                 _b[6 /* Uint32 */] = 4,
                 _b[32 /* Float32 */] = 4,
                 _b[33 /* Float64 */] = 8,
-                _b);
+                _b
+            );
             function byteArray(data) {
                 var type = Binary.Encoding.getDataType(data);
                 if (type === 1 /* Int8 */)
@@ -2863,7 +2862,7 @@ var CIFTools;
             }
             Encoder.integerPacking = integerPacking;
             function stringArray(data) {
-                var map = new Map();
+                var map = Object.create(null);
                 var strings = [];
                 var accLength = 0;
                 var offsets = CIFTools.Utils.ChunkedArray.create(function (s) { return new Int32Array(s); }, 1024, 1);
@@ -2877,14 +2876,14 @@ var CIFTools;
                         output[i++] = -1;
                         continue;
                     }
-                    var index = map.get(s);
+                    var index = map[s];
                     if (index === void 0) {
                         // increment the length
                         accLength += s.length;
                         // store the string and index                   
                         index = strings.length;
                         strings[index] = s;
-                        map.set(s, index);
+                        map[s] = index;
                         // write the offset
                         CIFTools.Utils.ChunkedArray.add(offsets, accLength);
                     }
@@ -2903,7 +2902,7 @@ var CIFTools;
     })(Binary = CIFTools.Binary || (CIFTools.Binary = {}));
 })(CIFTools || (CIFTools = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under MIT License, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under MIT License, See LICENSE file for more info.
  */
 var CIFTools;
 (function (CIFTools) {
@@ -2944,7 +2943,7 @@ var CIFTools;
     })(Binary = CIFTools.Binary || (CIFTools.Binary = {}));
 })(CIFTools || (CIFTools = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under MIT License, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under MIT License, See LICENSE file for more info.
  */
 var CIFTools;
 (function (CIFTools) {
@@ -2977,7 +2976,7 @@ var CIFTools;
     })(Binary = CIFTools.Binary || (CIFTools.Binary = {}));
 })(CIFTools || (CIFTools = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under MIT License, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under MIT License, See LICENSE file for more info.
  */
 var CIFTools;
 (function (CIFTools) {

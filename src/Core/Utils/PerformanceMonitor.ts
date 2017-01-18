@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
 
 namespace LiteMol.Core.Utils {
@@ -25,8 +25,8 @@ namespace LiteMol.Core.Utils {
 
     export class PerformanceMonitor {
 
-        private starts = new Map<string, number>();
-        private ends = new Map<string, number>();
+        private starts = Utils.FastMap.create<string, number>();
+        private ends = Utils.FastMap.create<string, number>();
 
         static currentTime() {
             return PerformanceHelper.perfGetTime();

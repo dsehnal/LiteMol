@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
 
 namespace LiteMol.Core.Formats.Molecule.mmCIF {
@@ -85,7 +85,7 @@ namespace LiteMol.Core.Formats.Molecule.mmCIF {
     type AtomSiteColumns = { get(name: AtomSiteColumnNames): CIF.Column }
 
     function getAtomSiteColumns(category: CIF.Category): AtomSiteColumns {   
-        let ret = new Map<string, CIF.Column>();
+        let ret = Utils.FastMap.create<string, CIF.Column>();
         for (let c of AtomSiteColumns) {
             ret.set(c, category.getColumn(c));
         }
@@ -516,8 +516,8 @@ namespace LiteMol.Core.Formats.Molecule.mmCIF {
             asymId = residues.asymId, seqNumber = residues.seqNumber, insCode = residues.insCode,
             currentElement: Structure.SecondaryStructureElement | undefined = void 0,
             key = '',
-            starts = new Map<string, Structure.SecondaryStructureElement>(),
-            ends = new Map<string, Structure.SecondaryStructureElement>();
+            starts = Utils.FastMap.create<string, Structure.SecondaryStructureElement>(),
+            ends = Utils.FastMap.create<string, Structure.SecondaryStructureElement>();
 
         for (let e of elements) {
             key = e.startResidueId.asymId + ' ' + e.startResidueId.seqNumber;
@@ -739,7 +739,7 @@ namespace LiteMol.Core.Formats.Molecule.mmCIF {
         let i: number,
             opers: { [id: string]: Structure.AssemblyOperator } = {},
             gens: Structure.AssemblyGen[] = [],
-            genMap = new Map<string, Structure.AssemblyGen>();
+            genMap = Utils.FastMap.create<string, Structure.AssemblyGen>();
 
         let assembly_id = _gen.getColumn('assembly_id');
         let oper_expression = _gen.getColumn('oper_expression');

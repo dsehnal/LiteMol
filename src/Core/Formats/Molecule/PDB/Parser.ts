@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
 
 namespace LiteMol.Core.Formats.Molecule.PDB {
@@ -318,8 +318,8 @@ namespace LiteMol.Core.Formats.Molecule.PDB {
             return { start: length - 6, end: length - 5 };
         }
 
-        static getNumberRanges(length: number): Map<number, TokenRange> {
-            let ret = new Map<number, TokenRange>();
+        static getNumberRanges(length: number): Utils.FastMap<number, TokenRange> {
+            let ret = Utils.FastMap.create<number, TokenRange>();
             for (let i = 0; i < 4; i++) {
                 ret.set(i, { start: length - 4 + i, end: length - 3 + i });
             }

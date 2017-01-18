@@ -510,7 +510,7 @@ declare namespace CIFTools.Binary {
     }
 }
 declare namespace CIFTools.Binary {
-    const VERSION = "0.3.0";
+    const VERSION: string;
     type Encoding = Encoding.ByteArray | Encoding.FixedPoint | Encoding.RunLength | Encoding.Delta | Encoding.IntervalQuantization | Encoding.IntegerPacking | Encoding.StringArray;
     interface EncodedFile {
         version: string;
@@ -1564,6 +1564,30 @@ declare namespace LiteMol.Core {
     }
 }
 declare namespace LiteMol.Core.Utils {
+    interface FastMap<K extends string | number, V> {
+        readonly size: number;
+        set(key: K, v: V): void;
+        get(key: K): V;
+        delete(key: K): boolean;
+        has(key: K): boolean;
+        forEach<Context>(f: (key: K, v: number, ctx?: Context) => void, ctx?: Context): void;
+    }
+    interface FastSet<T extends string | number> {
+        readonly size: number;
+        add(key: T): boolean;
+        delete(key: T): boolean;
+        has(key: T): boolean;
+        forEach<Context>(f: (key: T, ctx?: Context) => void, ctx?: Context): void;
+    }
+    namespace FastMap {
+        function create<K extends string | number, V>(): FastMap<K, V>;
+    }
+    namespace FastSet {
+        function create<T extends string | number>(): FastSet<T>;
+        function of(xs: (string | number)[]): FastSet<string | number>;
+    }
+}
+declare namespace LiteMol.Core.Utils {
     export import FastNumberParsers = Core.Formats.CIF.Utils.FastNumberParsers;
     function extend<S, T, U>(object: S, source: T, guard?: U): S & T & U;
     function debounce<T>(func: () => T, wait: number): () => T;
@@ -1614,7 +1638,7 @@ declare namespace LiteMol.Core.Utils {
     }
 }
 declare namespace LiteMol.Core.Utils {
-    function integerSetToSortedTypedArray(set: Set<number>): number[];
+    function integerSetToSortedTypedArray(set: FastSet<number>): number[];
     /**
      * A a JS native array with the given size.
      */
@@ -1742,7 +1766,9 @@ declare namespace LiteMol.Core.Formats {
     /**
      * This ensures there is only 1 instance of a short string.
      */
-    type ShortStringPool = Map<string, string>;
+    type ShortStringPool = {
+        [key: string]: string;
+    };
     namespace ShortStringPool {
         function create(): ShortStringPool;
         function get(pool: ShortStringPool, str: string): string;
@@ -1759,7 +1785,7 @@ declare namespace LiteMol.Core.Formats.Molecule.PDB {
     type HelperData = {
         dot: TokenRange;
         question: TokenRange;
-        numberTokens: Map<number, TokenRange>;
+        numberTokens: Utils.FastMap<number, TokenRange>;
         data: string;
     };
     class MoleculeData {
@@ -1816,7 +1842,7 @@ declare namespace LiteMol.Core.Formats.Molecule.PDB {
         private static tokenizeAtom(tokens, tokenizer);
         private static tokenize(id, data);
         static getDotRange(length: number): TokenRange;
-        static getNumberRanges(length: number): Map<number, TokenRange>;
+        static getNumberRanges(length: number): Utils.FastMap<number, TokenRange>;
         static getQuestionmarkRange(length: number): TokenRange;
         static parse(id: string, data: string): ParserResult<CIF.File>;
     }
@@ -2287,12 +2313,12 @@ declare namespace LiteMol.Core.Structure {
     }
     class ComponentBondInfoEntry {
         id: string;
-        map: Map<string, Map<string, Bond.Type>>;
+        map: Utils.FastMap<string, Utils.FastMap<string, Bond.Type>>;
         add(a: string, b: string, order: Bond.Type, swap?: boolean): void;
         constructor(id: string);
     }
     class ComponentBondInfo {
-        entries: Map<string, ComponentBondInfoEntry>;
+        entries: Utils.FastMap<string, ComponentBondInfoEntry>;
         newEntry(id: string): ComponentBondInfoEntry;
     }
     /**
@@ -2614,7 +2640,7 @@ declare namespace LiteMol.Core.Structure {
              * Create a fragment from an integer set.
              * Assumes the set is in the given context's mask.
              */
-            static ofSet(context: Context, atomIndices: Set<number>): Fragment;
+            static ofSet(context: Context, atomIndices: Utils.FastSet<number>): Fragment;
             /**
              * Create a fragment from an integer array.
              * Assumes the set is in the given context's mask.

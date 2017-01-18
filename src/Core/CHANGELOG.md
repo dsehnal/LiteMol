@@ -1,4 +1,16 @@
-﻿# 2.5.1
+﻿# 3.0.0
+* Updated Molecule representation.
+  - Changed namespaces for MoleculeModel to Molecule.Model
+  - Molecule.Model:
+    - atoms/residues/chains/... are now accessed as data.atoms/...
+    - positions are now a separate table and no longer part of atoms. 
+    - these changes are to enable better data sharing between different models of the same molecule
+  - Core.Structure.DataTable is now Core.Utils.DataTable and the API has been updated
+* Added Core.Utils.FastMap/FastSet
+  - This replaces most ES6 map usage in LiteMol.
+
+
+# 2.5.1
 * Updated molecular surface vertex annotation code.
 
 # 2.5.0

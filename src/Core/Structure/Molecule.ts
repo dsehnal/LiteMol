@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
 
 namespace LiteMol.Core.Structure {
@@ -105,7 +105,7 @@ namespace LiteMol.Core.Structure {
 
     export class ComponentBondInfoEntry {
 
-        map: Map<string, Map<string, Bond.Type>> = new Map<string, Map<string, Bond.Type>>();
+        map: Utils.FastMap<string, Utils.FastMap<string, Bond.Type>> = Utils.FastMap.create<string, Utils.FastMap<string, Bond.Type>>();
 
         add(a: string, b: string, order: Bond.Type, swap = true) {
 
@@ -116,7 +116,7 @@ namespace LiteMol.Core.Structure {
                     e.set(b, order);
                 }
             } else {
-                let map = new Map<string, Bond.Type>();
+                let map = Utils.FastMap.create<string, Bond.Type>();
                 map.set(b, order);
                 this.map.set(a, map);
             }
@@ -129,7 +129,7 @@ namespace LiteMol.Core.Structure {
     }
 
     export class ComponentBondInfo {
-        entries: Map<string, ComponentBondInfoEntry> = new Map<string, ComponentBondInfoEntry>();
+        entries: Utils.FastMap<string, ComponentBondInfoEntry> = Utils.FastMap.create<string, ComponentBondInfoEntry>();
 
         newEntry(id: string) {
             let e = new ComponentBondInfoEntry(id);

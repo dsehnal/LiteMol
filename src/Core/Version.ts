@@ -1,7 +1,7 @@
 ﻿/*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
 
 namespace LiteMol.Core {
-    export var VERSION = { number: "2.5.1", date: "Dec 21 2016" };
+    export var VERSION = { number: "3.0.0", date: "Jan 18 2017" };
 } 

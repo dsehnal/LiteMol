@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
 
 namespace LiteMol.Visualization.Molecule.Cartoons.Geometry {
@@ -435,7 +435,6 @@ namespace LiteMol.Visualization.Molecule.Cartoons.Geometry {
         private tempA = new THREE.Vector3();
         private tempB = new THREE.Vector3();
         private tempC = new THREE.Vector3();
-
 
         controlPoints: number[] = <any>new Float32Array(0);
         torsionVectors: number[] = <any>new Float32Array(0);

@@ -1041,14 +1041,14 @@ if (typeof window !== 'undefined' && window && window.Promise) {
 
 
 /*
- * Copyright (c) 2016 David Sehnal, licensed under MIT License, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under MIT License, See LICENSE file for more info.
  */
 var CIFTools;
 (function (CIFTools) {
-    CIFTools.VERSION = { number: "1.1.3", date: "Dec 18 2016" };
+    CIFTools.VERSION = { number: "1.1.4", date: "Jan 18 2017" };
 })(CIFTools || (CIFTools = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under MIT License, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under MIT License, See LICENSE file for more info.
  */
 var CIFTools;
 (function (CIFTools) {
@@ -1191,7 +1191,7 @@ var CIFTools;
     })(Utils = CIFTools.Utils || (CIFTools.Utils = {}));
 })(CIFTools || (CIFTools = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under MIT License, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under MIT License, See LICENSE file for more info.
  */
 /**
  * Efficient integer and float parsers.
@@ -1283,7 +1283,7 @@ var CIFTools;
     })(Utils = CIFTools.Utils || (CIFTools.Utils = {}));
 })(CIFTools || (CIFTools = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under MIT License, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under MIT License, See LICENSE file for more info.
  */
 var CIFTools;
 (function (CIFTools) {
@@ -1432,7 +1432,7 @@ var CIFTools;
     })(Utils = CIFTools.Utils || (CIFTools.Utils = {}));
 })(CIFTools || (CIFTools = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under MIT License, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under MIT License, See LICENSE file for more info.
  */
 var CIFTools;
 (function (CIFTools) {
@@ -1498,7 +1498,7 @@ var CIFTools;
     })(Category = CIFTools.Category || (CIFTools.Category = {}));
 })(CIFTools || (CIFTools = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under MIT License, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under MIT License, See LICENSE file for more info.
  */
 var CIFTools;
 (function (CIFTools) {
@@ -1542,10 +1542,10 @@ var CIFTools;
     CIFTools.ParserSuccess = ParserSuccess;
 })(CIFTools || (CIFTools = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under MIT License, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under MIT License, See LICENSE file for more info.
  */
 /*
- * Copyright (c) 2016 David Sehnal, licensed under MIT License, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under MIT License, See LICENSE file for more info.
  */
 /*
     On data representation of molecular files
@@ -1591,15 +1591,15 @@ var CIFTools;
         "use strict";
         var ShortStringPool;
         (function (ShortStringPool) {
-            function create() { return new Map(); }
+            function create() { return Object.create(null); }
             ShortStringPool.create = create;
             function get(pool, str) {
                 if (str.length > 6)
                     return str;
-                var value = pool.get(str);
+                var value = pool[str];
                 if (value !== void 0)
                     return value;
-                pool.set(str, str);
+                pool[str] = str;
                 return str;
             }
             ShortStringPool.get = get;
@@ -1811,7 +1811,7 @@ var CIFTools;
     })(Text = CIFTools.Text || (CIFTools.Text = {}));
 })(CIFTools || (CIFTools = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under MIT License, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under MIT License, See LICENSE file for more info.
  */
 var CIFTools;
 (function (CIFTools) {
@@ -2324,7 +2324,7 @@ var CIFTools;
     })(Text = CIFTools.Text || (CIFTools.Text = {}));
 })(CIFTools || (CIFTools = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under MIT License, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under MIT License, See LICENSE file for more info.
  */
 var CIFTools;
 (function (CIFTools) {
@@ -2570,7 +2570,7 @@ var CIFTools;
     })(Text = CIFTools.Text || (CIFTools.Text = {}));
 })(CIFTools || (CIFTools = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under MIT License, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under MIT License, See LICENSE file for more info.
  */
 var CIFTools;
 (function (CIFTools) {
@@ -2578,10 +2578,6 @@ var CIFTools;
     (function (Binary) {
         var MessagePack;
         (function (MessagePack) {
-            /*
-             * Adapted from https://github.com/rcsb/mmtf-javascript
-             * by Alexander Rose <alexander.rose@weirdbyte.de>, MIT License, Copyright (c) 2016
-             */
             /**
              * decode all key-value pairs of a map into an object
              * @param  {Integer} length - number of key-value pairs
@@ -2791,7 +2787,7 @@ var CIFTools;
     })(Binary = CIFTools.Binary || (CIFTools.Binary = {}));
 })(CIFTools || (CIFTools = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under MIT License, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under MIT License, See LICENSE file for more info.
  */
 var CIFTools;
 (function (CIFTools) {
@@ -3085,7 +3081,7 @@ var CIFTools;
     })(Binary = CIFTools.Binary || (CIFTools.Binary = {}));
 })(CIFTools || (CIFTools = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under MIT License, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under MIT License, See LICENSE file for more info.
  */
 var CIFTools;
 (function (CIFTools) {
@@ -3208,7 +3204,7 @@ var CIFTools;
     })(Binary = CIFTools.Binary || (CIFTools.Binary = {}));
 })(CIFTools || (CIFTools = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under MIT License, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under MIT License, See LICENSE file for more info.
  */
 var CIFTools;
 (function (CIFTools) {
@@ -3394,7 +3390,7 @@ var CIFTools;
                 var str = encoding.stringData;
                 var offsets = decode({ encoding: encoding.offsetEncoding, data: encoding.offsets });
                 var indices = decode({ encoding: encoding.dataEncoding, data: data });
-                var cache = new Map();
+                var cache = Object.create(null);
                 var result = new Array(indices.length);
                 var offset = 0;
                 for (var _i = 0, indices_1 = indices; _i < indices_1.length; _i++) {
@@ -3403,10 +3399,10 @@ var CIFTools;
                         result[offset++] = null;
                         continue;
                     }
-                    var v = cache.get(i);
+                    var v = cache[i];
                     if (v === void 0) {
                         v = str.substring(offsets[i], offsets[i + 1]);
-                        cache.set(i, v);
+                        cache[i] = v;
                     }
                     result[offset++] = v;
                 }
@@ -3416,7 +3412,7 @@ var CIFTools;
     })(Binary = CIFTools.Binary || (CIFTools.Binary = {}));
 })(CIFTools || (CIFTools = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under MIT License, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under MIT License, See LICENSE file for more info.
  */
 var CIFTools;
 (function (CIFTools) {
@@ -3580,7 +3576,7 @@ var CIFTools;
     })(Binary = CIFTools.Binary || (CIFTools.Binary = {}));
 })(CIFTools || (CIFTools = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under MIT License, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under MIT License, See LICENSE file for more info.
  */
 var CIFTools;
 (function (CIFTools) {
@@ -3623,6 +3619,7 @@ var CIFTools;
             return Encoder;
         }());
         Binary.Encoder = Encoder;
+        var Encoder;
         (function (Encoder) {
             function by(f) {
                 return new Encoder([f]);
@@ -3647,7 +3644,8 @@ var CIFTools;
                 _a[6 /* Uint32 */] = function (v, i, a) { v.setUint32(4 * i, a, true); },
                 _a[32 /* Float32 */] = function (v, i, a) { v.setFloat32(4 * i, a, true); },
                 _a[33 /* Float64 */] = function (v, i, a) { v.setFloat64(8 * i, a, true); },
-                _a);
+                _a
+            );
             var byteSizes = (_b = {},
                 _b[2 /* Int16 */] = 2,
                 _b[5 /* Uint16 */] = 2,
@@ -3655,7 +3653,8 @@ var CIFTools;
                 _b[6 /* Uint32 */] = 4,
                 _b[32 /* Float32 */] = 4,
                 _b[33 /* Float64 */] = 8,
-                _b);
+                _b
+            );
             function byteArray(data) {
                 var type = Binary.Encoding.getDataType(data);
                 if (type === 1 /* Int8 */)
@@ -3905,7 +3904,7 @@ var CIFTools;
             }
             Encoder.integerPacking = integerPacking;
             function stringArray(data) {
-                var map = new Map();
+                var map = Object.create(null);
                 var strings = [];
                 var accLength = 0;
                 var offsets = CIFTools.Utils.ChunkedArray.create(function (s) { return new Int32Array(s); }, 1024, 1);
@@ -3919,14 +3918,14 @@ var CIFTools;
                         output[i++] = -1;
                         continue;
                     }
-                    var index = map.get(s);
+                    var index = map[s];
                     if (index === void 0) {
                         // increment the length
                         accLength += s.length;
                         // store the string and index                   
                         index = strings.length;
                         strings[index] = s;
-                        map.set(s, index);
+                        map[s] = index;
                         // write the offset
                         CIFTools.Utils.ChunkedArray.add(offsets, accLength);
                     }
@@ -3945,7 +3944,7 @@ var CIFTools;
     })(Binary = CIFTools.Binary || (CIFTools.Binary = {}));
 })(CIFTools || (CIFTools = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under MIT License, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under MIT License, See LICENSE file for more info.
  */
 var CIFTools;
 (function (CIFTools) {
@@ -3986,7 +3985,7 @@ var CIFTools;
     })(Binary = CIFTools.Binary || (CIFTools.Binary = {}));
 })(CIFTools || (CIFTools = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under MIT License, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under MIT License, See LICENSE file for more info.
  */
 var CIFTools;
 (function (CIFTools) {
@@ -4019,7 +4018,7 @@ var CIFTools;
     })(Binary = CIFTools.Binary || (CIFTools.Binary = {}));
 })(CIFTools || (CIFTools = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under MIT License, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under MIT License, See LICENSE file for more info.
  */
 var CIFTools;
 (function (CIFTools) {
@@ -11253,7 +11252,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 /*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
 var LiteMol;
 (function (LiteMol) {
@@ -11272,17 +11271,17 @@ var LiteMol;
     })(Core = LiteMol.Core || (LiteMol.Core = {}));
 })(LiteMol || (LiteMol = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
 var LiteMol;
 (function (LiteMol) {
     var Core;
     (function (Core) {
-        Core.VERSION = { number: "2.5.1", date: "Dec 21 2016" };
+        Core.VERSION = { number: "3.0.0", date: "Jan 18 2017" };
     })(Core = LiteMol.Core || (LiteMol.Core = {}));
 })(LiteMol || (LiteMol = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
 var LiteMol;
 (function (LiteMol) {
@@ -11434,7 +11433,116 @@ var LiteMol;
     })(Core = LiteMol.Core || (LiteMol.Core = {}));
 })(LiteMol || (LiteMol = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ */
+var LiteMol;
+(function (LiteMol) {
+    var Core;
+    (function (Core) {
+        var Utils;
+        (function (Utils) {
+            "use strict";
+            var FastMap;
+            (function (FastMap) {
+                function forEach(map, f, ctx) {
+                    var hasOwn = Object.prototype.hasOwnProperty;
+                    for (var _i = 0, _a = Object.keys(map); _i < _a.length; _i++) {
+                        var p = _a[_i];
+                        if (!hasOwn.call(map, p))
+                            continue;
+                        var v = map[p];
+                        if (v === void 0)
+                            continue;
+                        f(p, v, ctx);
+                    }
+                }
+                var __proto = {
+                    set: function (key, v) {
+                        if (this.data[key] === void 0 && v !== void 0) {
+                            this.size++;
+                        }
+                        this.data[key] = v;
+                    },
+                    get: function (key) {
+                        return this.data[key];
+                    },
+                    delete: function (key) {
+                        if (this.data[key] === void 0)
+                            return false;
+                        this.data[key] = void 0;
+                        this.size--;
+                        return true;
+                    },
+                    has: function (key) {
+                        return this.data[key] !== void 0;
+                    },
+                    forEach: function (f, ctx) {
+                        forEach(this.data, f, ctx !== void 0 ? ctx : void 0);
+                    }
+                };
+                function create() {
+                    var ret = Object.create(__proto);
+                    ret.data = Object.create(null);
+                    ret.size = 0;
+                    return ret;
+                }
+                FastMap.create = create;
+            })(FastMap = Utils.FastMap || (Utils.FastMap = {}));
+            var FastSet;
+            (function (FastSet) {
+                function forEach(map, f, ctx) {
+                    var hasOwn = Object.prototype.hasOwnProperty;
+                    for (var _i = 0, _a = Object.keys(map); _i < _a.length; _i++) {
+                        var p = _a[_i];
+                        if (!hasOwn.call(map, p) || map[p] !== null)
+                            continue;
+                        f(p, ctx);
+                    }
+                }
+                var __proto = {
+                    add: function (key) {
+                        if (this.data[key] === null)
+                            return false;
+                        this.data[key] = null;
+                        this.size++;
+                        return true;
+                    },
+                    delete: function (key) {
+                        if (this.data[key] !== null)
+                            return false;
+                        this.data[key] = void 0;
+                        this.size--;
+                        return true;
+                    },
+                    has: function (key) {
+                        return this.data[key] === null;
+                    },
+                    forEach: function (f, ctx) {
+                        forEach(this.data, f, ctx !== void 0 ? ctx : void 0);
+                    }
+                };
+                function create() {
+                    var ret = Object.create(__proto);
+                    ret.data = Object.create(null);
+                    ret.size = 0;
+                    return ret;
+                }
+                FastSet.create = create;
+                function of(xs) {
+                    var ret = create();
+                    for (var _i = 0, xs_1 = xs; _i < xs_1.length; _i++) {
+                        var x = xs_1[_i];
+                        ret.add(x);
+                    }
+                    return ret;
+                }
+                FastSet.of = of;
+            })(FastSet = Utils.FastSet || (Utils.FastSet = {}));
+        })(Utils = Core.Utils || (Core.Utils = {}));
+    })(Core = LiteMol.Core || (LiteMol.Core = {}));
+})(LiteMol || (LiteMol = {}));
+/*
+ * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
 var LiteMol;
 (function (LiteMol) {
@@ -11552,7 +11660,7 @@ var LiteMol;
     })(Core = LiteMol.Core || (LiteMol.Core = {}));
 })(LiteMol || (LiteMol = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
 var LiteMol;
 (function (LiteMol) {
@@ -11668,7 +11776,7 @@ var LiteMol;
     })(Core = LiteMol.Core || (LiteMol.Core = {}));
 })(LiteMol || (LiteMol = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
 var LiteMol;
 (function (LiteMol) {
@@ -11679,7 +11787,7 @@ var LiteMol;
             "use strict";
             function integerSetToSortedTypedArray(set) {
                 var array = new Int32Array(set.size);
-                set.forEach(function (v) { this.array[this.index++] = v; }, { array: array, index: 0 });
+                set.forEach(function (v, ctx) { ctx.array[ctx.index++] = v; }, { array: array, index: 0 });
                 Array.prototype.sort.call(array, function (x, y) { return x - y; });
                 return array;
             }
@@ -11905,7 +12013,7 @@ var LiteMol;
     })(Core = LiteMol.Core || (LiteMol.Core = {}));
 })(LiteMol || (LiteMol = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
 var LiteMol;
 (function (LiteMol) {
@@ -11933,8 +12041,8 @@ var LiteMol;
             })(PerformanceHelper || (PerformanceHelper = {}));
             var PerformanceMonitor = (function () {
                 function PerformanceMonitor() {
-                    this.starts = new Map();
-                    this.ends = new Map();
+                    this.starts = Utils.FastMap.create();
+                    this.ends = Utils.FastMap.create();
                 }
                 PerformanceMonitor.currentTime = function () {
                     return PerformanceHelper.perfGetTime();
@@ -11996,7 +12104,7 @@ var LiteMol;
     })(Core = LiteMol.Core || (LiteMol.Core = {}));
 })(LiteMol || (LiteMol = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
 var LiteMol;
 (function (LiteMol) {
@@ -12107,15 +12215,15 @@ var LiteMol;
             })(TokenIndexBuilder = Formats.TokenIndexBuilder || (Formats.TokenIndexBuilder = {}));
             var ShortStringPool;
             (function (ShortStringPool) {
-                function create() { return new Map(); }
+                function create() { return Object.create(null); }
                 ShortStringPool.create = create;
                 function get(pool, str) {
                     if (str.length > 6)
                         return str;
-                    var value = pool.get(str);
+                    var value = pool[str];
                     if (value !== void 0)
                         return value;
-                    pool.set(str, str);
+                    pool[str] = str;
                     return str;
                 }
                 ShortStringPool.get = get;
@@ -12124,7 +12232,7 @@ var LiteMol;
     })(Core = LiteMol.Core || (LiteMol.Core = {}));
 })(LiteMol || (LiteMol = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
 var LiteMol;
 (function (LiteMol) {
@@ -12189,7 +12297,7 @@ var LiteMol;
                         'pdbx_PDB_model_num'
                     ];
                     function getAtomSiteColumns(category) {
-                        var ret = new Map();
+                        var ret = Core.Utils.FastMap.create();
                         for (var _i = 0, AtomSiteColumns_1 = AtomSiteColumns; _i < AtomSiteColumns_1.length; _i++) {
                             var c = AtomSiteColumns_1[_i];
                             ret.set(c, category.getColumn(c));
@@ -12478,7 +12586,7 @@ var LiteMol;
                         return ret;
                     }
                     function updateSSIndicesAndFilterEmpty(elements, structure) {
-                        var residues = structure.residues, count = residues.count, asymId = residues.asymId, seqNumber = residues.seqNumber, insCode = residues.insCode, currentElement = void 0, key = '', starts = new Map(), ends = new Map();
+                        var residues = structure.residues, count = residues.count, asymId = residues.asymId, seqNumber = residues.seqNumber, insCode = residues.insCode, currentElement = void 0, key = '', starts = Core.Utils.FastMap.create(), ends = Core.Utils.FastMap.create();
                         for (var _i = 0, elements_2 = elements; _i < elements_2.length; _i++) {
                             var e = elements_2[_i];
                             key = e.startResidueId.asymId + ' ' + e.startResidueId.seqNumber;
@@ -12656,7 +12764,7 @@ var LiteMol;
                         if (!_info || !_gen || !_opers) {
                             return void 0;
                         }
-                        var i, opers = {}, gens = [], genMap = new Map();
+                        var i, opers = {}, gens = [], genMap = Core.Utils.FastMap.create();
                         var assembly_id = _gen.getColumn('assembly_id');
                         var oper_expression = _gen.getColumn('oper_expression');
                         var asym_id_list = _gen.getColumn('asym_id_list');
@@ -12816,7 +12924,7 @@ var LiteMol;
     })(Core = LiteMol.Core || (LiteMol.Core = {}));
 })(LiteMol || (LiteMol = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
 var LiteMol;
 (function (LiteMol) {
@@ -13139,7 +13247,7 @@ var LiteMol;
     })(Core = LiteMol.Core || (LiteMol.Core = {}));
 })(LiteMol || (LiteMol = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
 var LiteMol;
 (function (LiteMol) {
@@ -13390,7 +13498,7 @@ var LiteMol;
                             return { start: length - 6, end: length - 5 };
                         };
                         Parser.getNumberRanges = function (length) {
-                            var ret = new Map();
+                            var ret = Core.Utils.FastMap.create();
                             for (var i = 0; i < 4; i++) {
                                 ret.set(i, { start: length - 4 + i, end: length - 3 + i });
                             }
@@ -13421,7 +13529,7 @@ var LiteMol;
     })(Core = LiteMol.Core || (LiteMol.Core = {}));
 })(LiteMol || (LiteMol = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
 var LiteMol;
 (function (LiteMol) {
@@ -13576,7 +13684,7 @@ var LiteMol;
     })(Core = LiteMol.Core || (LiteMol.Core = {}));
 })(LiteMol || (LiteMol = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
 var LiteMol;
 (function (LiteMol) {
@@ -13662,7 +13770,7 @@ var LiteMol;
     })(Core = LiteMol.Core || (LiteMol.Core = {}));
 })(LiteMol || (LiteMol = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
 var LiteMol;
 (function (LiteMol) {
@@ -13773,7 +13881,7 @@ var LiteMol;
     })(Core = LiteMol.Core || (LiteMol.Core = {}));
 })(LiteMol || (LiteMol = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
 var LiteMol;
 (function (LiteMol) {
@@ -13987,7 +14095,7 @@ var LiteMol;
     })(Core = LiteMol.Core || (LiteMol.Core = {}));
 })(LiteMol || (LiteMol = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
 var LiteMol;
 (function (LiteMol) {
@@ -14084,7 +14192,7 @@ var LiteMol;
     })(Core = LiteMol.Core || (LiteMol.Core = {}));
 })(LiteMol || (LiteMol = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
 var LiteMol;
 (function (LiteMol) {
@@ -14305,7 +14413,7 @@ var LiteMol;
     })(Core = LiteMol.Core || (LiteMol.Core = {}));
 })(LiteMol || (LiteMol = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
 var LiteMol;
 (function (LiteMol) {
@@ -14339,7 +14447,7 @@ var LiteMol;
     })(Core = LiteMol.Core || (LiteMol.Core = {}));
 })(LiteMol || (LiteMol = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
 var LiteMol;
 (function (LiteMol) {
@@ -14666,7 +14774,7 @@ var LiteMol;
     })(Core = LiteMol.Core || (LiteMol.Core = {}));
 })(LiteMol || (LiteMol = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
 var LiteMol;
 (function (LiteMol) {
@@ -14951,7 +15059,7 @@ var LiteMol;
     })(Core = LiteMol.Core || (LiteMol.Core = {}));
 })(LiteMol || (LiteMol = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
 var LiteMol;
 (function (LiteMol) {
@@ -15166,7 +15274,7 @@ var LiteMol;
     })(Core = LiteMol.Core || (LiteMol.Core = {}));
 })(LiteMol || (LiteMol = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
 var LiteMol;
 (function (LiteMol) {
@@ -15383,7 +15491,7 @@ var LiteMol;
     })(Core = LiteMol.Core || (LiteMol.Core = {}));
 })(LiteMol || (LiteMol = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
 var LiteMol;
 (function (LiteMol) {
@@ -15814,7 +15922,7 @@ var LiteMol;
     })(Core = LiteMol.Core || (LiteMol.Core = {}));
 })(LiteMol || (LiteMol = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
 var LiteMol;
 (function (LiteMol) {
@@ -16084,7 +16192,7 @@ var LiteMol;
     })(Core = LiteMol.Core || (LiteMol.Core = {}));
 })(LiteMol || (LiteMol = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
 var LiteMol;
 (function (LiteMol) {
@@ -16097,7 +16205,7 @@ var LiteMol;
             var ComponentBondInfoEntry = (function () {
                 function ComponentBondInfoEntry(id) {
                     this.id = id;
-                    this.map = new Map();
+                    this.map = Core.Utils.FastMap.create();
                 }
                 ComponentBondInfoEntry.prototype.add = function (a, b, order, swap) {
                     if (swap === void 0) { swap = true; }
@@ -16109,7 +16217,7 @@ var LiteMol;
                         }
                     }
                     else {
-                        var map = new Map();
+                        var map = Core.Utils.FastMap.create();
                         map.set(b, order);
                         this.map.set(a, map);
                     }
@@ -16121,7 +16229,7 @@ var LiteMol;
             Structure.ComponentBondInfoEntry = ComponentBondInfoEntry;
             var ComponentBondInfo = (function () {
                 function ComponentBondInfo() {
-                    this.entries = new Map();
+                    this.entries = Core.Utils.FastMap.create();
                 }
                 ComponentBondInfo.prototype.newEntry = function (id) {
                     var e = new ComponentBondInfoEntry(id);
@@ -16404,7 +16512,7 @@ var LiteMol;
     })(Core = LiteMol.Core || (LiteMol.Core = {}));
 })(LiteMol || (LiteMol = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
 var LiteMol;
 (function (LiteMol) {
@@ -17797,7 +17905,7 @@ var LiteMol;
     })(Core = LiteMol.Core || (LiteMol.Core = {}));
 })(LiteMol || (LiteMol = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
 var LiteMol;
 (function (LiteMol) {
@@ -18403,7 +18511,7 @@ var LiteMol;
                     var transforms = getAssemblyTransforms(model, ops);
                     state.transformsOffset += state.transforms.length;
                     (_a = state.transforms).push.apply(_a, transforms);
-                    var asymIds = new Set();
+                    var asymIds = Core.Utils.FastSet.create();
                     entry.asymIds.forEach(function (id) { return asymIds.add(id); });
                     var residueAsymIds = model.data.residues.asymId;
                     var residueCount = model.data.residues.count;
@@ -18457,7 +18565,7 @@ var LiteMol;
     })(Core = LiteMol.Core || (LiteMol.Core = {}));
 })(LiteMol || (LiteMol = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
 var LiteMol;
 (function (LiteMol) {
@@ -18587,7 +18695,7 @@ var LiteMol;
                         function ofIndices(structure, atomIndices) {
                             var f = atomIndices.length / structure.data.atoms.count;
                             if (f < 0.25) {
-                                var set = new Set();
+                                var set = Core.Utils.FastSet.create();
                                 for (var _i = 0, atomIndices_1 = atomIndices; _i < atomIndices_1.length; _i++) {
                                     var i = atomIndices_1[_i];
                                     set.add(i);
@@ -18611,7 +18719,7 @@ var LiteMol;
                             var count = seq.context.structure.data.atoms.count;
                             if (sizeEstimate / count < 0.25) {
                                 // create set;
-                                var mask = new Set();
+                                var mask = Core.Utils.FastSet.create();
                                 for (var _c = 0, _d = seq.fragments; _c < _d.length; _c++) {
                                     var f = _d[_c];
                                     for (var _e = 0, _f = f.atomIndices; _e < _f.length; _e++) {
@@ -18756,7 +18864,7 @@ var LiteMol;
                     Fragment.prototype.computeIndices = function () {
                         if (this._residueIndices)
                             return;
-                        var residueIndices = new Set(), chainIndices = new Set(), entityIndices = new Set(), rIndices = this.context.structure.data.atoms.residueIndex, cIndices = this.context.structure.data.residues.chainIndex, eIndices = this.context.structure.data.chains.entityIndex;
+                        var residueIndices = Core.Utils.FastSet.create(), chainIndices = Core.Utils.FastSet.create(), entityIndices = Core.Utils.FastSet.create(), rIndices = this.context.structure.data.atoms.residueIndex, cIndices = this.context.structure.data.residues.chainIndex, eIndices = this.context.structure.data.chains.entityIndex;
                         for (var _i = 0, _a = this.atomIndices; _i < _a.length; _i++) {
                             var i = _a[_i];
                             residueIndices.add(rIndices[i]);
@@ -18822,7 +18930,7 @@ var LiteMol;
                      */
                     Fragment.ofSet = function (context, atomIndices) {
                         var array = new Int32Array(atomIndices.size);
-                        atomIndices.forEach(function (i) { this.array[this.index++] = i; }, { array: array, index: 0 });
+                        atomIndices.forEach(function (i, ctx) { ctx.array[ctx.index++] = i; }, { array: array, index: 0 });
                         Array.prototype.sort.call(array, function (a, b) { return a - b; });
                         return new Fragment(context, array[0], array);
                     };
@@ -18946,7 +19054,7 @@ var LiteMol;
                     function HashFragmentSeqBuilder(ctx) {
                         this.ctx = ctx;
                         this.fragments = [];
-                        this.byHash = new Map();
+                        this.byHash = Core.Utils.FastMap.create();
                     }
                     HashFragmentSeqBuilder.prototype.add = function (f) {
                         var hash = f.hashCode;
@@ -18977,7 +19085,7 @@ var LiteMol;
     })(Core = LiteMol.Core || (LiteMol.Core = {}));
 })(LiteMol || (LiteMol = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
 var LiteMol;
 (function (LiteMol) {
@@ -19216,7 +19324,7 @@ var LiteMol;
                     Compiler.compileEverything = compileEverything;
                     function compileAtoms(elements, sel) {
                         return function (ctx) {
-                            var set = new Set(elements), data = sel(ctx.structure), fragments = new Query.FragmentSeqBuilder(ctx);
+                            var set = Core.Utils.FastSet.of(elements), data = sel(ctx.structure), fragments = new Query.FragmentSeqBuilder(ctx);
                             for (var i = 0, _b = data.length; i < _b; i++) {
                                 if (ctx.hasAtom(i) && set.has(data[i]))
                                     fragments.add(Query.Fragment.ofIndex(ctx, i));
@@ -19250,7 +19358,7 @@ var LiteMol;
                         return function (ctx) {
                             var table = tableProvider(ctx.structure), atomStartIndex = table.atomStartIndex, atomEndIndex = table.atomEndIndex, fragments = new Query.FragmentSeqBuilder(ctx);
                             if (complement) {
-                                var exclude = new Set(indices);
+                                var exclude = Core.Utils.FastSet.of(indices);
                                 var count = table.count;
                                 for (var i = 0; i < count; i++) {
                                     if (exclude.has(i))
@@ -19492,7 +19600,7 @@ var LiteMol;
                     function compileUnion(what) {
                         var _what = Builder.toQuery(what);
                         return function (ctx) {
-                            var src = _what(ctx).fragments, indices = new Set(), j = 0, atoms;
+                            var src = _what(ctx).fragments, indices = Core.Utils.FastSet.create(), j = 0, atoms;
                             for (var i = 0; i < src.length; i++) {
                                 atoms = src[i].atomIndices;
                                 for (j = 0; j < atoms.length; j++)
@@ -19507,7 +19615,7 @@ var LiteMol;
                     function compilePolymerNames(names, complement) {
                         return function (ctx) {
                             var structure = ctx.structure, entities = structure.data.entities, atomNames = structure.data.atoms.name, indices = [], indexCount = 0;
-                            var allowedNames = new Set(names);
+                            var allowedNames = Core.Utils.FastSet.of(names);
                             if (complement) {
                                 for (var ei = 0; ei < structure.data.entities.count; ei++) {
                                     if (entities.type[ei] !== 'polymer')
@@ -19539,31 +19647,28 @@ var LiteMol;
                     function compileAmbientResidues(where, radius) {
                         var _where = Builder.toQuery(where);
                         return function (ctx) {
-                            var src = _where(ctx), tree = ctx.tree, radiusCtx = Core.Geometry.SubdivisionTree3D.createContextRadius(tree, radius, false), buffer = radiusCtx.buffer, ret = new Query.HashFragmentSeqBuilder(ctx), _a = ctx.structure.positions, x = _a.x, y = _a.y, z = _a.z, residueIndex = ctx.structure.data.atoms.residueIndex, atomStart = ctx.structure.data.residues.atomStartIndex, atomEnd = ctx.structure.data.residues.atomEndIndex, residues = new Set(), treeData = tree.data;
-                            var _loop_1 = function (f) {
-                                residues.clear();
-                                for (var _i = 0, _a = f.atomIndices; _i < _a.length; _i++) {
-                                    var i = _a[_i];
-                                    residues.add(residueIndex[i]);
+                            var src = _where(ctx), tree = ctx.tree, radiusCtx = Core.Geometry.SubdivisionTree3D.createContextRadius(tree, radius, false), buffer = radiusCtx.buffer, ret = new Query.HashFragmentSeqBuilder(ctx), _a = ctx.structure.positions, x = _a.x, y = _a.y, z = _a.z, residueIndex = ctx.structure.data.atoms.residueIndex, atomStart = ctx.structure.data.residues.atomStartIndex, atomEnd = ctx.structure.data.residues.atomEndIndex, treeData = tree.data;
+                            for (var _i = 0, _c = src.fragments; _i < _c.length; _i++) {
+                                var f = _c[_i];
+                                var residues_1 = Core.Utils.FastSet.create();
+                                for (var _d = 0, _e = f.atomIndices; _d < _e.length; _d++) {
+                                    var i = _e[_d];
+                                    residues_1.add(residueIndex[i]);
                                     radiusCtx.nearest(x[i], y[i], z[i], radius);
                                     for (var j = 0, _l = buffer.count; j < _l; j++) {
-                                        residues.add(residueIndex[treeData[buffer.indices[j]]]);
+                                        residues_1.add(residueIndex[treeData[buffer.indices[j]]]);
                                     }
                                 }
                                 var atomCount = { count: 0, start: atomStart, end: atomEnd };
-                                residues.forEach(function (r) { this.count += this.end[r] - this.start[r]; }, atomCount);
+                                residues_1.forEach(function (r, ctx) { ctx.count += ctx.end[r] - ctx.start[r]; }, atomCount);
                                 var indices = new Int32Array(atomCount.count), atomIndices = { indices: indices, offset: 0, start: atomStart, end: atomEnd };
-                                residues.forEach(function (r) {
-                                    for (var i = this.start[r], _l = this.end[r]; i < _l; i++) {
-                                        this.indices[this.offset++] = i;
+                                residues_1.forEach(function (r, ctx) {
+                                    for (var i = ctx.start[r], _l = ctx.end[r]; i < _l; i++) {
+                                        ctx.indices[ctx.offset++] = i;
                                     }
                                 }, atomIndices);
                                 Array.prototype.sort.call(indices, function (a, b) { return a - b; });
                                 ret.add(Query.Fragment.ofArray(ctx, indices[0], indices));
-                            };
-                            for (var _i = 0, _c = src.fragments; _i < _c.length; _i++) {
-                                var f = _c[_i];
-                                _loop_1(f);
                             }
                             return ret.getSeq();
                         };
@@ -19572,27 +19677,24 @@ var LiteMol;
                     function compileWholeResidues(where) {
                         var _where = Builder.toQuery(where);
                         return function (ctx) {
-                            var src = _where(ctx), ret = new Query.HashFragmentSeqBuilder(ctx), residueIndex = ctx.structure.data.atoms.residueIndex, atomStart = ctx.structure.data.residues.atomStartIndex, atomEnd = ctx.structure.data.residues.atomEndIndex, residues = new Set();
-                            var _loop_2 = function (f) {
-                                residues.clear();
-                                for (var _i = 0, _a = f.atomIndices; _i < _a.length; _i++) {
-                                    var i = _a[_i];
-                                    residues.add(residueIndex[i]);
+                            var src = _where(ctx), ret = new Query.HashFragmentSeqBuilder(ctx), residueIndex = ctx.structure.data.atoms.residueIndex, atomStart = ctx.structure.data.residues.atomStartIndex, atomEnd = ctx.structure.data.residues.atomEndIndex;
+                            for (var _i = 0, _a = src.fragments; _i < _a.length; _i++) {
+                                var f = _a[_i];
+                                var residues_2 = Core.Utils.FastSet.create();
+                                for (var _c = 0, _d = f.atomIndices; _c < _d.length; _c++) {
+                                    var i = _d[_c];
+                                    residues_2.add(residueIndex[i]);
                                 }
                                 var atomCount = { count: 0, start: atomStart, end: atomEnd };
-                                residues.forEach(function (r) { this.count += this.end[r] - this.start[r]; }, atomCount);
+                                residues_2.forEach(function (r, ctx) { ctx.count += ctx.end[r] - ctx.start[r]; }, atomCount);
                                 var indices = new Int32Array(atomCount.count), atomIndices = { indices: indices, offset: 0, start: atomStart, end: atomEnd };
-                                residues.forEach(function (r) {
-                                    for (var i = this.start[r], _l = this.end[r]; i < _l; i++) {
-                                        this.indices[this.offset++] = i;
+                                residues_2.forEach(function (r, ctx) {
+                                    for (var i = ctx.start[r], _l = ctx.end[r]; i < _l; i++) {
+                                        ctx.indices[ctx.offset++] = i;
                                     }
                                 }, atomIndices);
                                 Array.prototype.sort.call(indices, function (a, b) { return a - b; });
                                 ret.add(Query.Fragment.ofArray(ctx, indices[0], indices));
-                            };
-                            for (var _i = 0, _a = src.fragments; _i < _a.length; _i++) {
-                                var f = _a[_i];
-                                _loop_2(f);
                             }
                             return ret.getSeq();
                         };
@@ -19621,7 +19723,7 @@ var LiteMol;
     })(Core = LiteMol.Core || (LiteMol.Core = {}));
 })(LiteMol || (LiteMol = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
 var LiteMol;
 (function (LiteMol) {
@@ -19641,7 +19743,7 @@ var LiteMol;
                     Algebraic.not = unaryP(function (a) { return !a; });
                     Algebraic.and = binaryP(function (a, b) { return a && b; });
                     Algebraic.or = binaryP(function (a, b) { return a || b; });
-                    var backboneAtoms = new Set(["N", "CA", "C", "O", "P", "OP1", "OP2", "O3'", "O5'", "C3'", "C5'", "C4"]);
+                    var backboneAtoms = Core.Utils.FastSet.of(["N", "CA", "C", "O", "P", "OP1", "OP2", "O3'", "O5'", "C3'", "C5'", "C4"]);
                     Algebraic.backbone = function (ctx, i) { return Algebraic.entityType(ctx, i) === 'polymer' && backboneAtoms.has(Algebraic.atomName(ctx, i)); };
                     Algebraic.sidechain = function (ctx, i) { return Algebraic.entityType(ctx, i) === 'polymer' && !backboneAtoms.has(Algebraic.atomName(ctx, i)); };
                     /**
@@ -54910,7 +55012,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 /*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
 var LiteMol;
 (function (LiteMol) {
@@ -54927,7 +55029,7 @@ var LiteMol;
     })(Visualization = LiteMol.Visualization || (LiteMol.Visualization = {}));
 })(LiteMol || (LiteMol = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
 var LiteMol;
 (function (LiteMol) {
@@ -55022,7 +55124,7 @@ var LiteMol;
     })(Visualization = LiteMol.Visualization || (LiteMol.Visualization = {}));
 })(LiteMol || (LiteMol = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
 var LiteMol;
 (function (LiteMol) {
@@ -55260,7 +55362,7 @@ var LiteMol;
     })(Visualization = LiteMol.Visualization || (LiteMol.Visualization = {}));
 })(LiteMol || (LiteMol = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
 var LiteMol;
 (function (LiteMol) {
@@ -55523,7 +55625,7 @@ var LiteMol;
     })(Visualization = LiteMol.Visualization || (LiteMol.Visualization = {}));
 })(LiteMol || (LiteMol = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
 var LiteMol;
 (function (LiteMol) {
@@ -55626,7 +55728,7 @@ var LiteMol;
     })(Visualization = LiteMol.Visualization || (LiteMol.Visualization = {}));
 })(LiteMol || (LiteMol = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
 var LiteMol;
 (function (LiteMol) {
@@ -55728,7 +55830,7 @@ var LiteMol;
     })(Visualization = LiteMol.Visualization || (LiteMol.Visualization = {}));
 })(LiteMol || (LiteMol = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
 var LiteMol;
 (function (LiteMol) {
@@ -56072,7 +56174,7 @@ var LiteMol;
     })(Visualization = LiteMol.Visualization || (LiteMol.Visualization = {}));
 })(LiteMol || (LiteMol = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
 var LiteMol;
 (function (LiteMol) {
@@ -56476,7 +56578,7 @@ var LiteMol;
     })(Visualization = LiteMol.Visualization || (LiteMol.Visualization = {}));
 })(LiteMol || (LiteMol = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
 var LiteMol;
 (function (LiteMol) {
@@ -56923,7 +57025,7 @@ var LiteMol;
     })(Visualization = LiteMol.Visualization || (LiteMol.Visualization = {}));
 })(LiteMol || (LiteMol = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
 var LiteMol;
 (function (LiteMol) {
@@ -57104,7 +57206,7 @@ var LiteMol;
     })(Visualization = LiteMol.Visualization || (LiteMol.Visualization = {}));
 })(LiteMol || (LiteMol = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
 var LiteMol;
 (function (LiteMol) {
@@ -57441,7 +57543,7 @@ var LiteMol;
     })(Visualization = LiteMol.Visualization || (LiteMol.Visualization = {}));
 })(LiteMol || (LiteMol = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
 var LiteMol;
 (function (LiteMol) {
@@ -57632,7 +57734,7 @@ var LiteMol;
     })(Visualization = LiteMol.Visualization || (LiteMol.Visualization = {}));
 })(LiteMol || (LiteMol = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
 var LiteMol;
 (function (LiteMol) {
@@ -57687,7 +57789,7 @@ var LiteMol;
     })(Visualization = LiteMol.Visualization || (LiteMol.Visualization = {}));
 })(LiteMol || (LiteMol = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
 var LiteMol;
 (function (LiteMol) {
@@ -57758,7 +57860,7 @@ var LiteMol;
     })(Visualization = LiteMol.Visualization || (LiteMol.Visualization = {}));
 })(LiteMol || (LiteMol = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
 var LiteMol;
 (function (LiteMol) {
@@ -57869,7 +57971,7 @@ var LiteMol;
     })(Visualization = LiteMol.Visualization || (LiteMol.Visualization = {}));
 })(LiteMol || (LiteMol = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
 var LiteMol;
 (function (LiteMol) {
@@ -58468,7 +58570,7 @@ var LiteMol;
     })(Visualization = LiteMol.Visualization || (LiteMol.Visualization = {}));
 })(LiteMol || (LiteMol = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
 var LiteMol;
 (function (LiteMol) {
@@ -58553,7 +58655,7 @@ var LiteMol;
     })(Visualization = LiteMol.Visualization || (LiteMol.Visualization = {}));
 })(LiteMol || (LiteMol = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
 var LiteMol;
 (function (LiteMol) {
@@ -59565,7 +59667,7 @@ var LiteMol;
     })(Visualization = LiteMol.Visualization || (LiteMol.Visualization = {}));
 })(LiteMol || (LiteMol = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
 var LiteMol;
 (function (LiteMol) {
@@ -59762,7 +59864,7 @@ var LiteMol;
     })(Visualization = LiteMol.Visualization || (LiteMol.Visualization = {}));
 })(LiteMol || (LiteMol = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
 var LiteMol;
 (function (LiteMol) {
@@ -59793,7 +59895,7 @@ var LiteMol;
     })(Visualization = LiteMol.Visualization || (LiteMol.Visualization = {}));
 })(LiteMol || (LiteMol = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
 var LiteMol;
 (function (LiteMol) {
@@ -59816,7 +59918,7 @@ var LiteMol;
     })(Visualization = LiteMol.Visualization || (LiteMol.Visualization = {}));
 })(LiteMol || (LiteMol = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
 var LiteMol;
 (function (LiteMol) {
@@ -59936,7 +60038,7 @@ var LiteMol;
     })(Visualization = LiteMol.Visualization || (LiteMol.Visualization = {}));
 })(LiteMol || (LiteMol = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
 var LiteMol;
 (function (LiteMol) {
@@ -65230,7 +65332,7 @@ var __extends = (this && this.__extends) || (function () {
     };
 })();
 /*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
 var LiteMol;
 (function (LiteMol) {
@@ -65240,7 +65342,7 @@ var LiteMol;
     })(Bootstrap = LiteMol.Bootstrap || (LiteMol.Bootstrap = {}));
 })(LiteMol || (LiteMol = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
 var LiteMol;
 (function (LiteMol) {
@@ -65253,7 +65355,7 @@ var LiteMol;
     })(Bootstrap = LiteMol.Bootstrap || (LiteMol.Bootstrap = {}));
 })(LiteMol || (LiteMol = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
 var LiteMol;
 (function (LiteMol) {
@@ -65447,7 +65549,7 @@ var LiteMol;
     })(Bootstrap = LiteMol.Bootstrap || (LiteMol.Bootstrap = {}));
 })(LiteMol || (LiteMol = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
 var LiteMol;
 (function (LiteMol) {
@@ -65486,7 +65588,7 @@ var LiteMol;
     })(Bootstrap = LiteMol.Bootstrap || (LiteMol.Bootstrap = {}));
 })(LiteMol || (LiteMol = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
 var LiteMol;
 (function (LiteMol) {
@@ -65526,7 +65628,7 @@ var LiteMol;
     })(Bootstrap = LiteMol.Bootstrap || (LiteMol.Bootstrap = {}));
 })(LiteMol || (LiteMol = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
 var LiteMol;
 (function (LiteMol) {
@@ -65584,7 +65686,7 @@ var LiteMol;
     })(Bootstrap = LiteMol.Bootstrap || (LiteMol.Bootstrap = {}));
 })(LiteMol || (LiteMol = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
 var LiteMol;
 (function (LiteMol) {
@@ -65629,7 +65731,7 @@ var LiteMol;
     })(Bootstrap = LiteMol.Bootstrap || (LiteMol.Bootstrap = {}));
 })(LiteMol || (LiteMol = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
 var LiteMol;
 (function (LiteMol) {
@@ -65771,7 +65873,7 @@ var LiteMol;
     })(Bootstrap = LiteMol.Bootstrap || (LiteMol.Bootstrap = {}));
 })(LiteMol || (LiteMol = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
 var LiteMol;
 (function (LiteMol) {
@@ -65887,7 +65989,7 @@ var LiteMol;
     })(Bootstrap = LiteMol.Bootstrap || (LiteMol.Bootstrap = {}));
 })(LiteMol || (LiteMol = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
 var LiteMol;
 (function (LiteMol) {
@@ -65949,7 +66051,7 @@ var LiteMol;
     })(Bootstrap = LiteMol.Bootstrap || (LiteMol.Bootstrap = {}));
 })(LiteMol || (LiteMol = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
 var LiteMol;
 (function (LiteMol) {
@@ -65993,7 +66095,7 @@ var LiteMol;
     })(Bootstrap = LiteMol.Bootstrap || (LiteMol.Bootstrap = {}));
 })(LiteMol || (LiteMol = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
 var LiteMol;
 (function (LiteMol) {
@@ -66006,7 +66108,7 @@ var LiteMol;
     })(Bootstrap = LiteMol.Bootstrap || (LiteMol.Bootstrap = {}));
 })(LiteMol || (LiteMol = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
 var LiteMol;
 (function (LiteMol) {
@@ -66153,7 +66255,7 @@ var LiteMol;
     })(Bootstrap = LiteMol.Bootstrap || (LiteMol.Bootstrap = {}));
 })(LiteMol || (LiteMol = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
 var LiteMol;
 (function (LiteMol) {
@@ -66177,7 +66279,7 @@ var LiteMol;
     })(Bootstrap = LiteMol.Bootstrap || (LiteMol.Bootstrap = {}));
 })(LiteMol || (LiteMol = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
 var LiteMol;
 (function (LiteMol) {
@@ -66230,7 +66332,7 @@ var LiteMol;
     })(Bootstrap = LiteMol.Bootstrap || (LiteMol.Bootstrap = {}));
 })(LiteMol || (LiteMol = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
 var LiteMol;
 (function (LiteMol) {
@@ -66280,7 +66382,7 @@ var LiteMol;
     })(Bootstrap = LiteMol.Bootstrap || (LiteMol.Bootstrap = {}));
 })(LiteMol || (LiteMol = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
 var LiteMol;
 (function (LiteMol) {
@@ -66434,7 +66536,7 @@ var LiteMol;
     })(Bootstrap = LiteMol.Bootstrap || (LiteMol.Bootstrap = {}));
 })(LiteMol || (LiteMol = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
 var LiteMol;
 (function (LiteMol) {
@@ -66585,7 +66687,7 @@ var LiteMol;
     })(Bootstrap = LiteMol.Bootstrap || (LiteMol.Bootstrap = {}));
 })(LiteMol || (LiteMol = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
 var LiteMol;
 (function (LiteMol) {
@@ -66745,7 +66847,7 @@ var LiteMol;
     })(Bootstrap = LiteMol.Bootstrap || (LiteMol.Bootstrap = {}));
 })(LiteMol || (LiteMol = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
 var LiteMol;
 (function (LiteMol) {
@@ -66944,7 +67046,7 @@ var LiteMol;
     })(Bootstrap = LiteMol.Bootstrap || (LiteMol.Bootstrap = {}));
 })(LiteMol || (LiteMol = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
 var LiteMol;
 (function (LiteMol) {
@@ -67109,7 +67211,7 @@ var LiteMol;
     })(Bootstrap = LiteMol.Bootstrap || (LiteMol.Bootstrap = {}));
 })(LiteMol || (LiteMol = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
 var LiteMol;
 (function (LiteMol) {
@@ -67157,7 +67259,7 @@ var LiteMol;
     })(Bootstrap = LiteMol.Bootstrap || (LiteMol.Bootstrap = {}));
 })(LiteMol || (LiteMol = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
 var LiteMol;
 (function (LiteMol) {
@@ -67218,7 +67320,7 @@ var LiteMol;
     })(Bootstrap = LiteMol.Bootstrap || (LiteMol.Bootstrap = {}));
 })(LiteMol || (LiteMol = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
 var LiteMol;
 (function (LiteMol) {
@@ -67261,7 +67363,7 @@ var LiteMol;
     })(Bootstrap = LiteMol.Bootstrap || (LiteMol.Bootstrap = {}));
 })(LiteMol || (LiteMol = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
 var LiteMol;
 (function (LiteMol) {
@@ -67400,7 +67502,7 @@ var LiteMol;
     })(Bootstrap = LiteMol.Bootstrap || (LiteMol.Bootstrap = {}));
 })(LiteMol || (LiteMol = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
 var LiteMol;
 (function (LiteMol) {
@@ -67630,7 +67732,7 @@ var LiteMol;
     })(Bootstrap = LiteMol.Bootstrap || (LiteMol.Bootstrap = {}));
 })(LiteMol || (LiteMol = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
 var LiteMol;
 (function (LiteMol) {
@@ -67686,7 +67788,7 @@ var LiteMol;
     })(Bootstrap = LiteMol.Bootstrap || (LiteMol.Bootstrap = {}));
 })(LiteMol || (LiteMol = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
 var LiteMol;
 (function (LiteMol) {
@@ -67851,7 +67953,7 @@ var LiteMol;
     })(Bootstrap = LiteMol.Bootstrap || (LiteMol.Bootstrap = {}));
 })(LiteMol || (LiteMol = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
 var LiteMol;
 (function (LiteMol) {
@@ -67909,7 +68011,7 @@ var LiteMol;
     })(Bootstrap = LiteMol.Bootstrap || (LiteMol.Bootstrap = {}));
 })(LiteMol || (LiteMol = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
 var LiteMol;
 (function (LiteMol) {
@@ -68062,7 +68164,7 @@ var LiteMol;
     })(Bootstrap = LiteMol.Bootstrap || (LiteMol.Bootstrap = {}));
 })(LiteMol || (LiteMol = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
 var LiteMol;
 (function (LiteMol) {
@@ -68167,7 +68269,7 @@ var LiteMol;
     })(Bootstrap = LiteMol.Bootstrap || (LiteMol.Bootstrap = {}));
 })(LiteMol || (LiteMol = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
 var LiteMol;
 (function (LiteMol) {
@@ -68229,7 +68331,7 @@ var LiteMol;
     })(Bootstrap = LiteMol.Bootstrap || (LiteMol.Bootstrap = {}));
 })(LiteMol || (LiteMol = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
 var LiteMol;
 (function (LiteMol) {
@@ -68288,7 +68390,7 @@ var LiteMol;
     })(Bootstrap = LiteMol.Bootstrap || (LiteMol.Bootstrap = {}));
 })(LiteMol || (LiteMol = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
 var LiteMol;
 (function (LiteMol) {
@@ -68394,7 +68496,7 @@ var LiteMol;
     })(Bootstrap = LiteMol.Bootstrap || (LiteMol.Bootstrap = {}));
 })(LiteMol || (LiteMol = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
 var LiteMol;
 (function (LiteMol) {
@@ -68461,7 +68563,7 @@ var LiteMol;
     })(Bootstrap = LiteMol.Bootstrap || (LiteMol.Bootstrap = {}));
 })(LiteMol || (LiteMol = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
 var LiteMol;
 (function (LiteMol) {
@@ -68506,7 +68608,7 @@ var LiteMol;
     })(Bootstrap = LiteMol.Bootstrap || (LiteMol.Bootstrap = {}));
 })(LiteMol || (LiteMol = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
 var LiteMol;
 (function (LiteMol) {
@@ -68564,7 +68666,7 @@ var LiteMol;
     })(Bootstrap = LiteMol.Bootstrap || (LiteMol.Bootstrap = {}));
 })(LiteMol || (LiteMol = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
 var LiteMol;
 (function (LiteMol) {
@@ -68928,7 +69030,7 @@ var LiteMol;
     })(Bootstrap = LiteMol.Bootstrap || (LiteMol.Bootstrap = {}));
 })(LiteMol || (LiteMol = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
 var LiteMol;
 (function (LiteMol) {
@@ -69095,7 +69197,7 @@ var LiteMol;
     })(Bootstrap = LiteMol.Bootstrap || (LiteMol.Bootstrap = {}));
 })(LiteMol || (LiteMol = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
 var LiteMol;
 (function (LiteMol) {
@@ -69270,7 +69372,7 @@ var LiteMol;
     })(Bootstrap = LiteMol.Bootstrap || (LiteMol.Bootstrap = {}));
 })(LiteMol || (LiteMol = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
 var LiteMol;
 (function (LiteMol) {
@@ -69340,7 +69442,7 @@ var LiteMol;
     })(Bootstrap = LiteMol.Bootstrap || (LiteMol.Bootstrap = {}));
 })(LiteMol || (LiteMol = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
 var LiteMol;
 (function (LiteMol) {
@@ -69514,7 +69616,7 @@ var LiteMol;
     })(Bootstrap = LiteMol.Bootstrap || (LiteMol.Bootstrap = {}));
 })(LiteMol || (LiteMol = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
 var LiteMol;
 (function (LiteMol) {
@@ -69561,7 +69663,7 @@ var LiteMol;
     })(Bootstrap = LiteMol.Bootstrap || (LiteMol.Bootstrap = {}));
 })(LiteMol || (LiteMol = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
 var LiteMol;
 (function (LiteMol) {
@@ -69689,7 +69791,7 @@ var LiteMol;
     })(Bootstrap = LiteMol.Bootstrap || (LiteMol.Bootstrap = {}));
 })(LiteMol || (LiteMol = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
 var LiteMol;
 (function (LiteMol) {
@@ -69814,7 +69916,7 @@ var LiteMol;
     })(Bootstrap = LiteMol.Bootstrap || (LiteMol.Bootstrap = {}));
 })(LiteMol || (LiteMol = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
 var LiteMol;
 (function (LiteMol) {
@@ -69917,7 +70019,7 @@ var LiteMol;
     })(Bootstrap = LiteMol.Bootstrap || (LiteMol.Bootstrap = {}));
 })(LiteMol || (LiteMol = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
 var LiteMol;
 (function (LiteMol) {
@@ -70082,7 +70184,7 @@ var LiteMol;
     })(Bootstrap = LiteMol.Bootstrap || (LiteMol.Bootstrap = {}));
 })(LiteMol || (LiteMol = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
 var LiteMol;
 (function (LiteMol) {
@@ -70184,7 +70286,7 @@ var LiteMol;
     })(Bootstrap = LiteMol.Bootstrap || (LiteMol.Bootstrap = {}));
 })(LiteMol || (LiteMol = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
 var LiteMol;
 (function (LiteMol) {
@@ -70239,7 +70341,7 @@ var LiteMol;
     })(Bootstrap = LiteMol.Bootstrap || (LiteMol.Bootstrap = {}));
 })(LiteMol || (LiteMol = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
 var LiteMol;
 (function (LiteMol) {
@@ -70414,7 +70516,7 @@ var LiteMol;
     })(Bootstrap = LiteMol.Bootstrap || (LiteMol.Bootstrap = {}));
 })(LiteMol || (LiteMol = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
 var LiteMol;
 (function (LiteMol) {
@@ -70518,7 +70620,7 @@ var LiteMol;
     })(Bootstrap = LiteMol.Bootstrap || (LiteMol.Bootstrap = {}));
 })(LiteMol || (LiteMol = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
 var LiteMol;
 (function (LiteMol) {
@@ -70568,7 +70670,7 @@ var LiteMol;
     })(Bootstrap = LiteMol.Bootstrap || (LiteMol.Bootstrap = {}));
 })(LiteMol || (LiteMol = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
 var LiteMol;
 (function (LiteMol) {
@@ -70710,7 +70812,7 @@ var LiteMol;
     })(Bootstrap = LiteMol.Bootstrap || (LiteMol.Bootstrap = {}));
 })(LiteMol || (LiteMol = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
 var LiteMol;
 (function (LiteMol) {
@@ -70757,7 +70859,7 @@ var LiteMol;
     })(Bootstrap = LiteMol.Bootstrap || (LiteMol.Bootstrap = {}));
 })(LiteMol || (LiteMol = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
 var LiteMol;
 (function (LiteMol) {
@@ -70805,7 +70907,7 @@ var LiteMol;
     })(Bootstrap = LiteMol.Bootstrap || (LiteMol.Bootstrap = {}));
 })(LiteMol || (LiteMol = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
 var LiteMol;
 (function (LiteMol) {
@@ -70832,7 +70934,7 @@ var LiteMol;
     })(Bootstrap = LiteMol.Bootstrap || (LiteMol.Bootstrap = {}));
 })(LiteMol || (LiteMol = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
 var LiteMol;
 (function (LiteMol) {
@@ -70916,7 +71018,7 @@ var LiteMol;
     })(Bootstrap = LiteMol.Bootstrap || (LiteMol.Bootstrap = {}));
 })(LiteMol || (LiteMol = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
 var LiteMol;
 (function (LiteMol) {
@@ -70980,7 +71082,7 @@ var LiteMol;
     })(Bootstrap = LiteMol.Bootstrap || (LiteMol.Bootstrap = {}));
 })(LiteMol || (LiteMol = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
 var LiteMol;
 (function (LiteMol) {
@@ -71006,7 +71108,7 @@ var LiteMol;
     })(Bootstrap = LiteMol.Bootstrap || (LiteMol.Bootstrap = {}));
 })(LiteMol || (LiteMol = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
 var LiteMol;
 (function (LiteMol) {
@@ -71065,7 +71167,7 @@ var LiteMol;
     })(Bootstrap = LiteMol.Bootstrap || (LiteMol.Bootstrap = {}));
 })(LiteMol || (LiteMol = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
 var LiteMol;
 (function (LiteMol) {
@@ -71115,7 +71217,7 @@ var LiteMol;
     })(Bootstrap = LiteMol.Bootstrap || (LiteMol.Bootstrap = {}));
 })(LiteMol || (LiteMol = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
 var LiteMol;
 (function (LiteMol) {
@@ -71128,7 +71230,7 @@ var LiteMol;
     })(Bootstrap = LiteMol.Bootstrap || (LiteMol.Bootstrap = {}));
 })(LiteMol || (LiteMol = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
 var LiteMol;
 (function (LiteMol) {
@@ -71183,7 +71285,7 @@ var LiteMol;
     })(Bootstrap = LiteMol.Bootstrap || (LiteMol.Bootstrap = {}));
 })(LiteMol || (LiteMol = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
 var LiteMol;
 (function (LiteMol) {
@@ -75906,7 +76008,7 @@ var __assign = (this && this.__assign) || Object.assign || function(t) {
     return t;
 };
 /*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
 var LiteMol;
 (function (LiteMol) {
@@ -75916,7 +76018,7 @@ var LiteMol;
     })(Plugin = LiteMol.Plugin || (LiteMol.Plugin = {}));
 })(LiteMol || (LiteMol = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
 var LiteMol;
 (function (LiteMol) {
@@ -75934,7 +76036,7 @@ var LiteMol;
     })(Plugin = LiteMol.Plugin || (LiteMol.Plugin = {}));
 })(LiteMol || (LiteMol = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
 var LiteMol;
 (function (LiteMol) {
@@ -76038,7 +76140,7 @@ var LiteMol;
     })(Plugin = LiteMol.Plugin || (LiteMol.Plugin = {}));
 })(LiteMol || (LiteMol = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
 var LiteMol;
 (function (LiteMol) {
@@ -76088,7 +76190,7 @@ var LiteMol;
     })(Plugin = LiteMol.Plugin || (LiteMol.Plugin = {}));
 })(LiteMol || (LiteMol = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
 var LiteMol;
 (function (LiteMol) {
@@ -76140,7 +76242,7 @@ var LiteMol;
     })(Plugin = LiteMol.Plugin || (LiteMol.Plugin = {}));
 })(LiteMol || (LiteMol = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
 var LiteMol;
 (function (LiteMol) {
@@ -76805,7 +76907,7 @@ var LiteMol;
     })(Plugin = LiteMol.Plugin || (LiteMol.Plugin = {}));
 })(LiteMol || (LiteMol = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
 var LiteMol;
 (function (LiteMol) {
@@ -76867,7 +76969,7 @@ var LiteMol;
     })(Plugin = LiteMol.Plugin || (LiteMol.Plugin = {}));
 })(LiteMol || (LiteMol = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
 var LiteMol;
 (function (LiteMol) {
@@ -76888,7 +76990,7 @@ var LiteMol;
     })(Plugin = LiteMol.Plugin || (LiteMol.Plugin = {}));
 })(LiteMol || (LiteMol = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
 var LiteMol;
 (function (LiteMol) {
@@ -77002,7 +77104,7 @@ var LiteMol;
     })(Plugin = LiteMol.Plugin || (LiteMol.Plugin = {}));
 })(LiteMol || (LiteMol = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
 var LiteMol;
 (function (LiteMol) {
@@ -77093,7 +77195,7 @@ var LiteMol;
     })(Plugin = LiteMol.Plugin || (LiteMol.Plugin = {}));
 })(LiteMol || (LiteMol = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
 var LiteMol;
 (function (LiteMol) {
@@ -77279,7 +77381,7 @@ var LiteMol;
     })(Plugin = LiteMol.Plugin || (LiteMol.Plugin = {}));
 })(LiteMol || (LiteMol = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
 var LiteMol;
 (function (LiteMol) {
@@ -77363,7 +77465,7 @@ var LiteMol;
     })(Plugin = LiteMol.Plugin || (LiteMol.Plugin = {}));
 })(LiteMol || (LiteMol = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
 var LiteMol;
 (function (LiteMol) {
@@ -77614,7 +77716,7 @@ var LiteMol;
     })(Plugin = LiteMol.Plugin || (LiteMol.Plugin = {}));
 })(LiteMol || (LiteMol = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
 var LiteMol;
 (function (LiteMol) {
@@ -77782,7 +77884,7 @@ var LiteMol;
     })(Plugin = LiteMol.Plugin || (LiteMol.Plugin = {}));
 })(LiteMol || (LiteMol = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
 var LiteMol;
 (function (LiteMol) {
@@ -77857,7 +77959,7 @@ var LiteMol;
     })(Plugin = LiteMol.Plugin || (LiteMol.Plugin = {}));
 })(LiteMol || (LiteMol = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
 var LiteMol;
 (function (LiteMol) {
@@ -77933,7 +78035,7 @@ var LiteMol;
     })(Plugin = LiteMol.Plugin || (LiteMol.Plugin = {}));
 })(LiteMol || (LiteMol = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
 var LiteMol;
 (function (LiteMol) {
@@ -77994,7 +78096,7 @@ var LiteMol;
     })(Plugin = LiteMol.Plugin || (LiteMol.Plugin = {}));
 })(LiteMol || (LiteMol = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
 var LiteMol;
 (function (LiteMol) {
@@ -78228,7 +78330,7 @@ var LiteMol;
     })(Plugin = LiteMol.Plugin || (LiteMol.Plugin = {}));
 })(LiteMol || (LiteMol = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
 var LiteMol;
 (function (LiteMol) {
@@ -78372,7 +78474,7 @@ var LiteMol;
     })(Plugin = LiteMol.Plugin || (LiteMol.Plugin = {}));
 })(LiteMol || (LiteMol = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
 var LiteMol;
 (function (LiteMol) {
@@ -78524,7 +78626,7 @@ var LiteMol;
     })(Plugin = LiteMol.Plugin || (LiteMol.Plugin = {}));
 })(LiteMol || (LiteMol = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
 var LiteMol;
 (function (LiteMol) {
@@ -78578,7 +78680,7 @@ var LiteMol;
     })(Plugin = LiteMol.Plugin || (LiteMol.Plugin = {}));
 })(LiteMol || (LiteMol = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
 var LiteMol;
 (function (LiteMol) {
@@ -78663,7 +78765,7 @@ var LiteMol;
     })(Plugin = LiteMol.Plugin || (LiteMol.Plugin = {}));
 })(LiteMol || (LiteMol = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
 var LiteMol;
 (function (LiteMol) {
@@ -78752,7 +78854,7 @@ var LiteMol;
     })(Plugin = LiteMol.Plugin || (LiteMol.Plugin = {}));
 })(LiteMol || (LiteMol = {}));
 /*
- * Copyright (c) 2016 David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
 var LiteMol;
 (function (LiteMol) {
