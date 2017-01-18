@@ -65879,7 +65879,7 @@ var LiteMol;
                     "No": 2.46,
                     "Lr": 2.46,
                 };
-                var ret = new Map();
+                var ret = LiteMol.Core.Utils.FastMap.create();
                 for (var e in vdwRadii) {
                     ret.set(e, vdwRadii[e]);
                     ret.set(e.toUpperCase(), vdwRadii[e]);
@@ -66413,8 +66413,8 @@ var LiteMol;
             function create(context, root) {
                 var tree = {
                     version: 0,
-                    refs: new Map(),
-                    nodes: new Set(),
+                    refs: LiteMol.Core.Utils.FastMap.create(),
+                    nodes: LiteMol.Core.Utils.FastSet.create(),
                     root: root,
                     context: context
                 };
@@ -66827,7 +66827,7 @@ var LiteMol;
                 function unique(b) {
                     var q = compile(b);
                     return build(function () { return function (tree) {
-                        var set = new Set();
+                        var set = LiteMol.Core.Utils.FastSet.create();
                         var ret = [];
                         for (var _i = 0, _a = q(tree); _i < _a.length; _i++) {
                             var n = _a[_i];
@@ -67791,7 +67791,7 @@ var LiteMol;
                 }
                 Theme.mergeProps = mergeProps;
                 function getProps(theme) {
-                    var colors = new Map();
+                    var colors = LiteMol.Core.Utils.FastMap.create();
                     if (theme.colors)
                         theme.colors.forEach(function (c, n) { return colors.set(n, c); });
                     return {
@@ -68601,7 +68601,7 @@ var LiteMol;
             var Cache = (function () {
                 function Cache(context) {
                     var _this = this;
-                    this.data = new Map();
+                    this.data = LiteMol.Core.Utils.FastMap.create();
                     Bootstrap.Event.Tree.NodeRemoved.getStream(context).subscribe(function (e) { return _this.data.delete(e.data.id); });
                 }
                 Cache.prototype.get = function (e, prop) {
@@ -71202,7 +71202,7 @@ var LiteMol;
         "use strict";
         var Settings = (function () {
             function Settings() {
-                this.settings = new Map();
+                this.settings = LiteMol.Core.Utils.FastMap.create();
             }
             Settings.prototype.set = function (key, value) {
                 this.settings.set(key, value);
@@ -71322,11 +71322,11 @@ var LiteMol;
             function TransformManager(context) {
                 var _this = this;
                 this.context = context;
-                this.controllerCache = new Map();
-                this.state = new Map();
-                this.byId = new Map();
-                this.bySourceType = new Map();
-                this.byTargetType = new Map();
+                this.controllerCache = LiteMol.Core.Utils.FastMap.create();
+                this.state = LiteMol.Core.Utils.FastMap.create();
+                this.byId = LiteMol.Core.Utils.FastMap.create();
+                this.bySourceType = LiteMol.Core.Utils.FastMap.create();
+                this.byTargetType = LiteMol.Core.Utils.FastMap.create();
                 Bootstrap.Event.Tree.NodeRemoved.getStream(context).subscribe(function (e) {
                     _this.controllerCache.delete(e.data.id);
                     _this.state.delete(e.data.id);
@@ -71350,7 +71350,7 @@ var LiteMol;
                 }
                 var cs = this.controllerCache.get(e.id);
                 if (!cs) {
-                    cs = new Map();
+                    cs = LiteMol.Core.Utils.FastMap.create();
                     this.controllerCache.set(e.id, cs);
                 }
                 var c = cs.get(t.info.id);
@@ -71420,12 +71420,12 @@ var LiteMol;
             TransformManager.prototype.setPersistentState = function (t, e, prop, value) {
                 var se = this.state.get(e.id);
                 if (!se) {
-                    se = new Map();
+                    se = LiteMol.Core.Utils.FastMap.create();
                     this.state.set(e.id, se);
                 }
                 var ps = se.get(t.info.id);
                 if (!ps) {
-                    ps = new Map();
+                    ps = LiteMol.Core.Utils.FastMap.create();
                     se.set(t.info.id, ps);
                 }
                 var old = ps.get(prop);
@@ -78719,8 +78719,8 @@ var LiteMol;
             function Instance(spec, target) {
                 this.spec = spec;
                 this.target = target;
-                this.componentMap = new Map();
-                this.transformersInfo = new Map();
+                this.componentMap = LiteMol.Core.Utils.FastMap.create();
+                this.transformersInfo = LiteMol.Core.Utils.FastMap.create();
                 this.context = new LiteMol.Bootstrap.Context(this);
                 this.init();
                 Plugin.ReactDOM.render(Plugin.React.createElement(this.spec.layoutView, { controller: this.context.layout }), target);

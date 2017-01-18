@@ -4903,7 +4903,7 @@ declare namespace LiteMol.Core.Utils {
     }
     namespace FastMap {
         function create<K extends string | number, V>(): FastMap<K, V>;
-        function of<K extends string | number, V>(data: (K | V)[][]): FastMap<string | number, {}>;
+        function of<K extends string | number, V>(data: (K | V)[][]): FastMap<K, V>;
     }
     namespace FastSet {
         function create<T extends string | number>(): FastSet<T>;
@@ -15742,7 +15742,7 @@ declare namespace LiteMol.Bootstrap.Command {
 }
 declare namespace LiteMol.Bootstrap {
     interface Tree<T extends Tree.Node.Any> {
-        refs: Map<string, T[]>;
+        refs: Core.Utils.FastMap<string, T[]>;
         root: T;
         context: Context;
     }

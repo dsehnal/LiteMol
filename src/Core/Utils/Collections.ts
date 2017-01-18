@@ -76,9 +76,9 @@ namespace LiteMol.Core.Utils {
         }
 
         export function of<K extends string | number, V>(data: (K | V)[][])         {
-            let ret = create();
+            let ret = create<K, V>();
             for (let xs of data) {
-                ret.set(xs[0] as any, xs[1]);
+                ret.set(xs[0] as K, xs[1] as V);
             }
             return ret;
         }

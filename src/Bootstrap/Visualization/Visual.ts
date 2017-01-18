@@ -78,8 +78,8 @@ namespace LiteMol.Bootstrap.Visualization {
         }
         
         export function getProps(theme: Instance): LiteMol.Visualization.Theme.Props {
-            let colors = new Map<string, LiteMol.Visualization.Color>();
-            if (theme.colors) theme.colors.forEach((c,n) => colors.set(n!, c));
+            let colors = Core.Utils.FastMap.create<string, LiteMol.Visualization.Color>();
+            if (theme.colors) theme.colors.forEach((c,n) => colors.set(n!, c!));
             return {
                 colors,
                 transparency: theme.transparency,

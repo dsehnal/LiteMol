@@ -197,7 +197,7 @@ namespace LiteMol.Example.Channels.State {
         defaultParams: () => ({}),
         isUpdatable: false
     }, (context, a, t) => {
-        let theme = Visualization.Theme.createUniform({ colors: new Map<string, Visualization.Color>([['Uniform', t.params.color!]]), interactive: t.params.isInteractive, transparency: t.params.transparency });
+        let theme = Visualization.Theme.createUniform({ colors: LiteMol.Core.Utils.FastMap.of<string, LiteMol.Visualization.Color>([['Uniform', t.params.color!]]), interactive: t.params.isInteractive, transparency: t.params.transparency });
         let style: Bootstrap.Visualization.Style<'Surface', {}> = {
             type: 'Surface',
             taskType: 'Silent',

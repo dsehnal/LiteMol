@@ -36,8 +36,8 @@ namespace LiteMol.Plugin {
     }
            
     export class Instance implements Bootstrap.Plugin.Instance {
-        private componentMap = new Map<string, Bootstrap.Components.ComponentInfo>();  
-        private transformersInfo = new Map<string, TransformerInfo>(); 
+        private componentMap = Core.Utils.FastMap.create<string, Bootstrap.Components.ComponentInfo>();  
+        private transformersInfo = Core.Utils.FastMap.create<string, TransformerInfo>(); 
                   
         context = new Bootstrap.Context(this);
         

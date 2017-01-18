@@ -10,14 +10,14 @@ namespace LiteMol.Bootstrap {
         
     export class TransformManager {  
             
-        private controllerCache = new Map<number, Map<string, Components.Transform.Controller<any>>>();
-        private state = new Map<number, Map<string, any>>();
+        private controllerCache = Core.Utils.FastMap.create<number, Core.Utils.FastMap<string, Components.Transform.Controller<any>>>();
+        private state = Core.Utils.FastMap.create<number, Core.Utils.FastMap<string, any>>();
 
-        private byId = new Map<string, Transformer>();
-        private bySourceType = new Map<string, Transformer[]>();
-        private byTargetType = new Map<string, Transformer[]>();
+        private byId = Core.Utils.FastMap.create<string, Transformer>();
+        private bySourceType = Core.Utils.FastMap.create<string, Transformer[]>();
+        private byTargetType = Core.Utils.FastMap.create<string, Transformer[]>();
 
-        private addType(e: Entity.AnyType, t: Transformer, to: Map<string, Transformer[]>) {
+        private addType(e: Entity.AnyType, t: Transformer, to: Core.Utils.FastMap<string, Transformer[]>) {
             let xs = to.get(e.id);
             if (!xs) to.set(e.id, [t]);
             else xs.push(t); 
@@ -36,7 +36,7 @@ namespace LiteMol.Bootstrap {
 
             let cs = this.controllerCache.get(e.id);
             if (!cs) {
-                cs = new Map<string, Components.Transform.Controller<any>>();
+                cs = Core.Utils.FastMap.create<string, Components.Transform.Controller<any>>();
                 this.controllerCache.set(e.id, cs);
             }
 
@@ -102,12 +102,12 @@ namespace LiteMol.Bootstrap {
         setPersistentState<T>(t: Transformer, e: Entity.Any, prop: string, value: T): boolean {
             let se = this.state.get(e.id);
             if (!se) {
-                se = new Map<string, any>();
+                se = Core.Utils.FastMap.create<string, any>();
                 this.state.set(e.id, se);
             }
             let ps = se.get(t.info.id);
             if (!ps) {
-                ps = new Map<string, any>();
+                ps = Core.Utils.FastMap.create<string, any>();
                 se.set(t.info.id, ps);
             } 
             let old = ps.get(prop);

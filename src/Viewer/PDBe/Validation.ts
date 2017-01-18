@@ -119,7 +119,7 @@ namespace LiteMol.Viewer.PDBe.Validation {
     
     namespace Theme {    
         const colorMap = (function () {
-            let colors = new Map<number, LiteMol.Visualization.Color>();
+            let colors = Core.Utils.FastMap.create<number, LiteMol.Visualization.Color>();
             colors.set(0, { r: 0, g: 1, b: 0 }); 
             colors.set(1, { r: 1, g: 1, b: 0 });
             colors.set(2, { r: 1, g: 0.5, b: 0 });
@@ -168,7 +168,7 @@ namespace LiteMol.Viewer.PDBe.Validation {
                 ? createResidueMapNormal(model, report)
                 : createResidueMapComputed(model, report);
             
-            let colors = new Map<string, LiteMol.Visualization.Color>();
+            let colors = Core.Utils.FastMap.create<string, LiteMol.Visualization.Color>();
             colors.set('Uniform', defaultColor)
             colors.set('Selection', selectionColor)
             colors.set('Highlight', highlightColor);
@@ -227,7 +227,7 @@ namespace LiteMol.Viewer.PDBe.Validation {
                 throw 'No suitable parent found.';
             } 
                 
-            let themes = new Map<number, Visualization.Theme>();      
+            let themes = Core.Utils.FastMap.create<number, Visualization.Theme>();      
             let visuals = context.select(Bootstrap.Tree.Selection.byValue(molecule).subtree().ofType(Bootstrap.Entity.Molecule.Visual));            
             for (let v of visuals) {
                 let model = Bootstrap.Utils.Molecule.findModel(v);

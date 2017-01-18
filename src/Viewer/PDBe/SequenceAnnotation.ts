@@ -164,13 +164,13 @@ namespace LiteMol.Viewer.PDBe.SequenceAnnotation {
             let fs = q(model.queryContext);                        
             let map = createResidueMap(model, fs);
             
-            let colors = new Map<string, LiteMol.Visualization.Color>();
+            let colors = Core.Utils.FastMap.create<string, LiteMol.Visualization.Color>();
             colors.set('Uniform', defaultColor);
             colors.set('Bond', defaultColor);
             colors.set('Selection', selectionColor);
             colors.set('Highlight', highlightColor);
             
-            let colorMap = new Map<number, Visualization.Color>();
+            let colorMap = Core.Utils.FastMap.create<number, Visualization.Color>();
             colorMap.set(1, color);
             
             let residueIndex = model.data.atoms.residueIndex;            

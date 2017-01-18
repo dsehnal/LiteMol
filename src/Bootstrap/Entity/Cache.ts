@@ -7,7 +7,7 @@ namespace LiteMol.Bootstrap.Entity {
     "use strict";
         
     export class Cache {         
-        private data = new Map<number, { [key: string]: any }>()
+        private data = Core.Utils.FastMap.create<number, { [key: string]: any }>()
         
         get<T>(e: Any, prop: string) {
             let c = this.data.get(e.id);

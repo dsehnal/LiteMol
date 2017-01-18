@@ -8,7 +8,7 @@ namespace LiteMol.Bootstrap {
     
     export class Settings {
         
-        private settings = new Map<string, any>();
+        private settings = Core.Utils.FastMap.create<string, any>();
         
         set(key: string, value: any) {
             this.settings.set(key, value);

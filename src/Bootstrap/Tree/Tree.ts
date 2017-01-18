@@ -6,7 +6,7 @@ namespace LiteMol.Bootstrap {
     "use strict";
     
     export interface Tree<T extends Tree.Node.Any> {
-        refs: Map<string, T[]>,
+        refs: Core.Utils.FastMap<string, T[]>,
         root: T,
         context: Context
     }
@@ -18,8 +18,8 @@ namespace LiteMol.Bootstrap {
         export function create<T extends Node.Any>(context: Context, root: T): Tree<T> {         
             let tree = <Tree<T>>{
                 version: 0,
-                refs: new Map<string, T[]>(),
-                nodes: new Set<number>(),
+                refs: Core.Utils.FastMap.create<string, T[]>(),
+                nodes: Core.Utils.FastSet.create<number>(),
                 root,                
                 context
             };

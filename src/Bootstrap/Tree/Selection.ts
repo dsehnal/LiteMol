@@ -108,7 +108,7 @@ namespace LiteMol.Bootstrap.Tree {
         export function unique<T extends Node.Any>(b: Selector<T>) {
             let q = compile<T>(b);
             return build(() => (tree: Tree<T>) => {
-                let set = new Set<number>();
+                let set = Core.Utils.FastSet.create<number>();
                 let ret: T[] = [];
                 for (let n of q(tree)) {
                     if (!set.has(n.id)) {

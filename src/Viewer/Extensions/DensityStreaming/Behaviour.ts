@@ -35,10 +35,10 @@ namespace LiteMol.Extensions.DensityStreaming {
         private server: string;
         private behaviour: Streaming;
         private groups = {
-            requested: new Set<string>(),
-            shown: new Set<string>(),
-            locked: new Set<string>(),
-            toBeRemoved: new Set<string>()
+            requested: Core.Utils.FastSet.create<string>(),
+            shown: Core.Utils.FastSet.create<string>(),
+            locked: Core.Utils.FastSet.create<string>(),
+            toBeRemoved: Core.Utils.FastSet.create<string>()
         };
         private download: Bootstrap.Task.Running<ArrayBuffer> | undefined = void 0;
         private dataBox: Box | undefined = void 0;

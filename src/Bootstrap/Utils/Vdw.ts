@@ -6,10 +6,10 @@ namespace LiteMol.Bootstrap.Utils {
     "use strict";
 
 
-    let VDWRadii: Map<string, number> = <any>void 0;
+    let VDWRadii: Core.Utils.FastMap<string, number> = <any>void 0;
     export function vdwRadiusFromElementSymbol(model: Core.Structure.Molecule.Model) {
         if (!VDWRadii) VDWRadii = createVdwRadii();        
-        return function (names: string[], radii: Map<string, number>) {
+        return function (names: string[], radii: Core.Utils.FastMap<string, number> ) {
             return function (i: number) {
                 let r = radii.get(names[i]);
                 if (r !== void 0) return r;
@@ -125,7 +125,7 @@ namespace LiteMol.Bootstrap.Utils {
             "Lr": 2.46,
             }
 
-        var ret = new Map<string, number>();
+        var ret = Core.Utils.FastMap.create<string, number>();
         for (let e in vdwRadii) {
             ret.set(e, vdwRadii[e]);
             ret.set(e.toUpperCase(), vdwRadii[e]);

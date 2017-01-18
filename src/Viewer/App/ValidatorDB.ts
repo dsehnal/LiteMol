@@ -33,7 +33,7 @@ namespace LiteMol.Viewer.ValidatorDB {
             return id.split(' ')[0];
         }
 
-        const RedFlags = new Set<string>(['Missing', 'NotAnalyzed']);
+        const RedFlags = Core.Utils.FastSet.of(['Missing', 'NotAnalyzed']);
 
         function isRed(flags: string[]) {
             for (let f of flags) if (RedFlags.has(f)) return true;
@@ -41,20 +41,20 @@ namespace LiteMol.Viewer.ValidatorDB {
         }
         
         export function createReport(data: any): Report {
-            let report: any = new Map<string, any>();
+            let report: any = Core.Utils.FastMap.create<string, any>();
             if (!data.Models) return report;
 
             let residue = { authSeqNumber: 0, authAsymId: '' };
-            let emptySet = new Set<number>();
+            let emptySet = Core.Utils.FastSet.create<number>();
             for (let model of data.Models) {
                 for (let entry of model.Entries) {
                     if (!entry.MainResidue) continue;
 
                     getResidueId(entry.MainResidue, residue);
 
-                    let residueReport = report.get(residue.authAsymId) as Map<number, any>;
+                    let residueReport = report.get(residue.authAsymId) as Core.Utils.FastMap<number, any>;
                     if (residueReport === void 0) {
-                        residueReport = new Map<number, any>();
+                        residueReport = Core.Utils.FastMap.create<number, any>();
                         report.set(residue.authAsymId, residueReport);
                     }
 
@@ -66,12 +66,12 @@ namespace LiteMol.Viewer.ValidatorDB {
 
                     if (!flags.length) flags.push('No Issue');
 
-                    let chiralityMismatchSet: Set<string> | undefined = void 0;
+                    let chiralityMismatchSet: Core.Utils.FastSet<string> | undefined = void 0;
                     let chiralityMismatches = entry.ChiralityMismatches;
                     for (let _m of Object.keys(chiralityMismatches)) {
                         if (!Object.prototype.hasOwnProperty.call(chiralityMismatches, _m)) continue;
                         let a = chiralityMismatches[_m];
-                        if (!chiralityMismatchSet) chiralityMismatchSet = new Set<string>();
+                        if (!chiralityMismatchSet) chiralityMismatchSet = Core.Utils.FastSet.create<string>();
                         chiralityMismatchSet.add(getAtomName(a));
                     }
 
@@ -147,7 +147,7 @@ namespace LiteMol.Viewer.ValidatorDB {
     
     namespace Theme {    
         const colorMap = (function () {
-            let colors = new Map<number, LiteMol.Visualization.Color>();
+            let colors = Core.Utils.FastMap.create<number, LiteMol.Visualization.Color>();
             colors.set(0, { r: 0.4, g: 0.4, b: 0.4 }); 
             colors.set(1, { r: 0, g: 1, b: 0 }); 
             colors.set(2, { r: 1, g: 0, b: 0 });
@@ -209,7 +209,7 @@ namespace LiteMol.Viewer.ValidatorDB {
                 ? createAtomMapNormal(model, report)
                 : createAtomMapComputed(model, report);
             
-            let colors = new Map<string, LiteMol.Visualization.Color>();
+            let colors = Core.Utils.FastMap.create<string, LiteMol.Visualization.Color>();
             colors.set('Uniform', defaultColor)
             colors.set('Selection', selectionColor)
             colors.set('Highlight', highlightColor);         
@@ -267,7 +267,7 @@ namespace LiteMol.Viewer.ValidatorDB {
                 throw 'No suitable parent found.';
             } 
                 
-            let themes = new Map<number, Visualization.Theme>();      
+            let themes = Core.Utils.FastMap.create<number, Visualization.Theme>();      
             let visuals = context.select(Bootstrap.Tree.Selection.byValue(molecule).subtree().ofType(Bootstrap.Entity.Molecule.Visual));            
             for (let v of visuals) {
                 let model = Bootstrap.Utils.Molecule.findModel(v);
