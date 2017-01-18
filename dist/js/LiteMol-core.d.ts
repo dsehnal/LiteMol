@@ -1567,20 +1567,27 @@ declare namespace LiteMol.Core.Utils {
     interface FastMap<K extends string | number, V> {
         readonly size: number;
         set(key: K, v: V): void;
-        get(key: K): V;
+        get(key: K): V | undefined;
         delete(key: K): boolean;
         has(key: K): boolean;
-        forEach<Context>(f: (key: K, v: number, ctx?: Context) => void, ctx?: Context): void;
+        clear(): void;
+        forEach<Context>(f: (value: V, key: K, ctx?: Context) => void, ctx?: Context): void;
+    }
+    interface MapLike<K extends string | number, V> {
+        get(key: K): V | undefined;
+        has(key: K): boolean;
     }
     interface FastSet<T extends string | number> {
         readonly size: number;
         add(key: T): boolean;
         delete(key: T): boolean;
         has(key: T): boolean;
+        clear(): void;
         forEach<Context>(f: (key: T, ctx?: Context) => void, ctx?: Context): void;
     }
     namespace FastMap {
         function create<K extends string | number, V>(): FastMap<K, V>;
+        function of<K extends string | number, V>(data: (K | V)[][]): FastMap<string | number, {}>;
     }
     namespace FastSet {
         function create<T extends string | number>(): FastSet<T>;

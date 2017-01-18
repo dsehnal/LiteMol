@@ -122,23 +122,25 @@ namespace LiteMol.Visualization {
     }
     
     export interface Theme {
-        colors: Map<string, Color>;
-        transparency: Theme.Transparency;
-        interactive: boolean;
-        disableFog: boolean;
-        setElementColor(index: number, target: Color): void;
+        colors: Theme.ColorMap,
+        transparency: Theme.Transparency,
+        interactive: boolean,
+        disableFog: boolean,
+        setElementColor(index: number, target: Color): void
     }
     
     export namespace Theme {
         
         export interface Props {
-            colors?: Map<string, Color>;
-            transparency?: Theme.Transparency;
-            interactive?: boolean;
-            disableFog?: boolean;
+            colors?: ColorMap,
+            transparency?: Theme.Transparency,
+            interactive?: boolean,
+            disableFog?: boolean
         }
                 
         export interface Transparency { alpha?: number; writeDepth?: boolean }
+
+        export interface ColorMap { get(key: any): Color | undefined, forEach(f: (value: Color, key: any) => void): void }
         
         export namespace Default {
             export const HighlightColor: Color = { r: 1.0, g: 1.0, b: 0 }; 
@@ -165,18 +167,22 @@ namespace LiteMol.Visualization {
             return c;
         }
         
-        export function createUniform(props: Props = {}): Theme {
+        export function createUniform(props: Props = {}): Theme {            
+            let { colors, transparency = Default.Transparency, interactive = true, disableFog = false } = props;
             
-            let { colors = new Map<string, Color>(), transparency = Default.Transparency, interactive = true, disableFog = false } = props;
-            
-            let uniform = colors.get('Uniform');
+            let finalColors = Core.Utils.FastMap.create<any, Color>();
+            if (colors) {
+                colors.forEach((c, n) => finalColors.set(n, c));
+            }
+
+            let uniform = finalColors.get('Uniform');
             if (!uniform) {
-                colors.set('Uniform', Default.UniformColor);
+                finalColors.set('Uniform', Default.UniformColor);
                 uniform = Default.UniformColor;
             }
             
             return {
-                colors,
+                colors: finalColors,
                 transparency,
                 interactive,
                 disableFog,
@@ -187,10 +193,8 @@ namespace LiteMol.Visualization {
         }
         
         export function createMapping(mapping: ElementMapping, props: Props = {}): Theme {
-            let { colors = new Map<string, Color>(), transparency = Default.Transparency, interactive = true, disableFog = false } = props;
-            
-            //let prop = mapping.getProperty;
-            // let set = mapping.setColor;
+            let { colors = Core.Utils.FastMap.create<string, Color>(), transparency = Default.Transparency, interactive = true, disableFog = false } = props;
+                        
             return {
                 colors,
                 transparency: transparency ? transparency : Default.Transparency,
@@ -202,7 +206,7 @@ namespace LiteMol.Visualization {
             }
         }
         
-        export function createColorMapMapping(getProperty: (index: number) => any, map: Map<any, Color>, fallbackColor:Color): ElementMapping {
+        export function createColorMapMapping(getProperty: (index: number) => any, map: ColorMap, fallbackColor:Color): ElementMapping {
             let mapper = new ColorMapMapper(map, fallbackColor);
             return {
                 getProperty,
@@ -221,9 +225,9 @@ namespace LiteMol.Visualization {
         class PaletterMapper {
             
             private colorIndex = 0;
-            private colorMap = new Map<any, Color>();   
+            private colorMap = Core.Utils.FastMap.create<any, Color>();   
             
-            setColor(p: any, target: Color) {
+            setColor(p: string | number, target: Color) {
                 var color = this.colorMap.get(p);
                 if (!color) {
                     this.colorIndex = ((this.colorIndex + 1) % this.pallete.length) | 0;
@@ -246,7 +250,7 @@ namespace LiteMol.Visualization {
                 Color.copy(color, target);
             }
             
-            constructor(private map: Map<any, Color>, private fallbackColor: Color) {                
+            constructor(private map: ColorMap, private fallbackColor: Color) {                
             }
             
         }

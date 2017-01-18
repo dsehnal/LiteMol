@@ -69,7 +69,7 @@ namespace LiteMol.Visualization.Molecule.BallsAndSticks {
             let tree = Core.Geometry.SubdivisionTree3D.create<number>(<any>indices, (i, add) => { add(cX[i], cY[i], cZ[i]) }),
                 ctx = Core.Geometry.SubdivisionTree3D.createContextRadius(tree, bondLength + 1, false),
                 pA = new THREE.Vector3(), pB = new THREE.Vector3(),
-                processed = new Set<number>(),
+                processed = Core.Utils.FastSet.create<number>(),
                 buffer = ctx.buffer;
 
             while (startAtomIndex < atomCount) {

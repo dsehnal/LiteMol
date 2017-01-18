@@ -441,8 +441,8 @@ namespace LiteMol.Visualization.Molecule.Cartoons.Geometry {
         normalVectors: number[] = <any>new Float32Array(0);
 
         residueCount = 0;
-        structureStarts = new Set<number>();
-        structureEnds = new Set<number>();
+        structureStarts = Core.Utils.FastSet.create();
+        structureEnds = Core.Utils.FastSet.create();
 
         residueType: Core.Structure.SecondaryStructureType[] = [];
         residueIndex: Int32Array = new Int32Array(0);

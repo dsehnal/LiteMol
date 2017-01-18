@@ -231,8 +231,8 @@ namespace LiteMolPluginInstance {
     function createSelectionTheme(color: CoreVis.Color) {
         // for more options also see Bootstrap/Visualization/Molecule/Theme
         let colors = new Map<string, CoreVis.Color>();
-        colors.set('Uniform', CoreVis.Color.fromHex(0xffffff))
-        colors.set('Selection', color)
+        colors.set('Uniform', CoreVis.Color.fromHex(0xffffff));
+        colors.set('Selection', color);
         colors.set('Highlight', CoreVis.Theme.Default.HighlightColor);
         return Visualization.Molecule.uniformThemeProvider(<any>void 0, { colors });
     }

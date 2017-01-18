@@ -8,7 +8,7 @@ namespace LiteMol.Visualization {
     export class ModelStore {        
         private availableIds: number[] = [];
         private list: Model[] = [];
-        private map = new Map<number, Model>();
+        private map = Core.Utils.FastMap.create<number, Model>();
         private maxId = 1;
         private _idWidth = 8;
         

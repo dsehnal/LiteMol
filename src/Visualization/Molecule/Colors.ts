@@ -6,7 +6,7 @@ namespace LiteMol.Visualization.Molecule.Colors {
              
     export const DefaultBondColor: Color = { r: 0.6, g: 0.6, b: 0.6 };
     export const DefaultElementColor = { r: 0.6, g: 0.6, b: 0.6 };
-    export const DefaultElementColorMap = new  Map<string, Color>();
+    export const DefaultElementColorMap: Theme.ColorMap = Core.Utils.FastMap.create<string, Color>();
     export const DefaultPallete: Color[] = [];
     
     (function () {
@@ -15,9 +15,9 @@ namespace LiteMol.Visualization.Molecule.Colors {
         for (let c of colors) {
             let n: string = <any>c[0];
             let clr = { r: <any>c[1], g: <any>c[2], b: <any>c[3] };
-            DefaultElementColorMap.set(n, clr);
-            DefaultElementColorMap.set(n.toUpperCase(), clr);
-            DefaultElementColorMap.set(n.toLowerCase(), clr);
+            (DefaultElementColorMap as Core.Utils.FastMap<string, Color>).set(n, clr);
+            (DefaultElementColorMap as Core.Utils.FastMap<string, Color>).set(n.toUpperCase(), clr);
+            (DefaultElementColorMap as Core.Utils.FastMap<string, Color>).set(n.toLowerCase(), clr);
             DefaultPallete.push(clr);
         }   
     })();

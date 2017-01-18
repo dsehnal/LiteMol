@@ -33,13 +33,20 @@ namespace LiteMol.Bootstrap.Visualization.Molecule {
     
     export function uniformThemeProvider(e: Entity.Any, props?: LiteMol.Visualization.Theme.Props) {
         if (props && props.colors) {
-            props.colors.set('Bond', props.colors.get('Uniform'));
+            if (!props.colors.get('Bond') && props.colors.get('Uniform')) {
+                let oldColors = props.colors;
+                props = Utils.assign({}, props);
+                let newColors = Core.Utils.FastMap.create<any, LiteMol.Visualization.Color>();
+                props.colors = newColors;
+                oldColors.forEach((color, key) => newColors.set(key, color));
+                newColors.set('Bond', props.colors.get('Uniform')!);
+            }
         }
         return Vis.Theme.createUniform(props);   
     }
     
     export function createColorMapThemeProvider(
-        provider: (m: Core.Structure.Molecule.Model) => { index: number[], property: any[] }, colorMap: Map<string, LiteMol.Visualization.Color>, fallbackColor: LiteMol.Visualization.Color) {
+        provider: (m: Core.Structure.Molecule.Model) => { index: number[], property: any[] }, colorMap: LiteMol.Visualization.Theme.ColorMap, fallbackColor: LiteMol.Visualization.Color) {
         return function (e: Entity.Any, props?: LiteMol.Visualization.Theme.Props) {            
             let model = Utils.Molecule.findModel(e)!.props.model;
             let map = provider(model);

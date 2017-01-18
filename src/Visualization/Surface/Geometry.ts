@@ -204,7 +204,7 @@ namespace LiteMol.Visualization.Surface {
         ctx.geom.pickPlatesGeometry = pickGeometry;
     }
 
-    function addWireframeEdge(edges: ChunkedArray<number>, included: Set<number>, a: number, b: number) {
+    function addWireframeEdge(edges: ChunkedArray<number>, included: Core.Utils.FastSet<number>, a: number, b: number) {
         if (a > b) {
             let t = a;
             a = b;
@@ -221,7 +221,7 @@ namespace LiteMol.Visualization.Surface {
     function buildWireframeIndices(ctx: Context) {
         let tris = ctx.data.triangleIndices;
         let edges = ChunkedArray.create<number>(size => new Uint32Array(size), (1.5 * ctx.triCount) | 0, 2);
-        let includedEdges = new Set<number>();
+        let includedEdges = Core.Utils.FastSet.create();
 
         for (let i = 0, _b = tris.length; i < _b; i += 3) {
             let a = tris[i], b = tris[i + 1], c = tris[i + 2];

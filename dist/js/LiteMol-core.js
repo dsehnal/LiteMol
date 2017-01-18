@@ -11382,13 +11382,13 @@ var LiteMol;
                 function forEach(map, f, ctx) {
                     var hasOwn = Object.prototype.hasOwnProperty;
                     for (var _i = 0, _a = Object.keys(map); _i < _a.length; _i++) {
-                        var p = _a[_i];
-                        if (!hasOwn.call(map, p))
+                        var key = _a[_i];
+                        if (!hasOwn.call(map, key))
                             continue;
-                        var v = map[p];
+                        var v = map[key];
                         if (v === void 0)
                             continue;
-                        f(p, v, ctx);
+                        f(v, key, ctx);
                     }
                 }
                 var __proto = {
@@ -11411,6 +11411,10 @@ var LiteMol;
                     has: function (key) {
                         return this.data[key] !== void 0;
                     },
+                    clear: function () {
+                        this.data = Object.create(null);
+                        this.size = 0;
+                    },
                     forEach: function (f, ctx) {
                         forEach(this.data, f, ctx !== void 0 ? ctx : void 0);
                     }
@@ -11422,6 +11426,15 @@ var LiteMol;
                     return ret;
                 }
                 FastMap.create = create;
+                function of(data) {
+                    var ret = create();
+                    for (var _i = 0, data_1 = data; _i < data_1.length; _i++) {
+                        var xs = data_1[_i];
+                        ret.set(xs[0], xs[1]);
+                    }
+                    return ret;
+                }
+                FastMap.of = of;
             })(FastMap = Utils.FastMap || (Utils.FastMap = {}));
             var FastSet;
             (function (FastSet) {
@@ -11451,6 +11464,10 @@ var LiteMol;
                     },
                     has: function (key) {
                         return this.data[key] === null;
+                    },
+                    clear: function () {
+                        this.data = Object.create(null);
+                        this.size = 0;
                     },
                     forEach: function (f, ctx) {
                         forEach(this.data, f, ctx !== void 0 ? ctx : void 0);

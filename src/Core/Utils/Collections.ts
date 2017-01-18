@@ -8,10 +8,16 @@ namespace LiteMol.Core.Utils {
     export interface FastMap<K extends string | number, V> {
         readonly size: number;
         set(key: K, v: V): void;
-        get(key: K): V;
+        get(key: K): V | undefined;
         delete(key: K): boolean;
         has(key: K): boolean;
-        forEach<Context>(f: (key: K, v: number, ctx?: Context) => void, ctx?: Context): void;
+        clear(): void;
+        forEach<Context>(f: (value: V, key: K, ctx?: Context) => void, ctx?: Context): void;
+    }
+
+    export interface MapLike<K extends string | number, V> {
+        get(key: K): V | undefined;
+        has(key: K): boolean;
     }
 
     export interface FastSet<T extends string | number> {
@@ -19,17 +25,18 @@ namespace LiteMol.Core.Utils {
         add(key: T): boolean;
         delete(key: T): boolean;
         has(key: T): boolean;
+        clear(): void;
         forEach<Context>(f: (key: T, ctx?: Context) => void, ctx?: Context): void;
     }
 
     export namespace FastMap {
-        function forEach(map: any, f: (k: string | number, v: number, ctx: any) => void, ctx: any) {
+        function forEach(map: any, f: (value: any, key: any, ctx: any) => void, ctx: any) {
             const hasOwn = Object.prototype.hasOwnProperty;
-            for (let p of Object.keys(map)) {
-                if (!hasOwn.call(map, p)) continue;
-                let v = map[p];
+            for (let key of Object.keys(map)) {
+                if (!hasOwn.call(map, key)) continue;
+                let v = map[key];
                 if (v === void 0) continue;
-                f(p, v, ctx);
+                f(v, key, ctx);
             }
         }
 
@@ -52,6 +59,10 @@ namespace LiteMol.Core.Utils {
             has(this: any, key: string | number) {
                 return this.data[key] !== void 0;
             },
+            clear(this: any) {
+                this.data = Object.create(null);
+                this.size = 0;
+            },
             forEach(this: any, f: (k: string | number, v: number, ctx?: any) => void, ctx?: any) {
                 forEach(this.data, f, ctx !== void 0 ? ctx : void 0);
             }
@@ -61,6 +72,14 @@ namespace LiteMol.Core.Utils {
             let ret = Object.create(__proto) as any;
             ret.data = Object.create(null);
             ret.size = 0;
+            return ret;
+        }
+
+        export function of<K extends string | number, V>(data: (K | V)[][])         {
+            let ret = create();
+            for (let xs of data) {
+                ret.set(xs[0] as any, xs[1]);
+            }
             return ret;
         }
     }
@@ -89,6 +108,10 @@ namespace LiteMol.Core.Utils {
             },
             has(this: any, key: string | number) {
                 return this.data[key] === null;
+            },
+            clear(this: any) {
+                this.data = Object.create(null);
+                this.size = 0;
             },
             forEach(this: any, f: (k: string | number, ctx: any) => void, ctx?: any) {
                 forEach(this.data, f, ctx !== void 0 ? ctx : void 0);

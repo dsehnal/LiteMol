@@ -4883,20 +4883,27 @@ declare namespace LiteMol.Core.Utils {
     interface FastMap<K extends string | number, V> {
         readonly size: number;
         set(key: K, v: V): void;
-        get(key: K): V;
+        get(key: K): V | undefined;
         delete(key: K): boolean;
         has(key: K): boolean;
-        forEach<Context>(f: (key: K, v: number, ctx?: Context) => void, ctx?: Context): void;
+        clear(): void;
+        forEach<Context>(f: (value: V, key: K, ctx?: Context) => void, ctx?: Context): void;
+    }
+    interface MapLike<K extends string | number, V> {
+        get(key: K): V | undefined;
+        has(key: K): boolean;
     }
     interface FastSet<T extends string | number> {
         readonly size: number;
         add(key: T): boolean;
         delete(key: T): boolean;
         has(key: T): boolean;
+        clear(): void;
         forEach<Context>(f: (key: T, ctx?: Context) => void, ctx?: Context): void;
     }
     namespace FastMap {
         function create<K extends string | number, V>(): FastMap<K, V>;
+        function of<K extends string | number, V>(data: (K | V)[][]): FastMap<string | number, {}>;
     }
     namespace FastSet {
         function create<T extends string | number>(): FastSet<T>;
@@ -12063,7 +12070,7 @@ declare namespace LiteMol.Visualization {
         function isColor(c: any): c is Color;
     }
     interface Theme {
-        colors: Map<string, Color>;
+        colors: Theme.ColorMap;
         transparency: Theme.Transparency;
         interactive: boolean;
         disableFog: boolean;
@@ -12071,7 +12078,7 @@ declare namespace LiteMol.Visualization {
     }
     namespace Theme {
         interface Props {
-            colors?: Map<string, Color>;
+            colors?: ColorMap;
             transparency?: Theme.Transparency;
             interactive?: boolean;
             disableFog?: boolean;
@@ -12079,6 +12086,10 @@ declare namespace LiteMol.Visualization {
         interface Transparency {
             alpha?: number;
             writeDepth?: boolean;
+        }
+        interface ColorMap {
+            get(key: any): Color | undefined;
+            forEach(f: (value: Color, key: any) => void): void;
         }
         namespace Default {
             const HighlightColor: Color;
@@ -12094,7 +12105,7 @@ declare namespace LiteMol.Visualization {
         function getColor(theme: Theme, name: string, fallback: Color): Color;
         function createUniform(props?: Props): Theme;
         function createMapping(mapping: ElementMapping, props?: Props): Theme;
-        function createColorMapMapping(getProperty: (index: number) => any, map: Map<any, Color>, fallbackColor: Color): ElementMapping;
+        function createColorMapMapping(getProperty: (index: number) => any, map: ColorMap, fallbackColor: Color): ElementMapping;
         function createPalleteMapping(getProperty: (index: number) => any, pallete: Color[]): ElementMapping;
     }
 }
@@ -12505,10 +12516,10 @@ declare namespace LiteMol.Visualization.Selection {
     }
     class VertexMap {
         elementIndices: number[];
-        elementMap: Map<number, number>;
+        elementMap: Core.Utils.FastMap<number, number>;
         elementRanges: number[];
         vertexRanges: number[];
-        constructor(elementIndices: number[], elementMap: Map<number, number>, elementRanges: number[], vertexRanges: number[]);
+        constructor(elementIndices: number[], elementMap: Core.Utils.FastMap<number, number>, elementRanges: number[], vertexRanges: number[]);
     }
     function applyActionToRange(array: Float32Array, start: number, end: number, action: Action): boolean;
     function applyActionToBuffer(buffer: THREE.BufferAttribute, action: Action): boolean;
@@ -12721,8 +12732,8 @@ declare namespace LiteMol.Visualization.Molecule.Cartoons.Geometry {
         torsionVectors: number[];
         normalVectors: number[];
         residueCount: number;
-        structureStarts: Set<number>;
-        structureEnds: Set<number>;
+        structureStarts: Core.Utils.FastSet<string | number>;
+        structureEnds: Core.Utils.FastSet<string | number>;
         residueType: Core.Structure.SecondaryStructureType[];
         residueIndex: Int32Array;
         backboneOnly: boolean;
@@ -12835,7 +12846,7 @@ declare namespace LiteMol.Visualization.Molecule.Colors {
         g: number;
         b: number;
     };
-    const DefaultElementColorMap: Map<string, Color>;
+    const DefaultElementColorMap: Theme.ColorMap;
     const DefaultPallete: Color[];
 }
 declare namespace LiteMol.Visualization.Primitive {
@@ -16087,7 +16098,7 @@ declare namespace LiteMol.Bootstrap.Visualization.Molecule {
     function createColorMapThemeProvider(provider: (m: Core.Structure.Molecule.Model) => {
         index: number[];
         property: any[];
-    }, colorMap: Map<string, LiteMol.Visualization.Color>, fallbackColor: LiteMol.Visualization.Color): (e: Entity.Any, props?: Vis.Theme.Props | undefined) => Vis.Theme;
+    }, colorMap: LiteMol.Visualization.Theme.ColorMap, fallbackColor: LiteMol.Visualization.Color): (e: Entity.Any, props?: Vis.Theme.Props | undefined) => Vis.Theme;
     namespace Default {
         const Themes: Theme.Template[];
         const CartoonThemeTemplate: Theme.Template;

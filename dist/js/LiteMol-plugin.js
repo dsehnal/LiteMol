@@ -11447,13 +11447,13 @@ var LiteMol;
                 function forEach(map, f, ctx) {
                     var hasOwn = Object.prototype.hasOwnProperty;
                     for (var _i = 0, _a = Object.keys(map); _i < _a.length; _i++) {
-                        var p = _a[_i];
-                        if (!hasOwn.call(map, p))
+                        var key = _a[_i];
+                        if (!hasOwn.call(map, key))
                             continue;
-                        var v = map[p];
+                        var v = map[key];
                         if (v === void 0)
                             continue;
-                        f(p, v, ctx);
+                        f(v, key, ctx);
                     }
                 }
                 var __proto = {
@@ -11476,6 +11476,10 @@ var LiteMol;
                     has: function (key) {
                         return this.data[key] !== void 0;
                     },
+                    clear: function () {
+                        this.data = Object.create(null);
+                        this.size = 0;
+                    },
                     forEach: function (f, ctx) {
                         forEach(this.data, f, ctx !== void 0 ? ctx : void 0);
                     }
@@ -11487,6 +11491,15 @@ var LiteMol;
                     return ret;
                 }
                 FastMap.create = create;
+                function of(data) {
+                    var ret = create();
+                    for (var _i = 0, data_1 = data; _i < data_1.length; _i++) {
+                        var xs = data_1[_i];
+                        ret.set(xs[0], xs[1]);
+                    }
+                    return ret;
+                }
+                FastMap.of = of;
             })(FastMap = Utils.FastMap || (Utils.FastMap = {}));
             var FastSet;
             (function (FastSet) {
@@ -11516,6 +11529,10 @@ var LiteMol;
                     },
                     has: function (key) {
                         return this.data[key] === null;
+                    },
+                    clear: function () {
+                        this.data = Object.create(null);
+                        this.size = 0;
                     },
                     forEach: function (f, ctx) {
                         forEach(this.data, f, ctx !== void 0 ? ctx : void 0);
@@ -55278,14 +55295,18 @@ var LiteMol;
             Theme.getColor = getColor;
             function createUniform(props) {
                 if (props === void 0) { props = {}; }
-                var _a = props.colors, colors = _a === void 0 ? new Map() : _a, _b = props.transparency, transparency = _b === void 0 ? Default.Transparency : _b, _c = props.interactive, interactive = _c === void 0 ? true : _c, _d = props.disableFog, disableFog = _d === void 0 ? false : _d;
-                var uniform = colors.get('Uniform');
+                var colors = props.colors, _a = props.transparency, transparency = _a === void 0 ? Default.Transparency : _a, _b = props.interactive, interactive = _b === void 0 ? true : _b, _c = props.disableFog, disableFog = _c === void 0 ? false : _c;
+                var finalColors = LiteMol.Core.Utils.FastMap.create();
+                if (colors) {
+                    colors.forEach(function (c, n) { return finalColors.set(n, c); });
+                }
+                var uniform = finalColors.get('Uniform');
                 if (!uniform) {
-                    colors.set('Uniform', Default.UniformColor);
+                    finalColors.set('Uniform', Default.UniformColor);
                     uniform = Default.UniformColor;
                 }
                 return {
-                    colors: colors,
+                    colors: finalColors,
                     transparency: transparency,
                     interactive: interactive,
                     disableFog: disableFog,
@@ -55297,9 +55318,7 @@ var LiteMol;
             Theme.createUniform = createUniform;
             function createMapping(mapping, props) {
                 if (props === void 0) { props = {}; }
-                var _a = props.colors, colors = _a === void 0 ? new Map() : _a, _b = props.transparency, transparency = _b === void 0 ? Default.Transparency : _b, _c = props.interactive, interactive = _c === void 0 ? true : _c, _d = props.disableFog, disableFog = _d === void 0 ? false : _d;
-                //let prop = mapping.getProperty;
-                // let set = mapping.setColor;
+                var _a = props.colors, colors = _a === void 0 ? LiteMol.Core.Utils.FastMap.create() : _a, _b = props.transparency, transparency = _b === void 0 ? Default.Transparency : _b, _c = props.interactive, interactive = _c === void 0 ? true : _c, _d = props.disableFog, disableFog = _d === void 0 ? false : _d;
                 return {
                     colors: colors,
                     transparency: transparency ? transparency : Default.Transparency,
@@ -55331,7 +55350,7 @@ var LiteMol;
                 function PaletterMapper(pallete) {
                     this.pallete = pallete;
                     this.colorIndex = 0;
-                    this.colorMap = new Map();
+                    this.colorMap = LiteMol.Core.Utils.FastMap.create();
                 }
                 PaletterMapper.prototype.setColor = function (p, target) {
                     var color = this.colorMap.get(p);
@@ -55739,7 +55758,7 @@ var LiteMol;
                 this.scene = scene;
                 this.availableIds = [];
                 this.list = [];
-                this.map = new Map();
+                this.map = LiteMol.Core.Utils.FastMap.create();
                 this.maxId = 1;
                 this._idWidth = 8;
             }
@@ -57104,7 +57123,7 @@ var LiteMol;
             var ChunkedArray = LiteMol.Core.Utils.ChunkedArray;
             var VertexMapBuilder = (function () {
                 function VertexMapBuilder(elementCount) {
-                    this.elementMap = new Map();
+                    this.elementMap = LiteMol.Core.Utils.FastMap.create();
                     this.elementIndex = 0;
                     this.elementRangeIndex = 0;
                     this.rangeIndex = 0;
@@ -57428,7 +57447,7 @@ var LiteMol;
             function buildWireframeIndices(ctx) {
                 var tris = ctx.data.triangleIndices;
                 var edges = ChunkedArray.create(function (size) { return new Uint32Array(size); }, (1.5 * ctx.triCount) | 0, 2);
-                var includedEdges = new Set();
+                var includedEdges = LiteMol.Core.Utils.FastSet.create();
                 for (var i = 0, _b = tris.length; i < _b; i += 3) {
                     var a = tris[i], b = tris[i + 1], c = tris[i + 2];
                     addWireframeEdge(edges, includedEdges, a, b);
@@ -58025,7 +58044,7 @@ var LiteMol;
                                 residueCount: residueCount
                             };
                         }
-                        var tree = LiteMol.Core.Geometry.SubdivisionTree3D.create(indices, function (i, add) { add(cX[i], cY[i], cZ[i]); }), ctx = LiteMol.Core.Geometry.SubdivisionTree3D.createContextRadius(tree, bondLength + 1, false), pA = new Visualization.THREE.Vector3(), pB = new Visualization.THREE.Vector3(), processed = new Set(), buffer = ctx.buffer;
+                        var tree = LiteMol.Core.Geometry.SubdivisionTree3D.create(indices, function (i, add) { add(cX[i], cY[i], cZ[i]); }), ctx = LiteMol.Core.Geometry.SubdivisionTree3D.createContextRadius(tree, bondLength + 1, false), pA = new Visualization.THREE.Vector3(), pB = new Visualization.THREE.Vector3(), processed = LiteMol.Core.Utils.FastSet.create(), buffer = ctx.buffer;
                         while (startAtomIndex < atomCount) {
                             var rIndex = atomResidueIndex[indices[startAtomIndex]];
                             endAtomIndex = startAtomIndex;
@@ -58792,8 +58811,8 @@ var LiteMol;
                             this.torsionVectors = new Float32Array(0);
                             this.normalVectors = new Float32Array(0);
                             this.residueCount = 0;
-                            this.structureStarts = new Set();
-                            this.structureEnds = new Set();
+                            this.structureStarts = LiteMol.Core.Utils.FastSet.create();
+                            this.structureEnds = LiteMol.Core.Utils.FastSet.create();
                             this.residueType = [];
                             this.residueIndex = new Int32Array(0);
                             this.backboneOnly = false;
@@ -59876,7 +59895,7 @@ var LiteMol;
             (function (Colors) {
                 Colors.DefaultBondColor = { r: 0.6, g: 0.6, b: 0.6 };
                 Colors.DefaultElementColor = { r: 0.6, g: 0.6, b: 0.6 };
-                Colors.DefaultElementColorMap = new Map();
+                Colors.DefaultElementColorMap = LiteMol.Core.Utils.FastMap.create();
                 Colors.DefaultPallete = [];
                 (function () {
                     var colors = [["Ac", 0.43921, 0.67058, 0.98039], ["Al", 0.74901, 0.65098, 0.65098], ["Am", 0.32941, 0.36078, 0.94901], ["Sb", 0.6196, 0.38823, 0.7098], ["Ar", 0.50196, 0.8196, 0.89019], ["As", 0.74117, 0.50196, 0.89019], ["At", 0.45882, 0.3098, 0.27058], ["Ba", 0, 0.78823, 0], ["Bk", 0.54117, 0.3098, 0.89019], ["Be", 0.76078, 1, 0], ["Bi", 0.6196, 0.3098, 0.7098], ["Bh", 0.87843, 0, 0.2196], ["B", 1, 0.7098, 0.7098], ["Br", 0.65098, 0.16078, 0.16078], ["Cd", 1, 0.85098, 0.56078], ["Ca", 0.23921, 1, 0], ["Cf", 0.63137, 0.21176, 0.83137], ["C", 0.45, 0.45, 0.45], ["Ce", 1, 1, 0.78039], ["Cs", 0.34117, 0.09019, 0.56078], ["Cl", 0.12156, 0.94117, 0.12156], ["Cr", 0.54117, 0.6, 0.78039], ["Co", 0.94117, 0.5647, 0.62745], ["Cu", 0.78431, 0.50196, 0.2], ["Cm", 0.47058, 0.36078, 0.89019], ["D", 0.9, 0.9, 0.9], ["Db", 0.8196, 0, 0.3098], ["Dy", 0.12156, 1, 0.78039], ["Es", 0.70196, 0.12156, 0.83137], ["Er", 0, 0.90196, 0.45882], ["Eu", 0.38039, 1, 0.78039], ["Fm", 0.70196, 0.12156, 0.72941], ["F", 0.70196, 1, 1], ["Fr", 0.25882, 0, 0.4], ["Gd", 0.27058, 1, 0.78039], ["Ga", 0.76078, 0.56078, 0.56078], ["Ge", 0.4, 0.56078, 0.56078], ["Au", 1, 0.8196, 0.13725], ["Hf", 0.30196, 0.76078, 1], ["Hs", 0.90196, 0, 0.18039], ["He", 0.85098, 1, 1], ["Ho", 0, 1, 0.61176], ["H", 0.9, 0.9, 0.9], ["In", 0.65098, 0.45882, 0.45098], ["I", 0.58039, 0, 0.58039], ["Ir", 0.09019, 0.32941, 0.52941], ["Fe", 0.698, 0.13, 0.13], ["Kr", 0.36078, 0.72156, 0.8196], ["La", 0.43921, 0.83137, 1], ["Lr", 0.78039, 0, 0.4], ["Pb", 0.34117, 0.34901, 0.38039], ["Li", 0.8, 0.50196, 1], ["Lu", 0, 0.67058, 0.14117], ["Mg", 0.54117, 1, 0], ["Mn", 0.61176, 0.47843, 0.78039], ["Mt", 0.92156, 0, 0.14901], ["Md", 0.70196, 0.05098, 0.65098], ["Hg", 0.72156, 0.72156, 0.81568], ["Mo", 0.32941, 0.7098, 0.7098], ["Nd", 0.78039, 1, 0.78039], ["Ne", 0.70196, 0.89019, 0.96078], ["Np", 0, 0.50196, 1], ["Ni", 0.31372, 0.81568, 0.31372], ["Nb", 0.45098, 0.76078, 0.78823], ["N", 0, 0.5, 1], ["No", 0.74117, 0.05098, 0.52941], ["Os", 0.14901, 0.4, 0.58823], ["O", 1, 0.3, 0.3], ["Pd", 0, 0.41176, 0.52156], ["P", 1, 0.50196, 0], ["Pt", 0.81568, 0.81568, 0.87843], ["Pu", 0, 0.4196, 1], ["Po", 0.67058, 0.36078, 0], ["K", 0.56078, 0.25098, 0.83137], ["Pr", 0.85098, 1, 0.78039], ["Pm", 0.63921, 1, 0.78039], ["Pa", 0, 0.63137, 1], ["Ra", 0, 0.49019, 0], ["Rn", 0.25882, 0.5098, 0.58823], ["Re", 0.14901, 0.49019, 0.67058], ["Rh", 0.03921, 0.49019, 0.54901], ["Rb", 0.43921, 0.18039, 0.69019], ["Ru", 0.14117, 0.56078, 0.56078], ["Rf", 0.8, 0, 0.34901], ["Sm", 0.56078, 1, 0.78039], ["Sc", 0.90196, 0.90196, 0.90196], ["Sg", 0.85098, 0, 0.27058], ["Se", 1, 0.63137, 0], ["Si", 0.94117, 0.78431, 0.62745], ["Ag", 0.75294, 0.75294, 0.75294], ["Na", 0.67058, 0.36078, 0.94901], ["Sr", 0, 1, 0], ["S", 0.9, 0.775, 0.25], ["Ta", 0.30196, 0.65098, 1], ["Tc", 0.23137, 0.6196, 0.6196], ["Te", 0.83137, 0.47843, 0], ["Tb", 0.18823, 1, 0.78039], ["Tl", 0.65098, 0.32941, 0.30196], ["Th", 0, 0.72941, 1], ["Tm", 0, 0.83137, 0.32156], ["Sn", 0.4, 0.50196, 0.50196], ["Ti", 0.74901, 0.76078, 0.78039], ["W", 0.12941, 0.58039, 0.83921], ["U", 0, 0.56078, 1], ["V", 0.65098, 0.65098, 0.67058], ["Xe", 0.25882, 0.6196, 0.69019], ["Yb", 0, 0.74901, 0.2196], ["Y", 0.58039, 1, 1], ["Zn", 0.49019, 0.50196, 0.69019], ["Zr", 0.58039, 0.87843, 0.87843]];
@@ -59937,7 +59956,7 @@ var LiteMol;
                             case 0: return [4 /*yield*/, ctx.updateProgress('Building surface...')];
                             case 1:
                                 _d.sent();
-                                uniqueSpheres = new Map();
+                                uniqueSpheres = LiteMol.Core.Utils.FastMap.create();
                                 for (_i = 0, shapes_1 = shapes; _i < shapes_1.length; _i++) {
                                     s = shapes_1[_i];
                                     if (s.type !== 'Sphere' || uniqueSpheres.has(s.tessalation || 0))
@@ -67824,7 +67843,14 @@ var LiteMol;
                 Molecule.createPaletteThemeProvider = createPaletteThemeProvider;
                 function uniformThemeProvider(e, props) {
                     if (props && props.colors) {
-                        props.colors.set('Bond', props.colors.get('Uniform'));
+                        if (!props.colors.get('Bond') && props.colors.get('Uniform')) {
+                            var oldColors = props.colors;
+                            props = Bootstrap.Utils.assign({}, props);
+                            var newColors_1 = LiteMol.Core.Utils.FastMap.create();
+                            props.colors = newColors_1;
+                            oldColors.forEach(function (color, key) { return newColors_1.set(key, color); });
+                            newColors_1.set('Bond', props.colors.get('Uniform'));
+                        }
                     }
                     return Vis.Theme.createUniform(props);
                 }

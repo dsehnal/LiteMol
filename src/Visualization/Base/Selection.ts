@@ -97,7 +97,7 @@ namespace LiteMol.Visualization.Selection {
     export class VertexMapBuilder {
 
         private elementIndices: ChunkedArray<number>;
-        private elementMap = new Map<number, number>();
+        private elementMap = Core.Utils.FastMap.create<number, number>();
         private elementRanges: Int32Array;
         private vertexRanges: ChunkedArray<number>;
 
@@ -145,7 +145,7 @@ namespace LiteMol.Visualization.Selection {
     export class VertexMap {
         constructor(
             public elementIndices: number[],
-            public elementMap: Map<number, number>,
+            public elementMap: Core.Utils.FastMap<number, number>,
             public elementRanges: number[],
             public vertexRanges: number[]) {
         }
