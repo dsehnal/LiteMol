@@ -1,3 +1,6 @@
+# 1.3.0
+* Updated for "LiteMol 2". 
+
 # 1.2.1
 * Performance updates thanks to rewrite of the Computation/Task API.
 

@@ -1,4 +1,7 @@
-﻿# 1.2.11
+﻿# 1.3.0
+* Updated for "LiteMol 2".
+
+# 1.2.11
 * Replaced HTML5 input=range by custom slider component.
 
 # 1.2.10

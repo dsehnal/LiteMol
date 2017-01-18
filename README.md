@@ -1,5 +1,6 @@
 
-![Version](https://img.shields.io/badge/Version-1.0.0-blue.svg?style=flat)
+![Version](https://img.shields.io/badge/Version-2.0.0_preview-blue.svg?style=flat)
+[![Latest Release](https://img.shields.io/badge/Latest%20Release-1.0-blue.svg?style=flat)](https://github.com/dsehnal/LiteMol/releases/tag/v1.0)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg?style=flat)](https://github.com/dsehnal/LiteMol/blob/master/LICENSE)
 
 ![Logo](web/assets/img/lm_logo_small.png)
@@ -25,7 +26,7 @@ Table of Contents
 * [License](#license)
 * [Support](#support)
 * [Contributing](#contributing)
-* [Roadmap](#roadmap)
+* [Releases and Roadmap](#releases-and-roadmap)
 * [FAQ](#faq)
 
 Getting Started
@@ -143,7 +144,7 @@ We would like to know about your use cases of the program, bug reports, and feat
 Our plan is to make a stable LiteMol Core Library (this repository) and allow users to contribute 
 by writing extensions handling their specific use cases of the application. The extension support is currently under development (see the Roadmap below).
 
-Roadmap
+Releases and Roadmap
 =======
 
 LiteMol is still in active development. All things in this section are a subject to change (especially based on user feedback). 
@@ -151,6 +152,13 @@ Currently, our priority is to improve these things:
 
 * Creating documentation and adding more usage examples.
 * Fixing bugs in the code.
+
+Releases
+--------
+
+The latest stable release of LiteMol is the [version 1.0](https://github.com/dsehnal/LiteMol/releases/tag/v1.0).
+
+Currently, the version 2.0 is being developed and is in a "preview" phase, meaning that a number of breaking changes will be introduced.
 
 Short term goals 
 ---------
@@ -161,11 +169,13 @@ These features are planned to be introduced during the first half of 2017.
 * Improving extension support: 
   * Streamline the process of extension creation.
   * Support for dynamic extension loading.
+  * _Will require breaking changes._
 * Support for saving and restoring the state of the application.
+  * _Will require breaking changes._
 * More visual primitives (spheres, cylinders, arrows, etc.). This is partially implemented.
 * Support for labels in the 3D scene.  
 * Improved internal data representation of molecules.
-* Restructure the code and update the build process to support NPM.
+  * _Will require breaking changes._
 
 Long term goals
 ----------

@@ -1,5 +1,8 @@
-﻿# 1.5.5
-* Fixed a  bug in surface highlighting code.
+﻿# 1.6.0
+* Avoid using ES6 Map/Set for performance reasons.
+
+# 1.5.5
+* Fixed a bug in surface highlighting code.
 
 # 1.5.4
 * Updated code to use new Computation API with async/await. As a result, stuff should be faster.

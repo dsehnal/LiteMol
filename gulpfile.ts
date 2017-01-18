@@ -147,7 +147,7 @@ function PackageVersion() {
 
     var readme = fs.readFileSync('README.md', 'UTF-8');
     var regex = /\!\[Version\]\(([^\(\)]+)\)/;
-    var rmVer = '![Version](https://img.shields.io/badge/Version-' + version + '-blue.svg?style=flat)';
+    var rmVer = '![Version](https://img.shields.io/badge/Version-' + version.replace('-', '_') + '-blue.svg?style=flat)';
     readme = readme.replace(regex, rmVer);
     fs.writeFileSync('README.md', readme, { encoding: 'UTF-8' });
 }

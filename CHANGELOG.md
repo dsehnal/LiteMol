@@ -5,6 +5,15 @@ This a global changelog that outlines overal changes in LiteMol.
 Each component also has its separate changelog 
 ([Core](src/Core/CHANGELOG.md), [Visualization](src/Visualization/CHANGELOG.md), [Bootstrap](src/Bootstrap/CHANGELOG.md), [Plugin](src/Plugin/CHANGELOG.md), [Viewer](src/Viewer/CHANGELOG.md)).
 
+
+2.0.0-preview
+-----------
+
+LiteMol 2 will gradually introduce new features and performance improvements. Some of the changes will be breaking.
+
+* Updated data representation of molecules to enable a more straightforward data sharing between different models. This is the first step towards efficient implementation for molecular dynamics and "low overhead" symmetry and assemblies. Breaking change and subject to change, but should not affect user level code much if at all.
+* Using custom implementation of Map/Set instead of ES6 versions where appropriate. This improves the performace by up to ~30% when parsing/visualizing large structures.
+
 1.0.0
 -----------
 

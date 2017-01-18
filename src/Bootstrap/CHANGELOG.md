@@ -1,4 +1,7 @@
-﻿# 1.3.0
+﻿# 1.3.1
+* Where appropriate, use Core.Utils.FastMap/Set instead of ES6 versions.
+
+# 1.3.0
 * Breaking: Updated Task to be backed by a computation rather than a Promise.
   - Tasks are not created by providing a computation object or a Promise and their context object 
     is the same as as the uderlaying Computation's one.
