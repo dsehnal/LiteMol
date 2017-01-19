@@ -6,11 +6,7 @@
 namespace LiteMol.Bootstrap {
     "use strict";
         
-    export interface Entity<
-        E extends Entity<E, T, Props>,
-        T extends Entity.Type<T, E, Props>, 
-        Props extends Entity.CommonProps>         
-        extends Tree.Node<E, Props, Entity.State, T, Entity.TypeInfo> {                     
+    export interface Entity<Props extends Entity.CommonProps> extends Tree.Node<Props, Entity.State, Entity.TypeInfo> {          
     }
         
     export namespace Entity {       
@@ -24,7 +20,7 @@ namespace LiteMol.Bootstrap {
         export const enum Visibility { Full, Partial, None }        
         export interface State { isCollapsed?: boolean; visibility?: Visibility; }
                 
-        export interface Any extends Entity<Any, AnyType, CommonProps> { }    
+        export interface Any extends Entity<CommonProps> { }    
         
         export type Tree = Bootstrap.Tree<Any>
        
@@ -41,19 +37,23 @@ namespace LiteMol.Bootstrap {
             isFocusable?: boolean,
             isSilent?: boolean // silent types are not automatically selected
         }
-                 
-        export interface TypeInfo {            
+
+        export interface TypeInfoBase {
             name: string;
             shortName: string;
             description: string;
             typeClass: TypeClass;
         }
+                 
+        export interface TypeInfo extends TypeInfoBase {            
+            traits: TypeTraits;
+        }
                         
-        export interface Type<T extends Type<T, E, P>, E extends Entity<E, T, P>, P extends CommonProps> extends Tree.Node.Type<TypeInfo, P, E> {
-            traits: TypeTraits,
-            create(transform: Tree.Transform<Any, E, any>, props: P): E        
+        export interface Type<P extends CommonProps> extends Tree.Node.Type<TypeInfo, P, Entity<P>> {
+            readonly Entity: Entity<P>,
+            create(transform: Tree.Transform<Any, Entity<P>, any>, props: P): Entity<P>        
         }                                
-        export type AnyType = Type<any, Any, CommonProps>
+        export type AnyType = Type<CommonProps>
         
         export const RootClass:TypeClass = 'Root';                
         export const GroupClass:TypeClass = 'Group';
@@ -64,7 +64,7 @@ namespace LiteMol.Bootstrap {
         export const ActionClass:TypeClass = 'Action';
         export const BehaviourClass:TypeClass = 'Behaviour';
                 
-        class TypeImpl implements Type<any, any, any> {            
+        class TypeImpl implements Type<any> {            
             create(transform: Tree.Transform.Any, props: CommonProps) {
                 let ret = <Any>{    
                     id: Tree.Node.createId(),
@@ -85,14 +85,17 @@ namespace LiteMol.Bootstrap {
                 
                 return Tree.Node.update(ret) as Any;
             }
+
+            Entity: Entity<any>;
+            public info: TypeInfo;
             
-            constructor(public id: string, public info: TypeInfo, public traits: TypeTraits) {
-                
+            constructor(public id: string, infoBase: TypeInfoBase, traits: TypeTraits) {
+                this.info = Utils.assign({}, infoBase, { traits }) as any;
             }
         }
         
-        export function create<E extends Entity<E, T, Props>, T extends Type<T, E, Props>, Props extends CommonProps>(info: TypeInfo, traits?: TypeTraits): T {
-            return new TypeImpl(Utils.generateUUID(), info, traits ? traits : { }) as T;
+        export function create<Props extends { }>(info: TypeInfoBase, traits?: TypeTraits): Type<Props & CommonProps> {
+            return new TypeImpl(Utils.generateUUID(), info, traits ? traits : { }) as Type<Props & CommonProps>;
         }            
     }    
 }

@@ -33,7 +33,7 @@ namespace LiteMol.Extensions.DensityStreaming {
     export class Behaviour implements Bootstrap.Behaviour.Dynamic {
         private obs: Rx.IDisposable[] = [];
         private server: string;
-        private behaviour: Streaming;
+        private behaviour: Entity.Behaviour.Any;
         private groups = {
             requested: Core.Utils.FastSet.create<string>(),
             shown: Core.Utils.FastSet.create<string>(),
@@ -275,7 +275,7 @@ namespace LiteMol.Extensions.DensityStreaming {
             this.obs = [];
         }
 
-        register(behaviour: Streaming) {
+        register(behaviour: Entity.Behaviour.Any) {
             this.behaviour = behaviour;
 
             Bootstrap.Command.Toast.Show.dispatch(this.context, { key: ToastKey, title: 'Density', message: 'Streaming enabled, click on a residue or an atom to view the data.', timeoutMs: 30 * 1000 });

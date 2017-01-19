@@ -9,10 +9,11 @@ Each component also has its separate changelog
 2.0.0-preview
 -----------
 
-LiteMol 2 will gradually introduce new features and performance improvements. Some of the changes will be breaking.
+LiteMol 2 will gradually introduce new features and performance improvements. Some of the changes will be breaking. The changes are outlined in the [migration docs](docs/migrating/1-to-2.md).
 
 * Updated data representation of molecules to enable a more straightforward data sharing between different models. This is the first step towards efficient implementation for molecular dynamics and "low overhead" symmetry and assemblies. Breaking change and subject to change, but should not affect user level code much if at all.
 * Using custom implementation of Map/Set instead of ES6 versions where appropriate. This improves the performace by up to ~30% when parsing/visualizing large structures.
+* Simplified entity type declaration in TypeScript.
 
 1.0.0
 -----------

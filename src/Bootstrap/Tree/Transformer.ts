@@ -88,7 +88,7 @@ namespace LiteMol.Bootstrap.Tree {
             
             update(context: Context, b: B, t: Transform<A, B, P>): Task<B> {
                 let node = b.parent;                
-                if (this.info.isComposed && !this.updater) return this.transform(context, node, t);
+                if (this.info.isComposed && !this.updater) return this.transform(context, node as A, t);
                 
                 if (this.updater) {
                     let paramValidation = this.validateParams(t);
@@ -97,7 +97,7 @@ namespace LiteMol.Bootstrap.Tree {
                     if (updated) return updated;
                 }              
                 Event.Tree.TransformerApply.dispatch(context, { a: b.parent, t }); 
-                return this.transform(context, node, t);
+                return this.transform(context, node as A, t);
             } 
             
             create(params: P, props?: Transform.Props): Transform<A, B, P>  {

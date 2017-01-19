@@ -7,26 +7,19 @@ namespace LiteMol.Viewer.PDBe.SequenceAnnotation {
     import Transformer = Bootstrap.Entity.Transformer;
     import Query = LiteMol.Core.Structure.Query;
     
-    export interface AnnotationsProps extends Entity.CommonProps { data: any }
-    export interface Annotations extends Entity<Annotations, AnnotationsType, AnnotationsProps> { }         
-    export interface AnnotationsType extends Entity.Type<AnnotationsType, Annotations, AnnotationsProps> { }   
-    export const Annotations = Entity.create<Annotations, AnnotationsType, AnnotationsProps>({ name: 'PDBe Sequence Annotations', typeClass: 'Data', shortName: 'SA', description: 'Represents PDBe sequence annotation data.' });
+    export const Annotations = Entity.create<{ data: any }>({ name: 'PDBe Sequence Annotations', typeClass: 'Data', shortName: 'SA', description: 'Represents PDBe sequence annotation data.' });
+    export type Annotations = typeof Annotations.Entity
+
+    export const Annotation = Entity.create<{ query: Query.Source; color: Visualization.Color; }>({ name: 'PDBe Sequence Annotation', typeClass: 'Object', shortName: 'SA', description: 'Represents PDBe sequence annotation.' }, { isSilent: true, isFocusable: true });
+    export type Annotation = typeof Annotation.Entity
     
-    export interface AnnotationProps extends Entity.CommonProps { query: Query.Source; color: Visualization.Color; }
-    export interface Annotation extends Entity<Annotation, AnnotationType, AnnotationProps> { }         
-    export interface AnnotationType extends Entity.Type<AnnotationType, Annotation, AnnotationProps> { }   
-    export const Annotation = Entity.create<Annotation, AnnotationType, AnnotationProps>({ name: 'PDBe Sequence Annotation', typeClass: 'Object', shortName: 'SA', description: 'Represents PDBe sequence annotation.' }, { isSilent: true, isFocusable: true });
-    
-    export interface BehaviourProps extends Entity.Behaviour.Props<Interactivity.Behaviour> { }
-    export interface Behaviour extends Entity<Behaviour, BehaviourType, BehaviourProps> { }         
-    export interface BehaviourType extends Entity.Type<BehaviourType, Behaviour, BehaviourProps> { }   
-    export const Behaviour = Entity.create<Behaviour, BehaviourType, BehaviourProps>({ name: 'PDBe Sequence Annotation Behaviour', typeClass: 'Behaviour', shortName: 'SA', description: 'Represents PDBe sequence annoation behaviour.' });
-    
-    
+    export const Behaviour = Entity.Behaviour.create<Interactivity.Behaviour, {}>({ name: 'PDBe Sequence Annotation Behaviour', typeClass: 'Behaviour', shortName: 'SA', description: 'Represents PDBe sequence annoation behaviour.' });
+    export type Behaviour = typeof Behaviour.Entity
+        
     namespace Interactivity {
         
         export class Behaviour implements Bootstrap.Behaviour.Dynamic {
-            private node: SequenceAnnotation.Behaviour = <any>void 0;
+            private node: Entity.Behaviour.Any = <any>void 0;
             private current: Annotation | undefined = void 0;
             private subs: Bootstrap.Rx.IDisposable[] = [];
             
@@ -42,7 +35,7 @@ namespace LiteMol.Viewer.PDBe.SequenceAnnotation {
                 this.node = <any>void 0;
             }
                     
-            register(behaviour: SequenceAnnotation.Behaviour) {
+            register(behaviour: Entity.Behaviour.Any) {
                 this.node = behaviour;
                 this.subs.push(this.context.behaviours.currentEntity.subscribe(e => this.update(e)));
                 this.subs.push(Bootstrap.Command.Entity.Highlight.getStream(this.context).subscribe(e => {

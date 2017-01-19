@@ -86,9 +86,9 @@ namespace LiteMol.Bootstrap {
             }
         }
         
-        export function updatePath<T extends Node.Any>(node: T) {
+        export function updatePath(node: Node.Any) {
             if (!node) return;            
-            let top: T | undefined = void 0;
+            let top: Node.Any | undefined = void 0;
             while (node !== node.parent) {
                 top = node;
                 Node.update(node);

@@ -22,7 +22,7 @@ namespace LiteMol.Bootstrap.Components.Transform {
             }
 
             let transforms: Controller<any>[] = [] 
-            for (let t of this.context.transforms.getBySourceType(e.type)) {
+            for (let t of this.context.transforms.getBySourceType(e.type as Entity.AnyType)) {
                 if (t.info.isApplicable && !t.info.isApplicable(e)) {
                     continue;
                 }

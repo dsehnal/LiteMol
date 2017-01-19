@@ -17,7 +17,7 @@ namespace LiteMol.Bootstrap.Behaviour.Density {
     export class ShowDynamicDensity implements Dynamic {
         
         private obs: Rx.IDisposable[] = [];
-        private behaviour: Entity.Density.InteractiveSurface;
+        private behaviour: Entity.Behaviour.Any;
         private ref = Utils.generateUUID();
         
         private remove() {
@@ -91,7 +91,7 @@ namespace LiteMol.Bootstrap.Behaviour.Density {
             this.obs = [];
         }
         
-        register(behaviour: Entity.Density.InteractiveSurface) {
+        register(behaviour: Entity.Behaviour.Any) {
             this.behaviour = behaviour;
 
             if (!this.params.showFull) {

@@ -6,35 +6,26 @@
 namespace LiteMol.Bootstrap.Tree {
     "use strict";
     
-    export interface Node<
-        T extends Node<T, Props, State, Type, TypeInfo>, 
-        Props, 
-        State, 
-        Type extends Node.Type<TypeInfo, Props, T>, 
-        TypeInfo> {        
+    export interface Node<Props, State, TypeInfo> {        
         id: number,    
         version: number,
         index: number,
         ref: string,       
         tag: any, 
-        type: Type,        
-        transform: Transform<any, T, any>,
-        tree: Tree<T> | undefined,
+        type: Node.Type<TypeInfo, Props, this>,        
+        transform: Transform<any, this, any>,
+        tree: Tree<Node.Any> | undefined,
         props: Props,
         state: State,
         isHidden: boolean,        
-        parent: T,
-        children: T[]
+        parent: Node.Any,
+        children: Node.Any[]
     };
     
     export module Node {
         
-        export interface Any extends Node<any, any, any, any, any> { }        
+        export interface Any extends Node<any, any, any> { }        
         export const Null = {} as Any;
-        
-        export type OfType<T extends AnyType> = Node<any, any, any, T, any>
-        export type WithProps<P> = Node<Any, P, any, AnyType, any>
-        export type WithState<S> = Node<Any, any, S, AnyType, any>
         
         export interface Type<Info, Props, T extends Node.Any> {
             id: string,
@@ -86,31 +77,31 @@ namespace LiteMol.Bootstrap.Tree {
             return serialId++;
         }
                        
-        export function update<T extends Node<T, Props, State, Type, TypeInfo>, Props, State, Type extends Node.Type<TypeInfo, Props, T>, TypeInfo>(e: T): T {
+        export function update<T extends Node<Props, State, TypeInfo>, Props, State, TypeInfo>(e: T): T {
             e.version++;
             return e;
         }
         
-        export function withProps<T extends Node<T, Props, State, Type, TypeInfo>, Props, State, Type extends Node.Type<TypeInfo, Props, T>, TypeInfo>(n: T, props: Props) {
+        export function withProps<T extends Node<Props, State, TypeInfo>, Props, State, TypeInfo>(n: T, props: Props) {
             let newProps = Utils.merge(n.props, props);
             if (newProps === n.props) return n;
             return update(n);
         }
         
-        export function withState<T extends Node<T, Props, State, Type, TypeInfo>, Props, State, Type extends Node.Type<TypeInfo, Props, T>, TypeInfo>(n: T, state: State) {
+        export function withState<T extends Node<Props, State, TypeInfo>, Props, State, TypeInfo>(n: T, state: State) {
             let ns = Utils.merge(n.state, state);
             if (ns === n.state) return n;
             n.state = ns;
             return update(n);
         }
         
-        export function addChild<T extends Node<T, Props, State, Type, TypeInfo>, Props, State, Type extends Node.Type<TypeInfo, Props, T>, TypeInfo>(n: T, c: T) {
+        export function addChild<T extends Node<Props, State, TypeInfo>, Props, State, TypeInfo>(n: T, c: T) {
             c.index = n.children.length;
             n.children.push(c);
             return update(n);
         }
         
-        export function removeChild<T extends Node<T, Props, State, Type, TypeInfo>, Props, State, Type extends Node.Type<TypeInfo, Props, T>, TypeInfo>(n: T, child: T) {            
+        export function removeChild<T extends Node<Props, State, TypeInfo>, Props, State, TypeInfo>(n: T, child: T) {            
             let children = n.children;
             for (let i = child.index, _b = children.length - 1; i < _b; i++) {
                 let c = children[i + 1];
@@ -121,24 +112,24 @@ namespace LiteMol.Bootstrap.Tree {
             return update(n);
         }
                 
-        export function replaceChild<T extends Node<T, Props, State, Type, TypeInfo>, Props, State, Type extends Node.Type<TypeInfo, Props, T>, TypeInfo>(n: T, oldChild: T, newChild: T) {
+        export function replaceChild<T extends Node<Props, State, TypeInfo>, Props, State, TypeInfo>(n: T, oldChild: T, newChild: T) {
             if (!newChild) return removeChild(n, oldChild);
             newChild.index = oldChild.index;
             n.children[newChild.index] = newChild; 
             return update(n);
         }
                 
-        export function forEach<T extends Node<T, Props, State, Type, TypeInfo>, Props, State, Type extends Node.Type<TypeInfo, Props, T>, TypeInfo>(n: T, f: (n: T) => void) {
+        export function forEach<T extends Node<Props, State, TypeInfo>, Props, State, TypeInfo>(n: T, f: (n: T) => void) {
             for (let c of n.children) forEach(c, f);
             f(n);
         }
         
-         export function forEachPreorder<T extends Node<T, Props, State, Type, TypeInfo>, Props, State, Type extends Node.Type<TypeInfo, Props, T>, TypeInfo>(n: T, f: (n: T) => void) {
+         export function forEachPreorder<T extends Node<Props, State, TypeInfo>, Props, State, TypeInfo>(n: T, f: (n: T) => void) {
             f(n);
             for (let c of n.children) forEach(c, f);
         }
         
-        export function collect<T extends Node<T, Props, State, Type, TypeInfo>, Props, State, Type extends Node.Type<TypeInfo, Props, T>, TypeInfo>(n: T): T[] {
+        export function collect<T extends Node<Props, State, TypeInfo>, Props, State, TypeInfo>(n: T): T[] {
             let nodes: T[] = [];
             forEach(n, c => nodes.push(c));
             return nodes;

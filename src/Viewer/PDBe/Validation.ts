@@ -6,11 +6,9 @@ namespace LiteMol.Viewer.PDBe.Validation {
     import Entity = Bootstrap.Entity;
     import Transformer = Bootstrap.Entity.Transformer;
             
-    export interface ReportProps extends Entity.Behaviour.Props<Interactivity.Behaviour> {}
-    export interface Report extends Entity<Report, ReportType, ReportProps> { }         
-    export interface ReportType extends Entity.Type<ReportType, Report, ReportProps> { }   
-    export const Report = Entity.create<Report, ReportType, ReportProps>({ name: 'PDBe Molecule Validation Report', typeClass: 'Behaviour', shortName: 'VR', description: 'Represents PDBe validation report.' });
-    
+    export const Report = Entity.Behaviour.create<Interactivity.Behaviour, {}>({ name: 'PDBe Molecule Validation Report', typeClass: 'Behaviour', shortName: 'VR', description: 'Represents PDBe validation report.' });
+    export type Report = typeof Report.Entity
+
     namespace Api {        
         export function getResidueId(seqNumber: number, insCode: string | null) {
             var id = seqNumber.toString();

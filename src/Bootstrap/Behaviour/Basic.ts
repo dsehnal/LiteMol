@@ -17,7 +17,7 @@ namespace LiteMol.Bootstrap.Behaviour {
     export function SetEntityToCurrentWhenAdded(context: Context) {
         Event.Tree.NodeAdded.getStream(context).subscribe(ev => {
             let e = ev.data as Entity.Any;
-            if (e && (e.transform.isUpdate || e.type.traits.isSilent)) return;
+            if (e && (e.transform.isUpdate || e.type.info.traits.isSilent)) return;
             Command.Entity.SetCurrent.dispatch(context, e);
         });
     }   

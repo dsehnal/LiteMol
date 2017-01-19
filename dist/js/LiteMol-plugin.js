@@ -11445,7 +11445,7 @@ var LiteMol;
             function createMapObject() {
                 var map = Object.create(null);
                 // to cause deoptimization as we don't want to create hidden classes
-                map["__"] = undefined;
+                map["__"] = void 0;
                 delete map["__"];
                 return map;
             }
@@ -68420,10 +68420,9 @@ var LiteMol;
             Entity.ActionClass = 'Action';
             Entity.BehaviourClass = 'Behaviour';
             var TypeImpl = (function () {
-                function TypeImpl(id, info, traits) {
+                function TypeImpl(id, infoBase, traits) {
                     this.id = id;
-                    this.info = info;
-                    this.traits = traits;
+                    this.info = Bootstrap.Utils.assign({}, infoBase, { traits: traits });
                 }
                 TypeImpl.prototype.create = function (transform, props) {
                     var ret = {
@@ -68589,6 +68588,13 @@ var LiteMol;
             Entity.Root = Entity.create({ name: 'Root', typeClass: 'Root', shortName: 'R', description: 'Where everything begins.' });
             Entity.Group = Entity.create({ name: 'Group', typeClass: 'Group', shortName: 'G', description: 'A group on entities.' });
             Entity.Action = Entity.create({ name: 'Action', typeClass: 'Action', shortName: 'A', description: 'Represents an action performed on the entity tree.' });
+            var Behaviour;
+            (function (Behaviour) {
+                function create(info, traits) {
+                    return Entity.create(info, traits);
+                }
+                Behaviour.create = create;
+            })(Behaviour = Entity.Behaviour || (Entity.Behaviour = {}));
             /* Data */
             var Data;
             (function (Data) {
@@ -68612,7 +68618,7 @@ var LiteMol;
                 Molecule_1.Visual = Entity.create({ name: 'Molecule Visual', typeClass: 'Visual', shortName: 'V_M', description: 'A visual of a molecule.' }, { isFocusable: true });
                 var CoordinateStreaming;
                 (function (CoordinateStreaming) {
-                    CoordinateStreaming.Behaviour = Entity.create({ name: 'Coordinate Streaming', typeClass: 'Behaviour', shortName: 'CS', description: 'Behaviour that downloads surrounding residues when an atom or residue is selected.' });
+                    CoordinateStreaming.Behaviour = Entity.Behaviour.create({ name: 'Coordinate Streaming', typeClass: 'Behaviour', shortName: 'CS', description: 'Behaviour that downloads surrounding residues when an atom or residue is selected.' });
                 })(CoordinateStreaming = Molecule_1.CoordinateStreaming || (Molecule_1.CoordinateStreaming = {}));
             })(Molecule = Entity.Molecule || (Entity.Molecule = {}));
             /* Density */
@@ -68620,7 +68626,7 @@ var LiteMol;
             (function (Density) {
                 Density.Data = Entity.create({ name: 'Density Data', typeClass: 'Object', shortName: 'DD', description: 'Density data.' });
                 Density.Visual = Entity.create({ name: 'Density Visual', typeClass: 'Visual', shortName: 'V_DD', description: 'A visual of density data.' }, { isFocusable: true });
-                Density.InteractiveSurface = Entity.create({ name: 'Interactive Surface', typeClass: 'Behaviour', shortName: 'B_IS', description: 'Behaviour that creates an interactive surface when an atom or residue is selected.' });
+                Density.InteractiveSurface = Behaviour.create({ name: 'Interactive Surface', typeClass: 'Behaviour', shortName: 'B_IS', description: 'Behaviour that creates an interactive surface when an atom or residue is selected.' });
             })(Density = Entity.Density || (Entity.Density = {}));
         })(Entity = Bootstrap.Entity || (Bootstrap.Entity = {}));
     })(Bootstrap = LiteMol.Bootstrap || (LiteMol.Bootstrap = {}));
@@ -69739,7 +69745,7 @@ var LiteMol;
             function SetEntityToCurrentWhenAdded(context) {
                 Bootstrap.Event.Tree.NodeAdded.getStream(context).subscribe(function (ev) {
                     var e = ev.data;
-                    if (e && (e.transform.isUpdate || e.type.traits.isSilent))
+                    if (e && (e.transform.isUpdate || e.type.info.traits.isSilent))
                         return;
                     Bootstrap.Command.Entity.SetCurrent.dispatch(context, e);
                 });
@@ -78318,7 +78324,7 @@ var LiteMol;
                                 : Plugin.React.createElement(Plugin.Controls.Button, { style: 'link', title: 'Collapse', onClick: function () { return LiteMol.Bootstrap.Command.Entity.ToggleExpanded.dispatch(_this.ctx, node); }, icon: 'collapse', customClass: 'lm-entity-tree-entry-toggle-group' });
                         }
                         else {
-                            if (node.state.visibility === 0 /* Full */ && node.type.traits.isFocusable) {
+                            if (node.state.visibility === 0 /* Full */ && node.type.info.traits.isFocusable) {
                                 expander = Plugin.React.createElement(Plugin.Controls.Button, { style: 'link', icon: 'focus-on-visual', title: 'Focus', onClick: function () { return LiteMol.Bootstrap.Command.Entity.Focus.dispatch(_this.ctx, _this.ctx.select(node)); }, customClass: 'lm-entity-tree-entry-toggle-group' });
                             }
                         }

@@ -6,7 +6,6 @@
 namespace LiteMol.Bootstrap.Entity {
     "use strict";
    
-   
     export function isMolecule(e: Any): e is Molecule.Molecule {
         return e && e.type === Molecule.Molecule;
     } 
@@ -27,116 +26,88 @@ namespace LiteMol.Bootstrap.Entity {
     
     export const RootTransform = Tree.Transform.create<Root, Root, {}>({}, {}, <any>void 0);
         
-    export interface Root extends Entity<Root, RootType, CommonProps> { } 
-    export interface RootType extends Type<RootType, Root, CommonProps> {}
-    export const Root = create<Root, RootType, CommonProps>({ name: 'Root', typeClass: 'Root', shortName: 'R', description: 'Where everything begins.' } );
+    export const Root = create({ name: 'Root', typeClass: 'Root', shortName: 'R', description: 'Where everything begins.' } );
+    export type Root = typeof Root.Entity
         
-    export interface Group extends Entity<Group, GroupType, CommonProps> { } 
-    export interface GroupType extends Type<GroupType, Group, CommonProps> { }
-    export const Group = create<Group, GroupType, CommonProps>({ name: 'Group', typeClass: 'Group', shortName: 'G', description: 'A group on entities.' }   );
+    export const Group = create({ name: 'Group', typeClass: 'Group', shortName: 'G', description: 'A group on entities.' }   );
+    export type Group = typeof Group.Entity
     
-    export interface ActionProps extends CommonProps { }    
-    export interface Action extends Entity<Action, ActionType, ActionProps> { } 
-    export interface ActionType extends Type<ActionType, Action, ActionProps> { }
-    export const Action = create<Action, ActionType, ActionProps>({ name: 'Action', typeClass: 'Action', shortName: 'A', description: 'Represents an action performed on the entity tree.' });
+    export const Action = create({ name: 'Action', typeClass: 'Action', shortName: 'A', description: 'Represents an action performed on the entity tree.' });
+    export type Action = typeof Action.Entity
     
-    export namespace Behaviour { 
-        export interface Props<T extends Bootstrap.Behaviour.Dynamic> extends CommonProps { behaviour: T }            
-        export interface Any extends Entity<Any, Type<any, Any, Props<Bootstrap.Behaviour.Dynamic>>, Props<Bootstrap.Behaviour.Dynamic>> { }
+    export namespace Behaviour {            
+        export interface Any extends Entity<{ behaviour: Bootstrap.Behaviour.Dynamic } & CommonProps> { }
+
+        export function create<B extends Bootstrap.Behaviour.Dynamic, Props extends { }>(info: TypeInfoBase, traits?: TypeTraits): Type<{ behaviour: B } & Props & CommonProps> {
+            return Entity.create<{ behaviour: B } & Props & CommonProps>(info, traits);
+        }
     }
     
     /* Data */
     
     export namespace Data {    
         export type Type = 'String' | 'Binary'        
-        export const Types:Type[] = ['String', 'Binary']
-        export interface Props<T> extends CommonProps { data: T }
+        export const Types:Type[] = ['String', 'Binary'];
             
-        export interface StringProps extends Props<string> { }    
-        export interface String extends Entity<String, StringType, StringProps> { }         
-        export interface StringType extends Entity.Type<StringType, String, StringProps> { }                
-        export const String = create<String, StringType, StringProps>({ name: 'String Data', typeClass: 'Data', shortName: 'S_D', description: 'A string.' });
+        export const String = create<{ data: string }>({ name: 'String Data', typeClass: 'Data', shortName: 'S_D', description: 'A string.' });
+        export type String = typeof String.Entity
                          
-        export interface BinaryProps extends Props<ArrayBuffer> { }    
-        export interface Binary extends Entity<Binary, BinaryType, BinaryProps> { }         
-        export interface BinaryType extends Entity.Type<BinaryType, Binary, BinaryProps> { }        
-        export const Binary = create<Binary, BinaryType, BinaryProps>( { name: 'Binary Data', typeClass: 'Data', shortName: 'B_D', description: 'A binary blob.' });
+        export const Binary = create<{ data: ArrayBuffer }>( { name: 'Binary Data', typeClass: 'Data', shortName: 'B_D', description: 'A binary blob.' });
+        export type Binary = typeof Binary.Entity
                 
-        export interface CifDictionaryProps extends CommonProps { dictionary: Core.Formats.CIF.File }
-        export interface CifDictionary extends Entity<CifDictionary, CifDictionaryType, CifDictionaryProps> { }         
-        export interface CifDictionaryType extends Entity.Type<CifDictionaryType, CifDictionary, CifDictionaryProps> { }   
-        export const CifDictionary = create<CifDictionary, CifDictionaryType, CifDictionaryProps>({ name: 'Cif Dictionary', typeClass: 'Data', shortName: 'CD', description: 'Represents parsed CIF data.' });
-        
-        export interface JsonProps extends CommonProps { data: any }
-        export interface Json extends Entity<Json, JsonType, JsonProps> { }         
-        export interface JsonType extends Entity.Type<JsonType, Json, JsonProps> { }   
-        export const Json = create<Json, JsonType, JsonProps>({ name: 'JSON Data', typeClass: 'Data', shortName: 'JS_D', description: 'Represents JSON data.' });
+        export const CifDictionary = create<{ dictionary: Core.Formats.CIF.File }>({ name: 'Cif Dictionary', typeClass: 'Data', shortName: 'CD', description: 'Represents parsed CIF data.' });
+        export type CifDictionary = typeof CifDictionary.Entity
+
+        export const Json = create<{ data: any }>({ name: 'JSON Data', typeClass: 'Data', shortName: 'JS_D', description: 'Represents JSON data.' });
+        export type Json = typeof Json.Entity
     }
     
     // /* Visual props */
     
     export namespace Visual {
-        export interface Props<Type> extends CommonProps { 
+        export interface Props<Type> { 
             model: LiteMol.Visualization.Model,
             style: Visualization.Style<Type, any>,
             isSelectable: boolean
         }   
         
-        export interface Any extends Entity<Any, Type<any, Any, Props<any>>, Props<any>> { }  
+        export interface Any extends Entity<Props<any> & CommonProps> { }  
 
-        export interface SurfaceProps extends Entity.Visual.Props<"Surface"> { tag: any }             
-        export interface Surface extends Entity<Surface, SurfaceType, SurfaceProps> { }         
-        export interface SurfaceType extends Entity.Type<SurfaceType, Surface, SurfaceProps> { }     
-        export const Surface = create<Surface, SurfaceType, SurfaceProps>({ name: 'Surface Visual', typeClass: 'Visual', shortName: 'V_S', description: 'A surface visual.' }, { isFocusable: true });
+        export const Surface = create<Entity.Visual.Props<"Surface"> & { tag: any }>({ name: 'Surface Visual', typeClass: 'Visual', shortName: 'V_S', description: 'A surface visual.' }, { isFocusable: true });
+        export type Surface = typeof Surface.Entity
     }
     
     /* Molecule */
     
     export namespace Molecule {                        
-        export interface MoleculeProps extends CommonProps { molecule: Core.Structure.Molecule }
-        export interface Molecule extends Entity<Molecule, MoleculeType, MoleculeProps> { }         
-        export interface MoleculeType extends Entity.Type<MoleculeType, Molecule, MoleculeProps> { }     
-        export const Molecule = create<Molecule, MoleculeType, MoleculeProps>({ name: 'Molecule', typeClass: 'Object', shortName: 'M', description: 'A molecule that might contain one or more models.' });
+        export const Molecule = create<{ molecule: Core.Structure.Molecule }>({ name: 'Molecule', typeClass: 'Object', shortName: 'M', description: 'A molecule that might contain one or more models.' });
+        export type Molecule = typeof Molecule.Entity
+
+        export const Model = create<{ model: Core.Structure.Molecule.Model }>( { name: 'Molecule Model', typeClass: 'Object', shortName: 'M_M', description: 'A model of a molecule.' });
+        export type Model = typeof Model.Entity
         
-        export interface ModelProps extends CommonProps { model: Core.Structure.Molecule.Model }
-        export interface Model extends Entity<Model, ModelType, ModelProps> { }         
-        export interface ModelType extends Entity.Type<ModelType, Model, ModelProps> { }     
-        export const Model = create<Model, ModelType, ModelProps>( { name: 'Molecule Model', typeClass: 'Object', shortName: 'M_M', description: 'A model of a molecule.' });
+        export const Selection = create<{ indices: number[] }>( { name: 'Molecule Model Selection', typeClass: 'Selection', shortName: 'S_M', description: 'A selection of atoms.' }, { isFocusable: true });
+        export type Selection = typeof Selection.Entity
         
-        export interface SelectionProps extends CommonProps { indices: number[] }
-        export interface Selection extends Entity<Selection, SelectionType, SelectionProps> { }         
-        export interface SelectionType extends Entity.Type<SelectionType, Selection, SelectionProps> { }     
-        export const Selection = create<Selection, SelectionType, SelectionProps>( { name: 'Molecule Model Selection', typeClass: 'Selection', shortName: 'S_M', description: 'A selection of atoms.' }, { isFocusable: true });
-        
-        export interface VisualProps extends Entity.Visual.Props<Bootstrap.Visualization.Molecule.Type> { }             
-        export interface Visual extends Entity<Visual, VisualType, VisualProps> { }         
-        export interface VisualType extends Entity.Type<VisualType, Visual, VisualProps> { }     
-        export const Visual = create<Visual, VisualType, VisualProps>({ name: 'Molecule Visual', typeClass: 'Visual', shortName: 'V_M', description: 'A visual of a molecule.' }, { isFocusable: true });
+        export const Visual = create<Entity.Visual.Props<Bootstrap.Visualization.Molecule.Type>>({ name: 'Molecule Visual', typeClass: 'Visual', shortName: 'V_M', description: 'A visual of a molecule.' }, { isFocusable: true });
+        export type Visual = typeof Visual.Entity
         
         export namespace CoordinateStreaming {
-            export interface BehaviourProps extends Behaviour.Props<Bootstrap.Behaviour.Molecule.CoordinateStreaming> { }    
-            export interface Behaviour extends Entity<Behaviour, BehaviourType, BehaviourProps> { } 
-            export interface BehaviourType extends Type<BehaviourType, Behaviour, BehaviourProps> { }
-            export const Behaviour = create<Behaviour, BehaviourType, BehaviourProps>({ name: 'Coordinate Streaming', typeClass: 'Behaviour', shortName: 'CS', description: 'Behaviour that downloads surrounding residues when an atom or residue is selected.' });
+            export const Behaviour = Entity.Behaviour.create<Bootstrap.Behaviour.Molecule.CoordinateStreaming, {}>({ name: 'Coordinate Streaming', typeClass: 'Behaviour', shortName: 'CS', description: 'Behaviour that downloads surrounding residues when an atom or residue is selected.' });
+            export type Behaviour = typeof CoordinateStreaming.Behaviour.Entity
         }
     }
     
     /* Density */
     
     export namespace Density {        
-        export interface DataProps extends CommonProps { data: Core.Formats.Density.Data }
-        export interface Data extends Entity<Data, DataType, DataProps> { }         
-        export interface DataType extends Entity.Type<DataType, Data, DataProps> { }     
-        export const Data = create<Data, DataType, DataProps>({ name: 'Density Data', typeClass: 'Object', shortName: 'DD', description: 'Density data.' });
+        export const Data = create<{ data: Core.Formats.Density.Data }>({ name: 'Density Data', typeClass: 'Object', shortName: 'DD', description: 'Density data.' });
+        export type Data = typeof Data.Entity
         
-        export interface VisualProps extends Entity.Visual.Props<{}> { }             
-        export interface Visual extends Entity<Visual, VisualType, VisualProps> { }         
-        export interface VisualType extends Entity.Type<VisualType, Visual, VisualProps> { }     
-        export const Visual = create<Visual, VisualType, VisualProps>({ name: 'Density Visual', typeClass: 'Visual', shortName: 'V_DD', description: 'A visual of density data.' }, { isFocusable: true });       
+        export const Visual = create<Entity.Visual.Props<{}>>({ name: 'Density Visual', typeClass: 'Visual', shortName: 'V_DD', description: 'A visual of density data.' }, { isFocusable: true });       
+        export type Visual = typeof Visual.Entity
         
-        export interface InteractiveSurfaceProps extends Behaviour.Props<Bootstrap.Behaviour.Density.ShowDynamicDensity> { }    
-        export interface InteractiveSurface extends Entity<InteractiveSurface, InteractiveSurfaceType, InteractiveSurfaceProps> { } 
-        export interface InteractiveSurfaceType extends Type<InteractiveSurfaceType, InteractiveSurface, InteractiveSurfaceProps> { }
-        export const InteractiveSurface = create<InteractiveSurface, InteractiveSurfaceType, InteractiveSurfaceProps>({ name: 'Interactive Surface', typeClass: 'Behaviour', shortName: 'B_IS', description: 'Behaviour that creates an interactive surface when an atom or residue is selected.' }); 
+        export const InteractiveSurface = Behaviour.create<Bootstrap.Behaviour.Density.ShowDynamicDensity, {}>({ name: 'Interactive Surface', typeClass: 'Behaviour', shortName: 'B_IS', description: 'Behaviour that creates an interactive surface when an atom or residue is selected.' }); 
+        export type InteractiveSurface = typeof InteractiveSurface.Entity
     }
 }

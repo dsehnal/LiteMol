@@ -8,8 +8,6 @@ namespace LiteMol.Bootstrap.Tree {
     export type Selector<T extends Node.Any> = Selection.Query<T> | Selection.Helpers.Builder<T> | string | T;
 
     export namespace Selection {
-        
-                        
         export type NodeSeq<T extends Node.Any> = T[];
         export type Query<T extends Node.Any> = (tree: Tree<T>) => NodeSeq<T>;
 
@@ -130,15 +128,15 @@ namespace LiteMol.Bootstrap.Tree {
         export function subtree<T extends Node.Any>(b: Selector<T>) { return flatMap<T>(b, n => Tree.Node.collect(n)); }
 
         Helpers.registerModifier('children', children);
-        export function children<T extends Node.Any>(b: Selector<T>) { return flatMap<T>(b, n => n.children); }
+        export function children<T extends Node.Any>(b: Selector<T>) { return flatMap<T>(b, n => <T[]>n.children); }
 
         Helpers.registerModifier('ofType', ofType);
         export function ofType<T extends Node.Any>(b: Selector<T>, t: Node.AnyType) { return filter<T>(b, n => n.type === t); }
 
         Helpers.registerModifier('ancestorOfType', ancestorOfType);
-        export function ancestorOfType<T extends Node.Any>(b: Selector<T>, t: Node.AnyType) { return unique(mapEntity<T>(b, n => Node.findAncestor(n, t))); }
+        export function ancestorOfType<T extends Node.Any>(b: Selector<T>, t: Node.AnyType) { return unique(mapEntity<T>(b, n => <T>Node.findAncestor(n, t))); }
 
         Helpers.registerModifier('parent', parent);
-        export function parent<T extends Node.Any>(b: Selector<T>) { return unique(mapEntity<T>(b, n => n.parent)); }
+        export function parent<T extends Node.Any>(b: Selector<T>) { return unique(mapEntity<T>(b, n => <T>n.parent)); }
     }
 }

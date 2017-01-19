@@ -159,6 +159,7 @@ Releases
 The latest stable release of LiteMol is the [version 1.0](https://github.com/dsehnal/LiteMol/releases/tag/v1.0).
 
 Currently, the version 2.0 is being developed and is in a "preview" phase, meaning that a number of breaking changes will be introduced.
+Migration summary can be found [here](docs/migrating/1-to-2.md).
 
 Short term goals 
 ---------

@@ -9,10 +9,8 @@ namespace LiteMol.Extensions.DensityStreaming {
     import Transformer = Bootstrap.Entity.Transformer;
     import Tree = Bootstrap.Tree;
 
-    export interface StreamingProps extends Entity.Behaviour.Props<Behaviour> { }
-    export interface Streaming extends Entity<Streaming, StreamingType, StreamingProps> { }
-    export interface StreamingType extends Entity.Type<StreamingType, Streaming, StreamingProps> { }
-    export const Streaming = Entity.create<Streaming, StreamingType, StreamingProps>({ name: 'Interactive Surface', typeClass: 'Behaviour', shortName: 'B_DS', description: 'Behaviour that downloads density data for molecule selection on demand.' });
+    export const Streaming = Entity.Behaviour.create<Behaviour, {}>({ name: 'Interactive Surface', typeClass: 'Behaviour', shortName: 'B_DS', description: 'Behaviour that downloads density data for molecule selection on demand.' });
+    export type Streaming = typeof Streaming.Entity
 
     type DataInfo = { maxQueryRegion: number[], data: {[K in DataType]?: { mean: number, sigma: number, min: number, max: number } } }
 

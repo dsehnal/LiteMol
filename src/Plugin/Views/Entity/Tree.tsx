@@ -162,7 +162,7 @@ namespace LiteMol.Plugin.Views.Entity {
                     ?  <Controls.Button style='link' title='Expand' onClick={() =>  Bootstrap.Command.Entity.ToggleExpanded.dispatch(this.ctx, node) } icon='expand' customClass='lm-entity-tree-entry-toggle-group' />
                     :  <Controls.Button style='link' title='Collapse' onClick={() =>  Bootstrap.Command.Entity.ToggleExpanded.dispatch(this.ctx, node)  } icon='collapse' customClass='lm-entity-tree-entry-toggle-group' />;
             } else {
-                if (/*BEntity.isVisual(node) &&*/ node.state.visibility === BEntity.Visibility.Full && node.type.traits.isFocusable) {
+                if (/*BEntity.isVisual(node) &&*/ node.state.visibility === BEntity.Visibility.Full && node.type.info.traits.isFocusable) {
                     expander = <Controls.Button style='link' icon='focus-on-visual' title='Focus'
                         onClick={() => Bootstrap.Command.Entity.Focus.dispatch(this.ctx, this.ctx.select(node) ) } 
                         customClass='lm-entity-tree-entry-toggle-group' />

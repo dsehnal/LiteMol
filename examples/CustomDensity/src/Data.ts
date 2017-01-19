@@ -8,10 +8,8 @@ namespace LiteMol.Custom {
     import Entity = Bootstrap.Entity;        
     import Transformer = Bootstrap.Entity.Transformer; 
 
-    export interface DensityLoaderProps extends Entity.CommonProps { id: string }
-    export interface DensityLoader extends Entity<DensityLoader, DensityLoaderType, DensityLoaderProps> { }         
-    export interface DensityLoaderType extends Entity.Type<DensityLoaderType, DensityLoader, DensityLoaderProps> { }   
-    export const DensityLoader = Entity.create<DensityLoader, DensityLoaderType, DensityLoaderProps>({ name: 'Density Loader', typeClass: 'Data', shortName: 'DL', description: 'Represents density loader entity.' });
+    export const DensityLoader = Entity.create<{ id: string }>({ name: 'Density Loader', typeClass: 'Data', shortName: 'DL', description: 'Represents density loader entity.' });
+    export type DensityLoader = typeof DensityLoader.Entity
 
     export const CreateDensityLoader = Bootstrap.Tree.Transformer.create<Entity.Root, DensityLoader, { id?: string }>({
         id: 'litemol-custom_density_example-create-loader',
@@ -23,7 +21,7 @@ namespace LiteMol.Custom {
         validateParams: (p) => p.id && p.id.trim().length > 0 ? void 0 : ['Enter Id.']
     }, (context, a, t) => { 
         return Bootstrap.Task.resolve('Density', 'Silent', DensityLoader.create(t, { id: t.params.id!, label: 'Density Loader' }));
-    });   
+    }); 
 
     export const DownloadDensity = Bootstrap.Tree.Transformer.actionWithContext<DensityLoader, Entity.Action, { }, string>({
         id: 'litemol-custom_density_example-download-density',

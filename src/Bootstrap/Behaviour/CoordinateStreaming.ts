@@ -13,7 +13,7 @@ namespace LiteMol.Bootstrap.Behaviour.Molecule {
         
         private obs: Rx.IDisposable[] = [];  
         private target: Entity.Molecule.Model | undefined = void 0; 
-        private behaviour: Entity.Molecule.CoordinateStreaming.Behaviour = <any>void 0;
+        private behaviour: Entity.Behaviour.Any = <any>void 0;
         private ref: string = Utils.generateUUID();
         private download: Task.Running<ArrayBuffer> | undefined = void 0;
         private cache = new CoordinateStreaming.Cache(100);
@@ -94,7 +94,7 @@ namespace LiteMol.Bootstrap.Behaviour.Molecule {
         }  
         
         private create(data: ArrayBuffer, transform: number[] | undefined) {
-            let action = Tree.Transform.build().add(this.behaviour, Entity.Transformer.Molecule.CoordinateStreaming.CreateModel, { data, transform }, { ref: this.ref, isHidden: true })
+            let action = Tree.Transform.build().add(this.behaviour as Entity.Molecule.CoordinateStreaming.Behaviour, Entity.Transformer.Molecule.CoordinateStreaming.CreateModel, { data, transform }, { ref: this.ref, isHidden: true })
                     .then(Transforms.Molecule.CreateVisual, { style: this.style });
             Tree.Transform.apply(this.context, action).run();
         }
@@ -105,7 +105,7 @@ namespace LiteMol.Bootstrap.Behaviour.Molecule {
             this.obs = [];
         }
                 
-        register(behaviour: Entity.Molecule.CoordinateStreaming.Behaviour) {
+        register(behaviour: Entity.Behaviour.Any) {
             this.behaviour = behaviour;
             this.target = <any>behaviour.parent;
             this.obs.push(this.context.behaviours.select.subscribe(e => this.update(e))); 
