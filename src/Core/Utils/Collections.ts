@@ -5,6 +5,13 @@
 namespace LiteMol.Core.Utils {
     "use strict";
 
+    /**
+     * An "object" based implementation of map that supports string and numeric keys
+     * which should be ok for most use cases in LiteMol. 
+     * 
+     * The type limitation is on purpose to prevent using the type in places that are 
+     * not appropriate.
+     */
     export interface FastMap<K extends string | number, V> {
         readonly size: number;
         set(key: K, v: V): void;
@@ -12,122 +19,176 @@ namespace LiteMol.Core.Utils {
         delete(key: K): boolean;
         has(key: K): boolean;
         clear(): void;
+        /**
+         * Iterate over the collection.
+         * Optional "context" object can be supplied that is passed to the callback.
+         * 
+         * Enumerates only values that are not undefined.
+         */
         forEach<Context>(f: (value: V, key: K, ctx?: Context) => void, ctx?: Context): void;
     }
 
-    export interface MapLike<K extends string | number, V> {
-        get(key: K): V | undefined;
-        has(key: K): boolean;
-    }
-
+    /**
+     * An "object" based implementation of set that supports string and numeric values
+     * which should be ok for most use cases in LiteMol.
+     * 
+     * The type limitation is on purpose to prevent using the type in places that are 
+     * not appropriate.
+     */
     export interface FastSet<T extends string | number> {
         readonly size: number;
         add(key: T): boolean;
         delete(key: T): boolean;
         has(key: T): boolean;
         clear(): void;
+        /**
+         * Iterate over the collection.
+         * Optional "context" object can be supplied that is passed to the callback.
+         */
         forEach<Context>(f: (key: T, ctx?: Context) => void, ctx?: Context): void;
     }
 
+    function createMapObject() {
+        let map = Object.create(null);
+        // to cause deoptimization as we don't want to create hidden classes
+        map["__"] = undefined;
+        delete map["__"];
+        return map;
+    }
+
+    type MapData = { data: any, size: number }
+
     export namespace FastMap {
-        function forEach(map: any, f: (value: any, key: any, ctx: any) => void, ctx: any) {
+        function forEach(data: any, f: (value: any, key: any, ctx: any) => void, ctx: any) {
             const hasOwn = Object.prototype.hasOwnProperty;
-            for (let key of Object.keys(map)) {
-                if (!hasOwn.call(map, key)) continue;
-                let v = map[key];
+            for (let key of Object.keys(data)) {
+                if (!hasOwn.call(data, key)) continue;
+                let v = data[key];
                 if (v === void 0) continue;
                 f(v, key, ctx);
             }
         }
 
-        const __proto = {
-            set(this: any, key: string | number, v: any) {
+        const fastMap = {
+            set(this: MapData, key: string | number, v: any) {
                 if (this.data[key] === void 0 && v !== void 0) {
                     this.size++;
                 }
                 this.data[key] = v;
             },
-            get(this: any, key: string | number) {
+            get(this: MapData, key: string | number) {
                 return this.data[key];
             },
-            delete(this: any, key: string | number) {
+            delete(this: MapData, key: string | number) {
                 if (this.data[key] === void 0) return false;
-                this.data[key] = void 0;
+                delete this.data[key];
                 this.size--;
                 return true;
             },
-            has(this: any, key: string | number) {
+            has(this: MapData, key: string | number) {
                 return this.data[key] !== void 0;
             },
-            clear(this: any) {
-                this.data = Object.create(null);
+            clear(this: MapData) {
+                this.data = createMapObject();
                 this.size = 0;
             },
-            forEach(this: any, f: (k: string | number, v: number, ctx?: any) => void, ctx?: any) {
+            forEach(this: MapData, f: (k: string | number, v: number, ctx?: any) => void, ctx?: any) {
                 forEach(this.data, f, ctx !== void 0 ? ctx : void 0);
             }
         };
 
+        /**
+         * Creates an empty map.
+         */
         export function create<K extends string | number, V>(): FastMap<K, V> {
-            let ret = Object.create(__proto) as any;
-            ret.data = Object.create(null);
+            let ret = Object.create(fastMap) as any;
+            ret.data = createMapObject();
             ret.size = 0;
             return ret;
         }
 
-        export function of<K extends string | number, V>(data: (K | V)[][])         {
+        /**
+         * Create a map from an array of the form [[key, value], ...]
+         */
+        export function ofArray<K extends string | number, V>(data: (K | V)[][]) {
             let ret = create<K, V>();
             for (let xs of data) {
                 ret.set(xs[0] as K, xs[1] as V);
             }
             return ret;
         }
+
+        /**
+         * Create a map from an object of the form { key: value, ... }
+         */
+        export function ofObject<V>(data: { [key: string]: V }) {
+            let ret = create<string, V>();
+            const hasOwn = Object.prototype.hasOwnProperty;
+            for (let key of Object.keys(data)) {
+                if (!hasOwn.call(data, key)) continue;
+                let v = data[key];
+                ret.set(key, v);
+            }
+            return ret;
+        }
     }
 
     export namespace FastSet {
-        function forEach(map: any, f: (k: string | number, ctx: any) => void, ctx: any) {
+        function forEach(data: any, f: (k: string | number, ctx: any) => void, ctx: any) {
             const hasOwn = Object.prototype.hasOwnProperty;
-            for (let p of Object.keys(map)) {
-                if (!hasOwn.call(map, p) || map[p] !== null) continue;
+            for (let p of Object.keys(data)) {
+                if (!hasOwn.call(data, p) || data[p] !== null) continue;
                 f(p, ctx);
             }
         }
 
-        const __proto = {
-            add(this: any, key: string | number) {
+
+        /**
+         * Uses null for present values.
+         */
+        const fastSet = {
+            add(this: MapData, key: string | number) {
                 if (this.data[key] === null) return false;
                 this.data[key] = null;
                 this.size++;
                 return true;
             },
-            delete(this: any, key: string | number) {
+            delete(this: MapData, key: string | number) {
                 if (this.data[key] !== null) return false;
-                this.data[key] = void 0;
+                delete this.data[key];
                 this.size--;
                 return true;
             },
-            has(this: any, key: string | number) {
+            has(this: MapData, key: string | number) {
                 return this.data[key] === null;
             },
-            clear(this: any) {
-                this.data = Object.create(null);
+            clear(this: MapData) {
+                this.data = createMapObject();
                 this.size = 0;
             },
-            forEach(this: any, f: (k: string | number, ctx: any) => void, ctx?: any) {
+            forEach(this: MapData, f: (k: string | number, ctx: any) => void, ctx?: any) {
                 forEach(this.data, f, ctx !== void 0 ? ctx : void 0);
             }
         };
 
+        /**
+         * Create an empty set.
+         */
         export function create<T extends string | number>(): FastSet<T> {
-            let ret = Object.create(__proto) as any;
-            ret.data = Object.create(null);
+            let ret = Object.create(fastSet) as any;
+            ret.data = createMapObject();
             ret.size = 0;
             return ret;
         }
 
-        export function of(xs: (string | number)[]) {
-            let ret = create();
-            for (let x of xs) ret.add(x);
+        /**
+         * Create a set of an "array like" sequence.
+         */
+        export function ofArray<T extends string | number>(xs: ArrayLike<T>) {
+            let ret = create<T>();
+            for (let i = 0, l = xs.length; i < l; i++) {
+                ret.add(xs[i]);
+            }
             return ret;
         }
     }

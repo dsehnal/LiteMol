@@ -33,7 +33,7 @@ namespace LiteMol.Viewer.ValidatorDB {
             return id.split(' ')[0];
         }
 
-        const RedFlags = Core.Utils.FastSet.of(['Missing', 'NotAnalyzed']);
+        const RedFlags = Core.Utils.FastSet.ofArray(['Missing', 'NotAnalyzed']);
 
         function isRed(flags: string[]) {
             for (let f of flags) if (RedFlags.has(f)) return true;

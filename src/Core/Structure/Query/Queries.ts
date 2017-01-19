@@ -159,7 +159,7 @@ namespace LiteMol.Core.Structure.Query {
         export function compileAtoms(elements: string[] | number[], sel: (model: Structure.Molecule.Model) => string[] | number[]) {
             return (ctx: Context) => {
 
-                let set = Utils.FastSet.of(elements),
+                let set = Utils.FastSet.ofArray<string | number>(elements),
                     data = sel(ctx.structure),
                     fragments = new FragmentSeqBuilder(ctx);
 
@@ -200,7 +200,7 @@ namespace LiteMol.Core.Structure.Query {
                     fragments = new FragmentSeqBuilder(ctx);
 
                 if (complement) {
-                    let exclude = Utils.FastSet.of(indices);
+                    let exclude = Utils.FastSet.ofArray(indices);
                     let count = table.count;
                     for (let i = 0; i < count; i++) {
                         if (exclude.has(i)) continue;
@@ -502,7 +502,7 @@ namespace LiteMol.Core.Structure.Query {
                     indices: number[] = [],
                     indexCount = 0;
 
-                const allowedNames = Utils.FastSet.of(names);
+                const allowedNames = Utils.FastSet.ofArray(names);
 
                 if (complement) {
                     for (let ei = 0; ei < structure.data.entities.count; ei++) {

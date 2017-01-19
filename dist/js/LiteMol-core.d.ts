@@ -1564,6 +1564,13 @@ declare namespace LiteMol.Core {
     }
 }
 declare namespace LiteMol.Core.Utils {
+    /**
+     * An "object" based implementation of map that supports string and numeric keys
+     * which should be ok for most use cases in LiteMol.
+     *
+     * The type limitation is on purpose to prevent using the type in places that are
+     * not appropriate.
+     */
     interface FastMap<K extends string | number, V> {
         readonly size: number;
         set(key: K, v: V): void;
@@ -1571,27 +1578,58 @@ declare namespace LiteMol.Core.Utils {
         delete(key: K): boolean;
         has(key: K): boolean;
         clear(): void;
+        /**
+         * Iterate over the collection.
+         * Optional "context" object can be supplied that is passed to the callback.
+         *
+         * Enumerates only values that are not undefined.
+         */
         forEach<Context>(f: (value: V, key: K, ctx?: Context) => void, ctx?: Context): void;
     }
-    interface MapLike<K extends string | number, V> {
-        get(key: K): V | undefined;
-        has(key: K): boolean;
-    }
+    /**
+     * An "object" based implementation of set that supports string and numeric values
+     * which should be ok for most use cases in LiteMol.
+     *
+     * The type limitation is on purpose to prevent using the type in places that are
+     * not appropriate.
+     */
     interface FastSet<T extends string | number> {
         readonly size: number;
         add(key: T): boolean;
         delete(key: T): boolean;
         has(key: T): boolean;
         clear(): void;
+        /**
+         * Iterate over the collection.
+         * Optional "context" object can be supplied that is passed to the callback.
+         */
         forEach<Context>(f: (key: T, ctx?: Context) => void, ctx?: Context): void;
     }
     namespace FastMap {
+        /**
+         * Creates an empty map.
+         */
         function create<K extends string | number, V>(): FastMap<K, V>;
-        function of<K extends string | number, V>(data: (K | V)[][]): FastMap<K, V>;
+        /**
+         * Create a map from an array of the form [[key, value], ...]
+         */
+        function ofArray<K extends string | number, V>(data: (K | V)[][]): FastMap<K, V>;
+        /**
+         * Create a map from an object of the form { key: value, ... }
+         */
+        function ofObject<V>(data: {
+            [key: string]: V;
+        }): FastMap<string, V>;
     }
     namespace FastSet {
+        /**
+         * Create an empty set.
+         */
         function create<T extends string | number>(): FastSet<T>;
-        function of(xs: (string | number)[]): FastSet<string | number>;
+        /**
+         * Create a set of an "array like" sequence.
+         */
+        function ofArray<T extends string | number>(xs: ArrayLike<T>): FastSet<T>;
     }
 }
 declare namespace LiteMol.Core.Utils {

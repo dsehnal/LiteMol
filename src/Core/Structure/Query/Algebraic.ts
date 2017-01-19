@@ -17,7 +17,7 @@ namespace LiteMol.Core.Structure.Query.Algebraic {
     export const and = binaryP((a, b) => a && b);
     export const or = binaryP((a, b) => a || b);
 
-    const backboneAtoms = Utils.FastSet.of(["N", "CA", "C", "O", "P", "OP1", "OP2", "O3'", "O5'", "C3'", "C5'", "C4"]);    
+    const backboneAtoms = Utils.FastSet.ofArray(["N", "CA", "C", "O", "P", "OP1", "OP2", "O3'", "O5'", "C3'", "C5'", "C4"]);    
     export const backbone: Predicate = (ctx, i) => entityType(ctx, i) === 'polymer' && backboneAtoms.has(atomName(ctx, i));    
     export const sidechain: Predicate = (ctx, i) => entityType(ctx, i) === 'polymer' && !backboneAtoms.has(atomName(ctx, i));
 

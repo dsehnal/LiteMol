@@ -11377,21 +11377,28 @@ var LiteMol;
         var Utils;
         (function (Utils) {
             "use strict";
+            function createMapObject() {
+                var map = Object.create(null);
+                // to cause deoptimization as we don't want to create hidden classes
+                map["__"] = undefined;
+                delete map["__"];
+                return map;
+            }
             var FastMap;
             (function (FastMap) {
-                function forEach(map, f, ctx) {
+                function forEach(data, f, ctx) {
                     var hasOwn = Object.prototype.hasOwnProperty;
-                    for (var _i = 0, _a = Object.keys(map); _i < _a.length; _i++) {
+                    for (var _i = 0, _a = Object.keys(data); _i < _a.length; _i++) {
                         var key = _a[_i];
-                        if (!hasOwn.call(map, key))
+                        if (!hasOwn.call(data, key))
                             continue;
-                        var v = map[key];
+                        var v = data[key];
                         if (v === void 0)
                             continue;
                         f(v, key, ctx);
                     }
                 }
-                var __proto = {
+                var fastMap = {
                     set: function (key, v) {
                         if (this.data[key] === void 0 && v !== void 0) {
                             this.size++;
@@ -11404,7 +11411,7 @@ var LiteMol;
                     delete: function (key) {
                         if (this.data[key] === void 0)
                             return false;
-                        this.data[key] = void 0;
+                        delete this.data[key];
                         this.size--;
                         return true;
                     },
@@ -11412,21 +11419,27 @@ var LiteMol;
                         return this.data[key] !== void 0;
                     },
                     clear: function () {
-                        this.data = Object.create(null);
+                        this.data = createMapObject();
                         this.size = 0;
                     },
                     forEach: function (f, ctx) {
                         forEach(this.data, f, ctx !== void 0 ? ctx : void 0);
                     }
                 };
+                /**
+                 * Creates an empty map.
+                 */
                 function create() {
-                    var ret = Object.create(__proto);
-                    ret.data = Object.create(null);
+                    var ret = Object.create(fastMap);
+                    ret.data = createMapObject();
                     ret.size = 0;
                     return ret;
                 }
                 FastMap.create = create;
-                function of(data) {
+                /**
+                 * Create a map from an array of the form [[key, value], ...]
+                 */
+                function ofArray(data) {
                     var ret = create();
                     for (var _i = 0, data_1 = data; _i < data_1.length; _i++) {
                         var xs = data_1[_i];
@@ -11434,20 +11447,39 @@ var LiteMol;
                     }
                     return ret;
                 }
-                FastMap.of = of;
+                FastMap.ofArray = ofArray;
+                /**
+                 * Create a map from an object of the form { key: value, ... }
+                 */
+                function ofObject(data) {
+                    var ret = create();
+                    var hasOwn = Object.prototype.hasOwnProperty;
+                    for (var _i = 0, _a = Object.keys(data); _i < _a.length; _i++) {
+                        var key = _a[_i];
+                        if (!hasOwn.call(data, key))
+                            continue;
+                        var v = data[key];
+                        ret.set(key, v);
+                    }
+                    return ret;
+                }
+                FastMap.ofObject = ofObject;
             })(FastMap = Utils.FastMap || (Utils.FastMap = {}));
             var FastSet;
             (function (FastSet) {
-                function forEach(map, f, ctx) {
+                function forEach(data, f, ctx) {
                     var hasOwn = Object.prototype.hasOwnProperty;
-                    for (var _i = 0, _a = Object.keys(map); _i < _a.length; _i++) {
+                    for (var _i = 0, _a = Object.keys(data); _i < _a.length; _i++) {
                         var p = _a[_i];
-                        if (!hasOwn.call(map, p) || map[p] !== null)
+                        if (!hasOwn.call(data, p) || data[p] !== null)
                             continue;
                         f(p, ctx);
                     }
                 }
-                var __proto = {
+                /**
+                 * Uses null for present values.
+                 */
+                var fastSet = {
                     add: function (key) {
                         if (this.data[key] === null)
                             return false;
@@ -11458,7 +11490,7 @@ var LiteMol;
                     delete: function (key) {
                         if (this.data[key] !== null)
                             return false;
-                        this.data[key] = void 0;
+                        delete this.data[key];
                         this.size--;
                         return true;
                     },
@@ -11466,29 +11498,34 @@ var LiteMol;
                         return this.data[key] === null;
                     },
                     clear: function () {
-                        this.data = Object.create(null);
+                        this.data = createMapObject();
                         this.size = 0;
                     },
                     forEach: function (f, ctx) {
                         forEach(this.data, f, ctx !== void 0 ? ctx : void 0);
                     }
                 };
+                /**
+                 * Create an empty set.
+                 */
                 function create() {
-                    var ret = Object.create(__proto);
-                    ret.data = Object.create(null);
+                    var ret = Object.create(fastSet);
+                    ret.data = createMapObject();
                     ret.size = 0;
                     return ret;
                 }
                 FastSet.create = create;
-                function of(xs) {
+                /**
+                 * Create a set of an "array like" sequence.
+                 */
+                function ofArray(xs) {
                     var ret = create();
-                    for (var _i = 0, xs_1 = xs; _i < xs_1.length; _i++) {
-                        var x = xs_1[_i];
-                        ret.add(x);
+                    for (var i = 0, l = xs.length; i < l; i++) {
+                        ret.add(xs[i]);
                     }
                     return ret;
                 }
-                FastSet.of = of;
+                FastSet.ofArray = ofArray;
             })(FastSet = Utils.FastSet || (Utils.FastSet = {}));
         })(Utils = Core.Utils || (Core.Utils = {}));
     })(Core = LiteMol.Core || (LiteMol.Core = {}));
@@ -19276,7 +19313,7 @@ var LiteMol;
                     Compiler.compileEverything = compileEverything;
                     function compileAtoms(elements, sel) {
                         return function (ctx) {
-                            var set = Core.Utils.FastSet.of(elements), data = sel(ctx.structure), fragments = new Query.FragmentSeqBuilder(ctx);
+                            var set = Core.Utils.FastSet.ofArray(elements), data = sel(ctx.structure), fragments = new Query.FragmentSeqBuilder(ctx);
                             for (var i = 0, _b = data.length; i < _b; i++) {
                                 if (ctx.hasAtom(i) && set.has(data[i]))
                                     fragments.add(Query.Fragment.ofIndex(ctx, i));
@@ -19310,7 +19347,7 @@ var LiteMol;
                         return function (ctx) {
                             var table = tableProvider(ctx.structure), atomStartIndex = table.atomStartIndex, atomEndIndex = table.atomEndIndex, fragments = new Query.FragmentSeqBuilder(ctx);
                             if (complement) {
-                                var exclude = Core.Utils.FastSet.of(indices);
+                                var exclude = Core.Utils.FastSet.ofArray(indices);
                                 var count = table.count;
                                 for (var i = 0; i < count; i++) {
                                     if (exclude.has(i))
@@ -19567,7 +19604,7 @@ var LiteMol;
                     function compilePolymerNames(names, complement) {
                         return function (ctx) {
                             var structure = ctx.structure, entities = structure.data.entities, atomNames = structure.data.atoms.name, indices = [], indexCount = 0;
-                            var allowedNames = Core.Utils.FastSet.of(names);
+                            var allowedNames = Core.Utils.FastSet.ofArray(names);
                             if (complement) {
                                 for (var ei = 0; ei < structure.data.entities.count; ei++) {
                                     if (entities.type[ei] !== 'polymer')
@@ -19695,7 +19732,7 @@ var LiteMol;
                     Algebraic.not = unaryP(function (a) { return !a; });
                     Algebraic.and = binaryP(function (a, b) { return a && b; });
                     Algebraic.or = binaryP(function (a, b) { return a || b; });
-                    var backboneAtoms = Core.Utils.FastSet.of(["N", "CA", "C", "O", "P", "OP1", "OP2", "O3'", "O5'", "C3'", "C5'", "C4"]);
+                    var backboneAtoms = Core.Utils.FastSet.ofArray(["N", "CA", "C", "O", "P", "OP1", "OP2", "O3'", "O5'", "C3'", "C5'", "C4"]);
                     Algebraic.backbone = function (ctx, i) { return Algebraic.entityType(ctx, i) === 'polymer' && backboneAtoms.has(Algebraic.atomName(ctx, i)); };
                     Algebraic.sidechain = function (ctx, i) { return Algebraic.entityType(ctx, i) === 'polymer' && !backboneAtoms.has(Algebraic.atomName(ctx, i)); };
                     /**
