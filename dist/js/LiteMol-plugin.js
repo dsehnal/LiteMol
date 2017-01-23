@@ -55072,7 +55072,7 @@ var LiteMol;
 (function (LiteMol) {
     var Visualization;
     (function (Visualization) {
-        Visualization.VERSION = { number: "1.6.0", date: "Jan 18 2017" };
+        Visualization.VERSION = { number: "1.6.1", date: "Jan 23 2017" };
     })(Visualization = LiteMol.Visualization || (LiteMol.Visualization = {}));
 })(LiteMol || (LiteMol = {}));
 var LiteMol;
@@ -58117,22 +58117,23 @@ var LiteMol;
                                 buffer.reset();
                                 ctx.nearest(cX[atom], cY[atom], cZ[atom], bondLength);
                                 pA.set(cX[atom], cY[atom], cZ[atom]);
-                                var isHA = elementSymbol[atom] === "H", altA = altLoc[atom], isWater = entityType[atomEntityIndex[atom]] === waterType;
+                                var es = elementSymbol[atom], isHA = es === 'H' || es === 'D' || es === 'T', altA = altLoc[atom], isWater = entityType[atomEntityIndex[atom]] === waterType;
                                 var count = buffer.count;
                                 for (var i = 0; i < count; i++) {
                                     var idx = indices[buffer.indices[i]];
                                     if (idx !== atom && !processed.has(idx)) {
-                                        var len = pB.set(cX[idx], cY[idx], cZ[idx]).sub(pA).length(), isHB = elementSymbol[idx] === "H";
+                                        es = elementSymbol[idx];
+                                        var len = pB.set(cX[idx], cY[idx], cZ[idx]).sub(pA).length(), isHB = es === 'H' || es === 'D' || es === 'T';
                                         if (isHA && isHB || (isWater && !isHB))
                                             continue;
+                                        var altB = altLoc[idx];
                                         if (isHA || isHB) {
-                                            if (len < 1.1) {
+                                            if (len < 1.1 && (!altA || !altB || altA === altB)) {
                                                 ChunkedArray.add3(builder, atom, idx, 1);
                                                 stickCount++;
                                             }
                                             continue;
                                         }
-                                        var altB = altLoc[idx];
                                         if (len && (!altA || !altB || altA === altB)) {
                                             ChunkedArray.add3(builder, atom, idx, 1);
                                             stickCount++;
@@ -58362,8 +58363,7 @@ var LiteMol;
                         bs.bondState.a.set(state.tempVector.x, state.tempVector.y, state.tempVector.z);
                         state.tempVector.set(state.cX[bI], state.cY[bI], state.cZ[bI]);
                         bs.bondState.b.set(state.tempVector.x, state.tempVector.y, state.tempVector.z);
-                        var r = bs.bondRadius, //atomSymbols[aI] === 'H' || atomSymbols[bI] === 'H' ? hydrogenBondRadius : bondRadius,
-                        o = 2 * r / 3, h = r / 2;
+                        var r = bs.bondRadius, o = 2 * r / 3, h = r / 2;
                         var bondState = bs.bondState;
                         switch (order) {
                             case 2:

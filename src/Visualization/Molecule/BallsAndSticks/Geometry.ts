@@ -121,7 +121,8 @@ namespace LiteMol.Visualization.Molecule.BallsAndSticks {
 
                     pA.set(cX[atom], cY[atom], cZ[atom]);
 
-                    let isHA = elementSymbol[atom] === "H",
+                    let es = elementSymbol[atom],
+                        isHA = es === 'H' || es === 'D' || es === 'T',
                         altA = altLoc[atom],
                         isWater = entityType[atomEntityIndex[atom]] === waterType;
 
@@ -130,20 +131,21 @@ namespace LiteMol.Visualization.Molecule.BallsAndSticks {
                         let idx = indices[buffer.indices[i]];
                         if (idx !== atom && !processed.has(idx)) {
 
-                            let len = pB.set(cX[idx], cY[idx], cZ[idx]).sub(pA).length(),
-                                isHB = elementSymbol[idx] === "H";
+                            es = elementSymbol[idx];
+                            let len = pB.set(cX[idx], cY[idx], cZ[idx]).sub(pA).length(),                            
+                                isHB = es === 'H' || es === 'D' || es === 'T';
 
                             if (isHA && isHB || (isWater && !isHB)) continue;
 
+                            let altB = altLoc[idx];
+
                             if (isHA || isHB) {
-                                if (len < 1.1) {
+                                if (len < 1.1 && (!altA || !altB || altA === altB)) {
                                     ChunkedArray.add3(builder, atom, idx, 1);
                                     stickCount++;
                                 }
                                 continue;
                             }
-
-                            let altB = altLoc[idx];
 
                             if (len && (!altA || !altB || altA === altB)) {
                                 ChunkedArray.add3(builder, atom, idx, 1);
@@ -405,7 +407,7 @@ namespace LiteMol.Visualization.Molecule.BallsAndSticks {
             state.tempVector.set(state.cX[bI], state.cY[bI], state.cZ[bI]);
             bs.bondState.b.set(state.tempVector.x, state.tempVector.y, state.tempVector.z);
 
-            let r = bs.bondRadius, //atomSymbols[aI] === 'H' || atomSymbols[bI] === 'H' ? hydrogenBondRadius : bondRadius,
+            let r = bs.bondRadius, 
                 o = 2 * r / 3,
                 h = r / 2;
 

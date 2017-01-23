@@ -1,4 +1,7 @@
-﻿# 1.6.0
+﻿# 1.6.1
+* Fixed an issue with bonds in Balls and Sticks model when hydrogens are present.
+
+# 1.6.0
 * Avoid using ES6 Map/Set for performance reasons.
 
 # 1.5.5
