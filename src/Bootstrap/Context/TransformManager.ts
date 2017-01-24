@@ -25,12 +25,12 @@ namespace LiteMol.Bootstrap {
         
         getController(t: Transformer, e: Entity.Any) {
             if (!e) {
-                console.warn(`Trying to get contoller for undefined entity.`);
+                console.warn(`Trying to get controller for undefined entity.`);
                 return void 0;
             }
 
             if (!this.byId.get(t.info.id)) {
-                console.warn(`Trying to get contoller for unregistered transform (${t.info.id}).`);
+                console.warn(`Trying to get controller for unregistered transform (${t.info.id}).`);
                 return void 0;
             }
 
