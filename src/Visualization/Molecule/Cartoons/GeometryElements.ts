@@ -236,7 +236,7 @@ namespace LiteMol.Visualization.Molecule.Cartoons.Geometry {
             let isOk = true;
             for (let i = parent.startResidueIndex, _b = parent.endResidueIndex; i < _b; i++) {
                 let foundCA = false, foundO = false;
-                for (let j = atomStartIndex[i], _c = atomEndIndex[_b]; j < _c; j++) {
+                for (let j = atomStartIndex[i], _c = atomEndIndex[i]; j < _c; j++) {
                     if (name[j] === 'CA') {
                         if (!foundCA) trace[offset++] = j;
                         foundCA = true;

@@ -55072,7 +55072,7 @@ var LiteMol;
 (function (LiteMol) {
     var Visualization;
     (function (Visualization) {
-        Visualization.VERSION = { number: "1.6.1", date: "Jan 23 2017" };
+        Visualization.VERSION = { number: "1.6.2", date: "Jan 24 2017" };
     })(Visualization = LiteMol.Visualization || (LiteMol.Visualization = {}));
 })(LiteMol || (LiteMol = {}));
 var LiteMol;
@@ -58949,7 +58949,7 @@ var LiteMol;
                             var isOk = true;
                             for (var i = parent.startResidueIndex, _b = parent.endResidueIndex; i < _b; i++) {
                                 var foundCA = false, foundO = false;
-                                for (var j = atomStartIndex[i], _c = atomEndIndex[_b]; j < _c; j++) {
+                                for (var j = atomStartIndex[i], _c = atomEndIndex[i]; j < _c; j++) {
                                     if (name[j] === 'CA') {
                                         if (!foundCA)
                                             trace[offset++] = j;

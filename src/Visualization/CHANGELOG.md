@@ -1,4 +1,7 @@
-﻿# 1.6.1
+﻿# 1.6.2
+* Fixed a bug in secondary structure detection.
+
+# 1.6.1
 * Fixed an issue with bonds in Balls and Sticks model when hydrogens are present.
 
 # 1.6.0
