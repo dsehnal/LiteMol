@@ -156,7 +156,7 @@ namespace LiteMol.Visualization {
         } 
         
         export function isTransparent(theme: Theme) {
-            let opacity = +theme.transparency.alpha;            
+            let opacity = +theme.transparency.alpha!;            
             if (isNaN(opacity)) opacity = 1.0;
             return opacity <= 0.999;
         }

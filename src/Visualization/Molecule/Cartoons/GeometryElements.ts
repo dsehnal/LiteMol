@@ -935,7 +935,7 @@ namespace LiteMol.Visualization.Molecule.Cartoons.Geometry {
 
         for (let elementIndex of map.elementIndices) {
 
-            let elementOffset = map.elementMap.get(elementIndex);
+            let elementOffset = map.elementMap.get(elementIndex)!;
 
             let rangeStart = map.elementRanges[2 * elementOffset],
                 rangeEnd = map.elementRanges[2 * elementOffset + 1];

@@ -57396,7 +57396,7 @@ var LiteMol;
                             ChunkedArray.add4(pickPlatesColors, color.r, color.g, color.b, 0.0);
                             ChunkedArray.add4(pickPlatesColors, color.r, color.g, color.b, 0.0);
                         }
-                        ctx.platesVertexCount += platesVertexCount;
+                        ctx.platesVertexCount = ctx.platesVertexCount + platesVertexCount;
                         return [2 /*return*/];
                     });
                 });
@@ -57614,7 +57614,7 @@ var LiteMol;
             var Model = (function (_super) {
                 __extends(Model, _super);
                 function Model() {
-                    return _super.apply(this, arguments) || this;
+                    return _super !== null && _super.apply(this, arguments) || this;
                 }
                 Model.prototype.applySelectionInternal = function (indices, action) {
                     var buffer = this.geometry.vertexStateBuffer, array = buffer.array, map = this.geometry.elementToVertexMap, vertexRanges = map.vertexRanges, changed = false;
@@ -57857,7 +57857,7 @@ var LiteMol;
             var Model = (function (_super) {
                 __extends(Model, _super);
                 function Model() {
-                    return _super.apply(this, arguments) || this;
+                    return _super !== null && _super.apply(this, arguments) || this;
                 }
                 Model.prototype.applySelectionInternal = function (indices, action) {
                     return false;
@@ -57936,7 +57936,7 @@ var LiteMol;
                 var Model = (function (_super) {
                     __extends(Model, _super);
                     function Model() {
-                        return _super.apply(this, arguments) || this;
+                        return _super !== null && _super.apply(this, arguments) || this;
                     }
                     Model.prototype.applySelectionInternal = function (indices, action) {
                         var buffer = this.ballsAndSticks.vertexStateBuffer, array = buffer.array, map = this.ballsAndSticks.atomVertexMap, vertexRanges = map.vertexRanges, changed = false;
@@ -58363,7 +58363,7 @@ var LiteMol;
                         bs.bondState.a.set(state.tempVector.x, state.tempVector.y, state.tempVector.z);
                         state.tempVector.set(state.cX[bI], state.cY[bI], state.cZ[bI]);
                         bs.bondState.b.set(state.tempVector.x, state.tempVector.y, state.tempVector.z);
-                        var r = bs.bondRadius, o = 2 * r / 3, h = r / 2;
+                        var r = +bs.bondRadius, o = 2 * r / 3, h = r / 2;
                         var bondState = bs.bondState;
                         switch (order) {
                             case 2:
@@ -58604,7 +58604,7 @@ var LiteMol;
                 var BallsAndSticksGeometry = (function (_super) {
                     __extends(BallsAndSticksGeometry, _super);
                     function BallsAndSticksGeometry() {
-                        var _this = _super.apply(this, arguments) || this;
+                        var _this = _super !== null && _super.apply(this, arguments) || this;
                         _this.atomsGeometry = void 0;
                         _this.bondsGeometry = void 0;
                         _this.pickGeometry = void 0;
@@ -58641,7 +58641,7 @@ var LiteMol;
                     var Data = (function (_super) {
                         __extends(Data, _super);
                         function Data() {
-                            var _this = _super.apply(this, arguments) || this;
+                            var _this = _super !== null && _super.apply(this, arguments) || this;
                             _this.geometry = void 0;
                             _this.pickGeometry = void 0;
                             _this.vertexMap = void 0;
@@ -59747,7 +59747,7 @@ var LiteMol;
                 var Model = (function (_super) {
                     __extends(Model, _super);
                     function Model() {
-                        return _super.apply(this, arguments) || this;
+                        return _super !== null && _super.apply(this, arguments) || this;
                     }
                     Model.prototype.applySelectionInternal = function (indices, action) {
                         var buffer = this.cartoons.vertexStateBuffer, array = buffer.array, map = this.cartoons.vertexMap, vertexRanges = map.vertexRanges, changed = false, residueIndex = this.model.data.atoms.residueIndex;
@@ -70753,7 +70753,7 @@ var LiteMol;
                 var MoleculeVisual = (function (_super) {
                     __extends(MoleculeVisual, _super);
                     function MoleculeVisual() {
-                        return _super.apply(this, arguments) || this;
+                        return _super !== null && _super.apply(this, arguments) || this;
                     }
                     MoleculeVisual.prototype.updateTemplate = function (key, all) {
                         var s = all.get(key);
@@ -70815,7 +70815,7 @@ var LiteMol;
                 var DensityVisual = (function (_super) {
                     __extends(DensityVisual, _super);
                     function DensityVisual() {
-                        return _super.apply(this, arguments) || this;
+                        return _super !== null && _super.apply(this, arguments) || this;
                     }
                     DensityVisual.prototype.cloneStyle = function (prop) {
                         return Bootstrap.Utils.shallowClone(this.latestState.params[prop || 'style']);
@@ -71384,11 +71384,11 @@ var LiteMol;
             };
             TransformManager.prototype.getController = function (t, e) {
                 if (!e) {
-                    console.warn("Trying to get contoller for undefined entity.");
+                    console.warn("Trying to get controller for undefined entity.");
                     return void 0;
                 }
                 if (!this.byId.get(t.info.id)) {
-                    console.warn("Trying to get contoller for unregistered transform (" + t.info.id + ").");
+                    console.warn("Trying to get controller for unregistered transform (" + t.info.id + ").");
                     return void 0;
                 }
                 var cs = this.controllerCache.get(e.id);
@@ -76118,7 +76118,7 @@ var LiteMol;
             var Pure = (function (_super) {
                 __extends(Pure, _super);
                 function Pure() {
-                    return _super.apply(this, arguments) || this;
+                    return _super !== null && _super.apply(this, arguments) || this;
                 }
                 Pure.prototype.shouldComponentUpdate = function (nextProps, nextState) {
                     return !shallowEqual(this.props, nextProps) || !shallowEqual(this.state, nextState);
@@ -76129,7 +76129,7 @@ var LiteMol;
             var Button = (function (_super) {
                 __extends(Button, _super);
                 function Button() {
-                    return _super.apply(this, arguments) || this;
+                    return _super !== null && _super.apply(this, arguments) || this;
                 }
                 Button.prototype.render = function () {
                     var props = this.props;
@@ -76221,7 +76221,7 @@ var LiteMol;
             var OptionsBox = (function (_super) {
                 __extends(OptionsBox, _super);
                 function OptionsBox() {
-                    var _this = _super.apply(this, arguments) || this;
+                    var _this = _super !== null && _super.apply(this, arguments) || this;
                     _this.current = void 0;
                     return _this;
                 }
@@ -76271,7 +76271,7 @@ var LiteMol;
             var Panel = (function (_super) {
                 __extends(Panel, _super);
                 function Panel() {
-                    return _super.apply(this, arguments) || this;
+                    return _super !== null && _super.apply(this, arguments) || this;
                 }
                 Panel.prototype.header = function () {
                     var _this = this;
@@ -76323,7 +76323,7 @@ var LiteMol;
             var Slider = (function (_super) {
                 __extends(Slider, _super);
                 function Slider() {
-                    var _this = _super.apply(this, arguments) || this;
+                    var _this = _super !== null && _super.apply(this, arguments) || this;
                     _this.state = { value: '0' };
                     _this.firedValue = NaN;
                     return _this;
@@ -76450,7 +76450,7 @@ var LiteMol;
             var Handle = (function (_super) {
                 __extends(Handle, _super);
                 function Handle() {
-                    return _super.apply(this, arguments) || this;
+                    return _super !== null && _super.apply(this, arguments) || this;
                 }
                 Handle.prototype.render = function () {
                     var _a = this.props, className = _a.className, tipFormatter = _a.tipFormatter, vertical = _a.vertical, offset = _a.offset, value = _a.value, index = _a.index;
@@ -76989,7 +76989,7 @@ var LiteMol;
             var ColorPicker = (function (_super) {
                 __extends(ColorPicker, _super);
                 function ColorPicker() {
-                    return _super.apply(this, arguments) || this;
+                    return _super !== null && _super.apply(this, arguments) || this;
                 }
                 ColorPicker.prototype.shouldComponentUpdate = function (nextProps, nextState, nextContext) {
                     return !shallowEqual(this.props, nextProps);
@@ -77012,7 +77012,7 @@ var LiteMol;
             var ToggleColorPicker = (function (_super) {
                 __extends(ToggleColorPicker, _super);
                 function ToggleColorPicker() {
-                    var _this = _super.apply(this, arguments) || this;
+                    var _this = _super !== null && _super.apply(this, arguments) || this;
                     _this.state = { isExpanded: false };
                     return _this;
                 }
@@ -77072,7 +77072,7 @@ var LiteMol;
             var PureView = (function (_super) {
                 __extends(PureView, _super);
                 function PureView() {
-                    return _super.apply(this, arguments) || this;
+                    return _super !== null && _super.apply(this, arguments) || this;
                 }
                 PureView.prototype.update = function (s) {
                     var ns = LiteMol.Bootstrap.Utils.merge(this.props.state, s);
@@ -77091,7 +77091,7 @@ var LiteMol;
                     // shouldComponentUpdate(nextProps: any, nextState: any) {
                     //     return !shallowEqual(this.props, nextProps);
                     // }
-                    var _this = _super.apply(this, arguments) || this;
+                    var _this = _super !== null && _super.apply(this, arguments) || this;
                     _this.subs = [];
                     return _this;
                 }
@@ -77121,7 +77121,7 @@ var LiteMol;
             var ObserverView = (function (_super) {
                 __extends(ObserverView, _super);
                 function ObserverView() {
-                    var _this = _super.apply(this, arguments) || this;
+                    var _this = _super !== null && _super.apply(this, arguments) || this;
                     _this.subs = [];
                     return _this;
                 }
@@ -77151,7 +77151,7 @@ var LiteMol;
             var View = (function (_super) {
                 __extends(View, _super);
                 function View() {
-                    return _super.apply(this, arguments) || this;
+                    return _super !== null && _super.apply(this, arguments) || this;
                 }
                 Object.defineProperty(View.prototype, "controller", {
                     get: function () {
@@ -77186,7 +77186,7 @@ var LiteMol;
             var Layout = (function (_super) {
                 __extends(Layout, _super);
                 function Layout() {
-                    return _super.apply(this, arguments) || this;
+                    return _super !== null && _super.apply(this, arguments) || this;
                 }
                 Layout.prototype.renderTarget = function (target) {
                     var statics = [];
@@ -77278,7 +77278,7 @@ var LiteMol;
                 var ControllerBase = (function (_super) {
                     __extends(ControllerBase, _super);
                     function ControllerBase() {
-                        return _super.apply(this, arguments) || this;
+                        return _super !== null && _super.apply(this, arguments) || this;
                     }
                     Object.defineProperty(ControllerBase.prototype, "params", {
                         get: function () {
@@ -77358,7 +77358,7 @@ var LiteMol;
                 var Empty = (function (_super) {
                     __extends(Empty, _super);
                     function Empty() {
-                        return _super.apply(this, arguments) || this;
+                        return _super !== null && _super.apply(this, arguments) || this;
                     }
                     Empty.prototype.renderControls = function () {
                         return Plugin.React.createElement("div", null);
@@ -77369,7 +77369,7 @@ var LiteMol;
                 var View = (function (_super) {
                     __extends(View, _super);
                     function View() {
-                        return _super.apply(this, arguments) || this;
+                        return _super !== null && _super.apply(this, arguments) || this;
                     }
                     View.prototype.render = function () {
                         var ctx = this.controller.context;
@@ -77396,7 +77396,7 @@ var LiteMol;
                 var Updater = (function (_super) {
                     __extends(Updater, _super);
                     function Updater() {
-                        return _super.apply(this, arguments) || this;
+                        return _super !== null && _super.apply(this, arguments) || this;
                     }
                     Updater.prototype.componentWillMount = function () {
                         var _this = this;
@@ -77427,7 +77427,7 @@ var LiteMol;
                 var Action = (function (_super) {
                     __extends(Action, _super);
                     function Action() {
-                        return _super.apply(this, arguments) || this;
+                        return _super !== null && _super.apply(this, arguments) || this;
                     }
                     Action.prototype.render = function () {
                         var c = this.controller.latestState.controller;
@@ -77466,7 +77466,7 @@ var LiteMol;
                     var Download = (function (_super) {
                         __extends(Download, _super);
                         function Download() {
-                            return _super.apply(this, arguments) || this;
+                            return _super !== null && _super.apply(this, arguments) || this;
                         }
                         Download.prototype.renderControls = function () {
                             var _this = this;
@@ -77484,7 +77484,7 @@ var LiteMol;
                     var OpenFile = (function (_super) {
                         __extends(OpenFile, _super);
                         function OpenFile() {
-                            return _super.apply(this, arguments) || this;
+                            return _super !== null && _super.apply(this, arguments) || this;
                         }
                         OpenFile.prototype.renderControls = function () {
                             var _this = this;
@@ -77503,7 +77503,7 @@ var LiteMol;
                     var WithIdField = (function (_super) {
                         __extends(WithIdField, _super);
                         function WithIdField() {
-                            return _super.apply(this, arguments) || this;
+                            return _super !== null && _super.apply(this, arguments) || this;
                         }
                         WithIdField.prototype.renderControls = function () {
                             var _this = this;
@@ -77517,7 +77517,7 @@ var LiteMol;
                     var WithUrlIdField = (function (_super) {
                         __extends(WithUrlIdField, _super);
                         function WithUrlIdField() {
-                            return _super.apply(this, arguments) || this;
+                            return _super !== null && _super.apply(this, arguments) || this;
                         }
                         WithUrlIdField.prototype.renderControls = function () {
                             var _this = this;
@@ -77550,7 +77550,7 @@ var LiteMol;
                     var CreateFromData = (function (_super) {
                         __extends(CreateFromData, _super);
                         function CreateFromData() {
-                            return _super.apply(this, arguments) || this;
+                            return _super !== null && _super.apply(this, arguments) || this;
                         }
                         CreateFromData.prototype.renderControls = function () {
                             var _this = this;
@@ -77564,7 +77564,7 @@ var LiteMol;
                     var DownloadFromUrl = (function (_super) {
                         __extends(DownloadFromUrl, _super);
                         function DownloadFromUrl() {
-                            return _super.apply(this, arguments) || this;
+                            return _super !== null && _super.apply(this, arguments) || this;
                         }
                         DownloadFromUrl.prototype.renderControls = function () {
                             var _this = this;
@@ -77579,7 +77579,7 @@ var LiteMol;
                     var OpenFile = (function (_super) {
                         __extends(OpenFile, _super);
                         function OpenFile() {
-                            return _super.apply(this, arguments) || this;
+                            return _super !== null && _super.apply(this, arguments) || this;
                         }
                         OpenFile.prototype.renderControls = function () {
                             var _this = this;
@@ -77598,7 +77598,7 @@ var LiteMol;
                     var InitCoordinateStreaming = (function (_super) {
                         __extends(InitCoordinateStreaming, _super);
                         function InitCoordinateStreaming() {
-                            return _super.apply(this, arguments) || this;
+                            return _super !== null && _super.apply(this, arguments) || this;
                         }
                         InitCoordinateStreaming.prototype.renderControls = function () {
                             var _this = this;
@@ -77613,7 +77613,7 @@ var LiteMol;
                     var CreateFromMmCif = (function (_super) {
                         __extends(CreateFromMmCif, _super);
                         function CreateFromMmCif() {
-                            return _super.apply(this, arguments) || this;
+                            return _super !== null && _super.apply(this, arguments) || this;
                         }
                         CreateFromMmCif.prototype.renderControls = function () {
                             var _this = this;
@@ -77628,7 +77628,7 @@ var LiteMol;
                     var CreateModel = (function (_super) {
                         __extends(CreateModel, _super);
                         function CreateModel() {
-                            return _super.apply(this, arguments) || this;
+                            return _super !== null && _super.apply(this, arguments) || this;
                         }
                         CreateModel.prototype.renderControls = function () {
                             var _this = this;
@@ -77642,7 +77642,7 @@ var LiteMol;
                     var CreateAssembly = (function (_super) {
                         __extends(CreateAssembly, _super);
                         function CreateAssembly() {
-                            return _super.apply(this, arguments) || this;
+                            return _super !== null && _super.apply(this, arguments) || this;
                         }
                         CreateAssembly.prototype.renderControls = function () {
                             var _this = this;
@@ -77662,7 +77662,7 @@ var LiteMol;
                     var CreateSymmetryMates = (function (_super) {
                         __extends(CreateSymmetryMates, _super);
                         function CreateSymmetryMates() {
-                            return _super.apply(this, arguments) || this;
+                            return _super !== null && _super.apply(this, arguments) || this;
                         }
                         CreateSymmetryMates.prototype.renderControls = function () {
                             var _this = this;
@@ -77678,7 +77678,7 @@ var LiteMol;
                     var CreateSelection = (function (_super) {
                         __extends(CreateSelection, _super);
                         function CreateSelection() {
-                            return _super.apply(this, arguments) || this;
+                            return _super !== null && _super.apply(this, arguments) || this;
                         }
                         CreateSelection.prototype.renderControls = function () {
                             var _this = this;
@@ -77694,7 +77694,7 @@ var LiteMol;
                     var CreateMacromoleculeVisual = (function (_super) {
                         __extends(CreateMacromoleculeVisual, _super);
                         function CreateMacromoleculeVisual() {
-                            return _super.apply(this, arguments) || this;
+                            return _super !== null && _super.apply(this, arguments) || this;
                         }
                         CreateMacromoleculeVisual.prototype.renderControls = function () {
                             var _this = this;
@@ -77710,7 +77710,7 @@ var LiteMol;
                     var CreateVisual = (function (_super) {
                         __extends(CreateVisual, _super);
                         function CreateVisual() {
-                            return _super.apply(this, arguments) || this;
+                            return _super !== null && _super.apply(this, arguments) || this;
                         }
                         CreateVisual.prototype.detail = function () {
                             var _this = this;
@@ -77820,7 +77820,7 @@ var LiteMol;
                     var ParseData = (function (_super) {
                         __extends(ParseData, _super);
                         function ParseData() {
-                            return _super.apply(this, arguments) || this;
+                            return _super !== null && _super.apply(this, arguments) || this;
                         }
                         ParseData.prototype.renderControls = function () {
                             var _this = this;
@@ -77846,7 +77846,7 @@ var LiteMol;
                     var CreateVisual = (function (_super) {
                         __extends(CreateVisual, _super);
                         function CreateVisual() {
-                            return _super.apply(this, arguments) || this;
+                            return _super !== null && _super.apply(this, arguments) || this;
                         }
                         CreateVisual.prototype.surface = function () {
                             var _this = this;
@@ -77891,7 +77891,7 @@ var LiteMol;
                     var CreateVisualBehaviour = (function (_super) {
                         __extends(CreateVisualBehaviour, _super);
                         function CreateVisualBehaviour() {
-                            return _super.apply(this, arguments) || this;
+                            return _super !== null && _super.apply(this, arguments) || this;
                         }
                         CreateVisualBehaviour.prototype.surface = function () {
                             var _this = this;
@@ -77968,7 +77968,7 @@ var LiteMol;
                 var Log = (function (_super) {
                     __extends(Log, _super);
                     function Log() {
-                        return _super.apply(this, arguments) || this;
+                        return _super !== null && _super.apply(this, arguments) || this;
                     }
                     Log.prototype.componentWillMount = function () {
                         var _this = this;
@@ -78042,7 +78042,7 @@ var LiteMol;
                 var TaskState = (function (_super) {
                     __extends(TaskState, _super);
                     function TaskState() {
-                        return _super.apply(this, arguments) || this;
+                        return _super !== null && _super.apply(this, arguments) || this;
                     }
                     TaskState.prototype.render = function () {
                         var info = this.props.info;
@@ -78059,7 +78059,7 @@ var LiteMol;
                 var Overlay = (function (_super) {
                     __extends(Overlay, _super);
                     function Overlay() {
-                        return _super.apply(this, arguments) || this;
+                        return _super !== null && _super.apply(this, arguments) || this;
                     }
                     Overlay.prototype.render = function () {
                         var state = this.controller.latestState;
@@ -78083,7 +78083,7 @@ var LiteMol;
                 var BackgroundTasks = (function (_super) {
                     __extends(BackgroundTasks, _super);
                     function BackgroundTasks() {
-                        return _super.apply(this, arguments) || this;
+                        return _super !== null && _super.apply(this, arguments) || this;
                     }
                     BackgroundTasks.prototype.render = function () {
                         var state = this.controller.latestState;
@@ -78118,7 +78118,7 @@ var LiteMol;
                 var ToastEntry = (function (_super) {
                     __extends(ToastEntry, _super);
                     function ToastEntry() {
-                        return _super.apply(this, arguments) || this;
+                        return _super !== null && _super.apply(this, arguments) || this;
                     }
                     ToastEntry.prototype.hide = function () {
                         var entry = this.props.entry;
@@ -78142,7 +78142,7 @@ var LiteMol;
                 var Toast = (function (_super) {
                     __extends(Toast, _super);
                     function Toast() {
-                        return _super.apply(this, arguments) || this;
+                        return _super !== null && _super.apply(this, arguments) || this;
                     }
                     Toast.prototype.render = function () {
                         var state = this.controller.latestState;
@@ -78201,7 +78201,7 @@ var LiteMol;
                 var Entity = (function (_super) {
                     __extends(Entity, _super);
                     function Entity() {
-                        var _this = _super.apply(this, arguments) || this;
+                        var _this = _super !== null && _super.apply(this, arguments) || this;
                         _this.renderedVersion = -1;
                         return _this;
                     }
@@ -78340,7 +78340,7 @@ var LiteMol;
                 var Tree = (function (_super) {
                     __extends(Tree, _super);
                     function Tree() {
-                        var _this = _super.apply(this, arguments) || this;
+                        var _this = _super !== null && _super.apply(this, arguments) || this;
                         _this.renderedVersion = -1;
                         _this.splash = Entity_1.SplashInfo.Info();
                         return _this;
@@ -78414,7 +78414,7 @@ var LiteMol;
                 var Badge = (function (_super) {
                     __extends(Badge, _super);
                     function Badge() {
-                        return _super.apply(this, arguments) || this;
+                        return _super !== null && _super.apply(this, arguments) || this;
                     }
                     Badge.prototype.shouldComponentUpdate = function (nextProps, nextState, nextContext) {
                         return this.props.type !== nextProps.type;
@@ -78463,7 +78463,7 @@ var LiteMol;
                 var CurrentEntityControl = (function (_super) {
                     __extends(CurrentEntityControl, _super);
                     function CurrentEntityControl() {
-                        var _this = _super.apply(this, arguments) || this;
+                        var _this = _super !== null && _super.apply(this, arguments) || this;
                         _this.state = { current: void 0 };
                         return _this;
                     }
@@ -78507,7 +78507,7 @@ var LiteMol;
                     var ClassInfo = (function (_super) {
                         __extends(ClassInfo, _super);
                         function ClassInfo() {
-                            var _this = _super.apply(this, arguments) || this;
+                            var _this = _super !== null && _super.apply(this, arguments) || this;
                             _this.state = { isExpanded: false };
                             return _this;
                         }
@@ -78557,7 +78557,7 @@ var LiteMol;
                 var ViewportControls = (function (_super) {
                     __extends(ViewportControls, _super);
                     function ViewportControls() {
-                        var _this = _super.apply(this, arguments) || this;
+                        var _this = _super !== null && _super.apply(this, arguments) || this;
                         _this.state = { showSceneOptions: false, showHelp: false };
                         return _this;
                     }
@@ -78608,7 +78608,7 @@ var LiteMol;
                 var HighlightInfo = (function (_super) {
                     __extends(HighlightInfo, _super);
                     function HighlightInfo() {
-                        return _super.apply(this, arguments) || this;
+                        return _super !== null && _super.apply(this, arguments) || this;
                     }
                     HighlightInfo.prototype.render = function () {
                         var state = this.controller.latestState;
@@ -78633,7 +78633,7 @@ var LiteMol;
                 var Viewport = (function (_super) {
                     __extends(Viewport, _super);
                     function Viewport() {
-                        var _this = _super.apply(this, arguments) || this;
+                        var _this = _super !== null && _super.apply(this, arguments) || this;
                         _this.state = { noWebGl: false, showLogo: true };
                         return _this;
                     }

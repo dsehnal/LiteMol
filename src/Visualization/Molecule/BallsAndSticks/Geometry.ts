@@ -407,7 +407,7 @@ namespace LiteMol.Visualization.Molecule.BallsAndSticks {
             state.tempVector.set(state.cX[bI], state.cY[bI], state.cZ[bI]);
             bs.bondState.b.set(state.tempVector.x, state.tempVector.y, state.tempVector.z);
 
-            let r = bs.bondRadius, 
+            let r = +bs.bondRadius!, 
                 o = 2 * r / 3,
                 h = r / 2;
 

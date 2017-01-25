@@ -46,7 +46,7 @@ namespace LiteMol.Visualization.Molecule.Cartoons {
                 
                 if (!map.elementMap.has(index)) continue;
                 
-                let indexOffset = map.elementMap.get(index),
+                let indexOffset = map.elementMap.get(index)!,
                     rangeStart = map.elementRanges[2 * indexOffset],
                     rangeEnd = map.elementRanges[2 * indexOffset + 1];
                 
@@ -110,7 +110,7 @@ namespace LiteMol.Visualization.Molecule.Cartoons {
                 if (!count) continue;
                 color.r = avgColor.r / count; color.g = avgColor.g / count; color.b = avgColor.b / count;
                 
-                let elementOffset = map.elementMap.get(rI);
+                let elementOffset = map.elementMap.get(rI)!;
 
                 let rangeStart = map.elementRanges[2 * elementOffset],
                     rangeEnd = map.elementRanges[2 * elementOffset + 1];

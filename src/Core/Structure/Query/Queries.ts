@@ -280,7 +280,7 @@ namespace LiteMol.Core.Structure.Query {
                     let i = residueStartIndex[cI], last = residueEndIndex[cI], startIndex = -1, endIndex = -1;                    
                     for (; i < last; i++) {
 
-                        if (seqNumber[i] >= start.seqNumber) {
+                        if (seqNumber[i] >= start.seqNumber!) {
                             startIndex = i;
                             break;
                         }
@@ -288,7 +288,7 @@ namespace LiteMol.Core.Structure.Query {
 
                     if (i === last) continue;
                     for (i = startIndex; i < last; i++) {                        
-                        if (seqNumber[i] >= end.seqNumber) {
+                        if (seqNumber[i] >= end.seqNumber!) {
                             break;
                         }
                     }

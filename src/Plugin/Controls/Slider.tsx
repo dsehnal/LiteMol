@@ -416,7 +416,7 @@ namespace LiteMol.Plugin.Controls {
             if (!cache || cache.marks !== marks || cache.step !== step) {
                 const pointsObject = { ...marks };
                 if (step !== null) {
-                    for (let point = min; point <= max; point += step) {
+                    for (let point = min; point <= max; point += step!) {
                         pointsObject[point] = point;
                     }
                 }
@@ -538,7 +538,7 @@ namespace LiteMol.Plugin.Controls {
             const nextValue = points[nextPointIndex];
             const { pushable: threshold } = this.props;
             const diffToNext = direction * (bounds[nextHandle] - nextValue);
-            if (!this.pushHandle(bounds, nextHandle, direction, +threshold - diffToNext)) {
+            if (!this.pushHandle(bounds, nextHandle, direction, +threshold! - diffToNext)) {
                 // couldn't push next handle, so we won't push this one either
                 return false;
             }
@@ -552,9 +552,9 @@ namespace LiteMol.Plugin.Controls {
             const value = bounds[handle];
 
             let direction = 0;
-            if (bounds[handle + 1] - value < threshold) {
+            if (bounds[handle + 1] - value < threshold!) {
                 direction = +1;
-            } else if (value - bounds[handle - 1] < threshold) {
+            } else if (value - bounds[handle - 1] < threshold!) {
                 direction = -1;
             }
 
@@ -562,7 +562,7 @@ namespace LiteMol.Plugin.Controls {
 
             const nextHandle = handle + direction;
             const diffToNext = direction * (bounds[nextHandle] - value);
-            if (!this.pushHandle(bounds, nextHandle, direction, +threshold - diffToNext)) {
+            if (!this.pushHandle(bounds, nextHandle, direction, +threshold! - diffToNext)) {
                 // revert to original value if pushing is impossible
                 bounds[handle] = originalValue;
             }
@@ -600,7 +600,7 @@ namespace LiteMol.Plugin.Controls {
 
             const points = Object.keys(marks).map(parseFloat);
             if (step !== null) {
-                const closestStep = (Math.round((val - min) / step) * step) + min;
+                const closestStep = (Math.round((val - min) / step!) * step!) + min;
                 points.push(closestStep);
             }
 

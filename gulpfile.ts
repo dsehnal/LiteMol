@@ -179,7 +179,9 @@ gulp.task('Docs-clean', function() {
 
 gulp.task('Docs-generate', ['Docs-clean'], function() {
     return gulp
-        .src(['./src/**/*.ts', './src/**/*.tsx', '!./src/**/Module.ts'])
+        .src(['./src/**/*.ts', './src/**/*.tsx', '!./src/modularity.ts',
+            '!./src/Core/build.ts', '!./src/Visualization/build.ts', '!./src/Bootstrap/build.ts', '!./src/Plugin/build.ts',
+            '!./src/Core/Module.ts', '!./src/Visualization/Module.ts', '!./src/Bootstrap/Module.ts', '!./src/Plugin/Module.ts'])
         .pipe(plugins.typedoc({
             module: 'commonjs',
             target: 'es5',

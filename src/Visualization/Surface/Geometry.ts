@@ -141,7 +141,7 @@ namespace LiteMol.Visualization.Surface {
             ChunkedArray.add4(pickPlatesColors, color.r, color.g, color.b, 0.0);
             ChunkedArray.add4(pickPlatesColors, color.r, color.g, color.b, 0.0);
         }
-        ctx.platesVertexCount += platesVertexCount;
+        ctx.platesVertexCount = ctx.platesVertexCount! + platesVertexCount;
     }
 
     async function computePickPlatesChunks(ctx: Context) {

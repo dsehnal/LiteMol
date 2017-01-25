@@ -66,7 +66,7 @@ namespace LiteMol.Core.Utils {
 
         // return the time in milliseconds and removes them from the cache.
         time(name: string): number {
-            let start = this.starts.get(name), end = this.ends.get(name);
+            let start = this.starts.get(name)!, end = this.ends.get(name)!;
 
             this.starts.delete(name);
             this.ends.delete(name);
@@ -76,7 +76,7 @@ namespace LiteMol.Core.Utils {
 
         timeSum(...names: string[]) {
             let t = 0;
-            for (let m of names.map(n => this.ends.get(n) - this.starts.get(n))) t += m;
+            for (let m of names.map(n => this.ends.get(n)! - this.starts.get(n)!)) t += m;
             return t;
         }
 

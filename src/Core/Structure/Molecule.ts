@@ -157,7 +157,7 @@ namespace LiteMol.Core.Structure {
                     if (a.insCode === b.insCode) return 0;
                     if (a.insCode === void 0) return -1;
                     if (b.insCode === void 0) return 1;
-                    return a.insCode < b.insCode ? -1 : 1;
+                    return a.insCode! < b.insCode! ? -1 : 1;
                 }
                 return a.seqNumber < b.seqNumber ? -1 : 1;
             }
@@ -170,7 +170,7 @@ namespace LiteMol.Core.Structure {
                     if (a.insCode === bInsCode[index]) return 0;
                     if (a.insCode === void 0) return -1;
                     if (bInsCode[index] === void 0) return 1;
-                    return a.insCode < bInsCode[index] ? -1 : 1;
+                    return a.insCode! < bInsCode[index] ? -1 : 1;
                 }
                 return a.seqNumber < bSeqNumber[index] ? -1 : 1;
             }

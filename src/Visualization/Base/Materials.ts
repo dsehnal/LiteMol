@@ -219,7 +219,7 @@ namespace LiteMol.Visualization {
            
             let transparency = theme.transparency;    
                                    
-            let opacity = +transparency.alpha;            
+            let opacity = +transparency.alpha!;            
             if (isNaN(opacity)) opacity = 1.0;
             let isTransparent = opacity <= 0.999;
             let writeDepth = !!transparency.writeDepth;
@@ -306,7 +306,7 @@ namespace LiteMol.Visualization {
 
             for (let elementIndex of map.elementIndices) {
 
-                let elementOffset = map.elementMap.get(elementIndex);
+                let elementOffset = map.elementMap.get(elementIndex)!;
 
                 let rangeStart = map.elementRanges[2 * elementOffset],
                     rangeEnd = map.elementRanges[2 * elementOffset + 1];

@@ -30,7 +30,7 @@ namespace LiteMol.Visualization.Surface {
             for (let index of indices) {
                 if (!map.elementMap.has(index)) continue;
 
-                let indexOffset = map.elementMap.get(index),
+                let indexOffset = map.elementMap.get(index)!,
                     rangeStart = map.elementRanges[2 * indexOffset],
                     rangeEnd = map.elementRanges[2 * indexOffset + 1];
 
@@ -68,7 +68,7 @@ namespace LiteMol.Visualization.Surface {
 
             for (let index of indices) {
                 if (!map.elementMap.has(index)) continue;
-                let indexOffset = map.elementMap.get(index),
+                let indexOffset = map.elementMap.get(index)!,
                     rangeStart = map.elementRanges[2 * indexOffset],
                     rangeEnd = map.elementRanges[2 * indexOffset + 1];
                 if (rangeStart === rangeEnd) continue;                
@@ -93,7 +93,7 @@ namespace LiteMol.Visualization.Surface {
             let radius = 0; 
             for (let index of indices) {
                 if (!map.elementMap.has(index)) continue;
-                let indexOffset = map.elementMap.get(index),
+                let indexOffset = map.elementMap.get(index)!,
                     rangeStart = map.elementRanges[2 * indexOffset],
                     rangeEnd = map.elementRanges[2 * indexOffset + 1];
                 if (rangeStart === rangeEnd) continue;                
