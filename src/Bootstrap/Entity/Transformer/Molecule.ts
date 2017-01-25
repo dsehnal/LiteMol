@@ -41,7 +41,7 @@ namespace LiteMol.Bootstrap.Entity.Transformer.Molecule {
             .add(a, Data.OpenFile, { file: t.params.file, type: format.isBinary ? 'Binary' : 'String' })
             .then(CreateFromData, { format }, { isBinding: true })
             .then(Molecule.CreateModel, { modelIndex: 0 }, { isBinding: false })
-    })
+    });
 
     export interface CreateFromDataParams {
         format: Core.Formats.FormatInfo,

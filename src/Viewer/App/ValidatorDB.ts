@@ -6,8 +6,8 @@ namespace LiteMol.Viewer.ValidatorDB {
     import Entity = Bootstrap.Entity;
     import Transformer = Bootstrap.Entity.Transformer;
             
-    export const Report = Entity.Behaviour.create<Interactivity.Behaviour, {}>({ name: 'Ligand Validation Report', typeClass: 'Behaviour', shortName: 'VR', description: 'Represents ValidatorDB ligand validation report.' });
-    export type Report = typeof Report.Entity
+    export interface Report extends Entity.Behaviour<Interactivity.Behaviour, {}> { }
+    export const Report = Entity.create<Report>({ name: 'Ligand Validation Report', typeClass: 'Behaviour', shortName: 'VR', description: 'Represents ValidatorDB ligand validation report.' });
     
     namespace Api {     
 

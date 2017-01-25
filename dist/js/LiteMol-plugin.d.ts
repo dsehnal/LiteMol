@@ -3191,7 +3191,7 @@ declare namespace LiteMol.Plugin {
 declare namespace LiteMol.Plugin {
     import Transformer = Bootstrap.Entity.Transformer;
     namespace DataSources {
-        const DownloadMolecule: Bootstrap.Tree.Transformer<Bootstrap.Entity<{} & Bootstrap.Entity.CommonProps>, Bootstrap.Entity<{} & Bootstrap.Entity.CommonProps>, Transformer.Molecule.DownloadMoleculeSourceParams>;
+        const DownloadMolecule: Bootstrap.Tree.Transformer<Bootstrap.Entity.Root, Bootstrap.Entity.Action, Transformer.Molecule.DownloadMoleculeSourceParams>;
     }
     function getDefaultSpecification(): Specification;
 }
@@ -15748,15 +15748,11 @@ declare namespace LiteMol.Bootstrap.Command {
     }
     namespace Molecule {
         const FocusQuery: Event.Type<{
-            model: Entity<{
-                model: Core.Structure.Molecule.Model;
-            } & Bootstrap.Entity.CommonProps>;
+            model: Bootstrap.Entity.Molecule.Model;
             query: Core.Structure.Query.Source;
         }>;
         const Highlight: Event.Type<{
-            model: Entity<{
-                model: Core.Structure.Molecule.Model;
-            } & Bootstrap.Entity.CommonProps>;
+            model: Bootstrap.Entity.Molecule.Model;
             query: Core.Structure.Query.Source;
             isOn: boolean;
         }>;
@@ -15903,7 +15899,7 @@ declare namespace LiteMol.Bootstrap.Tree {
             isComposed?: boolean;
         }
         function create<A extends Node, B extends Node, P>(info: Info<A, B, P>, transform: (ctx: Context, a: A, t: Transform<A, B, P>) => Task<B>, updater?: (ctx: Context, b: B, t: Transform<A, B, P>) => Task<B> | undefined): Transformer<A, B, P>;
-        function internal<A extends Node, B extends Node, P>(id: string, from: Tree.Node.TypeOf<A>[], to: Tree.Node.TypeOf<B>[], transform: (ctx: Context, a: A, t: Transform<A, B, P>) => Task<B>): Transformer<Entity<{} & Entity.CommonProps>, Entity<{} & Entity.CommonProps>, {}>;
+        function internal<A extends Node, B extends Node, P>(id: string, from: Tree.Node.TypeOf<A>[], to: Tree.Node.TypeOf<B>[], transform: (ctx: Context, a: A, t: Transform<A, B, P>) => Task<B>): Transformer<Entity.Root, Entity.Root, {}>;
         interface ActionWithContext<T> {
             action: Transform.Source;
             context: T;
@@ -16202,7 +16198,7 @@ declare namespace LiteMol.Bootstrap.Visualization.Density {
         smoothing: number;
         isWireframe: boolean;
     }
-    type Style = Visualization.Style<{}, Params>;
+    type Style = Visualization.Style<'Density', Params>;
     namespace Style {
         function create(params: {
             isoValue: number;
@@ -16223,7 +16219,7 @@ declare namespace LiteMol.Bootstrap.Visualization.Density {
     }
 }
 declare namespace LiteMol.Bootstrap {
-    interface Entity<Props extends Entity.CommonProps> extends Tree.Node<Props, Entity.State, Entity.TypeInfo> {
+    interface Entity<Props> extends Tree.Node<Props & Entity.CommonProps, Entity.State, Entity.TypeInfo> {
     }
     namespace Entity {
         interface CommonProps {
@@ -16239,7 +16235,7 @@ declare namespace LiteMol.Bootstrap {
             isCollapsed?: boolean;
             visibility?: Visibility;
         }
-        interface Any extends Entity<CommonProps> {
+        interface Any extends Entity<{}> {
         }
         type Tree = Bootstrap.Tree<Any>;
         function isClass(e: Any, cls: TypeClass): boolean;
@@ -16258,11 +16254,10 @@ declare namespace LiteMol.Bootstrap {
         interface TypeInfo extends TypeInfoBase {
             traits: TypeTraits;
         }
-        interface Type<P extends CommonProps> extends Tree.Node.Type<TypeInfo, P, Entity<P>> {
-            readonly Entity: Entity<P>;
+        interface Type<P> extends Tree.Node.Type<TypeInfo, P, Entity<P>> {
             create(transform: Tree.Transform<Any, Entity<P>, any>, props: P): Entity<P>;
         }
-        type AnyType = Type<CommonProps>;
+        type AnyType = Type<{}>;
         const RootClass: TypeClass;
         const GroupClass: TypeClass;
         const DataClass: TypeClass;
@@ -16271,7 +16266,7 @@ declare namespace LiteMol.Bootstrap {
         const SelectionClass: TypeClass;
         const ActionClass: TypeClass;
         const BehaviourClass: TypeClass;
-        function create<Props extends {}>(info: TypeInfoBase, traits?: TypeTraits): Type<Props & CommonProps>;
+        function create<T extends Any>(info: TypeInfoBase, traits?: TypeTraits): Type<T['props']>;
     }
 }
 declare namespace LiteMol.Bootstrap.Entity {
@@ -16286,41 +16281,59 @@ declare namespace LiteMol.Bootstrap.Entity {
     function isMoleculeModel(e: Any): e is Molecule.Model;
     function isMoleculeSelection(e: Any): e is Molecule.Selection;
     function isVisual(e: Any): e is Visual.Any;
-    const RootTransform: Tree.Transform<Entity<{} & CommonProps>, Entity<{} & CommonProps>, {}>;
+    const RootTransform: Tree.Transform<Root, Root, {}>;
+    interface Root extends Entity<{}> {
+    }
     const Root: Type<{} & CommonProps>;
-    type Root = typeof Root.Entity;
+    interface Group extends Entity<{}> {
+    }
     const Group: Type<{} & CommonProps>;
-    type Group = typeof Group.Entity;
+    interface Action extends Entity<{}> {
+    }
     const Action: Type<{} & CommonProps>;
-    type Action = typeof Action.Entity;
+    interface Behaviour<T extends Bootstrap.Behaviour.Dynamic, Props> extends Entity<{
+        behaviour: T;
+    } & Props> {
+    }
     namespace Behaviour {
         interface Any extends Entity<{
             behaviour: Bootstrap.Behaviour.Dynamic;
         } & CommonProps> {
         }
-        function create<B extends Bootstrap.Behaviour.Dynamic, Props extends {}>(info: TypeInfoBase, traits?: TypeTraits): Type<{
-            behaviour: B;
-        } & Props & CommonProps>;
     }
     namespace Data {
         type Type = 'String' | 'Binary';
         const Types: Type[];
+        interface String extends Entity<{
+            data: string;
+        }> {
+        }
         const String: Entity.Type<{
             data: string;
         } & CommonProps>;
-        type String = typeof String.Entity;
+        interface Binary extends Entity<{
+            data: ArrayBuffer;
+        }> {
+        }
         const Binary: Entity.Type<{
             data: ArrayBuffer;
         } & CommonProps>;
-        type Binary = typeof Binary.Entity;
+        interface CifDictionary extends Entity<{
+            dictionary: Core.Formats.CIF.File;
+        }> {
+        }
         const CifDictionary: Entity.Type<{
             dictionary: CIFTools.File;
         } & CommonProps>;
-        type CifDictionary = typeof CifDictionary.Entity;
+        interface Json extends Entity<{
+            data: any;
+        }> {
+        }
         const Json: Entity.Type<{
             data: any;
         } & CommonProps>;
-        type Json = typeof Json.Entity;
+    }
+    interface Visual<Type, Props> extends Entity<Visual.Props<Type> & Props> {
     }
     namespace Visual {
         interface Props<Type> {
@@ -16328,46 +16341,65 @@ declare namespace LiteMol.Bootstrap.Entity {
             style: Visualization.Style<Type, any>;
             isSelectable: boolean;
         }
-        interface Any extends Entity<Props<any> & CommonProps> {
+        interface Any extends Visual<any, {}> {
+        }
+        interface Surface extends Visual<"Surface", {
+            tag: any;
+        }> {
         }
         const Surface: Type<Props<"Surface"> & {
             tag: any;
         } & CommonProps>;
-        type Surface = typeof Surface.Entity;
     }
     namespace Molecule {
+        interface Molecule extends Entity<{
+            molecule: Core.Structure.Molecule;
+        }> {
+        }
         const Molecule: Type<{
             molecule: Core.Structure.Molecule;
         } & CommonProps>;
-        type Molecule = typeof Molecule.Entity;
+        interface Model extends Entity<{
+            model: Core.Structure.Molecule.Model;
+        }> {
+        }
         const Model: Type<{
             model: Core.Structure.Molecule.Model;
         } & CommonProps>;
-        type Model = typeof Model.Entity;
+        interface Selection extends Entity<{
+            indices: number[];
+        }> {
+        }
         const Selection: Type<{
             indices: number[];
         } & CommonProps>;
-        type Selection = typeof Selection.Entity;
-        const Visual: Type<Visual.Props<"Surface" | "Cartoons" | "Calpha" | "BallsAndSticks" | "VDWBalls"> & CommonProps>;
-        type Visual = typeof Visual.Entity;
+        interface Visual extends Entity.Visual<Bootstrap.Visualization.Molecule.Type, {}> {
+        }
+        const Visual: Type<Visual.Props<"Surface" | "Cartoons" | "Calpha" | "BallsAndSticks" | "VDWBalls"> & {} & CommonProps>;
         namespace CoordinateStreaming {
+            interface Behaviour extends Entity.Behaviour<Bootstrap.Behaviour.Molecule.CoordinateStreaming, {}> {
+            }
             const Behaviour: Type<{
                 behaviour: Bootstrap.Behaviour.Molecule.CoordinateStreaming;
             } & {} & CommonProps>;
-            type Behaviour = typeof CoordinateStreaming.Behaviour.Entity;
         }
     }
     namespace Density {
+        interface Data extends Entity<{
+            data: Core.Formats.Density.Data;
+        }> {
+        }
         const Data: Type<{
             data: Core.Formats.Density.Data;
         } & CommonProps>;
-        type Data = typeof Data.Entity;
-        const Visual: Type<Visual.Props<{}> & CommonProps>;
-        type Visual = typeof Visual.Entity;
+        interface Visual extends Entity.Visual<'Density', {}> {
+        }
+        const Visual: Type<Visual.Props<"Density"> & {} & CommonProps>;
+        interface InteractiveSurface extends Behaviour<Bootstrap.Behaviour.Density.ShowDynamicDensity, {}> {
+        }
         const InteractiveSurface: Type<{
             behaviour: Bootstrap.Behaviour.Density.ShowDynamicDensity;
         } & {} & CommonProps>;
-        type InteractiveSurface = typeof InteractiveSurface.Entity;
     }
 }
 declare namespace LiteMol.Bootstrap.Entity {
@@ -16383,8 +16415,8 @@ declare namespace LiteMol.Bootstrap.Entity {
 }
 declare namespace LiteMol.Bootstrap.Entity.Transformer.Basic {
     import Transformer = Tree.Transformer;
-    const Root: Transformer<Entity<{} & CommonProps>, Entity<{} & CommonProps>, {}>;
-    const Fail: Transformer<Any, Entity<{} & CommonProps>, {
+    const Root: Transformer<Root, Root, {}>;
+    const Fail: Transformer<Any, Root, {
         title: string;
         message: string;
     }>;
@@ -16393,7 +16425,7 @@ declare namespace LiteMol.Bootstrap.Entity.Transformer.Basic {
         description?: string;
         isCollapsed?: boolean;
     }
-    const CreateGroup: Transformer<Any, Entity<{} & CommonProps>, CreateGroupParams>;
+    const CreateGroup: Transformer<Any, Root, CreateGroupParams>;
 }
 declare namespace LiteMol.Bootstrap.Entity.Transformer.Molecule {
     interface DownloadMoleculeSourceParams {
@@ -16408,77 +16440,47 @@ declare namespace LiteMol.Bootstrap.Entity.Transformer.Molecule {
         defaultId: string;
         specificFormat?: Core.Formats.FormatInfo;
         isFullUrl?: boolean;
-    }): Tree.Transformer<Entity<{} & CommonProps>, Entity<{} & CommonProps>, DownloadMoleculeSourceParams>;
+    }): Tree.Transformer<Root, Action, DownloadMoleculeSourceParams>;
     interface OpenMoleculeFromFileParams {
         file: File | undefined;
     }
-    const OpenMoleculeFromFile: Tree.Transformer<Entity<{} & CommonProps>, Entity<{} & CommonProps>, OpenMoleculeFromFileParams>;
+    const OpenMoleculeFromFile: Tree.Transformer<Root, Action, OpenMoleculeFromFileParams>;
     interface CreateFromDataParams {
         format: Core.Formats.FormatInfo;
         customId?: string;
     }
-    const CreateFromData: Tree.Transformer<Entity<{
-        data: string;
-    } & CommonProps> | Entity<{
-        data: ArrayBuffer;
-    } & CommonProps>, Entity<{
-        molecule: Core.Structure.Molecule;
-    } & CommonProps>, CreateFromDataParams>;
+    const CreateFromData: Tree.Transformer<Entity.Data.String | Entity.Data.Binary, Entity.Molecule.Molecule, CreateFromDataParams>;
     interface CreateFromMmCifParams {
         blockIndex: number;
     }
-    const CreateFromMmCif: Tree.Transformer<Entity<{
-        dictionary: CIFTools.File;
-    } & CommonProps>, Entity<{
-        molecule: Core.Structure.Molecule;
-    } & CommonProps>, CreateFromMmCifParams>;
+    const CreateFromMmCif: Tree.Transformer<Entity.Data.CifDictionary, Entity.Molecule.Molecule, CreateFromMmCifParams>;
     interface CreateModelParams {
         modelIndex: number;
     }
-    const CreateModel: Tree.Transformer<Entity<{
-        molecule: Core.Structure.Molecule;
-    } & CommonProps>, Entity<{
-        model: Core.Structure.Molecule.Model;
-    } & CommonProps>, CreateModelParams>;
+    const CreateModel: Tree.Transformer<Entity.Molecule.Molecule, Entity.Molecule.Model, CreateModelParams>;
     interface CreateSelectionParams {
         name?: string;
         queryString: string;
         silent?: boolean;
         inFullContext?: boolean;
     }
-    const CreateSelection: Tree.Transformer<Entity<{
-        model: Core.Structure.Molecule.Model;
-    } & CommonProps> | Entity<Visual.Props<"Surface" | "Cartoons" | "Calpha" | "BallsAndSticks" | "VDWBalls"> & CommonProps>, Entity<{
-        indices: number[];
-    } & CommonProps>, CreateSelectionParams>;
+    const CreateSelection: Tree.Transformer<Entity.Molecule.Model | Entity.Molecule.Visual, Entity.Molecule.Selection, CreateSelectionParams>;
     interface CreateSelectionFromQueryParams {
         query: Core.Structure.Query.Source;
         name?: string;
         silent?: boolean;
         inFullContext?: boolean;
     }
-    const CreateSelectionFromQuery: Tree.Transformer<Entity<{
-        model: Core.Structure.Molecule.Model;
-    } & CommonProps> | Entity<Visual.Props<"Surface" | "Cartoons" | "Calpha" | "BallsAndSticks" | "VDWBalls"> & CommonProps>, Entity<{
-        indices: number[];
-    } & CommonProps>, CreateSelectionFromQueryParams>;
+    const CreateSelectionFromQuery: Tree.Transformer<Entity.Molecule.Model | Entity.Molecule.Visual, Entity.Molecule.Selection, CreateSelectionFromQueryParams>;
     interface CreateAssemblyParams {
         name: string;
     }
-    const CreateAssembly: Tree.Transformer<Entity<{
-        model: Core.Structure.Molecule.Model;
-    } & CommonProps>, Entity<{
-        model: Core.Structure.Molecule.Model;
-    } & CommonProps>, CreateAssemblyParams>;
+    const CreateAssembly: Tree.Transformer<Entity.Molecule.Model, Entity.Molecule.Model, CreateAssemblyParams>;
     interface CreateSymmetryMatesParams {
         type: 'Mates' | 'Interaction';
         radius: number;
     }
-    const CreateSymmetryMates: Tree.Transformer<Entity<{
-        model: Core.Structure.Molecule.Model;
-    } & CommonProps>, Entity<{
-        model: Core.Structure.Molecule.Model;
-    } & CommonProps>, CreateSymmetryMatesParams>;
+    const CreateSymmetryMates: Tree.Transformer<Entity.Molecule.Model, Entity.Molecule.Model, CreateSymmetryMatesParams>;
     interface ModelTransform3DParams {
         /**
          * a 4x4 matrix stored as 1D array in column major order.
@@ -16488,19 +16490,11 @@ declare namespace LiteMol.Bootstrap.Entity.Transformer.Molecule {
         transform: number[];
         description?: string;
     }
-    const ModelTransform3D: Tree.Transformer<Entity<{
-        model: Core.Structure.Molecule.Model;
-    } & CommonProps>, Entity<{
-        model: Core.Structure.Molecule.Model;
-    } & CommonProps>, ModelTransform3DParams>;
+    const ModelTransform3D: Tree.Transformer<Entity.Molecule.Model, Entity.Molecule.Model, ModelTransform3DParams>;
     interface CreateVisualParams {
         style: Visualization.Molecule.Style<any>;
     }
-    const CreateVisual: Tree.Transformer<Entity<{
-        model: Core.Structure.Molecule.Model;
-    } & CommonProps> | Entity<{
-        indices: number[];
-    } & CommonProps>, Entity<Visual.Props<"Surface" | "Cartoons" | "Calpha" | "BallsAndSticks" | "VDWBalls"> & CommonProps>, CreateVisualParams>;
+    const CreateVisual: Tree.Transformer<Entity.Molecule.Model | Entity.Molecule.Selection, Entity.Molecule.Visual, CreateVisualParams>;
     interface CreateMacromoleculeVisualParams {
         groupRef?: string;
         polymer?: boolean;
@@ -16510,9 +16504,7 @@ declare namespace LiteMol.Bootstrap.Entity.Transformer.Molecule {
         water?: boolean;
         waterRef?: string;
     }
-    const CreateMacromoleculeVisual: Tree.Transformer<Entity<{
-        model: Core.Structure.Molecule.Model;
-    } & CommonProps>, Entity<{} & CommonProps>, CreateMacromoleculeVisualParams>;
+    const CreateMacromoleculeVisual: Tree.Transformer<Entity.Molecule.Model, Action, CreateMacromoleculeVisualParams>;
 }
 declare namespace LiteMol.Bootstrap.Entity.Transformer.Data {
     interface DownloadParams {
@@ -16523,59 +16515,35 @@ declare namespace LiteMol.Bootstrap.Entity.Transformer.Data {
         title?: string;
         responseCompression?: Utils.DataCompressionMethod;
     }
-    const Download: Tree.Transformer<Entity<{} & CommonProps>, Entity<{
-        data: string;
-    } & CommonProps> | Entity<{
-        data: ArrayBuffer;
-    } & CommonProps>, DownloadParams>;
+    const Download: Tree.Transformer<Root, Entity.Data.String | Entity.Data.Binary, DownloadParams>;
     interface OpenFileParams {
         description?: string;
         id?: string;
         file: File | undefined;
         type?: string;
     }
-    const OpenFile: Tree.Transformer<Entity<{} & CommonProps>, Entity<{
-        data: string;
-    } & CommonProps> | Entity<{
-        data: ArrayBuffer;
-    } & CommonProps>, OpenFileParams>;
+    const OpenFile: Tree.Transformer<Root, Entity.Data.String | Entity.Data.Binary, OpenFileParams>;
     interface ParseCifParams {
         id?: string;
         description?: string;
     }
-    const ParseCif: Tree.Transformer<Entity<{
-        data: string;
-    } & CommonProps>, Entity<{
-        dictionary: CIFTools.File;
-    } & CommonProps>, ParseCifParams>;
+    const ParseCif: Tree.Transformer<Entity.Data.String, Entity.Data.CifDictionary, ParseCifParams>;
     interface ParseBinaryCifParams {
         id?: string;
         description?: string;
     }
-    const ParseBinaryCif: Tree.Transformer<Entity<{
-        data: ArrayBuffer;
-    } & CommonProps>, Entity<{
-        dictionary: CIFTools.File;
-    } & CommonProps>, ParseBinaryCifParams>;
+    const ParseBinaryCif: Tree.Transformer<Entity.Data.Binary, Entity.Data.CifDictionary, ParseBinaryCifParams>;
     interface ParseJsonParams {
         id?: string;
         description?: string;
     }
-    const ParseJson: Tree.Transformer<Entity<{
-        data: string;
-    } & CommonProps>, Entity<{
-        data: any;
-    } & CommonProps>, ParseJsonParams>;
+    const ParseJson: Tree.Transformer<Entity.Data.String, Entity.Data.Json, ParseJsonParams>;
     interface FromDataParams {
         id?: string;
         description?: string;
         data: string | ArrayBuffer;
     }
-    const FromData: Tree.Transformer<Entity<{} & CommonProps>, Entity<{
-        data: string;
-    } & CommonProps> | Entity<{
-        data: ArrayBuffer;
-    } & CommonProps>, FromDataParams>;
+    const FromData: Tree.Transformer<Root, Entity.Data.String | Entity.Data.Binary, FromDataParams>;
 }
 declare namespace LiteMol.Bootstrap.Entity.Transformer.Density {
     interface ParseDataParams {
@@ -16583,35 +16551,21 @@ declare namespace LiteMol.Bootstrap.Entity.Transformer.Density {
         format: LiteMol.Core.Formats.FormatInfo;
         normalize: boolean;
     }
-    const ParseData: Tree.Transformer<Entity<{
-        data: string;
-    } & CommonProps> | Entity<{
-        data: ArrayBuffer;
-    } & CommonProps>, Entity<{
-        data: Core.Formats.Density.Data;
-    } & CommonProps>, ParseDataParams>;
+    const ParseData: Tree.Transformer<Entity.Data.String | Entity.Data.Binary, Entity.Density.Data, ParseDataParams>;
     interface CreateFromCifParams {
         id?: string;
         blockIndex: number;
     }
-    const CreateFromCif: Tree.Transformer<Entity<{
-        dictionary: CIFTools.File;
-    } & CommonProps>, Entity<{
-        data: Core.Formats.Density.Data;
-    } & CommonProps>, CreateFromCifParams>;
+    const CreateFromCif: Tree.Transformer<Entity.Data.CifDictionary, Entity.Density.Data, CreateFromCifParams>;
     interface CreateFromDataParams {
         id?: string;
         data: Core.Formats.Density.Data;
     }
-    const CreateFromData: Tree.Transformer<Entity<{} & CommonProps>, Entity<{
-        data: Core.Formats.Density.Data;
-    } & CommonProps>, CreateFromDataParams>;
+    const CreateFromData: Tree.Transformer<Root, Entity.Density.Data, CreateFromDataParams>;
     interface CreateVisualParams {
         style: Visualization.Density.Style;
     }
-    const CreateVisual: Tree.Transformer<Entity<{
-        data: Core.Formats.Density.Data;
-    } & CommonProps>, Entity<Visual.Props<{}> & CommonProps>, CreateVisualParams>;
+    const CreateVisual: Tree.Transformer<Entity.Density.Data, Entity.Density.Visual, CreateVisualParams>;
     interface CreateVisualBehaviourParams {
         id?: string;
         isoSigmaMin: number;
@@ -16622,37 +16576,25 @@ declare namespace LiteMol.Bootstrap.Entity.Transformer.Density {
         showFull: boolean;
         style: Visualization.Density.Style;
     }
-    const CreateVisualBehaviour: Tree.Transformer<Entity<{
-        data: Core.Formats.Density.Data;
-    } & CommonProps>, Entity<{
-        behaviour: Bootstrap.Behaviour.Density.ShowDynamicDensity;
-    } & {} & CommonProps>, CreateVisualBehaviourParams>;
+    const CreateVisualBehaviour: Tree.Transformer<Entity.Density.Data, Entity.Density.InteractiveSurface, CreateVisualBehaviourParams>;
 }
 declare namespace LiteMol.Bootstrap.Entity.Transformer.Molecule.CoordinateStreaming {
     interface CreateStreamingBehaviourParams {
         server: string;
         radius: number;
     }
-    const CreateBehaviour: Tree.Transformer<Entity<{
-        model: Core.Structure.Molecule.Model;
-    } & CommonProps>, Entity<{
-        behaviour: Bootstrap.Behaviour.Molecule.CoordinateStreaming;
-    } & {} & CommonProps>, CreateStreamingBehaviourParams>;
+    const CreateBehaviour: Tree.Transformer<Entity.Molecule.Model, Entity.Molecule.CoordinateStreaming.Behaviour, CreateStreamingBehaviourParams>;
     interface CreateModelParams {
         data: ArrayBuffer;
         transform: number[];
     }
-    const CreateModel: Tree.Transformer<Entity<{
-        behaviour: Bootstrap.Behaviour.Molecule.CoordinateStreaming;
-    } & {} & CommonProps>, Entity<{
-        model: Core.Structure.Molecule.Model;
-    } & CommonProps>, CreateModelParams>;
+    const CreateModel: Tree.Transformer<Entity.Molecule.CoordinateStreaming.Behaviour, Entity.Molecule.Model, CreateModelParams>;
     interface InitStreamingParams {
         id: string;
         server: string;
         radius: number;
     }
-    const InitStreaming: Tree.Transformer<Entity<{} & CommonProps>, Entity<{} & CommonProps>, InitStreamingParams>;
+    const InitStreaming: Tree.Transformer<Root, Action, InitStreamingParams>;
 }
 declare namespace LiteMol.Bootstrap.Utils.Molecule {
     import Structure = LiteMol.Core.Structure;

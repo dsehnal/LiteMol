@@ -7,14 +7,14 @@ namespace LiteMol.Viewer.PDBe.SequenceAnnotation {
     import Transformer = Bootstrap.Entity.Transformer;
     import Query = LiteMol.Core.Structure.Query;
     
-    export const Annotations = Entity.create<{ data: any }>({ name: 'PDBe Sequence Annotations', typeClass: 'Data', shortName: 'SA', description: 'Represents PDBe sequence annotation data.' });
-    export type Annotations = typeof Annotations.Entity
+    export interface Annotations extends Entity<{ data: any }> { }
+    export const Annotations = Entity.create<Annotations>({ name: 'PDBe Sequence Annotations', typeClass: 'Data', shortName: 'SA', description: 'Represents PDBe sequence annotation data.' });
 
-    export const Annotation = Entity.create<{ query: Query.Source; color: Visualization.Color; }>({ name: 'PDBe Sequence Annotation', typeClass: 'Object', shortName: 'SA', description: 'Represents PDBe sequence annotation.' }, { isSilent: true, isFocusable: true });
-    export type Annotation = typeof Annotation.Entity
+    export interface Annotation extends Entity<{ query: Query.Source; color: Visualization.Color; }> { }
+    export const Annotation = Entity.create<Annotation>({ name: 'PDBe Sequence Annotation', typeClass: 'Object', shortName: 'SA', description: 'Represents PDBe sequence annotation.' }, { isSilent: true, isFocusable: true });
     
-    export const Behaviour = Entity.Behaviour.create<Interactivity.Behaviour, {}>({ name: 'PDBe Sequence Annotation Behaviour', typeClass: 'Behaviour', shortName: 'SA', description: 'Represents PDBe sequence annoation behaviour.' });
-    export type Behaviour = typeof Behaviour.Entity
+    export interface Behaviour extends Entity.Behaviour<Interactivity.Behaviour, {}> { }
+    export const Behaviour = Entity.create<Behaviour>({ name: 'PDBe Sequence Annotation Behaviour', typeClass: 'Behaviour', shortName: 'SA', description: 'Represents PDBe sequence annoation behaviour.' });
         
     namespace Interactivity {
         

@@ -64,7 +64,7 @@ namespace LiteMol.Bootstrap.Behaviour {
              
              latestModel = info.source.props.model;
              latestIndices = info.elements;
-             latestModel.applySelection(latestIndices!,  LiteMol.Visualization.Selection.Action.Select);                          
+             latestModel!.applySelection(latestIndices!,  LiteMol.Visualization.Selection.Action.Select);                          
         });           
     }
 

@@ -19,7 +19,7 @@ namespace LiteMol.Bootstrap.Visualization.Density {
         isWireframe: boolean
     }
     
-    export type Style = Visualization.Style<{}, Params>
+    export type Style = Visualization.Style<'Density', Params>
     
     export namespace Style {    
         export function create(params: { 
@@ -67,6 +67,6 @@ namespace LiteMol.Bootstrap.Visualization.Density {
         ];         
         export const Transparency: LiteMol.Visualization.Theme.Transparency = { alpha: 1.0, writeDepth: false };        
         export const Theme = Themes[0];
-        export const Style: Style = { type: {}, params: Params, theme: { template: Theme, colors: Theme.colors, transparency: Transparency, interactive: false, disableFog: false } }         
+        export const Style: Style = { type: 'Density', params: Params, theme: { template: Theme, colors: Theme.colors, transparency: Transparency, interactive: false, disableFog: false } }         
     }    
 }

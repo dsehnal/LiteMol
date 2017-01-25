@@ -6,7 +6,7 @@
 namespace LiteMol.Bootstrap {
     "use strict";
         
-    export interface Entity<Props extends Entity.CommonProps> extends Tree.Node<Props, Entity.State, Entity.TypeInfo> {          
+    export interface Entity<Props> extends Tree.Node<Props & Entity.CommonProps, Entity.State, Entity.TypeInfo> {          
     }
         
     export namespace Entity {       
@@ -20,7 +20,7 @@ namespace LiteMol.Bootstrap {
         export const enum Visibility { Full, Partial, None }        
         export interface State { isCollapsed?: boolean; visibility?: Visibility; }
                 
-        export interface Any extends Entity<CommonProps> { }    
+        export interface Any extends Entity<{}> { }    
         
         export type Tree = Bootstrap.Tree<Any>
        
@@ -49,11 +49,10 @@ namespace LiteMol.Bootstrap {
             traits: TypeTraits;
         }
                         
-        export interface Type<P extends CommonProps> extends Tree.Node.Type<TypeInfo, P, Entity<P>> {
-            readonly Entity: Entity<P>,
+        export interface Type<P> extends Tree.Node.Type<TypeInfo, P, Entity<P>> {
             create(transform: Tree.Transform<Any, Entity<P>, any>, props: P): Entity<P>        
         }                                
-        export type AnyType = Type<CommonProps>
+        export type AnyType = Type<{}>
         
         export const RootClass:TypeClass = 'Root';                
         export const GroupClass:TypeClass = 'Group';
@@ -94,8 +93,8 @@ namespace LiteMol.Bootstrap {
             }
         }
         
-        export function create<Props extends { }>(info: TypeInfoBase, traits?: TypeTraits): Type<Props & CommonProps> {
-            return new TypeImpl(Utils.generateUUID(), info, traits ? traits : { }) as Type<Props & CommonProps>;
+        export function create<T extends Any>(info: TypeInfoBase, traits?: TypeTraits): Type<T['props']> {
+            return new TypeImpl(Utils.generateUUID(), info, traits ? traits : { }) as Type<T['props']>;
         }            
     }    
 }

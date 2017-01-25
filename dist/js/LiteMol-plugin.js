@@ -68387,7 +68387,7 @@ var LiteMol;
                     ];
                     Default.Transparency = { alpha: 1.0, writeDepth: false };
                     Default.Theme = Default.Themes[0];
-                    Default.Style = { type: {}, params: Default.Params, theme: { template: Default.Theme, colors: Default.Theme.colors, transparency: Default.Transparency, interactive: false, disableFog: false } };
+                    Default.Style = { type: 'Density', params: Default.Params, theme: { template: Default.Theme, colors: Default.Theme.colors, transparency: Default.Transparency, interactive: false, disableFog: false } };
                 })(Default = Density.Default || (Density.Default = {}));
             })(Density = Visualization.Density || (Visualization.Density = {}));
         })(Visualization = Bootstrap.Visualization || (Bootstrap.Visualization = {}));
@@ -68588,13 +68588,6 @@ var LiteMol;
             Entity.Root = Entity.create({ name: 'Root', typeClass: 'Root', shortName: 'R', description: 'Where everything begins.' });
             Entity.Group = Entity.create({ name: 'Group', typeClass: 'Group', shortName: 'G', description: 'A group on entities.' });
             Entity.Action = Entity.create({ name: 'Action', typeClass: 'Action', shortName: 'A', description: 'Represents an action performed on the entity tree.' });
-            var Behaviour;
-            (function (Behaviour) {
-                function create(info, traits) {
-                    return Entity.create(info, traits);
-                }
-                Behaviour.create = create;
-            })(Behaviour = Entity.Behaviour || (Entity.Behaviour = {}));
             /* Data */
             var Data;
             (function (Data) {
@@ -68604,7 +68597,6 @@ var LiteMol;
                 Data.CifDictionary = Entity.create({ name: 'Cif Dictionary', typeClass: 'Data', shortName: 'CD', description: 'Represents parsed CIF data.' });
                 Data.Json = Entity.create({ name: 'JSON Data', typeClass: 'Data', shortName: 'JS_D', description: 'Represents JSON data.' });
             })(Data = Entity.Data || (Entity.Data = {}));
-            // /* Visual props */
             var Visual;
             (function (Visual) {
                 Visual.Surface = Entity.create({ name: 'Surface Visual', typeClass: 'Visual', shortName: 'V_S', description: 'A surface visual.' }, { isFocusable: true });
@@ -68618,7 +68610,7 @@ var LiteMol;
                 Molecule_1.Visual = Entity.create({ name: 'Molecule Visual', typeClass: 'Visual', shortName: 'V_M', description: 'A visual of a molecule.' }, { isFocusable: true });
                 var CoordinateStreaming;
                 (function (CoordinateStreaming) {
-                    CoordinateStreaming.Behaviour = Entity.Behaviour.create({ name: 'Coordinate Streaming', typeClass: 'Behaviour', shortName: 'CS', description: 'Behaviour that downloads surrounding residues when an atom or residue is selected.' });
+                    CoordinateStreaming.Behaviour = Entity.create({ name: 'Coordinate Streaming', typeClass: 'Behaviour', shortName: 'CS', description: 'Behaviour that downloads surrounding residues when an atom or residue is selected.' });
                 })(CoordinateStreaming = Molecule_1.CoordinateStreaming || (Molecule_1.CoordinateStreaming = {}));
             })(Molecule = Entity.Molecule || (Entity.Molecule = {}));
             /* Density */
@@ -68626,7 +68618,7 @@ var LiteMol;
             (function (Density) {
                 Density.Data = Entity.create({ name: 'Density Data', typeClass: 'Object', shortName: 'DD', description: 'Density data.' });
                 Density.Visual = Entity.create({ name: 'Density Visual', typeClass: 'Visual', shortName: 'V_DD', description: 'A visual of density data.' }, { isFocusable: true });
-                Density.InteractiveSurface = Behaviour.create({ name: 'Interactive Surface', typeClass: 'Behaviour', shortName: 'B_IS', description: 'Behaviour that creates an interactive surface when an atom or residue is selected.' });
+                Density.InteractiveSurface = Entity.create({ name: 'Interactive Surface', typeClass: 'Behaviour', shortName: 'B_IS', description: 'Behaviour that creates an interactive surface when an atom or residue is selected.' });
             })(Density = Entity.Density || (Entity.Density = {}));
         })(Entity = Bootstrap.Entity || (Bootstrap.Entity = {}));
     })(Bootstrap = LiteMol.Bootstrap || (LiteMol.Bootstrap = {}));
