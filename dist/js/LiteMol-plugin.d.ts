@@ -16219,7 +16219,7 @@ declare namespace LiteMol.Bootstrap.Visualization.Density {
     }
 }
 declare namespace LiteMol.Bootstrap {
-    interface Entity<Props> extends Tree.Node<Props & Entity.CommonProps, Entity.State, Entity.TypeInfo> {
+    interface Entity<Props extends {}> extends Tree.Node<Props & Entity.CommonProps, Entity.State, Entity.TypeInfo> {
     }
     namespace Entity {
         interface CommonProps {
@@ -16255,7 +16255,7 @@ declare namespace LiteMol.Bootstrap {
             traits: TypeTraits;
         }
         interface Type<P> extends Tree.Node.Type<TypeInfo, P, Entity<P>> {
-            create(transform: Tree.Transform<Any, Entity<P>, any>, props: P): Entity<P>;
+            create(transform: Tree.Transform<Any, Entity<P>, any>, props: P & CommonProps): Entity<P>;
         }
         type AnyType = Type<{}>;
         const RootClass: TypeClass;
@@ -16266,7 +16266,7 @@ declare namespace LiteMol.Bootstrap {
         const SelectionClass: TypeClass;
         const ActionClass: TypeClass;
         const BehaviourClass: TypeClass;
-        function create<T extends Any>(info: TypeInfoBase, traits?: TypeTraits): Type<T['props']>;
+        function create<Props>(info: TypeInfoBase, traits?: TypeTraits): Type<Props>;
     }
 }
 declare namespace LiteMol.Bootstrap.Entity {
@@ -16284,21 +16284,20 @@ declare namespace LiteMol.Bootstrap.Entity {
     const RootTransform: Tree.Transform<Root, Root, {}>;
     interface Root extends Entity<{}> {
     }
-    const Root: Type<{} & CommonProps>;
+    const Root: Type<{}>;
     interface Group extends Entity<{}> {
     }
-    const Group: Type<{} & CommonProps>;
+    const Group: Type<{}>;
     interface Action extends Entity<{}> {
     }
-    const Action: Type<{} & CommonProps>;
-    interface Behaviour<T extends Bootstrap.Behaviour.Dynamic, Props> extends Entity<{
-        behaviour: T;
-    } & Props> {
-    }
+    const Action: Type<{}>;
     namespace Behaviour {
+        interface Props<T extends Bootstrap.Behaviour.Dynamic> {
+            behaviour: T;
+        }
         interface Any extends Entity<{
             behaviour: Bootstrap.Behaviour.Dynamic;
-        } & CommonProps> {
+        }> {
         }
     }
     namespace Data {
@@ -16310,30 +16309,28 @@ declare namespace LiteMol.Bootstrap.Entity {
         }
         const String: Entity.Type<{
             data: string;
-        } & CommonProps>;
+        }>;
         interface Binary extends Entity<{
             data: ArrayBuffer;
         }> {
         }
         const Binary: Entity.Type<{
             data: ArrayBuffer;
-        } & CommonProps>;
+        }>;
         interface CifDictionary extends Entity<{
             dictionary: Core.Formats.CIF.File;
         }> {
         }
         const CifDictionary: Entity.Type<{
             dictionary: CIFTools.File;
-        } & CommonProps>;
+        }>;
         interface Json extends Entity<{
             data: any;
         }> {
         }
         const Json: Entity.Type<{
             data: any;
-        } & CommonProps>;
-    }
-    interface Visual<Type, Props> extends Entity<Visual.Props<Type> & Props> {
+        }>;
     }
     namespace Visual {
         interface Props<Type> {
@@ -16341,15 +16338,15 @@ declare namespace LiteMol.Bootstrap.Entity {
             style: Visualization.Style<Type, any>;
             isSelectable: boolean;
         }
-        interface Any extends Visual<any, {}> {
+        interface Any extends Entity<Props<any>> {
         }
-        interface Surface extends Visual<"Surface", {
+        interface Surface extends Entity<Props<"Surface"> & {
             tag: any;
         }> {
         }
         const Surface: Type<Props<"Surface"> & {
             tag: any;
-        } & CommonProps>;
+        }>;
     }
     namespace Molecule {
         interface Molecule extends Entity<{
@@ -16358,30 +16355,28 @@ declare namespace LiteMol.Bootstrap.Entity {
         }
         const Molecule: Type<{
             molecule: Core.Structure.Molecule;
-        } & CommonProps>;
+        }>;
         interface Model extends Entity<{
             model: Core.Structure.Molecule.Model;
         }> {
         }
         const Model: Type<{
             model: Core.Structure.Molecule.Model;
-        } & CommonProps>;
+        }>;
         interface Selection extends Entity<{
             indices: number[];
         }> {
         }
         const Selection: Type<{
             indices: number[];
-        } & CommonProps>;
-        interface Visual extends Entity.Visual<Bootstrap.Visualization.Molecule.Type, {}> {
+        }>;
+        interface Visual extends Entity<Visual.Props<Bootstrap.Visualization.Molecule.Type>> {
         }
-        const Visual: Type<Visual.Props<"Surface" | "Cartoons" | "Calpha" | "BallsAndSticks" | "VDWBalls"> & {} & CommonProps>;
+        const Visual: Type<Visual.Props<"Surface" | "Cartoons" | "Calpha" | "BallsAndSticks" | "VDWBalls">>;
         namespace CoordinateStreaming {
-            interface Behaviour extends Entity.Behaviour<Bootstrap.Behaviour.Molecule.CoordinateStreaming, {}> {
+            interface Behaviour extends Entity<Behaviour.Props<Bootstrap.Behaviour.Molecule.CoordinateStreaming>> {
             }
-            const Behaviour: Type<{
-                behaviour: Bootstrap.Behaviour.Molecule.CoordinateStreaming;
-            } & {} & CommonProps>;
+            const Behaviour: Type<Behaviour.Props<Bootstrap.Behaviour.Molecule.CoordinateStreaming>>;
         }
     }
     namespace Density {
@@ -16391,15 +16386,13 @@ declare namespace LiteMol.Bootstrap.Entity {
         }
         const Data: Type<{
             data: Core.Formats.Density.Data;
-        } & CommonProps>;
-        interface Visual extends Entity.Visual<'Density', {}> {
+        }>;
+        interface Visual extends Entity<Visual.Props<'Density'>> {
         }
-        const Visual: Type<Visual.Props<"Density"> & {} & CommonProps>;
-        interface InteractiveSurface extends Behaviour<Bootstrap.Behaviour.Density.ShowDynamicDensity, {}> {
+        const Visual: Type<Visual.Props<"Density">>;
+        interface InteractiveSurface extends Entity<Behaviour.Props<Bootstrap.Behaviour.Density.ShowDynamicDensity>> {
         }
-        const InteractiveSurface: Type<{
-            behaviour: Bootstrap.Behaviour.Density.ShowDynamicDensity;
-        } & {} & CommonProps>;
+        const InteractiveSurface: Type<Behaviour.Props<Bootstrap.Behaviour.Density.ShowDynamicDensity>>;
     }
 }
 declare namespace LiteMol.Bootstrap.Entity {

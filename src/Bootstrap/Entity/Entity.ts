@@ -6,7 +6,7 @@
 namespace LiteMol.Bootstrap {
     "use strict";
         
-    export interface Entity<Props> extends Tree.Node<Props & Entity.CommonProps, Entity.State, Entity.TypeInfo> {          
+    export interface Entity<Props extends { }> extends Tree.Node<Props & Entity.CommonProps, Entity.State, Entity.TypeInfo> {          
     }
         
     export namespace Entity {       
@@ -50,7 +50,7 @@ namespace LiteMol.Bootstrap {
         }
                         
         export interface Type<P> extends Tree.Node.Type<TypeInfo, P, Entity<P>> {
-            create(transform: Tree.Transform<Any, Entity<P>, any>, props: P): Entity<P>        
+            create(transform: Tree.Transform<Any, Entity<P>, any>, props: P & CommonProps): Entity<P>        
         }                                
         export type AnyType = Type<{}>
         
@@ -63,9 +63,9 @@ namespace LiteMol.Bootstrap {
         export const ActionClass:TypeClass = 'Action';
         export const BehaviourClass:TypeClass = 'Behaviour';
                 
-        class TypeImpl implements Type<any> {            
-            create(transform: Tree.Transform.Any, props: CommonProps) {
-                let ret = <Any>{    
+        class TypeImpl<P> implements Type<P> {            
+            create(transform: Tree.Transform.Any, props: P & CommonProps) {
+                let ret = <Entity<P>>{    
                     id: Tree.Node.createId(),
                     
                     version: 0,
@@ -82,10 +82,9 @@ namespace LiteMol.Bootstrap {
                     type: <any>this
                 }; 
                 
-                return Tree.Node.update(ret) as Any;
+                return Tree.Node.update(ret) as Entity<P>;
             }
 
-            Entity: Entity<any>;
             public info: TypeInfo;
             
             constructor(public id: string, infoBase: TypeInfoBase, traits: TypeTraits) {
@@ -93,8 +92,8 @@ namespace LiteMol.Bootstrap {
             }
         }
         
-        export function create<T extends Any>(info: TypeInfoBase, traits?: TypeTraits): Type<T['props']> {
-            return new TypeImpl(Utils.generateUUID(), info, traits ? traits : { }) as Type<T['props']>;
+        export function create<Props>(info: TypeInfoBase, traits?: TypeTraits): Type<Props> {
+            return new TypeImpl(Utils.generateUUID(), info, traits ? traits : { }) as Type<Props>;
         }            
     }    
 }

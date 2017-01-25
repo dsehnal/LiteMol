@@ -9,7 +9,7 @@ namespace LiteMol.Custom {
     import Transformer = Bootstrap.Entity.Transformer; 
 
     export interface DensityLoader extends Entity<{ id: string }> { }
-    export const DensityLoader = Entity.create<DensityLoader>({ name: 'Density Loader', typeClass: 'Data', shortName: 'DL', description: 'Represents density loader entity.' });
+    export const DensityLoader = Entity.create<{ id: string }>({ name: 'Density Loader', typeClass: 'Data', shortName: 'DL', description: 'Represents density loader entity.' });
     
 
     export const CreateDensityLoader = Bootstrap.Tree.Transformer.create<Entity.Root, DensityLoader, { id?: string }>({

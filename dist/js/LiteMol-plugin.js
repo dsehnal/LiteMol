@@ -68597,6 +68597,7 @@ var LiteMol;
                 Data.CifDictionary = Entity.create({ name: 'Cif Dictionary', typeClass: 'Data', shortName: 'CD', description: 'Represents parsed CIF data.' });
                 Data.Json = Entity.create({ name: 'JSON Data', typeClass: 'Data', shortName: 'JS_D', description: 'Represents JSON data.' });
             })(Data = Entity.Data || (Entity.Data = {}));
+            // /* Visual props */
             var Visual;
             (function (Visual) {
                 Visual.Surface = Entity.create({ name: 'Surface Visual', typeClass: 'Visual', shortName: 'V_S', description: 'A surface visual.' }, { isFocusable: true });
