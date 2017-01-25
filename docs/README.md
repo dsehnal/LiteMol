@@ -8,3 +8,5 @@ Documentation
 - [Extending](extending.md) - Describes how to add custom entities to LiteMol.
 
 Make sure you check out all the [examples](../examples). If you need more help using LiteMol, do not hesitate to ask in the GitHub issues section.  
+
+**Auto-generated source code documentation for the latest version is available [here](https://webchemdev.ncbr.muni.cz/LiteMol/SourceDocs/).**
