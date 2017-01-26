@@ -16,7 +16,11 @@
   "files": [
     "../../dist/js/LiteMol-plugin.d.ts",
 
-    "src/DownloadToast.tsx",
+    "../../src/Viewer/Extensions/DensityStreaming/Entity.ts",
+    "../../src/Viewer/Extensions/DensityStreaming/Behaviour.ts",
+    "../../src/Viewer/Extensions/DensityStreaming/View.tsx",
+
+    "src/UI.tsx",
     "src/Data.ts",        
     "src/App.ts"
   ]
