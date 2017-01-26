@@ -13811,7 +13811,7 @@ var LiteMol;
                 Density.Field3DZYX = Field3DZYX;
                 var Data;
                 (function (Data) {
-                    function create(cellSize, cellAngles, origin, hasSkewMatrix, skewMatrix, data, dataDimensions, basis, startOffset, valuesInfo, attributes) {
+                    function create(cellSize, cellAngles, origin, hasSkewMatrix, skewMatrix, data, dataDimensions, basis, valuesInfo, attributes) {
                         return {
                             cellSize: cellSize,
                             cellAngles: cellAngles,
@@ -13820,7 +13820,6 @@ var LiteMol;
                             skewMatrix: skewMatrix,
                             data: data,
                             basis: basis,
-                            startOffset: startOffset,
                             dataDimensions: dataDimensions,
                             valuesInfo: valuesInfo,
                             attributes: attributes ? attributes : {},
@@ -14014,7 +14013,9 @@ var LiteMol;
                                 ? readRawData1(new Float32Array(buffer, headerSize + header.symBytes, extent[0] * extent[1] * extent[2]), endian, extent, header.extent, indices, header.mean)
                                 : readRawData(new DataView(buffer, headerSize + header.symBytes), endian, extent, header.extent, indices, header.mean);
                             var field = new Density.Field3DZYX(rawData.data, extent);
-                            var data = Density.Data.create(header.cellDimensions, header.cellAngles, origin, header.skewFlag !== 0, skewMatrix, field, extent, { x: xAxis, y: yAxis, z: zAxis }, [header.nxyzStart[indices[0]], header.nxyzStart[indices[1]], header.nxyzStart[indices[2]]], { min: header.min, max: header.max, mean: header.mean, sigma: rawData.sigma }, { spacegroupIndex: header.spacegroupNumber - 1 });
+                            var data = Density.Data.create(header.cellDimensions, header.cellAngles, origin, header.skewFlag !== 0, skewMatrix, field, extent, { x: xAxis, y: yAxis, z: zAxis }, 
+                            //[header.nxyzStart[indices[0]], header.nxyzStart[indices[1]], header.nxyzStart[indices[2]]],
+                            { min: header.min, max: header.max, mean: header.mean, sigma: rawData.sigma }, { spacegroupIndex: header.spacegroupNumber - 1 });
                             return Formats.ParserResult.success(data, warnings);
                         }
                         Parser.parse = parse;
@@ -14136,7 +14137,7 @@ var LiteMol;
                             indices[header.axisOrder[0]] = 0;
                             indices[header.axisOrder[1]] = 1;
                             indices[header.axisOrder[2]] = 2;
-                            var d = [header.origin[header.axisOrder[0]], header.origin[header.axisOrder[1]], header.origin[header.axisOrder[2]]];
+                            var d = [header.origin[indices[0]], header.origin[indices[1]], header.origin[indices[2]]];
                             var origin = [
                                 xAxis[0] * d[0] + yAxis[0] * d[1] + zAxis[0] * d[2],
                                 yAxis[1] * d[1] + zAxis[1] * d[2],
@@ -14145,7 +14146,9 @@ var LiteMol;
                             var extent = [header.extent[indices[0]], header.extent[indices[1]], header.extent[indices[2]]];
                             var rawData = readRawData1(block.getCategory('_density_data').getColumn('values'), extent, header.extent, indices, header.mean);
                             var field = new Density.Field3DZYX(rawData.data, extent);
-                            var data = Density.Data.create(header.cellSize, header.cellAngles, origin, false, void 0, field, extent, { x: xAxis, y: yAxis, z: zAxis }, [header.axisOrder[indices[0]], header.axisOrder[indices[1]], header.axisOrder[indices[2]]], { min: rawData.min, max: rawData.max, mean: header.mean, sigma: header.sigma }, { spacegroupIndex: header.spacegroupNumber - 1, name: header.name });
+                            var data = Density.Data.create(header.cellSize, header.cellAngles, origin, false, void 0, field, extent, { x: xAxis, y: yAxis, z: zAxis }, 
+                            //[header.axisOrder[indices[0]], header.axisOrder[indices[1]], header.axisOrder[indices[2]]],
+                            { min: rawData.min, max: rawData.max, mean: header.mean, sigma: header.sigma }, { spacegroupIndex: header.spacegroupNumber - 1, name: header.name });
                             return Formats.ParserResult.success(data);
                         }
                         Parser.parse = parse;
@@ -14314,7 +14317,9 @@ var LiteMol;
                             endian = nativeEndian;
                             var rawData = readRawData(new Uint8Array(buffer, headerSize + header.symBytes), endian, extent, header.extent, indices, header.mean, header.prod, header.plus);
                             var field = new Density.Field3DZYX(rawData.data, extent);
-                            var data = Density.Data.create(header.cellDimensions, header.cellAngles, origin, header.skewFlag !== 0, skewMatrix, field, extent, { x: xAxis, y: yAxis, z: zAxis }, [header.nxyzStart[indices[0]], header.nxyzStart[indices[1]], header.nxyzStart[indices[2]]], { min: rawData.minj, max: rawData.maxj, mean: rawData.meanj, sigma: rawData.sigma }, { prod: header.prod, plus: header.plus }); //! added attributes property to store additional information
+                            var data = Density.Data.create(header.cellDimensions, header.cellAngles, origin, header.skewFlag !== 0, skewMatrix, field, extent, { x: xAxis, y: yAxis, z: zAxis }, 
+                            //[header.nxyzStart[indices[0]], header.nxyzStart[indices[1]], header.nxyzStart[indices[2]]],
+                            { min: rawData.minj, max: rawData.maxj, mean: rawData.meanj, sigma: rawData.sigma }, { prod: header.prod, plus: header.plus }); //! added attributes property to store additional information
                             return Formats.ParserResult.success(data, warnings);
                         }
                         Parser.parse = parse;

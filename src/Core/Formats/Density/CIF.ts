@@ -60,7 +60,7 @@ namespace LiteMol.Core.Formats.Density.CIF {
             indices[header.axisOrder[1]] = 1;
             indices[header.axisOrder[2]] = 2;
                         
-            let d = [header.origin[header.axisOrder[0]], header.origin[header.axisOrder[1]], header.origin[header.axisOrder[2]]]
+            let d = [header.origin[indices[0]], header.origin[indices[1]], header.origin[indices[2]]]
             let origin = [
                 xAxis[0] * d[0] + yAxis[0] * d[1] + zAxis[0] * d[2],
                                   yAxis[1] * d[1] + zAxis[1] * d[2],
@@ -76,7 +76,7 @@ namespace LiteMol.Core.Formats.Density.CIF {
                 header.cellSize, header.cellAngles, origin,
                 false, <any>void 0, field, extent,
                 { x: xAxis, y: yAxis, z: zAxis },
-                [header.axisOrder[indices[0]], header.axisOrder[indices[1]], header.axisOrder[indices[2]]],
+                //[header.axisOrder[indices[0]], header.axisOrder[indices[1]], header.axisOrder[indices[2]]],
                 { min: rawData.min, max: rawData.max, mean: header.mean, sigma: header.sigma },
                 { spacegroupIndex: header.spacegroupNumber - 1, name: header.name });
             

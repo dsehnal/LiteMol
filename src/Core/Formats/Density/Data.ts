@@ -93,11 +93,6 @@ namespace LiteMol.Core.Formats.Density {
         basis: { x: number[]; y: number[]; z: number[] };
 
         /**
-         * Start offsets.
-         */
-        startOffset: number[];
-
-        /**
          * Was the skew matrix present in the input?
          */
         hasSkewMatrix: boolean;
@@ -127,7 +122,7 @@ namespace LiteMol.Core.Formats.Density {
         
         export function create(
             cellSize: number[], cellAngles: number[], origin: number[], hasSkewMatrix: boolean, skewMatrix: number[],
-            data: Field3D, dataDimensions: number[], basis: { x: number[]; y: number[]; z: number[] }, startOffset: number[],
+            data: Field3D, dataDimensions: number[], basis: { x: number[]; y: number[]; z: number[] },
             valuesInfo: { min: number; max: number; mean: number; sigma: number }, attributes?: { [key: string]: any }): Data {
 
             return {
@@ -138,7 +133,6 @@ namespace LiteMol.Core.Formats.Density {
                 skewMatrix: skewMatrix,
                 data: data,
                 basis: basis,
-                startOffset: startOffset,
                 dataDimensions: dataDimensions,
                 valuesInfo: valuesInfo,
                 attributes: attributes ? attributes : { },

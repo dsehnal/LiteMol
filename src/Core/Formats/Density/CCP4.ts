@@ -170,7 +170,7 @@ namespace LiteMol.Core.Formats.Density.CCP4 {
                 header.cellDimensions, header.cellAngles, origin,
                 header.skewFlag !== 0, <any>skewMatrix, field, extent,
                 { x: xAxis, y: yAxis, z: zAxis },
-                [header.nxyzStart[indices[0]], header.nxyzStart[indices[1]], header.nxyzStart[indices[2]]],
+                //[header.nxyzStart[indices[0]], header.nxyzStart[indices[1]], header.nxyzStart[indices[2]]],
                 { min: header.min, max: header.max, mean: header.mean, sigma: rawData.sigma },
                 { spacegroupIndex: header.spacegroupNumber - 1 });
             

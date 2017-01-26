@@ -174,7 +174,7 @@ namespace LiteMol.Core.Formats.Density.DSN6 {
                 header.cellDimensions, header.cellAngles, origin,
                 header.skewFlag !== 0, <any>skewMatrix, field, extent,
                 { x: xAxis, y: yAxis, z: zAxis },
-                [header.nxyzStart[indices[0]], header.nxyzStart[indices[1]], header.nxyzStart[indices[2]]],
+                //[header.nxyzStart[indices[0]], header.nxyzStart[indices[1]], header.nxyzStart[indices[2]]],
                 { min: rawData.minj, max: rawData.maxj, mean: rawData.meanj, sigma: rawData.sigma },
                 { prod: header.prod, plus: header.plus }); //! added attributes property to store additional information
 

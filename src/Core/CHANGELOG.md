@@ -1,5 +1,6 @@
 ﻿# 3.0.1
 * Fixed a bug in Symmetry Mates generation.
+* Fixed a bug in CIF based density parsing.
 
 # 3.0.0
 * Updated Molecule representation.

@@ -5278,10 +5278,6 @@ declare namespace LiteMol.Core.Formats.Density {
             z: number[];
         };
         /**
-         * Start offsets.
-         */
-        startOffset: number[];
-        /**
          * Was the skew matrix present in the input?
          */
         hasSkewMatrix: boolean;
@@ -5314,7 +5310,7 @@ declare namespace LiteMol.Core.Formats.Density {
             x: number[];
             y: number[];
             z: number[];
-        }, startOffset: number[], valuesInfo: {
+        }, valuesInfo: {
             min: number;
             max: number;
             mean: number;
