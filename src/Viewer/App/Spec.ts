@@ -19,7 +19,7 @@ namespace LiteMol.Viewer {
             'molecule.coordinateStreaming.defaultRadius': 10,
             'density.defaultVisualBehaviourRadius': 5,
 
-            'extensions.densityStreaming.defaultServer': 'https://webchemdev.ncbr.muni.cz/DensityServer/'
+            'extensions.densityStreaming.defaultServer': 'https://webchem.ncbr.muni.cz/DensityServer/'
         },
         transforms: [
             // Root transforms -- things that load data.

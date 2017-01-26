@@ -1,4 +1,7 @@
-﻿# 3.0.0
+﻿# 3.0.1
+* Fixed a bug in Symmetry Mates generation.
+
+# 3.0.0
 * Updated Molecule representation.
   - Changed namespaces for MoleculeModel to Molecule.Model
   - Molecule.Model:

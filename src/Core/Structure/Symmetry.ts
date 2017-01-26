@@ -588,7 +588,6 @@ namespace LiteMol.Core.Structure {
                     atomX![atomOffset] = temp.x;
                     atomY![atomOffset] = temp.y;
                     atomZ![atomOffset] = temp.z;
-
                     atomId![atomOffset] = atomOffset + 1;
 
                     atomResidue![atomOffset] = residueOffset;
@@ -760,7 +759,6 @@ namespace LiteMol.Core.Structure {
                             Utils.ArrayBuilder.add(operatorIndices, opIndex);
                         }
                     }
-                    opIndex++;
                 }
             }
 

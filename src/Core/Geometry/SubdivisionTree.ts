@@ -329,13 +329,12 @@ namespace LiteMol.Core.Geometry {
                 while (r >= startIndex && state.positions[3 * state.indices[r] + coord] > median) r--;
             }
             midIndex = l - 1;
-            
             state.bounds.max[coord] = median;
             left = split(state, startIndex, midIndex, (coord + 1) % 3);
             state.bounds.max[coord] = max;
             state.bounds.min[coord] = median;
             right = split(state, midIndex + 1, endIndex, (coord + 1) % 3);
-            state.bounds.min[coord] = min;
+            state.bounds.min[coord] = min;            
             return SubdivisionTree3DNode.create(median, startIndex, endIndex + 1, left, right);
         }
 

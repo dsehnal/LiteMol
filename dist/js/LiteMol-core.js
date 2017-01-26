@@ -11212,7 +11212,7 @@ var LiteMol;
 (function (LiteMol) {
     var Core;
     (function (Core) {
-        Core.VERSION = { number: "3.0.0", date: "Jan 18 2017" };
+        Core.VERSION = { number: "3.0.1", date: "Jan 26 2017" };
     })(Core = LiteMol.Core || (LiteMol.Core = {}));
 })(LiteMol || (LiteMol = {}));
 /*
@@ -18402,7 +18402,6 @@ var LiteMol;
                                     Core.Utils.ArrayBuilder.add(operatorIndices, opIndex);
                                 }
                             }
-                            opIndex++;
                         }
                     }
                     return {
