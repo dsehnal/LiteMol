@@ -56,11 +56,6 @@ function Uglify() {
     return plugins.merge(BuildCSS(true).concat([plugin, core]));
 }
 
-function Viewer() {
-    console.log('Building Viewer');
-    return buildts('./src/Viewer');
-}
-
 var ExampleNames = [
     'Commands',
     'CustomControls',
@@ -72,13 +67,20 @@ var ExampleNames = [
     'Channels'
 ];
 
-function ViewerAndExamples() {       
-   console.log('Building Viewer and Examples');
-   return plugins.merge([
-       buildts('./src/Viewer', './build/Viewer'),
-       buildts('./examples/BasicNode', './examples/BasicNode/build'),
-    ].concat(ExampleNames.map(e => buildExample(e))));    
-}
+var ViewerAndExamplesTasks = [];
+
+gulp.task('Viewer', [], function() { return buildts('./src/Viewer', './build/Viewer') });
+gulp.task('Viewer-inline', ['Plugin'], function() { return buildts('./src/Viewer', './build/Viewer') });
+gulp.task('Example-BasicNode', [], function() { return buildts('./examples/BasicNode', './examples/BasicNode') });
+gulp.task('Example-BasicNode-inline', ['Plugin'], function() { return buildts('./examples/BasicNode', './examples/BasicNode') });
+
+ViewerAndExamplesTasks.push('Viewer', 'Example-BasicNode');
+
+ExampleNames.forEach(e => {
+    gulp.task('Example-' + e, [], function() { return buildExample(e) });
+    gulp.task('Example-' + e + '-inline', ['Plugin'], function() { return buildExample(e) });
+    ViewerAndExamplesTasks.push('Example-' + e);
+});
 
 function __webAssets() {
     var css = gulp.src(['./web/src/css/bootstrap.min.css', './web/src/css/style.css', './web/src/css/animate.min.css', './web/src/css/font-awesome.min.css'])
@@ -206,12 +208,10 @@ gulp.task('Docs-pack', ['Docs-generate'], function() {
 
 gulp.task('Docs', ['Docs-pack'], function() { });
 
-gulp.task('Viewer', [], Viewer);
-
 gulp.task('CSS', ['Clean'], function () { return BuildCSS(false); });
 gulp.task('CSS-min', ['Clean'], function () { return BuildCSS(true); });
-gulp.task('ViewerAndExamples', [], ViewerAndExamples)
-gulp.task('ViewerAndExamples-inline', ['Plugin'], ViewerAndExamples)
+gulp.task('ViewerAndExamples', ViewerAndExamplesTasks, function() { })
+gulp.task('ViewerAndExamples-inline', ViewerAndExamplesTasks.map(t => t + '-inline'), function() { })
 
 gulp.task('Web-assemble', [], WebAssemble);
 gulp.task('Web-assemble-inline', ['Plugin', 'CSS', 'ViewerAndExamples-inline'], WebAssemble);

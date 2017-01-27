@@ -7,7 +7,7 @@
     "sourceMap": false,
     "declaration": true,
     "strictNullChecks": true,
-    "noImplicitThis": true,
+    "noImplicitThis": true,    
     "noUnusedLocals": true,
     "noImplicitReturns": true,
     "lib": [
