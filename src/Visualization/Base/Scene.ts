@@ -178,6 +178,7 @@ namespace LiteMol.Visualization {
             
 
             this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: options.alpha, preserveDrawingBuffer: true });
+            this.renderer.setPixelRatio(window.devicePixelRatio || 1);
             this.renderer.setClearColor(new THREE.Color(options.clearColor!.r, options.clearColor!.g, options.clearColor!.b));
             this.renderer.autoClear = true;
             this.renderer.sortObjects = false;

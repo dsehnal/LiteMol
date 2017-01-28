@@ -56350,6 +56350,7 @@ var LiteMol;
                 this.pickTarget = new Visualization.THREE.WebGLRenderTarget(1, 1, { format: Visualization.THREE.RGBAFormat, minFilter: Visualization.THREE.LinearFilter });
                 this.pickTarget.generateMipmaps = false;
                 this.renderer = new Visualization.THREE.WebGLRenderer({ antialias: true, alpha: options.alpha, preserveDrawingBuffer: true });
+                this.renderer.setPixelRatio(window.devicePixelRatio || 1);
                 this.renderer.setClearColor(new Visualization.THREE.Color(options.clearColor.r, options.clearColor.g, options.clearColor.b));
                 this.renderer.autoClear = true;
                 this.renderer.sortObjects = false;
