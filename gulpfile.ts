@@ -28,10 +28,6 @@ const plugins = {
 const PluginTask = require(`./src/helpers/build-plugin`)(gulp, plugins);
 const CoreTask = require(`./src/helpers/build-core`)(gulp, plugins);
 
-function buildts(root: string, out?:string) {
-    return null;
-}
-
 function buildExample(name) {
     return compilets({ project: `./examples/${name}/tsconfig.json`, out: `./build/examples/${name}/LiteMol-example.js` });
 }
