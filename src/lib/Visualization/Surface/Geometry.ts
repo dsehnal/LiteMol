@@ -209,7 +209,7 @@ namespace LiteMol.Visualization.Surface {
             // swap
             let t = a; a = b; b = t;
         }
-        if (included.add(((a + b) * (a + b + 1) / 2 + b) | 0 /* cantor pairing function */)) {
+        if (included.add((a + b) * (a + b + 1) / 2 + b /* cantor pairing function */)) {
             ChunkedArray.add2(edges, a, b);
         }
     }
