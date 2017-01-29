@@ -69,16 +69,18 @@ var ExampleNames = [
 
 var ViewerAndExamplesTasks = [];
 
-gulp.task('Viewer', [], function() { return compilets({ project: `./src/Viewer/tsconfig.json`, out: `./build/Viewer/LiteMol-viewer.js` }); });
-gulp.task('Viewer-inline', ['Plugin'], function() { return compilets({ project: `./src/Viewer/tsconfig.json`, out: `./build/Viewer/LiteMol-viewer.js` }); });
-gulp.task('Example-BasicNode', [], function() { return compilets({ project: `./examples/BasicNode/tsconfig.json`, outDir: `./build/examples/BasicNode` }); });
-gulp.task('Example-BasicNode-inline', ['Plugin'], function() { return compilets({ project: `./examples/BasicNode/tsconfig.json`, outDir: `./build/examples/BasicNode` }); });
+gulp.task('Start-ExamplesAndViewer', [], function() { console.log('Building Viewer and Examples'); });
+gulp.task('Start-ExamplesAndViewer-inline', ['Plugin'], function() { console.log('Building Viewer and Examples'); });
+gulp.task('Viewer', ['Start-ExamplesAndViewer'], function() { return compilets({ project: `./src/Viewer/tsconfig.json`, out: `./build/Viewer/LiteMol-viewer.js` }); });
+gulp.task('Viewer-inline', ['Start-ExamplesAndViewer-inline', 'Plugin'], function() { return compilets({ project: `./src/Viewer/tsconfig.json`, out: `./build/Viewer/LiteMol-viewer.js` }); });
+gulp.task('Example-BasicNode', ['Start-ExamplesAndViewer'], function() { return compilets({ project: `./examples/BasicNode/tsconfig.json`, outDir: `./build/examples/BasicNode` }); });
+gulp.task('Example-BasicNode-inline', ['Start-ExamplesAndViewer-inline', 'Plugin'], function() { return compilets({ project: `./examples/BasicNode/tsconfig.json`, outDir: `./build/examples/BasicNode` }); });
 
 ViewerAndExamplesTasks.push('Viewer', 'Example-BasicNode');
 
 ExampleNames.forEach(e => {
-    gulp.task('Example-' + e, [], function() { return buildExample(e) });
-    gulp.task('Example-' + e + '-inline', ['Plugin'], function() { return buildExample(e) });
+    gulp.task('Example-' + e, ['Start-ExamplesAndViewer'], function() { return buildExample(e) });
+    gulp.task('Example-' + e + '-inline', ['Start-ExamplesAndViewer-inline', 'Plugin'], function() { return buildExample(e) });
     ViewerAndExamplesTasks.push('Example-' + e);
 });
 

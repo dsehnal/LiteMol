@@ -1,4 +1,7 @@
-﻿# 1.6.2
+﻿# 1.6.3
+* Fixed a bug in wireframe mesh generation.
+
+# 1.6.2
 * Fixed a bug in secondary structure detection.
 
 # 1.6.1

@@ -205,17 +205,13 @@ namespace LiteMol.Visualization.Surface {
     }
 
     function addWireframeEdge(edges: ChunkedArray<number>, included: Core.Utils.FastSet<number>, a: number, b: number) {
-        if (a > b) {
-            let t = a;
-            a = b;
-            b = t;
+        if (a > b) { 
+            // swap
+            let t = a; a = b; b = t;
         }
-
-        let cantorPairing = (((a + b) * (a + b + 1) + b) / 2) | 0;
-        let oldSize = included.size;
-        included.add(cantorPairing);
-        if (included.size === oldSize) return;
-        ChunkedArray.add2(edges, a, b);
+        if (included.add(((a + b) * (a + b + 1) / 2 + b) | 0 /* cantor pairing function */)) {
+            ChunkedArray.add2(edges, a, b);
+        }
     }
 
     function buildWireframeIndices(ctx: Context) {

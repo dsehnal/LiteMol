@@ -64792,7 +64792,7 @@ var LiteMol;
 (function (LiteMol) {
     var Visualization;
     (function (Visualization) {
-        Visualization.VERSION = { number: "1.6.2", date: "Jan 24 2017" };
+        Visualization.VERSION = { number: "1.6.3", date: "Jan 30 2017" };
     })(Visualization = LiteMol.Visualization || (LiteMol.Visualization = {}));
 })(LiteMol || (LiteMol = {}));
 var LiteMol;
@@ -67201,16 +67201,14 @@ var LiteMol;
             }
             function addWireframeEdge(edges, included, a, b) {
                 if (a > b) {
+                    // swap
                     var t = a;
                     a = b;
                     b = t;
                 }
-                var cantorPairing = (((a + b) * (a + b + 1) + b) / 2) | 0;
-                var oldSize = included.size;
-                included.add(cantorPairing);
-                if (included.size === oldSize)
-                    return;
-                ChunkedArray.add2(edges, a, b);
+                if (included.add(((a + b) * (a + b + 1) / 2 + b) | 0 /* cantor pairing function */)) {
+                    ChunkedArray.add2(edges, a, b);
+                }
             }
             function buildWireframeIndices(ctx) {
                 var tris = ctx.data.triangleIndices;
