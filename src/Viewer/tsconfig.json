@@ -13,6 +13,9 @@
     "lib": [ "es5", "es2015.collection", "es2015.promise", "dom" ],
     "target": "es5",
     "jsx": "react",
+    "module": "none",
+    "types": [],
+    "skipDefaultLibCheck": true,
     "out": "LiteMol-viewer.js"
   },
   "files": [

@@ -28,6 +28,7 @@
   ],
   "license": "Apache-2.0",
   "devDependencies": {
+    "byline": "^5.0.0",
     "gulp": "^3.9.1",
     "gulp-clean": "^0.3.2",
     "gulp-concat": "^2.6.0",
@@ -38,12 +39,11 @@
     "gulp-sass": "^2.3.2",
     "gulp-tar": "^1.9.0",
     "gulp-typedoc": "^2.0.2",
-    "gulp-typescript": "^3.1.4",
     "gulp-uglify": "^2.0.1",
-    "gulp-unique-files": "^0.1.2",
+    "gulp-util": "^3.0.8",
     "merge2": "^1.0.3",
     "ts-node": "^2.0.0",
     "typedoc": "^0.5.5",
-    "typescript": "^2.2.0-dev.20170127"
+    "typescript": "^2.2.0-dev.20170129"
   }
 }

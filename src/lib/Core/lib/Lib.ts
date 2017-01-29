@@ -3,7 +3,7 @@
  */
 
 namespace LiteMol {
-    declare var __LiteMolPromise: typeof __Promise.Promise;
+    declare const __LiteMolPromise: typeof __Promise.Promise;
     export type Promise<T> = __Promise.Promise<T>;
     export const Promise: typeof __Promise.Promise = __LiteMolPromise;
 }

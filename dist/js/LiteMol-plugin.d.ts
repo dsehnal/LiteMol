@@ -1,3944 +1,4 @@
 
-declare namespace __LiteMolColorPicker {
-    
-    interface __LiteMolColorPickerRGB {
-        a: number; r: number; g: number; b: number;
-    }
-
-    interface __LiteMolColorPickerHSV {
-        a: number; h: number; s: number; v: number;
-    }
-
-    interface __LiteMolColorPickerHSL {
-        a: number; h: number; s: number; l: number;
-    }
-
-    interface __LiteMolColorPickerChangeEvent {
-        rgb: __LiteMolColorPickerRGB;
-        hsv: __LiteMolColorPickerHSV;
-        rsl: __LiteMolColorPickerHSL;
-        hex: string;   
-    }
-    
-    // class ColorPicker extends __LiteMolReact.Component<{
-    //     color?: string | __LiteMolColorPickerRGB | __LiteMolColorPickerHSV | __LiteMolColorPickerHSL,
-    //     onChange?: (e: __LiteMolColorPickerChangeEvent) => void,
-    // }, {}> {
-        
-    // }
-    
-    class ChromePicker extends __LiteMolReact.Component<{
-        color?: string | __LiteMolColorPickerRGB | __LiteMolColorPickerHSV | __LiteMolColorPickerHSL,
-        onChange?: (e: __LiteMolColorPickerChangeEvent) => void,
-        onChangeComplete?: (e: __LiteMolColorPickerChangeEvent) => void,
-    }, {}> {
-        
-    }
-    
-    // class AlphaPicker extends __LiteMolReact.Component<{
-    //     color?: string | __LiteMolColorPickerRGB | __LiteMolColorPickerHSV | __LiteMolColorPickerHSL,
-    //     onChange?: (e: __LiteMolColorPickerChangeEvent) => void,
-    // }, {}> {
-        
-    // }
-}
-// Type definitions for React v0.14 (react-dom)
-// Project: http://facebook.github.io/react/
-// Definitions by: Asana <https://asana.com>, AssureSign <http://www.assuresign.com>, Microsoft <https://microsoft.com>
-// Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
-
-declare namespace __LiteMolReact {
-    namespace __DOM {
-        function findDOMNode<E extends Element>(instance: ReactInstance): E;
-        function findDOMNode(instance: ReactInstance): Element;
-
-        function render<P extends DOMAttributes, T extends Element>(
-            element: DOMElement<P, T>,
-            container: Element,
-            callback?: (element: T) => any): T;
-        function render<P>(
-            element: SFCElement<P>,
-            container: Element,
-            callback?: () => any): void;
-        function render<P, T extends Component<P, {}>>(
-            element: CElement<P, T>,
-            container: Element,
-            callback?: (component: T) => any): T;
-        function render<P>(
-            element: ReactElement<P>,
-            container: Element,
-            callback?: (component?: Component<P, {}> | Element) => any): Component<P, {}> | Element | void;
-
-        function unmountComponentAtNode(container: Element): boolean;
-
-        var version: string;
-
-        function unstable_batchedUpdates<A, B>(callback: (a: A, b: B) => any, a: A, b: B): void;
-        function unstable_batchedUpdates<A>(callback: (a: A) => any, a: A): void;
-        function unstable_batchedUpdates(callback: () => any): void;
-
-        function unstable_renderSubtreeIntoContainer<P extends DOMAttributes, T extends Element>(
-            parentComponent: Component<any, any>,
-            element: DOMElement<P, T>,
-            container: Element,
-            callback?: (element: T) => any): T;
-        function unstable_renderSubtreeIntoContainer<P, T extends Component<P, {}>>(
-            parentComponent: Component<any, any>,
-            element: CElement<P, T>,
-            container: Element,
-            callback?: (component: T) => any): T;
-        function render<P>(
-            parentComponent: Component<any, any>,
-            element: SFCElement<P>,
-            container: Element,
-            callback?: () => any): void;
-        function unstable_renderSubtreeIntoContainer<P>(
-            parentComponent: Component<any, any>,
-            element: ReactElement<P>,
-            container: Element,
-            callback?: (component?: Component<P, {}> | Element) => any): Component<P, {}> | Element | void;
-    }
-
-    namespace __DOMServer {
-        function renderToString(element: ReactElement<any>): string;
-        function renderToStaticMarkup(element: ReactElement<any>): string;
-        var version: string;
-    }
-}
-// Type definitions for React v0.14
-// Project: http://facebook.github.io/react/
-// Definitions by: Asana <https://asana.com>, AssureSign <http://www.assuresign.com>, Microsoft <https://microsoft.com>
-// Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
-
-declare namespace __LiteMolReact {
-    //
-    // React Elements
-    // ----------------------------------------------------------------------
-
-    type ReactType = string | ComponentClass<any> | StatelessComponent<any>;
-
-    type Key = string | number;
-    type Ref<T> = string | ((instance: T) => any);
-
-    interface Attributes {
-        key?: Key;
-    }
-    interface ClassAttributes<T> extends Attributes {
-        ref?: Ref<T>;
-    }
-
-    interface ReactElement<P> {
-        type: string | ComponentClass<P> | SFC<P>;
-        props: P;
-        key?: Key;
-    }
-
-    interface SFCElement<P> extends ReactElement<P> {
-        type: SFC<P>;
-    }
-
-    type CElement<P, T extends Component<P, {}>> = ComponentElement<P, T>;
-    interface ComponentElement<P, T extends Component<P, {}>> extends ReactElement<P> {
-        type: ComponentClass<P>;
-        ref?: Ref<T>;
-    }
-
-    type ClassicElement<P> = CElement<P, ClassicComponent<P, {}>>;
-
-    interface DOMElement<P extends DOMAttributes, T extends Element> extends ReactElement<P> {
-        type: string;
-        ref: Ref<T>;
-    }
-
-    interface ReactHTMLElement<T extends HTMLElement> extends DOMElement<HTMLAttributes, T> {
-    }
-
-    interface ReactSVGElement extends DOMElement<SVGAttributes, SVGElement> {
-    }
-
-    //
-    // Factories
-    // ----------------------------------------------------------------------
-
-    interface Factory<P> {
-        (props?: P & Attributes, ...children: ReactNode[]): ReactElement<P>;
-    }
-
-    interface SFCFactory<P> {
-        (props?: P & Attributes, ...children: ReactNode[]): SFCElement<P>;
-    }
-
-    interface ComponentFactory<P, T extends Component<P, {}>> {
-        (props?: P & ClassAttributes<T>, ...children: ReactNode[]): CElement<P, T>;
-    }
-
-    type CFactory<P, T extends Component<P, {}>> = ComponentFactory<P, T>;
-    type ClassicFactory<P> = CFactory<P, ClassicComponent<P, {}>>;
-
-    interface DOMFactory<P extends DOMAttributes, T extends Element> {
-        (props?: P & ClassAttributes<T>, ...children: ReactNode[]): DOMElement<P, T>;
-    }
-
-    interface HTMLFactory<T extends HTMLElement> extends DOMFactory<HTMLAttributes, T> {
-    }
-
-    interface SVGFactory extends DOMFactory<SVGAttributes, SVGElement> {
-    }
-
-    //
-    // React Nodes
-    // http://facebook.github.io/react/docs/glossary.html
-    // ----------------------------------------------------------------------
-
-    type ReactText = string | number;
-    type ReactChild = ReactElement<any> | ReactText;
-
-    // Should be Array<ReactNode> but type aliases cannot be recursive
-    type ReactFragment = {} | Array<ReactChild | any[] | boolean>;
-    type ReactNode = ReactChild | ReactFragment | boolean;
-
-    //
-    // Top Level API
-    // ----------------------------------------------------------------------
-
-    function createClass<P, S>(spec: ComponentSpec<P, S>): ClassicComponentClass<P>;
-
-    function createFactory<P extends DOMAttributes, T extends Element>(
-        type: string): DOMFactory<P, T>;
-    function createFactory<P>(type: SFC<P>): SFCFactory<P>;
-    function createFactory<P>(
-        type: ClassType<P, ClassicComponent<P, {}>, ClassicComponentClass<P>>): CFactory<P, ClassicComponent<P, {}>>;
-    function createFactory<P, T extends Component<P, {}>, C extends ComponentClass<P>>(
-        type: ClassType<P, T, C>): CFactory<P, T>;
-    function createFactory<P>(type: ComponentClass<P> | SFC<P>): Factory<P>;
-
-    function createElement<P extends DOMAttributes, T extends Element>(
-        type: string,
-        props?: P & ClassAttributes<T>,
-        ...children: ReactNode[]): DOMElement<P, T>;
-    function createElement<P>(
-        type: SFC<P>,
-        props?: P & Attributes,
-        ...children: ReactNode[]): SFCElement<P>;
-    function createElement<P>(
-        type: ClassType<P, ClassicComponent<P, {}>, ClassicComponentClass<P>>,
-        props?: P & ClassAttributes<ClassicComponent<P, {}>>,
-        ...children: ReactNode[]): CElement<P, ClassicComponent<P, {}>>;
-    function createElement<P, T extends Component<P, {}>, C extends ComponentClass<P>>(
-        type: ClassType<P, T, C>,
-        props?: P & ClassAttributes<T>,
-        ...children: ReactNode[]): CElement<P, T>;
-    function createElement<P>(
-        type: ComponentClass<P> | SFC<P>,
-        props?: P & Attributes,
-        ...children: ReactNode[]): ReactElement<P>;
-
-    function cloneElement<P extends DOMAttributes, T extends Element>(
-        element: DOMElement<P, T>,
-        props?: P & ClassAttributes<T>,
-        ...children: ReactNode[]): DOMElement<P, T>;
-    function cloneElement<P extends Q, Q>(
-        element: SFCElement<P>,
-        props?: Q, // should be Q & Attributes, but then Q is inferred as {}
-        ...children: ReactNode[]): SFCElement<P>;
-    function cloneElement<P extends Q, Q, T extends Component<P, {}>>(
-        element: CElement<P, T>,
-        props?: Q, // should be Q & ClassAttributes<T>
-        ...children: ReactNode[]): CElement<P, T>;
-    function cloneElement<P extends Q, Q>(
-        element: ReactElement<P>,
-        props?: Q, // should be Q & Attributes
-        ...children: ReactNode[]): ReactElement<P>;
-
-    function isValidElement<P>(object: {}): object is ReactElement<P>;
-
-    var DOM: ReactDOM;
-    var PropTypes: ReactPropTypes;
-    var Children: ReactChildren;
-
-    //
-    // Component API
-    // ----------------------------------------------------------------------
-
-    type ReactInstance = Component<any, any> | Element;
-
-    // Base component for plain JS classes
-    class Component<P, S> implements ComponentLifecycle<P, S> {
-        constructor(props?: P, context?: any);
-        setState(f: (prevState: S, props: P) => S, callback?: () => any): void;
-        setState(state: S, callback?: () => any): void;
-        forceUpdate(callBack?: () => any): void;
-        render(): JSX.Element;
-
-        // React.Props<T> is now deprecated, which means that the `children`
-        // property is not available on `P` by default, even though you can
-        // always pass children as variadic arguments to `createElement`.
-        // In the future, if we can define its call signature conditionally
-        // on the existence of `children` in `P`, then we should remove this.
-        props: P & { children?: ReactNode };
-        state: S;
-        context: {};
-        refs: {
-            [key: string]: ReactInstance
-        };
-    }
-
-    interface ClassicComponent<P, S> extends Component<P, S> {
-        replaceState(nextState: S, callback?: () => any): void;
-        isMounted(): boolean;
-        getInitialState?(): S;
-    }
-
-    interface ChildContextProvider<CC> {
-        getChildContext(): CC;
-    }
-
-    //
-    // Class Interfaces
-    // ----------------------------------------------------------------------
-
-    type SFC<P> = StatelessComponent<P>;
-    interface StatelessComponent<P> {
-        (props?: P, context?: any): ReactElement<any>;
-        propTypes?: ValidationMap<P>;
-        contextTypes?: ValidationMap<any>;
-        defaultProps?: P;
-        displayName?: string;
-    }
-
-    interface ComponentClass<P> {
-        new (props?: P, context?: any): Component<P, {}>;
-        propTypes?: ValidationMap<P>;
-        contextTypes?: ValidationMap<any>;
-        childContextTypes?: ValidationMap<any>;
-        defaultProps?: P;
-        displayName?: string;
-    }
-
-    interface ClassicComponentClass<P> extends ComponentClass<P> {
-        new (props?: P, context?: any): ClassicComponent<P, {}>;
-        getDefaultProps?(): P;
-    }
-
-    /**
-     * We use an intersection type to infer multiple type parameters from
-     * a single argument, which is useful for many top-level API defs.
-     * See https://github.com/Microsoft/TypeScript/issues/7234 for more info.
-     */
-    type ClassType<P, T extends Component<P, {}>, C extends ComponentClass<P>> =
-        C &
-        (new () => T) &
-        (new () => { props: P });
-
-    //
-    // Component Specs and Lifecycle
-    // ----------------------------------------------------------------------
-
-    interface ComponentLifecycle<P, S> {
-        componentWillMount?(): void;
-        componentDidMount?(): void;
-        componentWillReceiveProps?(nextProps: P, nextContext: any): void;
-        shouldComponentUpdate?(nextProps: P, nextState: S, nextContext: any): boolean;
-        componentWillUpdate?(nextProps: P, nextState: S, nextContext: any): void;
-        componentDidUpdate?(prevProps: P, prevState: S, prevContext: any): void;
-        componentWillUnmount?(): void;
-    }
-
-    interface Mixin<P, S> extends ComponentLifecycle<P, S> {
-        mixins?: Mixin<P, S>;
-        statics?: {
-            [key: string]: any;
-        };
-
-        displayName?: string;
-        propTypes?: ValidationMap<any>;
-        contextTypes?: ValidationMap<any>;
-        childContextTypes?: ValidationMap<any>;
-
-        getDefaultProps?(): P;
-        getInitialState?(): S;
-    }
-
-    interface ComponentSpec<P, S> extends Mixin<P, S> {
-        render(): ReactElement<any>;
-
-        [propertyName: string]: any;
-    }
-
-    //
-    // Event System
-    // ----------------------------------------------------------------------
-
-    interface SyntheticEvent {
-        bubbles: boolean;
-        cancelable: boolean;
-        currentTarget: EventTarget;
-        defaultPrevented: boolean;
-        eventPhase: number;
-        isTrusted: boolean;
-        nativeEvent: Event;
-        preventDefault(): void;
-        stopPropagation(): void;
-        target: EventTarget;
-        timeStamp: Date;
-        type: string;
-    }
-
-    interface ClipboardEvent extends SyntheticEvent {
-        clipboardData: DataTransfer;
-    }
-
-    interface CompositionEvent extends SyntheticEvent {
-        data: string;
-    }
-
-    interface DragEvent extends SyntheticEvent {
-        dataTransfer: DataTransfer;
-    }
-
-    interface FocusEvent extends SyntheticEvent {
-        relatedTarget: EventTarget;
-    }
-
-    interface FormEvent extends SyntheticEvent {
-    }
-
-    interface KeyboardEvent extends SyntheticEvent {
-        altKey: boolean;
-        charCode: number;
-        ctrlKey: boolean;
-        getModifierState(key: string): boolean;
-        key: string;
-        keyCode: number;
-        locale: string;
-        location: number;
-        metaKey: boolean;
-        repeat: boolean;
-        shiftKey: boolean;
-        which: number;
-    }
-
-    interface MouseEvent extends SyntheticEvent {
-        altKey: boolean;
-        button: number;
-        buttons: number;
-        clientX: number;
-        clientY: number;
-        ctrlKey: boolean;
-        getModifierState(key: string): boolean;
-        metaKey: boolean;
-        pageX: number;
-        pageY: number;
-        relatedTarget: EventTarget;
-        screenX: number;
-        screenY: number;
-        shiftKey: boolean;
-    }
-
-    interface TouchEvent extends SyntheticEvent {
-        altKey: boolean;
-        changedTouches: TouchList;
-        ctrlKey: boolean;
-        getModifierState(key: string): boolean;
-        metaKey: boolean;
-        shiftKey: boolean;
-        targetTouches: TouchList;
-        touches: TouchList;
-    }
-
-    interface UIEvent extends SyntheticEvent {
-        detail: number;
-        view: AbstractView;
-    }
-
-    interface WheelEvent extends SyntheticEvent {
-        deltaMode: number;
-        deltaX: number;
-        deltaY: number;
-        deltaZ: number;
-    }
-
-    //
-    // Event Handler Types
-    // ----------------------------------------------------------------------
-
-    interface EventHandler<E extends SyntheticEvent> {
-        (event: E): void;
-    }
-
-    type ReactEventHandler = EventHandler<SyntheticEvent>;
-
-    type ClipboardEventHandler = EventHandler<ClipboardEvent>;
-    type CompositionEventHandler = EventHandler<CompositionEvent>;
-    type DragEventHandler = EventHandler<DragEvent>;
-    type FocusEventHandler = EventHandler<FocusEvent>;
-    type FormEventHandler = EventHandler<FormEvent>;
-    type KeyboardEventHandler = EventHandler<KeyboardEvent>;
-    type MouseEventHandler = EventHandler<MouseEvent>;
-    type TouchEventHandler = EventHandler<TouchEvent>;
-    type UIEventHandler = EventHandler<UIEvent>;
-    type WheelEventHandler = EventHandler<WheelEvent>;
-
-    //
-    // Props / DOM Attributes
-    // ----------------------------------------------------------------------
-
-    /**
-     * @deprecated. This was used to allow clients to pass `ref` and `key`
-     * to `createElement`, which is no longer necessary due to intersection
-     * types. If you need to declare a props object before passing it to
-     * `createElement` or a factory, use `ClassAttributes<T>`:
-     *
-     * ```ts
-     * var b: Button;
-     * var props: ButtonProps & ClassAttributes<Button> = {
-     *     ref: b => button = b, // ok!
-     *     label: "I'm a Button"
-     * };
-     * ```
-     */
-    interface Props<T> {
-        children?: ReactNode;
-        key?: Key;
-        ref?: Ref<T>;
-    }
-
-    interface HTMLProps<T> extends HTMLAttributes, ClassAttributes<T> {
-    }
-
-    interface SVGProps extends SVGAttributes, ClassAttributes<SVGElement> {
-    }
-
-    interface DOMAttributes {
-        children?: ReactNode;
-        dangerouslySetInnerHTML?: {
-            __html: string;
-        };
-
-        // Clipboard Events
-        onCopy?: ClipboardEventHandler;
-        onCut?: ClipboardEventHandler;
-        onPaste?: ClipboardEventHandler;
-
-        // Composition Events
-        onCompositionEnd?: CompositionEventHandler;
-        onCompositionStart?: CompositionEventHandler;
-        onCompositionUpdate?: CompositionEventHandler;
-
-        // Focus Events
-        onFocus?: FocusEventHandler;
-        onBlur?: FocusEventHandler;
-
-        // Form Events
-        onChange?: FormEventHandler;
-        onInput?: FormEventHandler;
-        onSubmit?: FormEventHandler;
-
-        // Image Events
-        onLoad?: ReactEventHandler;
-        onError?: ReactEventHandler; // also a Media Event
-
-        // Keyboard Events
-        onKeyDown?: KeyboardEventHandler;
-        onKeyPress?: KeyboardEventHandler;
-        onKeyUp?: KeyboardEventHandler;
-
-        // Media Events
-        onAbort?: ReactEventHandler;
-        onCanPlay?: ReactEventHandler;
-        onCanPlayThrough?: ReactEventHandler;
-        onDurationChange?: ReactEventHandler;
-        onEmptied?: ReactEventHandler;
-        onEncrypted?: ReactEventHandler;
-        onEnded?: ReactEventHandler;
-        onLoadedData?: ReactEventHandler;
-        onLoadedMetadata?: ReactEventHandler;
-        onLoadStart?: ReactEventHandler;
-        onPause?: ReactEventHandler;
-        onPlay?: ReactEventHandler;
-        onPlaying?: ReactEventHandler;
-        onProgress?: ReactEventHandler;
-        onRateChange?: ReactEventHandler;
-        onSeeked?: ReactEventHandler;
-        onSeeking?: ReactEventHandler;
-        onStalled?: ReactEventHandler;
-        onSuspend?: ReactEventHandler;
-        onTimeUpdate?: ReactEventHandler;
-        onVolumeChange?: ReactEventHandler;
-        onWaiting?: ReactEventHandler;
-
-        // MouseEvents
-        onClick?: MouseEventHandler;
-        onContextMenu?: MouseEventHandler;
-        onDoubleClick?: MouseEventHandler;
-        onDrag?: DragEventHandler;
-        onDragEnd?: DragEventHandler;
-        onDragEnter?: DragEventHandler;
-        onDragExit?: DragEventHandler;
-        onDragLeave?: DragEventHandler;
-        onDragOver?: DragEventHandler;
-        onDragStart?: DragEventHandler;
-        onDrop?: DragEventHandler;
-        onMouseDown?: MouseEventHandler;
-        onMouseEnter?: MouseEventHandler;
-        onMouseLeave?: MouseEventHandler;
-        onMouseMove?: MouseEventHandler;
-        onMouseOut?: MouseEventHandler;
-        onMouseOver?: MouseEventHandler;
-        onMouseUp?: MouseEventHandler;
-
-        // Selection Events
-        onSelect?: ReactEventHandler;
-
-        // Touch Events
-        onTouchCancel?: TouchEventHandler;
-        onTouchEnd?: TouchEventHandler;
-        onTouchMove?: TouchEventHandler;
-        onTouchStart?: TouchEventHandler;
-
-        // UI Events
-        onScroll?: UIEventHandler;
-
-        // Wheel Events
-        onWheel?: WheelEventHandler;
-    }
-
-    // This interface is not complete. Only properties accepting
-    // unitless numbers are listed here (see CSSProperty.js in React)
-    interface CSSProperties {
-
-        /**
-         * Aligns a flex container's lines within the flex container when there is extra space in the cross-axis, similar to how justify-content aligns individual items within the main-axis.
-         */
-        alignContent?: any;
-
-        /**
-         * Sets the default alignment in the cross axis for all of the flex container's items, including anonymous flex items, similarly to how justify-content aligns items along the main axis.
-         */
-        alignItems?: any;
-
-        /**
-         * Allows the default alignment to be overridden for individual flex items.
-         */
-        alignSelf?: any;
-
-        /**
-         * This property allows precise alignment of elements, such as graphics, that do not have a baseline-table or lack the desired baseline in their baseline-table. With the alignment-adjust property, the position of the baseline identified by the alignment-baseline can be explicitly determined. It also determines precisely the alignment point for each glyph within a textual element.
-         */
-        alignmentAdjust?: any;
-
-        alignmentBaseline?: any;
-
-        /**
-         * Defines a length of time to elapse before an animation starts, allowing an animation to begin execution some time after it is applied.
-         */
-        animationDelay?: any;
-
-        /**
-         * Defines whether an animation should run in reverse on some or all cycles.
-         */
-        animationDirection?: any;
-
-        /**
-         * Specifies how many times an animation cycle should play.
-         */
-        animationIterationCount?: any;
-
-        /**
-         * Defines the list of animations that apply to the element.
-         */
-        animationName?: any;
-
-        /**
-         * Defines whether an animation is running or paused.
-         */
-        animationPlayState?: any;
-
-        /**
-         * Allows changing the style of any element to platform-based interface elements or vice versa.
-         */
-        appearance?: any;
-
-        /**
-         * Determines whether or not the �back� side of a transformed element is visible when facing the viewer.
-         */
-        backfaceVisibility?: any;
-
-        /**
-         * Shorthand property to set the values for one or more of:
-         * background-clip, background-color, background-image,
-         * background-origin, background-position, background-repeat,
-         * background-size, and background-attachment.
-         */
-        background?: any;
-
-        /**
-         * If a background-image is specified, this property determines
-         * whether that image's position is fixed within the viewport,
-         * or scrolls along with its containing block.
-         */
-        backgroundAttachment?: "scroll" | "fixed" | "local";
-
-        /**
-         * This property describes how the element's background images should blend with each other and the element's background color.
-         * The value is a list of blend modes that corresponds to each background image. Each element in the list will apply to the corresponding element of background-image. If a property doesn�t have enough comma-separated values to match the number of layers, the UA must calculate its used value by repeating the list of values until there are enough.
-         */
-        backgroundBlendMode?: any;
-
-        /**
-         * Sets the background color of an element.
-         */
-        backgroundColor?: any;
-
-        backgroundComposite?: any;
-
-        /**
-         * Applies one or more background images to an element. These can be any valid CSS image, including url() paths to image files or CSS gradients.
-         */
-        backgroundImage?: any;
-
-        /**
-         * Specifies what the background-position property is relative to.
-         */
-        backgroundOrigin?: any;
-
-        /**
-         * Sets the position of a background image.
-         */
-        backgroundPosition?: any;
-
-        /**
-         * Background-repeat defines if and how background images will be repeated after they have been sized and positioned
-         */
-        backgroundRepeat?: any;
-
-        /**
-         * Obsolete - spec retired, not implemented.
-         */
-        baselineShift?: any;
-
-        /**
-         * Non standard. Sets or retrieves the location of the Dynamic HTML (DHTML) behavior.
-         */
-        behavior?: any;
-
-        /**
-         * Shorthand property that defines the different properties of all four sides of an element's border in a single declaration. It can be used to set border-width, border-style and border-color, or a subset of these.
-         */
-        border?: any;
-
-        /**
-         * Shorthand that sets the values of border-bottom-color,
-         * border-bottom-style, and border-bottom-width.
-         */
-        borderBottom?: any;
-
-        /**
-         * Sets the color of the bottom border of an element.
-         */
-        borderBottomColor?: any;
-
-        /**
-         * Defines the shape of the border of the bottom-left corner.
-         */
-        borderBottomLeftRadius?: any;
-
-        /**
-         * Defines the shape of the border of the bottom-right corner.
-         */
-        borderBottomRightRadius?: any;
-
-        /**
-         * Sets the line style of the bottom border of a box.
-         */
-        borderBottomStyle?: any;
-
-        /**
-         * Sets the width of an element's bottom border. To set all four borders, use the border-width shorthand property which sets the values simultaneously for border-top-width, border-right-width, border-bottom-width, and border-left-width.
-         */
-        borderBottomWidth?: any;
-
-        /**
-         * Border-collapse can be used for collapsing the borders between table cells
-         */
-        borderCollapse?: any;
-
-        /**
-         * The CSS border-color property sets the color of an element's four borders. This property can have from one to four values, made up of the elementary properties:     �       border-top-color
-         *      �       border-right-color
-         *      �       border-bottom-color
-         *      �       border-left-color The default color is the currentColor of each of these values.
-         * If you provide one value, it sets the color for the element. Two values set the horizontal and vertical values, respectively. Providing three values sets the top, vertical, and bottom values, in that order. Four values set all for sides: top, right, bottom, and left, in that order.
-         */
-        borderColor?: any;
-
-        /**
-         * Specifies different corner clipping effects, such as scoop (inner curves), bevel (straight cuts) or notch (cut-off rectangles). Works along with border-radius to specify the size of each corner effect.
-         */
-        borderCornerShape?: any;
-
-        /**
-         * The property border-image-source is used to set the image to be used instead of the border style. If this is set to none the border-style is used instead.
-         */
-        borderImageSource?: any;
-
-        /**
-         * The border-image-width CSS property defines the offset to use for dividing the border image in nine parts, the top-left corner, central top edge, top-right-corner, central right edge, bottom-right corner, central bottom edge, bottom-left corner, and central right edge. They represent inward distance from the top, right, bottom, and left edges.
-         */
-        borderImageWidth?: any;
-
-        /**
-         * Shorthand property that defines the border-width, border-style and border-color of an element's left border in a single declaration. Note that you can use the corresponding longhand properties to set specific individual properties of the left border � border-left-width, border-left-style and border-left-color.
-         */
-        borderLeft?: any;
-
-        /**
-         * The CSS border-left-color property sets the color of an element's left border. This page explains the border-left-color value, but often you will find it more convenient to fix the border's left color as part of a shorthand set, either border-left or border-color.
-         * Colors can be defined several ways. For more information, see Usage.
-         */
-        borderLeftColor?: any;
-
-        /**
-         * Sets the style of an element's left border. To set all four borders, use the shorthand property, border-style. Otherwise, you can set the borders individually with border-top-style, border-right-style, border-bottom-style, border-left-style.
-         */
-        borderLeftStyle?: any;
-
-        /**
-         * Sets the width of an element's left border. To set all four borders, use the border-width shorthand property which sets the values simultaneously for border-top-width, border-right-width, border-bottom-width, and border-left-width.
-         */
-        borderLeftWidth?: any;
-
-        /**
-         * Shorthand property that defines the border-width, border-style and border-color of an element's right border in a single declaration. Note that you can use the corresponding longhand properties to set specific individual properties of the right border � border-right-width, border-right-style and border-right-color.
-         */
-        borderRight?: any;
-
-        /**
-         * Sets the color of an element's right border. This page explains the border-right-color value, but often you will find it more convenient to fix the border's right color as part of a shorthand set, either border-right or border-color.
-         * Colors can be defined several ways. For more information, see Usage.
-         */
-        borderRightColor?: any;
-
-        /**
-         * Sets the style of an element's right border. To set all four borders, use the shorthand property, border-style. Otherwise, you can set the borders individually with border-top-style, border-right-style, border-bottom-style, border-left-style.
-         */
-        borderRightStyle?: any;
-
-        /**
-         * Sets the width of an element's right border. To set all four borders, use the border-width shorthand property which sets the values simultaneously for border-top-width, border-right-width, border-bottom-width, and border-left-width.
-         */
-        borderRightWidth?: any;
-
-        /**
-         * Specifies the distance between the borders of adjacent cells.
-         */
-        borderSpacing?: any;
-
-        /**
-         * Sets the style of an element's four borders. This property can have from one to four values. With only one value, the value will be applied to all four borders; otherwise, this works as a shorthand property for each of border-top-style, border-right-style, border-bottom-style, border-left-style, where each border style may be assigned a separate value.
-         */
-        borderStyle?: any;
-
-        /**
-         * Shorthand property that defines the border-width, border-style and border-color of an element's top border in a single declaration. Note that you can use the corresponding longhand properties to set specific individual properties of the top border � border-top-width, border-top-style and border-top-color.
-         */
-        borderTop?: any;
-
-        /**
-         * Sets the color of an element's top border. This page explains the border-top-color value, but often you will find it more convenient to fix the border's top color as part of a shorthand set, either border-top or border-color.
-         * Colors can be defined several ways. For more information, see Usage.
-         */
-        borderTopColor?: any;
-
-        /**
-         * Sets the rounding of the top-left corner of the element.
-         */
-        borderTopLeftRadius?: any;
-
-        /**
-         * Sets the rounding of the top-right corner of the element.
-         */
-        borderTopRightRadius?: any;
-
-        /**
-         * Sets the style of an element's top border. To set all four borders, use the shorthand property, border-style. Otherwise, you can set the borders individually with border-top-style, border-right-style, border-bottom-style, border-left-style.
-         */
-        borderTopStyle?: any;
-
-        /**
-         * Sets the width of an element's top border. To set all four borders, use the border-width shorthand property which sets the values simultaneously for border-top-width, border-right-width, border-bottom-width, and border-left-width.
-         */
-        borderTopWidth?: any;
-
-        /**
-         * Sets the width of an element's four borders. This property can have from one to four values. This is a shorthand property for setting values simultaneously for border-top-width, border-right-width, border-bottom-width, and border-left-width.
-         */
-        borderWidth?: any;
-
-        /**
-         * This property specifies how far an absolutely positioned box's bottom margin edge is offset above the bottom edge of the box's containing block. For relatively positioned boxes, the offset is with respect to the bottom edges of the box itself (i.e., the box is given a position in the normal flow, then offset from that position according to these properties).
-         */
-        bottom?: any;
-
-        /**
-         * Obsolete.
-         */
-        boxAlign?: any;
-
-        /**
-         * Breaks a box into fragments creating new borders, padding and repeating backgrounds or lets it stay as a continuous box on a page break, column break, or, for inline elements, at a line break.
-         */
-        boxDecorationBreak?: any;
-
-        /**
-         * Deprecated
-         */
-        boxDirection?: any;
-
-        /**
-         * Do not use. This property has been replaced by the flex-wrap property.
-         * Gets or sets a value that specifies the direction to add successive rows or columns when the value of box-lines is set to multiple.
-         */
-        boxLineProgression?: any;
-
-        /**
-         * Do not use. This property has been replaced by the flex-wrap property.
-         * Gets or sets a value that specifies whether child elements wrap onto multiple lines or columns based on the space available in the object.
-         */
-        boxLines?: any;
-
-        /**
-         * Do not use. This property has been replaced by flex-order.
-         * Specifies the ordinal group that a child element of the object belongs to. This ordinal value identifies the display order (along the axis defined by the box-orient property) for the group.
-         */
-        boxOrdinalGroup?: any;
-
-        /**
-         * Deprecated.
-         */
-        boxFlex?: number;
-
-        /**
-         * Deprecated.
-         */
-        boxFlexGroup?: number;
-
-        /**
-         * The CSS break-after property allows you to force a break on multi-column layouts. More specifically, it allows you to force a break after an element. It allows you to determine if a break should occur, and what type of break it should be. The break-after CSS property describes how the page, column or region break behaves after the generated box. If there is no generated box, the property is ignored.
-         */
-        breakAfter?: any;
-
-        /**
-         * Control page/column/region breaks that fall above a block of content
-         */
-        breakBefore?: any;
-
-        /**
-         * Control page/column/region breaks that fall within a block of content
-         */
-        breakInside?: any;
-
-        /**
-         * The clear CSS property specifies if an element can be positioned next to or must be positioned below the floating elements that precede it in the markup.
-         */
-        clear?: any;
-
-        /**
-         * Deprecated; see clip-path.
-         * Lets you specify the dimensions of an absolutely positioned element that should be visible, and the element is clipped into this shape, and displayed.
-         */
-        clip?: any;
-
-        /**
-         * Clipping crops an graphic, so that only a portion of the graphic is rendered, or filled. This clip-rule property, when used with the clip-path property, defines which clip rule, or algorithm, to use when filling the different parts of a graphics.
-         */
-        clipRule?: any;
-
-        /**
-         * The color property sets the color of an element's foreground content (usually text), accepting any standard CSS color from keywords and hex values to RGB(a) and HSL(a).
-         */
-        color?: any;
-
-        /**
-         * Describes the number of columns of the element.
-         */
-        columnCount?: number;
-
-        /**
-         * Specifies how to fill columns (balanced or sequential).
-         */
-        columnFill?: any;
-
-        /**
-         * The column-gap property controls the width of the gap between columns in multi-column elements.
-         */
-        columnGap?: any;
-
-        /**
-         * Sets the width, style, and color of the rule between columns.
-         */
-        columnRule?: any;
-
-        /**
-         * Specifies the color of the rule between columns.
-         */
-        columnRuleColor?: any;
-
-        /**
-         * Specifies the width of the rule between columns.
-         */
-        columnRuleWidth?: any;
-
-        /**
-         * The column-span CSS property makes it possible for an element to span across all columns when its value is set to all. An element that spans more than one column is called a spanning element.
-         */
-        columnSpan?: any;
-
-        /**
-         * Specifies the width of columns in multi-column elements.
-         */
-        columnWidth?: any;
-
-        /**
-         * This property is a shorthand property for setting column-width and/or column-count.
-         */
-        columns?: any;
-
-        /**
-         * The counter-increment property accepts one or more names of counters (identifiers), each one optionally followed by an integer which specifies the value by which the counter should be incremented (e.g. if the value is 2, the counter increases by 2 each time it is invoked).
-         */
-        counterIncrement?: any;
-
-        /**
-         * The counter-reset property contains a list of one or more names of counters, each one optionally followed by an integer (otherwise, the integer defaults to 0.) Each time the given element is invoked, the counters specified by the property are set to the given integer.
-         */
-        counterReset?: any;
-
-        /**
-         * The cue property specifies sound files (known as an "auditory icon") to be played by speech media agents before and after presenting an element's content; if only one file is specified, it is played both before and after. The volume at which the file(s) should be played, relative to the volume of the main element, may also be specified. The icon files may also be set separately with the cue-before and cue-after properties.
-         */
-        cue?: any;
-
-        /**
-         * The cue-after property specifies a sound file (known as an "auditory icon") to be played by speech media agents after presenting an element's content; the volume at which the file should be played may also be specified. The shorthand property cue sets cue sounds for both before and after the element is presented.
-         */
-        cueAfter?: any;
-
-        /**
-         * Specifies the mouse cursor displayed when the mouse pointer is over an element.
-         */
-        cursor?: any;
-
-        /**
-         * The direction CSS property specifies the text direction/writing direction. The rtl is used for Hebrew or Arabic text, the ltr is for other languages.
-         */
-        direction?: any;
-
-        /**
-         * This property specifies the type of rendering box used for an element. It is a shorthand property for many other display properties.
-         */
-        display?: any;
-
-        /**
-         * The �fill� property paints the interior of the given graphical element. The area to be painted consists of any areas inside the outline of the shape. To determine the inside of the shape, all subpaths are considered, and the interior is determined according to the rules associated with the current value of the �fill-rule� property. The zero-width geometric outline of a shape is included in the area to be painted.
-         */
-        fill?: any;
-
-        /**
-         * SVG: Specifies the opacity of the color or the content the current object is filled with.
-         */
-        fillOpacity?: number;
-
-        /**
-         * The �fill-rule� property indicates the algorithm which is to be used to determine what parts of the canvas are included inside the shape. For a simple, non-intersecting path, it is intuitively clear what region lies "inside"; however, for a more complex path, such as a path that intersects itself or where one subpath encloses another, the interpretation of "inside" is not so obvious.
-         * The �fill-rule� property provides two options for how the inside of a shape is determined:
-         */
-        fillRule?: any;
-
-        /**
-         * Applies various image processing effects. This property is largely unsupported. See Compatibility section for more information.
-         */
-        filter?: any;
-
-        /**
-         * Shorthand for `flex-grow`, `flex-shrink`, and `flex-basis`.
-         */
-        flex?: number | string;
-
-        /**
-         * Obsolete, do not use. This property has been renamed to align-items.
-         * Specifies the alignment (perpendicular to the layout axis defined by the flex-direction property) of child elements of the object.
-         */
-        flexAlign?: any;
-
-        /**
-         * The flex-basis CSS property describes the initial main size of the flex item before any free space is distributed according to the flex factors described in the flex property (flex-grow and flex-shrink).
-         */
-        flexBasis?: any;
-
-        /**
-         * The flex-direction CSS property describes how flex items are placed in the flex container, by setting the direction of the flex container's main axis.
-         */
-        flexDirection?: any;
-
-        /**
-         * The flex-flow CSS property defines the flex container's main and cross axis. It is a shorthand property for the flex-direction and flex-wrap properties.
-         */
-        flexFlow?: any;
-
-        /**
-         * Specifies the flex grow factor of a flex item.
-         */
-        flexGrow?: number;
-
-        /**
-         * Do not use. This property has been renamed to align-self
-         * Specifies the alignment (perpendicular to the layout axis defined by flex-direction) of child elements of the object.
-         */
-        flexItemAlign?: any;
-
-        /**
-         * Do not use. This property has been renamed to align-content.
-         * Specifies how a flexbox's lines align within the flexbox when there is extra space along the axis that is perpendicular to the axis defined by the flex-direction property.
-         */
-        flexLinePack?: any;
-
-        /**
-         * Gets or sets a value that specifies the ordinal group that a flexbox element belongs to. This ordinal value identifies the display order for the group.
-         */
-        flexOrder?: any;
-
-        /**
-         * Specifies the flex shrink factor of a flex item.
-         */
-        flexShrink?: number;
-
-        /**
-         * Elements which have the style float are floated horizontally. These elements can move as far to the left or right of the containing element. All elements after the floating element will flow around it, but elements before the floating element are not impacted. If several floating elements are placed after each other, they will float next to each other as long as there is room.
-         */
-        float?: any;
-
-        /**
-         * Flows content from a named flow (specified by a corresponding flow-into) through selected elements to form a dynamic chain of layout regions.
-         */
-        flowFrom?: any;
-
-        /**
-         * The font property is shorthand that allows you to do one of two things: you can either set up six of the most mature font properties in one line, or you can set one of a choice of keywords to adopt a system font setting.
-         */
-        font?: any;
-
-        /**
-         * The font-family property allows one or more font family names and/or generic family names to be specified for usage on the selected element(s)' text. The browser then goes through the list; for each character in the selection it applies the first font family that has an available glyph for that character.
-         */
-        fontFamily?: any;
-
-        /**
-         * The font-kerning property allows contextual adjustment of inter-glyph spacing, i.e. the spaces between the characters in text. This property controls <bold>metric kerning</bold> - that utilizes adjustment data contained in the font. Optical Kerning is not supported as yet.
-         */
-        fontKerning?: any;
-
-        /**
-         * Specifies the size of the font. Used to compute em and ex units.
-         */
-        fontSize?: number | string;
-
-        /**
-         * The font-size-adjust property adjusts the font-size of the fallback fonts defined with font-family, so that the x-height is the same no matter what font is used. This preserves the readability of the text when fallback happens.
-         */
-        fontSizeAdjust?: any;
-
-        /**
-         * Allows you to expand or condense the widths for a normal, condensed, or expanded font face.
-         */
-        fontStretch?: any;
-
-        /**
-         * The font-style property allows normal, italic, or oblique faces to be selected. Italic forms are generally cursive in nature while oblique faces are typically sloped versions of the regular face. Oblique faces can be simulated by artificially sloping the glyphs of the regular face.
-         */
-        fontStyle?: any;
-
-        /**
-         * This value specifies whether the user agent is allowed to synthesize bold or oblique font faces when a font family lacks bold or italic faces.
-         */
-        fontSynthesis?: any;
-
-        /**
-         * The font-variant property enables you to select the small-caps font within a font family.
-         */
-        fontVariant?: any;
-
-        /**
-         * Fonts can provide alternate glyphs in addition to default glyph for a character. This property provides control over the selection of these alternate glyphs.
-         */
-        fontVariantAlternates?: any;
-
-        /**
-         * Specifies the weight or boldness of the font.
-         */
-        fontWeight?: "normal" | "bold" | "lighter" | "bolder" | number;
-
-        /**
-         * Lays out one or more grid items bound by 4 grid lines. Shorthand for setting grid-column-start, grid-column-end, grid-row-start, and grid-row-end in a single declaration.
-         */
-        gridArea?: any;
-
-        /**
-         * Controls a grid item's placement in a grid area, particularly grid position and a grid span. Shorthand for setting grid-column-start and grid-column-end in a single declaration.
-         */
-        gridColumn?: any;
-
-        /**
-         * Controls a grid item's placement in a grid area as well as grid position and a grid span. The grid-column-end property (with grid-row-start, grid-row-end, and grid-column-start) determines a grid item's placement by specifying the grid lines of a grid item's grid area.
-         */
-        gridColumnEnd?: any;
-
-        /**
-         * Determines a grid item's placement by specifying the starting grid lines of a grid item's grid area . A grid item's placement in a grid area consists of a grid position and a grid span. See also ( grid-row-start, grid-row-end, and grid-column-end)
-         */
-        gridColumnStart?: any;
-
-        /**
-         * Gets or sets a value that indicates which row an element within a Grid should appear in. Shorthand for setting grid-row-start and grid-row-end in a single declaration.
-         */
-        gridRow?: any;
-
-        /**
-         * Determines a grid item�s placement by specifying the block-end. A grid item's placement in a grid area consists of a grid position and a grid span. The grid-row-end property (with grid-row-start, grid-column-start, and grid-column-end) determines a grid item's placement by specifying the grid lines of a grid item's grid area.
-         */
-        gridRowEnd?: any;
-
-        /**
-         * Specifies a row position based upon an integer location, string value, or desired row size.
-         * css/properties/grid-row is used as short-hand for grid-row-position and grid-row-position
-         */
-        gridRowPosition?: any;
-
-        gridRowSpan?: any;
-
-        /**
-         * Specifies named grid areas which are not associated with any particular grid item, but can be referenced from the grid-placement properties. The syntax of the grid-template-areas property also provides a visualization of the structure of the grid, making the overall layout of the grid container easier to understand.
-         */
-        gridTemplateAreas?: any;
-
-        /**
-         * Specifies (with grid-template-rows) the line names and track sizing functions of the grid. Each sizing function can be specified as a length, a percentage of the grid container�s size, a measurement of the contents occupying the column or row, or a fraction of the free space in the grid.
-         */
-        gridTemplateColumns?: any;
-
-        /**
-         * Specifies (with grid-template-columns) the line names and track sizing functions of the grid. Each sizing function can be specified as a length, a percentage of the grid container�s size, a measurement of the contents occupying the column or row, or a fraction of the free space in the grid.
-         */
-        gridTemplateRows?: any;
-
-        /**
-         * Sets the height of an element. The content area of the element height does not include the padding, border, and margin of the element.
-         */
-        height?: any;
-
-        /**
-         * Specifies the minimum number of characters in a hyphenated word
-         */
-        hyphenateLimitChars?: any;
-
-        /**
-         * Indicates the maximum number of successive hyphenated lines in an element. The �no-limit� value means that there is no limit.
-         */
-        hyphenateLimitLines?: any;
-
-        /**
-         * Specifies the maximum amount of trailing whitespace (before justification) that may be left in a line before hyphenation is triggered to pull part of a word from the next line back up into the current one.
-         */
-        hyphenateLimitZone?: any;
-
-        /**
-         * Specifies whether or not words in a sentence can be split by the use of a manual or automatic hyphenation mechanism.
-         */
-        hyphens?: any;
-
-        imeMode?: any;
-
-        layoutGrid?: any;
-
-        layoutGridChar?: any;
-
-        layoutGridLine?: any;
-
-        layoutGridMode?: any;
-
-        layoutGridType?: any;
-
-        /**
-         * Sets the left edge of an element
-         */
-        left?: any;
-
-        /**
-         * The letter-spacing CSS property specifies the spacing behavior between text characters.
-         */
-        letterSpacing?: any;
-
-        /**
-         * Deprecated. Gets or sets line-breaking rules for text in selected languages such as Japanese, Chinese, and Korean.
-         */
-        lineBreak?: any;
-
-        lineClamp?: number;
-
-        /**
-         * Specifies the height of an inline block level element. 
-         */
-        lineHeight?: number | string;
-
-        /**
-         * Shorthand property that sets the list-style-type, list-style-position and list-style-image properties in one declaration.
-         */
-        listStyle?: any;
-
-        /**
-         * This property sets the image that will be used as the list item marker. When the image is available, it will replace the marker set with the 'list-style-type' marker. That also means that if the image is not available, it will show the style specified by list-style-property
-         */
-        listStyleImage?: any;
-
-        /**
-         * Specifies if the list-item markers should appear inside or outside the content flow.
-         */
-        listStylePosition?: any;
-
-        /**
-         * Specifies the type of list-item marker in a list.
-         */
-        listStyleType?: any;
-
-        /**
-         * The margin property is shorthand to allow you to set all four margins of an element at once. Its equivalent longhand properties are margin-top, margin-right, margin-bottom and margin-left. Negative values are also allowed.
-         */
-        margin?: any;
-
-        /**
-         * margin-bottom sets the bottom margin of an element.
-         */
-        marginBottom?: any;
-
-        /**
-         * margin-left sets the left margin of an element.
-         */
-        marginLeft?: any;
-
-        /**
-         * margin-right sets the right margin of an element.
-         */
-        marginRight?: any;
-
-        /**
-         * margin-top sets the top margin of an element.
-         */
-        marginTop?: any;
-
-        /**
-         * The marquee-direction determines the initial direction in which the marquee content moves.
-         */
-        marqueeDirection?: any;
-
-        /**
-         * The 'marquee-style' property determines a marquee's scrolling behavior.
-         */
-        marqueeStyle?: any;
-
-        /**
-         * This property is shorthand for setting mask-image, mask-mode, mask-repeat, mask-position, mask-clip, mask-origin, mask-composite and mask-size. Omitted values are set to their original properties' initial values.
-         */
-        mask?: any;
-
-        /**
-         * This property is shorthand for setting mask-border-source, mask-border-slice, mask-border-width, mask-border-outset, and mask-border-repeat. Omitted values are set to their original properties' initial values.
-         */
-        maskBorder?: any;
-
-        /**
-         * This property specifies how the images for the sides and the middle part of the mask image are scaled and tiled. The first keyword applies to the horizontal sides, the second one applies to the vertical ones. If the second keyword is absent, it is assumed to be the same as the first, similar to the CSS border-image-repeat property.
-         */
-        maskBorderRepeat?: any;
-
-        /**
-         * This property specifies inward offsets from the top, right, bottom, and left edges of the mask image, dividing it into nine regions: four corners, four edges, and a middle. The middle image part is discarded and treated as fully transparent black unless the fill keyword is present. The four values set the top, right, bottom and left offsets in that order, similar to the CSS border-image-slice property.
-         */
-        maskBorderSlice?: any;
-
-        /**
-         * Specifies an image to be used as a mask. An image that is empty, fails to download, is non-existent, or cannot be displayed is ignored and does not mask the element.
-         */
-        maskBorderSource?: any;
-
-        /**
-         * This property sets the width of the mask box image, similar to the CSS border-image-width property.
-         */
-        maskBorderWidth?: any;
-
-        /**
-         * Determines the mask painting area, which defines the area that is affected by the mask. The painted content of an element may be restricted to this area.
-         */
-        maskClip?: any;
-
-        /**
-         * For elements rendered as a single box, specifies the mask positioning area. For elements rendered as multiple boxes (e.g., inline boxes on several lines, boxes on several pages) specifies which boxes box-decoration-break operates on to determine the mask positioning area(s).
-         */
-        maskOrigin?: any;
-
-        /**
-         * This property must not be used. It is no longer included in any standard or standard track specification, nor is it implemented in any browser. It is only used when the text-align-last property is set to size. It controls allowed adjustments of font-size to fit line content.
-         */
-        maxFontSize?: any;
-
-        /**
-         * Sets the maximum height for an element. It prevents the height of the element to exceed the specified value. If min-height is specified and is greater than max-height, max-height is overridden.
-         */
-        maxHeight?: any;
-
-        /**
-         * Sets the maximum width for an element. It limits the width property to be larger than the value specified in max-width.
-         */
-        maxWidth?: any;
-
-        /**
-         * Sets the minimum height for an element. It prevents the height of the element to be smaller than the specified value. The value of min-height overrides both max-height and height.
-         */
-        minHeight?: any;
-
-        /**
-         * Sets the minimum width of an element. It limits the width property to be not smaller than the value specified in min-width.
-         */
-        minWidth?: any;
-
-        /**
-         * Specifies the transparency of an element.
-         */
-        opacity?: number;
-
-        /**
-         * Specifies the order used to lay out flex items in their flex container.
-         * Elements are laid out in the ascending order of the order value.
-         */
-        order?: number;
-
-        /**
-         * In paged media, this property defines the minimum number of lines in
-         * a block container that must be left at the bottom of the page.
-         */
-        orphans?: number;
-
-        /**
-         * The CSS outline property is a shorthand property for setting one or more of the individual outline properties outline-style, outline-width and outline-color in a single rule. In most cases the use of this shortcut is preferable and more convenient.
-         * Outlines differ from borders in the following ways:  �       Outlines do not take up space, they are drawn above the content.
-         *      �       Outlines may be non-rectangular. They are rectangular in Gecko/Firefox. Internet Explorer attempts to place the smallest contiguous outline around all elements or shapes that are indicated to have an outline. Opera draws a non-rectangular shape around a construct.
-         */
-        outline?: any;
-
-        /**
-         * The outline-color property sets the color of the outline of an element. An outline is a line that is drawn around elements, outside the border edge, to make the element stand out.
-         */
-        outlineColor?: any;
-
-        /**
-         * The outline-offset property offsets the outline and draw it beyond the border edge.
-         */
-        outlineOffset?: any;
-
-        /**
-         * The overflow property controls how extra content exceeding the bounding box of an element is rendered. It can be used in conjunction with an element that has a fixed width and height, to eliminate text-induced page distortion.
-         */
-        overflow?: any;
-
-        /**
-         * Specifies the preferred scrolling methods for elements that overflow.
-         */
-        overflowStyle?: any;
-
-        /**
-         * Controls how extra content exceeding the x-axis of the bounding box of an element is rendered.
-         */
-        overflowX?: any;
-
-        /**
-         * Controls how extra content exceeding the y-axis of the bounding box of an element is rendered.
-         */
-        overflowY?: any;
-
-        /**
-         * The padding optional CSS property sets the required padding space on one to four sides of an element. The padding area is the space between an element and its border. Negative values are not allowed but decimal values are permitted. The element size is treated as fixed, and the content of the element shifts toward the center as padding is increased.
-         * The padding property is a shorthand to avoid setting each side separately (padding-top, padding-right, padding-bottom, padding-left).
-         */
-        padding?: any;
-
-        /**
-         * The padding-bottom CSS property of an element sets the padding space required on the bottom of an element. The padding area is the space between the content of the element and its border. Contrary to margin-bottom values, negative values of padding-bottom are invalid.
-         */
-        paddingBottom?: any;
-
-        /**
-         * The padding-left CSS property of an element sets the padding space required on the left side of an element. The padding area is the space between the content of the element and its border. Contrary to margin-left values, negative values of padding-left are invalid.
-         */
-        paddingLeft?: any;
-
-        /**
-         * The padding-right CSS property of an element sets the padding space required on the right side of an element. The padding area is the space between the content of the element and its border. Contrary to margin-right values, negative values of padding-right are invalid.
-         */
-        paddingRight?: any;
-
-        /**
-         * The padding-top CSS property of an element sets the padding space required on the top of an element. The padding area is the space between the content of the element and its border. Contrary to margin-top values, negative values of padding-top are invalid.
-         */
-        paddingTop?: any;
-
-        /**
-         * The page-break-after property is supported in all major browsers. With CSS3, page-break-* properties are only aliases of the break-* properties. The CSS3 Fragmentation spec defines breaks for all CSS box fragmentation.
-         */
-        pageBreakAfter?: any;
-
-        /**
-         * The page-break-before property sets the page-breaking behavior before an element. With CSS3, page-break-* properties are only aliases of the break-* properties. The CSS3 Fragmentation spec defines breaks for all CSS box fragmentation.
-         */
-        pageBreakBefore?: any;
-
-        /**
-         * Sets the page-breaking behavior inside an element. With CSS3, page-break-* properties are only aliases of the break-* properties. The CSS3 Fragmentation spec defines breaks for all CSS box fragmentation.
-         */
-        pageBreakInside?: any;
-
-        /**
-         * The pause property determines how long a speech media agent should pause before and after presenting an element. It is a shorthand for the pause-before and pause-after properties.
-         */
-        pause?: any;
-
-        /**
-         * The pause-after property determines how long a speech media agent should pause after presenting an element. It may be replaced by the shorthand property pause, which sets pause time before and after.
-         */
-        pauseAfter?: any;
-
-        /**
-         * The pause-before property determines how long a speech media agent should pause before presenting an element. It may be replaced by the shorthand property pause, which sets pause time before and after.
-         */
-        pauseBefore?: any;
-
-        /**
-         * The perspective property defines how far an element is placed from the view on the z-axis, from the screen to the viewer.
-         * Perspective defines how an object is viewed. In graphic arts, perspective is the representation on a flat surface of what the viewer's eye would see in a 3D space. (See Wikipedia for more information about graphical perspective and for related illustrations.)
-         * The illusion of perspective on a flat surface, such as a computer screen, is created by projecting points on the flat surface as they would appear if the flat surface were a window through which the viewer was looking at the object. In discussion of virtual environments, this flat surface is called a projection plane.
-         */
-        perspective?: any;
-
-        /**
-         * The perspective-origin property establishes the origin for the perspective property. It effectively sets the X and Y position at which the viewer appears to be looking at the children of the element.
-         * When used with perspective, perspective-origin changes the appearance of an object, as if a viewer were looking at it from a different origin. An object appears differently if a viewer is looking directly at it versus looking at it from below, above, or from the side. Thus, the perspective-origin is like a vanishing point.
-         * The default value of perspective-origin is 50% 50%. This displays an object as if the viewer's eye were positioned directly at the center of the screen, both top-to-bottom and left-to-right. A value of 0% 0% changes the object as if the viewer was looking toward the top left angle. A value of 100% 100% changes the appearance as if viewed toward the bottom right angle.
-         */
-        perspectiveOrigin?: any;
-
-        /**
-         * The pointer-events property allows you to control whether an element can be the target for the pointing device (e.g, mouse, pen) events.
-         */
-        pointerEvents?: any;
-
-        /**
-         * The position property controls the type of positioning used by an element within its parent elements. The effect of the position property depends on a lot of factors, for example the position property of parent elements.
-         */
-        position?: any;
-
-        /**
-         * Obsolete: unsupported.
-         * This property determines whether or not a full-width punctuation mark character should be trimmed if it appears at the beginning of a line, so that its "ink" lines up with the first glyph in the line above and below.
-         */
-        punctuationTrim?: any;
-
-        /**
-         * Sets the type of quotation marks for embedded quotations.
-         */
-        quotes?: any;
-
-        /**
-         * Controls whether the last region in a chain displays additional 'overset' content according its default overflow property, or if it displays a fragment of content as if it were flowing into a subsequent region.
-         */
-        regionFragment?: any;
-
-        /**
-         * The rest-after property determines how long a speech media agent should pause after presenting an element's main content, before presenting that element's exit cue sound. It may be replaced by the shorthand property rest, which sets rest time before and after.
-         */
-        restAfter?: any;
-
-        /**
-         * The rest-before property determines how long a speech media agent should pause after presenting an intro cue sound for an element, before presenting that element's main content. It may be replaced by the shorthand property rest, which sets rest time before and after.
-         */
-        restBefore?: any;
-
-        /**
-         * Specifies the position an element in relation to the right side of the containing element.
-         */
-        right?: any;
-
-        rubyAlign?: any;
-
-        rubyPosition?: any;
-
-        /**
-         * Defines the alpha channel threshold used to extract a shape from an image. Can be thought of as a "minimum opacity" threshold; that is, a value of 0.5 means that the shape will enclose all the pixels that are more than 50% opaque.
-         */
-        shapeImageThreshold?: any;
-
-        /**
-         * A future level of CSS Shapes will define a shape-inside property, which will define a shape to wrap content within the element. See Editor's Draft <http://dev.w3.org/csswg/css-shapes/> and CSSWG wiki page on next-level plans <http://wiki.csswg.org/spec/css-shapes>
-         */
-        shapeInside?: any;
-
-        /**
-         * Adds a margin to a shape-outside. In effect, defines a new shape that is the smallest contour around all the points that are the shape-margin distance outward perpendicular to each point on the underlying shape. For points where a perpendicular direction is not defined (e.g., a triangle corner), takes all points on a circle centered at the point and with a radius of the shape-margin distance. This property accepts only non-negative values.
-         */
-        shapeMargin?: any;
-
-        /**
-         * Declares a shape around which text should be wrapped, with possible modifications from the shape-margin property. The shape defined by shape-outside and shape-margin changes the geometry of a float element's float area.
-         */
-        shapeOutside?: any;
-
-        /**
-         * The speak property determines whether or not a speech synthesizer will read aloud the contents of an element.
-         */
-        speak?: any;
-
-        /**
-         * The speak-as property determines how the speech synthesizer interprets the content: words as whole words or as a sequence of letters, numbers as a numerical value or a sequence of digits, punctuation as pauses in speech or named punctuation characters.
-         */
-        speakAs?: any;
-
-        /**
-         * SVG: Specifies the opacity of the outline on the current object.
-         */
-        strokeOpacity?: number;
-
-        /**
-         * SVG: Specifies the width of the outline on the current object.
-         */
-        strokeWidth?: number;
-
-        /**
-         * The tab-size CSS property is used to customise the width of a tab (U+0009) character.
-         */
-        tabSize?: any;
-
-        /**
-         * The 'table-layout' property controls the algorithm used to lay out the table cells, rows, and columns.
-         */
-        tableLayout?: any;
-
-        /**
-         * The text-align CSS property describes how inline content like text is aligned in its parent block element. text-align does not control the alignment of block elements itself, only their inline content.
-         */
-        textAlign?: any;
-
-        /**
-         * The text-align-last CSS property describes how the last line of a block element or a line before line break is aligned in its parent block element.
-         */
-        textAlignLast?: any;
-
-        /**
-         * The text-decoration CSS property is used to set the text formatting to underline, overline, line-through or blink.
-         * underline and overline decorations are positioned under the text, line-through over it.
-         */
-        textDecoration?: any;
-
-        /**
-         * Sets the color of any text decoration, such as underlines, overlines, and strike throughs.
-         */
-        textDecorationColor?: any;
-
-        /**
-         * Sets what kind of line decorations are added to an element, such as underlines, overlines, etc.
-         */
-        textDecorationLine?: any;
-
-        textDecorationLineThrough?: any;
-
-        textDecorationNone?: any;
-
-        textDecorationOverline?: any;
-
-        /**
-         * Specifies what parts of an element�s content are skipped over when applying any text decoration.
-         */
-        textDecorationSkip?: any;
-
-        /**
-         * This property specifies the style of the text decoration line drawn on the specified element. The intended meaning for the values are the same as those of the border-style-properties.
-         */
-        textDecorationStyle?: any;
-
-        textDecorationUnderline?: any;
-
-        /**
-         * The text-emphasis property will apply special emphasis marks to the elements text. Slightly similar to the text-decoration property only that this property can have affect on the line-height. It also is noted that this is shorthand for text-emphasis-style and for text-emphasis-color.
-         */
-        textEmphasis?: any;
-
-        /**
-         * The text-emphasis-color property specifies the foreground color of the emphasis marks.
-         */
-        textEmphasisColor?: any;
-
-        /**
-         * The text-emphasis-style property applies special emphasis marks to an element's text.
-         */
-        textEmphasisStyle?: any;
-
-        /**
-         * This property helps determine an inline box's block-progression dimension, derived from the text-height and font-size properties for non-replaced elements, the height or the width for replaced elements, and the stacked block-progression dimension for inline-block elements. The block-progression dimension determines the position of the padding, border and margin for the element.
-         */
-        textHeight?: any;
-
-        /**
-         * Specifies the amount of space horizontally that should be left on the first line of the text of an element. This horizontal spacing is at the beginning of the first line and is in respect to the left edge of the containing block box.
-         */
-        textIndent?: any;
-
-        textJustifyTrim?: any;
-
-        textKashidaSpace?: any;
-
-        /**
-         * The text-line-through property is a shorthand property for text-line-through-style, text-line-through-color and text-line-through-mode. (Considered obsolete; use text-decoration instead.)
-         */
-        textLineThrough?: any;
-
-        /**
-         * Specifies the line colors for the line-through text decoration.
-         * (Considered obsolete; use text-decoration-color instead.)
-         */
-        textLineThroughColor?: any;
-
-        /**
-         * Sets the mode for the line-through text decoration, determining whether the text decoration affects the space characters or not.
-         * (Considered obsolete; use text-decoration-skip instead.)
-         */
-        textLineThroughMode?: any;
-
-        /**
-         * Specifies the line style for line-through text decoration.
-         * (Considered obsolete; use text-decoration-style instead.)
-         */
-        textLineThroughStyle?: any;
-
-        /**
-         * Specifies the line width for the line-through text decoration.
-         */
-        textLineThroughWidth?: any;
-
-        /**
-         * The text-overflow shorthand CSS property determines how overflowed content that is not displayed is signaled to the users. It can be clipped, display an ellipsis ('�', U+2026 HORIZONTAL ELLIPSIS) or a Web author-defined string. It covers the two long-hand properties text-overflow-mode and text-overflow-ellipsis
-         */
-        textOverflow?: any;
-
-        /**
-         * The text-overline property is the shorthand for the text-overline-style, text-overline-width, text-overline-color, and text-overline-mode properties.
-         */
-        textOverline?: any;
-
-        /**
-         * Specifies the line color for the overline text decoration.
-         */
-        textOverlineColor?: any;
-
-        /**
-         * Sets the mode for the overline text decoration, determining whether the text decoration affects the space characters or not.
-         */
-        textOverlineMode?: any;
-
-        /**
-         * Specifies the line style for overline text decoration.
-         */
-        textOverlineStyle?: any;
-
-        /**
-         * Specifies the line width for the overline text decoration.
-         */
-        textOverlineWidth?: any;
-
-        /**
-         * The text-rendering CSS property provides information to the browser about how to optimize when rendering text. Options are: legibility, speed or geometric precision.
-         */
-        textRendering?: any;
-
-        /**
-         * Obsolete: unsupported.
-         */
-        textScript?: any;
-
-        /**
-         * The CSS text-shadow property applies one or more drop shadows to the text and <text-decorations> of an element. Each shadow is specified as an offset from the text, along with optional color and blur radius values.
-         */
-        textShadow?: any;
-
-        /**
-         * This property transforms text for styling purposes. (It has no effect on the underlying content.)
-         */
-        textTransform?: any;
-
-        /**
-         * Unsupported.
-         * This property will add a underline position value to the element that has an underline defined.
-         */
-        textUnderlinePosition?: any;
-
-        /**
-         * After review this should be replaced by text-decoration should it not?
-         * This property will set the underline style for text with a line value for underline, overline, and line-through.
-         */
-        textUnderlineStyle?: any;
-
-        /**
-         * This property specifies how far an absolutely positioned box's top margin edge is offset below the top edge of the box's containing block. For relatively positioned boxes, the offset is with respect to the top edges of the box itself (i.e., the box is given a position in the normal flow, then offset from that position according to these properties).
-         */
-        top?: any;
-
-        /**
-         * Determines whether touch input may trigger default behavior supplied by the user agent, such as panning or zooming.
-         */
-        touchAction?: any;
-
-        /**
-         * CSS transforms allow elements styled with CSS to be transformed in two-dimensional or three-dimensional space. Using this property, elements can be translated, rotated, scaled, and skewed. The value list may consist of 2D and/or 3D transform values.
-         */
-        transform?: any;
-
-        /**
-         * This property defines the origin of the transformation axes relative to the element to which the transformation is applied.
-         */
-        transformOrigin?: any;
-
-        /**
-         * This property allows you to define the relative position of the origin of the transformation grid along the z-axis.
-         */
-        transformOriginZ?: any;
-
-        /**
-         * This property specifies how nested elements are rendered in 3D space relative to their parent.
-         */
-        transformStyle?: any;
-
-        /**
-         * The transition CSS property is a shorthand property for transition-property, transition-duration, transition-timing-function, and transition-delay. It allows to define the transition between two states of an element.
-         */
-        transition?: any;
-
-        /**
-         * Defines when the transition will start. A value of �0s� means the transition will execute as soon as the property is changed. Otherwise, the value specifies an offset from the moment the property is changed, and the transition will delay execution by that offset.
-         */
-        transitionDelay?: any;
-
-        /**
-         * The 'transition-duration' property specifies the length of time a transition animation takes to complete.
-         */
-        transitionDuration?: any;
-
-        /**
-         * The 'transition-property' property specifies the name of the CSS property to which the transition is applied.
-         */
-        transitionProperty?: any;
-
-        /**
-         * Sets the pace of action within a transition
-         */
-        transitionTimingFunction?: any;
-
-        /**
-         * The unicode-bidi CSS property specifies the level of embedding with respect to the bidirectional algorithm.
-         */
-        unicodeBidi?: any;
-
-        /**
-         * unicode-range allows you to set a specific range of characters to be downloaded from a font (embedded using @font-face) and made available for use on the current page.
-         */
-        unicodeRange?: any;
-
-        /**
-         * This is for all the high level UX stuff.
-         */
-        userFocus?: any;
-
-        /**
-         * For inputing user content
-         */
-        userInput?: any;
-
-        /**
-         * The vertical-align property controls how inline elements or text are vertically aligned compared to the baseline. If this property is used on table-cells it controls the vertical alignment of content of the table cell.
-         */
-        verticalAlign?: any;
-
-        /**
-         * The visibility property specifies whether the boxes generated by an element are rendered.
-         */
-        visibility?: any;
-
-        /**
-         * The voice-balance property sets the apparent position (in stereo sound) of the synthesized voice for spoken media.
-         */
-        voiceBalance?: any;
-
-        /**
-         * The voice-duration property allows the author to explicitly set the amount of time it should take a speech synthesizer to read an element's content, for example to allow the speech to be synchronized with other media. With a value of auto (the default) the length of time it takes to read the content is determined by the content itself and the voice-rate property.
-         */
-        voiceDuration?: any;
-
-        /**
-         * The voice-family property sets the speaker's voice used by a speech media agent to read an element. The speaker may be specified as a named character (to match a voice option in the speech reading software) or as a generic description of the age and gender of the voice. Similar to the font-family property for visual media, a comma-separated list of fallback options may be given in case the speech reader does not recognize the character name or cannot synthesize the requested combination of generic properties.
-         */
-        voiceFamily?: any;
-
-        /**
-         * The voice-pitch property sets pitch or tone (high or low) for the synthesized speech when reading an element; the pitch may be specified absolutely or relative to the normal pitch for the voice-family used to read the text.
-         */
-        voicePitch?: any;
-
-        /**
-         * The voice-range property determines how much variation in pitch or tone will be created by the speech synthesize when reading an element. Emphasized text, grammatical structures and punctuation may all be rendered as changes in pitch, this property determines how strong or obvious those changes are; large ranges are associated with enthusiastic or emotional speech, while small ranges are associated with flat or mechanical speech.
-         */
-        voiceRange?: any;
-
-        /**
-         * The voice-rate property sets the speed at which the voice synthesized by a speech media agent will read content.
-         */
-        voiceRate?: any;
-
-        /**
-         * The voice-stress property sets the level of vocal emphasis to be used for synthesized speech reading the element.
-         */
-        voiceStress?: any;
-
-        /**
-         * The voice-volume property sets the volume for spoken content in speech media. It replaces the deprecated volume property.
-         */
-        voiceVolume?: any;
-
-        /**
-         * The white-space property controls whether and how white space inside the element is collapsed, and whether lines may wrap at unforced "soft wrap" opportunities.
-         */
-        whiteSpace?: any;
-
-        /**
-         * Obsolete: unsupported.
-         */
-        whiteSpaceTreatment?: any;
-
-        /**
-         * In paged media, this property defines the mimimum number of lines
-         * that must be left at the top of the second page.
-         */
-        widows?: number;
-
-        /**
-         * Specifies the width of the content area of an element. The content area of the element width does not include the padding, border, and margin of the element.
-         */
-        width?: any;
-
-        /**
-         * The word-break property is often used when there is long generated content that is strung together without and spaces or hyphens to beak apart. A common case of this is when there is a long URL that does not have any hyphens. This case could potentially cause the breaking of the layout as it could extend past the parent element.
-         */
-        wordBreak?: any;
-
-        /**
-         * The word-spacing CSS property specifies the spacing behavior between "words".
-         */
-        wordSpacing?: any;
-
-        /**
-         * An alias of css/properties/overflow-wrap, word-wrap defines whether to break words when the content exceeds the boundaries of its container.
-         */
-        wordWrap?: any;
-
-        /**
-         * Specifies how exclusions affect inline content within block-level elements. Elements lay out their inline content in their content area but wrap around exclusion areas.
-         */
-        wrapFlow?: any;
-
-        /**
-         * Set the value that is used to offset the inner wrap shape from other shapes. Inline content that intersects a shape with this property will be pushed by this shape's margin.
-         */
-        wrapMargin?: any;
-
-        /**
-         * Obsolete and unsupported. Do not use.
-         * This CSS property controls the text when it reaches the end of the block in which it is enclosed.
-         */
-        wrapOption?: any;
-
-        /**
-         * writing-mode specifies if lines of text are laid out horizontally or vertically, and the direction which lines of text and blocks progress.
-         */
-        writingMode?: any;
-
-        /**
-         * The z-index property specifies the z-order of an element and its descendants.
-         * When elements overlap, z-order determines which one covers the other.
-         */
-        zIndex?: "auto" | number;
-
-        /**
-         * Sets the initial zoom factor of a document defined by @viewport.
-         */
-        zoom?: "auto" | number;
-
-        [propertyName: string]: any;
-    }
-
-    interface HTMLAttributes extends DOMAttributes {
-        // React-specific Attributes
-        defaultChecked?: boolean;
-        defaultValue?: string | string[];
-
-        // Standard HTML Attributes
-        accept?: string;
-        acceptCharset?: string;
-        accessKey?: string;
-        action?: string;
-        allowFullScreen?: boolean;
-        allowTransparency?: boolean;
-        alt?: string;
-        async?: boolean;
-        autoComplete?: string;
-        autoFocus?: boolean;
-        autoPlay?: boolean;
-        capture?: boolean;
-        cellPadding?: number | string;
-        cellSpacing?: number | string;
-        charSet?: string;
-        challenge?: string;
-        checked?: boolean;
-        classID?: string;
-        className?: string;
-        cols?: number;
-        colSpan?: number;
-        content?: string;
-        contentEditable?: boolean;
-        contextMenu?: string;
-        controls?: boolean;
-        coords?: string;
-        crossOrigin?: string;
-        data?: string;
-        dateTime?: string;
-        default?: boolean;
-        defer?: boolean;
-        dir?: string;
-        disabled?: boolean;
-        download?: any;
-        draggable?: boolean;
-        encType?: string;
-        form?: string;
-        formAction?: string;
-        formEncType?: string;
-        formMethod?: string;
-        formNoValidate?: boolean;
-        formTarget?: string;
-        frameBorder?: number | string;
-        headers?: string;
-        height?: number | string;
-        hidden?: boolean;
-        high?: number;
-        href?: string;
-        hrefLang?: string;
-        htmlFor?: string;
-        httpEquiv?: string;
-        icon?: string;
-        id?: string;
-        inputMode?: string;
-        integrity?: string;
-        is?: string;
-        keyParams?: string;
-        keyType?: string;
-        kind?: string;
-        label?: string;
-        lang?: string;
-        list?: string;
-        loop?: boolean;
-        low?: number;
-        manifest?: string;
-        marginHeight?: number;
-        marginWidth?: number;
-        max?: number | string;
-        maxLength?: number;
-        media?: string;
-        mediaGroup?: string;
-        method?: string;
-        min?: number | string;
-        minLength?: number;
-        multiple?: boolean;
-        muted?: boolean;
-        name?: string;
-        nonce?: string;
-        noValidate?: boolean;
-        open?: boolean;
-        optimum?: number;
-        pattern?: string;
-        placeholder?: string;
-        poster?: string;
-        preload?: string;
-        radioGroup?: string;
-        readOnly?: boolean;
-        rel?: string;
-        required?: boolean;
-        reversed?: boolean;
-        role?: string;
-        rows?: number;
-        rowSpan?: number;
-        sandbox?: string;
-        scope?: string;
-        scoped?: boolean;
-        scrolling?: string;
-        seamless?: boolean;
-        selected?: boolean;
-        shape?: string;
-        size?: number;
-        sizes?: string;
-        span?: number;
-        spellCheck?: boolean;
-        src?: string;
-        srcDoc?: string;
-        srcLang?: string;
-        srcSet?: string;
-        start?: number;
-        step?: number | string;
-        style?: CSSProperties;
-        summary?: string;
-        tabIndex?: number;
-        target?: string;
-        title?: string;
-        type?: string;
-        useMap?: string;
-        value?: string | string[];
-        width?: number | string;
-        wmode?: string;
-        wrap?: string;
-
-        // RDFa Attributes
-        about?: string;
-        datatype?: string;
-        inlist?: any;
-        prefix?: string;
-        property?: string;
-        resource?: string;
-        typeof?: string;
-        vocab?: string;
-
-        // Non-standard Attributes
-        autoCapitalize?: string;
-        autoCorrect?: string;
-        autoSave?: string;
-        color?: string;
-        itemProp?: string;
-        itemScope?: boolean;
-        itemType?: string;
-        itemID?: string;
-        itemRef?: string;
-        results?: number;
-        security?: string;
-        unselectable?: boolean;
-
-        // Allows aria- and data- Attributes
-        [key: string]: any;
-    }
-
-    interface SVGAttributes extends HTMLAttributes {
-        clipPath?: string;
-        cx?: number | string;
-        cy?: number | string;
-        d?: string;
-        dx?: number | string;
-        dy?: number | string;
-        fill?: string;
-        fillOpacity?: number | string;
-        fontFamily?: string;
-        fontSize?: number | string;
-        fx?: number | string;
-        fy?: number | string;
-        gradientTransform?: string;
-        gradientUnits?: string;
-        markerEnd?: string;
-        markerMid?: string;
-        markerStart?: string;
-        offset?: number | string;
-        opacity?: number | string;
-        patternContentUnits?: string;
-        patternUnits?: string;
-        points?: string;
-        preserveAspectRatio?: string;
-        r?: number | string;
-        rx?: number | string;
-        ry?: number | string;
-        spreadMethod?: string;
-        stopColor?: string;
-        stopOpacity?: number | string;
-        stroke?: string;
-        strokeDasharray?: string;
-        strokeLinecap?: string;
-        strokeMiterlimit?: string;
-        strokeOpacity?: number | string;
-        strokeWidth?: number | string;
-        textAnchor?: string;
-        transform?: string;
-        version?: string;
-        viewBox?: string;
-        x1?: number | string;
-        x2?: number | string;
-        x?: number | string;
-        xlinkActuate?: string;
-        xlinkArcrole?: string;
-        xlinkHref?: string;
-        xlinkRole?: string;
-        xlinkShow?: string;
-        xlinkTitle?: string;
-        xlinkType?: string;
-        xmlBase?: string;
-        xmlLang?: string;
-        xmlSpace?: string;
-        y1?: number | string;
-        y2?: number | string;
-        y?: number | string;
-    }
-
-    //
-    // React.DOM
-    // ----------------------------------------------------------------------
-
-    interface ReactDOM {
-        // HTML
-        a: HTMLFactory<HTMLAnchorElement>;
-        abbr: HTMLFactory<HTMLElement>;
-        address: HTMLFactory<HTMLElement>;
-        area: HTMLFactory<HTMLAreaElement>;
-        article: HTMLFactory<HTMLElement>;
-        aside: HTMLFactory<HTMLElement>;
-        audio: HTMLFactory<HTMLAudioElement>;
-        b: HTMLFactory<HTMLElement>;
-        base: HTMLFactory<HTMLBaseElement>;
-        bdi: HTMLFactory<HTMLElement>;
-        bdo: HTMLFactory<HTMLElement>;
-        big: HTMLFactory<HTMLElement>;
-        blockquote: HTMLFactory<HTMLElement>;
-        body: HTMLFactory<HTMLBodyElement>;
-        br: HTMLFactory<HTMLBRElement>;
-        button: HTMLFactory<HTMLButtonElement>;
-        canvas: HTMLFactory<HTMLCanvasElement>;
-        caption: HTMLFactory<HTMLElement>;
-        cite: HTMLFactory<HTMLElement>;
-        code: HTMLFactory<HTMLElement>;
-        col: HTMLFactory<HTMLTableColElement>;
-        colgroup: HTMLFactory<HTMLTableColElement>;
-        data: HTMLFactory<HTMLElement>;
-        datalist: HTMLFactory<HTMLDataListElement>;
-        dd: HTMLFactory<HTMLElement>;
-        del: HTMLFactory<HTMLElement>;
-        details: HTMLFactory<HTMLElement>;
-        dfn: HTMLFactory<HTMLElement>;
-        dialog: HTMLFactory<HTMLElement>;
-        div: HTMLFactory<HTMLDivElement>;
-        dl: HTMLFactory<HTMLDListElement>;
-        dt: HTMLFactory<HTMLElement>;
-        em: HTMLFactory<HTMLElement>;
-        embed: HTMLFactory<HTMLEmbedElement>;
-        fieldset: HTMLFactory<HTMLFieldSetElement>;
-        figcaption: HTMLFactory<HTMLElement>;
-        figure: HTMLFactory<HTMLElement>;
-        footer: HTMLFactory<HTMLElement>;
-        form: HTMLFactory<HTMLFormElement>;
-        h1: HTMLFactory<HTMLHeadingElement>;
-        h2: HTMLFactory<HTMLHeadingElement>;
-        h3: HTMLFactory<HTMLHeadingElement>;
-        h4: HTMLFactory<HTMLHeadingElement>;
-        h5: HTMLFactory<HTMLHeadingElement>;
-        h6: HTMLFactory<HTMLHeadingElement>;
-        head: HTMLFactory<HTMLHeadElement>;
-        header: HTMLFactory<HTMLElement>;
-        hgroup: HTMLFactory<HTMLElement>;
-        hr: HTMLFactory<HTMLHRElement>;
-        html: HTMLFactory<HTMLHtmlElement>;
-        i: HTMLFactory<HTMLElement>;
-        iframe: HTMLFactory<HTMLIFrameElement>;
-        img: HTMLFactory<HTMLImageElement>;
-        input: HTMLFactory<HTMLInputElement>;
-        ins: HTMLFactory<HTMLModElement>;
-        kbd: HTMLFactory<HTMLElement>;
-        keygen: HTMLFactory<HTMLElement>;
-        label: HTMLFactory<HTMLLabelElement>;
-        legend: HTMLFactory<HTMLLegendElement>;
-        li: HTMLFactory<HTMLLIElement>;
-        link: HTMLFactory<HTMLLinkElement>;
-        main: HTMLFactory<HTMLElement>;
-        map: HTMLFactory<HTMLMapElement>;
-        mark: HTMLFactory<HTMLElement>;
-        menu: HTMLFactory<HTMLElement>;
-        menuitem: HTMLFactory<HTMLElement>;
-        meta: HTMLFactory<HTMLMetaElement>;
-        meter: HTMLFactory<HTMLElement>;
-        nav: HTMLFactory<HTMLElement>;
-        noscript: HTMLFactory<HTMLElement>;
-        object: HTMLFactory<HTMLObjectElement>;
-        ol: HTMLFactory<HTMLOListElement>;
-        optgroup: HTMLFactory<HTMLOptGroupElement>;
-        option: HTMLFactory<HTMLOptionElement>;
-        output: HTMLFactory<HTMLElement>;
-        p: HTMLFactory<HTMLParagraphElement>;
-        param: HTMLFactory<HTMLParamElement>;
-        picture: HTMLFactory<HTMLElement>;
-        pre: HTMLFactory<HTMLPreElement>;
-        progress: HTMLFactory<HTMLProgressElement>;
-        q: HTMLFactory<HTMLQuoteElement>;
-        rp: HTMLFactory<HTMLElement>;
-        rt: HTMLFactory<HTMLElement>;
-        ruby: HTMLFactory<HTMLElement>;
-        s: HTMLFactory<HTMLElement>;
-        samp: HTMLFactory<HTMLElement>;
-        script: HTMLFactory<HTMLElement>;
-        section: HTMLFactory<HTMLElement>;
-        select: HTMLFactory<HTMLSelectElement>;
-        small: HTMLFactory<HTMLElement>;
-        source: HTMLFactory<HTMLSourceElement>;
-        span: HTMLFactory<HTMLSpanElement>;
-        strong: HTMLFactory<HTMLElement>;
-        style: HTMLFactory<HTMLStyleElement>;
-        sub: HTMLFactory<HTMLElement>;
-        summary: HTMLFactory<HTMLElement>;
-        sup: HTMLFactory<HTMLElement>;
-        table: HTMLFactory<HTMLTableElement>;
-        tbody: HTMLFactory<HTMLTableSectionElement>;
-        td: HTMLFactory<HTMLTableDataCellElement>;
-        textarea: HTMLFactory<HTMLTextAreaElement>;
-        tfoot: HTMLFactory<HTMLTableSectionElement>;
-        th: HTMLFactory<HTMLTableHeaderCellElement>;
-        thead: HTMLFactory<HTMLTableSectionElement>;
-        time: HTMLFactory<HTMLElement>;
-        title: HTMLFactory<HTMLTitleElement>;
-        tr: HTMLFactory<HTMLTableRowElement>;
-        track: HTMLFactory<HTMLTrackElement>;
-        u: HTMLFactory<HTMLElement>;
-        ul: HTMLFactory<HTMLUListElement>;
-        "var": HTMLFactory<HTMLElement>;
-        video: HTMLFactory<HTMLVideoElement>;
-        wbr: HTMLFactory<HTMLElement>;
-
-        // SVG
-        svg: SVGFactory;
-        circle: SVGFactory;
-        defs: SVGFactory;
-        ellipse: SVGFactory;
-        g: SVGFactory;
-        image: SVGFactory;
-        line: SVGFactory;
-        linearGradient: SVGFactory;
-        mask: SVGFactory;
-        path: SVGFactory;
-        pattern: SVGFactory;
-        polygon: SVGFactory;
-        polyline: SVGFactory;
-        radialGradient: SVGFactory;
-        rect: SVGFactory;
-        stop: SVGFactory;
-        text: SVGFactory;
-        tspan: SVGFactory;
-    }
-
-    //
-    // React.PropTypes
-    // ----------------------------------------------------------------------
-
-    interface Validator<T> {
-        (object: T, key: string, componentName: string): Error;
-    }
-
-    interface Requireable<T> extends Validator<T> {
-        isRequired: Validator<T>;
-    }
-
-    interface ValidationMap<T> {
-        [key: string]: Validator<T>;
-    }
-
-    interface ReactPropTypes {
-        any: Requireable<any>;
-        array: Requireable<any>;
-        bool: Requireable<any>;
-        func: Requireable<any>;
-        number: Requireable<any>;
-        object: Requireable<any>;
-        string: Requireable<any>;
-        node: Requireable<any>;
-        element: Requireable<any>;
-        instanceOf(expectedClass: {}): Requireable<any>;
-        oneOf(types: any[]): Requireable<any>;
-        oneOfType(types: Validator<any>[]): Requireable<any>;
-        arrayOf(type: Validator<any>): Requireable<any>;
-        objectOf(type: Validator<any>): Requireable<any>;
-        shape(type: ValidationMap<any>): Requireable<any>;
-    }
-
-    //
-    // React.Children
-    // ----------------------------------------------------------------------
-
-    interface ReactChildren {
-        map<T>(children: ReactNode, fn: (child: ReactChild, index: number) => T): T[];
-        forEach(children: ReactNode, fn: (child: ReactChild, index: number) => any): void;
-        count(children: ReactNode): number;
-        only(children: ReactNode): ReactElement<any>;
-        toArray(children: ReactNode): ReactChild[];
-    }
-
-    //
-    // Browser Interfaces
-    // https://github.com/nikeee/2048-typescript/blob/master/2048/js/touch.d.ts
-    // ----------------------------------------------------------------------
-
-    interface AbstractView {
-        styleMedia: StyleMedia;
-        document: Document;
-    }
-
-    interface Touch {
-        identifier: number;
-        target: EventTarget;
-        screenX: number;
-        screenY: number;
-        clientX: number;
-        clientY: number;
-        pageX: number;
-        pageY: number;
-    }
-
-    interface TouchList {
-        [index: number]: Touch;
-        length: number;
-        item(index: number): Touch;
-        identifiedTouch(identifier: number): Touch;
-    }
-}
-
-declare namespace JSX {
-    import React = __LiteMolReact;
-
-    interface Element extends React.ReactElement<any> { }
-    interface ElementClass extends React.Component<any, any> {
-        render(): JSX.Element;
-    }
-    interface ElementAttributesProperty { props: {}; }
-
-    interface IntrinsicAttributes extends React.Attributes { }
-    interface IntrinsicClassAttributes<T> extends React.ClassAttributes<T> { }
-
-    interface IntrinsicElements {
-        // HTML
-        a: React.HTMLProps<HTMLAnchorElement>;
-        abbr: React.HTMLProps<HTMLElement>;
-        address: React.HTMLProps<HTMLElement>;
-        area: React.HTMLProps<HTMLAreaElement>;
-        article: React.HTMLProps<HTMLElement>;
-        aside: React.HTMLProps<HTMLElement>;
-        audio: React.HTMLProps<HTMLAudioElement>;
-        b: React.HTMLProps<HTMLElement>;
-        base: React.HTMLProps<HTMLBaseElement>;
-        bdi: React.HTMLProps<HTMLElement>;
-        bdo: React.HTMLProps<HTMLElement>;
-        big: React.HTMLProps<HTMLElement>;
-        blockquote: React.HTMLProps<HTMLElement>;
-        body: React.HTMLProps<HTMLBodyElement>;
-        br: React.HTMLProps<HTMLBRElement>;
-        button: React.HTMLProps<HTMLButtonElement>;
-        canvas: React.HTMLProps<HTMLCanvasElement>;
-        caption: React.HTMLProps<HTMLElement>;
-        cite: React.HTMLProps<HTMLElement>;
-        code: React.HTMLProps<HTMLElement>;
-        col: React.HTMLProps<HTMLTableColElement>;
-        colgroup: React.HTMLProps<HTMLTableColElement>;
-        data: React.HTMLProps<HTMLElement>;
-        datalist: React.HTMLProps<HTMLDataListElement>;
-        dd: React.HTMLProps<HTMLElement>;
-        del: React.HTMLProps<HTMLElement>;
-        details: React.HTMLProps<HTMLElement>;
-        dfn: React.HTMLProps<HTMLElement>;
-        dialog: React.HTMLProps<HTMLElement>;
-        div: React.HTMLProps<HTMLDivElement>;
-        dl: React.HTMLProps<HTMLDListElement>;
-        dt: React.HTMLProps<HTMLElement>;
-        em: React.HTMLProps<HTMLElement>;
-        embed: React.HTMLProps<HTMLEmbedElement>;
-        fieldset: React.HTMLProps<HTMLFieldSetElement>;
-        figcaption: React.HTMLProps<HTMLElement>;
-        figure: React.HTMLProps<HTMLElement>;
-        footer: React.HTMLProps<HTMLElement>;
-        form: React.HTMLProps<HTMLFormElement>;
-        h1: React.HTMLProps<HTMLHeadingElement>;
-        h2: React.HTMLProps<HTMLHeadingElement>;
-        h3: React.HTMLProps<HTMLHeadingElement>;
-        h4: React.HTMLProps<HTMLHeadingElement>;
-        h5: React.HTMLProps<HTMLHeadingElement>;
-        h6: React.HTMLProps<HTMLHeadingElement>;
-        head: React.HTMLProps<HTMLHeadElement>;
-        header: React.HTMLProps<HTMLElement>;
-        hgroup: React.HTMLProps<HTMLElement>;
-        hr: React.HTMLProps<HTMLHRElement>;
-        html: React.HTMLProps<HTMLHtmlElement>;
-        i: React.HTMLProps<HTMLElement>;
-        iframe: React.HTMLProps<HTMLIFrameElement>;
-        img: React.HTMLProps<HTMLImageElement>;
-        input: React.HTMLProps<HTMLInputElement>;
-        ins: React.HTMLProps<HTMLModElement>;
-        kbd: React.HTMLProps<HTMLElement>;
-        keygen: React.HTMLProps<HTMLElement>;
-        label: React.HTMLProps<HTMLLabelElement>;
-        legend: React.HTMLProps<HTMLLegendElement>;
-        li: React.HTMLProps<HTMLLIElement>;
-        link: React.HTMLProps<HTMLLinkElement>;
-        main: React.HTMLProps<HTMLElement>;
-        map: React.HTMLProps<HTMLMapElement>;
-        mark: React.HTMLProps<HTMLElement>;
-        menu: React.HTMLProps<HTMLElement>;
-        menuitem: React.HTMLProps<HTMLElement>;
-        meta: React.HTMLProps<HTMLMetaElement>;
-        meter: React.HTMLProps<HTMLElement>;
-        nav: React.HTMLProps<HTMLElement>;
-        noscript: React.HTMLProps<HTMLElement>;
-        object: React.HTMLProps<HTMLObjectElement>;
-        ol: React.HTMLProps<HTMLOListElement>;
-        optgroup: React.HTMLProps<HTMLOptGroupElement>;
-        option: React.HTMLProps<HTMLOptionElement>;
-        output: React.HTMLProps<HTMLElement>;
-        p: React.HTMLProps<HTMLParagraphElement>;
-        param: React.HTMLProps<HTMLParamElement>;
-        picture: React.HTMLProps<HTMLElement>;
-        pre: React.HTMLProps<HTMLPreElement>;
-        progress: React.HTMLProps<HTMLProgressElement>;
-        q: React.HTMLProps<HTMLQuoteElement>;
-        rp: React.HTMLProps<HTMLElement>;
-        rt: React.HTMLProps<HTMLElement>;
-        ruby: React.HTMLProps<HTMLElement>;
-        s: React.HTMLProps<HTMLElement>;
-        samp: React.HTMLProps<HTMLElement>;
-        script: React.HTMLProps<HTMLElement>;
-        section: React.HTMLProps<HTMLElement>;
-        select: React.HTMLProps<HTMLSelectElement>;
-        small: React.HTMLProps<HTMLElement>;
-        source: React.HTMLProps<HTMLSourceElement>;
-        span: React.HTMLProps<HTMLSpanElement>;
-        strong: React.HTMLProps<HTMLElement>;
-        style: React.HTMLProps<HTMLStyleElement>;
-        sub: React.HTMLProps<HTMLElement>;
-        summary: React.HTMLProps<HTMLElement>;
-        sup: React.HTMLProps<HTMLElement>;
-        table: React.HTMLProps<HTMLTableElement>;
-        tbody: React.HTMLProps<HTMLTableSectionElement>;
-        td: React.HTMLProps<HTMLTableDataCellElement>;
-        textarea: React.HTMLProps<HTMLTextAreaElement>;
-        tfoot: React.HTMLProps<HTMLTableSectionElement>;
-        th: React.HTMLProps<HTMLTableHeaderCellElement>;
-        thead: React.HTMLProps<HTMLTableSectionElement>;
-        time: React.HTMLProps<HTMLElement>;
-        title: React.HTMLProps<HTMLTitleElement>;
-        tr: React.HTMLProps<HTMLTableRowElement>;
-        track: React.HTMLProps<HTMLTrackElement>;
-        u: React.HTMLProps<HTMLElement>;
-        ul: React.HTMLProps<HTMLUListElement>;
-        "var": React.HTMLProps<HTMLElement>;
-        video: React.HTMLProps<HTMLVideoElement>;
-        wbr: React.HTMLProps<HTMLElement>;
-
-        // SVG
-        svg: React.SVGProps;
-
-        circle: React.SVGProps;
-        clipPath: React.SVGProps;
-        defs: React.SVGProps;
-        ellipse: React.SVGProps;
-        g: React.SVGProps;
-        image: React.SVGProps;
-        line: React.SVGProps;
-        linearGradient: React.SVGProps;
-        mask: React.SVGProps;
-        path: React.SVGProps;
-        pattern: React.SVGProps;
-        polygon: React.SVGProps;
-        polyline: React.SVGProps;
-        radialGradient: React.SVGProps;
-        rect: React.SVGProps;
-        stop: React.SVGProps;
-        text: React.SVGProps;
-        tspan: React.SVGProps;
-    }
-}
-declare namespace LiteMol.Plugin {
-    var VERSION: {
-        number: string;
-        date: string;
-    };
-}
-declare namespace LiteMol.Plugin {
-    export import React = __LiteMolReact;
-    const ReactDOM: typeof React.__DOM;
-    namespace Controls {
-        class ChromePickerHelper extends __LiteMolColorPicker.ChromePicker {
-        }
-    }
-}
-declare namespace LiteMol.Plugin.Controls {
-    type ButtonSize = 'xs' | 'sm' | 'normal' | 'lg';
-    type ButtonStyle = 'link' | 'remove' | 'default';
-    abstract class Pure<Props> extends React.Component<Props, {}> {
-        shouldComponentUpdate(nextProps: any, nextState: any): boolean;
-    }
-    class Button extends Pure<{
-        onClick: (e: React.MouseEvent | React.TouchEvent) => void;
-        size?: ButtonSize;
-        style?: ButtonStyle;
-        active?: boolean;
-        activeStyle?: ButtonStyle;
-        icon?: string;
-        activeIcon?: string;
-        disabled?: boolean;
-        disabledStyle?: ButtonStyle;
-        asBlock?: boolean;
-        title?: string;
-        customClass?: string;
-        customStyle?: any;
-    }> {
-        render(): JSX.Element;
-    }
-    const TextBox: (props: {
-        onChange: (v: string) => void;
-        value?: string | undefined;
-        defaultValue?: string | undefined;
-        onKeyPress?: ((e: React.KeyboardEvent) => void) | undefined;
-        onBlur?: ((e: React.FormEvent) => void) | undefined;
-        placeholder?: string | undefined;
-    }) => JSX.Element;
-    function isEnter(e: React.KeyboardEvent): boolean;
-    function TextBoxGroup(props: {
-        value: string;
-        onChange: (v: string) => void;
-        placeholder?: string;
-        label: string;
-        onEnter?: (e: React.KeyboardEvent) => void;
-        title?: string;
-    }): JSX.Element;
-    const CommitButton: (props: {
-        action: () => void;
-        isOn: boolean;
-        on: string;
-        off?: string | undefined;
-        title?: string | undefined;
-    }) => JSX.Element;
-    const Toggle: (props: {
-        onChange: (v: boolean) => void;
-        value: boolean;
-        label: string;
-        title?: string | undefined;
-    }) => JSX.Element;
-    const ControlGroupExpander: (props: {
-        onChange: (e: boolean) => void;
-        isExpanded: boolean;
-    }) => JSX.Element;
-    const RowText: (props: {
-        value: any;
-        label: string;
-        title?: string | undefined;
-    }) => JSX.Element;
-    const HelpBox: (props: {
-        title: string;
-        content: string | JSX.Element;
-    }) => JSX.Element;
-}
-declare namespace LiteMol.Plugin.Controls {
-    class OptionsBox extends React.Component<{
-        options: any[] | Bootstrap.Immutable.List<any>;
-        current: any;
-        caption: (o: any) => any;
-        onChange: (o: any) => void;
-        small?: boolean;
-        title?: string;
-    }, {}> {
-        current: any;
-        private get(i);
-        render(): JSX.Element;
-    }
-    function OptionsGroup(props: {
-        options: any[] | Bootstrap.Immutable.List<any>;
-        current: any;
-        caption?: (o: any) => string | number;
-        onChange: (o: any) => void;
-        label: string;
-        title?: string;
-    }): JSX.Element;
-}
-declare namespace LiteMol.Plugin.Controls {
-    class Panel extends React.Component<{
-        header: any;
-        title?: string;
-        className?: string;
-        badge?: any;
-        isExpanded: boolean;
-        onExpand: (e: boolean) => void;
-        description: string;
-        topRightAction?: JSX.Element;
-    }, {}> {
-        private header();
-        render(): JSX.Element;
-    }
-    const ExpandableGroup: (props: {
-        select: any;
-        options: any[];
-        expander: any;
-        isExpanded: boolean;
-        colorStripe?: Visualization.Color | undefined;
-    }) => JSX.Element;
-}
-declare namespace LiteMol.Plugin.Controls {
-    class Slider extends React.Component<{
-        label: any;
-        min: number;
-        max: number;
-        value: number;
-        step?: number;
-        title?: string;
-        onChange: (v: number) => void;
-    }, {
-        value: string;
-    }> {
-        state: {
-            value: string;
-        };
-        private firedValue;
-        componentWillMount(): void;
-        componentWillReceiveProps(nextProps: any): void;
-        private updateValue(s);
-        private fire();
-        render(): JSX.Element;
-    }
-    class Handle extends React.Component<Partial<HandleProps>, {}> {
-        render(): JSX.Element;
-    }
-    interface SliderBaseProps {
-        min: number;
-        max: number;
-        step?: number;
-        defaultValue?: number | number[];
-        value?: number | number[];
-        marks?: any;
-        included?: boolean;
-        className?: string;
-        prefixCls?: string;
-        disabled?: boolean;
-        children?: any;
-        onBeforeChange?: (value: number | number[]) => void;
-        onChange?: (value: number | number[]) => void;
-        onAfterChange?: (value: number | number[]) => void;
-        handle?: JSX.Element;
-        tipFormatter?: (value: number, index: number) => any;
-        dots?: boolean;
-        range?: boolean | number;
-        vertical?: boolean;
-        allowCross?: boolean;
-        pushable?: boolean | number;
-    }
-    interface SliderBaseState {
-        handle: number | null;
-        recent: number;
-        bounds: number[];
-    }
-    class SliderBase extends React.Component<SliderBaseProps, SliderBaseState> {
-        constructor(props: SliderBaseProps);
-        static defaultProps: SliderBaseProps;
-        private dragOffset;
-        private startPosition;
-        private startValue;
-        private _getPointsCache;
-        componentWillReceiveProps(nextProps: SliderBaseProps): void;
-        onChange(state: this['state']): void;
-        onMouseDown(e: MouseEvent): void;
-        onMouseMove(e: MouseEvent): void;
-        onMove(e: MouseEvent | TouchEvent, position: number): void;
-        onStart(position: number): void;
-        onTouchMove(e: TouchEvent): void;
-        onTouchStart(e: TouchEvent): void;
-        /**
-         * Returns an array of possible slider points, taking into account both
-         * `marks` and `step`. The result is cached.
-         */
-        getPoints(): any;
-        getPrecision(step: number): number;
-        getSliderLength(): number;
-        getSliderStart(): number;
-        getValue(): number;
-        private eventHandlers;
-        addDocumentEvents(type: 'touch' | 'mouse'): void;
-        calcOffset(value: number): number;
-        calcValue(offset: number): number;
-        calcValueByPos(position: number): number;
-        end(type: 'mouse' | 'touch'): void;
-        isEventFromHandle(e: Event): boolean;
-        isValueOutOfBounds(value: number, props: SliderBaseProps): boolean;
-        pushHandle(bounds: number[], handle: number, direction: number, amount: number): boolean;
-        pushHandleOnePoint(bounds: number[], handle: number, direction: number): boolean;
-        pushSurroundingHandles(bounds: number[], handle: number, originalValue: number): void;
-        removeEvents(type: 'touch' | 'mouse'): void;
-        trimAlignValue(v: number, nextProps?: SliderBaseProps): number;
-        render(): JSX.Element;
-    }
-    interface HandleProps {
-        className: string;
-        vertical: boolean;
-        offset: number;
-        tipFormatter: (v: number, index: number) => any;
-        value: number;
-        index: number;
-    }
-}
-declare namespace LiteMol.Plugin.Controls {
-    interface ColorPickerProps {
-        color: LiteMol.Visualization.Color;
-        onChange: (c: LiteMol.Visualization.Color) => void;
-    }
-    class ColorPicker extends React.Component<ColorPickerProps, {}> {
-        shouldComponentUpdate(nextProps: ColorPickerProps, nextState: {}, nextContext: any): boolean;
-        render(): JSX.Element;
-    }
-    class ToggleColorPicker extends React.Component<ColorPickerProps & {
-        label: string;
-        position?: 'above' | 'below';
-    }, {
-        isExpanded?: boolean;
-    }> {
-        state: {
-            isExpanded: boolean;
-        };
-        render(): JSX.Element;
-    }
-}
-declare namespace LiteMol.Plugin.Controls {
-    function QueryEditor(props: {
-        value: string;
-        onChange: (v: string) => void;
-        onEnter?: (e: React.KeyboardEvent) => void;
-    }): JSX.Element;
-}
-declare namespace LiteMol.Plugin.Views {
-    abstract class PureView<State, Props, ViewState> extends React.Component<{
-        state: State;
-        onChange: (s: State) => void;
-    } & Props, ViewState> {
-        protected update(s: State): void;
-        shouldComponentUpdate(nextProps: any, nextState: any): boolean;
-    }
-    abstract class Component<Props> extends React.Component<{
-        context: Bootstrap.Context;
-    } & Props, {}> {
-        private subs;
-        protected subscribe<T>(stream: Bootstrap.Rx.Observable<T>, obs: (n: T) => void): __LiteMolRx.IDisposable;
-        protected unsubscribe(sub: Bootstrap.Rx.IDisposable): void;
-        componentWillUnmount(): void;
-    }
-    abstract class ObserverView<P, S> extends React.Component<P, S> {
-        private subs;
-        protected subscribe<T>(stream: Bootstrap.Rx.Observable<T>, obs: (n: T) => void): __LiteMolRx.IDisposable;
-        protected unsubscribe(sub: Bootstrap.Rx.IDisposable): void;
-        componentWillUnmount(): void;
-    }
-    abstract class View<Controller extends Bootstrap.Components.Component<any>, State, CustomProps> extends ObserverView<{
-        controller: Controller;
-    } & CustomProps, State> {
-        readonly controller: Controller;
-        componentWillMount(): void;
-    }
-}
-declare namespace LiteMol.Plugin.Views {
-    class Layout extends View<Bootstrap.Components.Layout, {}, {}> {
-        private renderTarget(target);
-        render(): JSX.Element;
-    }
-}
-declare namespace LiteMol.Plugin.Views.Transform {
-    abstract class ControllerBase<C extends Bootstrap.Components.Transform.Controller<any>> extends Views.View<C, {}, {
-        customHeader?: string;
-        hideBadge?: boolean;
-        isAction?: boolean;
-        showVisibilityIcon?: boolean;
-    }> {
-        protected abstract renderControls(): void;
-        readonly params: C['latestState']['params'];
-        updateParams(p: Partial<C['latestState']['params']>): void;
-        autoUpdateParams(p: Partial<C['latestState']['params']>): void;
-        getPersistentState<T>(prop: string, defaultValue: T): any;
-        setPersistentState<T>(prop: string, value: T): void;
-        readonly transformSourceEntity: Bootstrap.Tree.Node.Any;
-        readonly isUpdate: boolean;
-        readonly canApply: boolean;
-        protected applyEnter(e: React.KeyboardEvent): void;
-        render(): JSX.Element;
-    }
-    class Empty extends Transform.ControllerBase<Bootstrap.Components.Transform.Controller<{}>> {
-        protected renderControls(): JSX.Element;
-    }
-    class View extends Views.View<Bootstrap.Components.Transform.View, {}, {}> {
-        render(): JSX.Element;
-    }
-    const TransparencyControl: (props: {
-        onChange: (td: LiteMol.Visualization.Theme.Transparency) => void;
-        definition: LiteMol.Visualization.Theme.Transparency;
-    }) => JSX.Element;
-    class Updater extends Views.View<Bootstrap.Components.Transform.Updater, {}, {}> {
-        componentWillMount(): void;
-        render(): JSX.Element;
-    }
-    class Action extends Views.View<Bootstrap.Components.Transform.Action, {}, {}> {
-        render(): JSX.Element;
-    }
-}
-declare namespace LiteMol.Plugin.Views.Transform.Data {
-    import Transformer = Bootstrap.Entity.Transformer;
-    class Download extends Transform.ControllerBase<Bootstrap.Components.Transform.Controller<Transformer.Data.DownloadParams>> {
-        protected renderControls(): JSX.Element;
-    }
-    class OpenFile extends Transform.ControllerBase<Bootstrap.Components.Transform.Controller<Transformer.Data.OpenFileParams>> {
-        protected renderControls(): JSX.Element;
-    }
-    class WithIdField extends Transform.ControllerBase<Bootstrap.Components.Transform.Controller<{
-        id: string;
-    }>> {
-        protected renderControls(): JSX.Element;
-    }
-    class WithUrlIdField extends Transform.ControllerBase<Bootstrap.Components.Transform.Controller<{
-        id: string;
-    }>> {
-        protected renderControls(): JSX.Element;
-    }
-}
-declare namespace LiteMol.Plugin.Views.Transform.Molecule {
-    import Transformer = Bootstrap.Entity.Transformer;
-    class CreateFromData extends Transform.ControllerBase<Bootstrap.Components.Transform.Controller<Transformer.Molecule.CreateFromDataParams>> {
-        protected renderControls(): JSX.Element;
-    }
-    class DownloadFromUrl extends Transform.ControllerBase<Bootstrap.Components.Transform.Controller<Transformer.Molecule.DownloadMoleculeSourceParams>> {
-        protected renderControls(): JSX.Element;
-    }
-    class OpenFile extends Transform.ControllerBase<Bootstrap.Components.Transform.Controller<Transformer.Molecule.OpenMoleculeFromFileParams>> {
-        protected renderControls(): JSX.Element;
-    }
-    class InitCoordinateStreaming extends Transform.ControllerBase<Bootstrap.Components.Transform.Controller<Transformer.Molecule.CoordinateStreaming.InitStreamingParams>> {
-        protected renderControls(): JSX.Element;
-    }
-    class CreateFromMmCif extends Transform.ControllerBase<Bootstrap.Components.Transform.Controller<Transformer.Molecule.CreateFromMmCifParams>> {
-        protected renderControls(): JSX.Element;
-    }
-    class CreateModel extends Transform.ControllerBase<Bootstrap.Components.Transform.Controller<Transformer.Molecule.CreateModelParams>> {
-        protected renderControls(): JSX.Element;
-    }
-    class CreateAssembly extends Transform.ControllerBase<Bootstrap.Components.Transform.Controller<Transformer.Molecule.CreateAssemblyParams>> {
-        protected renderControls(): JSX.Element | undefined;
-    }
-    class CreateSymmetryMates extends Transform.ControllerBase<Bootstrap.Components.Transform.Controller<Transformer.Molecule.CreateSymmetryMatesParams>> {
-        protected renderControls(): JSX.Element;
-    }
-    class CreateSelection extends Transform.ControllerBase<Bootstrap.Components.Transform.Controller<Transformer.Molecule.CreateSelectionParams>> {
-        protected renderControls(): JSX.Element;
-    }
-    class CreateMacromoleculeVisual extends Transform.ControllerBase<Bootstrap.Components.Transform.Controller<Transformer.Molecule.CreateMacromoleculeVisualParams>> {
-        protected renderControls(): JSX.Element;
-    }
-    class CreateVisual extends Transform.ControllerBase<Bootstrap.Components.Transform.MoleculeVisual> {
-        private detail();
-        private ballsAndSticks();
-        private surface();
-        private createColors();
-        protected renderControls(): JSX.Element;
-    }
-}
-declare namespace LiteMol.Plugin.Views.Transform.Density {
-    import Transformer = Bootstrap.Entity.Transformer;
-    class ParseData extends Transform.ControllerBase<Bootstrap.Components.Transform.Controller<Transformer.Density.ParseDataParams>> {
-        protected renderControls(): JSX.Element;
-    }
-    class CreateVisual extends Transform.ControllerBase<Bootstrap.Components.Transform.DensityVisual<Transformer.Density.CreateVisualParams, 'style'>> {
-        private surface();
-        private colors();
-        protected renderControls(): JSX.Element;
-    }
-    class CreateVisualBehaviour extends Transform.ControllerBase<Bootstrap.Components.Transform.DensityVisual<Transformer.Density.CreateVisualBehaviourParams, 'style'>> {
-        private surface();
-        private colors();
-        private show();
-        protected renderControls(): JSX.Element;
-    }
-}
-declare namespace LiteMol.Plugin.Views.Context {
-    class Log extends View<Bootstrap.Components.Context.Log, {}, {}> {
-        componentWillMount(): void;
-        componentDidUpdate(): void;
-        private scrollToBottom();
-        render(): JSX.Element;
-    }
-}
-declare namespace LiteMol.Plugin.Views.Context {
-    class Overlay extends View<Bootstrap.Components.Context.TaskWatcher, {}, {}> {
-        render(): JSX.Element;
-    }
-    class BackgroundTasks extends View<Bootstrap.Components.Context.TaskWatcher, {}, {}> {
-        render(): JSX.Element;
-    }
-}
-declare namespace LiteMol.Plugin.Views.Context {
-    class Toast extends View<Bootstrap.Components.Context.Toast, {}, {}> {
-        render(): JSX.Element;
-    }
-}
-declare namespace LiteMol.Plugin.Views.Entity {
-    import BEntity = Bootstrap.Entity;
-    const VisibilityControl: (props: {
-        entity: BEntity.Any;
-    }) => JSX.Element;
-    class Tree extends View<Bootstrap.Components.Component<{}>, {}, {}> {
-        private renderedVersion;
-        scrollIntoView(element: Element): void;
-        componentWillMount(): void;
-        private splash;
-        render(): JSX.Element;
-    }
-}
-declare namespace LiteMol.Plugin.Views.Entity {
-    const Remove: (props: {
-        entity: Bootstrap.Entity.Any;
-        onRemove: () => void;
-    }) => JSX.Element;
-    class Badge extends React.Component<{
-        type: Bootstrap.Entity.TypeInfo;
-    }, {}> {
-        shouldComponentUpdate(nextProps: {
-            type: Bootstrap.Entity.TypeInfo;
-        }, nextState: {}, nextContext: any): boolean;
-        private part(name, i, t, ret);
-        private split(name, type, ret);
-        private createBadge(name);
-        render(): JSX.Element;
-    }
-    class CurrentEntityControl extends View<Plugin.Components.AppInfo, {
-        current?: Bootstrap.Entity.Any;
-    }, {}> {
-        state: {
-            current?: Bootstrap.Entity.Any;
-        };
-        componentWillMount(): void;
-        render(): JSX.Element;
-    }
-    namespace SplashInfo {
-        const General: () => JSX.Element;
-        const Info: () => JSX.Element;
-    }
-}
-declare namespace LiteMol.Plugin.Views.Visualization {
-    class ViewportControls extends View<Bootstrap.Components.Visualization.Viewport, {
-        showSceneOptions?: boolean;
-        showHelp?: boolean;
-    }, {}> {
-        state: {
-            showSceneOptions: boolean;
-            showHelp: boolean;
-        };
-        private help();
-        render(): JSX.Element;
-    }
-    class HighlightInfo extends View<Bootstrap.Components.Visualization.HighlightInfo, {}, {}> {
-        render(): JSX.Element;
-    }
-    const Logo: () => JSX.Element;
-    class Viewport extends View<Bootstrap.Components.Visualization.Viewport, {}, {
-        noWebGl?: boolean;
-        showLogo?: boolean;
-    }> {
-        state: {
-            noWebGl: boolean;
-            showLogo: boolean;
-        };
-        componentDidMount(): void;
-        componentWillUnmount(): void;
-        renderMissing(): JSX.Element;
-        private handleLogo();
-        private getShowLogo();
-        render(): JSX.Element;
-    }
-}
-declare namespace LiteMol.Plugin.Components {
-    function create(key: string, controller: (ctx: Context) => Bootstrap.Components.Component<any>, view: ViewDefinition): (t: Bootstrap.Components.LayoutRegion, isStatic?: boolean | undefined) => (ctx: Context) => {
-        key: string;
-        controller: Bootstrap.Components.Component<any>;
-        region: Bootstrap.Components.LayoutRegion;
-        view: React.ComponentClass<any>;
-        isStatic: boolean | undefined;
-    };
-    class AppInfo extends Bootstrap.Components.Component<{}> {
-        appName: string;
-        appVersion: string;
-        constructor(ctx: Bootstrap.Context, appName: string, appVersion: string);
-    }
-    namespace Context {
-        const Log: (t: Bootstrap.Components.LayoutRegion, isStatic?: boolean | undefined) => (ctx: Context) => {
-            key: string;
-            controller: Bootstrap.Components.Component<any>;
-            region: Bootstrap.Components.LayoutRegion;
-            view: React.ComponentClass<any>;
-            isStatic: boolean | undefined;
-        };
-        const Toast: (t: Bootstrap.Components.LayoutRegion, isStatic?: boolean | undefined) => (ctx: Context) => {
-            key: string;
-            controller: Bootstrap.Components.Component<any>;
-            region: Bootstrap.Components.LayoutRegion;
-            view: React.ComponentClass<any>;
-            isStatic: boolean | undefined;
-        };
-        const Overlay: (t: Bootstrap.Components.LayoutRegion, isStatic?: boolean | undefined) => (ctx: Context) => {
-            key: string;
-            controller: Bootstrap.Components.Component<any>;
-            region: Bootstrap.Components.LayoutRegion;
-            view: React.ComponentClass<any>;
-            isStatic: boolean | undefined;
-        };
-        const BackgroundTasks: (t: Bootstrap.Components.LayoutRegion, isStatic?: boolean | undefined) => (ctx: Context) => {
-            key: string;
-            controller: Bootstrap.Components.Component<any>;
-            region: Bootstrap.Components.LayoutRegion;
-            view: React.ComponentClass<any>;
-            isStatic: boolean | undefined;
-        };
-    }
-    namespace Transform {
-        const View: (t: Bootstrap.Components.LayoutRegion, isStatic?: boolean | undefined) => (ctx: Context) => {
-            key: string;
-            controller: Bootstrap.Components.Component<any>;
-            region: Bootstrap.Components.LayoutRegion;
-            view: React.ComponentClass<any>;
-            isStatic: boolean | undefined;
-        };
-    }
-    namespace Entity {
-        const Current: (appName: string, appVersion: string) => (t: Bootstrap.Components.LayoutRegion, isStatic?: boolean | undefined) => (ctx: Context) => {
-            key: string;
-            controller: Bootstrap.Components.Component<any>;
-            region: Bootstrap.Components.LayoutRegion;
-            view: React.ComponentClass<any>;
-            isStatic: boolean | undefined;
-        };
-    }
-    namespace Visualization {
-        const Viewport: (t: Bootstrap.Components.LayoutRegion, isStatic?: boolean | undefined) => (ctx: Context) => {
-            key: string;
-            controller: Bootstrap.Components.Component<any>;
-            region: Bootstrap.Components.LayoutRegion;
-            view: React.ComponentClass<any>;
-            isStatic: boolean | undefined;
-        };
-        const HighlightInfo: (t: Bootstrap.Components.LayoutRegion, isStatic?: boolean | undefined) => (ctx: Context) => {
-            key: string;
-            controller: Bootstrap.Components.Component<any>;
-            region: Bootstrap.Components.LayoutRegion;
-            view: React.ComponentClass<any>;
-            isStatic: boolean | undefined;
-        };
-    }
-}
-declare namespace LiteMol.Plugin {
-    export import Context = Bootstrap.Context;
-    type ViewDefinition = React.ComponentClass<{
-        controller: Bootstrap.Components.Component<any>;
-    } & any>;
-    import LayoutRegion = Bootstrap.Components.LayoutRegion;
-    interface TransformerInfo extends Bootstrap.Plugin.TransformerInfo {
-        transformer: Bootstrap.Tree.Transformer.Any;
-        view: ViewDefinition;
-        initiallyCollapsed?: boolean;
-    }
-    type BehaviourProvider = (stack: Context) => void;
-    type ComponentProvider = (context: Context) => Bootstrap.Components.ComponentInfo;
-    interface Specification {
-        settings: {
-            [key: string]: any;
-        };
-        behaviours: BehaviourProvider[];
-        transforms: TransformerInfo[];
-        layoutView: ViewDefinition;
-        tree: {
-            view: ViewDefinition;
-            region: LayoutRegion;
-        } | undefined;
-        viewport: {
-            view: ViewDefinition;
-            controlsView: ViewDefinition;
-        };
-        components: ComponentProvider[];
-    }
-    class Instance implements Bootstrap.Plugin.Instance {
-        private spec;
-        private target;
-        private componentMap;
-        private transformersInfo;
-        context: Context;
-        private compose();
-        getTransformerInfo(transformer: Bootstrap.Tree.Transformer.Any): TransformerInfo;
-        destroy(): void;
-        private init();
-        constructor(spec: Specification, target: HTMLElement);
-    }
-}
-declare namespace LiteMol.Plugin {
-    import Transformer = Bootstrap.Entity.Transformer;
-    namespace DataSources {
-        const DownloadMolecule: Bootstrap.Tree.Transformer<Bootstrap.Entity.Root, Bootstrap.Entity.Action, Transformer.Molecule.DownloadMoleculeSourceParams>;
-    }
-    function getDefaultSpecification(): Specification;
-}
-declare namespace LiteMol.Plugin {
-    interface PluginControllerOptions {
-        /**
-         * query selector or HTMLElement
-         */
-        target: string | HTMLElement;
-        customSpecification?: Specification;
-        /**
-         * HEX color in format '#rgb' or '#rrggbb'
-         * or Visualization.Color instance.
-         */
-        viewportBackground?: string | Visualization.Color;
-        layoutState?: Partial<Bootstrap.Components.LayoutState>;
-        /**
-         * This options determines if Google Analytics is enabled
-         * to collect data about the plugin usage.
-         * The type of information includes PDBids downloaded or types
-         * of representations created.
-         *
-         * All information about what data is sent can be found in
-         * src/Bootstrap/Behaviour/Analytics.ts.
-         *
-         * By default this is OFF.
-         * This option is ignored if customSpecification is specified.
-         */
-        allowAnalytics?: boolean;
-        /**
-         * This specifies what Google Analytics ID to use. This
-         * means you can create your own google analytics account
-         * and collect the information for yourself.
-         */
-        analyticsId?: string;
-    }
-    interface ControllerLoadMoleculeInfo {
-        id?: string;
-        moleculeRef?: string;
-        modelRef?: string;
-        url?: string;
-        data?: string | ArrayBuffer;
-        format?: string | Core.Formats.FormatInfo;
-        onLoad?: () => void;
-        onError?: (e: any) => void;
-    }
-    import Entity = Bootstrap.Entity;
-    class Controller {
-        private _instance;
-        readonly instance: Instance;
-        readonly context: Context;
-        readonly root: Entity.Any;
-        /**
-         * execute a command with the specified params.
-         */
-        command<T>(cmd: Bootstrap.Event.Type<T>, params?: T): void;
-        /**
-         * Queries the entity state tree to select a list of entities
-         * satisfying the selector.
-         *
-         * Equivalent to plugin.context.select(selector).
-         *
-         * @example
-         *   selectEntities('model') // select node with ref = 'model'
-         *   selectEntities(entity).subtree()
-         *   selectEntities(Bootstrap.Tree.Selection.byRef('ref').ancestorOfType(Bootstrap.Entity.Molecule.Model))
-         */
-        selectEntities(selector: Bootstrap.Tree.Selector<Bootstrap.Entity.Any>): Entity.Any[];
-        /**
-         * Subscribes the specified event and returns
-         * a disposable for the event.
-         *
-         * let sub = litemol.subscribe(...)
-         * ...
-         * sub.dispose(); // to stop listening
-         */
-        subscribe<T>(event: Bootstrap.Event.Type<T>, onEvent: (e: Bootstrap.Event<T>) => void): __LiteMolRx.IDisposable;
-        /**
-         * Create a transform builder.
-         */
-        createTransform(): Bootstrap.Tree.Transform.Builder;
-        /**
-         * Applies a state trasnform.
-         */
-        applyTransform(transform: Bootstrap.Tree.Transform.Source): __Promise.Promise<void>;
-        /**
-         * Remove all entities.
-         */
-        clear(): void;
-        /**
-         * Set the background of the viewport from:
-         *
-         * HEX color in format '#rgb' or '#rrggbb'
-         * or Visualization.Color instance.
-         */
-        setViewportBackground(color: string | Visualization.Color): void;
-        /**
-         * Sets the state of the plugin layout.
-         *
-         * Expanded, show/hide controls, etc..
-         */
-        setLayoutState(state: Partial<Bootstrap.Components.LayoutState>): void;
-        /**
-         * Load molecule from url or string/binary data.
-         *
-         * Default format is mmCIF.
-         */
-        loadMolecule(source: ControllerLoadMoleculeInfo): __Promise.Promise<void>;
-        /**
-         * Destroys the the plugin instance.
-         * The controller becomes unusable as a result.
-         */
-        destroy(): void;
-        constructor(options: PluginControllerOptions);
-    }
-    function create(options: PluginControllerOptions): Controller;
-}
-declare module 'LiteMol-plugin' {
-    import __Plugin = LiteMol.Plugin;
-    export = __Plugin;
-}
-
-declare namespace CIFTools {
-    var VERSION: {
-        number: string;
-        date: string;
-    };
-}
-declare namespace CIFTools.Utils {
-    /**
-     * A generic chunked array builder.
-     *
-     * When adding elements, the array growns by a specified number
-     * of elements and no copying is done until ChunkedArray.compact
-     * is called.
-     */
-    interface ChunkedArray<T> {
-        creator: (size: number) => any;
-        elementSize: number;
-        chunkSize: number;
-        current: any;
-        currentIndex: number;
-        parts: any[];
-        elementCount: number;
-    }
-    namespace ChunkedArray {
-        function is(x: any): x is ChunkedArray<any>;
-        function add4<T>(array: ChunkedArray<T>, x: T, y: T, z: T, w: T): number;
-        function add3<T>(array: ChunkedArray<T>, x: T, y: T, z: T): number;
-        function add2<T>(array: ChunkedArray<T>, x: T, y: T): number;
-        function add<T>(array: ChunkedArray<T>, x: T): number;
-        function compact<T>(array: ChunkedArray<T>): T[];
-        function forVertex3D<T>(chunkVertexCount?: number): ChunkedArray<number>;
-        function forIndexBuffer<T>(chunkIndexCount?: number): ChunkedArray<number>;
-        function forTokenIndices<T>(chunkTokenCount?: number): ChunkedArray<number>;
-        function forIndices<T>(chunkTokenCount?: number): ChunkedArray<number>;
-        function forInt32<T>(chunkSize?: number): ChunkedArray<number>;
-        function forFloat32<T>(chunkSize?: number): ChunkedArray<number>;
-        function forArray<T>(chunkSize?: number): ChunkedArray<T>;
-        function create<T>(creator: (size: number) => any, chunkElementCount: number, elementSize: number): ChunkedArray<T>;
-    }
-}
-/**
- * Efficient integer and float parsers.
- *
- * For the purposes of parsing numbers from the mmCIF data representations,
- * up to 4 times faster than JS parseInt/parseFloat.
- */
-declare namespace CIFTools.Utils.FastNumberParsers {
-    function parseIntSkipTrailingWhitespace(str: string, start: number, end: number): number;
-    function parseInt(str: string, start: number, end: number): number;
-    function parseFloatSkipTrailingWhitespace(str: string, start: number, end: number): number;
-    function parseFloat(str: string, start: number, end: number): number;
-}
-declare namespace CIFTools.Utils {
-    interface StringWriter {
-        chunkData: string[];
-        chunkOffset: number;
-        chunkCapacity: number;
-        data: string[];
-    }
-    namespace StringWriter {
-        function create(chunkCapacity?: number): StringWriter;
-        function asString(writer: StringWriter): string;
-        function writeTo(writer: StringWriter, stream: OutputStream): void;
-        function newline(writer: StringWriter): void;
-        function whitespace(writer: StringWriter, len: number): void;
-        function write(writer: StringWriter, val: string): void;
-        function writeSafe(writer: StringWriter, val: string): void;
-        function writePadLeft(writer: StringWriter, val: string, totalWidth: number): void;
-        function writePadRight(writer: StringWriter, val: string, totalWidth: number): void;
-        function writeInteger(writer: StringWriter, val: number): void;
-        function writeIntegerPadLeft(writer: StringWriter, val: number, totalWidth: number): void;
-        function writeIntegerPadRight(writer: StringWriter, val: number, totalWidth: number): void;
-        /**
-         * @example writeFloat(123.2123, 100) -- 2 decim
-         */
-        function writeFloat(writer: StringWriter, val: number, precisionMultiplier: number): void;
-        function writeFloatPadLeft(writer: StringWriter, val: number, precisionMultiplier: number, totalWidth: number): void;
-        function writeFloatPadRight(writer: StringWriter, val: number, precisionMultiplier: number, totalWidth: number): void;
-    }
-}
-declare namespace CIFTools {
-    /**
-     * Represents a "CIF FILE" with one or more data blocks.
-     */
-    interface File {
-        dataBlocks: DataBlock[];
-        toJSON(): any;
-    }
-    /**
-     * Represents a single CIF data block that contains categories and possibly
-     * additonal data such as save frames.
-     *
-     * Example:
-     * data_HEADER
-     * _category1.field1
-     * ...
-     * ...
-     * _categoryN.fieldN
-     */
-    interface DataBlock {
-        header: string;
-        categories: Category[];
-        additionalData: {
-            [name: string]: any;
-        };
-        getCategory(name: string): Category | undefined;
-        toJSON(): any;
-    }
-    /**
-     * Represents that CIF category with multiple fields represented as columns.
-     *
-     * Example:
-     * _category.field1
-     * _category.field2
-     * ...
-     */
-    interface Category {
-        name: string;
-        rowCount: number;
-        columnCount: number;
-        columnNames: string[];
-        /**
-         * If a field with the given name is not present, returns UndefinedColumn.
-         *
-         * Columns are accessed by their field name only, i.e.
-         * _category.field is accessed by
-         * category.getColumn('field')
-         *
-         * Note that column are created on demand and there is some computational
-         * cost when creating a new column. Therefore, if you need to reuse a column,
-         * it is a good idea to cache it.
-         */
-        getColumn(name: string): Column;
-        toJSON(): any;
-    }
-    const enum ValuePresence {
-        Present = 0,
-        NotSpecified = 1,
-        Unknown = 2,
-    }
-    /**
-     * A columns represents a single field of a CIF category.
-     */
-    interface Column {
-        isDefined: boolean;
-        getString(row: number): string | null;
-        getInteger(row: number): number;
-        getFloat(row: number): number;
-        getValuePresence(row: number): ValuePresence;
-        areValuesEqual(rowA: number, rowB: number): boolean;
-        stringEquals(row: number, value: string): boolean;
-    }
-    const UndefinedColumn: Column;
-    /**
-     * Helper functions for categoies.
-     */
-    namespace Category {
-        /**
-         * Extracts a matrix from a category from a specified rowIndex.
-         *
-         * _category.matrix[1][1] v11
-         * ....
-         * ....
-         * _category.matrix[rows][cols] vRowsCols
-         */
-        function getMatrix(category: Category, field: string, rows: number, cols: number, rowIndex: number): number[][];
-        /**
-         * Extracts a vector from a category from a specified rowIndex.
-         *
-         * _category.matrix[1][1] v11
-         * ....
-         * ....
-         * _category.matrix[rows][cols] vRowsCols
-         */
-        function getVector(category: Category, field: string, rows: number, cols: number, rowIndex: number): number[];
-    }
-}
-declare namespace CIFTools {
-    type ParserResult<T> = ParserSuccess<T> | ParserError;
-    namespace ParserResult {
-        function error<T>(message: string, line?: number): ParserResult<T>;
-        function success<T>(result: T, warnings?: string[]): ParserResult<T>;
-    }
-    class ParserError {
-        message: string;
-        line: number;
-        isError: true;
-        toString(): string;
-        constructor(message: string, line: number);
-    }
-    class ParserSuccess<T> {
-        result: T;
-        warnings: string[];
-        isError: false;
-        constructor(result: T, warnings: string[]);
-    }
-}
-declare namespace CIFTools {
-    interface FieldDesc<Data> {
-        name: string;
-        string?: (data: Data, i: number) => string | null;
-        number?: (data: Data, i: number) => number;
-        typedArray?: any;
-        encoder?: Binary.Encoder;
-        presence?: (data: Data, i: number) => ValuePresence;
-    }
-    interface CategoryDesc<Data> {
-        name: string;
-        fields: FieldDesc<Data>[];
-    }
-    type CategoryInstance<Data> = {
-        data: any;
-        count: number;
-        desc: CategoryDesc<Data>;
-    };
-    type CategoryProvider = (ctx: any) => CategoryInstance<any> | undefined;
-    type OutputStream = {
-        writeString: (data: string) => boolean;
-        writeBinary: (data: Uint8Array) => boolean;
-    };
-    interface Writer<Context> {
-        startDataBlock(header: string): void;
-        writeCategory(category: CategoryProvider, contexts?: Context[]): void;
-        encode(): void;
-        flush(stream: OutputStream): void;
-    }
-}
-declare namespace CIFTools.Text {
-    /**
-     * Represents the input file.
-     */
-    class File implements CIFTools.File {
-        /**
-         * The input string.
-         *
-         * In JavaScript, the input must always* be a string as there is no support for streams.
-         * So since we already have the string in memory, we won't store unnecessary copies of
-         * substrings but rather represent individual elements as pairs of <start,end) indices
-         * to the data string.
-         *
-         * * It can also be a typed array buffer, but the point still holds: we need to have the entire
-         *   input in memory. And most molecular file formats are text based.
-         */
-        data: string;
-        /**
-         * Data blocks inside the file. If no data block is present, a "default" one is created.
-         */
-        dataBlocks: DataBlock[];
-        toJSON(): {
-            id: string;
-            categories: {
-                name: string;
-                columns: string[];
-                rows: any[];
-            }[];
-            additionalData: {
-                [name: string]: any;
-            };
-        }[];
-        constructor(data: string);
-    }
-    /**
-     * Represents a single data block.
-     */
-    class DataBlock implements CIFTools.DataBlock {
-        private categoryMap;
-        private categoryList;
-        /**
-         * The input mmCIF string (same as file.data)
-         */
-        data: string;
-        /**
-         * Header of the data block.
-         */
-        header: string;
-        /**
-         * Categories of the block.
-         * block.categories._atom_site / ['_atom_site']
-         */
-        readonly categories: Category[];
-        /**
-         * Additional data such as save frames for mmCIF file.
-         */
-        additionalData: {
-            [name: string]: any;
-        };
-        /**
-         * Gets a category by its name.
-         */
-        getCategory(name: string): Category | undefined;
-        /**
-         * Adds a category.
-         */
-        addCategory(category: Category): void;
-        toJSON(): {
-            id: string;
-            categories: {
-                name: string;
-                columns: string[];
-                rows: any[];
-            }[];
-            additionalData: {
-                [name: string]: any;
-            };
-        };
-        constructor(data: string, header: string);
-    }
-    /**
-     * Represents a single CIF category.
-     */
-    class Category implements CIFTools.Category {
-        private data;
-        private columnIndices;
-        private columnNameList;
-        /**
-         * Name of the category.
-         */
-        name: string;
-        /**
-         * The array of columns.
-         */
-        readonly columnNames: string[];
-        /**
-         * Number of columns in the category.
-         */
-        columnCount: number;
-        /**
-         * Number of rows in the category.
-         */
-        rowCount: number;
-        /**
-         * Pairs of (start at index 2 * i, end at index 2 * i + 1) indices to the data string.
-         * The "end" character is not included (for it's iterated as for (i = start; i < end; i++)).
-         */
-        tokens: number[];
-        /**
-         * Start index of the category in the input string.
-         */
-        startIndex: number;
-        /**
-         * Start index of the category in the input string.
-         */
-        endIndex: number;
-        /**
-         * Get a column object that makes accessing data easier.
-         * @returns undefined if the column isn't present, the Column object otherwise.
-         */
-        getColumn(name: string): CIFTools.Column;
-        constructor(data: string, name: string, startIndex: number, endIndex: number, columns: string[], tokens: number[], tokenCount: number);
-        toJSON(): {
-            name: string;
-            columns: string[];
-            rows: any[];
-        };
-    }
-    /**
-     * Represents a single column of a CIF category.
-     */
-    class Column implements CIFTools.Column {
-        private data;
-        name: string;
-        index: number;
-        private tokens;
-        private columnCount;
-        private rowCount;
-        private stringPool;
-        isDefined: boolean;
-        /**
-         * Returns the string value at given row.
-         */
-        getString(row: number): string | null;
-        /**
-         * Returns the integer value at given row.
-         */
-        getInteger(row: number): number;
-        /**
-         * Returns the float value at given row.
-         */
-        getFloat(row: number): number;
-        /**
-         * Returns true if the token has the specified string value.
-         */
-        stringEquals(row: number, value: string): boolean;
-        /**
-         * Determines if values at the given rows are equal.
-         */
-        areValuesEqual(rowA: number, rowB: number): boolean;
-        /**
-         * Returns true if the value is not defined (. or ? token).
-         */
-        getValuePresence(row: number): ValuePresence;
-        constructor(category: Category, data: string, name: string, index: number);
-    }
-}
-declare namespace CIFTools.Text {
-    function parse(data: string): ParserResult<CIFTools.File>;
-}
-declare namespace CIFTools.Text {
-    class Writer<Context> implements CIFTools.Writer<Context> {
-        private writer;
-        private encoded;
-        private dataBlockCreated;
-        startDataBlock(header: string): void;
-        writeCategory(category: CategoryProvider, contexts?: Context[]): void;
-        encode(): void;
-        flush(stream: OutputStream): void;
-        constructor();
-    }
-}
-declare namespace CIFTools.Binary.MessagePack {
-    function decode(buffer: Uint8Array): any;
-}
-declare namespace CIFTools.Binary.MessagePack {
-    function encode(value: any): Uint8Array;
-}
-declare namespace CIFTools.Binary.MessagePack {
-    function utf8Write(data: Uint8Array, offset: number, str: string): void;
-    function utf8Read(data: Uint8Array, offset: number, length: number): string;
-    function utf8ByteCount(str: string): number;
-}
-declare namespace CIFTools.Binary {
-    /**
-     * Fixed point, delta, RLE, integer packing adopted from https://github.com/rcsb/mmtf-javascript/
-     * by Alexander Rose <alexander.rose@weirdbyte.de>, MIT License, Copyright (c) 2016
-     */
-    function decode(data: EncodedData): any;
-}
-declare namespace CIFTools.Binary {
-    class File implements CIFTools.File {
-        dataBlocks: DataBlock[];
-        toJSON(): {
-            id: string;
-            categories: {
-                name: string;
-                columns: string[];
-                rows: any[];
-            }[];
-            additionalData: {
-                [name: string]: any;
-            };
-        }[];
-        constructor(data: EncodedFile);
-    }
-    class DataBlock implements CIFTools.DataBlock {
-        private categoryMap;
-        private categoryList;
-        header: string;
-        additionalData: {
-            [name: string]: any;
-        };
-        readonly categories: Category[];
-        getCategory(name: string): Category | undefined;
-        toJSON(): {
-            id: string;
-            categories: {
-                name: string;
-                columns: string[];
-                rows: any[];
-            }[];
-            additionalData: {
-                [name: string]: any;
-            };
-        };
-        constructor(data: EncodedDataBlock);
-    }
-    class Category implements CIFTools.Category {
-        private encodedColumns;
-        private columnNameList;
-        name: string;
-        columnCount: number;
-        rowCount: number;
-        readonly columnNames: string[];
-        getColumn(name: string): CIFTools.Column;
-        toJSON(): {
-            name: string;
-            columns: string[];
-            rows: any[];
-        };
-        constructor(data: EncodedCategory);
-    }
-}
-declare namespace CIFTools.Binary {
-    /**
-     * Fixed point, delta, RLE, integer packing adopted from https://github.com/rcsb/mmtf-javascript/
-     * by Alexander Rose <alexander.rose@weirdbyte.de>, MIT License, Copyright (c) 2016
-     */
-    class Encoder {
-        private providers;
-        and(f: Encoder.Provider): Encoder;
-        encode(data: any): EncodedData;
-        constructor(providers: Encoder.Provider[]);
-    }
-    namespace Encoder {
-        interface Result {
-            encodings: Encoding[];
-            data: any;
-        }
-        type Provider = (data: any) => Result;
-        function by(f: Provider): Encoder;
-        function byteArray(data: Encoding.FloatArray | Encoding.IntArray): Result;
-        function fixedPoint(factor: number): Provider;
-        function intervalQuantizaiton(min: number, max: number, numSteps: number, arrayType?: new (size: number) => Encoding.IntArray): Provider;
-        function runLength(data: Encoding.IntArray): Result;
-        function delta(data: Int8Array | Int16Array | Int32Array): Result;
-        /**
-         * Packs Int32 array. The packing level is determined automatically to either 1-, 2-, or 4-byte words.
-         */
-        function integerPacking(data: Int32Array): Result;
-        function stringArray(data: string[]): Result;
-    }
-}
-declare namespace CIFTools.Binary {
-    const VERSION: string;
-    type Encoding = Encoding.ByteArray | Encoding.FixedPoint | Encoding.RunLength | Encoding.Delta | Encoding.IntervalQuantization | Encoding.IntegerPacking | Encoding.StringArray;
-    interface EncodedFile {
-        version: string;
-        encoder: string;
-        dataBlocks: EncodedDataBlock[];
-    }
-    interface EncodedDataBlock {
-        header: string;
-        categories: EncodedCategory[];
-    }
-    interface EncodedCategory {
-        name: string;
-        rowCount: number;
-        columns: EncodedColumn[];
-    }
-    interface EncodedColumn {
-        name: string;
-        data: EncodedData;
-        /**
-         * The mask represents the presence or absent of particular "CIF value".
-         * If the mask is not set, every value is present.
-         *
-         * 0 = Value is present
-         * 1 = . = value not specified
-         * 2 = ? = value unknown
-         */
-        mask?: EncodedData;
-    }
-    interface EncodedData {
-        encoding: Encoding[];
-        data: Uint8Array;
-    }
-    namespace Encoding {
-        const enum IntDataType {
-            Int8 = 1,
-            Int16 = 2,
-            Int32 = 3,
-            Uint8 = 4,
-            Uint16 = 5,
-            Uint32 = 6,
-        }
-        const enum FloatDataType {
-            Float32 = 32,
-            Float64 = 33,
-        }
-        type DataType = IntDataType | FloatDataType;
-        type IntArray = Int8Array | Int16Array | Int32Array | Uint8Array | Uint16Array | Uint32Array;
-        type FloatArray = Float32Array | Float64Array;
-        function getDataType(data: IntArray | FloatArray): DataType;
-        function isSignedIntegerDataType(data: IntArray): boolean;
-        interface ByteArray {
-            kind: 'ByteArray';
-            type: DataType;
-        }
-        interface FixedPoint {
-            kind: 'FixedPoint';
-            factor: number;
-            srcType: FloatDataType;
-        }
-        interface IntervalQuantization {
-            kind: 'IntervalQuantization';
-            min: number;
-            max: number;
-            numSteps: number;
-            srcType: FloatDataType;
-        }
-        interface RunLength {
-            kind: 'RunLength';
-            srcType: IntDataType;
-            srcSize: number;
-        }
-        interface Delta {
-            kind: 'Delta';
-            origin: number;
-            srcType: IntDataType;
-        }
-        interface IntegerPacking {
-            kind: 'IntegerPacking';
-            byteCount: number;
-            isUnsigned: boolean;
-            srcSize: number;
-        }
-        interface StringArray {
-            kind: 'StringArray';
-            dataEncoding: Encoding[];
-            stringData: string;
-            offsetEncoding: Encoding[];
-            offsets: Uint8Array;
-        }
-    }
-}
-declare namespace CIFTools.Binary {
-    function parse(data: ArrayBuffer): ParserResult<CIFTools.File>;
-}
-declare namespace CIFTools.Binary {
-    class Writer<Context> implements CIFTools.Writer<Context> {
-        private data;
-        private dataBlocks;
-        private encodedData;
-        startDataBlock(header: string): void;
-        writeCategory(category: CategoryProvider, contexts?: Context[]): void;
-        encode(): void;
-        flush(stream: OutputStream): void;
-        constructor(encoder: string);
-    }
-}
-declare module 'CIFTools' {
-    import __Tools = CIFTools;
-    export = __Tools;
-}
-
-
 
 
 // Project: https://github.com/jakearchibald/ES6-Promise
@@ -4826,188 +886,13 @@ declare namespace __LiteMolRx {
         shareReplay(bufferSize?: number, window?: number, scheduler?: IScheduler): Observable<T>;
     }
 }
-declare namespace LiteMol {
-    type Promise<T> = __Promise.Promise<T>;
-    const Promise: typeof __Promise.Promise;
-}
-declare namespace LiteMol.Core {
-    export import Rx = __LiteMolRx;
-    export import Promise = LiteMol.Promise;
-    namespace Formats {
-        export import CIF = CIFTools;
-    }
-}
-declare namespace LiteMol.Core {
+declare namespace CIFTools {
     var VERSION: {
         number: string;
         date: string;
     };
 }
-declare namespace LiteMol.Core {
-    function computation<A>(c: (ctx: Computation.Context) => Promise<A>): Computation<A>;
-    class Computation<A> {
-        private computation;
-        run(ctx?: Computation.Context): __Promise.Promise<A>;
-        runWithContext(ctx?: Computation.Context): Computation.Running<A>;
-        constructor(computation: (ctx: Computation.Context) => Promise<A>);
-    }
-    module Computation {
-        function resolve<A>(a: A): Computation<A>;
-        function reject<A>(reason: any): Computation<A>;
-        function createContext(): Computation.Context;
-        const Aborted = "Aborted";
-        const UpdateProgressDelta = 100;
-        interface Progress {
-            message: string;
-            isIndeterminate: boolean;
-            current: number;
-            max: number;
-            requestAbort?: () => void;
-        }
-        interface Context {
-            progress: Rx.Observable<Progress>;
-            requestAbort(): void;
-            /**
-             * Checks if the computation was aborted. If so, throws.
-             * Otherwise, updates the progress.
-             */
-            updateProgress(msg: string, abort?: boolean | (() => void), current?: number, max?: number): void;
-        }
-        interface Running<A> {
-            progress: Rx.Observable<Progress>;
-            result: Promise<A>;
-        }
-    }
-}
-declare namespace LiteMol.Core.Utils {
-    /**
-     * An "object" based implementation of map that supports string and numeric keys
-     * which should be ok for most use cases in LiteMol.
-     *
-     * The type limitation is on purpose to prevent using the type in places that are
-     * not appropriate.
-     */
-    interface FastMap<K extends string | number, V> {
-        readonly size: number;
-        set(key: K, v: V): void;
-        get(key: K): V | undefined;
-        delete(key: K): boolean;
-        has(key: K): boolean;
-        clear(): void;
-        /**
-         * Iterate over the collection.
-         * Optional "context" object can be supplied that is passed to the callback.
-         *
-         * Enumerates only values that are not undefined.
-         */
-        forEach<Context>(f: (value: V, key: K, ctx?: Context) => void, ctx?: Context): void;
-    }
-    /**
-     * An "object" based implementation of set that supports string and numeric values
-     * which should be ok for most use cases in LiteMol.
-     *
-     * The type limitation is on purpose to prevent using the type in places that are
-     * not appropriate.
-     */
-    interface FastSet<T extends string | number> {
-        readonly size: number;
-        add(key: T): boolean;
-        delete(key: T): boolean;
-        has(key: T): boolean;
-        clear(): void;
-        /**
-         * Iterate over the collection.
-         * Optional "context" object can be supplied that is passed to the callback.
-         */
-        forEach<Context>(f: (key: T, ctx?: Context) => void, ctx?: Context): void;
-    }
-    namespace FastMap {
-        /**
-         * Creates an empty map.
-         */
-        function create<K extends string | number, V>(): FastMap<K, V>;
-        /**
-         * Create a map from an array of the form [[key, value], ...]
-         */
-        function ofArray<K extends string | number, V>(data: (K | V)[][]): FastMap<K, V>;
-        /**
-         * Create a map from an object of the form { key: value, ... }
-         */
-        function ofObject<V>(data: {
-            [key: string]: V;
-        }): FastMap<string, V>;
-    }
-    namespace FastSet {
-        /**
-         * Create an empty set.
-         */
-        function create<T extends string | number>(): FastSet<T>;
-        /**
-         * Create a set of an "array like" sequence.
-         */
-        function ofArray<T extends string | number>(xs: ArrayLike<T>): FastSet<T>;
-    }
-}
-declare namespace LiteMol.Core.Utils {
-    export import FastNumberParsers = Core.Formats.CIF.Utils.FastNumberParsers;
-    function extend<S, T, U>(object: S, source: T, guard?: U): S & T & U;
-    function debounce<T>(func: () => T, wait: number): () => T;
-}
-declare namespace LiteMol.Core.Utils {
-    type DataTable<Schema> = DataTable.Base<Schema> & DataTable.Columns<Schema>;
-    module DataTable {
-        type Definition<Schema> = {
-            [T in keyof Schema]: ((size: number) => Schema[T][]) | undefined;
-        };
-        type Columns<Schema> = {
-            readonly [P in keyof Schema]: Schema[P][];
-        };
-        interface ColumnDescriptor<Schema> {
-            name: keyof Schema;
-            creator: (size: number) => any;
-        }
-        type TypedArrayContructor = Float32ArrayConstructor | Float64ArrayConstructor | Int32ArrayConstructor | Uint32ArrayConstructor | Int16ArrayConstructor | Uint16ArrayConstructor | Int8ArrayConstructor | Uint8ArrayConstructor;
-        function typedColumn(t: TypedArrayContructor): (size: number) => number[];
-        function customColumn<T>(): (size: number) => T[];
-        const stringColumn: (size: number) => string[];
-        const stringNullColumn: (size: number) => (string | null)[];
-        interface Base<Schema> {
-            count: number;
-            indices: number[];
-            columns: ColumnDescriptor<Schema>[];
-            getBuilder(count: number): Builder<Schema>;
-            getRawData(): any[][];
-            /**
-             * Get a MUTABLE representation of a row.
-             * Calling getRow() with differnt 'i' will change update old reference.
-             */
-            getRow(i: number): Schema;
-        }
-        interface Builder<Schema> {
-            count: number;
-            columns: ColumnDescriptor<Schema>[];
-            addColumn<T>(name: keyof Schema, creator: (size: number) => T): T;
-            getRawData(): any[][];
-            /**
-             * This functions clones the table and defines all its column inside the constructor, hopefully making the JS engine
-             * use internal class instead of dictionary representation.
-             */
-            seal(): DataTable<Schema>;
-        }
-        function builder<Schema>(count: number): Builder<Schema>;
-        function ofDefinition<Schema>(definition: Definition<Schema>, count: number): DataTable<Schema>;
-    }
-}
-declare namespace LiteMol.Core.Utils {
-    function integerSetToSortedTypedArray(set: FastSet<number>): number[];
-    /**
-     * A a JS native array with the given size.
-     */
-    function makeNativeIntArray(size: number): number[];
-    /**
-     * A a JS native array with the given size.
-     */
-    function makeNativeFloatArray(size: number): number[];
+declare namespace CIFTools.Utils {
     /**
      * A generic chunked array builder.
      *
@@ -5031,69 +916,154 @@ declare namespace LiteMol.Core.Utils {
         function add2<T>(array: ChunkedArray<T>, x: T, y: T): number;
         function add<T>(array: ChunkedArray<T>, x: T): number;
         function compact<T>(array: ChunkedArray<T>): T[];
-        function forVertex3D(chunkVertexCount?: number): ChunkedArray<number>;
-        function forIndexBuffer(chunkIndexCount?: number): ChunkedArray<number>;
-        function forTokenIndices(chunkTokenCount?: number): ChunkedArray<number>;
-        function forIndices(chunkTokenCount?: number): ChunkedArray<number>;
-        function forInt32(chunkSize?: number): ChunkedArray<number>;
-        function forFloat32(chunkSize?: number): ChunkedArray<number>;
+        function forVertex3D<T>(chunkVertexCount?: number): ChunkedArray<number>;
+        function forIndexBuffer<T>(chunkIndexCount?: number): ChunkedArray<number>;
+        function forTokenIndices<T>(chunkTokenCount?: number): ChunkedArray<number>;
+        function forIndices<T>(chunkTokenCount?: number): ChunkedArray<number>;
+        function forInt32<T>(chunkSize?: number): ChunkedArray<number>;
+        function forFloat32<T>(chunkSize?: number): ChunkedArray<number>;
         function forArray<T>(chunkSize?: number): ChunkedArray<T>;
         function create<T>(creator: (size: number) => any, chunkElementCount: number, elementSize: number): ChunkedArray<T>;
     }
+}
+/**
+ * Efficient integer and float parsers.
+ *
+ * For the purposes of parsing numbers from the mmCIF data representations,
+ * up to 4 times faster than JS parseInt/parseFloat.
+ */
+declare namespace CIFTools.Utils.FastNumberParsers {
+    function parseIntSkipTrailingWhitespace(str: string, start: number, end: number): number;
+    function parseInt(str: string, start: number, end: number): number;
+    function parseFloatSkipTrailingWhitespace(str: string, start: number, end: number): number;
+    function parseFloat(str: string, start: number, end: number): number;
+}
+declare namespace CIFTools.Utils {
+    interface StringWriter {
+        chunkData: string[];
+        chunkOffset: number;
+        chunkCapacity: number;
+        data: string[];
+    }
+    namespace StringWriter {
+        function create(chunkCapacity?: number): StringWriter;
+        function asString(writer: StringWriter): string;
+        function writeTo(writer: StringWriter, stream: OutputStream): void;
+        function newline(writer: StringWriter): void;
+        function whitespace(writer: StringWriter, len: number): void;
+        function write(writer: StringWriter, val: string): void;
+        function writeSafe(writer: StringWriter, val: string): void;
+        function writePadLeft(writer: StringWriter, val: string, totalWidth: number): void;
+        function writePadRight(writer: StringWriter, val: string, totalWidth: number): void;
+        function writeInteger(writer: StringWriter, val: number): void;
+        function writeIntegerPadLeft(writer: StringWriter, val: number, totalWidth: number): void;
+        function writeIntegerPadRight(writer: StringWriter, val: number, totalWidth: number): void;
+        /**
+         * @example writeFloat(123.2123, 100) -- 2 decim
+         */
+        function writeFloat(writer: StringWriter, val: number, precisionMultiplier: number): void;
+        function writeFloatPadLeft(writer: StringWriter, val: number, precisionMultiplier: number, totalWidth: number): void;
+        function writeFloatPadRight(writer: StringWriter, val: number, precisionMultiplier: number, totalWidth: number): void;
+    }
+}
+declare namespace CIFTools {
     /**
-     * Static size array builder.
+     * Represents a "CIF FILE" with one or more data blocks.
      */
-    interface ArrayBuilder<T> {
-        currentIndex: number;
-        elementCount: number;
-        array: T[];
+    interface File {
+        dataBlocks: DataBlock[];
+        toJSON(): any;
     }
-    namespace ArrayBuilder {
-        function add3<T>(array: ArrayBuilder<T>, x: T, y: T, z: T): void;
-        function add2<T>(array: ArrayBuilder<T>, x: T, y: T): void;
-        function add<T>(array: ArrayBuilder<T>, x: T): void;
-        function forVertex3D(count: number): ArrayBuilder<number>;
-        function forIndexBuffer(count: number): ArrayBuilder<number>;
-        function forTokenIndices(count: number): ArrayBuilder<number>;
-        function forIndices(count: number): ArrayBuilder<number>;
-        function forInt32(count: number): ArrayBuilder<number>;
-        function forFloat32(count: number): ArrayBuilder<number>;
-        function forArray<T>(count: number): ArrayBuilder<T>;
-        function create<T>(creator: (size: number) => any, chunkElementCount: number, elementSize: number): ArrayBuilder<T>;
-    }
-}
-declare namespace LiteMol.Core.Utils {
-    class PerformanceMonitor {
-        private starts;
-        private ends;
-        static currentTime(): number;
-        start(name: string): void;
-        end(name: string): void;
-        static format(t: number): string;
-        formatTime(name: string): string;
-        formatTimeSum(...names: string[]): string;
-        time(name: string): number;
-        timeSum(...names: string[]): number;
-    }
-}
-declare namespace LiteMol.Core.Formats {
-    interface FormatInfo {
-        name: string;
-        shortcuts: string[];
-        extensions: string[];
-        isBinary?: boolean;
-        parse: (data: string | ArrayBuffer, params?: FormatInfo.Params) => Computation<ParserResult<any>>;
-    }
-    namespace FormatInfo {
-        type Params = {
-            id?: string;
+    /**
+     * Represents a single CIF data block that contains categories and possibly
+     * additonal data such as save frames.
+     *
+     * Example:
+     * data_HEADER
+     * _category1.field1
+     * ...
+     * ...
+     * _categoryN.fieldN
+     */
+    interface DataBlock {
+        header: string;
+        categories: Category[];
+        additionalData: {
+            [name: string]: any;
         };
-        function is(o: any): o is FormatInfo;
-        function fromShortcut(all: FormatInfo[], name: string): FormatInfo | undefined;
-        function formatRegExp(info: FormatInfo): RegExp;
-        function formatFileFilters(all: FormatInfo[]): string;
-        function getFormat(filename: string, all: FormatInfo[]): FormatInfo | undefined;
+        getCategory(name: string): Category | undefined;
+        toJSON(): any;
     }
+    /**
+     * Represents that CIF category with multiple fields represented as columns.
+     *
+     * Example:
+     * _category.field1
+     * _category.field2
+     * ...
+     */
+    interface Category {
+        name: string;
+        rowCount: number;
+        columnCount: number;
+        columnNames: string[];
+        /**
+         * If a field with the given name is not present, returns UndefinedColumn.
+         *
+         * Columns are accessed by their field name only, i.e.
+         * _category.field is accessed by
+         * category.getColumn('field')
+         *
+         * Note that column are created on demand and there is some computational
+         * cost when creating a new column. Therefore, if you need to reuse a column,
+         * it is a good idea to cache it.
+         */
+        getColumn(name: string): Column;
+        toJSON(): any;
+    }
+    const enum ValuePresence {
+        Present = 0,
+        NotSpecified = 1,
+        Unknown = 2,
+    }
+    /**
+     * A columns represents a single field of a CIF category.
+     */
+    interface Column {
+        isDefined: boolean;
+        getString(row: number): string | null;
+        getInteger(row: number): number;
+        getFloat(row: number): number;
+        getValuePresence(row: number): ValuePresence;
+        areValuesEqual(rowA: number, rowB: number): boolean;
+        stringEquals(row: number, value: string): boolean;
+    }
+    const UndefinedColumn: Column;
+    /**
+     * Helper functions for categoies.
+     */
+    namespace Category {
+        /**
+         * Extracts a matrix from a category from a specified rowIndex.
+         *
+         * _category.matrix[1][1] v11
+         * ....
+         * ....
+         * _category.matrix[rows][cols] vRowsCols
+         */
+        function getMatrix(category: Category, field: string, rows: number, cols: number, rowIndex: number): number[][];
+        /**
+         * Extracts a vector from a category from a specified rowIndex.
+         *
+         * _category.matrix[1][1] v11
+         * ....
+         * ....
+         * _category.matrix[rows][cols] vRowsCols
+         */
+        function getVector(category: Category, field: string, rows: number, cols: number, rowIndex: number): number[];
+    }
+}
+declare namespace CIFTools {
     type ParserResult<T> = ParserSuccess<T> | ParserError;
     namespace ParserResult {
         function error<T>(message: string, line?: number): ParserResult<T>;
@@ -5112,1100 +1082,432 @@ declare namespace LiteMol.Core.Formats {
         isError: false;
         constructor(result: T, warnings: string[]);
     }
-    /**
-     * A helper for building a typed array of token indices.
-     */
-    interface TokenIndexBuilder {
-        tokensLenMinus2: number;
+}
+declare namespace CIFTools {
+    interface FieldDesc<Data> {
+        name: string;
+        string?: (data: Data, i: number) => string | null;
+        number?: (data: Data, i: number) => number;
+        typedArray?: any;
+        encoder?: Binary.Encoder;
+        presence?: (data: Data, i: number) => ValuePresence;
+    }
+    interface CategoryDesc<Data> {
+        name: string;
+        fields: FieldDesc<Data>[];
+    }
+    type CategoryInstance<Data> = {
+        data: any;
         count: number;
-        tokens: Int32Array;
+        desc: CategoryDesc<Data>;
+    };
+    type CategoryProvider = (ctx: any) => CategoryInstance<any> | undefined;
+    type OutputStream = {
+        writeString: (data: string) => boolean;
+        writeBinary: (data: Uint8Array) => boolean;
+    };
+    interface Writer<Context> {
+        startDataBlock(header: string): void;
+        writeCategory(category: CategoryProvider, contexts?: Context[]): void;
+        encode(): void;
+        flush(stream: OutputStream): void;
     }
-    namespace TokenIndexBuilder {
-        function addToken(builder: TokenIndexBuilder, start: number, end: number): void;
-        function create(size: number): TokenIndexBuilder;
-    }
+}
+declare namespace CIFTools.Text {
     /**
-     * This ensures there is only 1 instance of a short string.
+     * Represents the input file.
      */
-    type ShortStringPool = {
-        [key: string]: string;
-    };
-    namespace ShortStringPool {
-        function create(): ShortStringPool;
-        function get(pool: ShortStringPool, str: string): string;
-    }
-}
-declare namespace LiteMol.Core.Formats.Molecule.mmCIF {
-    function ofDataBlock(data: CIF.DataBlock): Structure.Molecule;
-}
-declare namespace LiteMol.Core.Formats.Molecule.PDB {
-    type TokenRange = {
-        start: number;
-        end: number;
-    };
-    type HelperData = {
-        dot: TokenRange;
-        question: TokenRange;
-        numberTokens: Utils.FastMap<number, TokenRange>;
+    class File implements CIFTools.File {
+        /**
+         * The input string.
+         *
+         * In JavaScript, the input must always* be a string as there is no support for streams.
+         * So since we already have the string in memory, we won't store unnecessary copies of
+         * substrings but rather represent individual elements as pairs of <start,end) indices
+         * to the data string.
+         *
+         * * It can also be a typed array buffer, but the point still holds: we need to have the entire
+         *   input in memory. And most molecular file formats are text based.
+         */
         data: string;
-    };
-    class MoleculeData {
-        header: Header;
-        crystInfo: CrystStructureInfo | undefined;
-        models: ModelsData;
+        /**
+         * Data blocks inside the file. If no data block is present, a "default" one is created.
+         */
+        dataBlocks: DataBlock[];
+        toJSON(): {
+            id: string;
+            categories: {
+                name: string;
+                columns: string[];
+                rows: any[];
+            }[];
+            additionalData: {
+                [name: string]: any;
+            };
+        }[];
+        constructor(data: string);
+    }
+    /**
+     * Represents a single data block.
+     */
+    class DataBlock implements CIFTools.DataBlock {
+        private categoryMap;
+        private categoryList;
+        /**
+         * The input mmCIF string (same as file.data)
+         */
         data: string;
-        private makeEntities();
-        toCifFile(): CIF.File;
-        constructor(header: Header, crystInfo: CrystStructureInfo | undefined, models: ModelsData, data: string);
-    }
-    class Header {
-        id: string;
-        constructor(id: string);
-    }
-    class CrystStructureInfo {
-        record: string;
-        toCifCategory(id: string): {
-            cell: CIF.Category | undefined;
-            symm: CIF.Category | undefined;
-        };
-        constructor(record: string);
-    }
-    class SecondaryStructure {
-        helixTokens: number[];
-        sheetTokens: number[];
-        toCifCategory(data: string): {
-            helices: CIF.Category;
-            sheets: CIF.Category;
-        } | undefined;
-        constructor(helixTokens: number[], sheetTokens: number[]);
-    }
-    class ModelData {
-        idToken: TokenRange;
-        atomTokens: number[];
-        atomCount: number;
-        static COLUMNS: string[];
-        private writeToken(index, cifTokens);
-        private writeTokenCond(index, cifTokens, dot);
-        private writeRange(range, cifTokens);
-        private tokenEquals(start, end, value, data);
-        private getEntityType(row, data);
-        writeCifTokens(modelToken: TokenRange, cifTokens: Utils.ArrayBuilder<number>, helpers: HelperData): void;
-        constructor(idToken: TokenRange, atomTokens: number[], atomCount: number);
-    }
-    class ModelsData {
-        models: ModelData[];
-        toCifCategory(block: CIF.Text.DataBlock, helpers: HelperData): CIF.Text.Category;
-        constructor(models: ModelData[]);
-    }
-}
-declare namespace LiteMol.Core.Formats.Molecule.PDB {
-    class Parser {
-        private static tokenizeAtom(tokens, tokenizer);
-        private static tokenize(id, data);
-        static getDotRange(length: number): TokenRange;
-        static getNumberRanges(length: number): Utils.FastMap<number, TokenRange>;
-        static getQuestionmarkRange(length: number): TokenRange;
-        static parse(id: string, data: string): ParserResult<CIF.File>;
-    }
-    function toCifFile(id: string, data: string): ParserResult<CIF.File>;
-}
-declare namespace LiteMol.Core.Formats.Molecule.SDF {
-    function parse(data: string, id?: string): ParserResult<Structure.Molecule>;
-}
-declare namespace LiteMol.Core.Formats.Molecule {
-    namespace SupportedFormats {
-        const mmCIF: FormatInfo;
-        const mmBCIF: FormatInfo;
-        const PDB: FormatInfo;
-        const SDF: FormatInfo;
-        const All: FormatInfo[];
-    }
-}
-declare namespace LiteMol.Core.Formats.Density {
-    interface Field3D {
-        dimensions: number[];
-        length: number;
-        getAt(idx: number): number;
-        setAt(idx: number, v: number): void;
-        get(i: number, j: number, k: number): number;
-        set(i: number, j: number, k: number, v: number): void;
-        fill(v: number): void;
-    }
-    class Field3DZYX implements Field3D {
-        data: number[];
-        dimensions: number[];
-        private nX;
-        private nY;
-        private len;
-        readonly length: number;
-        getAt(idx: number): number;
-        setAt(idx: number, v: number): void;
-        get(i: number, j: number, k: number): number;
-        set(i: number, j: number, k: number, v: number): void;
-        fill(v: number): void;
-        constructor(data: number[], dimensions: number[]);
-    }
-    /**
-     * Represents electron density data.
-     */
-    interface Data {
         /**
-         * Crystal cell size.
+         * Header of the data block.
          */
-        cellSize: number[];
+        header: string;
         /**
-         * Crystal cell angles.
+         * Categories of the block.
+         * block.categories._atom_site / ['_atom_site']
          */
-        cellAngles: number[];
+        readonly categories: Category[];
         /**
-         * Origin of the cell
+         * Additional data such as save frames for mmCIF file.
          */
-        origin: number[];
-        /**
-         * 3D volumetric data.
-         */
-        data: Field3D;
-        /**
-         * X, Y, Z dimensions of the data matrix.
-         */
-        dataDimensions: number[];
-        /**
-         * The basis of the space.
-         */
-        basis: {
-            x: number[];
-            y: number[];
-            z: number[];
+        additionalData: {
+            [name: string]: any;
         };
         /**
-         * Was the skew matrix present in the input?
+         * Gets a category by its name.
          */
-        hasSkewMatrix: boolean;
+        getCategory(name: string): Category | undefined;
         /**
-         * Column major ordered skew matrix.
+         * Adds a category.
          */
-        skewMatrix: number[];
-        /**
-         * Information about the min/max/mean/sigma values.
-         */
-        valuesInfo: {
-            min: number;
-            max: number;
-            mean: number;
-            sigma: number;
+        addCategory(category: Category): void;
+        toJSON(): {
+            id: string;
+            categories: {
+                name: string;
+                columns: string[];
+                rows: any[];
+            }[];
+            additionalData: {
+                [name: string]: any;
+            };
         };
+        constructor(data: string, header: string);
+    }
+    /**
+     * Represents a single CIF category.
+     */
+    class Category implements CIFTools.Category {
+        private data;
+        private columnIndices;
+        private columnNameList;
         /**
-         * Additional attributes.
+         * Name of the category.
          */
-        attributes: {
-            [key: string]: any;
-        };
+        name: string;
         /**
-         * Are the data normalized?
+         * The array of columns.
          */
-        isNormalized: boolean;
-    }
-    namespace Data {
-        function create(cellSize: number[], cellAngles: number[], origin: number[], hasSkewMatrix: boolean, skewMatrix: number[], data: Field3D, dataDimensions: number[], basis: {
-            x: number[];
-            y: number[];
-            z: number[];
-        }, valuesInfo: {
-            min: number;
-            max: number;
-            mean: number;
-            sigma: number;
-        }, attributes?: {
-            [key: string]: any;
-        }): Data;
-        function normalize(densityData: Data): void;
-        function denormalize(densityData: Data): void;
-    }
-}
-declare namespace LiteMol.Core.Formats.Density.CCP4 {
-    function parse(buffer: ArrayBuffer): ParserResult<Data>;
-}
-declare namespace LiteMol.Core.Formats.Density.CIF {
-    function parse(block: Formats.CIF.DataBlock): ParserResult<Data>;
-}
-declare namespace LiteMol.Core.Formats.Density.DSN6 {
-    function parse(buffer: ArrayBuffer): ParserResult<Data>;
-}
-declare namespace LiteMol.Core.Formats.Density {
-    namespace SupportedFormats {
-        const CCP4: FormatInfo;
-        const DSN6: FormatInfo;
-        const All: FormatInfo[];
-    }
-}
-declare namespace LiteMol.Core.Geometry.LinearAlgebra {
-    type ObjectVec3 = {
-        x: number;
-        y: number;
-        z: number;
-    };
-    /**
-     * Stores a 4x4 matrix in a column major (j * 4 + i indexing) format.
-     */
-    namespace Matrix4 {
-        function empty(): number[];
-        function identity(): number[];
-        function ofRows(rows: number[][]): number[];
-        function areEqual(a: number[], b: number[], eps: number): boolean;
-        function setValue(a: number[], i: number, j: number, value: number): void;
-        function copy(out: number[], a: any): number[];
-        function clone(a: number[]): number[];
-        function invert(out: number[], a: number[]): number[] | null;
-        function mul(out: number[], a: number[], b: number[]): number[];
-        function translate(out: number[], a: number[], v: number[]): number[];
-        function fromTranslation(out: number[], v: number[]): number[];
-        function transformVector3(out: {
-            x: number;
-            y: number;
-            z: number;
-        }, a: {
-            x: number;
-            y: number;
-            z: number;
-        }, m: number[]): {
-            x: number;
-            y: number;
-            z: number;
-        };
-        function makeTable(m: number[]): string;
-        function determinant(a: number[]): number;
-    }
-    namespace Vector4 {
-        function create(): number[];
-        function clone(a: number[]): number[];
-        function fromValues(x: number, y: number, z: number, w: number): number[];
-        function set(out: number[], x: number, y: number, z: number, w: number): number[];
-        function distance(a: number[], b: number[]): number;
-        function squaredDistance(a: number[], b: number[]): number;
-        function norm(a: number[]): number;
-        function squaredNorm(a: number[]): number;
-        function transform(out: number[], a: number[], m: number[]): number[];
-    }
-}
-declare namespace LiteMol.Core.Geometry {
-    /**
-     * Basic shape of the result buffer for range queries.
-     */
-    interface SubdivisionTree3DResultBuffer {
-        count: number;
-        indices: number[];
-        hasPriorities: boolean;
-        priorities: number[] | undefined;
-        add(distSq: number, index: number): void;
-        reset(): void;
-    }
-    /**
-     * A buffer that only remembers the values.
-     */
-    namespace SubdivisionTree3DResultIndexBuffer {
-        function create(initialCapacity: number): SubdivisionTree3DResultBuffer;
-    }
-    /**
-     * A buffer that remembers values and priorities.
-     */
-    namespace SubdivisionTree3DResultPriorityBuffer {
-        function create(initialCapacity: number): SubdivisionTree3DResultBuffer;
-    }
-    /**
-     * Query context. Handles the actual querying.
-     */
-    interface SubdivisionTree3DQueryContext<T> {
-        tree: SubdivisionTree3D<T>;
-        pivot: number[];
-        radius: number;
-        radiusSq: number;
-        indices: number[];
-        positions: number[];
-        buffer: SubdivisionTree3DResultBuffer;
-        nearest(x: number, y: number, z: number, radius: number): void;
-    }
-    namespace SubdivisionTree3DQueryContext {
-        function create<T>(tree: SubdivisionTree3D<T>, buffer: SubdivisionTree3DResultBuffer): SubdivisionTree3DQueryContext<T>;
-    }
-    /**
-     * A kd-like tree to query 3D data.
-     */
-    interface SubdivisionTree3D<T> {
-        data: T[];
-        indices: number[];
-        positions: number[];
-        root: SubdivisionTree3DNode;
-    }
-    namespace SubdivisionTree3D {
+        readonly columnNames: string[];
         /**
-         * Create a context used for querying the data.
+         * Number of columns in the category.
          */
-        function createContextRadius<T>(tree: SubdivisionTree3D<T>, radiusEstimate: number, includePriorities?: boolean): SubdivisionTree3DQueryContext<T>;
+        columnCount: number;
         /**
-         * Takes data and a function that calls SubdivisionTree3DPositionBuilder.add(x, y, z) on each data element.
+         * Number of rows in the category.
          */
-        function create<T>(data: T[], f: (e: T, add: (x: number, y: number, z: number) => void) => void, leafSize?: number): SubdivisionTree3D<T>;
-    }
-    /**
-     * A tree node.
-     */
-    interface SubdivisionTree3DNode {
-        splitValue: number;
+        rowCount: number;
+        /**
+         * Pairs of (start at index 2 * i, end at index 2 * i + 1) indices to the data string.
+         * The "end" character is not included (for it's iterated as for (i = start; i < end; i++)).
+         */
+        tokens: number[];
+        /**
+         * Start index of the category in the input string.
+         */
         startIndex: number;
+        /**
+         * Start index of the category in the input string.
+         */
         endIndex: number;
-        left: SubdivisionTree3DNode;
-        right: SubdivisionTree3DNode;
-    }
-    namespace SubdivisionTree3DNode {
-        function nearest<T>(node: SubdivisionTree3DNode, ctx: SubdivisionTree3DQueryContext<T>, dim: number): void;
-        function create(splitValue: number, startIndex: number, endIndex: number, left: SubdivisionTree3DNode, right: SubdivisionTree3DNode): SubdivisionTree3DNode;
+        /**
+         * Get a column object that makes accessing data easier.
+         * @returns undefined if the column isn't present, the Column object otherwise.
+         */
+        getColumn(name: string): CIFTools.Column;
+        constructor(data: string, name: string, startIndex: number, endIndex: number, columns: string[], tokens: number[], tokenCount: number);
+        toJSON(): {
+            name: string;
+            columns: string[];
+            rows: any[];
+        };
     }
     /**
-     * A helper to store boundary box.
+     * Represents a single column of a CIF category.
      */
-    interface Box3D {
-        min: number[];
-        max: number[];
-    }
-    namespace Box3D {
-        function createInfinite(): Box3D;
+    class Column implements CIFTools.Column {
+        private data;
+        name: string;
+        index: number;
+        private tokens;
+        private columnCount;
+        private rowCount;
+        private stringPool;
+        isDefined: boolean;
+        /**
+         * Returns the string value at given row.
+         */
+        getString(row: number): string | null;
+        /**
+         * Returns the integer value at given row.
+         */
+        getInteger(row: number): number;
+        /**
+         * Returns the float value at given row.
+         */
+        getFloat(row: number): number;
+        /**
+         * Returns true if the token has the specified string value.
+         */
+        stringEquals(row: number, value: string): boolean;
+        /**
+         * Determines if values at the given rows are equal.
+         */
+        areValuesEqual(rowA: number, rowB: number): boolean;
+        /**
+         * Returns true if the value is not defined (. or ? token).
+         */
+        getValuePresence(row: number): ValuePresence;
+        constructor(category: Category, data: string, name: string, index: number);
     }
 }
-declare namespace LiteMol.Core.Geometry {
-    interface Surface {
+declare namespace CIFTools.Text {
+    function parse(data: string): ParserResult<CIFTools.File>;
+}
+declare namespace CIFTools.Text {
+    class Writer<Context> implements CIFTools.Writer<Context> {
+        private writer;
+        private encoded;
+        private dataBlockCreated;
+        startDataBlock(header: string): void;
+        writeCategory(category: CategoryProvider, contexts?: Context[]): void;
+        encode(): void;
+        flush(stream: OutputStream): void;
+        constructor();
+    }
+}
+declare namespace CIFTools.Binary.MessagePack {
+    function decode(buffer: Uint8Array): any;
+}
+declare namespace CIFTools.Binary.MessagePack {
+    function encode(value: any): Uint8Array;
+}
+declare namespace CIFTools.Binary.MessagePack {
+    function utf8Write(data: Uint8Array, offset: number, str: string): void;
+    function utf8Read(data: Uint8Array, offset: number, length: number): string;
+    function utf8ByteCount(str: string): number;
+}
+declare namespace CIFTools.Binary {
+    /**
+     * Fixed point, delta, RLE, integer packing adopted from https://github.com/rcsb/mmtf-javascript/
+     * by Alexander Rose <alexander.rose@weirdbyte.de>, MIT License, Copyright (c) 2016
+     */
+    function decode(data: EncodedData): any;
+}
+declare namespace CIFTools.Binary {
+    class File implements CIFTools.File {
+        dataBlocks: DataBlock[];
+        toJSON(): {
+            id: string;
+            categories: {
+                name: string;
+                columns: string[];
+                rows: any[];
+            }[];
+            additionalData: {
+                [name: string]: any;
+            };
+        }[];
+        constructor(data: EncodedFile);
+    }
+    class DataBlock implements CIFTools.DataBlock {
+        private categoryMap;
+        private categoryList;
+        header: string;
+        additionalData: {
+            [name: string]: any;
+        };
+        readonly categories: Category[];
+        getCategory(name: string): Category | undefined;
+        toJSON(): {
+            id: string;
+            categories: {
+                name: string;
+                columns: string[];
+                rows: any[];
+            }[];
+            additionalData: {
+                [name: string]: any;
+            };
+        };
+        constructor(data: EncodedDataBlock);
+    }
+    class Category implements CIFTools.Category {
+        private encodedColumns;
+        private columnNameList;
+        name: string;
+        columnCount: number;
+        rowCount: number;
+        readonly columnNames: string[];
+        getColumn(name: string): CIFTools.Column;
+        toJSON(): {
+            name: string;
+            columns: string[];
+            rows: any[];
+        };
+        constructor(data: EncodedCategory);
+    }
+}
+declare namespace CIFTools.Binary {
+    /**
+     * Fixed point, delta, RLE, integer packing adopted from https://github.com/rcsb/mmtf-javascript/
+     * by Alexander Rose <alexander.rose@weirdbyte.de>, MIT License, Copyright (c) 2016
+     */
+    class Encoder {
+        private providers;
+        and(f: Encoder.Provider): Encoder;
+        encode(data: any): EncodedData;
+        constructor(providers: Encoder.Provider[]);
+    }
+    namespace Encoder {
+        interface Result {
+            encodings: Encoding[];
+            data: any;
+        }
+        type Provider = (data: any) => Result;
+        function by(f: Provider): Encoder;
+        function byteArray(data: Encoding.FloatArray | Encoding.IntArray): Result;
+        function fixedPoint(factor: number): Provider;
+        function intervalQuantizaiton(min: number, max: number, numSteps: number, arrayType?: new (size: number) => Encoding.IntArray): Provider;
+        function runLength(data: Encoding.IntArray): Result;
+        function delta(data: Int8Array | Int16Array | Int32Array): Result;
         /**
-         * Number of vertices.
+         * Packs Int32 array. The packing level is determined automatically to either 1-, 2-, or 4-byte words.
          */
-        vertexCount: number;
+        function integerPacking(data: Int32Array): Result;
+        function stringArray(data: string[]): Result;
+    }
+}
+declare namespace CIFTools.Binary {
+    const VERSION: string;
+    type Encoding = Encoding.ByteArray | Encoding.FixedPoint | Encoding.RunLength | Encoding.Delta | Encoding.IntervalQuantization | Encoding.IntegerPacking | Encoding.StringArray;
+    interface EncodedFile {
+        version: string;
+        encoder: string;
+        dataBlocks: EncodedDataBlock[];
+    }
+    interface EncodedDataBlock {
+        header: string;
+        categories: EncodedCategory[];
+    }
+    interface EncodedCategory {
+        name: string;
+        rowCount: number;
+        columns: EncodedColumn[];
+    }
+    interface EncodedColumn {
+        name: string;
+        data: EncodedData;
         /**
-         * Number of triangles.
-         */
-        triangleCount: number;
-        /**
-         * Array of size 3 * vertexCount. Layout [x1, y1, z1, ...., xn, yn, zn]
-         */
-        vertices: Float32Array;
-        /**
-         * 3 indexes for each triangle
-         */
-        triangleIndices: Uint32Array;
-        /**
-         * Per vertex annotation.
-         */
-        annotation?: number[];
-        /**
-         * Array of size 3 * vertexCount. Layout [x1, y1, z1, ...., xn, yn, zn]
+         * The mask represents the presence or absent of particular "CIF value".
+         * If the mask is not set, every value is present.
          *
-         * Computed on demand.
+         * 0 = Value is present
+         * 1 = . = value not specified
+         * 2 = ? = value unknown
          */
-        normals?: Float32Array;
-        /**
-         * Bounding sphere.
-         */
-        boundingSphere?: {
-            center: Geometry.LinearAlgebra.ObjectVec3;
-            radius: number;
-        };
+        mask?: EncodedData;
     }
-    namespace Surface {
-        function computeNormalsImmediate(surface: Surface): void;
-        function computeNormals(surface: Surface): Computation<Surface>;
-        function laplacianSmooth(surface: Surface, iterCount?: number): Computation<Surface>;
-        function computeBoundingSphere(surface: Surface): Computation<Surface>;
-        function transformImmediate(surface: Surface, t: number[]): void;
-        function transform(surface: Surface, t: number[]): Computation<Surface>;
+    interface EncodedData {
+        encoding: Encoding[];
+        data: Uint8Array;
     }
-}
-declare namespace LiteMol.Core.Geometry.MarchingCubes {
-    /**
-     * The parameters required by the algorithm.
-     */
-    interface MarchingCubesParameters {
-        isoLevel: number;
-        scalarField: Formats.Density.Field3D;
-        bottomLeft?: number[];
-        topRight?: number[];
-        annotationField?: Formats.Density.Field3D;
-    }
-    function compute(parameters: MarchingCubesParameters): Computation<Surface>;
-}
-declare namespace LiteMol.Core.Geometry.MarchingCubes {
-    class Index {
-        i: number;
-        j: number;
-        k: number;
-        constructor(i: number, j: number, k: number);
-    }
-    class IndexPair {
-        a: Index;
-        b: Index;
-        constructor(a: Index, b: Index);
-    }
-    var EdgesXY: number[][];
-    var EdgesXZ: number[][];
-    var EdgesYZ: number[][];
-    var CubeVertices: Index[];
-    var CubeEdges: IndexPair[];
-    var EdgeIdInfo: {
-        i: number;
-        j: number;
-        k: number;
-        e: number;
-    }[];
-    var EdgeTable: number[];
-    var TriTable: number[][];
-}
-declare namespace LiteMol.Core.Geometry.MolecularSurface {
-    interface MolecularIsoSurfaceParameters {
-        exactBoundary?: boolean;
-        boundaryDelta?: {
-            dx: number;
-            dy: number;
-            dz: number;
-        };
-        probeRadius?: number;
-        atomRadius?: (i: number) => number;
-        density?: number;
-        interactive?: boolean;
-        smoothingIterations?: number;
-    }
-    interface MolecularIsoField {
-        data: Geometry.MarchingCubes.MarchingCubesParameters;
-        bottomLeft: Geometry.LinearAlgebra.ObjectVec3;
-        topRight: Geometry.LinearAlgebra.ObjectVec3;
-        transform: number[];
-        inputParameters: MolecularSurfaceInputParameters;
-        parameters: MolecularIsoSurfaceParameters;
-    }
-    interface MolecularIsoSurfaceGeometryData {
-        surface: Surface;
-        usedParameters: MolecularIsoSurfaceParameters;
-    }
-    function createMolecularIsoFieldAsync(parameters: MolecularSurfaceInputParameters): Computation<MolecularIsoField>;
-    interface MolecularSurfaceInputParameters {
-        positions: Core.Structure.PositionTable;
-        atomIndices: number[];
-        parameters?: MolecularIsoSurfaceParameters;
-    }
-    function computeMolecularSurfaceAsync(parameters: MolecularSurfaceInputParameters): Computation<MolecularIsoSurfaceGeometryData>;
-}
-declare namespace LiteMol.Core.Structure {
-    import DataTable = Utils.DataTable;
-    interface Position {
-        x: number;
-        y: number;
-        z: number;
-    }
-    interface Atom {
-        id: number;
-        name: string;
-        authName: string;
-        elementSymbol: string;
-        altLoc: string | null;
-        occupancy: number;
-        tempFactor: number;
-        residueIndex: number;
-        chainIndex: number;
-        entityIndex: number;
-        rowIndex: number;
-    }
-    interface Residue {
-        name: string;
-        seqNumber: number;
-        asymId: string;
-        authName: string;
-        authSeqNumber: number;
-        authAsymId: string;
-        insCode: string | null;
-        entityId: string;
-        isHet: number;
-        atomStartIndex: number;
-        atomEndIndex: number;
-        chainIndex: number;
-        entityIndex: number;
-        secondaryStructureIndex: number;
-    }
-    interface Chain {
-        asymId: string;
-        authAsymId: string;
-        entityId: string;
-        atomStartIndex: number;
-        atomEndIndex: number;
-        residueStartIndex: number;
-        residueEndIndex: number;
-        entityIndex: number;
-        sourceChainIndex: number;
-        operatorIndex: number;
-    }
-    interface Entity {
-        entityId: string;
-        atomStartIndex: number;
-        atomEndIndex: number;
-        residueStartIndex: number;
-        residueEndIndex: number;
-        chainStartIndex: number;
-        chainEndIndex: number;
-        type: Entity.Type;
-    }
-    namespace Entity {
-        type Type = 'polymer' | 'non-polymer' | 'water' | 'unknown';
-    }
-    interface Bond {
-        atomAIndex: number;
-        atomBIndex: number;
-        type: Bond.Type;
-    }
-    namespace Bond {
-        const enum Type {
-            Unknown = 0,
-            Single = 1,
-            Double = 2,
-            Triple = 3,
-            Aromatic = 4,
-            Metallic = 5,
-            Ion = 6,
-            Hydrogen = 7,
-            DisulfideBridge = 8,
+    namespace Encoding {
+        const enum IntDataType {
+            Int8 = 1,
+            Int16 = 2,
+            Int32 = 3,
+            Uint8 = 4,
+            Uint16 = 5,
+            Uint32 = 6,
         }
-    }
-    class ComponentBondInfoEntry {
-        id: string;
-        map: Utils.FastMap<string, Utils.FastMap<string, Bond.Type>>;
-        add(a: string, b: string, order: Bond.Type, swap?: boolean): void;
-        constructor(id: string);
-    }
-    class ComponentBondInfo {
-        entries: Utils.FastMap<string, ComponentBondInfoEntry>;
-        newEntry(id: string): ComponentBondInfoEntry;
-    }
-    /**
-     * Identifier for a reside that is a part of the polymer.
-     */
-    class PolyResidueIdentifier {
-        asymId: string;
-        seqNumber: number;
-        insCode: string | null;
-        constructor(asymId: string, seqNumber: number, insCode: string | null);
-        static areEqual(a: PolyResidueIdentifier, index: number, bAsymId: string[], bSeqNumber: number[], bInsCode: string[]): boolean;
-        static compare(a: PolyResidueIdentifier, b: PolyResidueIdentifier): 0 | 1 | -1;
-        static compareResidue(a: PolyResidueIdentifier, index: number, bAsymId: string[], bSeqNumber: number[], bInsCode: string[]): 0 | 1 | -1;
-    }
-    const enum SecondaryStructureType {
-        None = 0,
-        Helix = 1,
-        Turn = 2,
-        Sheet = 3,
-        AminoSeq = 4,
-        Strand = 5,
-    }
-    class SecondaryStructureElement {
-        type: SecondaryStructureType;
-        startResidueId: PolyResidueIdentifier;
-        endResidueId: PolyResidueIdentifier;
-        info: any;
-        startResidueIndex: number;
-        endResidueIndex: number;
-        readonly length: number;
-        constructor(type: SecondaryStructureType, startResidueId: PolyResidueIdentifier, endResidueId: PolyResidueIdentifier, info?: any);
-    }
-    class SymmetryInfo {
-        spacegroupName: string;
-        cellSize: number[];
-        cellAngles: number[];
-        toFracTransform: number[];
-        isNonStandardCrytalFrame: boolean;
-        constructor(spacegroupName: string, cellSize: number[], cellAngles: number[], toFracTransform: number[], isNonStandardCrytalFrame: boolean);
-    }
-    /**
-     * Wraps an assembly operator.
-     */
-    class AssemblyOperator {
-        id: string;
-        name: string;
-        operator: number[];
-        constructor(id: string, name: string, operator: number[]);
-    }
-    /**
-     * Wraps a single assembly gen entry.
-     */
-    class AssemblyGenEntry {
-        operators: string[][];
-        asymIds: string[];
-        constructor(operators: string[][], asymIds: string[]);
-    }
-    /**
-     * Wraps an assembly generation template.
-     */
-    class AssemblyGen {
-        name: string;
-        gens: AssemblyGenEntry[];
-        constructor(name: string);
-    }
-    /**
-     * Information about the assemblies.
-     */
-    class AssemblyInfo {
-        operators: {
-            [id: string]: AssemblyOperator;
-        };
-        assemblies: AssemblyGen[];
-        constructor(operators: {
-            [id: string]: AssemblyOperator;
-        }, assemblies: AssemblyGen[]);
-    }
-    type PositionTable = DataTable<Position>;
-    type AtomTable = DataTable<Atom>;
-    type ResidueTable = DataTable<Residue>;
-    type ChainTable = DataTable<Chain>;
-    type EntityTable = DataTable<Entity>;
-    type BondTable = DataTable<Bond>;
-    /**
-     * Default Builders
-     */
-    namespace Tables {
-        const Positions: DataTable.Definition<Position>;
-        const Atoms: DataTable.Definition<Atom>;
-        const Residues: DataTable.Definition<Residue>;
-        const Chains: DataTable.Definition<Chain>;
-        const Entities: DataTable.Definition<Entity>;
-        const Bonds: DataTable.Definition<Bond>;
-    }
-    class Operator {
-        matrix: number[];
-        id: string;
-        isIdentity: boolean;
-        apply(v: Geometry.LinearAlgebra.ObjectVec3): void;
-        static applyToModelUnsafe(matrix: number[], m: Molecule.Model): void;
-        constructor(matrix: number[], id: string, isIdentity: boolean);
-    }
-    interface Molecule {
-        readonly properties: Molecule.Properties;
-        readonly id: string;
-        readonly models: Molecule.Model[];
-    }
-    namespace Molecule {
-        function create(id: string, models: Model[], properties?: Properties): Molecule;
-        interface Properties {
-            experimentMethod?: string;
+        const enum FloatDataType {
+            Float32 = 32,
+            Float64 = 33,
         }
-        interface Bonds {
-            covalent?: BondTable;
-            nonCovalent?: BondTable;
-            computed?: BondTable;
-            readonly component?: ComponentBondInfo;
+        type DataType = IntDataType | FloatDataType;
+        type IntArray = Int8Array | Int16Array | Int32Array | Uint8Array | Uint16Array | Uint32Array;
+        type FloatArray = Float32Array | Float64Array;
+        function getDataType(data: IntArray | FloatArray): DataType;
+        function isSignedIntegerDataType(data: IntArray): boolean;
+        interface ByteArray {
+            kind: 'ByteArray';
+            type: DataType;
         }
-        interface Model extends Model.Base {
-            readonly queryContext: Query.Context;
+        interface FixedPoint {
+            kind: 'FixedPoint';
+            factor: number;
+            srcType: FloatDataType;
         }
-        namespace Model {
-            function create(model: Base): Model;
-            enum Source {
-                File = 0,
-                Computed = 1,
-            }
-            interface Base {
-                readonly id: string;
-                readonly modelId: string;
-                readonly positions: PositionTable;
-                readonly data: Data;
-                readonly source: Source;
-                readonly parent?: Model;
-                readonly operators?: Operator[];
-            }
-            interface Data {
-                readonly atoms: AtomTable;
-                readonly residues: ResidueTable;
-                readonly chains: ChainTable;
-                readonly entities: EntityTable;
-                readonly bonds: Bonds;
-                readonly secondaryStructure: SecondaryStructureElement[];
-                readonly symmetryInfo?: SymmetryInfo;
-                readonly assemblyInfo?: AssemblyInfo;
-            }
-            function withTransformedXYZ<T>(model: Model, ctx: T, transform: (ctx: T, x: number, y: number, z: number, out: Geometry.LinearAlgebra.ObjectVec3) => void): Model;
+        interface IntervalQuantization {
+            kind: 'IntervalQuantization';
+            min: number;
+            max: number;
+            numSteps: number;
+            srcType: FloatDataType;
+        }
+        interface RunLength {
+            kind: 'RunLength';
+            srcType: IntDataType;
+            srcSize: number;
+        }
+        interface Delta {
+            kind: 'Delta';
+            origin: number;
+            srcType: IntDataType;
+        }
+        interface IntegerPacking {
+            kind: 'IntegerPacking';
+            byteCount: number;
+            isUnsigned: boolean;
+            srcSize: number;
+        }
+        interface StringArray {
+            kind: 'StringArray';
+            dataEncoding: Encoding[];
+            stringData: string;
+            offsetEncoding: Encoding[];
+            offsets: Uint8Array;
         }
     }
 }
-declare namespace LiteMol.Core.Structure {
-    class Spacegroup {
-        info: Structure.SymmetryInfo;
-        private temp;
-        private tempV;
-        private space;
-        private operators;
-        readonly operatorCount: number;
-        getOperatorMatrix(index: number, i: number, j: number, k: number, target: number[]): number[];
-        private getSpace();
-        private static getOperator(ids);
-        private getOperators();
-        constructor(info: Structure.SymmetryInfo);
-    }
-    namespace SpacegroupTables {
-        var Transform: number[][];
-        var Operator: number[][];
-        var Group: number[][];
-        var Spacegroup: {
-            [key: string]: number;
-        };
+declare namespace CIFTools.Binary {
+    function parse(data: ArrayBuffer): ParserResult<CIFTools.File>;
+}
+declare namespace CIFTools.Binary {
+    class Writer<Context> implements CIFTools.Writer<Context> {
+        private data;
+        private dataBlocks;
+        private encodedData;
+        startDataBlock(header: string): void;
+        writeCategory(category: CategoryProvider, contexts?: Context[]): void;
+        encode(): void;
+        flush(stream: OutputStream): void;
+        constructor(encoder: string);
     }
 }
-declare namespace LiteMol.Core.Structure {
-    function buildPivotGroupSymmetry(model: Molecule.Model, radius: number, pivotsQuery?: Query.Source): Molecule.Model;
-    function buildSymmetryMates(model: Molecule.Model, radius: number): Molecule.Model;
-    function buildAssembly(model: Molecule.Model, assembly: AssemblyGen): Molecule.Model;
-}
-declare namespace LiteMol.Core.Structure {
-    /**
-     * The query is a mapping from a context to a sequence of fragments.
-     */
-    type Query = (ctx: Query.Context) => Query.FragmentSeq;
-    namespace Query {
-        function apply(q: Source, m: Molecule.Model): FragmentSeq;
-        type Source = Query | string | Builder;
-        /**
-         * The context of a query.
-         *
-         * Stores:
-         * - the mask of "active" atoms.
-         * - kd-tree for fast geometry queries.
-         * - the molecule itself.
-         *
-         */
-        class Context {
-            private mask;
-            private lazyTree;
-            /**
-             * Number of atoms in the current context.
-             */
-            readonly atomCount: number;
-            /**
-             * Determine if the context contains all atoms of the input model.
-             */
-            readonly isComplete: boolean;
-            /**
-             * The structure this context is based on.
-             */
-            structure: Molecule.Model;
-            /**
-             * Get a kd-tree for the atoms in the current context.
-             */
-            readonly tree: Geometry.SubdivisionTree3D<number>;
-            /**
-             * Checks if an atom is included in the current context.
-             */
-            hasAtom(index: number): boolean;
-            /**
-             * Checks if an atom from the range is included in the current context.
-             */
-            hasRange(start: number, end: number): boolean;
-            /**
-             * Create a new context based on the provide structure.
-             */
-            static ofStructure(structure: Molecule.Model): Context;
-            /**
-             * Create a new context from a sequence of fragments.
-             */
-            static ofFragments(seq: FragmentSeq): Context;
-            /**
-             * Create a new context from a sequence of fragments.
-             */
-            static ofAtomIndices(structure: Molecule.Model, atomIndices: number[]): Context;
-            constructor(structure: Molecule.Model, mask: Context.Mask);
-            private makeTree();
-        }
-        namespace Context {
-            /**
-             * Represents the atoms in the context.
-             */
-            interface Mask {
-                size: number;
-                has(i: number): boolean;
-            }
-            module Mask {
-                function ofStructure(structure: Molecule.Model): Mask;
-                function ofIndices(structure: Molecule.Model, atomIndices: number[]): Mask;
-                function ofFragments(seq: FragmentSeq): Mask;
-            }
-        }
-        /**
-         * The basic element of the query language.
-         * Everything is represented as a fragment.
-         */
-        class Fragment {
-            /**
-             * The index of the first atom of the generator.
-             */
-            tag: number;
-            /**
-             * Indices of atoms.
-             */
-            atomIndices: number[];
-            /**
-             * The context the fragment belongs to.
-             */
-            context: Context;
-            private _hashCode;
-            private _hashComputed;
-            /**
-             * The hash code of the fragment.
-             */
-            readonly hashCode: number;
-            /**
-             * Id composed of <moleculeid>_<tag>.
-             */
-            readonly id: string;
-            /**
-             * Number of atoms.
-             */
-            readonly atomCount: number;
-            /**
-             * Determines if a fragment is HET based on the tag.
-             */
-            readonly isHet: any;
-            private _fingerprint;
-            /**
-             * A sorted list of residue identifiers.
-             */
-            readonly fingerprint: string;
-            private _authFingerprint;
-            /**
-             * A sorted list of residue identifiers.
-             */
-            readonly authFingerprint: string;
-            /**
-             * Executes a query on the current fragment.
-             */
-            find(what: Source): FragmentSeq;
-            private _residueIndices;
-            private _chainIndices;
-            private _entityIndices;
-            private computeIndices();
-            /**
-             * A sorted list of residue indices.
-             */
-            readonly residueIndices: number[];
-            /**
-             * A sorted list of chain indices.
-             */
-            readonly chainIndices: number[];
-            /**
-             * A sorted list of entity indices.
-             */
-            readonly entityIndices: number[];
-            static areEqual(a: Fragment, b: Fragment): boolean;
-            /**
-             * Create a fragment from an integer set.
-             * Assumes the set is in the given context's mask.
-             */
-            static ofSet(context: Context, atomIndices: Utils.FastSet<number>): Fragment;
-            /**
-             * Create a fragment from an integer array.
-             * Assumes the set is in the given context's mask.
-             * Assumes the array is sorted.
-             */
-            static ofArray(context: Context, tag: number, atomIndices: Int32Array): Fragment;
-            /**
-             * Create a fragment from a single index.
-             * Assumes the index is in the given context's mask.
-             */
-            static ofIndex(context: Context, index: number): Fragment;
-            /**
-             * Create a fragment from a <start,end) range.
-             * Assumes the fragment is non-empty in the given context's mask.
-             */
-            static ofIndexRange(context: Context, start: number, endExclusive: number): Fragment;
-            /**
-             * Create a fragment from an integer set.
-             */
-            constructor(context: Context, tag: number, atomIndices: number[]);
-        }
-        /**
-         * A sequence of fragments the queries operate on.
-         */
-        class FragmentSeq {
-            context: Context;
-            fragments: Fragment[];
-            static empty(ctx: Context): FragmentSeq;
-            readonly length: number;
-            /**
-             * Merges atom indices from all fragments.
-             */
-            unionAtomIndices(): number[];
-            /**
-             * Merges atom indices from all fragments into a single fragment.
-             */
-            unionFragment(): Fragment;
-            constructor(context: Context, fragments: Fragment[]);
-        }
-        /**
-         * A builder that includes all fragments.
-         */
-        class FragmentSeqBuilder {
-            private ctx;
-            private fragments;
-            add(f: Fragment): void;
-            getSeq(): FragmentSeq;
-            constructor(ctx: Context);
-        }
-        /**
-         * A builder that includes only unique fragments.
-         */
-        class HashFragmentSeqBuilder {
-            private ctx;
-            private fragments;
-            private byHash;
-            add(f: Fragment): this;
-            getSeq(): FragmentSeq;
-            constructor(ctx: Context);
-        }
-    }
-}
-declare namespace LiteMol.Core.Structure.Query {
-    interface Builder {
-        compile(): Query;
-        complement(): Builder;
-        ambientResidues(radius: number): Builder;
-        wholeResidues(): Builder;
-        union(): Builder;
-        inside(where: Source): Builder;
-        intersectWith(where: Source): Builder;
-        flatten(selector: (f: Fragment) => FragmentSeq): Builder;
-    }
-    namespace Builder {
-        const BuilderPrototype: any;
-        function registerModifier(name: string, f: Function): void;
-        function build(compile: () => Query): Builder;
-        function parse(query: string): Query;
-        function toQuery(q: Source): Query;
-    }
-    interface EntityIdSchema {
-        entityId?: string;
-        type?: string;
-    }
-    interface AsymIdSchema extends EntityIdSchema {
-        asymId?: string;
-        authAsymId?: string;
-    }
-    interface ResidueIdSchema extends AsymIdSchema {
-        name?: string;
-        seqNumber?: number;
-        authName?: string;
-        authSeqNumber?: number;
-        insCode?: string | null;
-    }
-    function atomsByElement(...elements: string[]): Builder;
-    function atomsByName(...names: string[]): Builder;
-    function atomsById(...ids: number[]): Builder;
-    function residues(...ids: ResidueIdSchema[]): Builder;
-    function chains(...ids: AsymIdSchema[]): Builder;
-    function entities(...ids: EntityIdSchema[]): Builder;
-    function notEntities(...ids: EntityIdSchema[]): Builder;
-    function everything(): Builder;
-    function entitiesFromIndices(indices: number[]): Builder;
-    function chainsFromIndices(indices: number[]): Builder;
-    function residuesFromIndices(indices: number[]): Builder;
-    function atomsFromIndices(indices: number[]): Builder;
-    function sequence(entityId: string, asymId: string | AsymIdSchema, startId: ResidueIdSchema, endId: ResidueIdSchema): Builder;
-    function hetGroups(): Builder;
-    function nonHetPolymer(): Builder;
-    function polymerTrace(...atomNames: string[]): Builder;
-    function cartoons(): Builder;
-    function backbone(): Builder;
-    function sidechain(): Builder;
-    function atomsInBox(min: {
-        x: number;
-        y: number;
-        z: number;
-    }, max: {
-        x: number;
-        y: number;
-        z: number;
-    }): Builder;
-    function or(...elements: Source[]): Builder;
-    function complement(q: Source): Builder;
-    function ambientResidues(q: Source, radius: number): Builder;
-    function wholeResidues(q: Source): Builder;
-    function union(q: Source): Builder;
-    function inside(q: Source, where: Source): Builder;
-    function intersectWith(what: Source, where: Source): Builder;
-    function flatten(what: Source, selector: (f: Fragment) => FragmentSeq): Builder;
-    /**
-     * Shortcuts
-     */
-    function residuesByName(...names: string[]): Builder;
-    function residuesById(...ids: number[]): Builder;
-    function chainsById(...ids: string[]): Builder;
-    /**
-     * Query compilation wrapper.
-     */
-    namespace Compiler {
-        function compileEverything(): (ctx: Context) => FragmentSeq;
-        function compileAtoms(elements: string[] | number[], sel: (model: Structure.Molecule.Model) => string[] | number[]): (ctx: Context) => FragmentSeq;
-        function compileAtomIndices(indices: number[]): (ctx: Context) => FragmentSeq;
-        function compileFromIndices(complement: boolean, indices: number[], tableProvider: (molecule: Structure.Molecule.Model) => {
-            atomStartIndex: number[];
-            atomEndIndex: number[];
-        } & Utils.DataTable<any>): Query;
-        function compileAtomRanges(complement: boolean, ids: ResidueIdSchema[], tableProvider: (molecule: Structure.Molecule.Model) => {
-            atomStartIndex: number[];
-            atomEndIndex: number[];
-        } & Utils.DataTable<any>): Query;
-        function compileSequence(seqEntityId: string, seqAsymId: string | AsymIdSchema, start: ResidueIdSchema, end: ResidueIdSchema): Query;
-        function compileHetGroups(): Query;
-        function compileNonHetPolymer(): Query;
-        function compileAtomsInBox(min: {
-            x: number;
-            y: number;
-            z: number;
-        }, max: {
-            x: number;
-            y: number;
-            z: number;
-        }): Query;
-        function compileInside(what: Source, where: Source): Query;
-        function compileIntersectWith(what: Source, where: Source): Query;
-        function compileFilter(what: Source, filter: (f: Fragment) => boolean): Query;
-        function compileComplement(what: Source): Query;
-        function compileOr(queries: Source[]): (ctx: Context) => FragmentSeq;
-        function compileUnion(what: Source): Query;
-        function compilePolymerNames(names: string[], complement: boolean): Query;
-        function compileAmbientResidues(where: Source, radius: number): (ctx: Context) => FragmentSeq;
-        function compileWholeResidues(where: Source): (ctx: Context) => FragmentSeq;
-        function compileFlatten(what: Source, selector: (f: Fragment) => FragmentSeq): (ctx: Context) => FragmentSeq;
-    }
-}
-declare namespace LiteMol.Core.Structure.Query.Algebraic {
-    type Predicate = (ctx: Context, i: number) => boolean;
-    type Selector = (ctx: Context, i: number) => any;
-    const not: (a: Predicate) => Predicate;
-    const and: (a: Predicate, b: Predicate) => Predicate;
-    const or: (a: Predicate, b: Predicate) => Predicate;
-    const backbone: Predicate;
-    const sidechain: Predicate;
-    const equal: (a: Selector, b: Selector) => Predicate;
-    const notEqual: (a: Selector, b: Selector) => Predicate;
-    const greater: (a: Selector, b: Selector) => Predicate;
-    const lesser: (a: Selector, b: Selector) => Predicate;
-    const greaterEqual: (a: Selector, b: Selector) => Predicate;
-    const lesserEqual: (a: Selector, b: Selector) => Predicate;
-    function inRange(s: Selector, a: number, b: number): Predicate;
-    /**
-     * Selectors
-     */
-    function value(v: any): Selector;
-    const residueSeqNumber: Selector;
-    const residueName: Selector;
-    const elementSymbol: Selector;
-    const atomName: Selector;
-    const entityType: Selector;
-    /**
-     * Query
-     */
-    function query(p: Predicate): Builder;
-}
-declare module 'LiteMol-core' {
-    import __Core = LiteMol.Core;
-    export = __Core;
+declare module 'CIFTools' {
+    import __Tools = CIFTools;
+    export = __Tools;
 }
 
 // Type definitions for three.js r71
@@ -12051,883 +7353,6 @@ declare module LiteMolTHREE {
 }
 
 
-declare namespace LiteMol.Visualization {
-    var VERSION: {
-        number: string;
-        date: string;
-    };
-}
-declare namespace LiteMol.Visualization {
-    export import THREE = LiteMolTHREE;
-}
-declare namespace LiteMol.Visualization {
-    function checkWebGL(): boolean;
-    interface IDisposable {
-        dispose(): void;
-    }
-    class GeometryHelper {
-        static setPickBase(objectId: number, objectIdWidth: number, elementId: number, color: {
-            r: number;
-            g: number;
-            b: number;
-        }): void;
-        static setPickColor(objectId: number, objectIdWidth: number, elementId: number, buffer: Float32Array, offset: number): void;
-        static toSurface(source: THREE.Geometry): Core.Geometry.Surface;
-        static getIndexedBufferGeometry(source: THREE.Geometry): THREE.BufferGeometry;
-    }
-}
-declare namespace LiteMol.Visualization {
-    interface Color {
-        r: number;
-        g: number;
-        b: number;
-    }
-    namespace Color {
-        function copy(from: Color, to: Color): void;
-        function clone({r, g, b}: Color): Color;
-        function toVector(color: Color): THREE.Vector3;
-        function fromVector(v: {
-            x: number;
-            y: number;
-            z: number;
-        }): Color;
-        function fromRgb(r: number, g: number, b: number): Color;
-        function fromHsl(h: number, s: number, l: number): Color;
-        function fromHsv(h: number, s: number, v: number): Color;
-        function random(): Color;
-        function fromHex(v: number): Color;
-        /**
-         * Parse color in formats #rgb and #rrggbb
-         */
-        function fromHexString(s: string): Color;
-        function interpolate(a: Color, b: Color, t: number, target: Color): void;
-        function isColor(c: any): c is Color;
-    }
-    interface Theme {
-        colors: Theme.ColorMap;
-        transparency: Theme.Transparency;
-        interactive: boolean;
-        disableFog: boolean;
-        setElementColor(index: number, target: Color): void;
-    }
-    namespace Theme {
-        interface Props {
-            colors?: ColorMap;
-            transparency?: Theme.Transparency;
-            interactive?: boolean;
-            disableFog?: boolean;
-        }
-        interface Transparency {
-            alpha?: number;
-            writeDepth?: boolean;
-        }
-        interface ColorMap {
-            get(key: any): Color | undefined;
-            forEach(f: (value: Color, key: any) => void): void;
-        }
-        namespace Default {
-            const HighlightColor: Color;
-            const SelectionColor: Color;
-            const UniformColor: Color;
-            const Transparency: Transparency;
-        }
-        interface ElementMapping {
-            getProperty(index: number): any;
-            setColor(property: any, c: Color): void;
-        }
-        function isTransparent(theme: Theme): boolean;
-        function getColor(theme: Theme, name: string, fallback: Color): Color;
-        function createUniform(props?: Props): Theme;
-        function createMapping(mapping: ElementMapping, props?: Props): Theme;
-        function createColorMapMapping(getProperty: (index: number) => any, map: ColorMap, fallbackColor: Color): ElementMapping;
-        function createPalleteMapping(getProperty: (index: number) => any, pallete: Color[]): ElementMapping;
-    }
-}
-declare namespace LiteMol.Visualization {
-    class MaterialsHelper {
-        private static pickVertexShader;
-        private static pickFragmentShader;
-        static getPickMaterial(): THREE.ShaderMaterial;
-        static getPickExcludeMaterial(): THREE.MeshBasicMaterial;
-        static shader: {
-            uniforms: any;
-            vertexShader: string;
-            fragmentShader: string;
-        };
-        private static compareVectorAndColor(v, c);
-        static updateMaterial(material: THREE.ShaderMaterial | THREE.MeshPhongMaterial, theme: Theme, object: THREE.Object3D): void;
-        private static updateHighlightColor(material, theme);
-        private static updateTransparencyAndFog(material, theme, object);
-        static getMeshMaterial(shading?: THREE.Shading, isWireframe?: boolean): THREE.ShaderMaterial;
-        static getPhongVertexColorMaterial(): THREE.MeshPhongMaterial;
-        static getDefaultHighlightMaterial(): THREE.MeshPhongMaterial;
-        static applyColorToMap(map: Selection.VertexMap, indices: number[], bufferAttribute: THREE.BufferAttribute, getter: (i: number, c: Color) => void): void;
-    }
-}
-declare namespace LiteMol.Visualization {
-    abstract class GeometryBase implements IDisposable {
-        abstract dispose(): void;
-        constructor();
-    }
-    abstract class Model {
-        constructor();
-        id: number;
-        entity: any;
-        centroid: THREE.Vector3;
-        radius: number;
-        object: THREE.Object3D;
-        theme: Theme;
-        disposeList: IDisposable[];
-        pickObject: THREE.Object3D | undefined;
-        pickBufferAttributes: THREE.BufferAttribute[];
-        dirty: boolean;
-        props: Model.Props;
-        tag: any;
-        updateVisibility(visible: boolean): void;
-        getVisibility(): boolean;
-        applyTheme(theme: Theme): void;
-        updateId(id: number, idWidth: number): void;
-        dispose(): void;
-        highlight(isOn: boolean): boolean;
-        applySelection(indices: number[], action: Selection.Action): boolean;
-        getBoundingSphereOfSelection(indices: number[]): {
-            radius: number;
-            center: Core.Geometry.LinearAlgebra.ObjectVec3;
-        } | undefined;
-        abstract highlightElement(pickId: number, highlight: boolean): boolean;
-        abstract getPickElements(pickId: number): number[];
-        protected abstract applySelectionInternal(indices: number[], action: Selection.Action): boolean;
-        protected abstract applyThemeInternal(theme: Theme): void;
-        protected abstract highlightInternal(isOn: boolean): boolean;
-        protected getPickObjectVisibility(visible: boolean): boolean;
-    }
-    namespace Model {
-        interface Props {
-        }
-    }
-}
-declare namespace LiteMol.Visualization {
-    class ModelStore {
-        scene: Scene;
-        private availableIds;
-        private list;
-        private map;
-        private maxId;
-        private _idWidth;
-        readonly idWidth: number;
-        readonly all: Model[];
-        readonly count: number;
-        getBySceneId(id: number): Model | undefined;
-        add(model: Model, resetCamera?: boolean): void;
-        private dispose(model);
-        removeAndDispose(model: Model): void;
-        clear(): void;
-        constructor(scene: Scene);
-    }
-}
-declare namespace LiteMol.Visualization {
-    enum CameraType {
-        Perspective = 0,
-        Orthographic = 1,
-    }
-    class SlabControls {
-        private width;
-        private height;
-        private touchSlabOn;
-        private touchStartPosition;
-        private touchPosition;
-        private radius;
-        private slabWheelRate;
-        private _planeDelta;
-        private subs;
-        readonly planeDelta: LiteMol.Core.Rx.IObservable<number>;
-        updateSize(w: number, h: number): void;
-        updateRadius(r: number): void;
-        destroy(): void;
-        private handleMouseWheel(event);
-        private touchstart(event);
-        private touchend(event);
-        private touchmove(event);
-        constructor(element: HTMLElement);
-    }
-    class Camera {
-        private scene;
-        private domElement;
-        private camera;
-        private controls;
-        private slabControls;
-        fog: THREE.Fog;
-        focusPoint: THREE.Vector3;
-        focusRadius: number;
-        targetDistance: number;
-        nearPlaneDistance: number;
-        nearPlaneDelta: number;
-        fogEnabled: boolean;
-        fogDelta: number;
-        static shouldInUpdateInclude(m: Model): boolean;
-        private updateFocus(models);
-        private focus();
-        reset(): void;
-        snapshot(): {
-            state: CameraControlsState;
-            prevState: CameraControlsState;
-            target: THREE.Vector3;
-            objPos: THREE.Vector3;
-            objUp: THREE.Vector3;
-            eye: THREE.Vector3;
-            lastPosition: THREE.Vector3;
-        };
-        restore(state: any): void;
-        focusOnModel(...models: Model[]): void;
-        focusOnPoint(center: {
-            x: number;
-            y: number;
-            z: number;
-        }, radius: number): void;
-        move(target: {
-            x: number;
-            y: number;
-            z: number;
-        }): void;
-        updateSize(w: number, h: number): void;
-        readonly position: THREE.Vector3;
-        readonly object: THREE.Camera;
-        private unbindCamera;
-        dispose(): void;
-        private planeDeltaUpdate(delta);
-        computeNearDistance(): number;
-        cameraUpdated(): void;
-        createCamera(): void;
-        private setup();
-        private observers;
-        observe(callback: (c: Camera) => void): void;
-        stopObserving(callback: (c: Camera) => void): void;
-        constructor(scene: Scene, domElement: HTMLElement);
-    }
-}
-declare namespace LiteMol.Visualization {
-    interface SceneOptions {
-        alpha?: boolean;
-        clearColor?: {
-            r: number;
-            g: number;
-            b: number;
-        };
-        cameraFOV?: number;
-        cameraType?: CameraType;
-        enableFog?: boolean;
-        enableFrontClip?: boolean;
-    }
-    const DefaultSceneOptions: SceneOptions;
-    class MouseInfo {
-        private renderState;
-        private domElement;
-        private position;
-        private lastPosition;
-        private isDirty;
-        private rect;
-        exactPosition: {
-            x: number;
-            y: number;
-        };
-        constructor(renderState: RenderState, domElement: Element);
-        updateRect(): void;
-        updatePosition(clientX: number, clientY: number): void;
-        update(): boolean;
-        isInside: boolean;
-        isButtonDown: boolean;
-        setExactPosition(): void;
-    }
-    interface ILighting {
-        setup(scene: THREE.Scene): void;
-        update(cameraPosition: THREE.Vector3): void;
-    }
-    class DefaultLighting implements ILighting {
-        private lights;
-        setup(scene: THREE.Scene): void;
-        update(cameraPosition: THREE.Vector3): void;
-        constructor();
-    }
-    class RenderState {
-        width: number;
-        height: number;
-        resizing: boolean;
-        rendered: boolean;
-        lastRenderTime: number;
-        pickDelta: number;
-        animationFrame: number;
-    }
-    class Scene {
-        private static hoverEvent;
-        private static selectEvent;
-        private renderer;
-        renderState: RenderState;
-        scene: THREE.Scene;
-        pickScene: THREE.Scene;
-        private pickTarget;
-        mouseInfo: MouseInfo;
-        private pickInfo;
-        private selectInfo;
-        private unbindEvents;
-        private lighting;
-        parentElement: HTMLElement;
-        options: SceneOptions;
-        camera: Camera;
-        models: ModelStore;
-        events: THREE.EventDispatcher;
-        updateOptions(options: SceneOptions): void;
-        constructor(element: HTMLElement, options?: SceneOptions);
-        private setupMouse();
-        private clearHighlightsCall;
-        private handleSelectStart(x, y);
-        private handleSelectEnd(x, y);
-        private handleResize();
-        private needsRender();
-        private checkDirty();
-        private renderFunc;
-        private render(time);
-        private pickBuffer;
-        private dispatchHoverEvent();
-        private dispatchSelectEvent(info);
-        private clearHighlights(update?);
-        private handlePick(isSelect);
-        resized(): void;
-        forceRender(): void;
-        clear(): void;
-        screenshotAsDataURL(): string;
-        destroy(): void;
-    }
-}
-declare namespace LiteMol.Visualization {
-    const enum CameraControlsState {
-        NONE = -1,
-        ROTATE = 0,
-        ZOOM = 2,
-        PAN = 1,
-        TOUCH_ROTATE = 3,
-        TOUCH_ZOOM_PAN = 4,
-    }
-    class CameraControls {
-        camera: THREE.Camera;
-        private domElement;
-        private scene;
-        constructor(camera: THREE.Camera, domElement: HTMLElement, scene: Scene);
-        enabled: boolean;
-        rotateSpeed: number;
-        zoomSpeed: number;
-        panSpeed: number;
-        noRotate: boolean;
-        noZoom: boolean;
-        noPan: boolean;
-        noRoll: boolean;
-        staticMoving: boolean;
-        dynamicDampingFactor: number;
-        minDistance: number;
-        maxDistance: number;
-        keys: number[];
-        target: THREE.Vector3;
-        private EPS;
-        private lastPosition;
-        private _state;
-        private _keyDownState;
-        private _prevState;
-        private _eye;
-        private _rotateStart;
-        private _rotateEnd;
-        private _zoomStart;
-        private _zoomEnd;
-        private _touchZoomDistanceStart;
-        private _touchZoomDistanceEnd;
-        private _panStart;
-        private _panEnd;
-        private target0;
-        private position0;
-        private up0;
-        private changeEvent;
-        private startEvent;
-        private endEvent;
-        events: THREE.EventDispatcher;
-        private _mouseOnScreen;
-        private getMouseOnScreen();
-        private _mouseOnBallProjection;
-        private _objectUp;
-        private _mouseOnBall;
-        private getMouseProjectionOnBall();
-        private _rotationAxis;
-        private _rotationQuaternion;
-        private rotateCamera();
-        private zoomCamera();
-        private _panMouseChange;
-        private _panObjectUp;
-        private _panPan;
-        private panCamera();
-        private _panToDelta;
-        private _panToVector;
-        panTo({x, y, z}: {
-            x: number;
-            y: number;
-            z: number;
-        }): void;
-        panAndMoveToDistance({x, y, z}: {
-            x: number;
-            y: number;
-            z: number;
-        }, distance: number): void;
-        private checkDistances();
-        update(): void;
-        reset(): void;
-        getState(): {
-            state: CameraControlsState;
-            prevState: CameraControlsState;
-            target: THREE.Vector3;
-            objPos: THREE.Vector3;
-            objUp: THREE.Vector3;
-            eye: THREE.Vector3;
-            lastPosition: THREE.Vector3;
-        };
-        setState(state: any): void;
-        private keydown(event);
-        private keyup(event);
-        private mousedown(event);
-        mousemove(event: MouseEvent): void;
-        mouseup(event: MouseEvent): void;
-        private touchstart(event);
-        private touchmove(event);
-        private touchend(event);
-        private preventContextMenu(event);
-        private eventHandlers;
-        private init();
-        destroy(): void;
-    }
-}
-declare namespace LiteMol.Visualization.Selection {
-    interface Info {
-        model: Model;
-        elements?: number[];
-    }
-    class Pick {
-        current: Info | null;
-        currentPickId: number;
-        currentPickElementId: number;
-        getPickInfo(): Info | null;
-        reset(): boolean;
-        private selectPos;
-        selectStart(x: number, y: number): void;
-        selectEnd(x: number, y: number): boolean;
-    }
-    module Picking {
-        function assignPickColor(elementId: number, color: {
-            r: number;
-            g: number;
-            b: number;
-        }): void;
-        function applySceneIdFast(id: number, offset: number, data: number[]): void;
-        function applySceneIdSlow(extraBits: number, id: number, offset: number, data: number[]): void;
-        function getElementId(idWidth: number, buffer: Uint8Array): number;
-        function getSceneId(idWidth: number, buffer: Uint8Array): number;
-    }
-    const enum Action {
-        Select = 1,
-        RemoveSelect = 2,
-        Highlight = 3,
-        RemoveHighlight = 4,
-        Clear = 5,
-    }
-    class VertexMapBuilder {
-        private elementIndices;
-        private elementMap;
-        private elementRanges;
-        private vertexRanges;
-        private elementIndex;
-        private elementRangeIndex;
-        private rangeIndex;
-        private added;
-        startElement(index: number): void;
-        addVertexRange(start: number, end: number): void;
-        endElement(): void;
-        getMap(): VertexMap;
-        constructor(elementCount: number);
-    }
-    class VertexMap {
-        elementIndices: number[];
-        elementMap: Core.Utils.FastMap<number, number>;
-        elementRanges: number[];
-        vertexRanges: number[];
-        constructor(elementIndices: number[], elementMap: Core.Utils.FastMap<number, number>, elementRanges: number[], vertexRanges: number[]);
-    }
-    function applyActionToRange(array: Float32Array, start: number, end: number, action: Action): boolean;
-    function applyActionToBuffer(buffer: THREE.BufferAttribute, action: Action): boolean;
-}
-declare namespace LiteMol.Visualization.Surface {
-    import Data = Core.Geometry.Surface;
-    function buildGeometry(data: Data, computation: Core.Computation.Context, isWireframe: boolean): LiteMol.Promise<Geometry>;
-    class Geometry extends GeometryBase {
-        geometry: THREE.BufferGeometry;
-        vertexToElementMap: number[];
-        elementToVertexMap: Selection.VertexMap;
-        pickGeometry: THREE.BufferGeometry;
-        pickPlatesGeometry: THREE.BufferGeometry;
-        vertexStateBuffer: THREE.BufferAttribute;
-        center: THREE.Vector3;
-        radius: number;
-        dispose(): void;
-        constructor();
-    }
-}
-declare namespace LiteMol.Visualization.Surface {
-    interface Parameters {
-        isWireframe?: boolean;
-    }
-    const DefaultSurfaceModelParameters: Parameters;
-    class Model extends Visualization.Model {
-        private surface;
-        private geometry;
-        private material;
-        private pickMaterial;
-        protected applySelectionInternal(indices: number[], action: Selection.Action): boolean;
-        highlightElement(pickId: number, highlight: boolean): boolean;
-        protected highlightInternal(isOn: boolean): boolean;
-        getPickElements(pickId: number): number[];
-        getBoundingSphereOfSelection(indices: number[]): {
-            radius: number;
-            center: Core.Geometry.LinearAlgebra.ObjectVec3;
-        } | undefined;
-        applyThemeInternal(theme: Theme): void;
-        protected getPickObjectVisibility(visible: boolean): boolean;
-        private createObjects();
-        static create(entity: any, {surface, theme, parameters, props}: {
-            surface: Core.Geometry.Surface;
-            theme: Theme;
-            parameters?: Parameters;
-            props?: Model.Props;
-        }): Core.Computation<Model>;
-    }
-}
-declare namespace LiteMol.Visualization.Lines {
-    class Geometry extends GeometryBase {
-        geometry: THREE.BufferGeometry;
-        center: THREE.Vector3;
-        radius: number;
-        dispose(): void;
-        static create(vertices: Float32Array, indices: Uint32Array): Geometry;
-        constructor();
-    }
-}
-declare namespace LiteMol.Visualization.Lines {
-    class Model extends Visualization.Model {
-        private geometry;
-        private material;
-        protected applySelectionInternal(indices: number[], action: Selection.Action): boolean;
-        highlightElement(pickId: number, highlight: boolean): boolean;
-        protected highlightInternal(isOn: boolean): boolean;
-        getPickElements(pickId: number): number[];
-        applyThemeInternal(theme: Theme): void;
-        protected getPickObjectVisibility(visible: boolean): boolean;
-        private createObjects();
-        static create(entity: any, {geometry, theme, props}: {
-            geometry: Geometry;
-            theme: Theme;
-            props?: Model.Props;
-        }): Core.Computation<Model>;
-    }
-}
-declare namespace LiteMol.Visualization.Molecule.BallsAndSticks {
-    interface Parameters {
-        tessalation?: number;
-        atomRadius?: (i: number) => number;
-        hideBonds?: boolean;
-        bondRadius?: number;
-    }
-    const DefaultBallsAndSticksModelParameters: Parameters;
-    class Model extends Visualization.Model {
-        private molecule;
-        private material;
-        private bondsMaterial;
-        private pickMaterial;
-        ballsAndSticks: BallsAndSticksGeometry;
-        protected applySelectionInternal(indices: number[], action: Selection.Action): boolean;
-        getPickElements(pickId: number): number[];
-        highlightElement(pickId: number, highlight: boolean): boolean;
-        protected highlightInternal(isOn: boolean): boolean;
-        applyThemeInternal(theme: Theme): void;
-        private createObjects();
-        static create(entity: any, {model, atomIndices, theme, params, props}: {
-            model: Core.Structure.Molecule.Model;
-            atomIndices: number[];
-            theme: Theme;
-            params: Parameters;
-            props?: Model.Props;
-        }): Core.Computation<Model>;
-    }
-}
-declare namespace LiteMol.Visualization.Molecule.BallsAndSticks {
-    function buildGeometry(model: Core.Structure.Molecule.Model, parameters: Parameters, atomIndices: number[], ctx: Core.Computation.Context): LiteMol.Promise<BallsAndSticksGeometry>;
-    class BallsAndSticksGeometry extends GeometryBase {
-        atomsGeometry: THREE.BufferGeometry;
-        bondsGeometry: THREE.BufferGeometry;
-        pickGeometry: THREE.BufferGeometry;
-        atomVertexMap: Selection.VertexMap;
-        bondVertexMap: Selection.VertexMap;
-        vertexStateBuffer: THREE.BufferAttribute;
-        dispose(): void;
-    }
-}
-declare namespace LiteMol.Visualization.Molecule.Cartoons.Geometry {
-    class Data extends GeometryBase {
-        geometry: THREE.BufferGeometry;
-        pickGeometry: THREE.BufferGeometry;
-        vertexMap: Selection.VertexMap;
-        vertexStateBuffer: THREE.BufferAttribute;
-        dispose(): void;
-    }
-    interface Context {
-        computation: Core.Computation.Context;
-        model: Core.Structure.Molecule.Model;
-        atomIndices: number[];
-        linearSegments: number;
-        parameters: any;
-        isTrace: boolean;
-        params: CartoonsGeometryParams;
-        state: CartoonsGeometryState;
-        units: CartoonAsymUnit[];
-        strandTemplate: {
-            vertex: number[];
-            normal: number[];
-            index: number[];
-            geometry: THREE.BufferGeometry;
-        };
-        strandArrays: {
-            startIndex: number[];
-            endIndex: number[];
-            x: number[];
-            y: number[];
-            z: number[];
-            name: string[];
-        };
-        builder: Builder;
-        geom: Data;
-    }
-    function create(model: Core.Structure.Molecule.Model, atomIndices: number[], linearSegments: number, parameters: any, isTrace: boolean, computation: Core.Computation.Context): LiteMol.Promise<Data>;
-}
-declare namespace LiteMol.Visualization.Molecule.Cartoons.Geometry {
-    import ChunkedArray = Core.Utils.ChunkedArray;
-    class CartoonAsymUnitState {
-        private typeBuilder;
-        private uPositionsBuilder;
-        private vPositionsBuilder;
-        private pPositionsBuilder;
-        private dPositionsBuilder;
-        residueType: Core.Structure.SecondaryStructureType[];
-        uPositions: number[];
-        vPositions: number[];
-        pPositions: number[];
-        dPositions: number[];
-        uvLength: number;
-        residueCount: number;
-        constructor(residueCount: number);
-        addResidue(rIndex: number, arrays: {
-            atomStartIndex: number[];
-            atomEndIndex: number[];
-            name: string[];
-            x: number[];
-            y: number[];
-            z: number[];
-        }, sType: Core.Structure.SecondaryStructureType): boolean;
-        finishResidues(): void;
-        addControlPoint(p: THREE.Vector3, d: THREE.Vector3): void;
-        finishContols(): void;
-    }
-    class CartoonAsymUnit {
-        private model;
-        private elements;
-        linearSegmentCount: number;
-        private static maskSplit(element, mask, target);
-        static isCartoonLike(atomIndices: number[], start: number, end: number, name: string[], a: string, b: string, isAmk: boolean): boolean;
-        static createMask(model: Core.Structure.Molecule.Model, atomIndices: number[]): boolean[];
-        private static isUnknownSecondaryStructure(model);
-        private static approximateSecondaryStructure(model, parent);
-        private static ZhangHelixDistance;
-        private static ZhangHelixDelta;
-        private static ZhangSheetDistance;
-        private static ZhangSheetDelta;
-        private static ZhangP1;
-        private static ZhangP2;
-        private static zhangSkolnickSStrace(model, trace, parent, elements);
-        private static zhangSkolnickSSresidue(model, trace, i, distances, delta);
-        private static throwIfEmpty(ss);
-        static buildUnits(model: Core.Structure.Molecule.Model, atomIndices: number[], linearSegmentCount: number): CartoonAsymUnit[];
-        private controlPointsBuilder;
-        private torsionVectorsBuilder;
-        private normalVectorsBuilder;
-        private tempA;
-        private tempB;
-        private tempC;
-        controlPoints: number[];
-        torsionVectors: number[];
-        normalVectors: number[];
-        residueCount: number;
-        structureStarts: Core.Utils.FastSet<string | number>;
-        structureEnds: Core.Utils.FastSet<string | number>;
-        residueType: Core.Structure.SecondaryStructureType[];
-        residueIndex: Int32Array;
-        backboneOnly: boolean;
-        constructor(model: Core.Structure.Molecule.Model, elements: Core.Structure.SecondaryStructureElement[], linearSegmentCount: number);
-        private createControlPoints(state);
-        private initPositions(state);
-        private initControlsPoints(state);
-        private computeSplines(state);
-        private addSplineNode(previousControlPoint, controlPoint, torsionPoint);
-        private reflectPositions(xs, u, v, a, b, c, d, r1, r2);
-        private static reflect(target, p1, p2, amount);
-        private static spline(target, p1, p2, p3, t);
-    }
-    class CartoonsGeometryParams {
-        radialSegmentCount: number;
-        turnWidth: number;
-        strandWidth: number;
-        strandLineWidth: number;
-        helixWidth: number;
-        helixHeight: number;
-        sheetWidth: number;
-        sheetHeight: number;
-        arrowWidth: number;
-        tessalation: number;
-        static Default: CartoonsGeometryParams;
-    }
-    class CartoonsGeometryState {
-        params: CartoonsGeometryParams;
-        residueIndex: number;
-        verticesDone: number;
-        trianglesDone: number;
-        vertexBuffer: ChunkedArray<number>;
-        normalBuffer: ChunkedArray<number>;
-        indexBuffer: ChunkedArray<number>;
-        translationMatrix: THREE.Matrix4;
-        scaleMatrix: THREE.Matrix4;
-        rotationMatrix: THREE.Matrix4;
-        invMatrix: THREE.Matrix4;
-        vertexMap: Selection.VertexMapBuilder;
-        addVertex(v: THREE.Vector3, n: THREE.Vector3): void;
-        addTriangle(i: number, j: number, k: number): void;
-        addTriangles(i: number, j: number, k: number, u: number, v: number, w: number): void;
-        constructor(params: CartoonsGeometryParams, residueCount: number);
-    }
-    function buildUnit(unit: CartoonAsymUnit, ctx: Context): void;
-    function buildUnitsAsync(ctx: Context): LiteMol.Promise<void>;
-    function createGeometry(ctx: Context): void;
-    class Builder {
-        constructor();
-        private tempVectors;
-        private setVector(data, i, v);
-        addTube(element: CartoonAsymUnit, state: CartoonsGeometryState, width: number, height: number): void;
-        addTubeCap(element: CartoonAsymUnit, state: CartoonsGeometryState, width: number, height: number, isStart: boolean, isEnd: boolean): void;
-        addSheet(element: CartoonAsymUnit, state: CartoonsGeometryState, isStart: boolean, isEnd: boolean): void;
-        addSheetCap(element: CartoonAsymUnit, state: CartoonsGeometryState, isStart: boolean, isEnd: boolean): void;
-        addSheepCapSection(state: CartoonsGeometryState, p1: THREE.Vector3, p2: THREE.Vector3, p3: THREE.Vector3, p4: THREE.Vector3): void;
-        private findN3(index, arrays, target);
-        addStrandLine(element: CartoonAsymUnit, state: CartoonsGeometryState, template: {
-            vertex: number[];
-            normal: number[];
-            index: number[];
-            geometry: THREE.BufferGeometry;
-        }, arrays: {
-            startIndex: number[];
-            endIndex: number[];
-            x: number[];
-            y: number[];
-            z: number[];
-            name: string[];
-        }, residueIndex: number): void;
-    }
-}
-declare namespace LiteMol.Visualization.Molecule.Cartoons {
-    enum CartoonsModelType {
-        Default = 0,
-        AlphaTrace = 1,
-    }
-    interface Parameters {
-        tessalation?: number;
-        drawingType?: CartoonsModelType;
-    }
-    const DefaultCartoonsModelParameters: Parameters;
-    class Model extends Visualization.Model {
-        private model;
-        private material;
-        private pickMaterial;
-        private queryContext;
-        private cartoons;
-        protected applySelectionInternal(indices: number[], action: Selection.Action): boolean;
-        getPickElements(pickId: number): number[];
-        highlightElement(pickId: number, highlight: boolean): boolean;
-        protected highlightInternal(isOn: boolean): boolean;
-        private applyColoring(theme);
-        protected applyThemeInternal(theme: Theme): void;
-        private createObjects();
-        static create(entity: any, {model, queryContext, atomIndices, theme, params, props}: {
-            model: Core.Structure.Molecule.Model;
-            queryContext: Core.Structure.Query.Context;
-            atomIndices: number[];
-            theme: Theme;
-            params: Parameters;
-            props?: Model.Props;
-        }): Core.Computation<Model>;
-    }
-}
-declare namespace LiteMol.Visualization.Molecule.Colors {
-    const DefaultBondColor: Color;
-    const DefaultElementColor: {
-        r: number;
-        g: number;
-        b: number;
-    };
-    const DefaultElementColorMap: Theme.ColorMap;
-    const DefaultPallete: Color[];
-}
-declare namespace LiteMol.Visualization.Primitive {
-    function createSphereSurface(center: Core.Geometry.LinearAlgebra.ObjectVec3, radius: number, tessalation: number): Core.Geometry.Surface;
-}
-declare namespace LiteMol.Visualization.Primitive {
-    import LA = Core.Geometry.LinearAlgebra;
-    import Surface = Core.Geometry.Surface;
-    type ShapeType = 'Sphere' | 'Surface';
-    type Shape = {
-        type: 'Sphere';
-        center: LA.ObjectVec3;
-        radius: number;
-        id: number;
-        tessalation?: number;
-    } | {
-        type: 'Surface';
-        surface: Surface;
-        id: number;
-    };
-    class Builder {
-        private shapes;
-        add(shape: Shape): this;
-        buildSurface(): Core.Computation<Surface>;
-        static create(): Builder;
-    }
-}
-declare namespace LiteMol.Visualization.Utils {
-    class Palette {
-        private static previous;
-        static getRandomColor(amountOfGrey?: number): Visualization.Color;
-        static randomMix(color1: Visualization.Color, color2: Visualization.Color, color3: Visualization.Color, greyControl: number): Visualization.Color;
-        /**
-         *
-         * @example
-         *   let min = Palette.getRandomColor(0.3);
-         *   let max = Palette.getRandomColor(0.3);
-         *   let color = Palette.interpolate(0.1, min, 0.6, max, 0.354);
-         */
-        static interpolate(min: number, minColor: Visualization.Color, max: number, maxColor: Visualization.Color, value: number, target?: Visualization.Color): Color;
-    }
-}
-declare module 'LiteMol-visualization' {
-    import __Visualization = LiteMol.Visualization;
-    export = __Visualization;
-}
-
 /**
  *  Copyright (c) 2014-2015, Facebook, Inc.
  *  All rights reserved.
@@ -15468,7 +9893,4826 @@ declare namespace LiteMolZlib {
         constructor(data: number[] | Uint8Array);
     }
 }
-/// <reference types="node" />
+// Type definitions for React v0.14
+// Project: http://facebook.github.io/react/
+// Definitions by: Asana <https://asana.com>, AssureSign <http://www.assuresign.com>, Microsoft <https://microsoft.com>
+// Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
+
+declare namespace __LiteMolReact {
+    //
+    // React Elements
+    // ----------------------------------------------------------------------
+
+    type ReactType = string | ComponentClass<any> | StatelessComponent<any>;
+
+    type Key = string | number;
+    type Ref<T> = string | ((instance: T) => any);
+
+    interface Attributes {
+        key?: Key;
+    }
+    interface ClassAttributes<T> extends Attributes {
+        ref?: Ref<T>;
+    }
+
+    interface ReactElement<P> {
+        type: string | ComponentClass<P> | SFC<P>;
+        props: P;
+        key?: Key;
+    }
+
+    interface SFCElement<P> extends ReactElement<P> {
+        type: SFC<P>;
+    }
+
+    type CElement<P, T extends Component<P, {}>> = ComponentElement<P, T>;
+    interface ComponentElement<P, T extends Component<P, {}>> extends ReactElement<P> {
+        type: ComponentClass<P>;
+        ref?: Ref<T>;
+    }
+
+    type ClassicElement<P> = CElement<P, ClassicComponent<P, {}>>;
+
+    interface DOMElement<P extends DOMAttributes, T extends Element> extends ReactElement<P> {
+        type: string;
+        ref: Ref<T>;
+    }
+
+    interface ReactHTMLElement<T extends HTMLElement> extends DOMElement<HTMLAttributes, T> {
+    }
+
+    interface ReactSVGElement extends DOMElement<SVGAttributes, SVGElement> {
+    }
+
+    //
+    // Factories
+    // ----------------------------------------------------------------------
+
+    interface Factory<P> {
+        (props?: P & Attributes, ...children: ReactNode[]): ReactElement<P>;
+    }
+
+    interface SFCFactory<P> {
+        (props?: P & Attributes, ...children: ReactNode[]): SFCElement<P>;
+    }
+
+    interface ComponentFactory<P, T extends Component<P, {}>> {
+        (props?: P & ClassAttributes<T>, ...children: ReactNode[]): CElement<P, T>;
+    }
+
+    type CFactory<P, T extends Component<P, {}>> = ComponentFactory<P, T>;
+    type ClassicFactory<P> = CFactory<P, ClassicComponent<P, {}>>;
+
+    interface DOMFactory<P extends DOMAttributes, T extends Element> {
+        (props?: P & ClassAttributes<T>, ...children: ReactNode[]): DOMElement<P, T>;
+    }
+
+    interface HTMLFactory<T extends HTMLElement> extends DOMFactory<HTMLAttributes, T> {
+    }
+
+    interface SVGFactory extends DOMFactory<SVGAttributes, SVGElement> {
+    }
+
+    //
+    // React Nodes
+    // http://facebook.github.io/react/docs/glossary.html
+    // ----------------------------------------------------------------------
+
+    type ReactText = string | number;
+    type ReactChild = ReactElement<any> | ReactText;
+
+    // Should be Array<ReactNode> but type aliases cannot be recursive
+    type ReactFragment = {} | Array<ReactChild | any[] | boolean>;
+    type ReactNode = ReactChild | ReactFragment | boolean;
+
+    //
+    // Top Level API
+    // ----------------------------------------------------------------------
+
+    function createClass<P, S>(spec: ComponentSpec<P, S>): ClassicComponentClass<P>;
+
+    function createFactory<P extends DOMAttributes, T extends Element>(
+        type: string): DOMFactory<P, T>;
+    function createFactory<P>(type: SFC<P>): SFCFactory<P>;
+    function createFactory<P>(
+        type: ClassType<P, ClassicComponent<P, {}>, ClassicComponentClass<P>>): CFactory<P, ClassicComponent<P, {}>>;
+    function createFactory<P, T extends Component<P, {}>, C extends ComponentClass<P>>(
+        type: ClassType<P, T, C>): CFactory<P, T>;
+    function createFactory<P>(type: ComponentClass<P> | SFC<P>): Factory<P>;
+
+    function createElement<P extends DOMAttributes, T extends Element>(
+        type: string,
+        props?: P & ClassAttributes<T>,
+        ...children: ReactNode[]): DOMElement<P, T>;
+    function createElement<P>(
+        type: SFC<P>,
+        props?: P & Attributes,
+        ...children: ReactNode[]): SFCElement<P>;
+    function createElement<P>(
+        type: ClassType<P, ClassicComponent<P, {}>, ClassicComponentClass<P>>,
+        props?: P & ClassAttributes<ClassicComponent<P, {}>>,
+        ...children: ReactNode[]): CElement<P, ClassicComponent<P, {}>>;
+    function createElement<P, T extends Component<P, {}>, C extends ComponentClass<P>>(
+        type: ClassType<P, T, C>,
+        props?: P & ClassAttributes<T>,
+        ...children: ReactNode[]): CElement<P, T>;
+    function createElement<P>(
+        type: ComponentClass<P> | SFC<P>,
+        props?: P & Attributes,
+        ...children: ReactNode[]): ReactElement<P>;
+
+    function cloneElement<P extends DOMAttributes, T extends Element>(
+        element: DOMElement<P, T>,
+        props?: P & ClassAttributes<T>,
+        ...children: ReactNode[]): DOMElement<P, T>;
+    function cloneElement<P extends Q, Q>(
+        element: SFCElement<P>,
+        props?: Q, // should be Q & Attributes, but then Q is inferred as {}
+        ...children: ReactNode[]): SFCElement<P>;
+    function cloneElement<P extends Q, Q, T extends Component<P, {}>>(
+        element: CElement<P, T>,
+        props?: Q, // should be Q & ClassAttributes<T>
+        ...children: ReactNode[]): CElement<P, T>;
+    function cloneElement<P extends Q, Q>(
+        element: ReactElement<P>,
+        props?: Q, // should be Q & Attributes
+        ...children: ReactNode[]): ReactElement<P>;
+
+    function isValidElement<P>(object: {}): object is ReactElement<P>;
+
+    var DOM: ReactDOM;
+    var PropTypes: ReactPropTypes;
+    var Children: ReactChildren;
+
+    //
+    // Component API
+    // ----------------------------------------------------------------------
+
+    type ReactInstance = Component<any, any> | Element;
+
+    // Base component for plain JS classes
+    class Component<P, S> implements ComponentLifecycle<P, S> {
+        constructor(props?: P, context?: any);
+        setState(f: (prevState: S, props: P) => S, callback?: () => any): void;
+        setState(state: S, callback?: () => any): void;
+        forceUpdate(callBack?: () => any): void;
+        render(): JSX.Element;
+
+        // React.Props<T> is now deprecated, which means that the `children`
+        // property is not available on `P` by default, even though you can
+        // always pass children as variadic arguments to `createElement`.
+        // In the future, if we can define its call signature conditionally
+        // on the existence of `children` in `P`, then we should remove this.
+        props: P & { children?: ReactNode };
+        state: S;
+        context: {};
+        refs: {
+            [key: string]: ReactInstance
+        };
+    }
+
+    interface ClassicComponent<P, S> extends Component<P, S> {
+        replaceState(nextState: S, callback?: () => any): void;
+        isMounted(): boolean;
+        getInitialState?(): S;
+    }
+
+    interface ChildContextProvider<CC> {
+        getChildContext(): CC;
+    }
+
+    //
+    // Class Interfaces
+    // ----------------------------------------------------------------------
+
+    type SFC<P> = StatelessComponent<P>;
+    interface StatelessComponent<P> {
+        (props?: P, context?: any): ReactElement<any>;
+        propTypes?: ValidationMap<P>;
+        contextTypes?: ValidationMap<any>;
+        defaultProps?: P;
+        displayName?: string;
+    }
+
+    interface ComponentClass<P> {
+        new (props?: P, context?: any): Component<P, {}>;
+        propTypes?: ValidationMap<P>;
+        contextTypes?: ValidationMap<any>;
+        childContextTypes?: ValidationMap<any>;
+        defaultProps?: P;
+        displayName?: string;
+    }
+
+    interface ClassicComponentClass<P> extends ComponentClass<P> {
+        new (props?: P, context?: any): ClassicComponent<P, {}>;
+        getDefaultProps?(): P;
+    }
+
+    /**
+     * We use an intersection type to infer multiple type parameters from
+     * a single argument, which is useful for many top-level API defs.
+     * See https://github.com/Microsoft/TypeScript/issues/7234 for more info.
+     */
+    type ClassType<P, T extends Component<P, {}>, C extends ComponentClass<P>> =
+        C &
+        (new () => T) &
+        (new () => { props: P });
+
+    //
+    // Component Specs and Lifecycle
+    // ----------------------------------------------------------------------
+
+    interface ComponentLifecycle<P, S> {
+        componentWillMount?(): void;
+        componentDidMount?(): void;
+        componentWillReceiveProps?(nextProps: P, nextContext: any): void;
+        shouldComponentUpdate?(nextProps: P, nextState: S, nextContext: any): boolean;
+        componentWillUpdate?(nextProps: P, nextState: S, nextContext: any): void;
+        componentDidUpdate?(prevProps: P, prevState: S, prevContext: any): void;
+        componentWillUnmount?(): void;
+    }
+
+    interface Mixin<P, S> extends ComponentLifecycle<P, S> {
+        mixins?: Mixin<P, S>;
+        statics?: {
+            [key: string]: any;
+        };
+
+        displayName?: string;
+        propTypes?: ValidationMap<any>;
+        contextTypes?: ValidationMap<any>;
+        childContextTypes?: ValidationMap<any>;
+
+        getDefaultProps?(): P;
+        getInitialState?(): S;
+    }
+
+    interface ComponentSpec<P, S> extends Mixin<P, S> {
+        render(): ReactElement<any>;
+
+        [propertyName: string]: any;
+    }
+
+    //
+    // Event System
+    // ----------------------------------------------------------------------
+
+    interface SyntheticEvent {
+        bubbles: boolean;
+        cancelable: boolean;
+        currentTarget: EventTarget;
+        defaultPrevented: boolean;
+        eventPhase: number;
+        isTrusted: boolean;
+        nativeEvent: Event;
+        preventDefault(): void;
+        stopPropagation(): void;
+        target: EventTarget;
+        timeStamp: Date;
+        type: string;
+    }
+
+    interface ClipboardEvent extends SyntheticEvent {
+        clipboardData: DataTransfer;
+    }
+
+    interface CompositionEvent extends SyntheticEvent {
+        data: string;
+    }
+
+    interface DragEvent extends SyntheticEvent {
+        dataTransfer: DataTransfer;
+    }
+
+    interface FocusEvent extends SyntheticEvent {
+        relatedTarget: EventTarget;
+    }
+
+    interface FormEvent extends SyntheticEvent {
+    }
+
+    interface KeyboardEvent extends SyntheticEvent {
+        altKey: boolean;
+        charCode: number;
+        ctrlKey: boolean;
+        getModifierState(key: string): boolean;
+        key: string;
+        keyCode: number;
+        locale: string;
+        location: number;
+        metaKey: boolean;
+        repeat: boolean;
+        shiftKey: boolean;
+        which: number;
+    }
+
+    interface MouseEvent extends SyntheticEvent {
+        altKey: boolean;
+        button: number;
+        buttons: number;
+        clientX: number;
+        clientY: number;
+        ctrlKey: boolean;
+        getModifierState(key: string): boolean;
+        metaKey: boolean;
+        pageX: number;
+        pageY: number;
+        relatedTarget: EventTarget;
+        screenX: number;
+        screenY: number;
+        shiftKey: boolean;
+    }
+
+    interface TouchEvent extends SyntheticEvent {
+        altKey: boolean;
+        changedTouches: TouchList;
+        ctrlKey: boolean;
+        getModifierState(key: string): boolean;
+        metaKey: boolean;
+        shiftKey: boolean;
+        targetTouches: TouchList;
+        touches: TouchList;
+    }
+
+    interface UIEvent extends SyntheticEvent {
+        detail: number;
+        view: AbstractView;
+    }
+
+    interface WheelEvent extends SyntheticEvent {
+        deltaMode: number;
+        deltaX: number;
+        deltaY: number;
+        deltaZ: number;
+    }
+
+    //
+    // Event Handler Types
+    // ----------------------------------------------------------------------
+
+    interface EventHandler<E extends SyntheticEvent> {
+        (event: E): void;
+    }
+
+    type ReactEventHandler = EventHandler<SyntheticEvent>;
+
+    type ClipboardEventHandler = EventHandler<ClipboardEvent>;
+    type CompositionEventHandler = EventHandler<CompositionEvent>;
+    type DragEventHandler = EventHandler<DragEvent>;
+    type FocusEventHandler = EventHandler<FocusEvent>;
+    type FormEventHandler = EventHandler<FormEvent>;
+    type KeyboardEventHandler = EventHandler<KeyboardEvent>;
+    type MouseEventHandler = EventHandler<MouseEvent>;
+    type TouchEventHandler = EventHandler<TouchEvent>;
+    type UIEventHandler = EventHandler<UIEvent>;
+    type WheelEventHandler = EventHandler<WheelEvent>;
+
+    //
+    // Props / DOM Attributes
+    // ----------------------------------------------------------------------
+
+    /**
+     * @deprecated. This was used to allow clients to pass `ref` and `key`
+     * to `createElement`, which is no longer necessary due to intersection
+     * types. If you need to declare a props object before passing it to
+     * `createElement` or a factory, use `ClassAttributes<T>`:
+     *
+     * ```ts
+     * var b: Button;
+     * var props: ButtonProps & ClassAttributes<Button> = {
+     *     ref: b => button = b, // ok!
+     *     label: "I'm a Button"
+     * };
+     * ```
+     */
+    interface Props<T> {
+        children?: ReactNode;
+        key?: Key;
+        ref?: Ref<T>;
+    }
+
+    interface HTMLProps<T> extends HTMLAttributes, ClassAttributes<T> {
+    }
+
+    interface SVGProps extends SVGAttributes, ClassAttributes<SVGElement> {
+    }
+
+    interface DOMAttributes {
+        children?: ReactNode;
+        dangerouslySetInnerHTML?: {
+            __html: string;
+        };
+
+        // Clipboard Events
+        onCopy?: ClipboardEventHandler;
+        onCut?: ClipboardEventHandler;
+        onPaste?: ClipboardEventHandler;
+
+        // Composition Events
+        onCompositionEnd?: CompositionEventHandler;
+        onCompositionStart?: CompositionEventHandler;
+        onCompositionUpdate?: CompositionEventHandler;
+
+        // Focus Events
+        onFocus?: FocusEventHandler;
+        onBlur?: FocusEventHandler;
+
+        // Form Events
+        onChange?: FormEventHandler;
+        onInput?: FormEventHandler;
+        onSubmit?: FormEventHandler;
+
+        // Image Events
+        onLoad?: ReactEventHandler;
+        onError?: ReactEventHandler; // also a Media Event
+
+        // Keyboard Events
+        onKeyDown?: KeyboardEventHandler;
+        onKeyPress?: KeyboardEventHandler;
+        onKeyUp?: KeyboardEventHandler;
+
+        // Media Events
+        onAbort?: ReactEventHandler;
+        onCanPlay?: ReactEventHandler;
+        onCanPlayThrough?: ReactEventHandler;
+        onDurationChange?: ReactEventHandler;
+        onEmptied?: ReactEventHandler;
+        onEncrypted?: ReactEventHandler;
+        onEnded?: ReactEventHandler;
+        onLoadedData?: ReactEventHandler;
+        onLoadedMetadata?: ReactEventHandler;
+        onLoadStart?: ReactEventHandler;
+        onPause?: ReactEventHandler;
+        onPlay?: ReactEventHandler;
+        onPlaying?: ReactEventHandler;
+        onProgress?: ReactEventHandler;
+        onRateChange?: ReactEventHandler;
+        onSeeked?: ReactEventHandler;
+        onSeeking?: ReactEventHandler;
+        onStalled?: ReactEventHandler;
+        onSuspend?: ReactEventHandler;
+        onTimeUpdate?: ReactEventHandler;
+        onVolumeChange?: ReactEventHandler;
+        onWaiting?: ReactEventHandler;
+
+        // MouseEvents
+        onClick?: MouseEventHandler;
+        onContextMenu?: MouseEventHandler;
+        onDoubleClick?: MouseEventHandler;
+        onDrag?: DragEventHandler;
+        onDragEnd?: DragEventHandler;
+        onDragEnter?: DragEventHandler;
+        onDragExit?: DragEventHandler;
+        onDragLeave?: DragEventHandler;
+        onDragOver?: DragEventHandler;
+        onDragStart?: DragEventHandler;
+        onDrop?: DragEventHandler;
+        onMouseDown?: MouseEventHandler;
+        onMouseEnter?: MouseEventHandler;
+        onMouseLeave?: MouseEventHandler;
+        onMouseMove?: MouseEventHandler;
+        onMouseOut?: MouseEventHandler;
+        onMouseOver?: MouseEventHandler;
+        onMouseUp?: MouseEventHandler;
+
+        // Selection Events
+        onSelect?: ReactEventHandler;
+
+        // Touch Events
+        onTouchCancel?: TouchEventHandler;
+        onTouchEnd?: TouchEventHandler;
+        onTouchMove?: TouchEventHandler;
+        onTouchStart?: TouchEventHandler;
+
+        // UI Events
+        onScroll?: UIEventHandler;
+
+        // Wheel Events
+        onWheel?: WheelEventHandler;
+    }
+
+    // This interface is not complete. Only properties accepting
+    // unitless numbers are listed here (see CSSProperty.js in React)
+    interface CSSProperties {
+
+        /**
+         * Aligns a flex container's lines within the flex container when there is extra space in the cross-axis, similar to how justify-content aligns individual items within the main-axis.
+         */
+        alignContent?: any;
+
+        /**
+         * Sets the default alignment in the cross axis for all of the flex container's items, including anonymous flex items, similarly to how justify-content aligns items along the main axis.
+         */
+        alignItems?: any;
+
+        /**
+         * Allows the default alignment to be overridden for individual flex items.
+         */
+        alignSelf?: any;
+
+        /**
+         * This property allows precise alignment of elements, such as graphics, that do not have a baseline-table or lack the desired baseline in their baseline-table. With the alignment-adjust property, the position of the baseline identified by the alignment-baseline can be explicitly determined. It also determines precisely the alignment point for each glyph within a textual element.
+         */
+        alignmentAdjust?: any;
+
+        alignmentBaseline?: any;
+
+        /**
+         * Defines a length of time to elapse before an animation starts, allowing an animation to begin execution some time after it is applied.
+         */
+        animationDelay?: any;
+
+        /**
+         * Defines whether an animation should run in reverse on some or all cycles.
+         */
+        animationDirection?: any;
+
+        /**
+         * Specifies how many times an animation cycle should play.
+         */
+        animationIterationCount?: any;
+
+        /**
+         * Defines the list of animations that apply to the element.
+         */
+        animationName?: any;
+
+        /**
+         * Defines whether an animation is running or paused.
+         */
+        animationPlayState?: any;
+
+        /**
+         * Allows changing the style of any element to platform-based interface elements or vice versa.
+         */
+        appearance?: any;
+
+        /**
+         * Determines whether or not the �back� side of a transformed element is visible when facing the viewer.
+         */
+        backfaceVisibility?: any;
+
+        /**
+         * Shorthand property to set the values for one or more of:
+         * background-clip, background-color, background-image,
+         * background-origin, background-position, background-repeat,
+         * background-size, and background-attachment.
+         */
+        background?: any;
+
+        /**
+         * If a background-image is specified, this property determines
+         * whether that image's position is fixed within the viewport,
+         * or scrolls along with its containing block.
+         */
+        backgroundAttachment?: "scroll" | "fixed" | "local";
+
+        /**
+         * This property describes how the element's background images should blend with each other and the element's background color.
+         * The value is a list of blend modes that corresponds to each background image. Each element in the list will apply to the corresponding element of background-image. If a property doesn�t have enough comma-separated values to match the number of layers, the UA must calculate its used value by repeating the list of values until there are enough.
+         */
+        backgroundBlendMode?: any;
+
+        /**
+         * Sets the background color of an element.
+         */
+        backgroundColor?: any;
+
+        backgroundComposite?: any;
+
+        /**
+         * Applies one or more background images to an element. These can be any valid CSS image, including url() paths to image files or CSS gradients.
+         */
+        backgroundImage?: any;
+
+        /**
+         * Specifies what the background-position property is relative to.
+         */
+        backgroundOrigin?: any;
+
+        /**
+         * Sets the position of a background image.
+         */
+        backgroundPosition?: any;
+
+        /**
+         * Background-repeat defines if and how background images will be repeated after they have been sized and positioned
+         */
+        backgroundRepeat?: any;
+
+        /**
+         * Obsolete - spec retired, not implemented.
+         */
+        baselineShift?: any;
+
+        /**
+         * Non standard. Sets or retrieves the location of the Dynamic HTML (DHTML) behavior.
+         */
+        behavior?: any;
+
+        /**
+         * Shorthand property that defines the different properties of all four sides of an element's border in a single declaration. It can be used to set border-width, border-style and border-color, or a subset of these.
+         */
+        border?: any;
+
+        /**
+         * Shorthand that sets the values of border-bottom-color,
+         * border-bottom-style, and border-bottom-width.
+         */
+        borderBottom?: any;
+
+        /**
+         * Sets the color of the bottom border of an element.
+         */
+        borderBottomColor?: any;
+
+        /**
+         * Defines the shape of the border of the bottom-left corner.
+         */
+        borderBottomLeftRadius?: any;
+
+        /**
+         * Defines the shape of the border of the bottom-right corner.
+         */
+        borderBottomRightRadius?: any;
+
+        /**
+         * Sets the line style of the bottom border of a box.
+         */
+        borderBottomStyle?: any;
+
+        /**
+         * Sets the width of an element's bottom border. To set all four borders, use the border-width shorthand property which sets the values simultaneously for border-top-width, border-right-width, border-bottom-width, and border-left-width.
+         */
+        borderBottomWidth?: any;
+
+        /**
+         * Border-collapse can be used for collapsing the borders between table cells
+         */
+        borderCollapse?: any;
+
+        /**
+         * The CSS border-color property sets the color of an element's four borders. This property can have from one to four values, made up of the elementary properties:     �       border-top-color
+         *      �       border-right-color
+         *      �       border-bottom-color
+         *      �       border-left-color The default color is the currentColor of each of these values.
+         * If you provide one value, it sets the color for the element. Two values set the horizontal and vertical values, respectively. Providing three values sets the top, vertical, and bottom values, in that order. Four values set all for sides: top, right, bottom, and left, in that order.
+         */
+        borderColor?: any;
+
+        /**
+         * Specifies different corner clipping effects, such as scoop (inner curves), bevel (straight cuts) or notch (cut-off rectangles). Works along with border-radius to specify the size of each corner effect.
+         */
+        borderCornerShape?: any;
+
+        /**
+         * The property border-image-source is used to set the image to be used instead of the border style. If this is set to none the border-style is used instead.
+         */
+        borderImageSource?: any;
+
+        /**
+         * The border-image-width CSS property defines the offset to use for dividing the border image in nine parts, the top-left corner, central top edge, top-right-corner, central right edge, bottom-right corner, central bottom edge, bottom-left corner, and central right edge. They represent inward distance from the top, right, bottom, and left edges.
+         */
+        borderImageWidth?: any;
+
+        /**
+         * Shorthand property that defines the border-width, border-style and border-color of an element's left border in a single declaration. Note that you can use the corresponding longhand properties to set specific individual properties of the left border � border-left-width, border-left-style and border-left-color.
+         */
+        borderLeft?: any;
+
+        /**
+         * The CSS border-left-color property sets the color of an element's left border. This page explains the border-left-color value, but often you will find it more convenient to fix the border's left color as part of a shorthand set, either border-left or border-color.
+         * Colors can be defined several ways. For more information, see Usage.
+         */
+        borderLeftColor?: any;
+
+        /**
+         * Sets the style of an element's left border. To set all four borders, use the shorthand property, border-style. Otherwise, you can set the borders individually with border-top-style, border-right-style, border-bottom-style, border-left-style.
+         */
+        borderLeftStyle?: any;
+
+        /**
+         * Sets the width of an element's left border. To set all four borders, use the border-width shorthand property which sets the values simultaneously for border-top-width, border-right-width, border-bottom-width, and border-left-width.
+         */
+        borderLeftWidth?: any;
+
+        /**
+         * Shorthand property that defines the border-width, border-style and border-color of an element's right border in a single declaration. Note that you can use the corresponding longhand properties to set specific individual properties of the right border � border-right-width, border-right-style and border-right-color.
+         */
+        borderRight?: any;
+
+        /**
+         * Sets the color of an element's right border. This page explains the border-right-color value, but often you will find it more convenient to fix the border's right color as part of a shorthand set, either border-right or border-color.
+         * Colors can be defined several ways. For more information, see Usage.
+         */
+        borderRightColor?: any;
+
+        /**
+         * Sets the style of an element's right border. To set all four borders, use the shorthand property, border-style. Otherwise, you can set the borders individually with border-top-style, border-right-style, border-bottom-style, border-left-style.
+         */
+        borderRightStyle?: any;
+
+        /**
+         * Sets the width of an element's right border. To set all four borders, use the border-width shorthand property which sets the values simultaneously for border-top-width, border-right-width, border-bottom-width, and border-left-width.
+         */
+        borderRightWidth?: any;
+
+        /**
+         * Specifies the distance between the borders of adjacent cells.
+         */
+        borderSpacing?: any;
+
+        /**
+         * Sets the style of an element's four borders. This property can have from one to four values. With only one value, the value will be applied to all four borders; otherwise, this works as a shorthand property for each of border-top-style, border-right-style, border-bottom-style, border-left-style, where each border style may be assigned a separate value.
+         */
+        borderStyle?: any;
+
+        /**
+         * Shorthand property that defines the border-width, border-style and border-color of an element's top border in a single declaration. Note that you can use the corresponding longhand properties to set specific individual properties of the top border � border-top-width, border-top-style and border-top-color.
+         */
+        borderTop?: any;
+
+        /**
+         * Sets the color of an element's top border. This page explains the border-top-color value, but often you will find it more convenient to fix the border's top color as part of a shorthand set, either border-top or border-color.
+         * Colors can be defined several ways. For more information, see Usage.
+         */
+        borderTopColor?: any;
+
+        /**
+         * Sets the rounding of the top-left corner of the element.
+         */
+        borderTopLeftRadius?: any;
+
+        /**
+         * Sets the rounding of the top-right corner of the element.
+         */
+        borderTopRightRadius?: any;
+
+        /**
+         * Sets the style of an element's top border. To set all four borders, use the shorthand property, border-style. Otherwise, you can set the borders individually with border-top-style, border-right-style, border-bottom-style, border-left-style.
+         */
+        borderTopStyle?: any;
+
+        /**
+         * Sets the width of an element's top border. To set all four borders, use the border-width shorthand property which sets the values simultaneously for border-top-width, border-right-width, border-bottom-width, and border-left-width.
+         */
+        borderTopWidth?: any;
+
+        /**
+         * Sets the width of an element's four borders. This property can have from one to four values. This is a shorthand property for setting values simultaneously for border-top-width, border-right-width, border-bottom-width, and border-left-width.
+         */
+        borderWidth?: any;
+
+        /**
+         * This property specifies how far an absolutely positioned box's bottom margin edge is offset above the bottom edge of the box's containing block. For relatively positioned boxes, the offset is with respect to the bottom edges of the box itself (i.e., the box is given a position in the normal flow, then offset from that position according to these properties).
+         */
+        bottom?: any;
+
+        /**
+         * Obsolete.
+         */
+        boxAlign?: any;
+
+        /**
+         * Breaks a box into fragments creating new borders, padding and repeating backgrounds or lets it stay as a continuous box on a page break, column break, or, for inline elements, at a line break.
+         */
+        boxDecorationBreak?: any;
+
+        /**
+         * Deprecated
+         */
+        boxDirection?: any;
+
+        /**
+         * Do not use. This property has been replaced by the flex-wrap property.
+         * Gets or sets a value that specifies the direction to add successive rows or columns when the value of box-lines is set to multiple.
+         */
+        boxLineProgression?: any;
+
+        /**
+         * Do not use. This property has been replaced by the flex-wrap property.
+         * Gets or sets a value that specifies whether child elements wrap onto multiple lines or columns based on the space available in the object.
+         */
+        boxLines?: any;
+
+        /**
+         * Do not use. This property has been replaced by flex-order.
+         * Specifies the ordinal group that a child element of the object belongs to. This ordinal value identifies the display order (along the axis defined by the box-orient property) for the group.
+         */
+        boxOrdinalGroup?: any;
+
+        /**
+         * Deprecated.
+         */
+        boxFlex?: number;
+
+        /**
+         * Deprecated.
+         */
+        boxFlexGroup?: number;
+
+        /**
+         * The CSS break-after property allows you to force a break on multi-column layouts. More specifically, it allows you to force a break after an element. It allows you to determine if a break should occur, and what type of break it should be. The break-after CSS property describes how the page, column or region break behaves after the generated box. If there is no generated box, the property is ignored.
+         */
+        breakAfter?: any;
+
+        /**
+         * Control page/column/region breaks that fall above a block of content
+         */
+        breakBefore?: any;
+
+        /**
+         * Control page/column/region breaks that fall within a block of content
+         */
+        breakInside?: any;
+
+        /**
+         * The clear CSS property specifies if an element can be positioned next to or must be positioned below the floating elements that precede it in the markup.
+         */
+        clear?: any;
+
+        /**
+         * Deprecated; see clip-path.
+         * Lets you specify the dimensions of an absolutely positioned element that should be visible, and the element is clipped into this shape, and displayed.
+         */
+        clip?: any;
+
+        /**
+         * Clipping crops an graphic, so that only a portion of the graphic is rendered, or filled. This clip-rule property, when used with the clip-path property, defines which clip rule, or algorithm, to use when filling the different parts of a graphics.
+         */
+        clipRule?: any;
+
+        /**
+         * The color property sets the color of an element's foreground content (usually text), accepting any standard CSS color from keywords and hex values to RGB(a) and HSL(a).
+         */
+        color?: any;
+
+        /**
+         * Describes the number of columns of the element.
+         */
+        columnCount?: number;
+
+        /**
+         * Specifies how to fill columns (balanced or sequential).
+         */
+        columnFill?: any;
+
+        /**
+         * The column-gap property controls the width of the gap between columns in multi-column elements.
+         */
+        columnGap?: any;
+
+        /**
+         * Sets the width, style, and color of the rule between columns.
+         */
+        columnRule?: any;
+
+        /**
+         * Specifies the color of the rule between columns.
+         */
+        columnRuleColor?: any;
+
+        /**
+         * Specifies the width of the rule between columns.
+         */
+        columnRuleWidth?: any;
+
+        /**
+         * The column-span CSS property makes it possible for an element to span across all columns when its value is set to all. An element that spans more than one column is called a spanning element.
+         */
+        columnSpan?: any;
+
+        /**
+         * Specifies the width of columns in multi-column elements.
+         */
+        columnWidth?: any;
+
+        /**
+         * This property is a shorthand property for setting column-width and/or column-count.
+         */
+        columns?: any;
+
+        /**
+         * The counter-increment property accepts one or more names of counters (identifiers), each one optionally followed by an integer which specifies the value by which the counter should be incremented (e.g. if the value is 2, the counter increases by 2 each time it is invoked).
+         */
+        counterIncrement?: any;
+
+        /**
+         * The counter-reset property contains a list of one or more names of counters, each one optionally followed by an integer (otherwise, the integer defaults to 0.) Each time the given element is invoked, the counters specified by the property are set to the given integer.
+         */
+        counterReset?: any;
+
+        /**
+         * The cue property specifies sound files (known as an "auditory icon") to be played by speech media agents before and after presenting an element's content; if only one file is specified, it is played both before and after. The volume at which the file(s) should be played, relative to the volume of the main element, may also be specified. The icon files may also be set separately with the cue-before and cue-after properties.
+         */
+        cue?: any;
+
+        /**
+         * The cue-after property specifies a sound file (known as an "auditory icon") to be played by speech media agents after presenting an element's content; the volume at which the file should be played may also be specified. The shorthand property cue sets cue sounds for both before and after the element is presented.
+         */
+        cueAfter?: any;
+
+        /**
+         * Specifies the mouse cursor displayed when the mouse pointer is over an element.
+         */
+        cursor?: any;
+
+        /**
+         * The direction CSS property specifies the text direction/writing direction. The rtl is used for Hebrew or Arabic text, the ltr is for other languages.
+         */
+        direction?: any;
+
+        /**
+         * This property specifies the type of rendering box used for an element. It is a shorthand property for many other display properties.
+         */
+        display?: any;
+
+        /**
+         * The �fill� property paints the interior of the given graphical element. The area to be painted consists of any areas inside the outline of the shape. To determine the inside of the shape, all subpaths are considered, and the interior is determined according to the rules associated with the current value of the �fill-rule� property. The zero-width geometric outline of a shape is included in the area to be painted.
+         */
+        fill?: any;
+
+        /**
+         * SVG: Specifies the opacity of the color or the content the current object is filled with.
+         */
+        fillOpacity?: number;
+
+        /**
+         * The �fill-rule� property indicates the algorithm which is to be used to determine what parts of the canvas are included inside the shape. For a simple, non-intersecting path, it is intuitively clear what region lies "inside"; however, for a more complex path, such as a path that intersects itself or where one subpath encloses another, the interpretation of "inside" is not so obvious.
+         * The �fill-rule� property provides two options for how the inside of a shape is determined:
+         */
+        fillRule?: any;
+
+        /**
+         * Applies various image processing effects. This property is largely unsupported. See Compatibility section for more information.
+         */
+        filter?: any;
+
+        /**
+         * Shorthand for `flex-grow`, `flex-shrink`, and `flex-basis`.
+         */
+        flex?: number | string;
+
+        /**
+         * Obsolete, do not use. This property has been renamed to align-items.
+         * Specifies the alignment (perpendicular to the layout axis defined by the flex-direction property) of child elements of the object.
+         */
+        flexAlign?: any;
+
+        /**
+         * The flex-basis CSS property describes the initial main size of the flex item before any free space is distributed according to the flex factors described in the flex property (flex-grow and flex-shrink).
+         */
+        flexBasis?: any;
+
+        /**
+         * The flex-direction CSS property describes how flex items are placed in the flex container, by setting the direction of the flex container's main axis.
+         */
+        flexDirection?: any;
+
+        /**
+         * The flex-flow CSS property defines the flex container's main and cross axis. It is a shorthand property for the flex-direction and flex-wrap properties.
+         */
+        flexFlow?: any;
+
+        /**
+         * Specifies the flex grow factor of a flex item.
+         */
+        flexGrow?: number;
+
+        /**
+         * Do not use. This property has been renamed to align-self
+         * Specifies the alignment (perpendicular to the layout axis defined by flex-direction) of child elements of the object.
+         */
+        flexItemAlign?: any;
+
+        /**
+         * Do not use. This property has been renamed to align-content.
+         * Specifies how a flexbox's lines align within the flexbox when there is extra space along the axis that is perpendicular to the axis defined by the flex-direction property.
+         */
+        flexLinePack?: any;
+
+        /**
+         * Gets or sets a value that specifies the ordinal group that a flexbox element belongs to. This ordinal value identifies the display order for the group.
+         */
+        flexOrder?: any;
+
+        /**
+         * Specifies the flex shrink factor of a flex item.
+         */
+        flexShrink?: number;
+
+        /**
+         * Elements which have the style float are floated horizontally. These elements can move as far to the left or right of the containing element. All elements after the floating element will flow around it, but elements before the floating element are not impacted. If several floating elements are placed after each other, they will float next to each other as long as there is room.
+         */
+        float?: any;
+
+        /**
+         * Flows content from a named flow (specified by a corresponding flow-into) through selected elements to form a dynamic chain of layout regions.
+         */
+        flowFrom?: any;
+
+        /**
+         * The font property is shorthand that allows you to do one of two things: you can either set up six of the most mature font properties in one line, or you can set one of a choice of keywords to adopt a system font setting.
+         */
+        font?: any;
+
+        /**
+         * The font-family property allows one or more font family names and/or generic family names to be specified for usage on the selected element(s)' text. The browser then goes through the list; for each character in the selection it applies the first font family that has an available glyph for that character.
+         */
+        fontFamily?: any;
+
+        /**
+         * The font-kerning property allows contextual adjustment of inter-glyph spacing, i.e. the spaces between the characters in text. This property controls <bold>metric kerning</bold> - that utilizes adjustment data contained in the font. Optical Kerning is not supported as yet.
+         */
+        fontKerning?: any;
+
+        /**
+         * Specifies the size of the font. Used to compute em and ex units.
+         */
+        fontSize?: number | string;
+
+        /**
+         * The font-size-adjust property adjusts the font-size of the fallback fonts defined with font-family, so that the x-height is the same no matter what font is used. This preserves the readability of the text when fallback happens.
+         */
+        fontSizeAdjust?: any;
+
+        /**
+         * Allows you to expand or condense the widths for a normal, condensed, or expanded font face.
+         */
+        fontStretch?: any;
+
+        /**
+         * The font-style property allows normal, italic, or oblique faces to be selected. Italic forms are generally cursive in nature while oblique faces are typically sloped versions of the regular face. Oblique faces can be simulated by artificially sloping the glyphs of the regular face.
+         */
+        fontStyle?: any;
+
+        /**
+         * This value specifies whether the user agent is allowed to synthesize bold or oblique font faces when a font family lacks bold or italic faces.
+         */
+        fontSynthesis?: any;
+
+        /**
+         * The font-variant property enables you to select the small-caps font within a font family.
+         */
+        fontVariant?: any;
+
+        /**
+         * Fonts can provide alternate glyphs in addition to default glyph for a character. This property provides control over the selection of these alternate glyphs.
+         */
+        fontVariantAlternates?: any;
+
+        /**
+         * Specifies the weight or boldness of the font.
+         */
+        fontWeight?: "normal" | "bold" | "lighter" | "bolder" | number;
+
+        /**
+         * Lays out one or more grid items bound by 4 grid lines. Shorthand for setting grid-column-start, grid-column-end, grid-row-start, and grid-row-end in a single declaration.
+         */
+        gridArea?: any;
+
+        /**
+         * Controls a grid item's placement in a grid area, particularly grid position and a grid span. Shorthand for setting grid-column-start and grid-column-end in a single declaration.
+         */
+        gridColumn?: any;
+
+        /**
+         * Controls a grid item's placement in a grid area as well as grid position and a grid span. The grid-column-end property (with grid-row-start, grid-row-end, and grid-column-start) determines a grid item's placement by specifying the grid lines of a grid item's grid area.
+         */
+        gridColumnEnd?: any;
+
+        /**
+         * Determines a grid item's placement by specifying the starting grid lines of a grid item's grid area . A grid item's placement in a grid area consists of a grid position and a grid span. See also ( grid-row-start, grid-row-end, and grid-column-end)
+         */
+        gridColumnStart?: any;
+
+        /**
+         * Gets or sets a value that indicates which row an element within a Grid should appear in. Shorthand for setting grid-row-start and grid-row-end in a single declaration.
+         */
+        gridRow?: any;
+
+        /**
+         * Determines a grid item�s placement by specifying the block-end. A grid item's placement in a grid area consists of a grid position and a grid span. The grid-row-end property (with grid-row-start, grid-column-start, and grid-column-end) determines a grid item's placement by specifying the grid lines of a grid item's grid area.
+         */
+        gridRowEnd?: any;
+
+        /**
+         * Specifies a row position based upon an integer location, string value, or desired row size.
+         * css/properties/grid-row is used as short-hand for grid-row-position and grid-row-position
+         */
+        gridRowPosition?: any;
+
+        gridRowSpan?: any;
+
+        /**
+         * Specifies named grid areas which are not associated with any particular grid item, but can be referenced from the grid-placement properties. The syntax of the grid-template-areas property also provides a visualization of the structure of the grid, making the overall layout of the grid container easier to understand.
+         */
+        gridTemplateAreas?: any;
+
+        /**
+         * Specifies (with grid-template-rows) the line names and track sizing functions of the grid. Each sizing function can be specified as a length, a percentage of the grid container�s size, a measurement of the contents occupying the column or row, or a fraction of the free space in the grid.
+         */
+        gridTemplateColumns?: any;
+
+        /**
+         * Specifies (with grid-template-columns) the line names and track sizing functions of the grid. Each sizing function can be specified as a length, a percentage of the grid container�s size, a measurement of the contents occupying the column or row, or a fraction of the free space in the grid.
+         */
+        gridTemplateRows?: any;
+
+        /**
+         * Sets the height of an element. The content area of the element height does not include the padding, border, and margin of the element.
+         */
+        height?: any;
+
+        /**
+         * Specifies the minimum number of characters in a hyphenated word
+         */
+        hyphenateLimitChars?: any;
+
+        /**
+         * Indicates the maximum number of successive hyphenated lines in an element. The �no-limit� value means that there is no limit.
+         */
+        hyphenateLimitLines?: any;
+
+        /**
+         * Specifies the maximum amount of trailing whitespace (before justification) that may be left in a line before hyphenation is triggered to pull part of a word from the next line back up into the current one.
+         */
+        hyphenateLimitZone?: any;
+
+        /**
+         * Specifies whether or not words in a sentence can be split by the use of a manual or automatic hyphenation mechanism.
+         */
+        hyphens?: any;
+
+        imeMode?: any;
+
+        layoutGrid?: any;
+
+        layoutGridChar?: any;
+
+        layoutGridLine?: any;
+
+        layoutGridMode?: any;
+
+        layoutGridType?: any;
+
+        /**
+         * Sets the left edge of an element
+         */
+        left?: any;
+
+        /**
+         * The letter-spacing CSS property specifies the spacing behavior between text characters.
+         */
+        letterSpacing?: any;
+
+        /**
+         * Deprecated. Gets or sets line-breaking rules for text in selected languages such as Japanese, Chinese, and Korean.
+         */
+        lineBreak?: any;
+
+        lineClamp?: number;
+
+        /**
+         * Specifies the height of an inline block level element. 
+         */
+        lineHeight?: number | string;
+
+        /**
+         * Shorthand property that sets the list-style-type, list-style-position and list-style-image properties in one declaration.
+         */
+        listStyle?: any;
+
+        /**
+         * This property sets the image that will be used as the list item marker. When the image is available, it will replace the marker set with the 'list-style-type' marker. That also means that if the image is not available, it will show the style specified by list-style-property
+         */
+        listStyleImage?: any;
+
+        /**
+         * Specifies if the list-item markers should appear inside or outside the content flow.
+         */
+        listStylePosition?: any;
+
+        /**
+         * Specifies the type of list-item marker in a list.
+         */
+        listStyleType?: any;
+
+        /**
+         * The margin property is shorthand to allow you to set all four margins of an element at once. Its equivalent longhand properties are margin-top, margin-right, margin-bottom and margin-left. Negative values are also allowed.
+         */
+        margin?: any;
+
+        /**
+         * margin-bottom sets the bottom margin of an element.
+         */
+        marginBottom?: any;
+
+        /**
+         * margin-left sets the left margin of an element.
+         */
+        marginLeft?: any;
+
+        /**
+         * margin-right sets the right margin of an element.
+         */
+        marginRight?: any;
+
+        /**
+         * margin-top sets the top margin of an element.
+         */
+        marginTop?: any;
+
+        /**
+         * The marquee-direction determines the initial direction in which the marquee content moves.
+         */
+        marqueeDirection?: any;
+
+        /**
+         * The 'marquee-style' property determines a marquee's scrolling behavior.
+         */
+        marqueeStyle?: any;
+
+        /**
+         * This property is shorthand for setting mask-image, mask-mode, mask-repeat, mask-position, mask-clip, mask-origin, mask-composite and mask-size. Omitted values are set to their original properties' initial values.
+         */
+        mask?: any;
+
+        /**
+         * This property is shorthand for setting mask-border-source, mask-border-slice, mask-border-width, mask-border-outset, and mask-border-repeat. Omitted values are set to their original properties' initial values.
+         */
+        maskBorder?: any;
+
+        /**
+         * This property specifies how the images for the sides and the middle part of the mask image are scaled and tiled. The first keyword applies to the horizontal sides, the second one applies to the vertical ones. If the second keyword is absent, it is assumed to be the same as the first, similar to the CSS border-image-repeat property.
+         */
+        maskBorderRepeat?: any;
+
+        /**
+         * This property specifies inward offsets from the top, right, bottom, and left edges of the mask image, dividing it into nine regions: four corners, four edges, and a middle. The middle image part is discarded and treated as fully transparent black unless the fill keyword is present. The four values set the top, right, bottom and left offsets in that order, similar to the CSS border-image-slice property.
+         */
+        maskBorderSlice?: any;
+
+        /**
+         * Specifies an image to be used as a mask. An image that is empty, fails to download, is non-existent, or cannot be displayed is ignored and does not mask the element.
+         */
+        maskBorderSource?: any;
+
+        /**
+         * This property sets the width of the mask box image, similar to the CSS border-image-width property.
+         */
+        maskBorderWidth?: any;
+
+        /**
+         * Determines the mask painting area, which defines the area that is affected by the mask. The painted content of an element may be restricted to this area.
+         */
+        maskClip?: any;
+
+        /**
+         * For elements rendered as a single box, specifies the mask positioning area. For elements rendered as multiple boxes (e.g., inline boxes on several lines, boxes on several pages) specifies which boxes box-decoration-break operates on to determine the mask positioning area(s).
+         */
+        maskOrigin?: any;
+
+        /**
+         * This property must not be used. It is no longer included in any standard or standard track specification, nor is it implemented in any browser. It is only used when the text-align-last property is set to size. It controls allowed adjustments of font-size to fit line content.
+         */
+        maxFontSize?: any;
+
+        /**
+         * Sets the maximum height for an element. It prevents the height of the element to exceed the specified value. If min-height is specified and is greater than max-height, max-height is overridden.
+         */
+        maxHeight?: any;
+
+        /**
+         * Sets the maximum width for an element. It limits the width property to be larger than the value specified in max-width.
+         */
+        maxWidth?: any;
+
+        /**
+         * Sets the minimum height for an element. It prevents the height of the element to be smaller than the specified value. The value of min-height overrides both max-height and height.
+         */
+        minHeight?: any;
+
+        /**
+         * Sets the minimum width of an element. It limits the width property to be not smaller than the value specified in min-width.
+         */
+        minWidth?: any;
+
+        /**
+         * Specifies the transparency of an element.
+         */
+        opacity?: number;
+
+        /**
+         * Specifies the order used to lay out flex items in their flex container.
+         * Elements are laid out in the ascending order of the order value.
+         */
+        order?: number;
+
+        /**
+         * In paged media, this property defines the minimum number of lines in
+         * a block container that must be left at the bottom of the page.
+         */
+        orphans?: number;
+
+        /**
+         * The CSS outline property is a shorthand property for setting one or more of the individual outline properties outline-style, outline-width and outline-color in a single rule. In most cases the use of this shortcut is preferable and more convenient.
+         * Outlines differ from borders in the following ways:  �       Outlines do not take up space, they are drawn above the content.
+         *      �       Outlines may be non-rectangular. They are rectangular in Gecko/Firefox. Internet Explorer attempts to place the smallest contiguous outline around all elements or shapes that are indicated to have an outline. Opera draws a non-rectangular shape around a construct.
+         */
+        outline?: any;
+
+        /**
+         * The outline-color property sets the color of the outline of an element. An outline is a line that is drawn around elements, outside the border edge, to make the element stand out.
+         */
+        outlineColor?: any;
+
+        /**
+         * The outline-offset property offsets the outline and draw it beyond the border edge.
+         */
+        outlineOffset?: any;
+
+        /**
+         * The overflow property controls how extra content exceeding the bounding box of an element is rendered. It can be used in conjunction with an element that has a fixed width and height, to eliminate text-induced page distortion.
+         */
+        overflow?: any;
+
+        /**
+         * Specifies the preferred scrolling methods for elements that overflow.
+         */
+        overflowStyle?: any;
+
+        /**
+         * Controls how extra content exceeding the x-axis of the bounding box of an element is rendered.
+         */
+        overflowX?: any;
+
+        /**
+         * Controls how extra content exceeding the y-axis of the bounding box of an element is rendered.
+         */
+        overflowY?: any;
+
+        /**
+         * The padding optional CSS property sets the required padding space on one to four sides of an element. The padding area is the space between an element and its border. Negative values are not allowed but decimal values are permitted. The element size is treated as fixed, and the content of the element shifts toward the center as padding is increased.
+         * The padding property is a shorthand to avoid setting each side separately (padding-top, padding-right, padding-bottom, padding-left).
+         */
+        padding?: any;
+
+        /**
+         * The padding-bottom CSS property of an element sets the padding space required on the bottom of an element. The padding area is the space between the content of the element and its border. Contrary to margin-bottom values, negative values of padding-bottom are invalid.
+         */
+        paddingBottom?: any;
+
+        /**
+         * The padding-left CSS property of an element sets the padding space required on the left side of an element. The padding area is the space between the content of the element and its border. Contrary to margin-left values, negative values of padding-left are invalid.
+         */
+        paddingLeft?: any;
+
+        /**
+         * The padding-right CSS property of an element sets the padding space required on the right side of an element. The padding area is the space between the content of the element and its border. Contrary to margin-right values, negative values of padding-right are invalid.
+         */
+        paddingRight?: any;
+
+        /**
+         * The padding-top CSS property of an element sets the padding space required on the top of an element. The padding area is the space between the content of the element and its border. Contrary to margin-top values, negative values of padding-top are invalid.
+         */
+        paddingTop?: any;
+
+        /**
+         * The page-break-after property is supported in all major browsers. With CSS3, page-break-* properties are only aliases of the break-* properties. The CSS3 Fragmentation spec defines breaks for all CSS box fragmentation.
+         */
+        pageBreakAfter?: any;
+
+        /**
+         * The page-break-before property sets the page-breaking behavior before an element. With CSS3, page-break-* properties are only aliases of the break-* properties. The CSS3 Fragmentation spec defines breaks for all CSS box fragmentation.
+         */
+        pageBreakBefore?: any;
+
+        /**
+         * Sets the page-breaking behavior inside an element. With CSS3, page-break-* properties are only aliases of the break-* properties. The CSS3 Fragmentation spec defines breaks for all CSS box fragmentation.
+         */
+        pageBreakInside?: any;
+
+        /**
+         * The pause property determines how long a speech media agent should pause before and after presenting an element. It is a shorthand for the pause-before and pause-after properties.
+         */
+        pause?: any;
+
+        /**
+         * The pause-after property determines how long a speech media agent should pause after presenting an element. It may be replaced by the shorthand property pause, which sets pause time before and after.
+         */
+        pauseAfter?: any;
+
+        /**
+         * The pause-before property determines how long a speech media agent should pause before presenting an element. It may be replaced by the shorthand property pause, which sets pause time before and after.
+         */
+        pauseBefore?: any;
+
+        /**
+         * The perspective property defines how far an element is placed from the view on the z-axis, from the screen to the viewer.
+         * Perspective defines how an object is viewed. In graphic arts, perspective is the representation on a flat surface of what the viewer's eye would see in a 3D space. (See Wikipedia for more information about graphical perspective and for related illustrations.)
+         * The illusion of perspective on a flat surface, such as a computer screen, is created by projecting points on the flat surface as they would appear if the flat surface were a window through which the viewer was looking at the object. In discussion of virtual environments, this flat surface is called a projection plane.
+         */
+        perspective?: any;
+
+        /**
+         * The perspective-origin property establishes the origin for the perspective property. It effectively sets the X and Y position at which the viewer appears to be looking at the children of the element.
+         * When used with perspective, perspective-origin changes the appearance of an object, as if a viewer were looking at it from a different origin. An object appears differently if a viewer is looking directly at it versus looking at it from below, above, or from the side. Thus, the perspective-origin is like a vanishing point.
+         * The default value of perspective-origin is 50% 50%. This displays an object as if the viewer's eye were positioned directly at the center of the screen, both top-to-bottom and left-to-right. A value of 0% 0% changes the object as if the viewer was looking toward the top left angle. A value of 100% 100% changes the appearance as if viewed toward the bottom right angle.
+         */
+        perspectiveOrigin?: any;
+
+        /**
+         * The pointer-events property allows you to control whether an element can be the target for the pointing device (e.g, mouse, pen) events.
+         */
+        pointerEvents?: any;
+
+        /**
+         * The position property controls the type of positioning used by an element within its parent elements. The effect of the position property depends on a lot of factors, for example the position property of parent elements.
+         */
+        position?: any;
+
+        /**
+         * Obsolete: unsupported.
+         * This property determines whether or not a full-width punctuation mark character should be trimmed if it appears at the beginning of a line, so that its "ink" lines up with the first glyph in the line above and below.
+         */
+        punctuationTrim?: any;
+
+        /**
+         * Sets the type of quotation marks for embedded quotations.
+         */
+        quotes?: any;
+
+        /**
+         * Controls whether the last region in a chain displays additional 'overset' content according its default overflow property, or if it displays a fragment of content as if it were flowing into a subsequent region.
+         */
+        regionFragment?: any;
+
+        /**
+         * The rest-after property determines how long a speech media agent should pause after presenting an element's main content, before presenting that element's exit cue sound. It may be replaced by the shorthand property rest, which sets rest time before and after.
+         */
+        restAfter?: any;
+
+        /**
+         * The rest-before property determines how long a speech media agent should pause after presenting an intro cue sound for an element, before presenting that element's main content. It may be replaced by the shorthand property rest, which sets rest time before and after.
+         */
+        restBefore?: any;
+
+        /**
+         * Specifies the position an element in relation to the right side of the containing element.
+         */
+        right?: any;
+
+        rubyAlign?: any;
+
+        rubyPosition?: any;
+
+        /**
+         * Defines the alpha channel threshold used to extract a shape from an image. Can be thought of as a "minimum opacity" threshold; that is, a value of 0.5 means that the shape will enclose all the pixels that are more than 50% opaque.
+         */
+        shapeImageThreshold?: any;
+
+        /**
+         * A future level of CSS Shapes will define a shape-inside property, which will define a shape to wrap content within the element. See Editor's Draft <http://dev.w3.org/csswg/css-shapes/> and CSSWG wiki page on next-level plans <http://wiki.csswg.org/spec/css-shapes>
+         */
+        shapeInside?: any;
+
+        /**
+         * Adds a margin to a shape-outside. In effect, defines a new shape that is the smallest contour around all the points that are the shape-margin distance outward perpendicular to each point on the underlying shape. For points where a perpendicular direction is not defined (e.g., a triangle corner), takes all points on a circle centered at the point and with a radius of the shape-margin distance. This property accepts only non-negative values.
+         */
+        shapeMargin?: any;
+
+        /**
+         * Declares a shape around which text should be wrapped, with possible modifications from the shape-margin property. The shape defined by shape-outside and shape-margin changes the geometry of a float element's float area.
+         */
+        shapeOutside?: any;
+
+        /**
+         * The speak property determines whether or not a speech synthesizer will read aloud the contents of an element.
+         */
+        speak?: any;
+
+        /**
+         * The speak-as property determines how the speech synthesizer interprets the content: words as whole words or as a sequence of letters, numbers as a numerical value or a sequence of digits, punctuation as pauses in speech or named punctuation characters.
+         */
+        speakAs?: any;
+
+        /**
+         * SVG: Specifies the opacity of the outline on the current object.
+         */
+        strokeOpacity?: number;
+
+        /**
+         * SVG: Specifies the width of the outline on the current object.
+         */
+        strokeWidth?: number;
+
+        /**
+         * The tab-size CSS property is used to customise the width of a tab (U+0009) character.
+         */
+        tabSize?: any;
+
+        /**
+         * The 'table-layout' property controls the algorithm used to lay out the table cells, rows, and columns.
+         */
+        tableLayout?: any;
+
+        /**
+         * The text-align CSS property describes how inline content like text is aligned in its parent block element. text-align does not control the alignment of block elements itself, only their inline content.
+         */
+        textAlign?: any;
+
+        /**
+         * The text-align-last CSS property describes how the last line of a block element or a line before line break is aligned in its parent block element.
+         */
+        textAlignLast?: any;
+
+        /**
+         * The text-decoration CSS property is used to set the text formatting to underline, overline, line-through or blink.
+         * underline and overline decorations are positioned under the text, line-through over it.
+         */
+        textDecoration?: any;
+
+        /**
+         * Sets the color of any text decoration, such as underlines, overlines, and strike throughs.
+         */
+        textDecorationColor?: any;
+
+        /**
+         * Sets what kind of line decorations are added to an element, such as underlines, overlines, etc.
+         */
+        textDecorationLine?: any;
+
+        textDecorationLineThrough?: any;
+
+        textDecorationNone?: any;
+
+        textDecorationOverline?: any;
+
+        /**
+         * Specifies what parts of an element�s content are skipped over when applying any text decoration.
+         */
+        textDecorationSkip?: any;
+
+        /**
+         * This property specifies the style of the text decoration line drawn on the specified element. The intended meaning for the values are the same as those of the border-style-properties.
+         */
+        textDecorationStyle?: any;
+
+        textDecorationUnderline?: any;
+
+        /**
+         * The text-emphasis property will apply special emphasis marks to the elements text. Slightly similar to the text-decoration property only that this property can have affect on the line-height. It also is noted that this is shorthand for text-emphasis-style and for text-emphasis-color.
+         */
+        textEmphasis?: any;
+
+        /**
+         * The text-emphasis-color property specifies the foreground color of the emphasis marks.
+         */
+        textEmphasisColor?: any;
+
+        /**
+         * The text-emphasis-style property applies special emphasis marks to an element's text.
+         */
+        textEmphasisStyle?: any;
+
+        /**
+         * This property helps determine an inline box's block-progression dimension, derived from the text-height and font-size properties for non-replaced elements, the height or the width for replaced elements, and the stacked block-progression dimension for inline-block elements. The block-progression dimension determines the position of the padding, border and margin for the element.
+         */
+        textHeight?: any;
+
+        /**
+         * Specifies the amount of space horizontally that should be left on the first line of the text of an element. This horizontal spacing is at the beginning of the first line and is in respect to the left edge of the containing block box.
+         */
+        textIndent?: any;
+
+        textJustifyTrim?: any;
+
+        textKashidaSpace?: any;
+
+        /**
+         * The text-line-through property is a shorthand property for text-line-through-style, text-line-through-color and text-line-through-mode. (Considered obsolete; use text-decoration instead.)
+         */
+        textLineThrough?: any;
+
+        /**
+         * Specifies the line colors for the line-through text decoration.
+         * (Considered obsolete; use text-decoration-color instead.)
+         */
+        textLineThroughColor?: any;
+
+        /**
+         * Sets the mode for the line-through text decoration, determining whether the text decoration affects the space characters or not.
+         * (Considered obsolete; use text-decoration-skip instead.)
+         */
+        textLineThroughMode?: any;
+
+        /**
+         * Specifies the line style for line-through text decoration.
+         * (Considered obsolete; use text-decoration-style instead.)
+         */
+        textLineThroughStyle?: any;
+
+        /**
+         * Specifies the line width for the line-through text decoration.
+         */
+        textLineThroughWidth?: any;
+
+        /**
+         * The text-overflow shorthand CSS property determines how overflowed content that is not displayed is signaled to the users. It can be clipped, display an ellipsis ('�', U+2026 HORIZONTAL ELLIPSIS) or a Web author-defined string. It covers the two long-hand properties text-overflow-mode and text-overflow-ellipsis
+         */
+        textOverflow?: any;
+
+        /**
+         * The text-overline property is the shorthand for the text-overline-style, text-overline-width, text-overline-color, and text-overline-mode properties.
+         */
+        textOverline?: any;
+
+        /**
+         * Specifies the line color for the overline text decoration.
+         */
+        textOverlineColor?: any;
+
+        /**
+         * Sets the mode for the overline text decoration, determining whether the text decoration affects the space characters or not.
+         */
+        textOverlineMode?: any;
+
+        /**
+         * Specifies the line style for overline text decoration.
+         */
+        textOverlineStyle?: any;
+
+        /**
+         * Specifies the line width for the overline text decoration.
+         */
+        textOverlineWidth?: any;
+
+        /**
+         * The text-rendering CSS property provides information to the browser about how to optimize when rendering text. Options are: legibility, speed or geometric precision.
+         */
+        textRendering?: any;
+
+        /**
+         * Obsolete: unsupported.
+         */
+        textScript?: any;
+
+        /**
+         * The CSS text-shadow property applies one or more drop shadows to the text and <text-decorations> of an element. Each shadow is specified as an offset from the text, along with optional color and blur radius values.
+         */
+        textShadow?: any;
+
+        /**
+         * This property transforms text for styling purposes. (It has no effect on the underlying content.)
+         */
+        textTransform?: any;
+
+        /**
+         * Unsupported.
+         * This property will add a underline position value to the element that has an underline defined.
+         */
+        textUnderlinePosition?: any;
+
+        /**
+         * After review this should be replaced by text-decoration should it not?
+         * This property will set the underline style for text with a line value for underline, overline, and line-through.
+         */
+        textUnderlineStyle?: any;
+
+        /**
+         * This property specifies how far an absolutely positioned box's top margin edge is offset below the top edge of the box's containing block. For relatively positioned boxes, the offset is with respect to the top edges of the box itself (i.e., the box is given a position in the normal flow, then offset from that position according to these properties).
+         */
+        top?: any;
+
+        /**
+         * Determines whether touch input may trigger default behavior supplied by the user agent, such as panning or zooming.
+         */
+        touchAction?: any;
+
+        /**
+         * CSS transforms allow elements styled with CSS to be transformed in two-dimensional or three-dimensional space. Using this property, elements can be translated, rotated, scaled, and skewed. The value list may consist of 2D and/or 3D transform values.
+         */
+        transform?: any;
+
+        /**
+         * This property defines the origin of the transformation axes relative to the element to which the transformation is applied.
+         */
+        transformOrigin?: any;
+
+        /**
+         * This property allows you to define the relative position of the origin of the transformation grid along the z-axis.
+         */
+        transformOriginZ?: any;
+
+        /**
+         * This property specifies how nested elements are rendered in 3D space relative to their parent.
+         */
+        transformStyle?: any;
+
+        /**
+         * The transition CSS property is a shorthand property for transition-property, transition-duration, transition-timing-function, and transition-delay. It allows to define the transition between two states of an element.
+         */
+        transition?: any;
+
+        /**
+         * Defines when the transition will start. A value of �0s� means the transition will execute as soon as the property is changed. Otherwise, the value specifies an offset from the moment the property is changed, and the transition will delay execution by that offset.
+         */
+        transitionDelay?: any;
+
+        /**
+         * The 'transition-duration' property specifies the length of time a transition animation takes to complete.
+         */
+        transitionDuration?: any;
+
+        /**
+         * The 'transition-property' property specifies the name of the CSS property to which the transition is applied.
+         */
+        transitionProperty?: any;
+
+        /**
+         * Sets the pace of action within a transition
+         */
+        transitionTimingFunction?: any;
+
+        /**
+         * The unicode-bidi CSS property specifies the level of embedding with respect to the bidirectional algorithm.
+         */
+        unicodeBidi?: any;
+
+        /**
+         * unicode-range allows you to set a specific range of characters to be downloaded from a font (embedded using @font-face) and made available for use on the current page.
+         */
+        unicodeRange?: any;
+
+        /**
+         * This is for all the high level UX stuff.
+         */
+        userFocus?: any;
+
+        /**
+         * For inputing user content
+         */
+        userInput?: any;
+
+        /**
+         * The vertical-align property controls how inline elements or text are vertically aligned compared to the baseline. If this property is used on table-cells it controls the vertical alignment of content of the table cell.
+         */
+        verticalAlign?: any;
+
+        /**
+         * The visibility property specifies whether the boxes generated by an element are rendered.
+         */
+        visibility?: any;
+
+        /**
+         * The voice-balance property sets the apparent position (in stereo sound) of the synthesized voice for spoken media.
+         */
+        voiceBalance?: any;
+
+        /**
+         * The voice-duration property allows the author to explicitly set the amount of time it should take a speech synthesizer to read an element's content, for example to allow the speech to be synchronized with other media. With a value of auto (the default) the length of time it takes to read the content is determined by the content itself and the voice-rate property.
+         */
+        voiceDuration?: any;
+
+        /**
+         * The voice-family property sets the speaker's voice used by a speech media agent to read an element. The speaker may be specified as a named character (to match a voice option in the speech reading software) or as a generic description of the age and gender of the voice. Similar to the font-family property for visual media, a comma-separated list of fallback options may be given in case the speech reader does not recognize the character name or cannot synthesize the requested combination of generic properties.
+         */
+        voiceFamily?: any;
+
+        /**
+         * The voice-pitch property sets pitch or tone (high or low) for the synthesized speech when reading an element; the pitch may be specified absolutely or relative to the normal pitch for the voice-family used to read the text.
+         */
+        voicePitch?: any;
+
+        /**
+         * The voice-range property determines how much variation in pitch or tone will be created by the speech synthesize when reading an element. Emphasized text, grammatical structures and punctuation may all be rendered as changes in pitch, this property determines how strong or obvious those changes are; large ranges are associated with enthusiastic or emotional speech, while small ranges are associated with flat or mechanical speech.
+         */
+        voiceRange?: any;
+
+        /**
+         * The voice-rate property sets the speed at which the voice synthesized by a speech media agent will read content.
+         */
+        voiceRate?: any;
+
+        /**
+         * The voice-stress property sets the level of vocal emphasis to be used for synthesized speech reading the element.
+         */
+        voiceStress?: any;
+
+        /**
+         * The voice-volume property sets the volume for spoken content in speech media. It replaces the deprecated volume property.
+         */
+        voiceVolume?: any;
+
+        /**
+         * The white-space property controls whether and how white space inside the element is collapsed, and whether lines may wrap at unforced "soft wrap" opportunities.
+         */
+        whiteSpace?: any;
+
+        /**
+         * Obsolete: unsupported.
+         */
+        whiteSpaceTreatment?: any;
+
+        /**
+         * In paged media, this property defines the mimimum number of lines
+         * that must be left at the top of the second page.
+         */
+        widows?: number;
+
+        /**
+         * Specifies the width of the content area of an element. The content area of the element width does not include the padding, border, and margin of the element.
+         */
+        width?: any;
+
+        /**
+         * The word-break property is often used when there is long generated content that is strung together without and spaces or hyphens to beak apart. A common case of this is when there is a long URL that does not have any hyphens. This case could potentially cause the breaking of the layout as it could extend past the parent element.
+         */
+        wordBreak?: any;
+
+        /**
+         * The word-spacing CSS property specifies the spacing behavior between "words".
+         */
+        wordSpacing?: any;
+
+        /**
+         * An alias of css/properties/overflow-wrap, word-wrap defines whether to break words when the content exceeds the boundaries of its container.
+         */
+        wordWrap?: any;
+
+        /**
+         * Specifies how exclusions affect inline content within block-level elements. Elements lay out their inline content in their content area but wrap around exclusion areas.
+         */
+        wrapFlow?: any;
+
+        /**
+         * Set the value that is used to offset the inner wrap shape from other shapes. Inline content that intersects a shape with this property will be pushed by this shape's margin.
+         */
+        wrapMargin?: any;
+
+        /**
+         * Obsolete and unsupported. Do not use.
+         * This CSS property controls the text when it reaches the end of the block in which it is enclosed.
+         */
+        wrapOption?: any;
+
+        /**
+         * writing-mode specifies if lines of text are laid out horizontally or vertically, and the direction which lines of text and blocks progress.
+         */
+        writingMode?: any;
+
+        /**
+         * The z-index property specifies the z-order of an element and its descendants.
+         * When elements overlap, z-order determines which one covers the other.
+         */
+        zIndex?: "auto" | number;
+
+        /**
+         * Sets the initial zoom factor of a document defined by @viewport.
+         */
+        zoom?: "auto" | number;
+
+        [propertyName: string]: any;
+    }
+
+    interface HTMLAttributes extends DOMAttributes {
+        // React-specific Attributes
+        defaultChecked?: boolean;
+        defaultValue?: string | string[];
+
+        // Standard HTML Attributes
+        accept?: string;
+        acceptCharset?: string;
+        accessKey?: string;
+        action?: string;
+        allowFullScreen?: boolean;
+        allowTransparency?: boolean;
+        alt?: string;
+        async?: boolean;
+        autoComplete?: string;
+        autoFocus?: boolean;
+        autoPlay?: boolean;
+        capture?: boolean;
+        cellPadding?: number | string;
+        cellSpacing?: number | string;
+        charSet?: string;
+        challenge?: string;
+        checked?: boolean;
+        classID?: string;
+        className?: string;
+        cols?: number;
+        colSpan?: number;
+        content?: string;
+        contentEditable?: boolean;
+        contextMenu?: string;
+        controls?: boolean;
+        coords?: string;
+        crossOrigin?: string;
+        data?: string;
+        dateTime?: string;
+        default?: boolean;
+        defer?: boolean;
+        dir?: string;
+        disabled?: boolean;
+        download?: any;
+        draggable?: boolean;
+        encType?: string;
+        form?: string;
+        formAction?: string;
+        formEncType?: string;
+        formMethod?: string;
+        formNoValidate?: boolean;
+        formTarget?: string;
+        frameBorder?: number | string;
+        headers?: string;
+        height?: number | string;
+        hidden?: boolean;
+        high?: number;
+        href?: string;
+        hrefLang?: string;
+        htmlFor?: string;
+        httpEquiv?: string;
+        icon?: string;
+        id?: string;
+        inputMode?: string;
+        integrity?: string;
+        is?: string;
+        keyParams?: string;
+        keyType?: string;
+        kind?: string;
+        label?: string;
+        lang?: string;
+        list?: string;
+        loop?: boolean;
+        low?: number;
+        manifest?: string;
+        marginHeight?: number;
+        marginWidth?: number;
+        max?: number | string;
+        maxLength?: number;
+        media?: string;
+        mediaGroup?: string;
+        method?: string;
+        min?: number | string;
+        minLength?: number;
+        multiple?: boolean;
+        muted?: boolean;
+        name?: string;
+        nonce?: string;
+        noValidate?: boolean;
+        open?: boolean;
+        optimum?: number;
+        pattern?: string;
+        placeholder?: string;
+        poster?: string;
+        preload?: string;
+        radioGroup?: string;
+        readOnly?: boolean;
+        rel?: string;
+        required?: boolean;
+        reversed?: boolean;
+        role?: string;
+        rows?: number;
+        rowSpan?: number;
+        sandbox?: string;
+        scope?: string;
+        scoped?: boolean;
+        scrolling?: string;
+        seamless?: boolean;
+        selected?: boolean;
+        shape?: string;
+        size?: number;
+        sizes?: string;
+        span?: number;
+        spellCheck?: boolean;
+        src?: string;
+        srcDoc?: string;
+        srcLang?: string;
+        srcSet?: string;
+        start?: number;
+        step?: number | string;
+        style?: CSSProperties;
+        summary?: string;
+        tabIndex?: number;
+        target?: string;
+        title?: string;
+        type?: string;
+        useMap?: string;
+        value?: string | string[];
+        width?: number | string;
+        wmode?: string;
+        wrap?: string;
+
+        // RDFa Attributes
+        about?: string;
+        datatype?: string;
+        inlist?: any;
+        prefix?: string;
+        property?: string;
+        resource?: string;
+        typeof?: string;
+        vocab?: string;
+
+        // Non-standard Attributes
+        autoCapitalize?: string;
+        autoCorrect?: string;
+        autoSave?: string;
+        color?: string;
+        itemProp?: string;
+        itemScope?: boolean;
+        itemType?: string;
+        itemID?: string;
+        itemRef?: string;
+        results?: number;
+        security?: string;
+        unselectable?: boolean;
+
+        // Allows aria- and data- Attributes
+        [key: string]: any;
+    }
+
+    interface SVGAttributes extends HTMLAttributes {
+        clipPath?: string;
+        cx?: number | string;
+        cy?: number | string;
+        d?: string;
+        dx?: number | string;
+        dy?: number | string;
+        fill?: string;
+        fillOpacity?: number | string;
+        fontFamily?: string;
+        fontSize?: number | string;
+        fx?: number | string;
+        fy?: number | string;
+        gradientTransform?: string;
+        gradientUnits?: string;
+        markerEnd?: string;
+        markerMid?: string;
+        markerStart?: string;
+        offset?: number | string;
+        opacity?: number | string;
+        patternContentUnits?: string;
+        patternUnits?: string;
+        points?: string;
+        preserveAspectRatio?: string;
+        r?: number | string;
+        rx?: number | string;
+        ry?: number | string;
+        spreadMethod?: string;
+        stopColor?: string;
+        stopOpacity?: number | string;
+        stroke?: string;
+        strokeDasharray?: string;
+        strokeLinecap?: string;
+        strokeMiterlimit?: string;
+        strokeOpacity?: number | string;
+        strokeWidth?: number | string;
+        textAnchor?: string;
+        transform?: string;
+        version?: string;
+        viewBox?: string;
+        x1?: number | string;
+        x2?: number | string;
+        x?: number | string;
+        xlinkActuate?: string;
+        xlinkArcrole?: string;
+        xlinkHref?: string;
+        xlinkRole?: string;
+        xlinkShow?: string;
+        xlinkTitle?: string;
+        xlinkType?: string;
+        xmlBase?: string;
+        xmlLang?: string;
+        xmlSpace?: string;
+        y1?: number | string;
+        y2?: number | string;
+        y?: number | string;
+    }
+
+    //
+    // React.DOM
+    // ----------------------------------------------------------------------
+
+    interface ReactDOM {
+        // HTML
+        a: HTMLFactory<HTMLAnchorElement>;
+        abbr: HTMLFactory<HTMLElement>;
+        address: HTMLFactory<HTMLElement>;
+        area: HTMLFactory<HTMLAreaElement>;
+        article: HTMLFactory<HTMLElement>;
+        aside: HTMLFactory<HTMLElement>;
+        audio: HTMLFactory<HTMLAudioElement>;
+        b: HTMLFactory<HTMLElement>;
+        base: HTMLFactory<HTMLBaseElement>;
+        bdi: HTMLFactory<HTMLElement>;
+        bdo: HTMLFactory<HTMLElement>;
+        big: HTMLFactory<HTMLElement>;
+        blockquote: HTMLFactory<HTMLElement>;
+        body: HTMLFactory<HTMLBodyElement>;
+        br: HTMLFactory<HTMLBRElement>;
+        button: HTMLFactory<HTMLButtonElement>;
+        canvas: HTMLFactory<HTMLCanvasElement>;
+        caption: HTMLFactory<HTMLElement>;
+        cite: HTMLFactory<HTMLElement>;
+        code: HTMLFactory<HTMLElement>;
+        col: HTMLFactory<HTMLTableColElement>;
+        colgroup: HTMLFactory<HTMLTableColElement>;
+        data: HTMLFactory<HTMLElement>;
+        datalist: HTMLFactory<HTMLDataListElement>;
+        dd: HTMLFactory<HTMLElement>;
+        del: HTMLFactory<HTMLElement>;
+        details: HTMLFactory<HTMLElement>;
+        dfn: HTMLFactory<HTMLElement>;
+        dialog: HTMLFactory<HTMLElement>;
+        div: HTMLFactory<HTMLDivElement>;
+        dl: HTMLFactory<HTMLDListElement>;
+        dt: HTMLFactory<HTMLElement>;
+        em: HTMLFactory<HTMLElement>;
+        embed: HTMLFactory<HTMLEmbedElement>;
+        fieldset: HTMLFactory<HTMLFieldSetElement>;
+        figcaption: HTMLFactory<HTMLElement>;
+        figure: HTMLFactory<HTMLElement>;
+        footer: HTMLFactory<HTMLElement>;
+        form: HTMLFactory<HTMLFormElement>;
+        h1: HTMLFactory<HTMLHeadingElement>;
+        h2: HTMLFactory<HTMLHeadingElement>;
+        h3: HTMLFactory<HTMLHeadingElement>;
+        h4: HTMLFactory<HTMLHeadingElement>;
+        h5: HTMLFactory<HTMLHeadingElement>;
+        h6: HTMLFactory<HTMLHeadingElement>;
+        head: HTMLFactory<HTMLHeadElement>;
+        header: HTMLFactory<HTMLElement>;
+        hgroup: HTMLFactory<HTMLElement>;
+        hr: HTMLFactory<HTMLHRElement>;
+        html: HTMLFactory<HTMLHtmlElement>;
+        i: HTMLFactory<HTMLElement>;
+        iframe: HTMLFactory<HTMLIFrameElement>;
+        img: HTMLFactory<HTMLImageElement>;
+        input: HTMLFactory<HTMLInputElement>;
+        ins: HTMLFactory<HTMLModElement>;
+        kbd: HTMLFactory<HTMLElement>;
+        keygen: HTMLFactory<HTMLElement>;
+        label: HTMLFactory<HTMLLabelElement>;
+        legend: HTMLFactory<HTMLLegendElement>;
+        li: HTMLFactory<HTMLLIElement>;
+        link: HTMLFactory<HTMLLinkElement>;
+        main: HTMLFactory<HTMLElement>;
+        map: HTMLFactory<HTMLMapElement>;
+        mark: HTMLFactory<HTMLElement>;
+        menu: HTMLFactory<HTMLElement>;
+        menuitem: HTMLFactory<HTMLElement>;
+        meta: HTMLFactory<HTMLMetaElement>;
+        meter: HTMLFactory<HTMLElement>;
+        nav: HTMLFactory<HTMLElement>;
+        noscript: HTMLFactory<HTMLElement>;
+        object: HTMLFactory<HTMLObjectElement>;
+        ol: HTMLFactory<HTMLOListElement>;
+        optgroup: HTMLFactory<HTMLOptGroupElement>;
+        option: HTMLFactory<HTMLOptionElement>;
+        output: HTMLFactory<HTMLElement>;
+        p: HTMLFactory<HTMLParagraphElement>;
+        param: HTMLFactory<HTMLParamElement>;
+        picture: HTMLFactory<HTMLElement>;
+        pre: HTMLFactory<HTMLPreElement>;
+        progress: HTMLFactory<HTMLProgressElement>;
+        q: HTMLFactory<HTMLQuoteElement>;
+        rp: HTMLFactory<HTMLElement>;
+        rt: HTMLFactory<HTMLElement>;
+        ruby: HTMLFactory<HTMLElement>;
+        s: HTMLFactory<HTMLElement>;
+        samp: HTMLFactory<HTMLElement>;
+        script: HTMLFactory<HTMLElement>;
+        section: HTMLFactory<HTMLElement>;
+        select: HTMLFactory<HTMLSelectElement>;
+        small: HTMLFactory<HTMLElement>;
+        source: HTMLFactory<HTMLSourceElement>;
+        span: HTMLFactory<HTMLSpanElement>;
+        strong: HTMLFactory<HTMLElement>;
+        style: HTMLFactory<HTMLStyleElement>;
+        sub: HTMLFactory<HTMLElement>;
+        summary: HTMLFactory<HTMLElement>;
+        sup: HTMLFactory<HTMLElement>;
+        table: HTMLFactory<HTMLTableElement>;
+        tbody: HTMLFactory<HTMLTableSectionElement>;
+        td: HTMLFactory<HTMLTableDataCellElement>;
+        textarea: HTMLFactory<HTMLTextAreaElement>;
+        tfoot: HTMLFactory<HTMLTableSectionElement>;
+        th: HTMLFactory<HTMLTableHeaderCellElement>;
+        thead: HTMLFactory<HTMLTableSectionElement>;
+        time: HTMLFactory<HTMLElement>;
+        title: HTMLFactory<HTMLTitleElement>;
+        tr: HTMLFactory<HTMLTableRowElement>;
+        track: HTMLFactory<HTMLTrackElement>;
+        u: HTMLFactory<HTMLElement>;
+        ul: HTMLFactory<HTMLUListElement>;
+        "var": HTMLFactory<HTMLElement>;
+        video: HTMLFactory<HTMLVideoElement>;
+        wbr: HTMLFactory<HTMLElement>;
+
+        // SVG
+        svg: SVGFactory;
+        circle: SVGFactory;
+        defs: SVGFactory;
+        ellipse: SVGFactory;
+        g: SVGFactory;
+        image: SVGFactory;
+        line: SVGFactory;
+        linearGradient: SVGFactory;
+        mask: SVGFactory;
+        path: SVGFactory;
+        pattern: SVGFactory;
+        polygon: SVGFactory;
+        polyline: SVGFactory;
+        radialGradient: SVGFactory;
+        rect: SVGFactory;
+        stop: SVGFactory;
+        text: SVGFactory;
+        tspan: SVGFactory;
+    }
+
+    //
+    // React.PropTypes
+    // ----------------------------------------------------------------------
+
+    interface Validator<T> {
+        (object: T, key: string, componentName: string): Error;
+    }
+
+    interface Requireable<T> extends Validator<T> {
+        isRequired: Validator<T>;
+    }
+
+    interface ValidationMap<T> {
+        [key: string]: Validator<T>;
+    }
+
+    interface ReactPropTypes {
+        any: Requireable<any>;
+        array: Requireable<any>;
+        bool: Requireable<any>;
+        func: Requireable<any>;
+        number: Requireable<any>;
+        object: Requireable<any>;
+        string: Requireable<any>;
+        node: Requireable<any>;
+        element: Requireable<any>;
+        instanceOf(expectedClass: {}): Requireable<any>;
+        oneOf(types: any[]): Requireable<any>;
+        oneOfType(types: Validator<any>[]): Requireable<any>;
+        arrayOf(type: Validator<any>): Requireable<any>;
+        objectOf(type: Validator<any>): Requireable<any>;
+        shape(type: ValidationMap<any>): Requireable<any>;
+    }
+
+    //
+    // React.Children
+    // ----------------------------------------------------------------------
+
+    interface ReactChildren {
+        map<T>(children: ReactNode, fn: (child: ReactChild, index: number) => T): T[];
+        forEach(children: ReactNode, fn: (child: ReactChild, index: number) => any): void;
+        count(children: ReactNode): number;
+        only(children: ReactNode): ReactElement<any>;
+        toArray(children: ReactNode): ReactChild[];
+    }
+
+    //
+    // Browser Interfaces
+    // https://github.com/nikeee/2048-typescript/blob/master/2048/js/touch.d.ts
+    // ----------------------------------------------------------------------
+
+    interface AbstractView {
+        styleMedia: StyleMedia;
+        document: Document;
+    }
+
+    interface Touch {
+        identifier: number;
+        target: EventTarget;
+        screenX: number;
+        screenY: number;
+        clientX: number;
+        clientY: number;
+        pageX: number;
+        pageY: number;
+    }
+
+    interface TouchList {
+        [index: number]: Touch;
+        length: number;
+        item(index: number): Touch;
+        identifiedTouch(identifier: number): Touch;
+    }
+}
+
+declare namespace JSX {
+    import React = __LiteMolReact;
+
+    interface Element extends React.ReactElement<any> { }
+    interface ElementClass extends React.Component<any, any> {
+        render(): JSX.Element;
+    }
+    interface ElementAttributesProperty { props: {}; }
+
+    interface IntrinsicAttributes extends React.Attributes { }
+    interface IntrinsicClassAttributes<T> extends React.ClassAttributes<T> { }
+
+    interface IntrinsicElements {
+        // HTML
+        a: React.HTMLProps<HTMLAnchorElement>;
+        abbr: React.HTMLProps<HTMLElement>;
+        address: React.HTMLProps<HTMLElement>;
+        area: React.HTMLProps<HTMLAreaElement>;
+        article: React.HTMLProps<HTMLElement>;
+        aside: React.HTMLProps<HTMLElement>;
+        audio: React.HTMLProps<HTMLAudioElement>;
+        b: React.HTMLProps<HTMLElement>;
+        base: React.HTMLProps<HTMLBaseElement>;
+        bdi: React.HTMLProps<HTMLElement>;
+        bdo: React.HTMLProps<HTMLElement>;
+        big: React.HTMLProps<HTMLElement>;
+        blockquote: React.HTMLProps<HTMLElement>;
+        body: React.HTMLProps<HTMLBodyElement>;
+        br: React.HTMLProps<HTMLBRElement>;
+        button: React.HTMLProps<HTMLButtonElement>;
+        canvas: React.HTMLProps<HTMLCanvasElement>;
+        caption: React.HTMLProps<HTMLElement>;
+        cite: React.HTMLProps<HTMLElement>;
+        code: React.HTMLProps<HTMLElement>;
+        col: React.HTMLProps<HTMLTableColElement>;
+        colgroup: React.HTMLProps<HTMLTableColElement>;
+        data: React.HTMLProps<HTMLElement>;
+        datalist: React.HTMLProps<HTMLDataListElement>;
+        dd: React.HTMLProps<HTMLElement>;
+        del: React.HTMLProps<HTMLElement>;
+        details: React.HTMLProps<HTMLElement>;
+        dfn: React.HTMLProps<HTMLElement>;
+        dialog: React.HTMLProps<HTMLElement>;
+        div: React.HTMLProps<HTMLDivElement>;
+        dl: React.HTMLProps<HTMLDListElement>;
+        dt: React.HTMLProps<HTMLElement>;
+        em: React.HTMLProps<HTMLElement>;
+        embed: React.HTMLProps<HTMLEmbedElement>;
+        fieldset: React.HTMLProps<HTMLFieldSetElement>;
+        figcaption: React.HTMLProps<HTMLElement>;
+        figure: React.HTMLProps<HTMLElement>;
+        footer: React.HTMLProps<HTMLElement>;
+        form: React.HTMLProps<HTMLFormElement>;
+        h1: React.HTMLProps<HTMLHeadingElement>;
+        h2: React.HTMLProps<HTMLHeadingElement>;
+        h3: React.HTMLProps<HTMLHeadingElement>;
+        h4: React.HTMLProps<HTMLHeadingElement>;
+        h5: React.HTMLProps<HTMLHeadingElement>;
+        h6: React.HTMLProps<HTMLHeadingElement>;
+        head: React.HTMLProps<HTMLHeadElement>;
+        header: React.HTMLProps<HTMLElement>;
+        hgroup: React.HTMLProps<HTMLElement>;
+        hr: React.HTMLProps<HTMLHRElement>;
+        html: React.HTMLProps<HTMLHtmlElement>;
+        i: React.HTMLProps<HTMLElement>;
+        iframe: React.HTMLProps<HTMLIFrameElement>;
+        img: React.HTMLProps<HTMLImageElement>;
+        input: React.HTMLProps<HTMLInputElement>;
+        ins: React.HTMLProps<HTMLModElement>;
+        kbd: React.HTMLProps<HTMLElement>;
+        keygen: React.HTMLProps<HTMLElement>;
+        label: React.HTMLProps<HTMLLabelElement>;
+        legend: React.HTMLProps<HTMLLegendElement>;
+        li: React.HTMLProps<HTMLLIElement>;
+        link: React.HTMLProps<HTMLLinkElement>;
+        main: React.HTMLProps<HTMLElement>;
+        map: React.HTMLProps<HTMLMapElement>;
+        mark: React.HTMLProps<HTMLElement>;
+        menu: React.HTMLProps<HTMLElement>;
+        menuitem: React.HTMLProps<HTMLElement>;
+        meta: React.HTMLProps<HTMLMetaElement>;
+        meter: React.HTMLProps<HTMLElement>;
+        nav: React.HTMLProps<HTMLElement>;
+        noscript: React.HTMLProps<HTMLElement>;
+        object: React.HTMLProps<HTMLObjectElement>;
+        ol: React.HTMLProps<HTMLOListElement>;
+        optgroup: React.HTMLProps<HTMLOptGroupElement>;
+        option: React.HTMLProps<HTMLOptionElement>;
+        output: React.HTMLProps<HTMLElement>;
+        p: React.HTMLProps<HTMLParagraphElement>;
+        param: React.HTMLProps<HTMLParamElement>;
+        picture: React.HTMLProps<HTMLElement>;
+        pre: React.HTMLProps<HTMLPreElement>;
+        progress: React.HTMLProps<HTMLProgressElement>;
+        q: React.HTMLProps<HTMLQuoteElement>;
+        rp: React.HTMLProps<HTMLElement>;
+        rt: React.HTMLProps<HTMLElement>;
+        ruby: React.HTMLProps<HTMLElement>;
+        s: React.HTMLProps<HTMLElement>;
+        samp: React.HTMLProps<HTMLElement>;
+        script: React.HTMLProps<HTMLElement>;
+        section: React.HTMLProps<HTMLElement>;
+        select: React.HTMLProps<HTMLSelectElement>;
+        small: React.HTMLProps<HTMLElement>;
+        source: React.HTMLProps<HTMLSourceElement>;
+        span: React.HTMLProps<HTMLSpanElement>;
+        strong: React.HTMLProps<HTMLElement>;
+        style: React.HTMLProps<HTMLStyleElement>;
+        sub: React.HTMLProps<HTMLElement>;
+        summary: React.HTMLProps<HTMLElement>;
+        sup: React.HTMLProps<HTMLElement>;
+        table: React.HTMLProps<HTMLTableElement>;
+        tbody: React.HTMLProps<HTMLTableSectionElement>;
+        td: React.HTMLProps<HTMLTableDataCellElement>;
+        textarea: React.HTMLProps<HTMLTextAreaElement>;
+        tfoot: React.HTMLProps<HTMLTableSectionElement>;
+        th: React.HTMLProps<HTMLTableHeaderCellElement>;
+        thead: React.HTMLProps<HTMLTableSectionElement>;
+        time: React.HTMLProps<HTMLElement>;
+        title: React.HTMLProps<HTMLTitleElement>;
+        tr: React.HTMLProps<HTMLTableRowElement>;
+        track: React.HTMLProps<HTMLTrackElement>;
+        u: React.HTMLProps<HTMLElement>;
+        ul: React.HTMLProps<HTMLUListElement>;
+        "var": React.HTMLProps<HTMLElement>;
+        video: React.HTMLProps<HTMLVideoElement>;
+        wbr: React.HTMLProps<HTMLElement>;
+
+        // SVG
+        svg: React.SVGProps;
+
+        circle: React.SVGProps;
+        clipPath: React.SVGProps;
+        defs: React.SVGProps;
+        ellipse: React.SVGProps;
+        g: React.SVGProps;
+        image: React.SVGProps;
+        line: React.SVGProps;
+        linearGradient: React.SVGProps;
+        mask: React.SVGProps;
+        path: React.SVGProps;
+        pattern: React.SVGProps;
+        polygon: React.SVGProps;
+        polyline: React.SVGProps;
+        radialGradient: React.SVGProps;
+        rect: React.SVGProps;
+        stop: React.SVGProps;
+        text: React.SVGProps;
+        tspan: React.SVGProps;
+    }
+}
+// Type definitions for React v0.14 (react-dom)
+// Project: http://facebook.github.io/react/
+// Definitions by: Asana <https://asana.com>, AssureSign <http://www.assuresign.com>, Microsoft <https://microsoft.com>
+// Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
+
+declare namespace __LiteMolReact {
+    namespace __DOM {
+        function findDOMNode<E extends Element>(instance: ReactInstance): E;
+        function findDOMNode(instance: ReactInstance): Element;
+
+        function render<P extends DOMAttributes, T extends Element>(
+            element: DOMElement<P, T>,
+            container: Element,
+            callback?: (element: T) => any): T;
+        function render<P>(
+            element: SFCElement<P>,
+            container: Element,
+            callback?: () => any): void;
+        function render<P, T extends Component<P, {}>>(
+            element: CElement<P, T>,
+            container: Element,
+            callback?: (component: T) => any): T;
+        function render<P>(
+            element: ReactElement<P>,
+            container: Element,
+            callback?: (component?: Component<P, {}> | Element) => any): Component<P, {}> | Element | void;
+
+        function unmountComponentAtNode(container: Element): boolean;
+
+        var version: string;
+
+        function unstable_batchedUpdates<A, B>(callback: (a: A, b: B) => any, a: A, b: B): void;
+        function unstable_batchedUpdates<A>(callback: (a: A) => any, a: A): void;
+        function unstable_batchedUpdates(callback: () => any): void;
+
+        function unstable_renderSubtreeIntoContainer<P extends DOMAttributes, T extends Element>(
+            parentComponent: Component<any, any>,
+            element: DOMElement<P, T>,
+            container: Element,
+            callback?: (element: T) => any): T;
+        function unstable_renderSubtreeIntoContainer<P, T extends Component<P, {}>>(
+            parentComponent: Component<any, any>,
+            element: CElement<P, T>,
+            container: Element,
+            callback?: (component: T) => any): T;
+        function render<P>(
+            parentComponent: Component<any, any>,
+            element: SFCElement<P>,
+            container: Element,
+            callback?: () => any): void;
+        function unstable_renderSubtreeIntoContainer<P>(
+            parentComponent: Component<any, any>,
+            element: ReactElement<P>,
+            container: Element,
+            callback?: (component?: Component<P, {}> | Element) => any): Component<P, {}> | Element | void;
+    }
+
+    namespace __DOMServer {
+        function renderToString(element: ReactElement<any>): string;
+        function renderToStaticMarkup(element: ReactElement<any>): string;
+        var version: string;
+    }
+}
+
+declare namespace __LiteMolColorPicker {
+    
+    interface __LiteMolColorPickerRGB {
+        a: number; r: number; g: number; b: number;
+    }
+
+    interface __LiteMolColorPickerHSV {
+        a: number; h: number; s: number; v: number;
+    }
+
+    interface __LiteMolColorPickerHSL {
+        a: number; h: number; s: number; l: number;
+    }
+
+    interface __LiteMolColorPickerChangeEvent {
+        rgb: __LiteMolColorPickerRGB;
+        hsv: __LiteMolColorPickerHSV;
+        rsl: __LiteMolColorPickerHSL;
+        hex: string;   
+    }
+    
+    // class ColorPicker extends __LiteMolReact.Component<{
+    //     color?: string | __LiteMolColorPickerRGB | __LiteMolColorPickerHSV | __LiteMolColorPickerHSL,
+    //     onChange?: (e: __LiteMolColorPickerChangeEvent) => void,
+    // }, {}> {
+        
+    // }
+    
+    class ChromePicker extends __LiteMolReact.Component<{
+        color?: string | __LiteMolColorPickerRGB | __LiteMolColorPickerHSV | __LiteMolColorPickerHSL,
+        onChange?: (e: __LiteMolColorPickerChangeEvent) => void,
+        onChangeComplete?: (e: __LiteMolColorPickerChangeEvent) => void,
+    }, {}> {
+        
+    }
+    
+    // class AlphaPicker extends __LiteMolReact.Component<{
+    //     color?: string | __LiteMolColorPickerRGB | __LiteMolColorPickerHSV | __LiteMolColorPickerHSL,
+    //     onChange?: (e: __LiteMolColorPickerChangeEvent) => void,
+    // }, {}> {
+        
+    // }
+}
+declare namespace LiteMol {
+    type Promise<T> = __Promise.Promise<T>;
+    const Promise: typeof __Promise.Promise;
+}
+declare namespace LiteMol.Core {
+    export import Rx = __LiteMolRx;
+    export import Promise = LiteMol.Promise;
+    namespace Formats {
+        export import CIF = CIFTools;
+    }
+}
+declare namespace LiteMol.Core {
+    var VERSION: {
+        number: string;
+        date: string;
+    };
+}
+declare namespace LiteMol.Core {
+    function computation<A>(c: (ctx: Computation.Context) => Promise<A>): Computation<A>;
+    class Computation<A> {
+        private computation;
+        run(ctx?: Computation.Context): __Promise.Promise<A>;
+        runWithContext(ctx?: Computation.Context): Computation.Running<A>;
+        constructor(computation: (ctx: Computation.Context) => Promise<A>);
+    }
+    module Computation {
+        function resolve<A>(a: A): Computation<A>;
+        function reject<A>(reason: any): Computation<A>;
+        function createContext(): Computation.Context;
+        const Aborted = "Aborted";
+        const UpdateProgressDelta = 100;
+        interface Progress {
+            message: string;
+            isIndeterminate: boolean;
+            current: number;
+            max: number;
+            requestAbort?: () => void;
+        }
+        interface Context {
+            progress: Rx.Observable<Progress>;
+            requestAbort(): void;
+            /**
+             * Checks if the computation was aborted. If so, throws.
+             * Otherwise, updates the progress.
+             */
+            updateProgress(msg: string, abort?: boolean | (() => void), current?: number, max?: number): void;
+        }
+        interface Running<A> {
+            progress: Rx.Observable<Progress>;
+            result: Promise<A>;
+        }
+    }
+}
+declare namespace LiteMol.Core.Utils {
+    /**
+     * An "object" based implementation of map that supports string and numeric keys
+     * which should be ok for most use cases in LiteMol.
+     *
+     * The type limitation is on purpose to prevent using the type in places that are
+     * not appropriate.
+     */
+    interface FastMap<K extends string | number, V> {
+        readonly size: number;
+        set(key: K, v: V): void;
+        get(key: K): V | undefined;
+        delete(key: K): boolean;
+        has(key: K): boolean;
+        clear(): void;
+        /**
+         * Iterate over the collection.
+         * Optional "context" object can be supplied that is passed to the callback.
+         *
+         * Enumerates only values that are not undefined.
+         */
+        forEach<Context>(f: (value: V, key: K, ctx?: Context) => void, ctx?: Context): void;
+    }
+    /**
+     * An "object" based implementation of set that supports string and numeric values
+     * which should be ok for most use cases in LiteMol.
+     *
+     * The type limitation is on purpose to prevent using the type in places that are
+     * not appropriate.
+     */
+    interface FastSet<T extends string | number> {
+        readonly size: number;
+        add(key: T): boolean;
+        delete(key: T): boolean;
+        has(key: T): boolean;
+        clear(): void;
+        /**
+         * Iterate over the collection.
+         * Optional "context" object can be supplied that is passed to the callback.
+         */
+        forEach<Context>(f: (key: T, ctx?: Context) => void, ctx?: Context): void;
+    }
+    namespace FastMap {
+        /**
+         * Creates an empty map.
+         */
+        function create<K extends string | number, V>(): FastMap<K, V>;
+        /**
+         * Create a map from an array of the form [[key, value], ...]
+         */
+        function ofArray<K extends string | number, V>(data: (K | V)[][]): FastMap<K, V>;
+        /**
+         * Create a map from an object of the form { key: value, ... }
+         */
+        function ofObject<V>(data: {
+            [key: string]: V;
+        }): FastMap<string, V>;
+    }
+    namespace FastSet {
+        /**
+         * Create an empty set.
+         */
+        function create<T extends string | number>(): FastSet<T>;
+        /**
+         * Create a set of an "array like" sequence.
+         */
+        function ofArray<T extends string | number>(xs: ArrayLike<T>): FastSet<T>;
+    }
+}
+declare namespace LiteMol.Core.Utils {
+    export import FastNumberParsers = Core.Formats.CIF.Utils.FastNumberParsers;
+    function extend<S, T, U>(object: S, source: T, guard?: U): S & T & U;
+    function debounce<T>(func: () => T, wait: number): () => T;
+}
+declare namespace LiteMol.Core.Utils {
+    type DataTable<Schema> = DataTable.Base<Schema> & DataTable.Columns<Schema>;
+    module DataTable {
+        type Definition<Schema> = {
+            [T in keyof Schema]: ((size: number) => Schema[T][]) | undefined;
+        };
+        type Columns<Schema> = {
+            readonly [P in keyof Schema]: Schema[P][];
+        };
+        interface ColumnDescriptor<Schema> {
+            name: keyof Schema;
+            creator: (size: number) => any;
+        }
+        type TypedArrayContructor = Float32ArrayConstructor | Float64ArrayConstructor | Int32ArrayConstructor | Uint32ArrayConstructor | Int16ArrayConstructor | Uint16ArrayConstructor | Int8ArrayConstructor | Uint8ArrayConstructor;
+        function typedColumn(t: TypedArrayContructor): (size: number) => number[];
+        function customColumn<T>(): (size: number) => T[];
+        const stringColumn: (size: number) => string[];
+        const stringNullColumn: (size: number) => (string | null)[];
+        interface Base<Schema> {
+            count: number;
+            indices: number[];
+            columns: ColumnDescriptor<Schema>[];
+            getBuilder(count: number): Builder<Schema>;
+            getRawData(): any[][];
+            /**
+             * Get a MUTABLE representation of a row.
+             * Calling getRow() with differnt 'i' will change update old reference.
+             */
+            getRow(i: number): Schema;
+        }
+        interface Builder<Schema> {
+            count: number;
+            columns: ColumnDescriptor<Schema>[];
+            addColumn<T>(name: keyof Schema, creator: (size: number) => T): T;
+            getRawData(): any[][];
+            /**
+             * This functions clones the table and defines all its column inside the constructor, hopefully making the JS engine
+             * use internal class instead of dictionary representation.
+             */
+            seal(): DataTable<Schema>;
+        }
+        function builder<Schema>(count: number): Builder<Schema>;
+        function ofDefinition<Schema>(definition: Definition<Schema>, count: number): DataTable<Schema>;
+    }
+}
+declare namespace LiteMol.Core.Utils {
+    function integerSetToSortedTypedArray(set: FastSet<number>): number[];
+    /**
+     * A a JS native array with the given size.
+     */
+    function makeNativeIntArray(size: number): number[];
+    /**
+     * A a JS native array with the given size.
+     */
+    function makeNativeFloatArray(size: number): number[];
+    /**
+     * A generic chunked array builder.
+     *
+     * When adding elements, the array growns by a specified number
+     * of elements and no copying is done until ChunkedArray.compact
+     * is called.
+     */
+    interface ChunkedArray<T> {
+        creator: (size: number) => any;
+        elementSize: number;
+        chunkSize: number;
+        current: any;
+        currentIndex: number;
+        parts: any[];
+        elementCount: number;
+    }
+    namespace ChunkedArray {
+        function is(x: any): x is ChunkedArray<any>;
+        function add4<T>(array: ChunkedArray<T>, x: T, y: T, z: T, w: T): number;
+        function add3<T>(array: ChunkedArray<T>, x: T, y: T, z: T): number;
+        function add2<T>(array: ChunkedArray<T>, x: T, y: T): number;
+        function add<T>(array: ChunkedArray<T>, x: T): number;
+        function compact<T>(array: ChunkedArray<T>): T[];
+        function forVertex3D(chunkVertexCount?: number): ChunkedArray<number>;
+        function forIndexBuffer(chunkIndexCount?: number): ChunkedArray<number>;
+        function forTokenIndices(chunkTokenCount?: number): ChunkedArray<number>;
+        function forIndices(chunkTokenCount?: number): ChunkedArray<number>;
+        function forInt32(chunkSize?: number): ChunkedArray<number>;
+        function forFloat32(chunkSize?: number): ChunkedArray<number>;
+        function forArray<T>(chunkSize?: number): ChunkedArray<T>;
+        function create<T>(creator: (size: number) => any, chunkElementCount: number, elementSize: number): ChunkedArray<T>;
+    }
+    /**
+     * Static size array builder.
+     */
+    interface ArrayBuilder<T> {
+        currentIndex: number;
+        elementCount: number;
+        array: T[];
+    }
+    namespace ArrayBuilder {
+        function add3<T>(array: ArrayBuilder<T>, x: T, y: T, z: T): void;
+        function add2<T>(array: ArrayBuilder<T>, x: T, y: T): void;
+        function add<T>(array: ArrayBuilder<T>, x: T): void;
+        function forVertex3D(count: number): ArrayBuilder<number>;
+        function forIndexBuffer(count: number): ArrayBuilder<number>;
+        function forTokenIndices(count: number): ArrayBuilder<number>;
+        function forIndices(count: number): ArrayBuilder<number>;
+        function forInt32(count: number): ArrayBuilder<number>;
+        function forFloat32(count: number): ArrayBuilder<number>;
+        function forArray<T>(count: number): ArrayBuilder<T>;
+        function create<T>(creator: (size: number) => any, chunkElementCount: number, elementSize: number): ArrayBuilder<T>;
+    }
+}
+declare namespace LiteMol.Core.Utils {
+    class PerformanceMonitor {
+        private starts;
+        private ends;
+        static currentTime(): number;
+        start(name: string): void;
+        end(name: string): void;
+        static format(t: number): string;
+        formatTime(name: string): string;
+        formatTimeSum(...names: string[]): string;
+        time(name: string): number;
+        timeSum(...names: string[]): number;
+    }
+}
+declare namespace LiteMol.Core.Formats {
+    interface FormatInfo {
+        name: string;
+        shortcuts: string[];
+        extensions: string[];
+        isBinary?: boolean;
+        parse: (data: string | ArrayBuffer, params?: FormatInfo.Params) => Computation<ParserResult<any>>;
+    }
+    namespace FormatInfo {
+        type Params = {
+            id?: string;
+        };
+        function is(o: any): o is FormatInfo;
+        function fromShortcut(all: FormatInfo[], name: string): FormatInfo | undefined;
+        function formatRegExp(info: FormatInfo): RegExp;
+        function formatFileFilters(all: FormatInfo[]): string;
+        function getFormat(filename: string, all: FormatInfo[]): FormatInfo | undefined;
+    }
+    type ParserResult<T> = ParserSuccess<T> | ParserError;
+    namespace ParserResult {
+        function error<T>(message: string, line?: number): ParserResult<T>;
+        function success<T>(result: T, warnings?: string[]): ParserResult<T>;
+    }
+    class ParserError {
+        message: string;
+        line: number;
+        isError: true;
+        toString(): string;
+        constructor(message: string, line: number);
+    }
+    class ParserSuccess<T> {
+        result: T;
+        warnings: string[];
+        isError: false;
+        constructor(result: T, warnings: string[]);
+    }
+    /**
+     * A helper for building a typed array of token indices.
+     */
+    interface TokenIndexBuilder {
+        tokensLenMinus2: number;
+        count: number;
+        tokens: Int32Array;
+    }
+    namespace TokenIndexBuilder {
+        function addToken(builder: TokenIndexBuilder, start: number, end: number): void;
+        function create(size: number): TokenIndexBuilder;
+    }
+    /**
+     * This ensures there is only 1 instance of a short string.
+     */
+    type ShortStringPool = {
+        [key: string]: string;
+    };
+    namespace ShortStringPool {
+        function create(): ShortStringPool;
+        function get(pool: ShortStringPool, str: string): string;
+    }
+}
+declare namespace LiteMol.Core.Formats.Molecule.mmCIF {
+    function ofDataBlock(data: CIF.DataBlock): Structure.Molecule;
+}
+declare namespace LiteMol.Core.Formats.Molecule.PDB {
+    type TokenRange = {
+        start: number;
+        end: number;
+    };
+    type HelperData = {
+        dot: TokenRange;
+        question: TokenRange;
+        numberTokens: Utils.FastMap<number, TokenRange>;
+        data: string;
+    };
+    class MoleculeData {
+        header: Header;
+        crystInfo: CrystStructureInfo | undefined;
+        models: ModelsData;
+        data: string;
+        private makeEntities();
+        toCifFile(): CIF.File;
+        constructor(header: Header, crystInfo: CrystStructureInfo | undefined, models: ModelsData, data: string);
+    }
+    class Header {
+        id: string;
+        constructor(id: string);
+    }
+    class CrystStructureInfo {
+        record: string;
+        toCifCategory(id: string): {
+            cell: CIF.Category | undefined;
+            symm: CIF.Category | undefined;
+        };
+        constructor(record: string);
+    }
+    class SecondaryStructure {
+        helixTokens: number[];
+        sheetTokens: number[];
+        toCifCategory(data: string): {
+            helices: CIF.Category;
+            sheets: CIF.Category;
+        } | undefined;
+        constructor(helixTokens: number[], sheetTokens: number[]);
+    }
+    class ModelData {
+        idToken: TokenRange;
+        atomTokens: number[];
+        atomCount: number;
+        static COLUMNS: string[];
+        private writeToken(index, cifTokens);
+        private writeTokenCond(index, cifTokens, dot);
+        private writeRange(range, cifTokens);
+        private tokenEquals(start, end, value, data);
+        private getEntityType(row, data);
+        writeCifTokens(modelToken: TokenRange, cifTokens: Utils.ArrayBuilder<number>, helpers: HelperData): void;
+        constructor(idToken: TokenRange, atomTokens: number[], atomCount: number);
+    }
+    class ModelsData {
+        models: ModelData[];
+        toCifCategory(block: CIF.Text.DataBlock, helpers: HelperData): CIF.Text.Category;
+        constructor(models: ModelData[]);
+    }
+}
+declare namespace LiteMol.Core.Formats.Molecule.PDB {
+    class Parser {
+        private static tokenizeAtom(tokens, tokenizer);
+        private static tokenize(id, data);
+        static getDotRange(length: number): TokenRange;
+        static getNumberRanges(length: number): Utils.FastMap<number, TokenRange>;
+        static getQuestionmarkRange(length: number): TokenRange;
+        static parse(id: string, data: string): ParserResult<CIF.File>;
+    }
+    function toCifFile(id: string, data: string): ParserResult<CIF.File>;
+}
+declare namespace LiteMol.Core.Formats.Molecule.SDF {
+    function parse(data: string, id?: string): ParserResult<Structure.Molecule>;
+}
+declare namespace LiteMol.Core.Formats.Molecule {
+    namespace SupportedFormats {
+        const mmCIF: FormatInfo;
+        const mmBCIF: FormatInfo;
+        const PDB: FormatInfo;
+        const SDF: FormatInfo;
+        const All: FormatInfo[];
+    }
+}
+declare namespace LiteMol.Core.Formats.Density {
+    interface Field3D {
+        dimensions: number[];
+        length: number;
+        getAt(idx: number): number;
+        setAt(idx: number, v: number): void;
+        get(i: number, j: number, k: number): number;
+        set(i: number, j: number, k: number, v: number): void;
+        fill(v: number): void;
+    }
+    class Field3DZYX implements Field3D {
+        data: number[];
+        dimensions: number[];
+        private nX;
+        private nY;
+        private len;
+        readonly length: number;
+        getAt(idx: number): number;
+        setAt(idx: number, v: number): void;
+        get(i: number, j: number, k: number): number;
+        set(i: number, j: number, k: number, v: number): void;
+        fill(v: number): void;
+        constructor(data: number[], dimensions: number[]);
+    }
+    /**
+     * Represents electron density data.
+     */
+    interface Data {
+        /**
+         * Crystal cell size.
+         */
+        cellSize: number[];
+        /**
+         * Crystal cell angles.
+         */
+        cellAngles: number[];
+        /**
+         * Origin of the cell
+         */
+        origin: number[];
+        /**
+         * 3D volumetric data.
+         */
+        data: Field3D;
+        /**
+         * X, Y, Z dimensions of the data matrix.
+         */
+        dataDimensions: number[];
+        /**
+         * The basis of the space.
+         */
+        basis: {
+            x: number[];
+            y: number[];
+            z: number[];
+        };
+        /**
+         * Was the skew matrix present in the input?
+         */
+        hasSkewMatrix: boolean;
+        /**
+         * Column major ordered skew matrix.
+         */
+        skewMatrix: number[];
+        /**
+         * Information about the min/max/mean/sigma values.
+         */
+        valuesInfo: {
+            min: number;
+            max: number;
+            mean: number;
+            sigma: number;
+        };
+        /**
+         * Additional attributes.
+         */
+        attributes: {
+            [key: string]: any;
+        };
+        /**
+         * Are the data normalized?
+         */
+        isNormalized: boolean;
+    }
+    namespace Data {
+        function create(cellSize: number[], cellAngles: number[], origin: number[], hasSkewMatrix: boolean, skewMatrix: number[], data: Field3D, dataDimensions: number[], basis: {
+            x: number[];
+            y: number[];
+            z: number[];
+        }, valuesInfo: {
+            min: number;
+            max: number;
+            mean: number;
+            sigma: number;
+        }, attributes?: {
+            [key: string]: any;
+        }): Data;
+        function normalize(densityData: Data): void;
+        function denormalize(densityData: Data): void;
+    }
+}
+declare namespace LiteMol.Core.Formats.Density.CCP4 {
+    function parse(buffer: ArrayBuffer): ParserResult<Data>;
+}
+declare namespace LiteMol.Core.Formats.Density.CIF {
+    function parse(block: Formats.CIF.DataBlock): ParserResult<Data>;
+}
+declare namespace LiteMol.Core.Formats.Density.DSN6 {
+    function parse(buffer: ArrayBuffer): ParserResult<Data>;
+}
+declare namespace LiteMol.Core.Formats.Density {
+    namespace SupportedFormats {
+        const CCP4: FormatInfo;
+        const DSN6: FormatInfo;
+        const All: FormatInfo[];
+    }
+}
+declare namespace LiteMol.Core.Geometry.LinearAlgebra {
+    type ObjectVec3 = {
+        x: number;
+        y: number;
+        z: number;
+    };
+    /**
+     * Stores a 4x4 matrix in a column major (j * 4 + i indexing) format.
+     */
+    namespace Matrix4 {
+        function empty(): number[];
+        function identity(): number[];
+        function ofRows(rows: number[][]): number[];
+        function areEqual(a: number[], b: number[], eps: number): boolean;
+        function setValue(a: number[], i: number, j: number, value: number): void;
+        function copy(out: number[], a: any): number[];
+        function clone(a: number[]): number[];
+        function invert(out: number[], a: number[]): number[] | null;
+        function mul(out: number[], a: number[], b: number[]): number[];
+        function translate(out: number[], a: number[], v: number[]): number[];
+        function fromTranslation(out: number[], v: number[]): number[];
+        function transformVector3(out: {
+            x: number;
+            y: number;
+            z: number;
+        }, a: {
+            x: number;
+            y: number;
+            z: number;
+        }, m: number[]): {
+            x: number;
+            y: number;
+            z: number;
+        };
+        function makeTable(m: number[]): string;
+        function determinant(a: number[]): number;
+    }
+    namespace Vector4 {
+        function create(): number[];
+        function clone(a: number[]): number[];
+        function fromValues(x: number, y: number, z: number, w: number): number[];
+        function set(out: number[], x: number, y: number, z: number, w: number): number[];
+        function distance(a: number[], b: number[]): number;
+        function squaredDistance(a: number[], b: number[]): number;
+        function norm(a: number[]): number;
+        function squaredNorm(a: number[]): number;
+        function transform(out: number[], a: number[], m: number[]): number[];
+    }
+}
+declare namespace LiteMol.Core.Geometry {
+    /**
+     * Basic shape of the result buffer for range queries.
+     */
+    interface SubdivisionTree3DResultBuffer {
+        count: number;
+        indices: number[];
+        hasPriorities: boolean;
+        priorities: number[] | undefined;
+        add(distSq: number, index: number): void;
+        reset(): void;
+    }
+    /**
+     * A buffer that only remembers the values.
+     */
+    namespace SubdivisionTree3DResultIndexBuffer {
+        function create(initialCapacity: number): SubdivisionTree3DResultBuffer;
+    }
+    /**
+     * A buffer that remembers values and priorities.
+     */
+    namespace SubdivisionTree3DResultPriorityBuffer {
+        function create(initialCapacity: number): SubdivisionTree3DResultBuffer;
+    }
+    /**
+     * Query context. Handles the actual querying.
+     */
+    interface SubdivisionTree3DQueryContext<T> {
+        tree: SubdivisionTree3D<T>;
+        pivot: number[];
+        radius: number;
+        radiusSq: number;
+        indices: number[];
+        positions: number[];
+        buffer: SubdivisionTree3DResultBuffer;
+        nearest(x: number, y: number, z: number, radius: number): void;
+    }
+    namespace SubdivisionTree3DQueryContext {
+        function create<T>(tree: SubdivisionTree3D<T>, buffer: SubdivisionTree3DResultBuffer): SubdivisionTree3DQueryContext<T>;
+    }
+    /**
+     * A kd-like tree to query 3D data.
+     */
+    interface SubdivisionTree3D<T> {
+        data: T[];
+        indices: number[];
+        positions: number[];
+        root: SubdivisionTree3DNode;
+    }
+    namespace SubdivisionTree3D {
+        /**
+         * Create a context used for querying the data.
+         */
+        function createContextRadius<T>(tree: SubdivisionTree3D<T>, radiusEstimate: number, includePriorities?: boolean): SubdivisionTree3DQueryContext<T>;
+        /**
+         * Takes data and a function that calls SubdivisionTree3DPositionBuilder.add(x, y, z) on each data element.
+         */
+        function create<T>(data: T[], f: (e: T, add: (x: number, y: number, z: number) => void) => void, leafSize?: number): SubdivisionTree3D<T>;
+    }
+    /**
+     * A tree node.
+     */
+    interface SubdivisionTree3DNode {
+        splitValue: number;
+        startIndex: number;
+        endIndex: number;
+        left: SubdivisionTree3DNode;
+        right: SubdivisionTree3DNode;
+    }
+    namespace SubdivisionTree3DNode {
+        function nearest<T>(node: SubdivisionTree3DNode, ctx: SubdivisionTree3DQueryContext<T>, dim: number): void;
+        function create(splitValue: number, startIndex: number, endIndex: number, left: SubdivisionTree3DNode, right: SubdivisionTree3DNode): SubdivisionTree3DNode;
+    }
+    /**
+     * A helper to store boundary box.
+     */
+    interface Box3D {
+        min: number[];
+        max: number[];
+    }
+    namespace Box3D {
+        function createInfinite(): Box3D;
+    }
+}
+declare namespace LiteMol.Core.Geometry {
+    interface Surface {
+        /**
+         * Number of vertices.
+         */
+        vertexCount: number;
+        /**
+         * Number of triangles.
+         */
+        triangleCount: number;
+        /**
+         * Array of size 3 * vertexCount. Layout [x1, y1, z1, ...., xn, yn, zn]
+         */
+        vertices: Float32Array;
+        /**
+         * 3 indexes for each triangle
+         */
+        triangleIndices: Uint32Array;
+        /**
+         * Per vertex annotation.
+         */
+        annotation?: number[];
+        /**
+         * Array of size 3 * vertexCount. Layout [x1, y1, z1, ...., xn, yn, zn]
+         *
+         * Computed on demand.
+         */
+        normals?: Float32Array;
+        /**
+         * Bounding sphere.
+         */
+        boundingSphere?: {
+            center: Geometry.LinearAlgebra.ObjectVec3;
+            radius: number;
+        };
+    }
+    namespace Surface {
+        function computeNormalsImmediate(surface: Surface): void;
+        function computeNormals(surface: Surface): Computation<Surface>;
+        function laplacianSmooth(surface: Surface, iterCount?: number): Computation<Surface>;
+        function computeBoundingSphere(surface: Surface): Computation<Surface>;
+        function transformImmediate(surface: Surface, t: number[]): void;
+        function transform(surface: Surface, t: number[]): Computation<Surface>;
+    }
+}
+declare namespace LiteMol.Core.Geometry.MarchingCubes {
+    /**
+     * The parameters required by the algorithm.
+     */
+    interface MarchingCubesParameters {
+        isoLevel: number;
+        scalarField: Formats.Density.Field3D;
+        bottomLeft?: number[];
+        topRight?: number[];
+        annotationField?: Formats.Density.Field3D;
+    }
+    function compute(parameters: MarchingCubesParameters): Computation<Surface>;
+}
+declare namespace LiteMol.Core.Geometry.MarchingCubes {
+    class Index {
+        i: number;
+        j: number;
+        k: number;
+        constructor(i: number, j: number, k: number);
+    }
+    class IndexPair {
+        a: Index;
+        b: Index;
+        constructor(a: Index, b: Index);
+    }
+    var EdgesXY: number[][];
+    var EdgesXZ: number[][];
+    var EdgesYZ: number[][];
+    var CubeVertices: Index[];
+    var CubeEdges: IndexPair[];
+    var EdgeIdInfo: {
+        i: number;
+        j: number;
+        k: number;
+        e: number;
+    }[];
+    var EdgeTable: number[];
+    var TriTable: number[][];
+}
+declare namespace LiteMol.Core.Geometry.MolecularSurface {
+    interface MolecularIsoSurfaceParameters {
+        exactBoundary?: boolean;
+        boundaryDelta?: {
+            dx: number;
+            dy: number;
+            dz: number;
+        };
+        probeRadius?: number;
+        atomRadius?: (i: number) => number;
+        density?: number;
+        interactive?: boolean;
+        smoothingIterations?: number;
+    }
+    interface MolecularIsoField {
+        data: Geometry.MarchingCubes.MarchingCubesParameters;
+        bottomLeft: Geometry.LinearAlgebra.ObjectVec3;
+        topRight: Geometry.LinearAlgebra.ObjectVec3;
+        transform: number[];
+        inputParameters: MolecularSurfaceInputParameters;
+        parameters: MolecularIsoSurfaceParameters;
+    }
+    interface MolecularIsoSurfaceGeometryData {
+        surface: Surface;
+        usedParameters: MolecularIsoSurfaceParameters;
+    }
+    function createMolecularIsoFieldAsync(parameters: MolecularSurfaceInputParameters): Computation<MolecularIsoField>;
+    interface MolecularSurfaceInputParameters {
+        positions: Core.Structure.PositionTable;
+        atomIndices: number[];
+        parameters?: MolecularIsoSurfaceParameters;
+    }
+    function computeMolecularSurfaceAsync(parameters: MolecularSurfaceInputParameters): Computation<MolecularIsoSurfaceGeometryData>;
+}
+declare namespace LiteMol.Core.Structure {
+    import DataTable = Utils.DataTable;
+    interface Position {
+        x: number;
+        y: number;
+        z: number;
+    }
+    interface Atom {
+        id: number;
+        name: string;
+        authName: string;
+        elementSymbol: string;
+        altLoc: string | null;
+        occupancy: number;
+        tempFactor: number;
+        residueIndex: number;
+        chainIndex: number;
+        entityIndex: number;
+        rowIndex: number;
+    }
+    interface Residue {
+        name: string;
+        seqNumber: number;
+        asymId: string;
+        authName: string;
+        authSeqNumber: number;
+        authAsymId: string;
+        insCode: string | null;
+        entityId: string;
+        isHet: number;
+        atomStartIndex: number;
+        atomEndIndex: number;
+        chainIndex: number;
+        entityIndex: number;
+        secondaryStructureIndex: number;
+    }
+    interface Chain {
+        asymId: string;
+        authAsymId: string;
+        entityId: string;
+        atomStartIndex: number;
+        atomEndIndex: number;
+        residueStartIndex: number;
+        residueEndIndex: number;
+        entityIndex: number;
+        sourceChainIndex: number;
+        operatorIndex: number;
+    }
+    interface Entity {
+        entityId: string;
+        atomStartIndex: number;
+        atomEndIndex: number;
+        residueStartIndex: number;
+        residueEndIndex: number;
+        chainStartIndex: number;
+        chainEndIndex: number;
+        type: Entity.Type;
+    }
+    namespace Entity {
+        type Type = 'polymer' | 'non-polymer' | 'water' | 'unknown';
+    }
+    interface Bond {
+        atomAIndex: number;
+        atomBIndex: number;
+        type: Bond.Type;
+    }
+    namespace Bond {
+        const enum Type {
+            Unknown = 0,
+            Single = 1,
+            Double = 2,
+            Triple = 3,
+            Aromatic = 4,
+            Metallic = 5,
+            Ion = 6,
+            Hydrogen = 7,
+            DisulfideBridge = 8,
+        }
+    }
+    class ComponentBondInfoEntry {
+        id: string;
+        map: Utils.FastMap<string, Utils.FastMap<string, Bond.Type>>;
+        add(a: string, b: string, order: Bond.Type, swap?: boolean): void;
+        constructor(id: string);
+    }
+    class ComponentBondInfo {
+        entries: Utils.FastMap<string, ComponentBondInfoEntry>;
+        newEntry(id: string): ComponentBondInfoEntry;
+    }
+    /**
+     * Identifier for a reside that is a part of the polymer.
+     */
+    class PolyResidueIdentifier {
+        asymId: string;
+        seqNumber: number;
+        insCode: string | null;
+        constructor(asymId: string, seqNumber: number, insCode: string | null);
+        static areEqual(a: PolyResidueIdentifier, index: number, bAsymId: string[], bSeqNumber: number[], bInsCode: string[]): boolean;
+        static compare(a: PolyResidueIdentifier, b: PolyResidueIdentifier): 0 | 1 | -1;
+        static compareResidue(a: PolyResidueIdentifier, index: number, bAsymId: string[], bSeqNumber: number[], bInsCode: string[]): 0 | 1 | -1;
+    }
+    const enum SecondaryStructureType {
+        None = 0,
+        Helix = 1,
+        Turn = 2,
+        Sheet = 3,
+        AminoSeq = 4,
+        Strand = 5,
+    }
+    class SecondaryStructureElement {
+        type: SecondaryStructureType;
+        startResidueId: PolyResidueIdentifier;
+        endResidueId: PolyResidueIdentifier;
+        info: any;
+        startResidueIndex: number;
+        endResidueIndex: number;
+        readonly length: number;
+        constructor(type: SecondaryStructureType, startResidueId: PolyResidueIdentifier, endResidueId: PolyResidueIdentifier, info?: any);
+    }
+    class SymmetryInfo {
+        spacegroupName: string;
+        cellSize: number[];
+        cellAngles: number[];
+        toFracTransform: number[];
+        isNonStandardCrytalFrame: boolean;
+        constructor(spacegroupName: string, cellSize: number[], cellAngles: number[], toFracTransform: number[], isNonStandardCrytalFrame: boolean);
+    }
+    /**
+     * Wraps an assembly operator.
+     */
+    class AssemblyOperator {
+        id: string;
+        name: string;
+        operator: number[];
+        constructor(id: string, name: string, operator: number[]);
+    }
+    /**
+     * Wraps a single assembly gen entry.
+     */
+    class AssemblyGenEntry {
+        operators: string[][];
+        asymIds: string[];
+        constructor(operators: string[][], asymIds: string[]);
+    }
+    /**
+     * Wraps an assembly generation template.
+     */
+    class AssemblyGen {
+        name: string;
+        gens: AssemblyGenEntry[];
+        constructor(name: string);
+    }
+    /**
+     * Information about the assemblies.
+     */
+    class AssemblyInfo {
+        operators: {
+            [id: string]: AssemblyOperator;
+        };
+        assemblies: AssemblyGen[];
+        constructor(operators: {
+            [id: string]: AssemblyOperator;
+        }, assemblies: AssemblyGen[]);
+    }
+    type PositionTable = DataTable<Position>;
+    type AtomTable = DataTable<Atom>;
+    type ResidueTable = DataTable<Residue>;
+    type ChainTable = DataTable<Chain>;
+    type EntityTable = DataTable<Entity>;
+    type BondTable = DataTable<Bond>;
+    /**
+     * Default Builders
+     */
+    namespace Tables {
+        const Positions: DataTable.Definition<Position>;
+        const Atoms: DataTable.Definition<Atom>;
+        const Residues: DataTable.Definition<Residue>;
+        const Chains: DataTable.Definition<Chain>;
+        const Entities: DataTable.Definition<Entity>;
+        const Bonds: DataTable.Definition<Bond>;
+    }
+    class Operator {
+        matrix: number[];
+        id: string;
+        isIdentity: boolean;
+        apply(v: Geometry.LinearAlgebra.ObjectVec3): void;
+        static applyToModelUnsafe(matrix: number[], m: Molecule.Model): void;
+        constructor(matrix: number[], id: string, isIdentity: boolean);
+    }
+    interface Molecule {
+        readonly properties: Molecule.Properties;
+        readonly id: string;
+        readonly models: Molecule.Model[];
+    }
+    namespace Molecule {
+        function create(id: string, models: Model[], properties?: Properties): Molecule;
+        interface Properties {
+            experimentMethod?: string;
+        }
+        interface Bonds {
+            covalent?: BondTable;
+            nonCovalent?: BondTable;
+            computed?: BondTable;
+            readonly component?: ComponentBondInfo;
+        }
+        interface Model extends Model.Base {
+            readonly queryContext: Query.Context;
+        }
+        namespace Model {
+            function create(model: Base): Model;
+            enum Source {
+                File = 0,
+                Computed = 1,
+            }
+            interface Base {
+                readonly id: string;
+                readonly modelId: string;
+                readonly positions: PositionTable;
+                readonly data: Data;
+                readonly source: Source;
+                readonly parent?: Model;
+                readonly operators?: Operator[];
+            }
+            interface Data {
+                readonly atoms: AtomTable;
+                readonly residues: ResidueTable;
+                readonly chains: ChainTable;
+                readonly entities: EntityTable;
+                readonly bonds: Bonds;
+                readonly secondaryStructure: SecondaryStructureElement[];
+                readonly symmetryInfo?: SymmetryInfo;
+                readonly assemblyInfo?: AssemblyInfo;
+            }
+            function withTransformedXYZ<T>(model: Model, ctx: T, transform: (ctx: T, x: number, y: number, z: number, out: Geometry.LinearAlgebra.ObjectVec3) => void): Model;
+        }
+    }
+}
+declare namespace LiteMol.Core.Structure {
+    class Spacegroup {
+        info: Structure.SymmetryInfo;
+        private temp;
+        private tempV;
+        private space;
+        private operators;
+        readonly operatorCount: number;
+        getOperatorMatrix(index: number, i: number, j: number, k: number, target: number[]): number[];
+        private getSpace();
+        private static getOperator(ids);
+        private getOperators();
+        constructor(info: Structure.SymmetryInfo);
+    }
+    namespace SpacegroupTables {
+        var Transform: number[][];
+        var Operator: number[][];
+        var Group: number[][];
+        var Spacegroup: {
+            [key: string]: number;
+        };
+    }
+}
+declare namespace LiteMol.Core.Structure {
+    function buildPivotGroupSymmetry(model: Molecule.Model, radius: number, pivotsQuery?: Query.Source): Molecule.Model;
+    function buildSymmetryMates(model: Molecule.Model, radius: number): Molecule.Model;
+    function buildAssembly(model: Molecule.Model, assembly: AssemblyGen): Molecule.Model;
+}
+declare namespace LiteMol.Core.Structure {
+    /**
+     * The query is a mapping from a context to a sequence of fragments.
+     */
+    type Query = (ctx: Query.Context) => Query.FragmentSeq;
+    namespace Query {
+        function apply(q: Source, m: Molecule.Model): FragmentSeq;
+        type Source = Query | string | Builder;
+        /**
+         * The context of a query.
+         *
+         * Stores:
+         * - the mask of "active" atoms.
+         * - kd-tree for fast geometry queries.
+         * - the molecule itself.
+         *
+         */
+        class Context {
+            private mask;
+            private lazyTree;
+            /**
+             * Number of atoms in the current context.
+             */
+            readonly atomCount: number;
+            /**
+             * Determine if the context contains all atoms of the input model.
+             */
+            readonly isComplete: boolean;
+            /**
+             * The structure this context is based on.
+             */
+            structure: Molecule.Model;
+            /**
+             * Get a kd-tree for the atoms in the current context.
+             */
+            readonly tree: Geometry.SubdivisionTree3D<number>;
+            /**
+             * Checks if an atom is included in the current context.
+             */
+            hasAtom(index: number): boolean;
+            /**
+             * Checks if an atom from the range is included in the current context.
+             */
+            hasRange(start: number, end: number): boolean;
+            /**
+             * Create a new context based on the provide structure.
+             */
+            static ofStructure(structure: Molecule.Model): Context;
+            /**
+             * Create a new context from a sequence of fragments.
+             */
+            static ofFragments(seq: FragmentSeq): Context;
+            /**
+             * Create a new context from a sequence of fragments.
+             */
+            static ofAtomIndices(structure: Molecule.Model, atomIndices: number[]): Context;
+            constructor(structure: Molecule.Model, mask: Context.Mask);
+            private makeTree();
+        }
+        namespace Context {
+            /**
+             * Represents the atoms in the context.
+             */
+            interface Mask {
+                size: number;
+                has(i: number): boolean;
+            }
+            module Mask {
+                function ofStructure(structure: Molecule.Model): Mask;
+                function ofIndices(structure: Molecule.Model, atomIndices: number[]): Mask;
+                function ofFragments(seq: FragmentSeq): Mask;
+            }
+        }
+        /**
+         * The basic element of the query language.
+         * Everything is represented as a fragment.
+         */
+        class Fragment {
+            /**
+             * The index of the first atom of the generator.
+             */
+            tag: number;
+            /**
+             * Indices of atoms.
+             */
+            atomIndices: number[];
+            /**
+             * The context the fragment belongs to.
+             */
+            context: Context;
+            private _hashCode;
+            private _hashComputed;
+            /**
+             * The hash code of the fragment.
+             */
+            readonly hashCode: number;
+            /**
+             * Id composed of <moleculeid>_<tag>.
+             */
+            readonly id: string;
+            /**
+             * Number of atoms.
+             */
+            readonly atomCount: number;
+            /**
+             * Determines if a fragment is HET based on the tag.
+             */
+            readonly isHet: any;
+            private _fingerprint;
+            /**
+             * A sorted list of residue identifiers.
+             */
+            readonly fingerprint: string;
+            private _authFingerprint;
+            /**
+             * A sorted list of residue identifiers.
+             */
+            readonly authFingerprint: string;
+            /**
+             * Executes a query on the current fragment.
+             */
+            find(what: Source): FragmentSeq;
+            private _residueIndices;
+            private _chainIndices;
+            private _entityIndices;
+            private computeIndices();
+            /**
+             * A sorted list of residue indices.
+             */
+            readonly residueIndices: number[];
+            /**
+             * A sorted list of chain indices.
+             */
+            readonly chainIndices: number[];
+            /**
+             * A sorted list of entity indices.
+             */
+            readonly entityIndices: number[];
+            static areEqual(a: Fragment, b: Fragment): boolean;
+            /**
+             * Create a fragment from an integer set.
+             * Assumes the set is in the given context's mask.
+             */
+            static ofSet(context: Context, atomIndices: Utils.FastSet<number>): Fragment;
+            /**
+             * Create a fragment from an integer array.
+             * Assumes the set is in the given context's mask.
+             * Assumes the array is sorted.
+             */
+            static ofArray(context: Context, tag: number, atomIndices: Int32Array): Fragment;
+            /**
+             * Create a fragment from a single index.
+             * Assumes the index is in the given context's mask.
+             */
+            static ofIndex(context: Context, index: number): Fragment;
+            /**
+             * Create a fragment from a <start,end) range.
+             * Assumes the fragment is non-empty in the given context's mask.
+             */
+            static ofIndexRange(context: Context, start: number, endExclusive: number): Fragment;
+            /**
+             * Create a fragment from an integer set.
+             */
+            constructor(context: Context, tag: number, atomIndices: number[]);
+        }
+        /**
+         * A sequence of fragments the queries operate on.
+         */
+        class FragmentSeq {
+            context: Context;
+            fragments: Fragment[];
+            static empty(ctx: Context): FragmentSeq;
+            readonly length: number;
+            /**
+             * Merges atom indices from all fragments.
+             */
+            unionAtomIndices(): number[];
+            /**
+             * Merges atom indices from all fragments into a single fragment.
+             */
+            unionFragment(): Fragment;
+            constructor(context: Context, fragments: Fragment[]);
+        }
+        /**
+         * A builder that includes all fragments.
+         */
+        class FragmentSeqBuilder {
+            private ctx;
+            private fragments;
+            add(f: Fragment): void;
+            getSeq(): FragmentSeq;
+            constructor(ctx: Context);
+        }
+        /**
+         * A builder that includes only unique fragments.
+         */
+        class HashFragmentSeqBuilder {
+            private ctx;
+            private fragments;
+            private byHash;
+            add(f: Fragment): this;
+            getSeq(): FragmentSeq;
+            constructor(ctx: Context);
+        }
+    }
+}
+declare namespace LiteMol.Core.Structure.Query {
+    interface Builder {
+        compile(): Query;
+        complement(): Builder;
+        ambientResidues(radius: number): Builder;
+        wholeResidues(): Builder;
+        union(): Builder;
+        inside(where: Source): Builder;
+        intersectWith(where: Source): Builder;
+        flatten(selector: (f: Fragment) => FragmentSeq): Builder;
+    }
+    namespace Builder {
+        const BuilderPrototype: any;
+        function registerModifier(name: string, f: Function): void;
+        function build(compile: () => Query): Builder;
+        function parse(query: string): Query;
+        function toQuery(q: Source): Query;
+    }
+    interface EntityIdSchema {
+        entityId?: string;
+        type?: string;
+    }
+    interface AsymIdSchema extends EntityIdSchema {
+        asymId?: string;
+        authAsymId?: string;
+    }
+    interface ResidueIdSchema extends AsymIdSchema {
+        name?: string;
+        seqNumber?: number;
+        authName?: string;
+        authSeqNumber?: number;
+        insCode?: string | null;
+    }
+    function atomsByElement(...elements: string[]): Builder;
+    function atomsByName(...names: string[]): Builder;
+    function atomsById(...ids: number[]): Builder;
+    function residues(...ids: ResidueIdSchema[]): Builder;
+    function chains(...ids: AsymIdSchema[]): Builder;
+    function entities(...ids: EntityIdSchema[]): Builder;
+    function notEntities(...ids: EntityIdSchema[]): Builder;
+    function everything(): Builder;
+    function entitiesFromIndices(indices: number[]): Builder;
+    function chainsFromIndices(indices: number[]): Builder;
+    function residuesFromIndices(indices: number[]): Builder;
+    function atomsFromIndices(indices: number[]): Builder;
+    function sequence(entityId: string, asymId: string | AsymIdSchema, startId: ResidueIdSchema, endId: ResidueIdSchema): Builder;
+    function hetGroups(): Builder;
+    function nonHetPolymer(): Builder;
+    function polymerTrace(...atomNames: string[]): Builder;
+    function cartoons(): Builder;
+    function backbone(): Builder;
+    function sidechain(): Builder;
+    function atomsInBox(min: {
+        x: number;
+        y: number;
+        z: number;
+    }, max: {
+        x: number;
+        y: number;
+        z: number;
+    }): Builder;
+    function or(...elements: Source[]): Builder;
+    function complement(q: Source): Builder;
+    function ambientResidues(q: Source, radius: number): Builder;
+    function wholeResidues(q: Source): Builder;
+    function union(q: Source): Builder;
+    function inside(q: Source, where: Source): Builder;
+    function intersectWith(what: Source, where: Source): Builder;
+    function flatten(what: Source, selector: (f: Fragment) => FragmentSeq): Builder;
+    /**
+     * Shortcuts
+     */
+    function residuesByName(...names: string[]): Builder;
+    function residuesById(...ids: number[]): Builder;
+    function chainsById(...ids: string[]): Builder;
+    /**
+     * Query compilation wrapper.
+     */
+    namespace Compiler {
+        function compileEverything(): (ctx: Context) => FragmentSeq;
+        function compileAtoms(elements: string[] | number[], sel: (model: Structure.Molecule.Model) => string[] | number[]): (ctx: Context) => FragmentSeq;
+        function compileAtomIndices(indices: number[]): (ctx: Context) => FragmentSeq;
+        function compileFromIndices(complement: boolean, indices: number[], tableProvider: (molecule: Structure.Molecule.Model) => {
+            atomStartIndex: number[];
+            atomEndIndex: number[];
+        } & Utils.DataTable<any>): Query;
+        function compileAtomRanges(complement: boolean, ids: ResidueIdSchema[], tableProvider: (molecule: Structure.Molecule.Model) => {
+            atomStartIndex: number[];
+            atomEndIndex: number[];
+        } & Utils.DataTable<any>): Query;
+        function compileSequence(seqEntityId: string, seqAsymId: string | AsymIdSchema, start: ResidueIdSchema, end: ResidueIdSchema): Query;
+        function compileHetGroups(): Query;
+        function compileNonHetPolymer(): Query;
+        function compileAtomsInBox(min: {
+            x: number;
+            y: number;
+            z: number;
+        }, max: {
+            x: number;
+            y: number;
+            z: number;
+        }): Query;
+        function compileInside(what: Source, where: Source): Query;
+        function compileIntersectWith(what: Source, where: Source): Query;
+        function compileFilter(what: Source, filter: (f: Fragment) => boolean): Query;
+        function compileComplement(what: Source): Query;
+        function compileOr(queries: Source[]): (ctx: Context) => FragmentSeq;
+        function compileUnion(what: Source): Query;
+        function compilePolymerNames(names: string[], complement: boolean): Query;
+        function compileAmbientResidues(where: Source, radius: number): (ctx: Context) => FragmentSeq;
+        function compileWholeResidues(where: Source): (ctx: Context) => FragmentSeq;
+        function compileFlatten(what: Source, selector: (f: Fragment) => FragmentSeq): (ctx: Context) => FragmentSeq;
+    }
+}
+declare namespace LiteMol.Core.Structure.Query.Algebraic {
+    type Predicate = (ctx: Context, i: number) => boolean;
+    type Selector = (ctx: Context, i: number) => any;
+    const not: (a: Predicate) => Predicate;
+    const and: (a: Predicate, b: Predicate) => Predicate;
+    const or: (a: Predicate, b: Predicate) => Predicate;
+    const backbone: Predicate;
+    const sidechain: Predicate;
+    const equal: (a: Selector, b: Selector) => Predicate;
+    const notEqual: (a: Selector, b: Selector) => Predicate;
+    const greater: (a: Selector, b: Selector) => Predicate;
+    const lesser: (a: Selector, b: Selector) => Predicate;
+    const greaterEqual: (a: Selector, b: Selector) => Predicate;
+    const lesserEqual: (a: Selector, b: Selector) => Predicate;
+    function inRange(s: Selector, a: number, b: number): Predicate;
+    /**
+     * Selectors
+     */
+    function value(v: any): Selector;
+    const residueSeqNumber: Selector;
+    const residueName: Selector;
+    const elementSymbol: Selector;
+    const atomName: Selector;
+    const entityType: Selector;
+    /**
+     * Query
+     */
+    function query(p: Predicate): Builder;
+}
+declare namespace LiteMol.Visualization {
+    var VERSION: {
+        number: string;
+        date: string;
+    };
+}
+declare namespace LiteMol.Visualization {
+    export import THREE = LiteMolTHREE;
+}
+declare namespace LiteMol.Visualization {
+    function checkWebGL(): boolean;
+    interface IDisposable {
+        dispose(): void;
+    }
+    class GeometryHelper {
+        static setPickBase(objectId: number, objectIdWidth: number, elementId: number, color: {
+            r: number;
+            g: number;
+            b: number;
+        }): void;
+        static setPickColor(objectId: number, objectIdWidth: number, elementId: number, buffer: Float32Array, offset: number): void;
+        static toSurface(source: THREE.Geometry): Core.Geometry.Surface;
+        static getIndexedBufferGeometry(source: THREE.Geometry): THREE.BufferGeometry;
+    }
+}
+declare namespace LiteMol.Visualization {
+    interface Color {
+        r: number;
+        g: number;
+        b: number;
+    }
+    namespace Color {
+        function copy(from: Color, to: Color): void;
+        function clone({r, g, b}: Color): Color;
+        function toVector(color: Color): THREE.Vector3;
+        function fromVector(v: {
+            x: number;
+            y: number;
+            z: number;
+        }): Color;
+        function fromRgb(r: number, g: number, b: number): Color;
+        function fromHsl(h: number, s: number, l: number): Color;
+        function fromHsv(h: number, s: number, v: number): Color;
+        function random(): Color;
+        function fromHex(v: number): Color;
+        /**
+         * Parse color in formats #rgb and #rrggbb
+         */
+        function fromHexString(s: string): Color;
+        function interpolate(a: Color, b: Color, t: number, target: Color): void;
+        function isColor(c: any): c is Color;
+    }
+    interface Theme {
+        colors: Theme.ColorMap;
+        transparency: Theme.Transparency;
+        interactive: boolean;
+        disableFog: boolean;
+        setElementColor(index: number, target: Color): void;
+    }
+    namespace Theme {
+        interface Props {
+            colors?: ColorMap;
+            transparency?: Theme.Transparency;
+            interactive?: boolean;
+            disableFog?: boolean;
+        }
+        interface Transparency {
+            alpha?: number;
+            writeDepth?: boolean;
+        }
+        interface ColorMap {
+            get(key: any): Color | undefined;
+            forEach(f: (value: Color, key: any) => void): void;
+        }
+        namespace Default {
+            const HighlightColor: Color;
+            const SelectionColor: Color;
+            const UniformColor: Color;
+            const Transparency: Transparency;
+        }
+        interface ElementMapping {
+            getProperty(index: number): any;
+            setColor(property: any, c: Color): void;
+        }
+        function isTransparent(theme: Theme): boolean;
+        function getColor(theme: Theme, name: string, fallback: Color): Color;
+        function createUniform(props?: Props): Theme;
+        function createMapping(mapping: ElementMapping, props?: Props): Theme;
+        function createColorMapMapping(getProperty: (index: number) => any, map: ColorMap, fallbackColor: Color): ElementMapping;
+        function createPalleteMapping(getProperty: (index: number) => any, pallete: Color[]): ElementMapping;
+    }
+}
+declare namespace LiteMol.Visualization {
+    class MaterialsHelper {
+        private static pickVertexShader;
+        private static pickFragmentShader;
+        static getPickMaterial(): THREE.ShaderMaterial;
+        static getPickExcludeMaterial(): THREE.MeshBasicMaterial;
+        static shader: {
+            uniforms: any;
+            vertexShader: string;
+            fragmentShader: string;
+        };
+        private static compareVectorAndColor(v, c);
+        static updateMaterial(material: THREE.ShaderMaterial | THREE.MeshPhongMaterial, theme: Theme, object: THREE.Object3D): void;
+        private static updateHighlightColor(material, theme);
+        private static updateTransparencyAndFog(material, theme, object);
+        static getMeshMaterial(shading?: THREE.Shading, isWireframe?: boolean): THREE.ShaderMaterial;
+        static getPhongVertexColorMaterial(): THREE.MeshPhongMaterial;
+        static getDefaultHighlightMaterial(): THREE.MeshPhongMaterial;
+        static applyColorToMap(map: Selection.VertexMap, indices: number[], bufferAttribute: THREE.BufferAttribute, getter: (i: number, c: Color) => void): void;
+    }
+}
+declare namespace LiteMol.Visualization {
+    abstract class GeometryBase implements IDisposable {
+        abstract dispose(): void;
+        constructor();
+    }
+    abstract class Model {
+        constructor();
+        id: number;
+        entity: any;
+        centroid: THREE.Vector3;
+        radius: number;
+        object: THREE.Object3D;
+        theme: Theme;
+        disposeList: IDisposable[];
+        pickObject: THREE.Object3D | undefined;
+        pickBufferAttributes: THREE.BufferAttribute[];
+        dirty: boolean;
+        props: Model.Props;
+        tag: any;
+        updateVisibility(visible: boolean): void;
+        getVisibility(): boolean;
+        applyTheme(theme: Theme): void;
+        updateId(id: number, idWidth: number): void;
+        dispose(): void;
+        highlight(isOn: boolean): boolean;
+        applySelection(indices: number[], action: Selection.Action): boolean;
+        getBoundingSphereOfSelection(indices: number[]): {
+            radius: number;
+            center: Core.Geometry.LinearAlgebra.ObjectVec3;
+        } | undefined;
+        abstract highlightElement(pickId: number, highlight: boolean): boolean;
+        abstract getPickElements(pickId: number): number[];
+        protected abstract applySelectionInternal(indices: number[], action: Selection.Action): boolean;
+        protected abstract applyThemeInternal(theme: Theme): void;
+        protected abstract highlightInternal(isOn: boolean): boolean;
+        protected getPickObjectVisibility(visible: boolean): boolean;
+    }
+    namespace Model {
+        interface Props {
+        }
+    }
+}
+declare namespace LiteMol.Visualization {
+    class ModelStore {
+        scene: Scene;
+        private availableIds;
+        private list;
+        private map;
+        private maxId;
+        private _idWidth;
+        readonly idWidth: number;
+        readonly all: Model[];
+        readonly count: number;
+        getBySceneId(id: number): Model | undefined;
+        add(model: Model, resetCamera?: boolean): void;
+        private dispose(model);
+        removeAndDispose(model: Model): void;
+        clear(): void;
+        constructor(scene: Scene);
+    }
+}
+declare namespace LiteMol.Visualization {
+    enum CameraType {
+        Perspective = 0,
+        Orthographic = 1,
+    }
+    class SlabControls {
+        private width;
+        private height;
+        private touchSlabOn;
+        private touchStartPosition;
+        private touchPosition;
+        private radius;
+        private slabWheelRate;
+        private _planeDelta;
+        private subs;
+        readonly planeDelta: LiteMol.Core.Rx.IObservable<number>;
+        updateSize(w: number, h: number): void;
+        updateRadius(r: number): void;
+        destroy(): void;
+        private handleMouseWheel(event);
+        private touchstart(event);
+        private touchend(event);
+        private touchmove(event);
+        constructor(element: HTMLElement);
+    }
+    class Camera {
+        private scene;
+        private domElement;
+        private camera;
+        private controls;
+        private slabControls;
+        fog: THREE.Fog;
+        focusPoint: THREE.Vector3;
+        focusRadius: number;
+        targetDistance: number;
+        nearPlaneDistance: number;
+        nearPlaneDelta: number;
+        fogEnabled: boolean;
+        fogDelta: number;
+        static shouldInUpdateInclude(m: Model): boolean;
+        private updateFocus(models);
+        private focus();
+        reset(): void;
+        snapshot(): {
+            state: CameraControlsState;
+            prevState: CameraControlsState;
+            target: THREE.Vector3;
+            objPos: THREE.Vector3;
+            objUp: THREE.Vector3;
+            eye: THREE.Vector3;
+            lastPosition: THREE.Vector3;
+        };
+        restore(state: any): void;
+        focusOnModel(...models: Model[]): void;
+        focusOnPoint(center: {
+            x: number;
+            y: number;
+            z: number;
+        }, radius: number): void;
+        move(target: {
+            x: number;
+            y: number;
+            z: number;
+        }): void;
+        updateSize(w: number, h: number): void;
+        readonly position: THREE.Vector3;
+        readonly object: THREE.Camera;
+        private unbindCamera;
+        dispose(): void;
+        private planeDeltaUpdate(delta);
+        computeNearDistance(): number;
+        cameraUpdated(): void;
+        createCamera(): void;
+        private setup();
+        private observers;
+        observe(callback: (c: Camera) => void): void;
+        stopObserving(callback: (c: Camera) => void): void;
+        constructor(scene: Scene, domElement: HTMLElement);
+    }
+}
+declare namespace LiteMol.Visualization {
+    interface SceneOptions {
+        alpha?: boolean;
+        clearColor?: {
+            r: number;
+            g: number;
+            b: number;
+        };
+        cameraFOV?: number;
+        cameraType?: CameraType;
+        enableFog?: boolean;
+        enableFrontClip?: boolean;
+    }
+    const DefaultSceneOptions: SceneOptions;
+    class MouseInfo {
+        private renderState;
+        private domElement;
+        private position;
+        private lastPosition;
+        private isDirty;
+        private rect;
+        exactPosition: {
+            x: number;
+            y: number;
+        };
+        constructor(renderState: RenderState, domElement: Element);
+        updateRect(): void;
+        updatePosition(clientX: number, clientY: number): void;
+        update(): boolean;
+        isInside: boolean;
+        isButtonDown: boolean;
+        setExactPosition(): void;
+    }
+    interface ILighting {
+        setup(scene: THREE.Scene): void;
+        update(cameraPosition: THREE.Vector3): void;
+    }
+    class DefaultLighting implements ILighting {
+        private lights;
+        setup(scene: THREE.Scene): void;
+        update(cameraPosition: THREE.Vector3): void;
+        constructor();
+    }
+    class RenderState {
+        width: number;
+        height: number;
+        resizing: boolean;
+        rendered: boolean;
+        lastRenderTime: number;
+        pickDelta: number;
+        animationFrame: number;
+    }
+    class Scene {
+        private static hoverEvent;
+        private static selectEvent;
+        private renderer;
+        renderState: RenderState;
+        scene: THREE.Scene;
+        pickScene: THREE.Scene;
+        private pickTarget;
+        mouseInfo: MouseInfo;
+        private pickInfo;
+        private selectInfo;
+        private unbindEvents;
+        private lighting;
+        parentElement: HTMLElement;
+        options: SceneOptions;
+        camera: Camera;
+        models: ModelStore;
+        events: THREE.EventDispatcher;
+        updateOptions(options: SceneOptions): void;
+        constructor(element: HTMLElement, options?: SceneOptions);
+        private setupMouse();
+        private clearHighlightsCall;
+        private handleSelectStart(x, y);
+        private handleSelectEnd(x, y);
+        private handleResize();
+        private needsRender();
+        private checkDirty();
+        private renderFunc;
+        private render(time);
+        private pickBuffer;
+        private dispatchHoverEvent();
+        private dispatchSelectEvent(info);
+        private clearHighlights(update?);
+        private handlePick(isSelect);
+        resized(): void;
+        forceRender(): void;
+        clear(): void;
+        screenshotAsDataURL(): string;
+        destroy(): void;
+    }
+}
+declare namespace LiteMol.Visualization {
+    const enum CameraControlsState {
+        NONE = -1,
+        ROTATE = 0,
+        ZOOM = 2,
+        PAN = 1,
+        TOUCH_ROTATE = 3,
+        TOUCH_ZOOM_PAN = 4,
+    }
+    class CameraControls {
+        camera: THREE.Camera;
+        private domElement;
+        private scene;
+        constructor(camera: THREE.Camera, domElement: HTMLElement, scene: Scene);
+        enabled: boolean;
+        rotateSpeed: number;
+        zoomSpeed: number;
+        panSpeed: number;
+        noRotate: boolean;
+        noZoom: boolean;
+        noPan: boolean;
+        noRoll: boolean;
+        staticMoving: boolean;
+        dynamicDampingFactor: number;
+        minDistance: number;
+        maxDistance: number;
+        keys: number[];
+        target: THREE.Vector3;
+        private EPS;
+        private lastPosition;
+        private _state;
+        private _keyDownState;
+        private _prevState;
+        private _eye;
+        private _rotateStart;
+        private _rotateEnd;
+        private _zoomStart;
+        private _zoomEnd;
+        private _touchZoomDistanceStart;
+        private _touchZoomDistanceEnd;
+        private _panStart;
+        private _panEnd;
+        private target0;
+        private position0;
+        private up0;
+        private changeEvent;
+        private startEvent;
+        private endEvent;
+        events: THREE.EventDispatcher;
+        private _mouseOnScreen;
+        private getMouseOnScreen();
+        private _mouseOnBallProjection;
+        private _objectUp;
+        private _mouseOnBall;
+        private getMouseProjectionOnBall();
+        private _rotationAxis;
+        private _rotationQuaternion;
+        private rotateCamera();
+        private zoomCamera();
+        private _panMouseChange;
+        private _panObjectUp;
+        private _panPan;
+        private panCamera();
+        private _panToDelta;
+        private _panToVector;
+        panTo({x, y, z}: {
+            x: number;
+            y: number;
+            z: number;
+        }): void;
+        panAndMoveToDistance({x, y, z}: {
+            x: number;
+            y: number;
+            z: number;
+        }, distance: number): void;
+        private checkDistances();
+        update(): void;
+        reset(): void;
+        getState(): {
+            state: CameraControlsState;
+            prevState: CameraControlsState;
+            target: THREE.Vector3;
+            objPos: THREE.Vector3;
+            objUp: THREE.Vector3;
+            eye: THREE.Vector3;
+            lastPosition: THREE.Vector3;
+        };
+        setState(state: any): void;
+        private keydown(event);
+        private keyup(event);
+        private mousedown(event);
+        mousemove(event: MouseEvent): void;
+        mouseup(event: MouseEvent): void;
+        private touchstart(event);
+        private touchmove(event);
+        private touchend(event);
+        private preventContextMenu(event);
+        private eventHandlers;
+        private init();
+        destroy(): void;
+    }
+}
+declare namespace LiteMol.Visualization.Selection {
+    interface Info {
+        model: Model;
+        elements?: number[];
+    }
+    class Pick {
+        current: Info | null;
+        currentPickId: number;
+        currentPickElementId: number;
+        getPickInfo(): Info | null;
+        reset(): boolean;
+        private selectPos;
+        selectStart(x: number, y: number): void;
+        selectEnd(x: number, y: number): boolean;
+    }
+    module Picking {
+        function assignPickColor(elementId: number, color: {
+            r: number;
+            g: number;
+            b: number;
+        }): void;
+        function applySceneIdFast(id: number, offset: number, data: number[]): void;
+        function applySceneIdSlow(extraBits: number, id: number, offset: number, data: number[]): void;
+        function getElementId(idWidth: number, buffer: Uint8Array): number;
+        function getSceneId(idWidth: number, buffer: Uint8Array): number;
+    }
+    const enum Action {
+        Select = 1,
+        RemoveSelect = 2,
+        Highlight = 3,
+        RemoveHighlight = 4,
+        Clear = 5,
+    }
+    class VertexMapBuilder {
+        private elementIndices;
+        private elementMap;
+        private elementRanges;
+        private vertexRanges;
+        private elementIndex;
+        private elementRangeIndex;
+        private rangeIndex;
+        private added;
+        startElement(index: number): void;
+        addVertexRange(start: number, end: number): void;
+        endElement(): void;
+        getMap(): VertexMap;
+        constructor(elementCount: number);
+    }
+    class VertexMap {
+        elementIndices: number[];
+        elementMap: Core.Utils.FastMap<number, number>;
+        elementRanges: number[];
+        vertexRanges: number[];
+        constructor(elementIndices: number[], elementMap: Core.Utils.FastMap<number, number>, elementRanges: number[], vertexRanges: number[]);
+    }
+    function applyActionToRange(array: Float32Array, start: number, end: number, action: Action): boolean;
+    function applyActionToBuffer(buffer: THREE.BufferAttribute, action: Action): boolean;
+}
+declare namespace LiteMol.Visualization.Surface {
+    import Data = Core.Geometry.Surface;
+    function buildGeometry(data: Data, computation: Core.Computation.Context, isWireframe: boolean): LiteMol.Promise<Geometry>;
+    class Geometry extends GeometryBase {
+        geometry: THREE.BufferGeometry;
+        vertexToElementMap: number[];
+        elementToVertexMap: Selection.VertexMap;
+        pickGeometry: THREE.BufferGeometry;
+        pickPlatesGeometry: THREE.BufferGeometry;
+        vertexStateBuffer: THREE.BufferAttribute;
+        center: THREE.Vector3;
+        radius: number;
+        dispose(): void;
+        constructor();
+    }
+}
+declare namespace LiteMol.Visualization.Surface {
+    interface Parameters {
+        isWireframe?: boolean;
+    }
+    const DefaultSurfaceModelParameters: Parameters;
+    class Model extends Visualization.Model {
+        private surface;
+        private geometry;
+        private material;
+        private pickMaterial;
+        protected applySelectionInternal(indices: number[], action: Selection.Action): boolean;
+        highlightElement(pickId: number, highlight: boolean): boolean;
+        protected highlightInternal(isOn: boolean): boolean;
+        getPickElements(pickId: number): number[];
+        getBoundingSphereOfSelection(indices: number[]): {
+            radius: number;
+            center: Core.Geometry.LinearAlgebra.ObjectVec3;
+        } | undefined;
+        applyThemeInternal(theme: Theme): void;
+        protected getPickObjectVisibility(visible: boolean): boolean;
+        private createObjects();
+        static create(entity: any, {surface, theme, parameters, props}: {
+            surface: Core.Geometry.Surface;
+            theme: Theme;
+            parameters?: Parameters;
+            props?: Model.Props;
+        }): Core.Computation<Model>;
+    }
+}
+declare namespace LiteMol.Visualization.Lines {
+    class Geometry extends GeometryBase {
+        geometry: THREE.BufferGeometry;
+        center: THREE.Vector3;
+        radius: number;
+        dispose(): void;
+        static create(vertices: Float32Array, indices: Uint32Array): Geometry;
+        constructor();
+    }
+}
+declare namespace LiteMol.Visualization.Lines {
+    class Model extends Visualization.Model {
+        private geometry;
+        private material;
+        protected applySelectionInternal(indices: number[], action: Selection.Action): boolean;
+        highlightElement(pickId: number, highlight: boolean): boolean;
+        protected highlightInternal(isOn: boolean): boolean;
+        getPickElements(pickId: number): number[];
+        applyThemeInternal(theme: Theme): void;
+        protected getPickObjectVisibility(visible: boolean): boolean;
+        private createObjects();
+        static create(entity: any, {geometry, theme, props}: {
+            geometry: Geometry;
+            theme: Theme;
+            props?: Model.Props;
+        }): Core.Computation<Model>;
+    }
+}
+declare namespace LiteMol.Visualization.Molecule.BallsAndSticks {
+    interface Parameters {
+        tessalation?: number;
+        atomRadius?: (i: number) => number;
+        hideBonds?: boolean;
+        bondRadius?: number;
+    }
+    const DefaultBallsAndSticksModelParameters: Parameters;
+    class Model extends Visualization.Model {
+        private molecule;
+        private material;
+        private bondsMaterial;
+        private pickMaterial;
+        ballsAndSticks: BallsAndSticksGeometry;
+        protected applySelectionInternal(indices: number[], action: Selection.Action): boolean;
+        getPickElements(pickId: number): number[];
+        highlightElement(pickId: number, highlight: boolean): boolean;
+        protected highlightInternal(isOn: boolean): boolean;
+        applyThemeInternal(theme: Theme): void;
+        private createObjects();
+        static create(entity: any, {model, atomIndices, theme, params, props}: {
+            model: Core.Structure.Molecule.Model;
+            atomIndices: number[];
+            theme: Theme;
+            params: Parameters;
+            props?: Model.Props;
+        }): Core.Computation<Model>;
+    }
+}
+declare namespace LiteMol.Visualization.Molecule.BallsAndSticks {
+    function buildGeometry(model: Core.Structure.Molecule.Model, parameters: Parameters, atomIndices: number[], ctx: Core.Computation.Context): LiteMol.Promise<BallsAndSticksGeometry>;
+    class BallsAndSticksGeometry extends GeometryBase {
+        atomsGeometry: THREE.BufferGeometry;
+        bondsGeometry: THREE.BufferGeometry;
+        pickGeometry: THREE.BufferGeometry;
+        atomVertexMap: Selection.VertexMap;
+        bondVertexMap: Selection.VertexMap;
+        vertexStateBuffer: THREE.BufferAttribute;
+        dispose(): void;
+    }
+}
+declare namespace LiteMol.Visualization.Molecule.Cartoons.Geometry {
+    class Data extends GeometryBase {
+        geometry: THREE.BufferGeometry;
+        pickGeometry: THREE.BufferGeometry;
+        vertexMap: Selection.VertexMap;
+        vertexStateBuffer: THREE.BufferAttribute;
+        dispose(): void;
+    }
+    interface Context {
+        computation: Core.Computation.Context;
+        model: Core.Structure.Molecule.Model;
+        atomIndices: number[];
+        linearSegments: number;
+        parameters: any;
+        isTrace: boolean;
+        params: CartoonsGeometryParams;
+        state: CartoonsGeometryState;
+        units: CartoonAsymUnit[];
+        strandTemplate: {
+            vertex: number[];
+            normal: number[];
+            index: number[];
+            geometry: THREE.BufferGeometry;
+        };
+        strandArrays: {
+            startIndex: number[];
+            endIndex: number[];
+            x: number[];
+            y: number[];
+            z: number[];
+            name: string[];
+        };
+        builder: Builder;
+        geom: Data;
+    }
+    function create(model: Core.Structure.Molecule.Model, atomIndices: number[], linearSegments: number, parameters: any, isTrace: boolean, computation: Core.Computation.Context): LiteMol.Promise<Data>;
+}
+declare namespace LiteMol.Visualization.Molecule.Cartoons.Geometry {
+    import ChunkedArray = Core.Utils.ChunkedArray;
+    class CartoonAsymUnitState {
+        private typeBuilder;
+        private uPositionsBuilder;
+        private vPositionsBuilder;
+        private pPositionsBuilder;
+        private dPositionsBuilder;
+        residueType: Core.Structure.SecondaryStructureType[];
+        uPositions: number[];
+        vPositions: number[];
+        pPositions: number[];
+        dPositions: number[];
+        uvLength: number;
+        residueCount: number;
+        constructor(residueCount: number);
+        addResidue(rIndex: number, arrays: {
+            atomStartIndex: number[];
+            atomEndIndex: number[];
+            name: string[];
+            x: number[];
+            y: number[];
+            z: number[];
+        }, sType: Core.Structure.SecondaryStructureType): boolean;
+        finishResidues(): void;
+        addControlPoint(p: THREE.Vector3, d: THREE.Vector3): void;
+        finishContols(): void;
+    }
+    class CartoonAsymUnit {
+        private model;
+        private elements;
+        linearSegmentCount: number;
+        private static maskSplit(element, mask, target);
+        static isCartoonLike(atomIndices: number[], start: number, end: number, name: string[], a: string, b: string, isAmk: boolean): boolean;
+        static createMask(model: Core.Structure.Molecule.Model, atomIndices: number[]): boolean[];
+        private static isUnknownSecondaryStructure(model);
+        private static approximateSecondaryStructure(model, parent);
+        private static ZhangHelixDistance;
+        private static ZhangHelixDelta;
+        private static ZhangSheetDistance;
+        private static ZhangSheetDelta;
+        private static ZhangP1;
+        private static ZhangP2;
+        private static zhangSkolnickSStrace(model, trace, parent, elements);
+        private static zhangSkolnickSSresidue(model, trace, i, distances, delta);
+        private static throwIfEmpty(ss);
+        static buildUnits(model: Core.Structure.Molecule.Model, atomIndices: number[], linearSegmentCount: number): CartoonAsymUnit[];
+        private controlPointsBuilder;
+        private torsionVectorsBuilder;
+        private normalVectorsBuilder;
+        private tempA;
+        private tempB;
+        private tempC;
+        controlPoints: number[];
+        torsionVectors: number[];
+        normalVectors: number[];
+        residueCount: number;
+        structureStarts: Core.Utils.FastSet<string | number>;
+        structureEnds: Core.Utils.FastSet<string | number>;
+        residueType: Core.Structure.SecondaryStructureType[];
+        residueIndex: Int32Array;
+        backboneOnly: boolean;
+        constructor(model: Core.Structure.Molecule.Model, elements: Core.Structure.SecondaryStructureElement[], linearSegmentCount: number);
+        private createControlPoints(state);
+        private initPositions(state);
+        private initControlsPoints(state);
+        private computeSplines(state);
+        private addSplineNode(previousControlPoint, controlPoint, torsionPoint);
+        private reflectPositions(xs, u, v, a, b, c, d, r1, r2);
+        private static reflect(target, p1, p2, amount);
+        private static spline(target, p1, p2, p3, t);
+    }
+    class CartoonsGeometryParams {
+        radialSegmentCount: number;
+        turnWidth: number;
+        strandWidth: number;
+        strandLineWidth: number;
+        helixWidth: number;
+        helixHeight: number;
+        sheetWidth: number;
+        sheetHeight: number;
+        arrowWidth: number;
+        tessalation: number;
+        static Default: CartoonsGeometryParams;
+    }
+    class CartoonsGeometryState {
+        params: CartoonsGeometryParams;
+        residueIndex: number;
+        verticesDone: number;
+        trianglesDone: number;
+        vertexBuffer: ChunkedArray<number>;
+        normalBuffer: ChunkedArray<number>;
+        indexBuffer: ChunkedArray<number>;
+        translationMatrix: THREE.Matrix4;
+        scaleMatrix: THREE.Matrix4;
+        rotationMatrix: THREE.Matrix4;
+        invMatrix: THREE.Matrix4;
+        vertexMap: Selection.VertexMapBuilder;
+        addVertex(v: THREE.Vector3, n: THREE.Vector3): void;
+        addTriangle(i: number, j: number, k: number): void;
+        addTriangles(i: number, j: number, k: number, u: number, v: number, w: number): void;
+        constructor(params: CartoonsGeometryParams, residueCount: number);
+    }
+    function buildUnit(unit: CartoonAsymUnit, ctx: Context): void;
+    function buildUnitsAsync(ctx: Context): LiteMol.Promise<void>;
+    function createGeometry(ctx: Context): void;
+    class Builder {
+        constructor();
+        private tempVectors;
+        private setVector(data, i, v);
+        addTube(element: CartoonAsymUnit, state: CartoonsGeometryState, width: number, height: number): void;
+        addTubeCap(element: CartoonAsymUnit, state: CartoonsGeometryState, width: number, height: number, isStart: boolean, isEnd: boolean): void;
+        addSheet(element: CartoonAsymUnit, state: CartoonsGeometryState, isStart: boolean, isEnd: boolean): void;
+        addSheetCap(element: CartoonAsymUnit, state: CartoonsGeometryState, isStart: boolean, isEnd: boolean): void;
+        addSheepCapSection(state: CartoonsGeometryState, p1: THREE.Vector3, p2: THREE.Vector3, p3: THREE.Vector3, p4: THREE.Vector3): void;
+        private findN3(index, arrays, target);
+        addStrandLine(element: CartoonAsymUnit, state: CartoonsGeometryState, template: {
+            vertex: number[];
+            normal: number[];
+            index: number[];
+            geometry: THREE.BufferGeometry;
+        }, arrays: {
+            startIndex: number[];
+            endIndex: number[];
+            x: number[];
+            y: number[];
+            z: number[];
+            name: string[];
+        }, residueIndex: number): void;
+    }
+}
+declare namespace LiteMol.Visualization.Molecule.Cartoons {
+    enum CartoonsModelType {
+        Default = 0,
+        AlphaTrace = 1,
+    }
+    interface Parameters {
+        tessalation?: number;
+        drawingType?: CartoonsModelType;
+    }
+    const DefaultCartoonsModelParameters: Parameters;
+    class Model extends Visualization.Model {
+        private model;
+        private material;
+        private pickMaterial;
+        private queryContext;
+        private cartoons;
+        protected applySelectionInternal(indices: number[], action: Selection.Action): boolean;
+        getPickElements(pickId: number): number[];
+        highlightElement(pickId: number, highlight: boolean): boolean;
+        protected highlightInternal(isOn: boolean): boolean;
+        private applyColoring(theme);
+        protected applyThemeInternal(theme: Theme): void;
+        private createObjects();
+        static create(entity: any, {model, queryContext, atomIndices, theme, params, props}: {
+            model: Core.Structure.Molecule.Model;
+            queryContext: Core.Structure.Query.Context;
+            atomIndices: number[];
+            theme: Theme;
+            params: Parameters;
+            props?: Model.Props;
+        }): Core.Computation<Model>;
+    }
+}
+declare namespace LiteMol.Visualization.Molecule.Colors {
+    const DefaultBondColor: Color;
+    const DefaultElementColor: {
+        r: number;
+        g: number;
+        b: number;
+    };
+    const DefaultElementColorMap: Theme.ColorMap;
+    const DefaultPallete: Color[];
+}
+declare namespace LiteMol.Visualization.Primitive {
+    function createSphereSurface(center: Core.Geometry.LinearAlgebra.ObjectVec3, radius: number, tessalation: number): Core.Geometry.Surface;
+}
+declare namespace LiteMol.Visualization.Primitive {
+    import LA = Core.Geometry.LinearAlgebra;
+    import Surface = Core.Geometry.Surface;
+    type ShapeType = 'Sphere' | 'Surface';
+    type Shape = {
+        type: 'Sphere';
+        center: LA.ObjectVec3;
+        radius: number;
+        id: number;
+        tessalation?: number;
+    } | {
+        type: 'Surface';
+        surface: Surface;
+        id: number;
+    };
+    class Builder {
+        private shapes;
+        add(shape: Shape): this;
+        buildSurface(): Core.Computation<Surface>;
+        static create(): Builder;
+    }
+}
+declare namespace LiteMol.Visualization.Utils {
+    class Palette {
+        private static previous;
+        static getRandomColor(amountOfGrey?: number): Visualization.Color;
+        static randomMix(color1: Visualization.Color, color2: Visualization.Color, color3: Visualization.Color, greyControl: number): Visualization.Color;
+        /**
+         *
+         * @example
+         *   let min = Palette.getRandomColor(0.3);
+         *   let max = Palette.getRandomColor(0.3);
+         *   let color = Palette.interpolate(0.1, min, 0.6, max, 0.354);
+         */
+        static interpolate(min: number, minColor: Visualization.Color, max: number, maxColor: Visualization.Color, value: number, target?: Visualization.Color): Color;
+    }
+}
 declare namespace LiteMol.Bootstrap {
     var VERSION: {
         number: string;
@@ -15551,7 +14795,7 @@ declare namespace LiteMol.Bootstrap.Service {
         private lanes;
         constructor();
         dispatch<T>(event: Event<T>): void;
-        schedule(action: () => void, onError?: (e: string) => void, timeout?: number): NodeJS.Timer;
+        schedule(action: () => void, onError?: (e: string) => void, timeout?: number): number;
         getStream<T>(type: Event.Type<T>): Event.Stream<T>;
         finished(): void;
     }
@@ -16985,7 +16229,747 @@ declare namespace LiteMol.Bootstrap {
         constructor(context: Context);
     }
 }
-declare module 'LiteMol-bootstrap' {
-    import __Bootstrap = LiteMol.Bootstrap;
-    export = __Bootstrap;
+declare namespace LiteMol.Plugin {
+    var VERSION: {
+        number: string;
+        date: string;
+    };
+}
+declare namespace LiteMol.Plugin {
+    export import React = __LiteMolReact;
+    const ReactDOM: typeof React.__DOM;
+    namespace Controls {
+        class ChromePickerHelper extends __LiteMolColorPicker.ChromePicker {
+        }
+    }
+}
+declare namespace LiteMol.Plugin.Controls {
+    type ButtonSize = 'xs' | 'sm' | 'normal' | 'lg';
+    type ButtonStyle = 'link' | 'remove' | 'default';
+    abstract class Pure<Props> extends React.Component<Props, {}> {
+        shouldComponentUpdate(nextProps: any, nextState: any): boolean;
+    }
+    class Button extends Pure<{
+        onClick: (e: React.MouseEvent | React.TouchEvent) => void;
+        size?: ButtonSize;
+        style?: ButtonStyle;
+        active?: boolean;
+        activeStyle?: ButtonStyle;
+        icon?: string;
+        activeIcon?: string;
+        disabled?: boolean;
+        disabledStyle?: ButtonStyle;
+        asBlock?: boolean;
+        title?: string;
+        customClass?: string;
+        customStyle?: any;
+    }> {
+        render(): JSX.Element;
+    }
+    const TextBox: (props: {
+        onChange: (v: string) => void;
+        value?: string | undefined;
+        defaultValue?: string | undefined;
+        onKeyPress?: ((e: React.KeyboardEvent) => void) | undefined;
+        onBlur?: ((e: React.FormEvent) => void) | undefined;
+        placeholder?: string | undefined;
+    }) => JSX.Element;
+    function isEnter(e: React.KeyboardEvent): boolean;
+    function TextBoxGroup(props: {
+        value: string;
+        onChange: (v: string) => void;
+        placeholder?: string;
+        label: string;
+        onEnter?: (e: React.KeyboardEvent) => void;
+        title?: string;
+    }): JSX.Element;
+    const CommitButton: (props: {
+        action: () => void;
+        isOn: boolean;
+        on: string;
+        off?: string | undefined;
+        title?: string | undefined;
+    }) => JSX.Element;
+    const Toggle: (props: {
+        onChange: (v: boolean) => void;
+        value: boolean;
+        label: string;
+        title?: string | undefined;
+    }) => JSX.Element;
+    const ControlGroupExpander: (props: {
+        onChange: (e: boolean) => void;
+        isExpanded: boolean;
+    }) => JSX.Element;
+    const RowText: (props: {
+        value: any;
+        label: string;
+        title?: string | undefined;
+    }) => JSX.Element;
+    const HelpBox: (props: {
+        title: string;
+        content: string | JSX.Element;
+    }) => JSX.Element;
+}
+declare namespace LiteMol.Plugin.Controls {
+    class OptionsBox extends React.Component<{
+        options: any[] | Bootstrap.Immutable.List<any>;
+        current: any;
+        caption: (o: any) => any;
+        onChange: (o: any) => void;
+        small?: boolean;
+        title?: string;
+    }, {}> {
+        current: any;
+        private get(i);
+        render(): JSX.Element;
+    }
+    function OptionsGroup(props: {
+        options: any[] | Bootstrap.Immutable.List<any>;
+        current: any;
+        caption?: (o: any) => string | number;
+        onChange: (o: any) => void;
+        label: string;
+        title?: string;
+    }): JSX.Element;
+}
+declare namespace LiteMol.Plugin.Controls {
+    class Panel extends React.Component<{
+        header: any;
+        title?: string;
+        className?: string;
+        badge?: any;
+        isExpanded: boolean;
+        onExpand: (e: boolean) => void;
+        description: string;
+        topRightAction?: JSX.Element;
+    }, {}> {
+        private header();
+        render(): JSX.Element;
+    }
+    const ExpandableGroup: (props: {
+        select: any;
+        options: any[];
+        expander: any;
+        isExpanded: boolean;
+        colorStripe?: Visualization.Color | undefined;
+    }) => JSX.Element;
+}
+declare namespace LiteMol.Plugin.Controls {
+    class Slider extends React.Component<{
+        label: any;
+        min: number;
+        max: number;
+        value: number;
+        step?: number;
+        title?: string;
+        onChange: (v: number) => void;
+    }, {
+        value: string;
+    }> {
+        state: {
+            value: string;
+        };
+        private firedValue;
+        componentWillMount(): void;
+        componentWillReceiveProps(nextProps: any): void;
+        private updateValue(s);
+        private fire();
+        render(): JSX.Element;
+    }
+    class Handle extends React.Component<Partial<HandleProps>, {}> {
+        render(): JSX.Element;
+    }
+    interface SliderBaseProps {
+        min: number;
+        max: number;
+        step?: number;
+        defaultValue?: number | number[];
+        value?: number | number[];
+        marks?: any;
+        included?: boolean;
+        className?: string;
+        prefixCls?: string;
+        disabled?: boolean;
+        children?: any;
+        onBeforeChange?: (value: number | number[]) => void;
+        onChange?: (value: number | number[]) => void;
+        onAfterChange?: (value: number | number[]) => void;
+        handle?: JSX.Element;
+        tipFormatter?: (value: number, index: number) => any;
+        dots?: boolean;
+        range?: boolean | number;
+        vertical?: boolean;
+        allowCross?: boolean;
+        pushable?: boolean | number;
+    }
+    interface SliderBaseState {
+        handle: number | null;
+        recent: number;
+        bounds: number[];
+    }
+    class SliderBase extends React.Component<SliderBaseProps, SliderBaseState> {
+        constructor(props: SliderBaseProps);
+        static defaultProps: SliderBaseProps;
+        private dragOffset;
+        private startPosition;
+        private startValue;
+        private _getPointsCache;
+        componentWillReceiveProps(nextProps: SliderBaseProps): void;
+        onChange(state: this['state']): void;
+        onMouseDown(e: MouseEvent): void;
+        onMouseMove(e: MouseEvent): void;
+        onMove(e: MouseEvent | TouchEvent, position: number): void;
+        onStart(position: number): void;
+        onTouchMove(e: TouchEvent): void;
+        onTouchStart(e: TouchEvent): void;
+        /**
+         * Returns an array of possible slider points, taking into account both
+         * `marks` and `step`. The result is cached.
+         */
+        getPoints(): any;
+        getPrecision(step: number): number;
+        getSliderLength(): number;
+        getSliderStart(): number;
+        getValue(): number;
+        private eventHandlers;
+        addDocumentEvents(type: 'touch' | 'mouse'): void;
+        calcOffset(value: number): number;
+        calcValue(offset: number): number;
+        calcValueByPos(position: number): number;
+        end(type: 'mouse' | 'touch'): void;
+        isEventFromHandle(e: Event): boolean;
+        isValueOutOfBounds(value: number, props: SliderBaseProps): boolean;
+        pushHandle(bounds: number[], handle: number, direction: number, amount: number): boolean;
+        pushHandleOnePoint(bounds: number[], handle: number, direction: number): boolean;
+        pushSurroundingHandles(bounds: number[], handle: number, originalValue: number): void;
+        removeEvents(type: 'touch' | 'mouse'): void;
+        trimAlignValue(v: number, nextProps?: SliderBaseProps): number;
+        render(): JSX.Element;
+    }
+    interface HandleProps {
+        className: string;
+        vertical: boolean;
+        offset: number;
+        tipFormatter: (v: number, index: number) => any;
+        value: number;
+        index: number;
+    }
+}
+declare namespace LiteMol.Plugin.Controls {
+    interface ColorPickerProps {
+        color: LiteMol.Visualization.Color;
+        onChange: (c: LiteMol.Visualization.Color) => void;
+    }
+    class ColorPicker extends React.Component<ColorPickerProps, {}> {
+        shouldComponentUpdate(nextProps: ColorPickerProps, nextState: {}, nextContext: any): boolean;
+        render(): JSX.Element;
+    }
+    class ToggleColorPicker extends React.Component<ColorPickerProps & {
+        label: string;
+        position?: 'above' | 'below';
+    }, {
+        isExpanded?: boolean;
+    }> {
+        state: {
+            isExpanded: boolean;
+        };
+        render(): JSX.Element;
+    }
+}
+declare namespace LiteMol.Plugin.Controls {
+    function QueryEditor(props: {
+        value: string;
+        onChange: (v: string) => void;
+        onEnter?: (e: React.KeyboardEvent) => void;
+    }): JSX.Element;
+}
+declare namespace LiteMol.Plugin.Views {
+    abstract class PureView<State, Props, ViewState> extends React.Component<{
+        state: State;
+        onChange: (s: State) => void;
+    } & Props, ViewState> {
+        protected update(s: State): void;
+        shouldComponentUpdate(nextProps: any, nextState: any): boolean;
+    }
+    abstract class Component<Props> extends React.Component<{
+        context: Bootstrap.Context;
+    } & Props, {}> {
+        private subs;
+        protected subscribe<T>(stream: Bootstrap.Rx.Observable<T>, obs: (n: T) => void): __LiteMolRx.IDisposable;
+        protected unsubscribe(sub: Bootstrap.Rx.IDisposable): void;
+        componentWillUnmount(): void;
+    }
+    abstract class ObserverView<P, S> extends React.Component<P, S> {
+        private subs;
+        protected subscribe<T>(stream: Bootstrap.Rx.Observable<T>, obs: (n: T) => void): __LiteMolRx.IDisposable;
+        protected unsubscribe(sub: Bootstrap.Rx.IDisposable): void;
+        componentWillUnmount(): void;
+    }
+    abstract class View<Controller extends Bootstrap.Components.Component<any>, State, CustomProps> extends ObserverView<{
+        controller: Controller;
+    } & CustomProps, State> {
+        readonly controller: Controller;
+        componentWillMount(): void;
+    }
+}
+declare namespace LiteMol.Plugin.Views {
+    class Layout extends View<Bootstrap.Components.Layout, {}, {}> {
+        private renderTarget(target);
+        render(): JSX.Element;
+    }
+}
+declare namespace LiteMol.Plugin.Views.Transform {
+    abstract class ControllerBase<C extends Bootstrap.Components.Transform.Controller<any>> extends Views.View<C, {}, {
+        customHeader?: string;
+        hideBadge?: boolean;
+        isAction?: boolean;
+        showVisibilityIcon?: boolean;
+    }> {
+        protected abstract renderControls(): void;
+        readonly params: C['latestState']['params'];
+        updateParams(p: Partial<C['latestState']['params']>): void;
+        autoUpdateParams(p: Partial<C['latestState']['params']>): void;
+        getPersistentState<T>(prop: string, defaultValue: T): any;
+        setPersistentState<T>(prop: string, value: T): void;
+        readonly transformSourceEntity: Bootstrap.Tree.Node.Any;
+        readonly isUpdate: boolean;
+        readonly canApply: boolean;
+        protected applyEnter(e: React.KeyboardEvent): void;
+        render(): JSX.Element;
+    }
+    class Empty extends Transform.ControllerBase<Bootstrap.Components.Transform.Controller<{}>> {
+        protected renderControls(): JSX.Element;
+    }
+    class View extends Views.View<Bootstrap.Components.Transform.View, {}, {}> {
+        render(): JSX.Element;
+    }
+    const TransparencyControl: (props: {
+        onChange: (td: LiteMol.Visualization.Theme.Transparency) => void;
+        definition: LiteMol.Visualization.Theme.Transparency;
+    }) => JSX.Element;
+    class Updater extends Views.View<Bootstrap.Components.Transform.Updater, {}, {}> {
+        componentWillMount(): void;
+        render(): JSX.Element;
+    }
+    class Action extends Views.View<Bootstrap.Components.Transform.Action, {}, {}> {
+        render(): JSX.Element;
+    }
+}
+declare namespace LiteMol.Plugin.Views.Transform.Data {
+    import Transformer = Bootstrap.Entity.Transformer;
+    class Download extends Transform.ControllerBase<Bootstrap.Components.Transform.Controller<Transformer.Data.DownloadParams>> {
+        protected renderControls(): JSX.Element;
+    }
+    class OpenFile extends Transform.ControllerBase<Bootstrap.Components.Transform.Controller<Transformer.Data.OpenFileParams>> {
+        protected renderControls(): JSX.Element;
+    }
+    class WithIdField extends Transform.ControllerBase<Bootstrap.Components.Transform.Controller<{
+        id: string;
+    }>> {
+        protected renderControls(): JSX.Element;
+    }
+    class WithUrlIdField extends Transform.ControllerBase<Bootstrap.Components.Transform.Controller<{
+        id: string;
+    }>> {
+        protected renderControls(): JSX.Element;
+    }
+}
+declare namespace LiteMol.Plugin.Views.Transform.Molecule {
+    import Transformer = Bootstrap.Entity.Transformer;
+    class CreateFromData extends Transform.ControllerBase<Bootstrap.Components.Transform.Controller<Transformer.Molecule.CreateFromDataParams>> {
+        protected renderControls(): JSX.Element;
+    }
+    class DownloadFromUrl extends Transform.ControllerBase<Bootstrap.Components.Transform.Controller<Transformer.Molecule.DownloadMoleculeSourceParams>> {
+        protected renderControls(): JSX.Element;
+    }
+    class OpenFile extends Transform.ControllerBase<Bootstrap.Components.Transform.Controller<Transformer.Molecule.OpenMoleculeFromFileParams>> {
+        protected renderControls(): JSX.Element;
+    }
+    class InitCoordinateStreaming extends Transform.ControllerBase<Bootstrap.Components.Transform.Controller<Transformer.Molecule.CoordinateStreaming.InitStreamingParams>> {
+        protected renderControls(): JSX.Element;
+    }
+    class CreateFromMmCif extends Transform.ControllerBase<Bootstrap.Components.Transform.Controller<Transformer.Molecule.CreateFromMmCifParams>> {
+        protected renderControls(): JSX.Element;
+    }
+    class CreateModel extends Transform.ControllerBase<Bootstrap.Components.Transform.Controller<Transformer.Molecule.CreateModelParams>> {
+        protected renderControls(): JSX.Element;
+    }
+    class CreateAssembly extends Transform.ControllerBase<Bootstrap.Components.Transform.Controller<Transformer.Molecule.CreateAssemblyParams>> {
+        protected renderControls(): JSX.Element | undefined;
+    }
+    class CreateSymmetryMates extends Transform.ControllerBase<Bootstrap.Components.Transform.Controller<Transformer.Molecule.CreateSymmetryMatesParams>> {
+        protected renderControls(): JSX.Element;
+    }
+    class CreateSelection extends Transform.ControllerBase<Bootstrap.Components.Transform.Controller<Transformer.Molecule.CreateSelectionParams>> {
+        protected renderControls(): JSX.Element;
+    }
+    class CreateMacromoleculeVisual extends Transform.ControllerBase<Bootstrap.Components.Transform.Controller<Transformer.Molecule.CreateMacromoleculeVisualParams>> {
+        protected renderControls(): JSX.Element;
+    }
+    class CreateVisual extends Transform.ControllerBase<Bootstrap.Components.Transform.MoleculeVisual> {
+        private detail();
+        private ballsAndSticks();
+        private surface();
+        private createColors();
+        protected renderControls(): JSX.Element;
+    }
+}
+declare namespace LiteMol.Plugin.Views.Transform.Density {
+    import Transformer = Bootstrap.Entity.Transformer;
+    class ParseData extends Transform.ControllerBase<Bootstrap.Components.Transform.Controller<Transformer.Density.ParseDataParams>> {
+        protected renderControls(): JSX.Element;
+    }
+    class CreateVisual extends Transform.ControllerBase<Bootstrap.Components.Transform.DensityVisual<Transformer.Density.CreateVisualParams, 'style'>> {
+        private surface();
+        private colors();
+        protected renderControls(): JSX.Element;
+    }
+    class CreateVisualBehaviour extends Transform.ControllerBase<Bootstrap.Components.Transform.DensityVisual<Transformer.Density.CreateVisualBehaviourParams, 'style'>> {
+        private surface();
+        private colors();
+        private show();
+        protected renderControls(): JSX.Element;
+    }
+}
+declare namespace LiteMol.Plugin.Views.Context {
+    class Log extends View<Bootstrap.Components.Context.Log, {}, {}> {
+        componentWillMount(): void;
+        componentDidUpdate(): void;
+        private scrollToBottom();
+        render(): JSX.Element;
+    }
+}
+declare namespace LiteMol.Plugin.Views.Context {
+    class Overlay extends View<Bootstrap.Components.Context.TaskWatcher, {}, {}> {
+        render(): JSX.Element;
+    }
+    class BackgroundTasks extends View<Bootstrap.Components.Context.TaskWatcher, {}, {}> {
+        render(): JSX.Element;
+    }
+}
+declare namespace LiteMol.Plugin.Views.Context {
+    class Toast extends View<Bootstrap.Components.Context.Toast, {}, {}> {
+        render(): JSX.Element;
+    }
+}
+declare namespace LiteMol.Plugin.Views.Entity {
+    import BEntity = Bootstrap.Entity;
+    const VisibilityControl: (props: {
+        entity: BEntity.Any;
+    }) => JSX.Element;
+    class Tree extends View<Bootstrap.Components.Component<{}>, {}, {}> {
+        private renderedVersion;
+        scrollIntoView(element: Element): void;
+        componentWillMount(): void;
+        private splash;
+        render(): JSX.Element;
+    }
+}
+declare namespace LiteMol.Plugin.Views.Entity {
+    const Remove: (props: {
+        entity: Bootstrap.Entity.Any;
+        onRemove: () => void;
+    }) => JSX.Element;
+    class Badge extends React.Component<{
+        type: Bootstrap.Entity.TypeInfo;
+    }, {}> {
+        shouldComponentUpdate(nextProps: {
+            type: Bootstrap.Entity.TypeInfo;
+        }, nextState: {}, nextContext: any): boolean;
+        private part(name, i, t, ret);
+        private split(name, type, ret);
+        private createBadge(name);
+        render(): JSX.Element;
+    }
+    class CurrentEntityControl extends View<Plugin.Components.AppInfo, {
+        current?: Bootstrap.Entity.Any;
+    }, {}> {
+        state: {
+            current?: Bootstrap.Entity.Any;
+        };
+        componentWillMount(): void;
+        render(): JSX.Element;
+    }
+    namespace SplashInfo {
+        const General: () => JSX.Element;
+        const Info: () => JSX.Element;
+    }
+}
+declare namespace LiteMol.Plugin.Views.Visualization {
+    class ViewportControls extends View<Bootstrap.Components.Visualization.Viewport, {
+        showSceneOptions?: boolean;
+        showHelp?: boolean;
+    }, {}> {
+        state: {
+            showSceneOptions: boolean;
+            showHelp: boolean;
+        };
+        private help();
+        render(): JSX.Element;
+    }
+    class HighlightInfo extends View<Bootstrap.Components.Visualization.HighlightInfo, {}, {}> {
+        render(): JSX.Element;
+    }
+    const Logo: () => JSX.Element;
+    class Viewport extends View<Bootstrap.Components.Visualization.Viewport, {}, {
+        noWebGl?: boolean;
+        showLogo?: boolean;
+    }> {
+        state: {
+            noWebGl: boolean;
+            showLogo: boolean;
+        };
+        componentDidMount(): void;
+        componentWillUnmount(): void;
+        renderMissing(): JSX.Element;
+        private handleLogo();
+        private getShowLogo();
+        render(): JSX.Element;
+    }
+}
+declare namespace LiteMol.Plugin.Components {
+    function create(key: string, controller: (ctx: Context) => Bootstrap.Components.Component<any>, view: ViewDefinition): (t: Bootstrap.Components.LayoutRegion, isStatic?: boolean | undefined) => (ctx: Context) => {
+        key: string;
+        controller: Bootstrap.Components.Component<any>;
+        region: Bootstrap.Components.LayoutRegion;
+        view: React.ComponentClass<any>;
+        isStatic: boolean | undefined;
+    };
+    class AppInfo extends Bootstrap.Components.Component<{}> {
+        appName: string;
+        appVersion: string;
+        constructor(ctx: Bootstrap.Context, appName: string, appVersion: string);
+    }
+    namespace Context {
+        const Log: (t: Bootstrap.Components.LayoutRegion, isStatic?: boolean | undefined) => (ctx: Context) => {
+            key: string;
+            controller: Bootstrap.Components.Component<any>;
+            region: Bootstrap.Components.LayoutRegion;
+            view: React.ComponentClass<any>;
+            isStatic: boolean | undefined;
+        };
+        const Toast: (t: Bootstrap.Components.LayoutRegion, isStatic?: boolean | undefined) => (ctx: Context) => {
+            key: string;
+            controller: Bootstrap.Components.Component<any>;
+            region: Bootstrap.Components.LayoutRegion;
+            view: React.ComponentClass<any>;
+            isStatic: boolean | undefined;
+        };
+        const Overlay: (t: Bootstrap.Components.LayoutRegion, isStatic?: boolean | undefined) => (ctx: Context) => {
+            key: string;
+            controller: Bootstrap.Components.Component<any>;
+            region: Bootstrap.Components.LayoutRegion;
+            view: React.ComponentClass<any>;
+            isStatic: boolean | undefined;
+        };
+        const BackgroundTasks: (t: Bootstrap.Components.LayoutRegion, isStatic?: boolean | undefined) => (ctx: Context) => {
+            key: string;
+            controller: Bootstrap.Components.Component<any>;
+            region: Bootstrap.Components.LayoutRegion;
+            view: React.ComponentClass<any>;
+            isStatic: boolean | undefined;
+        };
+    }
+    namespace Transform {
+        const View: (t: Bootstrap.Components.LayoutRegion, isStatic?: boolean | undefined) => (ctx: Context) => {
+            key: string;
+            controller: Bootstrap.Components.Component<any>;
+            region: Bootstrap.Components.LayoutRegion;
+            view: React.ComponentClass<any>;
+            isStatic: boolean | undefined;
+        };
+    }
+    namespace Entity {
+        const Current: (appName: string, appVersion: string) => (t: Bootstrap.Components.LayoutRegion, isStatic?: boolean | undefined) => (ctx: Context) => {
+            key: string;
+            controller: Bootstrap.Components.Component<any>;
+            region: Bootstrap.Components.LayoutRegion;
+            view: React.ComponentClass<any>;
+            isStatic: boolean | undefined;
+        };
+    }
+    namespace Visualization {
+        const Viewport: (t: Bootstrap.Components.LayoutRegion, isStatic?: boolean | undefined) => (ctx: Context) => {
+            key: string;
+            controller: Bootstrap.Components.Component<any>;
+            region: Bootstrap.Components.LayoutRegion;
+            view: React.ComponentClass<any>;
+            isStatic: boolean | undefined;
+        };
+        const HighlightInfo: (t: Bootstrap.Components.LayoutRegion, isStatic?: boolean | undefined) => (ctx: Context) => {
+            key: string;
+            controller: Bootstrap.Components.Component<any>;
+            region: Bootstrap.Components.LayoutRegion;
+            view: React.ComponentClass<any>;
+            isStatic: boolean | undefined;
+        };
+    }
+}
+declare namespace LiteMol.Plugin {
+    export import Context = Bootstrap.Context;
+    type ViewDefinition = React.ComponentClass<{
+        controller: Bootstrap.Components.Component<any>;
+    } & any>;
+    import LayoutRegion = Bootstrap.Components.LayoutRegion;
+    interface TransformerInfo extends Bootstrap.Plugin.TransformerInfo {
+        transformer: Bootstrap.Tree.Transformer.Any;
+        view: ViewDefinition;
+        initiallyCollapsed?: boolean;
+    }
+    type BehaviourProvider = (stack: Context) => void;
+    type ComponentProvider = (context: Context) => Bootstrap.Components.ComponentInfo;
+    interface Specification {
+        settings: {
+            [key: string]: any;
+        };
+        behaviours: BehaviourProvider[];
+        transforms: TransformerInfo[];
+        layoutView: ViewDefinition;
+        tree: {
+            view: ViewDefinition;
+            region: LayoutRegion;
+        } | undefined;
+        viewport: {
+            view: ViewDefinition;
+            controlsView: ViewDefinition;
+        };
+        components: ComponentProvider[];
+    }
+    class Instance implements Bootstrap.Plugin.Instance {
+        private spec;
+        private target;
+        private componentMap;
+        private transformersInfo;
+        context: Context;
+        private compose();
+        getTransformerInfo(transformer: Bootstrap.Tree.Transformer.Any): TransformerInfo;
+        destroy(): void;
+        private init();
+        constructor(spec: Specification, target: HTMLElement);
+    }
+}
+declare namespace LiteMol.Plugin {
+    import Transformer = Bootstrap.Entity.Transformer;
+    namespace DataSources {
+        const DownloadMolecule: Bootstrap.Tree.Transformer<Bootstrap.Entity.Root, Bootstrap.Entity.Action, Transformer.Molecule.DownloadMoleculeSourceParams>;
+    }
+    function getDefaultSpecification(): Specification;
+}
+declare namespace LiteMol.Plugin {
+    interface PluginControllerOptions {
+        /**
+         * query selector or HTMLElement
+         */
+        target: string | HTMLElement;
+        customSpecification?: Specification;
+        /**
+         * HEX color in format '#rgb' or '#rrggbb'
+         * or Visualization.Color instance.
+         */
+        viewportBackground?: string | Visualization.Color;
+        layoutState?: Partial<Bootstrap.Components.LayoutState>;
+        /**
+         * This options determines if Google Analytics is enabled
+         * to collect data about the plugin usage.
+         * The type of information includes PDBids downloaded or types
+         * of representations created.
+         *
+         * All information about what data is sent can be found in
+         * src/Bootstrap/Behaviour/Analytics.ts.
+         *
+         * By default this is OFF.
+         * This option is ignored if customSpecification is specified.
+         */
+        allowAnalytics?: boolean;
+        /**
+         * This specifies what Google Analytics ID to use. This
+         * means you can create your own google analytics account
+         * and collect the information for yourself.
+         */
+        analyticsId?: string;
+    }
+    interface ControllerLoadMoleculeInfo {
+        id?: string;
+        moleculeRef?: string;
+        modelRef?: string;
+        url?: string;
+        data?: string | ArrayBuffer;
+        format?: string | Core.Formats.FormatInfo;
+        onLoad?: () => void;
+        onError?: (e: any) => void;
+    }
+    import Entity = Bootstrap.Entity;
+    class Controller {
+        private _instance;
+        readonly instance: Instance;
+        readonly context: Context;
+        readonly root: Entity.Any;
+        /**
+         * execute a command with the specified params.
+         */
+        command<T>(cmd: Bootstrap.Event.Type<T>, params?: T): void;
+        /**
+         * Queries the entity state tree to select a list of entities
+         * satisfying the selector.
+         *
+         * Equivalent to plugin.context.select(selector).
+         *
+         * @example
+         *   selectEntities('model') // select node with ref = 'model'
+         *   selectEntities(entity).subtree()
+         *   selectEntities(Bootstrap.Tree.Selection.byRef('ref').ancestorOfType(Bootstrap.Entity.Molecule.Model))
+         */
+        selectEntities(selector: Bootstrap.Tree.Selector<Bootstrap.Entity.Any>): Entity.Any[];
+        /**
+         * Subscribes the specified event and returns
+         * a disposable for the event.
+         *
+         * let sub = litemol.subscribe(...)
+         * ...
+         * sub.dispose(); // to stop listening
+         */
+        subscribe<T>(event: Bootstrap.Event.Type<T>, onEvent: (e: Bootstrap.Event<T>) => void): __LiteMolRx.IDisposable;
+        /**
+         * Create a transform builder.
+         */
+        createTransform(): Bootstrap.Tree.Transform.Builder;
+        /**
+         * Applies a state trasnform.
+         */
+        applyTransform(transform: Bootstrap.Tree.Transform.Source): __Promise.Promise<void>;
+        /**
+         * Remove all entities.
+         */
+        clear(): void;
+        /**
+         * Set the background of the viewport from:
+         *
+         * HEX color in format '#rgb' or '#rrggbb'
+         * or Visualization.Color instance.
+         */
+        setViewportBackground(color: string | Visualization.Color): void;
+        /**
+         * Sets the state of the plugin layout.
+         *
+         * Expanded, show/hide controls, etc..
+         */
+        setLayoutState(state: Partial<Bootstrap.Components.LayoutState>): void;
+        /**
+         * Load molecule from url or string/binary data.
+         *
+         * Default format is mmCIF.
+         */
+        loadMolecule(source: ControllerLoadMoleculeInfo): __Promise.Promise<void>;
+        /**
+         * Destroys the the plugin instance.
+         * The controller becomes unusable as a result.
+         */
+        destroy(): void;
+        constructor(options: PluginControllerOptions);
+    }
+    function create(options: PluginControllerOptions): Controller;
+}
+declare module 'LiteMol-plugin' {
+    import __Plugin = LiteMol.Plugin;
+    export = __Plugin;
 }

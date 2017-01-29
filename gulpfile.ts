@@ -1,59 +1,63 @@
 import * as fs from 'fs'
 import * as gulp from 'gulp'
+import compilets from './src/helpers/Compile'
 
-const plugins = {
-    concat: require('gulp-concat'),
-    rename: require('gulp-rename'),
-    replace: require('gulp-replace'),
-    ts: require('gulp-typescript'),
-    merge: require('merge2'),
-    clean: require('gulp-clean'),
-    insert: require('gulp-insert'),
-    unique: require('gulp-unique-files'),
-    sass: require('gulp-sass'),
-    uglify: require('gulp-uglify'),
-    tsc: require('typescript'),
-    tar: require('gulp-tar'),
-    gzip: require('gulp-gzip'),
-    typedoc: require('gulp-typedoc')
-};
-
-function build(name) {
-    return require(`./src/${name}/build`)(gulp, plugins);
+function plugin(name: string) {
+    let cached: any;
+    return function() {
+        if (cached) return cached;
+        cached = require(name);
+        return cached;
+    }
 }
 
+const plugins = {
+    concat: plugin('gulp-concat'),
+    rename: plugin('gulp-rename'),
+    replace: plugin('gulp-replace'),
+    merge: plugin('merge2'),
+    clean: plugin('gulp-clean'),
+    insert: plugin('gulp-insert'),
+    sass: plugin('gulp-sass'),
+    uglify: plugin('gulp-uglify'),
+    tar: plugin('gulp-tar'),
+    gzip: plugin('gulp-gzip'),
+    typedoc: plugin('gulp-typedoc')
+};
+
+const PluginTask = require(`./src/helpers/build-plugin`)(gulp, plugins);
+const CoreTask = require(`./src/helpers/build-core`)(gulp, plugins);
+
 function buildts(root: string, out?:string) {
-    var project = plugins.ts.createProject(root + '/tsconfig.json', { typescript: plugins.tsc });
-    var b = project.src().pipe(project());    
-    return b.js.pipe(gulp.dest(out ? out : root));
+    return null;
 }
 
 function buildExample(name) {
-    return buildts('./examples/' + name, './build/examples/' + name);
+    return compilets({ project: `./examples/${name}/tsconfig.json`, out: `./build/examples/${name}/LiteMol-example.js` });
 }
 
 function BuildCSS(minify: boolean) {
     var affixes = ['', '-light', '-blue'];
 
-    return affixes.map(f => gulp.src(['./src/Plugin/Skin/LiteMol-plugin' + f + '.scss'])
-        .pipe(plugins.sass({ outputStyle: minify ? 'compressed' : void 0 }).on('error', plugins.sass.logError))
-        .pipe(plugins.rename('LiteMol-plugin' + f + (minify ? '.min' : '') + '.css'))
+    return affixes.map(f => gulp.src(['./src/lib/Plugin/Skin/LiteMol-plugin' + f + '.scss'])
+        .pipe(plugins.sass()({ outputStyle: minify ? 'compressed' : void 0 }).on('error', plugins.sass().logError))
+        .pipe(plugins.rename()('LiteMol-plugin' + f + (minify ? '.min' : '') + '.css'))
         .pipe(gulp.dest('./dist/css')));
 }
 
 function Uglify() {
     var plugin =  gulp.src(['./dist/js/LiteMol-plugin.js'])
-        .pipe(plugins.uglify())
-        .pipe(plugins.rename('LiteMol-plugin.min.js'))
+        .pipe(plugins.uglify()())
+        .pipe(plugins.rename()('LiteMol-plugin.min.js'))
         .pipe(gulp.dest('./dist/js'));
 
     var core = gulp.src(['./dist/js/LiteMol-core.js'])
-        .pipe(plugins.uglify())
-        .pipe(plugins.rename('LiteMol-core.min.js'))
+        .pipe(plugins.uglify()())
+        .pipe(plugins.rename()('LiteMol-core.min.js'))
         .pipe(gulp.dest('./dist/js'));
 
    
-    return plugins.merge(BuildCSS(true).concat([plugin, core]));
+    return plugins.merge()(BuildCSS(true).concat([plugin, core]));
 }
 
 var ExampleNames = [
@@ -69,10 +73,10 @@ var ExampleNames = [
 
 var ViewerAndExamplesTasks = [];
 
-gulp.task('Viewer', [], function() { return buildts('./src/Viewer', './build/Viewer') });
-gulp.task('Viewer-inline', ['Plugin'], function() { return buildts('./src/Viewer', './build/Viewer') });
-gulp.task('Example-BasicNode', [], function() { return buildts('./examples/BasicNode', './examples/BasicNode') });
-gulp.task('Example-BasicNode-inline', ['Plugin'], function() { return buildts('./examples/BasicNode', './examples/BasicNode') });
+gulp.task('Viewer', [], function() { return compilets({ project: `./src/Viewer/tsconfig.json`, out: `./build/Viewer/LiteMol-viewer.js` }); });
+gulp.task('Viewer-inline', ['Plugin'], function() { return compilets({ project: `./src/Viewer/tsconfig.json`, out: `./build/Viewer/LiteMol-viewer.js` }); });
+gulp.task('Example-BasicNode', [], function() { return compilets({ project: `./examples/BasicNode/tsconfig.json`, outDir: `./build/examples/BasicNode` }); });
+gulp.task('Example-BasicNode-inline', ['Plugin'], function() { return compilets({ project: `./examples/BasicNode/tsconfig.json`, outDir: `./build/examples/BasicNode` }); });
 
 ViewerAndExamplesTasks.push('Viewer', 'Example-BasicNode');
 
@@ -84,14 +88,14 @@ ExampleNames.forEach(e => {
 
 function __webAssets() {
     var css = gulp.src(['./web/src/css/bootstrap.min.css', './web/src/css/style.css', './web/src/css/animate.min.css', './web/src/css/font-awesome.min.css'])
-        .pipe(plugins.concat('web.css'))
+        .pipe(plugins.concat()('web.css'))
         .pipe(gulp.dest('./build/web/assets/css'));
 
     var js = gulp.src(['./web/src/js/jquery-2.1.0.min.js', './web/src/js/bootstrap.min.js', './web/src/js/blocs.min.js', './web/src/js/chart.min.js', './web/src/js/data.js'])
-        .pipe(plugins.concat('web.js'))
+        .pipe(plugins.concat()('web.js'))
         .pipe(gulp.dest('./build/web/assets/js'));
 
-    return plugins.merge([
+    return plugins.merge()([
         css,
         js
     ]);
@@ -102,7 +106,7 @@ function __webPluginAssets() {
     var fonts = gulp.src(['./dist/fonts/*']).pipe(gulp.dest('./build/web/assets/fonts'));
     var js = gulp.src(['./dist/js/*.js']).pipe(gulp.dest('./build/web/assets/js'));
 
-    return plugins.merge([css, fonts, js]);
+    return plugins.merge()([css, fonts, js]);
 }
 
 function __webBase() {
@@ -122,7 +126,7 @@ function __webExample(name) {
 }
 
 function WebAssemble() {
-    return plugins.merge([
+    return plugins.merge()([
         __webBase(),
         __webPluginAssets(),
         __webAssets(),
@@ -134,7 +138,7 @@ function WebAssemble() {
 var versionStamp = (+new Date()).toString();
 function WebVersions() {
     return gulp.src(['./build/web/**/*.html'])
-        .pipe(plugins.replace(/lmversion=[0-9]+/g, function (s) {
+        .pipe(plugins.replace()(/lmversion=[0-9]+/g, function (s) {
             //var v = (+s.match(/lmversion=([0-9]+)/)[1]) + 1;
             return 'lmversion=' + versionStamp;
         })) 
@@ -156,43 +160,33 @@ function PackageVersion() {
 
 gulp.task('PackageVersion', [], PackageVersion);
 
-// function Tarball() {
-//     console.log('Creating Tarbal');
-//     var tarball = gulp.src(['./dist/*.js', './dist/css/*.css', './dist/fonts/*'], { base: './dist' } )
-//         .pipe(plugins.tar('LiteMol.tar'))
-//         .pipe(plugins.gzip())
-//         .pipe(gulp.dest('./dist'));
-
-//     return tarball;
-// }
-
 gulp.task('Clean', [], function () {
     return gulp
         .src([
             './dist/js/*.min.js', './dist/css/*.min.css',
             './build'
         ], { read: false })
-        .pipe(plugins.clean());
+        .pipe(plugins.clean()());
 });
 
 gulp.task('Docs-clean', function() {
-    return gulp.src('./build/docs', { read: false }).pipe(plugins.clean());
+    return gulp.src('./build/docs', { read: false }).pipe(plugins.clean()());
 })
 
 gulp.task('Docs-generate', ['Docs-clean'], function() {
     return gulp
-        .src(['./src/**/*.ts', './src/**/*.tsx', '!./src/modularity.ts',
-            '!./src/Core/build.ts', '!./src/Visualization/build.ts', '!./src/Bootstrap/build.ts', '!./src/Plugin/build.ts',
-            '!./src/Core/Module.ts', '!./src/Visualization/Module.ts', '!./src/Bootstrap/Module.ts', '!./src/Plugin/Module.ts'])
-        .pipe(plugins.typedoc({
+        .src(['./src/lib/**/*.ts', './src/lib/**/*.tsx',
+            '!./src/lib/Core/Module.ts', '!./src/lib/Plugin/Module.ts'])
+        .pipe(plugins.typedoc()({
             module: 'commonjs',
-            target: 'es5',
+            target: 'es6',
             out: './build/docs/',
             name: 'LiteMol',
             mode: 'file',
             jsx: 'react',
             readme: 'none',
-            ignoreCompilerErrors: true
+            ignoreCompilerErrors: true,
+            suppressExcessPropertyErrors: true
         }));
     ;
 });
@@ -200,8 +194,8 @@ gulp.task('Docs-generate', ['Docs-clean'], function() {
 gulp.task('Docs-pack', ['Docs-generate'], function() {
     return gulp
         .src(['./build/docs/**/*'], { base: './build/docs' })
-        .pipe(plugins.tar('docs.tar'))
-        .pipe(plugins.gzip())
+        .pipe(plugins.tar()('docs.tar'))
+        .pipe(plugins.gzip()())
         .pipe(gulp.dest('./build/docs'));
     ;
 });
@@ -217,17 +211,12 @@ gulp.task('Web-assemble', [], WebAssemble);
 gulp.task('Web-assemble-inline', ['Plugin', 'CSS', 'ViewerAndExamples-inline'], WebAssemble);
 gulp.task('Web-inline', ['Web-assemble-inline'], WebVersions);
 
-gulp.task('Web-assemble-plugin', ['Plugin', 'CSS'], WebAssemble);
-gulp.task('Plugin-web', ['Web-assemble-plugin'], WebVersions);
-
 gulp.task('Dist-min', [], Uglify);
 
 gulp.task('default', [
     'Clean',
-    build('Core'), 
-    build('Visualization'),
-    build('Bootstrap'),
-    build('Plugin'),
+    CoreTask,
+    PluginTask,
     'ViewerAndExamples-inline',
     'CSS',
     'Web-inline',

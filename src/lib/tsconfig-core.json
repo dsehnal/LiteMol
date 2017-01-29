@@ -1,0 +1,68 @@
+{
+  "compileOnSave": false,
+  "compilerOptions": {
+    "noImplicitAny": true,
+    "noEmitOnError": true,
+    "removeComments": false,
+    "sourceMap": false,
+    "declaration": true,
+    "strictNullChecks": true,
+    "noImplicitThis": true,    
+    "noUnusedLocals": true,
+    "noImplicitReturns": true,
+    "lib": [ "es5", "es2015.collection", "dom", "es2015.promise" ],
+    "target": "es5",
+    "jsx": "react",
+    "module": "none",
+    "types": [],
+    "skipDefaultLibCheck": true,
+    "skipLibCheck": true,
+    "out": "LiteMol-core-temp.js"
+  },
+  "files": [
+    /*******************************************************************
+     * CORE
+     *******************************************************************/
+     
+    "./Core/lib/promise.d.ts",
+    "./Core/lib/rx-lite.d.ts",
+    "./Core/lib/CIFTools.d.ts",
+    "./Core/lib/Lib.ts",
+    "./Core/Version.ts",
+    "./Core/Base/Computation.ts",
+    // UTILS
+    "./Core/Utils/Collections.ts",
+    "./Core/Utils/MiscUtils.ts",
+    "./Core/Utils/DataTable.ts",
+    "./Core/Utils/ArrayBuilder.ts",
+    "./Core/Utils/PerformanceMonitor.ts",
+    // FORMATS
+    "./Core/Formats/Common.ts",
+    "./Core/Formats/Molecule/mmCIF.ts",
+    "./Core/Formats/Molecule/PDB/Data.ts",
+    "./Core/Formats/Molecule/PDB/Parser.ts",
+    "./Core/Formats/Molecule/SDF.ts",
+    "./Core/Formats/Molecule/Formats.ts",
+    "./Core/Formats/Density/Data.ts",
+    "./Core/Formats/Density/CCP4.ts",
+    "./Core/Formats/Density/CIF.ts",
+    "./Core/Formats/Density/DSN6.ts",
+    "./Core/Formats/Density/Formats.ts",
+    // GEOMETRY
+    "./Core/Geometry/LinearAlgebra.ts",
+    "./Core/Geometry/SubdivisionTree.ts",
+    "./Core/Geometry/Surface.ts",
+    "./Core/Geometry/MarchingCubes/MarchingCubes.ts",
+    "./Core/Geometry/MarchingCubes/Tables.ts",
+    "./Core/Geometry/MolecularSurface/MolecularIsoSurface.ts",
+    // STRUCTURE
+    "./Core/Structure/Molecule.ts",
+    "./Core/Structure/Spacegroups.ts",
+    "./Core/Structure/Symmetry.ts",
+    "./Core/Structure/Query/Data.ts",
+    "./Core/Structure/Query/Queries.ts",
+    "./Core/Structure/Query/Algebraic.ts",
+
+    "./Core/Module.ts"
+  ]
+}

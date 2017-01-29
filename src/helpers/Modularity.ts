@@ -1,12 +1,18 @@
+import * as path from 'path'
+import compile from './Compile'
+
 interface ModuleSpec {
+    root: string,
+    tsconfig: string,
     name: string,
     dependencies?: string[],
-    include?: string[],
-    priorityLib?: string[],
+    libs?: string[],
     isPlugin?: boolean,
     excludeDtsRefs?: boolean,
-    createDist?: boolean
+    createDist?: boolean,
 }
+
+type Plugins = { [key: string]: () => any }
 
 function createPre(spec: ModuleSpec) {
     let ret = [
@@ -68,51 +74,33 @@ function createInfo(spec: ModuleSpec) {
     }
 }
 
-function base(root: string, gulp: any, plugins: any) {
+function base(spec: ModuleSpec, gulp: any) {
      return function () {
-        let project = plugins.ts.createProject(root + '/tsconfig.json', { typescript: plugins.tsc });
-        let b = project.src().pipe(project());
-        
-        return plugins.merge([
-            b.js.pipe(gulp.dest('./build')),
-            b.dts.pipe(gulp.dest('./build'))
-        ]);
+        return compile({ project: path.join(spec.root, spec.tsconfig), out: `./build/LiteMol-${spec.name.toLowerCase()}-temp.js` });
      }
 }
 
-function assemble(root: string, spec: ModuleSpec, gulp: any, plugins: any) {
+function assemble(spec: ModuleSpec, gulp: any, plugins: Plugins) {
     return function() {        
         let info = createInfo(spec);  
-        
-        let include = (spec.include || []).map(i => `./build/LiteMol-${i.toLowerCase()}`);
-              
+                      
         let js = gulp
-            .src((spec.priorityLib || [])
-                .map(l => `${root}/lib/${l}.js`)
-                .concat(include.map(i => i + '.js'))
-                .concat([`${root}/lib/*.js`, `./build/LiteMol-${spec.name.toLowerCase()}-temp.js`]))
-            .pipe(plugins.unique())
-            .pipe(plugins.concat(`LiteMol-${spec.name.toLowerCase()}.js`));
+            .src((spec.libs || []).map(l => path.join(spec.root, l + '.js')).concat([`./build/LiteMol-${spec.name.toLowerCase()}-temp.js`]))
+            .pipe(plugins.concat()(`LiteMol-${spec.name.toLowerCase()}.js`));
             
         let jsMod = gulp
-            .src((spec.priorityLib || [])
-                .map(l => `${root}/lib/${l}.js`)
-                .concat(include.map(i => i + '.js'))
-                .concat([`${root}/lib/*.js`, `./build/LiteMol-${spec.name.toLowerCase()}-temp.js`]))
-            .pipe(plugins.unique())
-            .pipe(plugins.concat(`LiteMol-${spec.name.toLowerCase()}.js`))
-            .pipe(plugins.insert.prepend(info.pre))
-            .pipe(plugins.insert.append(info.post));
+            .src((spec.libs || []).map(l => path.join(spec.root, l + '.js')).concat([`./build/LiteMol-${spec.name.toLowerCase()}-temp.js`]))
+            .pipe(plugins.concat()(`LiteMol-${spec.name.toLowerCase()}.js`))
+            .pipe(plugins.insert().prepend(info.pre))
+            .pipe(plugins.insert().append(info.post));
             
         let dts = gulp
-            .src(
-                [`${root}/lib/*.d.ts`, `./build/LiteMol-${spec.name.toLowerCase()}-temp.d.ts`]
-                .concat(include.map(i => i + '.d.ts')))
-            .pipe(plugins.concat(`LiteMol-${spec.name.toLowerCase()}.d.ts`))
-            .pipe(plugins.insert.prepend(info.ts));
+            .src((spec.libs || []).map(l => path.join(spec.root, l + '.d.ts')).concat([`./build/LiteMol-${spec.name.toLowerCase()}-temp.d.ts`]))
+            .pipe(plugins.concat()(`LiteMol-${spec.name.toLowerCase()}.d.ts`))
+            .pipe(plugins.insert().prepend(info.ts));
         
         if (spec.createDist) {
-            return plugins.merge([
+            return plugins.merge()([
             js.pipe(gulp.dest('./build')),
             jsMod.pipe(gulp.dest('./dist/js')),
             
@@ -120,49 +108,45 @@ function assemble(root: string, spec: ModuleSpec, gulp: any, plugins: any) {
             dts.pipe(gulp.dest('./build'))]);
         }
 
-        return plugins.merge([
+        return plugins.merge()([
             js.pipe(gulp.dest('./build')),
             dts.pipe(gulp.dest('./build'))]);
     }    
 }
 
-function cleanup(spec: ModuleSpec, gulp: any, plugins: any) {
+function cleanup(spec: ModuleSpec, gulp: any, plugins: Plugins) {
     return function() {
         return gulp
             .src([`./build/LiteMol-${spec.name.toLowerCase()}-temp.*`])
-            .pipe(plugins.clean());
+            .pipe(plugins.clean()());
     }
 }
 
-function buildModule(root: string, spec: ModuleSpec, gulp: any, plugins: any) {
+function buildModule(spec: ModuleSpec, gulp: any, plugins: Plugins) {
     return {
-        base: base(root, gulp, plugins),
-        assemble: assemble(root, spec, gulp, plugins),
+        base: base(spec, gulp),
+        assemble: assemble(spec, gulp, plugins),
         cleanup: cleanup(spec, gulp, plugins)
     };
 }
 
-function build(root: string, spec: ModuleSpec, gulp: any, plugins: any) {
+function build(spec: ModuleSpec, gulp: any, plugins: Plugins) {
     if (!spec.dependencies) spec.dependencies = [];
-    if (!spec.priorityLib) spec.priorityLib = [];
-    if (!spec.include) spec.include = [];
+    if (!spec.libs) spec.libs = [];
     
-    var tasks = buildModule(root, spec, gulp, plugins);
+    var tasks = buildModule(spec, gulp, plugins);
      
     let base = `${spec.name}-base`;
     let assemble = `${spec.name}-assemble`;
     let cleanup = `${spec.name}-cleanup`;
-    
-    let deps = spec.dependencies.concat(spec.include);
-     
-    gulp.task(base, deps, function() {
+         
+    gulp.task(base, [], function() {
         console.log(`Building ${spec.name}`)
         return tasks.base();
     });
     gulp.task(assemble, [base], tasks.assemble);
     gulp.task(cleanup, [base, assemble], tasks.cleanup);
-    gulp.task(spec.name, deps.concat([base, assemble, cleanup]));
-    
+    gulp.task(spec.name, [base, assemble, cleanup], function() { console.log(`Finished ${spec.name}`) });
     
     gulp.task(base + '-standalone', function() {
         console.log(`Building ${spec.name}`)

@@ -12,6 +12,8 @@
     "lib": [ "es6", "dom" ],
     "target": "es6",
     "rootDir": "./src",
+    "types": ["node"],
+    "skipDefaultLibCheck": true,
     "outDir": "./build"
   },
   "files": [

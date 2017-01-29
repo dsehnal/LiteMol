@@ -54,3 +54,11 @@ tsc
 
 Finally, just open ``index.html`` in a browser or run the ``http-server`` in the example directory as shown above.
 
+Individual examples can also be built from the root directory using the command 
+
+```
+gulp Example-"name of example"
+```
+
+For example ``gulp Example-Channels``.
+

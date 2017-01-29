@@ -1,0 +1,255 @@
+{
+  "compileOnSave": false,
+  "compilerOptions": {
+    "noImplicitAny": true,
+    "noEmitOnError": true,
+    "removeComments": false,
+    "sourceMap": false,
+    "declaration": true,
+    "strictNullChecks": true,
+    "noImplicitThis": true,    
+    "noUnusedLocals": true,
+    "noImplicitReturns": true,
+    "lib": [ "es5", "es2015.collection", "dom", "es2015.promise" ],
+    "target": "es5",
+    "jsx": "react",
+    "module": "none",
+    "types": [],
+    "skipDefaultLibCheck": true,
+    "out": "LiteMol-plugin-temp.js"
+  },
+  "files": [
+    /*******************************************************************
+     * CORE
+     *******************************************************************/
+     
+    "./Core/lib/promise.d.ts",
+    "./Core/lib/rx-lite.d.ts",
+    "./Core/lib/CIFTools.d.ts",
+    "./Core/lib/Lib.ts",
+    "./Core/Version.ts",
+    "./Core/Base/Computation.ts",
+    // UTILS
+    "./Core/Utils/Collections.ts",
+    "./Core/Utils/MiscUtils.ts",
+    "./Core/Utils/DataTable.ts",
+    "./Core/Utils/ArrayBuilder.ts",
+    "./Core/Utils/PerformanceMonitor.ts",
+    // FORMATS
+    "./Core/Formats/Common.ts",
+    "./Core/Formats/Molecule/mmCIF.ts",
+    "./Core/Formats/Molecule/PDB/Data.ts",
+    "./Core/Formats/Molecule/PDB/Parser.ts",
+    "./Core/Formats/Molecule/SDF.ts",
+    "./Core/Formats/Molecule/Formats.ts",
+    "./Core/Formats/Density/Data.ts",
+    "./Core/Formats/Density/CCP4.ts",
+    "./Core/Formats/Density/CIF.ts",
+    "./Core/Formats/Density/DSN6.ts",
+    "./Core/Formats/Density/Formats.ts",
+    // GEOMETRY
+    "./Core/Geometry/LinearAlgebra.ts",
+    "./Core/Geometry/SubdivisionTree.ts",
+    "./Core/Geometry/Surface.ts",
+    "./Core/Geometry/MarchingCubes/MarchingCubes.ts",
+    "./Core/Geometry/MarchingCubes/Tables.ts",
+    "./Core/Geometry/MolecularSurface/MolecularIsoSurface.ts",
+    // STRUCTURE
+    "./Core/Structure/Molecule.ts",
+    "./Core/Structure/Spacegroups.ts",
+    "./Core/Structure/Symmetry.ts",
+    "./Core/Structure/Query/Data.ts",
+    "./Core/Structure/Query/Queries.ts",
+    "./Core/Structure/Query/Algebraic.ts",
+
+    /*******************************************************************
+     * VISUALIZATION
+     *******************************************************************/
+
+    "./Visualization/lib/three.d.ts",
+
+    "./Visualization/Version.ts",
+
+    "./Visualization/lib/lib.ts",
+
+    "./Visualization/Base/Helpers.ts",
+    "./Visualization/Base/Theme.ts",
+    "./Visualization/Base/Materials.ts",
+    "./Visualization/Base/Model.ts",
+    "./Visualization/Base/ModelStore.ts",
+    "./Visualization/Base/Camera.ts", // before scene
+    "./Visualization/Base/Scene.ts",
+    "./Visualization/Base/CameraControls.ts",
+    "./Visualization/Base/Selection.ts",
+
+    "./Visualization/Surface/Geometry.ts",
+    "./Visualization/Surface/Model.ts",
+
+    "./Visualization/Lines/Geometry.ts",
+    "./Visualization/Lines/Model.ts",
+
+    "./Visualization/Molecule/BallsAndSticks/Model.ts",
+    "./Visualization/Molecule/BallsAndSticks/Geometry.ts",
+    "./Visualization/Molecule/Cartoons/Geometry.ts",
+    "./Visualization/Molecule/Cartoons/GeometryElements.ts",
+    "./Visualization/Molecule/Cartoons/Model.ts",
+    "./Visualization/Molecule/Colors.ts",
+
+    "./Visualization/Primitive/Geometry.ts",
+    "./Visualization/Primitive/Builder.ts",
+
+    "./Visualization/Utils/Palette.ts",
+
+    /*******************************************************************
+     * BOOTSTRAP
+     *******************************************************************/
+
+    "./Bootstrap/lib/zlib.d.ts",
+    "./Bootstrap/lib/immutable.d.ts",
+    
+    "./Bootstrap/Version.ts",
+
+    "./Bootstrap/lib/Lib.ts",
+        
+    // COMMON UTILS
+    "./Bootstrap/Utils/DataSource.ts",
+    "./Bootstrap/Utils/Query.ts",
+    "./Bootstrap/Utils/ValueOrError.ts",
+    "./Bootstrap/Utils/LinkedList.ts",
+    "./Bootstrap/Utils/Misc.ts",
+    "./Bootstrap/Utils/Vdw.ts",
+    "./Bootstrap/Utils/Object.ts",
+    
+    // SERVICE
+    "./Bootstrap/Service/Dispatcher.ts",                
+    "./Bootstrap/Service/Logger.ts",
+    "./Bootstrap/Service/Toast.ts",
+            
+    //  TASK
+    "./Bootstrap/Tasks/Task.ts",    
+    
+    // EVENT
+    "./Bootstrap/Event/Event.ts",
+    "./Bootstrap/Event/Events.ts",
+    "./Bootstrap/Event/Commands.ts",
+        
+    // TREE
+    "./Bootstrap/Tree/Tree.ts",
+    "./Bootstrap/Tree/Node.ts",
+    "./Bootstrap/Tree/Selection.ts",
+    "./Bootstrap/Tree/Transformer.ts",
+    "./Bootstrap/Tree/Transform/Transform.ts",
+    "./Bootstrap/Tree/Transform/Builder.ts",
+    
+    // INTERACTIVITY   
+    "./Bootstrap/Interactivity/Interactivity.ts",
+    "./Bootstrap/Interactivity/Highlight.ts",
+    "./Bootstrap/Interactivity/Molecule.ts",
+      
+    // VISUALIZATION
+    "./Bootstrap/Visualization/SceneWrapper.ts",
+    "./Bootstrap/Visualization/Visual.ts",
+    
+    "./Bootstrap/Visualization/Molecule/Theme.ts", // must go before the rest in /Molecule?
+    "./Bootstrap/Visualization/Molecule/Styles.ts",
+    "./Bootstrap/Visualization/Molecule/Model.ts",    
+    
+    "./Bootstrap/Visualization/Density/Model.ts",    
+    "./Bootstrap/Visualization/Density/Styles.ts", // last because it references others
+   
+    // ENTITY
+    "./Bootstrap/Entity/Entity.ts",
+    "./Bootstrap/Entity/State.ts",    
+    "./Bootstrap/Entity/Types.ts",    
+    "./Bootstrap/Entity/Cache.ts",    
+    "./Bootstrap/Entity/Transformer/Basic.ts", // basic goes 1st
+    "./Bootstrap/Entity/Transformer/Molecule.ts",
+    "./Bootstrap/Entity/Transformer/Data.ts",
+    "./Bootstrap/Entity/Transformer/Density.ts",
+    "./Bootstrap/Entity/Transformer/CoordinateStreaming.ts",
+
+    // ENTITY UTILS    
+    "./Bootstrap/Utils/Molecule.ts",
+            
+    // BEHAVIOURS
+    "./Bootstrap/Behaviour/Streams.ts",    
+    "./Bootstrap/Behaviour/Basic.ts",
+    "./Bootstrap/Behaviour/Molecule.ts",
+    "./Bootstrap/Behaviour/Density.ts",
+    "./Bootstrap/Behaviour/CoordinateStreaming.ts",
+    "./Bootstrap/Behaviour/Analytics.ts",
+    
+    // COMPONENTS
+    "./Bootstrap/Components/Component.ts", 
+    "./Bootstrap/Components/Layout.ts",
+    
+    "./Bootstrap/Components/Transform/Controller.ts",
+    "./Bootstrap/Components/Transform/View.ts",
+    "./Bootstrap/Components/Transform/Visual.ts",
+    "./Bootstrap/Components/Transform/Updater.ts",
+    "./Bootstrap/Components/Transform/Action.ts",
+    
+    "./Bootstrap/Components/Context/Log.ts",
+    "./Bootstrap/Components/Context/Toast.ts",
+    "./Bootstrap/Components/Context/TaskWatcher.ts",
+    
+    "./Bootstrap/Components/Visualization/HighlightInfo.ts",
+    "./Bootstrap/Components/Visualization/Viewport.ts",
+    
+    // CONTEXT
+    "./Bootstrap/Context/Context.ts",
+    "./Bootstrap/Context/Plugin.ts",
+    "./Bootstrap/Context/Events.ts",
+    "./Bootstrap/Context/TransformManager.ts",
+    
+    /*******************************************************************
+     * PLUGIN
+     *******************************************************************/
+
+    "./Plugin/lib/react.d.ts",
+    "./Plugin/lib/react-dom.d.ts",
+    "./Plugin/lib/color-picker.d.ts",
+    
+    "./Plugin/Version.ts",
+
+    "./Plugin/lib/Lib.ts",
+
+    // BASIC CONTROLS
+    "./Plugin/Controls/CommonControls.tsx",
+    "./Plugin/Controls/OptionsBox.tsx",
+    "./Plugin/Controls/Panel.tsx",
+    "./Plugin/Controls/Slider.tsx",
+    "./Plugin/Controls/ColorPicker.tsx",
+    "./Plugin/Controls/QueryEditor.tsx",
+
+    // VIEW
+    "./Plugin/Views/View.tsx",
+    "./Plugin/Views/Layout.tsx",
+    
+    // VIEW -> TRANSFORM
+    "./Plugin/Views/Transform/View.tsx",    
+    "./Plugin/Views/Transform/Data.tsx",    
+    "./Plugin/Views/Transform/Molecule.tsx",
+    "./Plugin/Views/Transform/Density.tsx",        
+    
+    // VIEW -> CONTEXT
+    "./Plugin/Views/Context/Log.tsx",
+    "./Plugin/Views/Context/Tasks.tsx",
+    "./Plugin/Views/Context/Toast.tsx",
+    
+    // VIEW -> ENTITY
+    "./Plugin/Views/Entity/Tree.tsx",
+    "./Plugin/Views/Entity/Info.tsx",
+    
+    // VIEW -> VISUALIZATION
+    "./Plugin/Views/Visualization/Viewport.tsx",    
+        
+    // PLUGIN BASICS
+    "./Plugin/Plugin/Components.ts",
+    "./Plugin/Plugin/Plugin.ts",
+    "./Plugin/Plugin/Default.ts",   
+    "./Plugin/Plugin/Controller.ts",   
+
+    "./Plugin/Module.ts"
+  ]
+}

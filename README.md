@@ -46,18 +46,19 @@ on LiteMol (or any other non-trivial JavaScript app for that matter), because yo
 Project Structure Overview
 ========
 
-The code is structured into four modules:
+The LiteMol library code is structured into four modules:
 
   - `Core` - parsing, basic data representation
   - `Visualization` - wrapper around WebGL + geometry
   - `Bootstrap` - higher level wrapper around Core and Visualization
   - `Plugin` - React based UI
 
+Auto-generated source code documentation is available [here](https://webchemdev.ncbr.muni.cz/LiteMol/SourceDocs/).
+
 Additionally, the [LiteMol Viewer](https://webchemdev.ncbr.muni.cz/LiteMol/Viewer/) application is available:
 
   - `Viewer` - Host for plugin, integration with the PDBe services (electron density, validation, etc.) and CoordinateServer
 
-Auto-generated source code documentation is available [here](https://webchemdev.ncbr.muni.cz/LiteMol/SourceDocs/).
   
 Examples
 --------
@@ -78,11 +79,6 @@ LiteMol is written in TypeScript and needs to be compiled to JavaScript before u
 Any subsequent full LiteMol builds can be done using just the command 
 
     gulp
-
-To rebuild just the ``Viewer`` and the examples, it is possible to use 
-
-    gulp ViewerAndExamples
-    gulp Web
         
 To build the minified version of the plugin and the stylesheets, use 
 
@@ -94,34 +90,9 @@ This will create the files `dist/js/LiteMol-*.min.js` and `dist/css/LiteMol-plug
 When embedding the plugin in your pages, do not forget to include the `dist/css` and `dist/fonts` folders with 
 the required style sheets and fonts.
 
-
 ### Modifying Examples
 
-To play with just a single example without having to rebuild the entire project, change the paths to `LiteMol-plugin.js` and CSS in the corresponding ``index.html`` file from
-
-```HTML
-<link rel="stylesheet" href="../../assets/css/LiteMol-plugin.css?lmversion=10" type="text/css" />
-<script src="../../assets/js/LiteMol-plugin.js?lmversion=10"></script>
-```
-
-to
-
-```HTML
-<link rel="stylesheet" href="../../dist/css/LiteMol-plugin.css?lmversion=10" type="text/css" />
-<script src="../../dist/js/LiteMol-plugin.js?lmversion=10"></script>
-```
-
-This is needed because the paths are set up so that they work when the examples are accessed from the ``web`` folder.
-
-Afterwards, you can recompile just the single example from a command line using the ``tsc`` command, provided you have the correct version of [TypeScript](https://www.typescriptlang.org/)
-installed (for the version needed, please check the ``package.json`` in the root directory of LiteMol and look for ``"typescript"``). For example
-
-```
-cd examples/Channels
-tsc
-```
-
-Finally, just open ``index.html`` in a browser or run the ``http-server`` in the example directory as shown above.
+Go to the [Examples folder](examples) to learn how to modify individual examples.
 
 License
 =======

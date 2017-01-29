@@ -11,6 +11,9 @@
     "lib": [ "es5", "es2015.collection", "dom" ],
     "target": "es5",
     "jsx": "react",
+    "module": "none",
+    "types": [],
+    "skipDefaultLibCheck": true,
     "out": "LiteMol-example.js"
   },
   "files": [
