@@ -19,11 +19,9 @@ To define an entity, you need to specify its type, class, and properties.
 
 For example, to define the ``Annotations`` entity that encapsulates annotation data from the PDBe API:
 
-```TypeScript
-export interface AnnotationsProps extends Entity.CommonProps { data: any }
-export interface Annotations extends Entity<Annotations, AnnotationsType, AnnotationsProps> { }         
-export interface AnnotationsType extends Entity.Type<AnnotationsType, Annotations, AnnotationsProps> { }   
-export const Annotations = Entity.create<Annotations, AnnotationsType, AnnotationsProps>({ 
+```TypeScript 
+export interface Annotations extends Entity<{ data: any }> { }         
+export const Annotations = Entity.create<{ data: any }>({ 
     name: 'PDBe Sequence Annotations', 
     typeClass: 'Data',
     shortName: 'SA', 
