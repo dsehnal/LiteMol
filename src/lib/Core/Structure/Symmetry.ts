@@ -689,9 +689,7 @@ namespace LiteMol.Core.Structure {
 
             let info = model.data.symmetryInfo;
 
-            if (!info
-                || info.spacegroupName === 'P 1'
-                || (info.cellSize[0] < 1.1 && info.cellSize[1] < 1.1 && info.cellSize[2] < 1.1)) {
+            if (!info || (info.cellSize[0] < 1.1 && info.cellSize[1] < 1.1 && info.cellSize[2] < 1.1)) {
                 return model;
             }
 
@@ -778,9 +776,7 @@ namespace LiteMol.Core.Structure {
 
             let info = model.data.symmetryInfo;
 
-            if (!info
-                || info.spacegroupName === 'P 1'
-                || (info.cellSize[0] < 1.1 && info.cellSize[1] < 1.1 && info.cellSize[2] < 1.1)) {
+            if (!info || (info.cellSize[0] < 1.1 && info.cellSize[1] < 1.1 && info.cellSize[2] < 1.1)) {
                 return model;
             }
 

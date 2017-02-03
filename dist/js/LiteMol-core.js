@@ -11177,7 +11177,7 @@ var LiteMol;
 (function (LiteMol) {
     var Core;
     (function (Core) {
-        Core.VERSION = { number: "3.0.1", date: "Jan 26 2017" };
+        Core.VERSION = { number: "3.0.2", date: "Feb 3 2017" };
     })(Core = LiteMol.Core || (LiteMol.Core = {}));
 })(LiteMol || (LiteMol = {}));
 /*
@@ -18355,9 +18355,7 @@ var LiteMol;
                 }
                 function buildPivotGroupSymmetry(model, radius, pivotsQuery) {
                     var info = model.data.symmetryInfo;
-                    if (!info
-                        || info.spacegroupName === 'P 1'
-                        || (info.cellSize[0] < 1.1 && info.cellSize[1] < 1.1 && info.cellSize[2] < 1.1)) {
+                    if (!info || (info.cellSize[0] < 1.1 && info.cellSize[1] < 1.1 && info.cellSize[2] < 1.1)) {
                         return model;
                     }
                     var pivotIndices;
@@ -18419,9 +18417,7 @@ var LiteMol;
                 }
                 function buildMates(model, radius) {
                     var info = model.data.symmetryInfo;
-                    if (!info
-                        || info.spacegroupName === 'P 1'
-                        || (info.cellSize[0] < 1.1 && info.cellSize[1] < 1.1 && info.cellSize[2] < 1.1)) {
+                    if (!info || (info.cellSize[0] < 1.1 && info.cellSize[1] < 1.1 && info.cellSize[2] < 1.1)) {
                         return model;
                     }
                     var transforms = findMates(model, radius);

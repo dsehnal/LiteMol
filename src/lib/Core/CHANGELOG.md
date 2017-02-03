@@ -1,4 +1,7 @@
-﻿# 3.0.1
+﻿# 3.0.2
+* Enable generating symmetry mates for the P 1 spacegroup.
+
+# 3.0.1
 * Fixed a bug in Symmetry Mates generation.
 * Fixed a bug in CIF based density parsing.
 
