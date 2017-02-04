@@ -11,6 +11,8 @@ namespace LiteMol.Bootstrap.Visualization.Molecule {
     
     function getTessalation(type: DetailType, count: number) {
         if (type === 'Automatic') {        
+            if (count < 250) return 5;
+            if (count < 1000) return 4;
             if (count < 75000) return 3;
             if (count < 250000) return 2;
             if (count < 600000) return 1;
