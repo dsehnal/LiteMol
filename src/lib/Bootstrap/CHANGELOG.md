@@ -1,4 +1,9 @@
-﻿# 1.3.1
+﻿# 1.3.2
+* Automatic density for molecular surfaces.
+* Automatic maximum detail level for balls and sticks and cartoons for small molecules.
+* Applying laplacian smoothing to density surfaces now uses weighting to better preserve "small density blobs".
+
+# 1.3.1
 * Where appropriate, use Core.Utils.FastMap/Set instead of ES6 versions.
 
 # 1.3.0

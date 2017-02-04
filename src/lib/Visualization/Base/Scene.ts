@@ -146,7 +146,9 @@ namespace LiteMol.Visualization {
         models = new ModelStore(this);
         
         events: THREE.EventDispatcher = new THREE.EventDispatcher();
-        
+
+        private initialResizeTimeout: number | undefined = void 0;
+
         
         updateOptions(options: SceneOptions) {
             
@@ -216,7 +218,12 @@ namespace LiteMol.Visualization {
             this.needsRender();
             this.renderState.animationFrame = requestAnimationFrame(this.renderFunc);
             
-            //this.updateSizeInterval = setInterval(() => this.handleResize(), 1000);
+            // sometimes, the renderer DOM element does not initially have the correct size. 
+            // This will hopefully fix the issue in most cases.
+            this.initialResizeTimeout = setTimeout(() => { 
+                this.initialResizeTimeout = void 0; 
+                this.handleResize();
+            }, 1000);
         }
 
         private setupMouse() {
@@ -486,6 +493,11 @@ namespace LiteMol.Visualization {
                 } catch (_ex) { }
             }            
             
+            if (this.initialResizeTimeout !== void 0) {
+                clearTimeout(this.initialResizeTimeout);
+                this.initialResizeTimeout = void 0;
+            }
+
             this.unbindEvents = [];
             cancelAnimationFrame(this.renderState.animationFrame);
             this.scene = <any>null;

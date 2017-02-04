@@ -1,4 +1,7 @@
-﻿# 1.3.0
+﻿# 1.3.1
+* UI for automatic mol. surface detail.
+
+# 1.3.0
 * Updated for "LiteMol 2".
 
 # 1.2.11

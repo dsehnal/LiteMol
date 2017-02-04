@@ -89,7 +89,7 @@ namespace LiteMol.Bootstrap.Visualization.Density {
                     topRight: max
                 }).run(ctx);
             surface = await Geom.Surface.transform(surface, <number[]><any>fromFrac.elements).run(ctx);
-            surface = await Geom.Surface.laplacianSmooth(surface, params.smoothing).run(ctx);
+            surface = await Geom.Surface.laplacianSmooth(surface, params.smoothing, 4).run(ctx);
                              
             let theme = style.theme!.template!.provider(source, Theme.getProps(style.theme!));
                             

@@ -89,15 +89,13 @@ namespace LiteMol.Core.Geometry {
             });        
         }
         
-        
         function addVertex(src: Float32Array, i: number, dst: Float32Array, j: number) {
             dst[3 * j] += src[3 * i];
             dst[3 * j + 1] += src[3 * i + 1];
             dst[3 * j + 2] += src[3 * i + 2];
         }
 
-        function laplacianSmoothIter(surface: Surface, counts: Int32Array, vs: Float32Array) {
-
+        function laplacianSmoothIter(surface: Surface, vertexCounts: Int32Array, vs: Float32Array, vertexWeight: number) {
             let triCount = surface.triangleIndices.length,
                 src = surface.vertices;
             
@@ -118,12 +116,47 @@ namespace LiteMol.Core.Geometry {
                 addVertex(src, b, vs, c);
             }
 
+            let vw = 2 * vertexWeight;
             for (let i = 0, _b = surface.vertexCount; i < _b; i++) {
-                let n = counts[i] + 2;                
-                vs[3 * i] = (vs[3 * i] + 2 * src[3 * i]) / n;
-                vs[3 * i + 1] = (vs[3 * i + 1] + 2 * src[3 * i + 1]) / n;
-                vs[3 * i + 2] = (vs[3 * i + 2] + 2 * src[3 * i + 2]) / n;
+                let n = vertexCounts[i] + vw;                
+                vs[3 * i] = (vs[3 * i] + vw * src[3 * i]) / n;
+                vs[3 * i + 1] = (vs[3 * i + 1] + vw * src[3 * i + 1]) / n;
+                vs[3 * i + 2] = (vs[3 * i + 2] + vw * src[3 * i + 2]) / n;
             }
+        }
+
+        async function laplacianSmoothComputation(ctx: Computation.Context, surface: Surface, iterCount: number, vertexWeight: number) {
+            await ctx.updateProgress('Smoothing surface...', true);
+                
+            let vertexCounts = new Int32Array(surface.vertexCount),
+                triCount = surface.triangleIndices.length;
+            
+            let tris = surface.triangleIndices;
+            for (let i = 0; i < triCount; i++) {
+                // in a triangle 2 edges touch each vertex, hence the constant.
+                vertexCounts[tris[i]] += 2;
+            }
+            
+            let vs = new Float32Array(surface.vertices.length);
+            let started = Utils.PerformanceMonitor.currentTime();
+            await ctx.updateProgress('Smoothing surface...', true);
+            for (let i = 0; i < iterCount; i++) {                        
+                if (i > 0) {
+                    for (let j = 0, _b = vs.length; j < _b; j++) vs[j] = 0;
+                }
+                surface.normals = void 0;
+                laplacianSmoothIter(surface, vertexCounts, vs, vertexWeight);
+                let t = surface.vertices;
+                surface.vertices = <any>vs;
+                vs = <any>t;
+                
+                let time = Utils.PerformanceMonitor.currentTime();
+                if (time - started > Computation.UpdateProgressDelta) {
+                    started = time;
+                    await ctx.updateProgress('Smoothing surface...', true, i + 1, iterCount);
+                }
+            }                            
+            return surface;
         }
 
         /*
@@ -131,43 +164,12 @@ namespace LiteMol.Core.Geometry {
          *
          * Resets normals. Might replace vertex array.
          */
-        export function laplacianSmooth(surface: Surface, iterCount: number = 1): Computation<Surface> {
+        export function laplacianSmooth(surface: Surface, iterCount: number = 1, vertexWeight: number = 1): Computation<Surface> {
             
             if (iterCount < 1) iterCount = 0;            
             if (iterCount === 0) return Computation.resolve(surface);
             
-            return computation(async ctx => {                
-                await ctx.updateProgress('Smoothing surface...', true);
-                
-                let counts = new Int32Array(surface.vertexCount),
-                    triCount = surface.triangleIndices.length;
-                
-                let tris = surface.triangleIndices;
-                for (let i = 0; i < triCount; i++) {
-                    counts[tris[i]] += 2;
-                }
-                
-                let vs = new Float32Array(surface.vertices.length);
-                let started = Utils.PerformanceMonitor.currentTime();
-                await ctx.updateProgress('Smoothing surface...', true);
-                for (let i = 0; i < iterCount; i++) {                        
-                    if (i > 0) {
-                        for (let j = 0, _b = vs.length; j < _b; j++) vs[j] = 0;
-                    }
-                    surface.normals = void 0;
-                    laplacianSmoothIter(surface, counts, vs);
-                    let t = surface.vertices;
-                    surface.vertices = <any>vs;
-                    vs = <any>t;
-                    
-                    let time = Utils.PerformanceMonitor.currentTime();
-                    if (time - started > Computation.UpdateProgressDelta) {
-                        started = time;
-                        await ctx.updateProgress('Smoothing surface...', true, i + 1, iterCount);
-                    }
-                }                            
-                return surface;
-            });
+            return computation(async ctx => await laplacianSmoothComputation(ctx, surface, iterCount, (1.1 * vertexWeight) / 1.1));
         }
         
         export function computeBoundingSphere(surface: Surface): Computation<Surface> {            

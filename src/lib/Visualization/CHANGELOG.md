@@ -1,4 +1,7 @@
-﻿# 1.6.3
+﻿# 1.6.4
+* Bugfix when renderer DOM element is not initially sized correctly.
+
+# 1.6.3
 * Fixed a bug in wireframe mesh generation.
 
 # 1.6.2

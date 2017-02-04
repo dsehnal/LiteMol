@@ -1,3 +1,7 @@
+# 1.3.1
+* Automatic detail for molecular surfaces => improved performance for large molecules.
+* Higher automatic detail for small molecules.
+
 # 1.3.0
 * Updated for "LiteMol 2". 
 

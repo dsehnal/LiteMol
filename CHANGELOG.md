@@ -6,6 +6,14 @@ Each component also has its separate changelog
 ([Core](src/Core/CHANGELOG.md), [Visualization](src/Visualization/CHANGELOG.md), [Bootstrap](src/Bootstrap/CHANGELOG.md), [Plugin](src/Plugin/CHANGELOG.md), [Viewer](src/Viewer/CHANGELOG.md)).
 
 
+2.0.1-preview
+-----------
+
+* Improved low resolution molecular surfaces.
+* Determines automatic detail level for molecular surfaces. This means that it is MUCH quicker to display a surface for large structures. For example showing surface for PDB 3j3q (2.44M atoms) is now <2s vs ~16s.
+* Automatic detail for small molecules is higher.
+* Applying laplacian smoothing to density surfaces now uses weighting to better preserve "small density blobs".
+
 2.0.0-preview
 -----------
 

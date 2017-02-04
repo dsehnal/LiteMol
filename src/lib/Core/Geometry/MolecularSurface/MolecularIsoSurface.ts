@@ -20,7 +20,7 @@ namespace LiteMol.Core.Geometry.MolecularSurface {
         exactBoundary: boolean;
         boundaryDelta: { dx: number; dy: number; dz: number };
         probeRadius: number;
-        atomRadius: (i: number) => number;
+        atomRadius: (i: number) => number;        
         defaultAtomRadius: number;
         density: number;
         interactive: boolean;
@@ -39,8 +39,7 @@ namespace LiteMol.Core.Geometry.MolecularSurface {
             });
 
             if (this.exactBoundary) this.boundaryDelta = { dx: 0, dy: 0, dz: 0 };
-            if (this.density < 0.3) this.density = 0.3;
-            //if (this.probeRadius < 0) this.probeRadius = 0;
+            if (this.density < 0.05) this.density = 0.05;
         }
     }
     
@@ -62,11 +61,21 @@ namespace LiteMol.Core.Geometry.MolecularSurface {
             this.y = positions.y;
             this.z = positions.z;
             this.atomIndices = inputParameters.atomIndices;
+
+            // make the atoms artificially bigger for low resolution surfaces
+            if (this.parameters.density >= 0.99)  {
+                // so that the number is float and not int32 internally 
+                this.vdwScaleFactor = 1.000000001; 
+            }
+            else {
+                this.vdwScaleFactor = 1 + (1 - this.parameters.density * this.parameters.density);
+            }
         }
 
         atomIndices: number[];
 
         parameters: MolecularIsoSurfaceParametersWrapper;
+        vdwScaleFactor: number;
 
         x: number[]; y: number[]; z: number[];
 
@@ -81,7 +90,7 @@ namespace LiteMol.Core.Geometry.MolecularSurface {
 
         private findBounds() {
             for (let aI of this.atomIndices) {
-                let r = this.parameters.exactBoundary ? 0 : this.parameters.atomRadius(aI) + this.parameters.probeRadius,
+                let r = this.parameters.exactBoundary ? 0 : this.vdwScaleFactor * this.parameters.atomRadius(aI) + this.parameters.probeRadius,
                     xx = this.x[aI], yy = this.y[aI], zz = this.z[aI];
 
                 if (r < 0) continue;
@@ -114,8 +123,6 @@ namespace LiteMol.Core.Geometry.MolecularSurface {
             this.dY = (this.maxY - this.minY) / (this.nY - 1);
             this.dZ = (this.maxZ - this.minZ) / (this.nZ - 1);
         }
-
-
 
         private initData() {
             let len = this.nX * this.nY * this.nZ;
@@ -193,7 +200,6 @@ namespace LiteMol.Core.Geometry.MolecularSurface {
             }
         }
 
-
         private async processChunks() {
             const chunkSize = 10000;
             let started = Utils.PerformanceMonitor.currentTime();
@@ -201,7 +207,7 @@ namespace LiteMol.Core.Geometry.MolecularSurface {
             await this.ctx.updateProgress('Creating field...', true);
             for (let currentAtom = 0, _b = this.atomIndices.length; currentAtom < _b; currentAtom++) {
                 let aI = this.atomIndices[currentAtom];
-                let r = this.parameters.atomRadius(aI) + this.parameters.probeRadius;
+                let r = this.vdwScaleFactor * this.parameters.atomRadius(aI) + this.parameters.probeRadius;
                                 
                 if (r >= 0) {
                     this.addBall(aI, r);
@@ -279,7 +285,17 @@ namespace LiteMol.Core.Geometry.MolecularSurface {
             let surface = await MarchingCubes.compute(field.data).run(ctx);
             surface = await Surface.transform(surface, field.transform).run(ctx);
             let smoothing = (parameters.parameters && parameters.parameters.smoothingIterations) || 1;
-            surface = await Surface.laplacianSmooth(surface, smoothing).run(ctx);
+
+            let smoothingVertexWeight = 1.0;
+            // low density results in very low detail and large distance between vertices.
+            // Applying uniform laplacian smmoth to such surfaces makes the surface a lot smaller 
+            // in each iteration. 
+            // To reduce this behaviour, the weight of the "central" vertex is increased
+            // for low desities to better preserve the shape of the surface.
+            if (parameters.parameters && parameters.parameters.density! < 1) {
+                smoothingVertexWeight = 2 / parameters.parameters.density!;
+            }
+            surface = await Surface.laplacianSmooth(surface, smoothing, smoothingVertexWeight).run(ctx);
             return { surface, usedParameters: field.parameters };
         });
     }

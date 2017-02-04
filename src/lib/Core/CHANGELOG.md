@@ -1,4 +1,8 @@
-﻿# 3.0.2
+﻿# 3.0.3
+* Better low resolution mol. surfaces.
+* Surface laplacian smooting now supports center vertex weight.
+
+# 3.0.2
 * Enable generating symmetry mates for the P 1 spacegroup.
 
 # 3.0.1

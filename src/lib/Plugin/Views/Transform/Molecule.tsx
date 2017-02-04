@@ -162,9 +162,12 @@ namespace LiteMol.Plugin.Views.Transform.Molecule {
                 <Controls.Slider label='Probe Radius' onChange={v => this.controller.updateStyleParams({ probeRadius: v  })} 
                     min={0} max={6} step={0.1} value={params.probeRadius!} />,
                 <Controls.Slider label='Smoothing' onChange={v => this.controller.updateStyleParams({ smoothing: v  })} 
-                    min={0} max={10} step={1} value={params.smoothing!} title='Number of laplacian smoothing itrations.' />,   
-                <Controls.Slider label='Detail' onChange={v => this.controller.updateStyleParams({ density: v  })} 
-                    min={0.3} max={3} step={0.1} value={params.density!} title='Determines the size of a grid cell.' />,
+                    min={0} max={20} step={1} value={params.smoothing!} title='Number of laplacian smoothing itrations.' />,   
+                <Controls.Toggle onChange={v => this.controller.updateStyleParams({ automaticDensity: v }) } value={params.automaticDensity!} label='Auto Detail' />,
+                (params.automaticDensity 
+                    ? void 0 
+                    : <Controls.Slider label='Detail' onChange={v => this.controller.updateStyleParams({ density: v  })} 
+                            min={0.1} max={3} step={0.1} value={params.density!} title='Determines the size of a grid cell (size = 1/detail).' />),
                 <Controls.Toggle onChange={v => this.controller.updateStyleParams({ isWireframe: v }) } value={params.isWireframe!} label='Wireframe' />                
             ];
         }
