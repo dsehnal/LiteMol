@@ -60366,6 +60366,7 @@ var LiteMol;
                                 this.state.processCell(i, j, k);
                             }
                         }
+                        this.state.clearEdgeVertexIndexSlice(k);
                     };
                     MarchingCubesComputation.prototype.finish = function () {
                         var vertices = Core.Utils.ChunkedArray.compact(this.state.vertexBuffer);
@@ -60419,10 +60420,20 @@ var LiteMol;
                         this.annotate = !!params.annotationField;
                         if (this.annotate)
                             this.annotationBuffer = Core.Utils.ChunkedArray.forInt32(vertexBufferSize);
-                        this.verticesOnEdges = new Int32Array(3 * this.nX * this.nY * this.nZ);
+                        // two layers of vertex indices. Each vertex has 3 edges associated.
+                        this.verticesOnEdges = new Int32Array(3 * this.nX * this.nY * 2);
                     }
                     MarchingCubesState.prototype.get3dOffsetFromEdgeInfo = function (index) {
-                        return (this.nX * ((this.k + index.k) * this.nY + this.j + index.j) + this.i + index.i) | 0;
+                        return (this.nX * (((this.k + index.k) % 2) * this.nY + this.j + index.j) + this.i + index.i) | 0;
+                    };
+                    /**
+                     * This clears the "vertex index buffer" for the slice that will not be accessed anymore.
+                     */
+                    MarchingCubesState.prototype.clearEdgeVertexIndexSlice = function (k) {
+                        var start = 3 * (this.nX * ((k % 2) * this.nY)) | 0;
+                        var end = 3 * (this.nX * ((k % 2) * this.nY + this.nY - 1) + this.nX - 1) | 0;
+                        for (var i = start; i < end; i++)
+                            this.verticesOnEdges[i] = 0;
                     };
                     MarchingCubesState.prototype.interpolate = function (edgeNum) {
                         var info = MarchingCubes.EdgeIdInfo[edgeNum], edgeId = 3 * this.get3dOffsetFromEdgeInfo(info) + info.e;

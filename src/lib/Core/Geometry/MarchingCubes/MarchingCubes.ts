@@ -26,7 +26,6 @@ namespace LiteMol.Core.Geometry.MarchingCubes {
     }
 
     class MarchingCubesComputation {
-
         private size: number;
         private sliceSize: number;
         
@@ -58,6 +57,7 @@ namespace LiteMol.Core.Geometry.MarchingCubes {
                     this.state.processCell(i, j, k);
                 }
             }
+            this.state.clearEdgeVertexIndexSlice(k);
         }
 
         private finish() {
@@ -77,7 +77,6 @@ namespace LiteMol.Core.Geometry.MarchingCubes {
 
             return ret;
         }
-
 
         async run() {            
             await this.ctx.updateProgress('Computing surface...', true, 0, this.size);
@@ -111,6 +110,7 @@ namespace LiteMol.Core.Geometry.MarchingCubes {
         annotationField?: Formats.Density.Field3D;
         annotate: boolean;
 
+        // two layers of vertex indices. Each vertex has 3 edges associated.
         verticesOnEdges: Int32Array;
         vertList: number[] = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
         i: number = 0; j: number = 0; k: number = 0;
@@ -120,7 +120,16 @@ namespace LiteMol.Core.Geometry.MarchingCubes {
         triangleBuffer: Core.Utils.ChunkedArray<number>;
 
         private get3dOffsetFromEdgeInfo(index: Index) {
-            return (this.nX * ((this.k + index.k) * this.nY + this.j + index.j) + this.i + index.i) | 0;
+            return (this.nX * (((this.k + index.k) % 2) * this.nY + this.j + index.j) + this.i + index.i) | 0;
+        }
+
+        /**
+         * This clears the "vertex index buffer" for the slice that will not be accessed anymore.
+         */
+        clearEdgeVertexIndexSlice(k: number) {
+            const start = 3 * (this.nX * ((k % 2) * this.nY)) | 0;
+            const end = 3 * (this.nX * ((k % 2) * this.nY + this.nY - 1) + this.nX - 1) | 0;
+            for (let i = start; i < end; i++) this.verticesOnEdges[i] = 0;
         }
 
         private interpolate(edgeNum: number) {
@@ -168,7 +177,8 @@ namespace LiteMol.Core.Geometry.MarchingCubes {
             this.annotate = !!params.annotationField;
             if (this.annotate) this.annotationBuffer = Core.Utils.ChunkedArray.forInt32(vertexBufferSize);
 
-            this.verticesOnEdges = new Int32Array(3 * this.nX * this.nY * this.nZ);
+            // two layers of vertex indices. Each vertex has 3 edges associated.
+            this.verticesOnEdges = new Int32Array(3 * this.nX * this.nY * 2);
         }
 
         processCell(i: number, j: number, k: number) {
