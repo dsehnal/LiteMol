@@ -1,4 +1,7 @@
-﻿# 1.3.2
+﻿# 1.3.3
+* Better controls for UI layout regions.
+
+# 1.3.2
 * Automatic density for molecular surfaces.
 * Automatic maximum detail level for balls and sticks and cartoons for small molecules.
 * Applying laplacian smoothing to density surfaces now uses weighting to better preserve "small density blobs".

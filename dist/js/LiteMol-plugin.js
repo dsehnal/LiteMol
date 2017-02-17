@@ -69942,7 +69942,7 @@ var LiteMol;
 (function (LiteMol) {
     var Bootstrap;
     (function (Bootstrap) {
-        Bootstrap.VERSION = { number: "1.3.2", date: "Feb 4 2017" };
+        Bootstrap.VERSION = { number: "1.3.3", date: "Feb 17 2017" };
     })(Bootstrap = LiteMol.Bootstrap || (LiteMol.Bootstrap = {}));
 })(LiteMol || (LiteMol = {}));
 /*
@@ -75018,7 +75018,7 @@ var LiteMol;
                         isExpanded: false,
                         hideControls: false,
                         collapsedControlsLayout: CollapsedControlsLayout.Outside,
-                        hiddenRegions: []
+                        regionStates: {}
                     }) || this;
                     _this.targets = targets;
                     _this.root = root;
@@ -77175,6 +77175,27 @@ var LiteMol;
                         statics.length ? Plugin.React.createElement("div", { className: 'lm-layout-static' }, statics) : void 0,
                         scrollable.length ? Plugin.React.createElement("div", { className: 'lm-layout-scrollable' }, scrollable) : void 0);
                 };
+                Layout.prototype.updateTarget = function (name, regionType, layout) {
+                    var state = this.controller.latestState;
+                    var regionStates = state.regionStates;
+                    var region = this.controller.targets[regionType];
+                    var show;
+                    if (state.hideControls) {
+                        show = regionStates !== void 0 && regionStates[regionType] === 'Sticky' && region.components.length > 0;
+                    }
+                    else if (regionStates && regionStates[regionType] === 'Hidden') {
+                        show = false;
+                    }
+                    else {
+                        show = region.components.length > 0;
+                    }
+                    if (show) {
+                        layout.regions.push(this.renderTarget(region));
+                    }
+                    else {
+                        layout.layoutClass += ' lm-layout-hide-' + name;
+                    }
+                };
                 Layout.prototype.render = function () {
                     var layoutClass = '';
                     var state = this.controller.latestState;
@@ -77201,29 +77222,13 @@ var LiteMol;
                     }
                     var targets = this.controller.targets;
                     var regions = [this.renderTarget(targets[LayoutRegion.Main])];
-                    var hiddenRegions = state.hiddenRegions || [];
-                    var region = targets[LayoutRegion.Top];
-                    if (state.hideControls || !region.components.length || hiddenRegions.indexOf(LayoutRegion.Top) >= 0)
-                        layoutClass += ' lm-layout-hide-top';
-                    else
-                        regions.push(this.renderTarget(region));
-                    region = targets[LayoutRegion.Right];
-                    if (state.hideControls || !region.components.length || hiddenRegions.indexOf(LayoutRegion.Right) >= 0)
-                        layoutClass += ' lm-layout-hide-right';
-                    else
-                        regions.push(this.renderTarget(region));
-                    region = targets[LayoutRegion.Bottom];
-                    if (state.hideControls || !region.components.length || hiddenRegions.indexOf(LayoutRegion.Bottom) >= 0)
-                        layoutClass += ' lm-layout-hide-bottom';
-                    else
-                        regions.push(this.renderTarget(region));
-                    region = targets[LayoutRegion.Left];
-                    if (state.hideControls || !region.components.length || hiddenRegions.indexOf(LayoutRegion.Left) >= 0)
-                        layoutClass += ' lm-layout-hide-left';
-                    else
-                        regions.push(this.renderTarget(region));
-                    var root = targets[LayoutRegion.Root]
-                        .components.map(function (c) { return Plugin.React.createElement(c.view, { controller: c.controller }); });
+                    var layout = { regions: regions, layoutClass: layoutClass };
+                    this.updateTarget('top', LayoutRegion.Top, layout);
+                    this.updateTarget('right', LayoutRegion.Right, layout);
+                    this.updateTarget('bottom', LayoutRegion.Bottom, layout);
+                    this.updateTarget('left', LayoutRegion.Left, layout);
+                    layoutClass = layout.layoutClass;
+                    var root = targets[LayoutRegion.Root].components.map(function (c) { return Plugin.React.createElement(c.view, { controller: c.controller }); });
                     return Plugin.React.createElement("div", { className: 'lm-plugin' },
                         Plugin.React.createElement("div", { className: 'lm-plugin-content ' + layoutType },
                             Plugin.React.createElement("div", { className: layoutClass },

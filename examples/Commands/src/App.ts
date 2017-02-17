@@ -145,11 +145,18 @@ namespace LiteMolPluginInstance {
         plugin.command(Command.Layout.SetState, { collapsedControlsLayout: Bootstrap.Components.CollapsedControlsLayout.Outside, hideControls: false });
     });
     addSeparator();
-    addButton('Control Regions: Hide Left and Bottom', () => {
-        plugin.command(Command.Layout.SetState, { hiddenRegions: [Bootstrap.Components.LayoutRegion.Left, Bootstrap.Components.LayoutRegion.Bottom], hideControls: false });
+    addButton('Control Regions: Hide Left and Bottom, Sticky Right', () => {
+        plugin.command(Command.Layout.SetState, { 
+            regionStates: { 
+                [Bootstrap.Components.LayoutRegion.Left]: 'Hidden', 
+                [Bootstrap.Components.LayoutRegion.Bottom]: 'Hidden',
+                [Bootstrap.Components.LayoutRegion.Right]: 'Sticky' 
+            }, 
+            hideControls: false 
+        });
     });
     addButton('Control Regions: Show All', () => {
-        plugin.command(Command.Layout.SetState, { hiddenRegions: [], hideControls: false });
+        plugin.command(Command.Layout.SetState, { regionStates: { }, hideControls: false });
     });
     
     addSeparator();

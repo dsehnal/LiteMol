@@ -16001,11 +16001,14 @@ declare namespace LiteMol.Bootstrap.Components {
         constructor(cssClass: string);
     }
     function makeEmptyTargets(): LayoutTarget[];
+    type RegionState = 'Hidden' | 'Sticky' | 'Default';
     interface LayoutState {
         isExpanded: boolean;
         hideControls: boolean;
         collapsedControlsLayout: CollapsedControlsLayout;
-        hiddenRegions: LayoutRegion[];
+        regionStates?: {
+            [region: number]: RegionState;
+        };
     }
     class Layout extends Component<LayoutState> {
         targets: LayoutTarget[];
@@ -16518,6 +16521,7 @@ declare namespace LiteMol.Plugin.Views {
 declare namespace LiteMol.Plugin.Views {
     class Layout extends View<Bootstrap.Components.Layout, {}, {}> {
         private renderTarget(target);
+        private updateTarget(name, regionType, layout);
         render(): JSX.Element;
     }
 }

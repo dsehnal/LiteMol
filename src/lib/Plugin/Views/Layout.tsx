@@ -26,8 +26,28 @@ namespace LiteMol.Plugin.Views {
             </div>;
         }
 
-        render() {
+        private updateTarget(name: string, regionType: Bootstrap.Components.LayoutRegion, layout: { regions: any[], layoutClass: string }) {            
+            let state = this.controller.latestState;
+            let regionStates = state.regionStates;            
+            let region = this.controller.targets[regionType];  
+            let show: boolean;
 
+            if (state.hideControls) {
+                show = regionStates !== void 0 && regionStates[regionType] === 'Sticky' && region.components.length > 0;
+            } else if (regionStates && regionStates[regionType] === 'Hidden') {
+                show = false;
+            } else {
+                show = region.components.length > 0;
+            }
+
+            if (show) {
+                layout.regions.push(this.renderTarget(region));            
+            } else {
+                layout.layoutClass += ' lm-layout-hide-' + name;
+            }
+        }
+
+        render() {
             let layoutClass = '';
             
             let state = this.controller.latestState;
@@ -48,26 +68,14 @@ namespace LiteMol.Plugin.Views {
             let targets = this.controller.targets;
             let regions = [this.renderTarget(targets[LayoutRegion.Main])];
 
-            let hiddenRegions = state.hiddenRegions || [];
+            let layout = { regions, layoutClass };
+            this.updateTarget('top', LayoutRegion.Top, layout);
+            this.updateTarget('right', LayoutRegion.Right, layout);
+            this.updateTarget('bottom', LayoutRegion.Bottom, layout);
+            this.updateTarget('left', LayoutRegion.Left, layout);
+            layoutClass = layout.layoutClass;
             
-            let region = targets[LayoutRegion.Top];                        
-            if (state.hideControls || !region.components.length || hiddenRegions.indexOf(LayoutRegion.Top) >= 0) layoutClass += ' lm-layout-hide-top';
-            else regions.push(this.renderTarget(region));
-            
-            region = targets[LayoutRegion.Right];
-            if (state.hideControls || !region.components.length || hiddenRegions.indexOf(LayoutRegion.Right) >= 0) layoutClass += ' lm-layout-hide-right';
-            else regions.push(this.renderTarget(region));
-            
-            region = targets[LayoutRegion.Bottom];
-            if (state.hideControls || !region.components.length || hiddenRegions.indexOf(LayoutRegion.Bottom) >= 0) layoutClass += ' lm-layout-hide-bottom';
-            else regions.push(this.renderTarget(region));
-                        
-            region = targets[LayoutRegion.Left];
-            if (state.hideControls || !region.components.length || hiddenRegions.indexOf(LayoutRegion.Left) >= 0) layoutClass += ' lm-layout-hide-left';
-            else regions.push(this.renderTarget(region));
-            
-            let root = targets[LayoutRegion.Root]
-                .components.map(c => <c.view controller={c.controller} />);
+            let root = targets[LayoutRegion.Root].components.map(c => <c.view controller={c.controller} />);
       
             return <div className='lm-plugin'>
                 <div className={'lm-plugin-content ' + layoutType}>

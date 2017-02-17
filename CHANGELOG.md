@@ -6,6 +6,12 @@ Each component also has its separate changelog
 ([Core](src/lib/Core/CHANGELOG.md), [Visualization](src/lib/Visualization/CHANGELOG.md), [Bootstrap](src/lib/Bootstrap/CHANGELOG.md), [Plugin](src/lib/Plugin/CHANGELOG.md), [Viewer](src/Viewer/CHANGELOG.md)).
 
 
+2.0.2-preview
+-----------
+
+* Added the ability to make the layout regions always shown ("sticky"). This is a breaking change if you were using the 'hiddenRegions'
+property of the layout state.
+
 2.0.1-preview
 -----------
 

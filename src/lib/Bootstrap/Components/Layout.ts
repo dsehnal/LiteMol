@@ -35,12 +35,13 @@ namespace LiteMol.Bootstrap.Components {
         return ret;
     }
 
-    export interface LayoutState {
-        isExpanded: boolean;
-        hideControls: boolean;
+    export type RegionState = 'Hidden' | 'Sticky' | 'Default'
 
-        collapsedControlsLayout: CollapsedControlsLayout;
-        hiddenRegions: LayoutRegion[];
+    export interface LayoutState {
+        isExpanded: boolean,
+        hideControls: boolean,
+        collapsedControlsLayout: CollapsedControlsLayout,
+        regionStates?: { [region: number]: RegionState }
     }
 
     interface RootState { 
@@ -195,7 +196,7 @@ namespace LiteMol.Bootstrap.Components {
                 isExpanded: false,
                 hideControls: false,
                 collapsedControlsLayout: CollapsedControlsLayout.Outside,
-                hiddenRegions: []
+                regionStates: { }
             });
             
             Command.Layout.SetState.getStream(this.context).subscribe(e => this.update(e.data));
