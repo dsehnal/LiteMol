@@ -1848,6 +1848,7 @@ declare namespace LiteMol.Core.Formats.Molecule.PDB {
     }
     class CrystStructureInfo {
         record: string;
+        private getValue(start, len);
         toCifCategory(id: string): {
             cell: CIF.Category | undefined;
             symm: CIF.Category | undefined;

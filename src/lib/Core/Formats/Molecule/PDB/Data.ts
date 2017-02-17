@@ -82,6 +82,12 @@ namespace LiteMol.Core.Formats.Molecule.PDB {
 
     export class CrystStructureInfo {
 
+        private getValue(start: number, len: number) {
+            let ret = this.record.substr(6, 9).trim();
+            if (!ret.length) return '.';
+            return ret;
+        }
+
         toCifCategory(id: string) {
 
             //COLUMNS       DATA TYPE      CONTENTS
@@ -98,16 +104,16 @@ namespace LiteMol.Core.Formats.Molecule.PDB {
 
             let data = [
                 `_cell.entry_id           '${id}'`,
-                `_cell.length_a           ${this.record.substr(6, 9).trim()}`,
-                `_cell.length_b           ${this.record.substr(15, 9).trim()}`,
-                `_cell.length_c           ${this.record.substr(24, 9).trim()}`,
-                `_cell.angle_alpha        ${this.record.substr(33, 7).trim()}`,
-                `_cell.angle_beta         ${this.record.substr(40, 7).trim()}`,
-                `_cell.angle_gamma        ${this.record.substr(48, 7).trim()}`,
-                `_cell.Z_PDB              ${this.record.substr(66, 4).trim()}`,
+                `_cell.length_a           ${this.getValue(6, 9)}`,
+                `_cell.length_b           ${this.getValue(15, 9)}`,
+                `_cell.length_c           ${this.getValue(24, 9)}`,
+                `_cell.angle_alpha        ${this.getValue(33, 7)}`,
+                `_cell.angle_beta         ${this.getValue(40, 7)}`,
+                `_cell.angle_gamma        ${this.getValue(48, 7)}`,
+                `_cell.Z_PDB              ${this.getValue(66, 4)}`,
                 `_cell.pdbx_unique_axis   ?`,
                 `_symmetry.entry_id                         '${id}'`,
-                `_symmetry.space_group_name_H-M             '${this.record.substr(55, 11).trim()}'`,
+                `_symmetry.space_group_name_H-M             '${this.getValue(55, 11)}'`,
                 `_symmetry.pdbx_full_space_group_name_H-M   ?`,
                 `_symmetry.cell_setting                     ?`,
                 `_symmetry.Int_Tables_number                ?`,

@@ -1,4 +1,7 @@
-﻿# 3.0.3
+﻿# 3.0.4
+* Fix in PDB CRYST1 record parsing.
+
+# 3.0.3
 * Better low resolution mol. surfaces.
 * Surface laplacian smooting now supports center vertex weight.
 
