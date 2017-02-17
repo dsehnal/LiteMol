@@ -17,7 +17,7 @@ namespace LiteMol.Plugin.Controls {
     }
 
     export class Button extends Pure<{
-        onClick: (e: React.MouseEvent | React.TouchEvent) => void,
+        onClick: (e: React.MouseEvent<HTMLButtonElement> | React.TouchEvent<HTMLButtonElement>) => void,
         size?: ButtonSize,
         style?: ButtonStyle,
         active?: boolean,
@@ -71,14 +71,14 @@ namespace LiteMol.Plugin.Controls {
         onChange: (v: string) => void,
         value?: string,
         defaultValue?: string,
-        onKeyPress?: (e: React.KeyboardEvent) => void,
-        onBlur?: (e: React.FormEvent) => void,
+        onKeyPress?: (e: React.KeyboardEvent<HTMLInputElement>) => void,
+        onBlur?: (e: React.FormEvent<HTMLInputElement>) => void,
         placeholder?: string
     }) => <input type='text' className='lm-form-control' placeholder={props.placeholder} value={props.value} defaultValue={props.defaultValue}
             onBlur={e => { if (props.onBlur) props.onBlur.call(null, e) } }
             onChange={e => props.onChange.call(null, (e.target as HTMLInputElement).value)} onKeyPress={props.onKeyPress} />;
     
-    export function isEnter(e: React.KeyboardEvent) {
+    export function isEnter(e: React.KeyboardEvent<HTMLInputElement>) {
         if ((e.keyCode === 13 || e.charCode === 13)) {
             return true;
         }
@@ -90,7 +90,7 @@ namespace LiteMol.Plugin.Controls {
         onChange: (v: string) => void,
         placeholder?:string,
         label: string,        
-        onEnter?: (e: React.KeyboardEvent) => void
+        onEnter?: (e: React.KeyboardEvent<HTMLInputElement>) => void
         title?: string
     }) {
         return <div className='lm-control-row lm-options-group' title={props.title}>

@@ -117,7 +117,7 @@ namespace LiteMol.Example.Channels.UI {
     export class Section extends React.Component<{ header: string, count: number }, { isExpanded: boolean }> {
         state = { isExpanded: false }
 
-        private toggle(e: React.MouseEvent) {
+        private toggle(e: React.MouseEvent<HTMLElement>) {
             e.preventDefault();
             this.setState({ isExpanded: !this.state.isExpanded });
         }

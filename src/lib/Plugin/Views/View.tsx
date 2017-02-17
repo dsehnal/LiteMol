@@ -12,8 +12,8 @@ namespace LiteMol.Plugin.Views {
     } & Props, ViewState> {
         
         protected update(s: State) {
-            let ns = Bootstrap.Utils.merge(this.props.state, s);
-            if (ns !== this.props.state) this.props.onChange(ns);
+            let ns = Bootstrap.Utils.merge<State>(this.props.state as any /* long live type system */, s);
+            if (ns !== this.props.state as any) this.props.onChange(ns);
         }
         
         shouldComponentUpdate(nextProps: any, nextState: any) {
@@ -77,7 +77,7 @@ namespace LiteMol.Plugin.Views {
         extends ObserverView<{ controller: Controller } & CustomProps, State> {
         
         public get controller(): Controller {
-            return this.props.controller;
+            return this.props.controller as any;
         }
                                 
         componentWillMount() {

@@ -9,7 +9,7 @@ namespace LiteMol.Plugin.Controls {
     export function QueryEditor(props: {
         value: string,
         onChange: (v: string) => void,
-        onEnter?: (e: React.KeyboardEvent) => void
+        onEnter?: (e: React.KeyboardEvent<HTMLInputElement>) => void
     }) {
         return <div className='lm-control-row'>
             <TextBox placeholder='Enter query...' onChange={props.onChange} value={props.value} onKeyPress={(e) => {

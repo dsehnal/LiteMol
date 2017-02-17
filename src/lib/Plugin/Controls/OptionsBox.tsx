@@ -29,7 +29,7 @@ namespace LiteMol.Plugin.Controls {
 
             return <select title={this.props.title} value={idx.toString() } className='lm-form-control'
                 onChange={e => {
-                    this.current = this.get(+(e.target as HTMLInputElement).value);
+                    this.current = this.get(+(e.target as HTMLSelectElement).value);
                     this.props.onChange(this.current);
                 }}>
                 {(this.props.options.map as any)((o: any, i: number) => {

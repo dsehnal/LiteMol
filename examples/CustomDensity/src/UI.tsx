@@ -6,7 +6,7 @@ namespace LiteMol.Custom {
     import React = LiteMol.Plugin.React
 
     function applyDownload(ctx: Bootstrap.Context, type: LoaderType) {
-        return (e: React.MouseEvent) => {
+        return (e: React.MouseEvent<HTMLElement>) => {
             e.preventDefault();
             let t = ctx.transforms.getController(DownloadDensity, ctx.select('density-downloader')[0]);
             // handled in the transform

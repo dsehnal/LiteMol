@@ -52,7 +52,7 @@ namespace LiteMol.Plugin.Views.Transform {
             return base;
         }
 
-        protected applyEnter(e: React.KeyboardEvent) {
+        protected applyEnter(e: React.KeyboardEvent<HTMLElement>) {
             if (!this.canApply) return;
             (e.target as HTMLElement).blur();
             this.controller.apply();
