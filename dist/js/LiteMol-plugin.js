@@ -58129,6 +58129,8 @@ var LiteMol;
                                 // ignored
                                 //77 - 78        LString(2)      Element symbol, right-justified.   
                                 ELEMENT: 13
+                                //79 - 80        LString(2)      Charge on the atom.      
+                                // ignored
                             };
                             var columnCount = 14;
                             for (var i = 0; i < this.atomCount; i++) {
@@ -68969,6 +68971,9 @@ var LiteMol;
                                         state.vPositions[9 + 3 * i_3 + j] = state.vPositions[6 + j] - 0.5 * (i_3 + 1) * d[j];
                                     }
                                 }
+                                //state.uPositions[0] = state.uPositions[6] - dx;
+                                //state.uPositions[9] = state.uPositions[6] - dx;                
+                                //console.log(state.uPositions, state.vPositions);
                             }
                         };
                         CartoonAsymUnit.prototype.initControlsPoints = function (state) {
@@ -74832,9 +74837,11 @@ var LiteMol;
                     var p = selector(transform.params, a);
                     if (ga && typeof p !== 'undefined') {
                         ga('send', 'event', name, p, ctx.id);
+                        //console.log('send', name, p, ctx.id);
                     }
                 }
                 catch (e) {
+                    //console.log('error', e);
                 }
             }
             function selectedMoleculeCreateFromData(p, a) { return p.format.name; }
@@ -75290,6 +75297,7 @@ var LiteMol;
                             var c = manager.getController(t, e);
                             if (c)
                                 transforms.push(c);
+                            //this.setParams(c);                
                         }
                         this.setState({ update: update, transforms: transforms });
                     };

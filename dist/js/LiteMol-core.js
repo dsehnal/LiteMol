@@ -13126,6 +13126,8 @@ var LiteMol;
                                 // ignored
                                 //77 - 78        LString(2)      Element symbol, right-justified.   
                                 ELEMENT: 13
+                                //79 - 80        LString(2)      Charge on the atom.      
+                                // ignored
                             };
                             var columnCount = 14;
                             for (var i = 0; i < this.atomCount; i++) {

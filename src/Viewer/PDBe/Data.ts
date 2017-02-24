@@ -37,7 +37,7 @@ namespace LiteMol.Viewer.PDBe.Data {
     }, (context, a, t) => {
         let query = t.params.type === 'Cartoon' ? 'cartoon' : 'full';
         let id = t.params.id!.toLowerCase().trim();
-        let url = `${t.params.serverUrl}${t.params.serverUrl![t.params.serverUrl!.length - 1] === '/' ? '' : '/'}${id}/${query}?encoding=bcif&lowPrecisionCoords=${t.params.lowPrecisionCoords ? '1' : '2'}`;
+        let url = `${t.params.serverUrl}${t.params.serverUrl![t.params.serverUrl!.length - 1] === '/' ? '' : '/'}${id}/${query}?encoding=bcif&lowPrecisionCoords=${t.params.lowPrecisionCoords ? '1' : '0'}`;
 
         return Bootstrap.Tree.Transform.build()
             .add(a, Entity.Transformer.Data.Download, { url, type: 'Binary', id, title: 'Molecule' })

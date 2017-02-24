@@ -15090,9 +15090,9 @@ declare namespace LiteMol.Visualization.Primitive {
 }
 declare namespace LiteMol.Visualization.Utils {
     class Palette {
-        private static previous;
         static getRandomColor(amountOfGrey?: number): Visualization.Color;
         static randomMix(color1: Visualization.Color, color2: Visualization.Color, color3: Visualization.Color, greyControl: number): Visualization.Color;
+        private static previous;
         /**
          *
          * @example

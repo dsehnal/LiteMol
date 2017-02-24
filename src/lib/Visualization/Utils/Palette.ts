@@ -7,7 +7,6 @@ namespace LiteMol.Visualization.Utils {
     
     export class Palette {
 
-        private static previous = Palette.randomMix({ r: 0.75, g: 0, b: 0.25 }, { r: 1, g: 0.5, b: 0 }, { r: 0, g: 0.35, b: 1 }, 0.5);
 
         static getRandomColor(amountOfGrey = 0.0): Visualization.Color
         {
@@ -42,6 +41,8 @@ namespace LiteMol.Visualization.Utils {
             };
         }
 
+        private static previous = Palette.randomMix({ r: 0.75, g: 0, b: 0.25 }, { r: 1, g: 0.5, b: 0 }, { r: 0, g: 0.35, b: 1 }, 0.5);
+        
         /**
          * 
          * @example
