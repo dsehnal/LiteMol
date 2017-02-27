@@ -15,8 +15,6 @@ a:hover{text-decoration: none; cursor:pointer;}
 
 a,button{outline: none!important;} /* Prevent ugly blue glow on chrome and safari */
 
-#page-loading-blocs-notifaction{position: fixed;top: 0;bottom: 0;width: 100%;z-index:100000;background:#FFFFFF url("img/pageload-spinner.gif") no-repeat center center;}
-
 /* = Blocs
 -------------------------------------------------------------- */
 
@@ -257,6 +255,10 @@ a,button{outline: none!important;} /* Prevent ugly blue glow on chrome and safar
 	line-height: 32px;
 }
 #coordinateserver p{
+	font-size: 18px;
+	line-height: 32px;
+}
+#densityserver p{
 	font-size: 18px;
 	line-height: 32px;
 }
@@ -764,6 +766,26 @@ li{
 	max-width: 80%;
 }
 
+.dens-section-image {
+    display: block;
+    text-align: center;    
+    margin: 20px 0; 
+}
+
+.dens-section-image:hover img {
+    -webkit-box-shadow: 0px 0px 9px 1px rgba(44,158,213,1);
+	-moz-box-shadow: 0px 0px 9px 1px rgba(44,158,213,1);
+	box-shadow: 0px 0px 9px 1px rgba(44,158,213,1);
+}
+
+.dens-section-image img {
+    -webkit-box-shadow: 0px 0px 9px 1px rgba(0,0,0,0.7);
+	-moz-box-shadow: 0px 0px 9px 1px rgba(0,0,0,0.7);
+	box-shadow: 0px 0px 9px 1px rgba(0,0,0,0.7);
+
+	max-width: 80%;
+}
+
 .text-justify {
     text-align: justify;
 }
@@ -782,7 +804,7 @@ li{
 	font-weight: 300;
 	font-size: 30px;
 	color: black;
-	margin: 30px auto 20px auto;
+	margin: 30px auto 30px auto;
 	max-width: 600px;
 	padding: 0 20px;
 }
@@ -797,7 +819,8 @@ li{
 	padding: 0 10px;
 }
 
-.lm-hero-logo-small {
+img.lm-hero-logo-small {
+	margin-top: 40px;
     max-height: 100px;
 }
 

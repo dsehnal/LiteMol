@@ -8,20 +8,19 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=0">
 	<link rel="shortcut icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAMAAABEpIrGAAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAD5UExURQAAACQ1RH6SkoKVli2h2tI/LBIXL2xrYoibnJZdqC2d1ZNboxMPJdFGKhK1eIdUt+iJMC2g2fMvItFALC0+TS+59x6wdCw7SiErPS2g25VdpuOGOh5aSYGUlZNbqueHOM89LCs9TOSHOYCTlRYYMR2vbyY8S5ZdqO+JMxyuc8w/K4CTlR6wdOaJO9VALSw9TIGUluSHOiye1phfqn6Tliuf1uKHNZpgqx2odB+ydh6vdCUuQWhLkxcaMh+zd4OXmeSHOy2j3OqKPCw+TBYZMZlfq5deqR6vdNRBLS5ATtVBLS4/Ti6n4tpCLi0/TS9BUJ1ir5xhrdNBLSJTHIoAAAA9dFJOUwBhG+vl4Y8FNOkhHGwkczFj0ybY/SuMnDYyzJ4YyjWSL+A1y+OClc4PPz7a5N+7oszox66svGDFLNj0mDZdQChMAAABH0lEQVQ4y4XRWVuCQBSA4QmBgZS0rIQitsDc27cLULFFTdv+/49piJmQQU/c8XzvGR7mIJR/BAWBj3BRAoVwMhx2MdxLypb+T393dbDvTz6a6/sp7bOmM9CAedKlZV3bPN8wHel7zouV/vC4sydNeXGTzfeiqCA8W+nSjvFh9MoLrx/bStLfGsktFgS+i0exjd1Z2gvCurdqIyJ095xtISeq6pda/RVmtiUmpnUHlc+eX1Jx/AewScVS6qB1Qvb1VAw6yWv5iBNyGPpmkAg6wZ0hh09hxTCCqNdm31w5o5X2A1E0gnZ2lUzElxrt48VtbhdU9D3Wx7vbqCis1saeiE/VAjoR13Bn/wd0pPtwJ6JigJ1s6WoBdoQMEe5E8P0HpPxDW5UCLSMAAAAASUVORK5CYII=" />
 
-	<!--<link rel="stylesheet" type="text/css" href="./src/css/bootstrap.min.css">
-	<link rel="stylesheet" type="text/css" href="./src/css/style.css">
-	<link rel="stylesheet" href="./src/css/animate.min.css">
-	<link rel="stylesheet" href="./src/css/font-awesome.min.css">-->
 	<link rel="stylesheet" type="text/css" href="assets/css/web.css?lmversion=1483114639243" />
 	<link href='https://fonts.googleapis.com/css?family=Lato:100,300,400,700,900&subset=latin,latin-ext' rel='stylesheet' type='text/css' />
 
-	<!--<script src="./src/js/jquery-2.1.0.min.js"></script>
-	<script src="./src/js/bootstrap.min.js"></script>
-	<script src="./src/js/blocs.min.js"></script>
-	<script src="./src/js/chart.min.js"></script>
-	<script src="./src/js/data.js"></script>-->
 	<script src="assets/js/web.js?lmversion=1483114639243"></script>
-	<title>LiteMol</title>
+	<title>LiteMol / 3D macromolecular data in the browser</title>
+
+	<meta property="og:type" content="website" />
+	<meta property="og:title" content="LiteMol / 3D macromolecular data in the browser" />
+	<meta property="og:description" content="Powerful and blazing-fast tools for handling 3D macromolecular data in the browser." />
+	<meta property="og:site_name" content="LiteMol / 3D macromolecular data in the browser" />
+	<meta name="twitter:card" content="summary" />
+	<meta name="twitter:title" content="LiteMol / 3D macromolecular data in the browser" />
+	<meta name="twitter:description" content="Powerful and blazing-fast tools for handling 3D macromolecular data in the browser." />
 </head>
 
 <body>
@@ -47,10 +46,13 @@
 								<a onclick="scrollToTarget('#coordinateserver')" class="ltc-outer-space">CoordinateServer</a>
 							</li>
 							<li>
+								<a onclick="scrollToTarget('#densityserver')" class="ltc-outer-space">DensityServer</a>
+							</li>
+							<li>
 								<a onclick="scrollToTarget('#binarycif')" class="ltc-outer-space">BinaryCIF</a>
 							</li>
 							<li>
-								<a href="https://github.com/dsehnal" target="_blank" class="ltc-outer-space"><i class="fa fa-github" aria-hidden="true"></i> <b>GitHub</b></a>
+								<a href="https://github.com/dsehnal"  class="ltc-outer-space"><i class="fa fa-github" aria-hidden="true"></i> <b>GitHub</b></a>
 							</li>
 						</ul>
 					</div>
@@ -64,25 +66,44 @@
 				</div>
 				<div class="row">
 					<div class="col-md-12">
-						<div class="text-center lm-hero-desc">Powerful and blazing-fast tool for handling 3D macromolecular data in the browser</div>
+						<div class="text-center lm-hero-desc">Powerful and blazing-fast tools for handling 3D macromolecular data in the browser</div>
 						<div class="text-center lm-hero-links">
-							<a href="Viewer/" class="btn btn-xl swing-hvr btn-persian-red" target="_blank"><b>Open LiteMol Viewer</b>
-							</a><a href='#' onclick="scrollToTarget('#litemol')" class="btn btn-xl swing-hvr btn-persian-red-s">More about LiteMol</a>
+							<a href="Viewer/" class="btn btn-xl swing-hvr btn-persian-red" ><b>Open LiteMol Viewer</b></a>
 						</div>
 					</div>
 				</div>
 				<div class="row">
 					<div class="col-md-12">
-						<div class="row voffset-lg">
+						<div class="row">
 							<div class="col-md-6">
-								<a href="https://webchemdev.ncbr.muni.cz/CoordinateServer" target="_blank"><img class="center-block lm-hero-logo-small" src="assets/img/CoordinateServer.png" alt="CoordinateServer" /></a>
-								<div class="text-center lm-hero-desc-m">Streaming of selected parts of 3D molecular data</div>
+								<img class="center-block lm-hero-logo-small" src="assets/img/litemol_small.png" alt="LiteMol" />
+								<div class="center-block text-center lm-hero-desc-m" style="width: 100%">3D moleculear viewer, plugin, and library</div>
+								<div class="text-center btn-sq">
+									<a onclick="scrollToTarget('#litemol')" class="btn btn-lg btn-m-hero swing-hvr btn-persian-red-s">More about LiteMol</a>
+								</div>
+							</div>
+							<div class="col-md-6">
+								<img class="center-block lm-hero-logo-small" src="assets/img/CoordinateServer.png" alt="CoordinateServer" />
+								<div class="text-center lm-hero-desc-m">3D molecular data streaming</div>
 								<div class="text-center">
 									<a onclick="scrollToTarget('#coordinateserver')" class="btn btn-lg btn-m-hero swing-hvr btn-persian-red-s">More about CoordinateServer</a>
 								</div>
 							</div>
+						</div>
+					</div>
+				</div>
+				<div class="row">
+					<div class="col-md-12">
+						<div class="row">
 							<div class="col-md-6">
-								<a href="https://github.com/dsehnal/BinaryCIF" target="_blank"><img class="center-block lm-hero-logo-small" src="assets/img/BinaryCIF.png" alt="BinaryCIF" /></a>
+								<img class="center-block lm-hero-logo-small" src="assets/img/DensityServer_small.png" alt="DensityServer" />
+								<div class="text-center lm-hero-desc-m">3D volumetric data streaming</div>
+								<div class="text-center">
+									<a onclick="scrollToTarget('#densityserver')" class="btn btn-lg btn-m-hero swing-hvr btn-persian-red-s">More about DensityServer</a>
+								</div>
+							</div>
+							<div class="col-md-6">
+								<img class="center-block lm-hero-logo-small" src="assets/img/BinaryCIF.png" alt="BinaryCIF" />
 								<div class="text-center lm-hero-desc-m">Efficient macromolecular data format</div>
 								<div class="text-center btn-sq">
 									<a onclick="scrollToTarget('#binarycif')" class="btn btn-lg btn-m-hero swing-hvr btn-persian-red-s">More about BinaryCIF</a>
@@ -122,9 +143,9 @@
 			<div class="container">
 				<div class="row voffset">
 					<div class="col-md-6">
-						<a href="Viewer" class="lm-section-image" target="_blank">
+						<div class="lm-section-image">
 							<img class="center-block img-responsive" src="assets/img/features/modes.png" id="viewer-feature-preview" />
-						</a>
+						</div>
 					</div>
 					<div class="col-md-6">
 						<h3 class="mg-clear text-center tc-white-2">
@@ -134,7 +155,7 @@
 							Web based molecular viewer
 						</h4>
 						<p class="desc mg-md text-justify">
-							<a href="Viewer" target="_blank">LiteMol Viewer</a> is an HTML5 web application for 3D visualization
+							<a href="Viewer" >LiteMol Viewer</a> is an HTML5 web application for 3D visualization
 							of molecules and other related data.
 						</p>
 						<p>
@@ -161,7 +182,7 @@
 							</li>
 							<li>
 								<p class=" p-list">
-									Integration with <a href="https://www.ebi.ac.uk/pdbe/pdbe-rest-api" target="_blank">PDBe API</a>: view and explore
+									Integration with <a href="https://www.ebi.ac.uk/pdbe/pdbe-rest-api" >PDBe API</a>: view and explore
 									validation and annotation data.
 									<a class="lm-feature-preview" title="Preview feature" data-preview-feature="annotation" href="#"><i class="fa fa-search" aria-hidden="true"></i></a>
 								</p>
@@ -180,8 +201,8 @@
 							</li>
 						</ul>
 						<p class="desc mg-md">
-							More information about LiteMol can be found on the <a href="https://webchem.ncbr.muni.cz/Wiki/LiteMol:UserManual"  target="_blank">wiki</a>							
-							or watch some of our <a href="https://www.youtube.com/channel/UCRoyYUeP1hdH2r8XUW-WMoA" target="_blank">YouTube tutorials</a>.
+							More information about LiteMol can be found on the <a href="https://webchem.ncbr.muni.cz/Wiki/LiteMol:UserManual"  >wiki</a>							
+							or watch some of our <a href="https://www.youtube.com/channel/UCRoyYUeP1hdH2r8XUW-WMoA" >YouTube tutorials</a>.
 						</p>
 					</div>
 				</div>
@@ -194,9 +215,9 @@
 			<div class="container bloc-md">
 				<div class="row voffset lm-plugin-wrap">
 					<div class="col-md-6">
-						<a href="https://www.ebi.ac.uk/pdbe/entry/pdb/1cbs/protein/1" class="lm-section-image lm-section-image-plugin" target="_blank">
+						<div class="lm-section-image lm-section-image-plugin" >
 							<img class="center-block img-responsive" src="assets/img/Plugin.png" />
-						</a>
+						</div>
 					</div>
 					<div class="col-md-6 text-justify">
 						<h3 class="mg-clear text-center tc-white-2">
@@ -207,19 +228,19 @@
 						</h4>
 						<p>
 							LiteMol can be embedded in your pages as a plugin to enable rich interaction with your data. For example, PDBe uses LiteMol
-							in <a href="https://www.ebi.ac.uk/pdbe/entry/pdb/1cbs/protein/1" target="_blank">simultaneously highlighting the 1D, 2D, and 3D structure of a protein</a>.
+							in <a href="https://www.ebi.ac.uk/pdbe/entry/pdb/1cbs/protein/1" >simultaneously highlighting the 1D, 2D, and 3D structure of a protein</a>.
 						</p>
 						<p>
 							To include LiteMol in your applications, you can start by looking at the examples in the <a href="https://github.com/dsehnal/LiteMol"
-								target="_blank">GitHub repository</a>. LiteMol is written in <a href="https://www.typescriptlang.org/" target="_blank">TypeScript</a>,
+								>GitHub repository</a>. LiteMol is written in <a href="https://www.typescriptlang.org/" >TypeScript</a>,
 							a typed extension of JavaScript (but can be consumed from plain old JS as well) and uses WebGL for 3D visualization.
 							For simple use cases,
-							<a href="https://www.ebi.ac.uk/pdbe/pdb-component-library/" target="_blank">PDB Component Library wrapper</a> can
+							<a href="https://www.ebi.ac.uk/pdbe/pdb-component-library/" >PDB Component Library wrapper</a> can
 							be used.
 						</p>
 						<p>
 							If you need more help integrating it or are missing some key functionality, please <a href="mailto:david.sehnal@gmail.com">contact us</a>							
-							or use the <a href="https://github.com/dsehnal/LiteMol/issues" target="_blank">GitHub issues</a> page.
+							or use the <a href="https://github.com/dsehnal/LiteMol/issues" >GitHub issues</a> page.
 						</p>
 					</div>
 				</div>
@@ -232,9 +253,9 @@
 			<div class="container bloc-md">
 				<div class="row voffset">
 					<div class="col-md-6">
-						<a href="https://github.com/dsehnal/LiteMol" class="lm-section-image" target="_blank">
+						<div class="lm-section-image" >
 							<img class="center-block img-responsive" src="assets/img/lm_library_alt.PNG" />
-						</a>
+						</div>
 					</div>
 					<div class="col-md-6 text-justify">
 						<h3 class="text-center mg-clear  tc-white-2">
@@ -244,7 +265,7 @@
 							Parsers and data representation for molecular data
 						</h4>
 						<p>
-							LiteMol can serve as a <a href="https://github.com/dsehnal/LiteMol" target="_blank">library</a> that provides parsers
+							LiteMol can serve as a <a href="https://github.com/dsehnal/LiteMol" >library</a> that provides parsers
 							and data reprepresentation for molecular data that could be used to build powerful applications.
 						</p>
 						<p>
@@ -259,7 +280,7 @@
 
 		<!-- coordinateserver -->
 		<div class="bloc tc-dark-jungle-green bgc-white-2 l-bloc" id="coordinateserver">
-			<div class="container bloc-lg">
+			<div class="container bloc-lg" style="padding: 100px 50px 25px 50px">
 				<div class="row">
 					<div class="col-md-12" style="padding: 0 60px">
 						<img class="center-block img-responsive" src="assets/img/CoordinateServerB.png" style="max-height: 80px;" alt="CoordinateServer"
@@ -272,10 +293,10 @@
 				<div class="row voffset">
 					<div class="col-md-6 text-justify">
 						<p>
-							<a href="https://webchemdev.ncbr.muni.cz/CoordinateServer" target="_blank">CoordinateServer</a> is a fast, web-based tool for returning
+							<a href="https://webchemdev.ncbr.muni.cz/CoordinateServer" >CoordinateServer</a> is a fast, web-based tool for delivering
 							a subset of mmCIF coordinate data for a PDB entry held in the PDB archive. The server is able to return the specific
 							portions of the structure that are relevant, as specified in your query. For example, the coordinates of the atoms
-							within a 5-A radius around the ligand binding site, including symmetry mates. As a result, it greatly reduces the
+							within a 5 angstrom radius around the ligand binding site, including symmetry mates. As a result, it greatly reduces the
 							time needed to transmit and manipulate the data.
 						</p>
 						<p>
@@ -283,7 +304,7 @@
 							reduces the amount of data that needs to be sent to the browser.
 						</p>
 						<p>
-							CoordinateServer is also available as a <a href="https://www.ebi.ac.uk/pdbe/coordinates/" target="_blank">service provided by PDBe</a>.
+							CoordinateServer is also available as a <a href="https://www.ebi.ac.uk/pdbe/coordinates/" >service provided by PDBe</a>.
 						</p>
 						<p>
 							Stay tuned, it will be open sourced soon.
@@ -296,6 +317,48 @@
 			</div>
 		</div>
 		<!-- coordinateserver END -->
+
+		<!-- densityserver -->
+		<div class="bloc tc-dark-jungle-green bgc-white-2 l-bloc" id="densityserver">
+			<div class="container bloc-lg" style="padding: 25px 50px 100px 50px">
+				<div class="row">
+					<div class="col-md-12" style="padding: 0 60px">
+						<img class="center-block img-responsive" src="assets/img/DensityServer.png" style="max-height: 92px;" alt="DensityServer"
+						/>
+						<h3 class="mg-md text-center tc-dark-jungle-green-2 lm-section-heading">
+							On-demand 3D volumetric data streaming
+						</h3>
+					</div>
+				</div>
+				<div class="row voffset">
+					<div class="col-md-6">
+						<div class="dens-section-image">
+							<img class="center-block img-responsive" src="assets/img/features/densityserver.png" />
+						</div>
+					</div>
+					<div class="col-md-6 text-justify">
+						<p>
+							<a href="https://webchem.ncbr.muni.cz/DensityServer">DensityServer</a> is a web service for streaming
+							slices of 3D volumetric data, most notably the electron density data available in the 
+							<a href="https://www.ebi.ac.uk/pdbe/eds">Electron Density Server (EDS)</a> and electron microscopy imaging
+							data from the <a href="https://www.ebi.ac.uk/pdbe/emdb/">Electron Microscopy Data Bank (EMDB)</a>.
+						</p>
+						<p>
+							The service provides <i>near-instant</i> access to any reasonably sized slice of 
+							density data (e.g. 5 angstrom radius around a ligand).
+						</p>
+						<p>
+							Like <a onclick="scrollToTarget('#coordinateserver')">CoordinateServer</a>, it uses the <a onclick="scrollToTarget('#binarycif')">BinaryCIF</a> format to
+							reduce the amount of data that needs to be sent to the browser.
+						</p>
+						<p>
+							It will be open sourced together with the CoordinateServer, later in 2017.
+						</p>
+					</div>
+				</div>
+			</div>
+		</div>
+		<!-- densityserver END -->
 
 		<!-- binarycif -->
 		<div class="bloc tc-white-2 bgc-dark-jungle-green-2 d-bloc" id="binarycif">
@@ -314,19 +377,23 @@
 					</div>
 					<div class="col-md-6 text-justify">
 						<p>
-							<a href="https://github.com/dsehnal/BinaryCIF" target="_blank">BinaryCIF</a> is a data format that stores the text
-							based <a href="http://www.iucr.org/resources/cif/spec/version1.1/cifsyntax" target="_blank">CIF</a> using a more efficient
+							<a href="https://github.com/dsehnal/BinaryCIF" >BinaryCIF</a> is a data format that stores the text
+							based <a href="http://www.iucr.org/resources/cif/spec/version1.1/cifsyntax" >CIF</a> using a more efficient
 							binary encoding. BinaryCIF files take up to
 							<abbr title='For example, HIV-1 Capsid (PDB id 3j3q) with coordinates stored using 1 decimal digit precision, 5.54MB vs 41.78MB'>an order of magnitude less space</abbr>							
 							than the corresponding CIF files.
 						</p>
 						<p>
 							mmCIF data stored using BinaryCIF correspond exactly to the standard text format defined by <a href="http://mmcif.wwpdb.org/"
-								target="_blank">wwPDB</a>. As a result, existing software supporting the mmCIF could be very easily modified to support
+								>wwPDB</a>. As a result, existing software supporting the mmCIF could be very easily modified to support
 							BinaryCIF as well.
+						</p> 
+						<p>
+							Moreover, thanks to the extensible encoding schemes available in BinaryCIF, the format is suitable for
+							transferring a wide range of other types of data, e.g. electron density.
 						</p>
 						<p>
-							A more comprehensive benchmark of BinaryCIF can be found in the <a href="https://github.com/dsehnal/BinaryCIF" target="_blank">BinaryCIF GitHub repository</a>.
+							A more comprehensive benchmark of BinaryCIF can be found in the <a href="https://github.com/dsehnal/BinaryCIF" >BinaryCIF GitHub repository</a>.
 						</p>
 					</div>
 				</div>
@@ -350,19 +417,19 @@
 							</h3>
 							<ul class="list-unstyled">
 								<li>
-									<a href="https://github.com/dsehnal" class="a-btn a-block" target="_blank">GitHub</a>
+									<a href="https://github.com/dsehnal" class="a-btn a-block" >GitHub</a>
 								</li>
 								<li>
-									<a href="https://webchemdev.ncbr.muni.cz/CoordinateServer" class="a-btn a-block" target="_blank">CoordinateServer</a>
+									<a href="https://webchemdev.ncbr.muni.cz/CoordinateServer" class="a-btn a-block" >CoordinateServer</a>
 								</li>
 								<li>
-									<a href="https://www.ebi.ac.uk/pdbe/coordinates/" class="a-btn a-block" target="_blank">CoordinateServer at PDBe</a>
+									<a href="https://www.ebi.ac.uk/pdbe/coordinates/" class="a-btn a-block" >CoordinateServer at PDBe</a>
 								</li>
 								<li>
-									<a href="https://webchem.ncbr.muni.cz/Wiki/LiteMol:UserManual" class="a-btn a-block" target="_blank">LiteMol Wiki</a>
+									<a href="https://webchem.ncbr.muni.cz/Wiki/LiteMol:UserManual" class="a-btn a-block" >LiteMol Wiki</a>
 								</li>
 								<li>
-									<a href="https://www.youtube.com/channel/UCRoyYUeP1hdH2r8XUW-WMoA" class="a-btn a-block" target="_blank">YouTube Tutorials</a>
+									<a href="https://www.youtube.com/channel/UCRoyYUeP1hdH2r8XUW-WMoA" class="a-btn a-block" >YouTube Tutorials</a>
 								</li>
 							</ul>
 						</div>
@@ -377,11 +444,11 @@
 							</ul>
 						</div>
 						<div class="col-md-3">
-							<a href="https://www.ceitec.cz"  target="_blank"><img class="center-block mg-md image-resize-mode" src="assets/img/CEITEC_logo.jpg" style="max-width:100%; max-height: 90px"
+							<a href="https://www.ceitec.cz"  ><img class="center-block mg-md image-resize-mode" src="assets/img/CEITEC_logo.jpg" style="max-width:100%; max-height: 90px"
 								/></a>
 						</div>
 						<div class="col-md-3">
-							<a href="https://www.ebi.ac.uk/pdbe/"  target="_blank"><img class="center-block mg-md image-resize-mode" src="assets/img/pdbe_logo.png" style="max-width:100%; max-height: 90px"
+							<a href="https://www.ebi.ac.uk/pdbe/"  ><img class="center-block mg-md image-resize-mode" src="assets/img/pdbe_logo.png" style="max-width:100%; max-height: 90px"
 								/></a>
 						</div>
 					</div>
@@ -393,7 +460,7 @@
 						</div>
 						<div class="col-md-6">
 							<p class="text-right p-footer">
-								&copy; 2016 David Sehnal
+								&copy; 2016&ndash;now, David Sehnal
 							</p>
 						</div>
 					</div>
