@@ -5,13 +5,77 @@
 namespace LiteMol.Core.Formats.Density.CIF {
     
     export function parse(block: Formats.CIF.DataBlock) {
-        return Parser.parse(block);
+        if (block.getCategory('_density_info')) return Parser.parseLegacy(block);
+        else if (block.getCategory('_volume_data_3d_info')) return Parser.parse(block);
+        return ParserResult.error<Data>('Invalid data format.');
     }
 
     namespace Parser {
-
         export function parse(block: Formats.CIF.DataBlock): ParserResult<Data> {
+            console.log('parsing new', block);
+            const info = block.getCategory('_volume_data_3d_info');
+            if (!info) return ParserResult.error<Data>('_volume_data_3d_info category is missing.');
+            if (!block.getCategory('_volume_data_3d')) return ParserResult.error<Data>('_volume_data_3d category is missing.');
 
+            function getVector3(name: string) {
+                const ret:number[] = [];
+                for (let i = 0; i < 3; i++) {
+                    ret[i] = info!.getColumn(`${name}[${i}]`).getFloat(0);
+                }
+                return ret;
+            }
+
+            function getNum(name: string) { return info!.getColumn(name).getFloat(0); }
+
+            const header = {
+                name: info.getColumn('name').getString(0),
+                axisOrder: getVector3('axis_order'),
+
+                origin: getVector3('origin'),
+                dimensions: getVector3('dimensions'),
+                
+                sampleCount: getVector3('sample_count'),
+
+                spacegroupNumber: getNum('spacegroup_number') | 0,
+                cellSize: getVector3('spacegroup_cell_size'),
+                cellAngles: getVector3('spacegroup_cell_angles'),
+
+                mean: getNum('global_mean'),
+                sigma: getNum('global_sigma'),
+            };
+            
+            const indices = [0, 0, 0];
+            indices[header.axisOrder[0]] = 0;
+            indices[header.axisOrder[1]] = 1;
+            indices[header.axisOrder[2]] = 2;
+
+            function normalizeOrder(xs: number[]) {
+                return [xs[indices[0]], xs[indices[1]], xs[indices[2]]];
+            }
+                        
+            const sampleCount = normalizeOrder(header.sampleCount);
+
+            const rawData = readRawData1(block.getCategory('_volume_data_3d')!.getColumn('values'), sampleCount, header.sampleCount, indices, header.mean);            
+            const field = new Field3DZYX(<any>rawData.data, sampleCount);                    
+                                     
+            const data: Data = {
+                spacegroup: createSpacegroup(header.spacegroupNumber, header.cellSize, header.cellAngles),
+                box: {
+                    origin: normalizeOrder(header.origin),
+                    dimensions: normalizeOrder(header.dimensions),
+                    sampleCount
+                },
+                data: field,
+                valuesInfo: { min: rawData.min, max: rawData.max, mean: header.mean, sigma: header.sigma },
+                attributes: { }
+            };
+
+            console.log(data);
+            
+            return ParserResult.success(data);
+        }
+
+        export function parseLegacy(block: Formats.CIF.DataBlock): ParserResult<Data> {
             const info = block.getCategory('_density_info');
             if (!info) return ParserResult.error<Data>('_density_info category is missing.');
             if (!block.getCategory('_density_data')) return ParserResult.error<Data>('_density_data category is missing.');
@@ -38,22 +102,6 @@ namespace LiteMol.Core.Formats.Density.CIF {
                 sigma: getNum('sigma'),
                 spacegroupNumber: getNum('spacegroup_number') | 0,
             };
-
-            const alpha = (Math.PI / 180.0) * header.cellAngles[0],
-                beta = (Math.PI / 180.0) * header.cellAngles[1],
-                gamma = (Math.PI / 180.0) * header.cellAngles[2];
-
-            const xScale = header.cellSize[0],
-                yScale = header.cellSize[1],
-                zScale = header.cellSize[2];
-
-            const z1 = Math.cos(beta),
-                z2 = (Math.cos(alpha) - Math.cos(beta) * Math.cos(gamma)) / Math.sin(gamma),
-                z3 = Math.sqrt(1.0 - z1 * z1 - z2 * z2);
-
-            const xAxis = [xScale, 0.0, 0.0],
-                yAxis = [Math.cos(gamma) * yScale, Math.sin(gamma) * yScale, 0.0],
-                zAxis = [z1 * zScale, z2 * zScale, z3 * zScale];
             
             const indices = [0, 0, 0];
             indices[header.axisOrder[0]] = 0;
@@ -66,21 +114,8 @@ namespace LiteMol.Core.Formats.Density.CIF {
             const rawData = readRawData1(block.getCategory('_density_data')!.getColumn('values'), extent, header.extent, indices, header.mean);            
             const field = new Field3DZYX(<any>rawData.data, extent);                    
                                      
-            // const data = Data.create(
-            //     header.cellSize, header.cellAngles, origin,
-            //     false, <any>void 0, field, extent,
-            //     { x: xAxis, y: yAxis, z: zAxis },
-            //     //[header.axisOrder[indices[0]], header.axisOrder[indices[1]], header.axisOrder[indices[2]]],
-            //     { min: rawData.min, max: rawData.max, mean: header.mean, sigma: header.sigma },
-            //     { spacegroupIndex: header.spacegroupNumber - 1, name: header.name });
-
             const data: Data = {
-                spacegroup: {
-                    number: header.spacegroupNumber,
-                    size: header.cellSize,
-                    angles: header.cellAngles,
-                    basis: { x: xAxis, y: yAxis, z: zAxis }
-                },
+                spacegroup: createSpacegroup(header.spacegroupNumber, header.cellSize, header.cellAngles),
                 box: {
                     origin: [originGrid[0] / header.grid[0], originGrid[1] / header.grid[1], originGrid[2] / header.grid[2]],
                     dimensions: [extent[0] / header.grid[0], extent[1] / header.grid[1], extent[2] / header.grid[2]],

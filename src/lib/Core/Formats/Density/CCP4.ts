@@ -47,7 +47,7 @@ namespace LiteMol.Core.Formats.Density.CCP4 {
                 mode: mode,
                 nxyzStart: getArray(readInt, 4, 3),
                 grid: getArray(readInt, 7, 3),
-                cellDimensions: getArray(readFloat, 10, 3),
+                cellSize: getArray(readFloat, 10, 3),
                 cellAngles: getArray(readFloat, 13, 3),
                 crs2xyz: getArray(readInt, 16, 3),
                 min: readFloat(19),
@@ -102,30 +102,14 @@ namespace LiteMol.Core.Formats.Density.CCP4 {
                 header.crs2xyz = [1, 2, 3];
             }
 
-            if (header.cellDimensions[0] === 0.0 &&
-                header.cellDimensions[1] === 0.0 &&
-                header.cellDimensions[2] === 0.0) {
+            if (header.cellSize[0] === 0.0 &&
+                header.cellSize[1] === 0.0 &&
+                header.cellSize[2] === 0.0) {
                 warnings.push("Cell dimensions are all zero. Setting to 1.0, 1.0, 1.0. Map file will not align with other structures.");
-                header.cellDimensions[0] = 1.0;
-                header.cellDimensions[1] = 1.0;
-                header.cellDimensions[2] = 1.0;
+                header.cellSize[0] = 1.0;
+                header.cellSize[1] = 1.0;
+                header.cellSize[2] = 1.0;
             }
-
-            const alpha = (Math.PI / 180.0) * header.cellAngles[0],
-                beta = (Math.PI / 180.0) * header.cellAngles[1],
-                gamma = (Math.PI / 180.0) * header.cellAngles[2];
-
-            const xScale = header.cellDimensions[0],
-                  yScale = header.cellDimensions[1],
-                  zScale = header.cellDimensions[2];
-
-            const z1 = Math.cos(beta),
-                z2 = (Math.cos(alpha) - Math.cos(beta) * Math.cos(gamma)) / Math.sin(gamma),
-                z3 = Math.sqrt(1.0 - z1 * z1 - z2 * z2);
-
-            const xAxis = [xScale, 0.0, 0.0],
-                yAxis = [Math.cos(gamma) * yScale, Math.sin(gamma) * yScale, 0.0],
-                zAxis = [z1 * zScale, z2 * zScale, z3 * zScale];
             
             const indices = [0, 0, 0];
             indices[header.crs2xyz[0] - 1] = 0;
@@ -155,12 +139,7 @@ namespace LiteMol.Core.Formats.Density.CCP4 {
             const field = new Field3DZYX(<any>rawData.data, extent);    
 
             const data: Data = {
-                spacegroup: {
-                    number: header.spacegroupNumber,
-                    size: header.cellDimensions,
-                    angles: header.cellAngles,
-                    basis: { x: xAxis, y: yAxis, z: zAxis }
-                },
+                spacegroup: createSpacegroup(header.spacegroupNumber, header.cellSize, header.cellAngles),
                 box: {
                     origin: [originGrid[0] / header.grid[0], originGrid[1] / header.grid[1], originGrid[2] / header.grid[2]],
                     dimensions: [extent[0] / header.grid[0], extent[1] / header.grid[1], extent[2] / header.grid[2]],

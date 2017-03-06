@@ -13272,20 +13272,21 @@ declare namespace LiteMol.Core.Formats.Density {
         fill(v: number): void;
         constructor(data: number[], dimensions: number[]);
     }
+    interface Spacegroup {
+        number: number;
+        size: number[];
+        angles: number[];
+        basis: {
+            x: number[];
+            y: number[];
+            z: number[];
+        };
+    }
     /**
      * Represents electron density data.
      */
     interface Data {
-        spacegroup: {
-            number: number;
-            size: number[];
-            angles: number[];
-            basis: {
-                x: number[];
-                y: number[];
-                z: number[];
-            };
-        };
+        spacegroup: Spacegroup;
         box: {
             /** Origin of the data block in fractional coords. */
             origin: number[];
@@ -13314,6 +13315,7 @@ declare namespace LiteMol.Core.Formats.Density {
             [key: string]: any;
         };
     }
+    function createSpacegroup(number: number, size: number[], angles: number[]): Spacegroup;
 }
 declare namespace LiteMol.Core.Formats.Density.CCP4 {
     function parse(buffer: ArrayBuffer): ParserResult<Data>;

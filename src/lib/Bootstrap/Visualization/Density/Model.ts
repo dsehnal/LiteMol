@@ -9,7 +9,6 @@ namespace LiteMol.Bootstrap.Visualization.Density {
     
     function getOffsets(data: Core.Formats.Density.Data, min: number[], max: number[], toFrac: LiteMol.Visualization.THREE.Matrix4) {
         const dx = max[0] - min[0], dy = max[1] - min[1], dz = max[2] - min[2];
-
         const corners = [
             min,
             [min[0] + dx, min[1], min[2]],
@@ -43,7 +42,6 @@ namespace LiteMol.Bootstrap.Visualization.Density {
             c = Math.ceil(sampleCount[i] * (topRightFrac[i] - origin[i]) / dimensions[i]);
             topRight[i] = Math.min(Math.max(c, 0), sampleCount[i]);
         }
-                    
         return { bottomLeft, topRight };
     }
     

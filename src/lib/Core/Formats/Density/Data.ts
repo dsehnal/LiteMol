@@ -58,18 +58,18 @@ namespace LiteMol.Core.Formats.Density {
         }        
     }
 
-    
+    export interface Spacegroup {
+        number: number,
+        size: number[],
+        angles: number[],
+        basis: { x: number[]; y: number[]; z: number[] };
+    }
 
     /**
      * Represents electron density data.
      */
     export interface Data {
-        spacegroup: {
-            number: number,
-            size: number[],
-            angles: number[],
-            basis: { x: number[]; y: number[]; z: number[] };
-        },
+        spacegroup: Spacegroup,
       
         box: {
             /** Origin of the data block in fractional coords. */
@@ -96,5 +96,25 @@ namespace LiteMol.Core.Formats.Density {
          * Additional attributes.
          */
         attributes: { [key: string]: any }          
+    }
+
+    export function createSpacegroup(number: number, size: number[], angles: number[]): Spacegroup {
+        const alpha = (Math.PI / 180.0) * angles[0], beta = (Math.PI / 180.0) * angles[1], gamma = (Math.PI / 180.0) * angles[2];
+        const xScale = size[0], yScale = size[1], zScale = size[2];
+
+        const z1 = Math.cos(beta),
+              z2 = (Math.cos(alpha) - Math.cos(beta) * Math.cos(gamma)) / Math.sin(gamma),
+              z3 = Math.sqrt(1.0 - z1 * z1 - z2 * z2);
+
+        const x = [xScale, 0.0, 0.0];
+        const y = [Math.cos(gamma) * yScale, Math.sin(gamma) * yScale, 0.0];
+        const z = [z1 * zScale, z2 * zScale, z3 * zScale];
+
+        return {
+            number,
+            size,
+            angles,
+            basis: { x, y, z }
+        };
     }
 }

@@ -58820,6 +58820,21 @@ var LiteMol;
                     return Field3DZYX;
                 }());
                 Density.Field3DZYX = Field3DZYX;
+                function createSpacegroup(number, size, angles) {
+                    var alpha = (Math.PI / 180.0) * angles[0], beta = (Math.PI / 180.0) * angles[1], gamma = (Math.PI / 180.0) * angles[2];
+                    var xScale = size[0], yScale = size[1], zScale = size[2];
+                    var z1 = Math.cos(beta), z2 = (Math.cos(alpha) - Math.cos(beta) * Math.cos(gamma)) / Math.sin(gamma), z3 = Math.sqrt(1.0 - z1 * z1 - z2 * z2);
+                    var x = [xScale, 0.0, 0.0];
+                    var y = [Math.cos(gamma) * yScale, Math.sin(gamma) * yScale, 0.0];
+                    var z = [z1 * zScale, z2 * zScale, z3 * zScale];
+                    return {
+                        number: number,
+                        size: size,
+                        angles: angles,
+                        basis: { x: x, y: y, z: z }
+                    };
+                }
+                Density.createSpacegroup = createSpacegroup;
             })(Density = Formats.Density || (Formats.Density = {}));
         })(Formats = Core.Formats || (Core.Formats = {}));
     })(Core = LiteMol.Core || (LiteMol.Core = {}));
@@ -58874,7 +58889,7 @@ var LiteMol;
                                 mode: mode,
                                 nxyzStart: getArray(readInt, 4, 3),
                                 grid: getArray(readInt, 7, 3),
-                                cellDimensions: getArray(readFloat, 10, 3),
+                                cellSize: getArray(readFloat, 10, 3),
                                 cellAngles: getArray(readFloat, 13, 3),
                                 crs2xyz: getArray(readInt, 16, 3),
                                 min: readFloat(19),
@@ -58925,18 +58940,14 @@ var LiteMol;
                                 warnings.push("All crs2xyz records are zero. Setting crs2xyz to 1, 2, 3.");
                                 header.crs2xyz = [1, 2, 3];
                             }
-                            if (header.cellDimensions[0] === 0.0 &&
-                                header.cellDimensions[1] === 0.0 &&
-                                header.cellDimensions[2] === 0.0) {
+                            if (header.cellSize[0] === 0.0 &&
+                                header.cellSize[1] === 0.0 &&
+                                header.cellSize[2] === 0.0) {
                                 warnings.push("Cell dimensions are all zero. Setting to 1.0, 1.0, 1.0. Map file will not align with other structures.");
-                                header.cellDimensions[0] = 1.0;
-                                header.cellDimensions[1] = 1.0;
-                                header.cellDimensions[2] = 1.0;
+                                header.cellSize[0] = 1.0;
+                                header.cellSize[1] = 1.0;
+                                header.cellSize[2] = 1.0;
                             }
-                            var alpha = (Math.PI / 180.0) * header.cellAngles[0], beta = (Math.PI / 180.0) * header.cellAngles[1], gamma = (Math.PI / 180.0) * header.cellAngles[2];
-                            var xScale = header.cellDimensions[0], yScale = header.cellDimensions[1], zScale = header.cellDimensions[2];
-                            var z1 = Math.cos(beta), z2 = (Math.cos(alpha) - Math.cos(beta) * Math.cos(gamma)) / Math.sin(gamma), z3 = Math.sqrt(1.0 - z1 * z1 - z2 * z2);
-                            var xAxis = [xScale, 0.0, 0.0], yAxis = [Math.cos(gamma) * yScale, Math.sin(gamma) * yScale, 0.0], zAxis = [z1 * zScale, z2 * zScale, z3 * zScale];
                             var indices = [0, 0, 0];
                             indices[header.crs2xyz[0] - 1] = 0;
                             indices[header.crs2xyz[1] - 1] = 1;
@@ -58960,12 +58971,7 @@ var LiteMol;
                                 : readRawData(new DataView(buffer, headerSize + header.symBytes), endian, extent, header.extent, indices, header.mean);
                             var field = new Density.Field3DZYX(rawData.data, extent);
                             var data = {
-                                spacegroup: {
-                                    number: header.spacegroupNumber,
-                                    size: header.cellDimensions,
-                                    angles: header.cellAngles,
-                                    basis: { x: xAxis, y: yAxis, z: zAxis }
-                                },
+                                spacegroup: Density.createSpacegroup(header.spacegroupNumber, header.cellSize, header.cellAngles),
                                 box: {
                                     origin: [originGrid[0] / header.grid[0], originGrid[1] / header.grid[1], originGrid[2] / header.grid[2]],
                                     dimensions: [extent[0] / header.grid[0], extent[1] / header.grid[1], extent[2] / header.grid[2]],
@@ -59057,12 +59063,68 @@ var LiteMol;
                 var CIF;
                 (function (CIF) {
                     function parse(block) {
-                        return Parser.parse(block);
+                        if (block.getCategory('_density_info'))
+                            return Parser.parseLegacy(block);
+                        else if (block.getCategory('_volume_data_3d_info'))
+                            return Parser.parse(block);
+                        return Formats.ParserResult.error('Invalid data format.');
                     }
                     CIF.parse = parse;
                     var Parser;
                     (function (Parser) {
                         function parse(block) {
+                            console.log('parsing new', block);
+                            var info = block.getCategory('_volume_data_3d_info');
+                            if (!info)
+                                return Formats.ParserResult.error('_volume_data_3d_info category is missing.');
+                            if (!block.getCategory('_volume_data_3d'))
+                                return Formats.ParserResult.error('_volume_data_3d category is missing.');
+                            function getVector3(name) {
+                                var ret = [];
+                                for (var i = 0; i < 3; i++) {
+                                    ret[i] = info.getColumn(name + "[" + i + "]").getFloat(0);
+                                }
+                                return ret;
+                            }
+                            function getNum(name) { return info.getColumn(name).getFloat(0); }
+                            var header = {
+                                name: info.getColumn('name').getString(0),
+                                axisOrder: getVector3('axis_order'),
+                                origin: getVector3('origin'),
+                                dimensions: getVector3('dimensions'),
+                                sampleCount: getVector3('sample_count'),
+                                spacegroupNumber: getNum('spacegroup_number') | 0,
+                                cellSize: getVector3('spacegroup_cell_size'),
+                                cellAngles: getVector3('spacegroup_cell_angles'),
+                                mean: getNum('global_mean'),
+                                sigma: getNum('global_sigma'),
+                            };
+                            var indices = [0, 0, 0];
+                            indices[header.axisOrder[0]] = 0;
+                            indices[header.axisOrder[1]] = 1;
+                            indices[header.axisOrder[2]] = 2;
+                            function normalizeOrder(xs) {
+                                return [xs[indices[0]], xs[indices[1]], xs[indices[2]]];
+                            }
+                            var sampleCount = normalizeOrder(header.sampleCount);
+                            var rawData = readRawData1(block.getCategory('_volume_data_3d').getColumn('values'), sampleCount, header.sampleCount, indices, header.mean);
+                            var field = new Density.Field3DZYX(rawData.data, sampleCount);
+                            var data = {
+                                spacegroup: Density.createSpacegroup(header.spacegroupNumber, header.cellSize, header.cellAngles),
+                                box: {
+                                    origin: normalizeOrder(header.origin),
+                                    dimensions: normalizeOrder(header.dimensions),
+                                    sampleCount: sampleCount
+                                },
+                                data: field,
+                                valuesInfo: { min: rawData.min, max: rawData.max, mean: header.mean, sigma: header.sigma },
+                                attributes: {}
+                            };
+                            console.log(data);
+                            return Formats.ParserResult.success(data);
+                        }
+                        Parser.parse = parse;
+                        function parseLegacy(block) {
                             var info = block.getCategory('_density_info');
                             if (!info)
                                 return Formats.ParserResult.error('_density_info category is missing.');
@@ -59088,10 +59150,6 @@ var LiteMol;
                                 sigma: getNum('sigma'),
                                 spacegroupNumber: getNum('spacegroup_number') | 0,
                             };
-                            var alpha = (Math.PI / 180.0) * header.cellAngles[0], beta = (Math.PI / 180.0) * header.cellAngles[1], gamma = (Math.PI / 180.0) * header.cellAngles[2];
-                            var xScale = header.cellSize[0], yScale = header.cellSize[1], zScale = header.cellSize[2];
-                            var z1 = Math.cos(beta), z2 = (Math.cos(alpha) - Math.cos(beta) * Math.cos(gamma)) / Math.sin(gamma), z3 = Math.sqrt(1.0 - z1 * z1 - z2 * z2);
-                            var xAxis = [xScale, 0.0, 0.0], yAxis = [Math.cos(gamma) * yScale, Math.sin(gamma) * yScale, 0.0], zAxis = [z1 * zScale, z2 * zScale, z3 * zScale];
                             var indices = [0, 0, 0];
                             indices[header.axisOrder[0]] = 0;
                             indices[header.axisOrder[1]] = 1;
@@ -59100,20 +59158,8 @@ var LiteMol;
                             var extent = [header.extent[indices[0]], header.extent[indices[1]], header.extent[indices[2]]];
                             var rawData = readRawData1(block.getCategory('_density_data').getColumn('values'), extent, header.extent, indices, header.mean);
                             var field = new Density.Field3DZYX(rawData.data, extent);
-                            // const data = Data.create(
-                            //     header.cellSize, header.cellAngles, origin,
-                            //     false, <any>void 0, field, extent,
-                            //     { x: xAxis, y: yAxis, z: zAxis },
-                            //     //[header.axisOrder[indices[0]], header.axisOrder[indices[1]], header.axisOrder[indices[2]]],
-                            //     { min: rawData.min, max: rawData.max, mean: header.mean, sigma: header.sigma },
-                            //     { spacegroupIndex: header.spacegroupNumber - 1, name: header.name });
                             var data = {
-                                spacegroup: {
-                                    number: header.spacegroupNumber,
-                                    size: header.cellSize,
-                                    angles: header.cellAngles,
-                                    basis: { x: xAxis, y: yAxis, z: zAxis }
-                                },
+                                spacegroup: Density.createSpacegroup(header.spacegroupNumber, header.cellSize, header.cellAngles),
                                 box: {
                                     origin: [originGrid[0] / header.grid[0], originGrid[1] / header.grid[1], originGrid[2] / header.grid[2]],
                                     dimensions: [extent[0] / header.grid[0], extent[1] / header.grid[1], extent[2] / header.grid[2]],
@@ -59125,7 +59171,7 @@ var LiteMol;
                             };
                             return Formats.ParserResult.success(data);
                         }
-                        Parser.parse = parse;
+                        Parser.parseLegacy = parseLegacy;
                         function readRawData1(col, extent, headerExtent, indices, mean) {
                             var data = new Float32Array(extent[0] * extent[1] * extent[2]), coord = [0, 0, 0], mX, mY, mZ, cX, cY, cZ, xSize, xySize, offset = 0, v = 0.1, min = Number.POSITIVE_INFINITY, max = Number.NEGATIVE_INFINITY, iX = indices[0], iY = indices[1], iZ = indices[2];
                             mX = headerExtent[0];
