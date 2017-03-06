@@ -1,4 +1,7 @@
-﻿# 1.3.1
+﻿# 1.3.2
+* Removed the normalize option from parsing CCP4 data.
+
+# 1.3.1
 * UI for automatic mol. surface detail.
 
 # 1.3.0

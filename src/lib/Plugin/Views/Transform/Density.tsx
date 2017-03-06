@@ -32,7 +32,6 @@ namespace LiteMol.Plugin.Views.Transform.Density {
     export class ParseData extends Transform.ControllerBase<Bootstrap.Components.Transform.Controller<Transformer.Density.ParseDataParams>> {        
         protected renderControls() {            
             let params = this.params;
-            let normalize = params.normalize!;
             let round = Bootstrap.Utils.round;
             if (this.isUpdate) {
                 let data = (this.controller.entity as Bootstrap.Entity.Density.Data).props.data;
@@ -41,15 +40,12 @@ namespace LiteMol.Plugin.Views.Transform.Density {
                     <Controls.RowText label='Sigma' value={round(data.valuesInfo.sigma, 3)} />
                     <Controls.RowText label='Mean' value={round(data.valuesInfo.mean, 3)} />
                     <Controls.RowText label='Value Range' value={`[${round(data.valuesInfo.min, 3)}, ${round(data.valuesInfo.max, 3)}]`} />
-                    <Controls.Toggle onChange={v => this.controller.updateParams({ normalize: v }) } value={normalize} label='Normalized' />
                 </div>;
             } 
                         
             return <div>
                 <Controls.OptionsGroup options={LiteMol.Core.Formats.Density.SupportedFormats.All} caption={s => s.name} current={params.format}
                         onChange={(o) => this.updateParams({ format: o }) } label='Format' />
-                <Controls.Toggle 
-                    onChange={v => this.controller.updateParams({ normalize: v }) } value={normalize} label='Normalized' />
             </div>
         }        
     }

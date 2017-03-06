@@ -15,7 +15,7 @@ namespace LiteMol.Core.Formats.Density.CCP4 {
     namespace Parser {
 
         function getArray(r: (offset: number) => number, offset: number, count: number) {
-            let ret:number[] = [];
+            const ret:number[] = [];
             for (let i = 0; i < count; i++) {
                 ret[i] = r(offset + i);
             }
@@ -27,22 +27,22 @@ namespace LiteMol.Core.Formats.Density.CCP4 {
          * Inspired by PyMOL implementation of the parser.
          */
         export function parse(buffer: ArrayBuffer): ParserResult<Data> {
-            let headerSize = 1024,
-                endian = false,
-                headerView = new DataView(buffer, 0, headerSize),
-                warnings: string[] = [];
+            const headerSize = 1024,
+                  headerView = new DataView(buffer, 0, headerSize),
+                  warnings: string[] = [];
 
+            let endian = false;
             let mode = headerView.getInt32(3 * 4, false);
             if (mode !== 2) {
                 endian = true;
                 mode = headerView.getInt32(3 * 4, true);
                 if (mode !== 2) {
-                    return ParserResult.error<Data>("Only CCP4 modes 0 and 2 are supported.");
+                    return ParserResult.error<Data>("Only CCP4 mode 2 is supported.");
                 }
             }
 
-            let readInt = (o: number) => headerView.getInt32(o * 4, endian), readFloat = (o: number) => headerView.getFloat32(o * 4, endian);
-            let header = {
+            const readInt = (o: number) => headerView.getInt32(o * 4, endian), readFloat = (o: number) => headerView.getFloat32(o * 4, endian);
+            const header = {
                 extent: getArray(readInt, 0, 3),
                 mode: mode,
                 nxyzStart: getArray(readInt, 4, 3),
@@ -78,8 +78,8 @@ namespace LiteMol.Core.Formats.Density.CCP4 {
                 }
             }
 
-            //let mapp = readInt(52);
-            //let mapStr = String.fromCharCode((mapp & 0xFF)) + String.fromCharCode(((mapp >> 8) & 0xFF)) + String.fromCharCode(((mapp >> 16) & 0xFF)) + String.fromCharCode(((mapp >> 24) & 0xFF));
+            //const mapp = readInt(52);
+            //const mapStr = String.fromCharCode((mapp & 0xFF)) + String.fromCharCode(((mapp >> 8) & 0xFF)) + String.fromCharCode(((mapp >> 16) & 0xFF)) + String.fromCharCode(((mapp >> 24) & 0xFF));
             
             // pretend we've checked the MAP string at offset 52
             // pretend we've read the symmetry data
@@ -111,69 +111,66 @@ namespace LiteMol.Core.Formats.Density.CCP4 {
                 header.cellDimensions[2] = 1.0;
             }
 
-            let alpha = (Math.PI / 180.0) * header.cellAngles[0],
+            const alpha = (Math.PI / 180.0) * header.cellAngles[0],
                 beta = (Math.PI / 180.0) * header.cellAngles[1],
                 gamma = (Math.PI / 180.0) * header.cellAngles[2];
 
-            let xScale = header.cellDimensions[0] / header.grid[0],
-                yScale = header.cellDimensions[1] / header.grid[1],
-                zScale = header.cellDimensions[2] / header.grid[2];
+            const xScale = header.cellDimensions[0],
+                  yScale = header.cellDimensions[1],
+                  zScale = header.cellDimensions[2];
 
-            let z1 = Math.cos(beta),
+            const z1 = Math.cos(beta),
                 z2 = (Math.cos(alpha) - Math.cos(beta) * Math.cos(gamma)) / Math.sin(gamma),
                 z3 = Math.sqrt(1.0 - z1 * z1 - z2 * z2);
 
-            let xAxis = [xScale, 0.0, 0.0],
+            const xAxis = [xScale, 0.0, 0.0],
                 yAxis = [Math.cos(gamma) * yScale, Math.sin(gamma) * yScale, 0.0],
                 zAxis = [z1 * zScale, z2 * zScale, z3 * zScale];
             
-            let indices = [0, 0, 0];
+            const indices = [0, 0, 0];
             indices[header.crs2xyz[0] - 1] = 0;
             indices[header.crs2xyz[1] - 1] = 1;
             indices[header.crs2xyz[2] - 1] = 2;
                         
-            let origin: number[];
+            let originGrid: number[];
             if (header.origin2k[0] === 0.0 && header.origin2k[1] === 0.0 && header.origin2k[2] === 0.0) {
-                origin = [
-                    xAxis[0] * header.nxyzStart[indices[0]] + yAxis[0] * header.nxyzStart[indices[1]] + zAxis[0] * header.nxyzStart[indices[2]],
-                                                              yAxis[1] * header.nxyzStart[indices[1]] + zAxis[1] * header.nxyzStart[indices[2]],
-                                                                                                        zAxis[2] * header.nxyzStart[indices[2]]
-                ];
+                originGrid = [header.nxyzStart[indices[0]], header.nxyzStart[indices[1]], header.nxyzStart[indices[2]]];
             } else {
                 // Use ORIGIN records rather than old n[xyz]start records
                 //   http://www2.mrc-lmb.cam.ac.uk/image2000.html
                 // XXX the ORIGIN field is only used by the EM community, and
                 //     has undefined meaning for non-orthogonal maps and/or
                 //     non-cubic voxels, etc.
-                origin = [header.origin2k[indices[0]], header.origin2k[indices[1]], header.origin2k[indices[2]]]
+                originGrid = [header.origin2k[indices[0]], header.origin2k[indices[1]], header.origin2k[indices[2]]]
             }
 
-            let extent = [header.extent[indices[0]], header.extent[indices[1]], header.extent[indices[2]]];
+            const extent = [header.extent[indices[0]], header.extent[indices[1]], header.extent[indices[2]]];
 
-            let skewMatrix = new Float32Array(16), i: number, j: number;
-            for (i = 0; i < 3; i++) {
-                for (j = 0; j < 3; j++) {
-                    skewMatrix[4 * j + i] = header.skewMatrix[3 * i + j];
-                }
-                skewMatrix[12 + i] = header.skewTranslation[i];
-            }
-            
-            let nativeEndian = new Uint16Array(new Uint8Array([0x12, 0x34]).buffer)[0] === 0x3412;
-            let rawData =
+            const nativeEndian = new Uint16Array(new Uint8Array([0x12, 0x34]).buffer)[0] === 0x3412;
+            const rawData =
                 endian === nativeEndian
                     ? readRawData1(new Float32Array(buffer, headerSize + header.symBytes, extent[0] * extent[1] * extent[2]), endian, extent, header.extent, indices, header.mean)
                     : readRawData(new DataView(buffer, headerSize + header.symBytes), endian, extent, header.extent, indices, header.mean);
             
-            let field = new Field3DZYX(<any>rawData.data, extent);                    
-                                     
-            let data = Data.create(
-                header.cellDimensions, header.cellAngles, origin,
-                header.skewFlag !== 0, <any>skewMatrix, field, extent,
-                { x: xAxis, y: yAxis, z: zAxis },
-                //[header.nxyzStart[indices[0]], header.nxyzStart[indices[1]], header.nxyzStart[indices[2]]],
-                { min: header.min, max: header.max, mean: header.mean, sigma: rawData.sigma },
-                { spacegroupIndex: header.spacegroupNumber - 1 });
-            
+            const field = new Field3DZYX(<any>rawData.data, extent);    
+
+            const data: Data = {
+                spacegroup: {
+                    number: header.spacegroupNumber,
+                    size: header.cellDimensions,
+                    angles: header.cellAngles,
+                    basis: { x: xAxis, y: yAxis, z: zAxis }
+                },
+                box: {
+                    origin: [originGrid[0] / header.grid[0], originGrid[1] / header.grid[1], originGrid[2] / header.grid[2]],
+                    dimensions: [extent[0] / header.grid[0], extent[1] / header.grid[1], extent[2] / header.grid[2]],
+                    sampleCount: extent
+                },
+                data: field,
+                valuesInfo: { min: header.min, max: header.max, mean: header.mean, sigma: rawData.sigma },
+                attributes: { }
+            };
+                                                 
             return ParserResult.success(data, warnings);
         }
 

@@ -168,7 +168,7 @@ namespace LiteMol.Visualization.Surface {
         for (let i = 0, _b = ctx.vertexCount; i < _b; i++) {
             let id = ids[i];
             if (id >= 0) {
-                Selection.Picking.assignPickColor(id, color);
+                Selection.Picking.assignPickColor(id + 1, color);
                 pickColorBuffer[i * 4] = color.r;
                 pickColorBuffer[i * 4 + 1] = color.g;
                 pickColorBuffer[i * 4 + 2] = color.b;

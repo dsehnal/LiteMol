@@ -1,4 +1,7 @@
-﻿# 1.6.4
+﻿# 1.6.5
+* Fixed a bug in surface picking.
+
+# 1.6.4
 * Bugfix when renderer DOM element is not initially sized correctly.
 
 # 1.6.3

@@ -46,7 +46,6 @@ namespace LiteMol.Core.Geometry {
     }
     
     export namespace Surface {
-
         export function computeNormalsImmediate(surface: Surface) {
             if (surface.normals) return;
             

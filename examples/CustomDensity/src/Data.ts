@@ -50,7 +50,7 @@ namespace LiteMol.Custom {
         if (t.params.type === 'Full 2Fo-Fc') {
             // Download the 2Fo-Fc density and enable the interactive density display
             action.add(context.tree.root, Transformer.Data.Download, { url: `https://www.ebi.ac.uk/pdbe/coordinates/files/${id}.ccp4`, type: 'Binary', id, description: '2Fo-Fc Density' })
-                .then(Transformer.Density.ParseData, { format: LiteMol.Core.Formats.Density.SupportedFormats.CCP4, id: '2Fo-Fc Density', normalize: false }, { isBinding: true })
+                .then(Transformer.Density.ParseData, { format: LiteMol.Core.Formats.Density.SupportedFormats.CCP4, id: '2Fo-Fc Density' }, { isBinding: true })
                 .then(Transformer.Density.CreateVisualBehaviour, {  
                     id: '2Fo-Fc Density',
                     isoSigmaMin: 0,

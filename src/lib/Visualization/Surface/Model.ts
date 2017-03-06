@@ -54,7 +54,8 @@ namespace LiteMol.Visualization.Surface {
         }
 
         getPickElements(pickId: number): number[] {
-            return [pickId];
+            if (!pickId) return [];
+            return [pickId - 1];
         }
 
         getBoundingSphereOfSelection(indices: number[]): { radius: number, center: Core.Geometry.LinearAlgebra.ObjectVec3 } | undefined {
@@ -115,8 +116,7 @@ namespace LiteMol.Visualization.Surface {
             };
         }
         
-        applyThemeInternal(theme: Theme) {
-            
+        applyThemeInternal(theme: Theme) {            
             let color = { r: 0, g: 0, b: 0 };            
             MaterialsHelper.updateMaterial(this.material, theme, this.object);
             
@@ -194,7 +194,6 @@ namespace LiteMol.Visualization.Surface {
             parameters?: Parameters,
             props?: Model.Props   
         }): Core.Computation<Model> {
-
             return Core.computation<Model>(async ctx => {
                 let geometry = await buildGeometry(surface, ctx, !!parameters.isWireframe);
                 let ret = new Model();

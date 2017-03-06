@@ -8,8 +8,7 @@ namespace LiteMol.Bootstrap.Entity.Transformer.Density {
 
     export interface ParseDataParams {
         id?: string,
-        format: LiteMol.Core.Formats.FormatInfo,
-        normalize: boolean
+        format: LiteMol.Core.Formats.FormatInfo
     }
     export const ParseData = Tree.Transformer.create<Entity.Data.String | Entity.Data.Binary, Entity.Density.Data, ParseDataParams>({
         id: 'density-parse-binary',
@@ -17,7 +16,7 @@ namespace LiteMol.Bootstrap.Entity.Transformer.Density {
         description: 'Parse density from binary data.',
         from: [Entity.Data.String, Entity.Data.Binary],
         to: [Entity.Density.Data],
-        isUpdatable: true,
+        isUpdatable: false,
         defaultParams: () => ({ format: LiteMol.Core.Formats.Density.SupportedFormats.CCP4, normalize: false })
     }, (bigCtx, a, t) => {
         return Task.create<Entity.Density.Data>(`Create Density (${a.props.label})`, 'Background', async ctx => {
@@ -25,21 +24,8 @@ namespace LiteMol.Bootstrap.Entity.Transformer.Density {
             if (data.isError) {
                 throw data.toString();
             }
-            if (t.params.normalize) {
-                data.result.normalize();
-            }
-            let e = Entity.Density.Data.create(t, { label: t.params.id ? t.params.id : 'Density Data', data: data.result, description: t.params.normalize ? 'Normalized' : '' });
+            let e = Entity.Density.Data.create(t, { label: t.params.id ? t.params.id : 'Density Data', data: data.result });
             return e;
-        });
-    }, (ctx, b, t) => {
-        if (b.props.data.isNormalized === t.params.normalize) return Task.resolve('Density', 'Background', Tree.Node.Null);
-
-        return Task.create<Entity.Density.Data>('Update Density', 'Normal', async ctx => {
-            await ctx.updateProgress('Updating...');
-            let data = b.props.data;
-            if (data.isNormalized) Core.Formats.Density.Data.denormalize(data);
-            else Core.Formats.Density.Data.normalize(data);
-            return Entity.Density.Data.create(t, { label: t.params.id ? t.params.id : 'Density Data', data, description: t.params.normalize ? 'Normalized' : '' });
         });
     });
 

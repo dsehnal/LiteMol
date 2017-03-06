@@ -42,7 +42,7 @@ namespace LiteMol.Viewer.PDBe.Data {
 
         let diff = group
             .then(Transformer.Data.Download, { url: `https://www.ebi.ac.uk/pdbe/coordinates/files/${id}_diff.ccp4`, type: 'Binary', id, description: 'Fo-Fc', title: 'Density' })
-            .then(Transformer.Density.ParseData, { format: LiteMol.Core.Formats.Density.SupportedFormats.CCP4, id: 'Fo-Fc', normalize: false }, { isBinding: true, ref: diffRef });
+            .then(Transformer.Density.ParseData, { format: LiteMol.Core.Formats.Density.SupportedFormats.CCP4, id: 'Fo-Fc' }, { isBinding: true, ref: diffRef });
             
         diff
             .then(Transformer.Density.CreateVisualBehaviour, {
@@ -82,7 +82,7 @@ namespace LiteMol.Viewer.PDBe.Data {
         
         group
             .then(Transformer.Data.Download, { url: `https://www.ebi.ac.uk/pdbe/coordinates/files/${id}.ccp4`, type: 'Binary', id, description: '2Fo-Fc', title: 'Density' })
-            .then(Transformer.Density.ParseData, { format: LiteMol.Core.Formats.Density.SupportedFormats.CCP4, id: '2Fo-Fc', normalize: false }, { isBinding: true, ref: mainRef })
+            .then(Transformer.Density.ParseData, { format: LiteMol.Core.Formats.Density.SupportedFormats.CCP4, id: '2Fo-Fc' }, { isBinding: true, ref: mainRef })
             .then(Transformer.Density.CreateVisualBehaviour, {  
                 id: '2Fo-Fc',
                 isoSigmaMin: 0,
@@ -122,7 +122,7 @@ namespace LiteMol.Viewer.PDBe.Data {
                 responseCompression: Bootstrap.Utils.DataCompressionMethod.Gzip,
                 title: 'Density' 
             })
-            .then(Transformer.Density.ParseData, { format: LiteMol.Core.Formats.Density.SupportedFormats.CCP4, id: labelId, normalize: false }, { isBinding: true, ref: mainRef })
+            .then(Transformer.Density.ParseData, { format: LiteMol.Core.Formats.Density.SupportedFormats.CCP4, id: labelId }, { isBinding: true, ref: mainRef })
             .then(Transformer.Density.CreateVisualBehaviour, {
                 id: 'Density',  
                 isoSigmaMin: -5,

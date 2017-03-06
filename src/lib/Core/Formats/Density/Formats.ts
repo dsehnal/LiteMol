@@ -12,9 +12,7 @@ namespace LiteMol.Core.Formats.Density {
     }
 
     export namespace SupportedFormats {
-        export const CCP4: FormatInfo = { name: 'CCP4', shortcuts: ['ccp4', 'map'], extensions: ['.ccp4', '.map'], isBinary: true, parse: data => parse(data, 'CCP4', d => Density.CCP4.parse(d as ArrayBuffer)) };
-        export const DSN6: FormatInfo = { name: 'DSN6', shortcuts: ['dsn6'], extensions: ['.dsn6'], isBinary: true, parse: data => parse(data, 'DSN6', d => Density.DSN6.parse(d as ArrayBuffer)) };
-
-        export const All = [ CCP4, DSN6 ];
+        export const CCP4: FormatInfo = { name: 'CCP4', shortcuts: ['ccp4', 'map'], extensions: ['.ccp4', '.map'], isBinary: true, parse: data => parse(data, 'CCP4', d => Density.CCP4.parse(d as ArrayBuffer)) };        
+        export const All = [ CCP4 ];
     }
 }

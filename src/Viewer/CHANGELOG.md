@@ -1,3 +1,6 @@
+# 1.3.2
+* Fixed Density Streaming to work on multiple structures at the same time.
+
 # 1.3.1
 * Automatic detail for molecular surfaces => improved performance for large molecules.
 * Higher automatic detail for small molecules.

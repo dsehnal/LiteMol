@@ -94,10 +94,10 @@ namespace LiteMol.Core.Formats {
     export namespace TokenIndexBuilder {
         function resize(builder: TokenIndexBuilder) {
             // scale the size using golden ratio, because why not.
-            var newBuffer = new Int32Array((1.61 * builder.tokens.length) | 0);
+            var newBuffer = new Int32Array(Math.round(1.61 * builder.tokens.length));
             newBuffer.set(builder.tokens);
             builder.tokens = newBuffer;
-            builder.tokensLenMinus2 = (newBuffer.length - 2) | 0;
+            builder.tokensLenMinus2 = newBuffer.length - 2;
         }
 
         export function addToken(builder: TokenIndexBuilder, start: number, end: number) {
@@ -110,7 +110,7 @@ namespace LiteMol.Core.Formats {
 
         export function create(size: number): TokenIndexBuilder {
             return {
-                tokensLenMinus2: (size - 2) | 0,
+                tokensLenMinus2: Math.round(size) - 2,
                 count: 0,
                 tokens: new Int32Array(size)
             }

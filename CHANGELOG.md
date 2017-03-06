@@ -5,6 +5,13 @@ This a global changelog that outlines overal changes in LiteMol.
 Each component also has its separate changelog 
 ([Core](src/lib/Core/CHANGELOG.md), [Visualization](src/lib/Visualization/CHANGELOG.md), [Bootstrap](src/lib/Bootstrap/CHANGELOG.md), [Plugin](src/lib/Plugin/CHANGELOG.md), [Viewer](src/Viewer/CHANGELOG.md)).
 
+2.1.0
+-----------
+
+* Updated the density data model.
+* Removed the support for the DSN6 density data format.
+* Fixed a bug in marching cubes algorithm.
+* Fixed a bug in surface element picking.
 
 2.0.2-preview
 -----------

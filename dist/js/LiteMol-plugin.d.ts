@@ -13276,42 +13276,28 @@ declare namespace LiteMol.Core.Formats.Density {
      * Represents electron density data.
      */
     interface Data {
-        /**
-         * Crystal cell size.
-         */
-        cellSize: number[];
-        /**
-         * Crystal cell angles.
-         */
-        cellAngles: number[];
-        /**
-         * Origin of the cell
-         */
-        origin: number[];
+        spacegroup: {
+            number: number;
+            size: number[];
+            angles: number[];
+            basis: {
+                x: number[];
+                y: number[];
+                z: number[];
+            };
+        };
+        box: {
+            /** Origin of the data block in fractional coords. */
+            origin: number[];
+            /** Dimensions oft he data block in fractional coords. */
+            dimensions: number[];
+            /** X, Y, Z dimensions of the data matrix. */
+            sampleCount: number[];
+        };
         /**
          * 3D volumetric data.
          */
         data: Field3D;
-        /**
-         * X, Y, Z dimensions of the data matrix.
-         */
-        dataDimensions: number[];
-        /**
-         * The basis of the space.
-         */
-        basis: {
-            x: number[];
-            y: number[];
-            z: number[];
-        };
-        /**
-         * Was the skew matrix present in the input?
-         */
-        hasSkewMatrix: boolean;
-        /**
-         * Column major ordered skew matrix.
-         */
-        skewMatrix: number[];
         /**
          * Information about the min/max/mean/sigma values.
          */
@@ -13327,26 +13313,6 @@ declare namespace LiteMol.Core.Formats.Density {
         attributes: {
             [key: string]: any;
         };
-        /**
-         * Are the data normalized?
-         */
-        isNormalized: boolean;
-    }
-    namespace Data {
-        function create(cellSize: number[], cellAngles: number[], origin: number[], hasSkewMatrix: boolean, skewMatrix: number[], data: Field3D, dataDimensions: number[], basis: {
-            x: number[];
-            y: number[];
-            z: number[];
-        }, valuesInfo: {
-            min: number;
-            max: number;
-            mean: number;
-            sigma: number;
-        }, attributes?: {
-            [key: string]: any;
-        }): Data;
-        function normalize(densityData: Data): void;
-        function denormalize(densityData: Data): void;
     }
 }
 declare namespace LiteMol.Core.Formats.Density.CCP4 {
@@ -13355,13 +13321,9 @@ declare namespace LiteMol.Core.Formats.Density.CCP4 {
 declare namespace LiteMol.Core.Formats.Density.CIF {
     function parse(block: Formats.CIF.DataBlock): ParserResult<Data>;
 }
-declare namespace LiteMol.Core.Formats.Density.DSN6 {
-    function parse(buffer: ArrayBuffer): ParserResult<Data>;
-}
 declare namespace LiteMol.Core.Formats.Density {
     namespace SupportedFormats {
         const CCP4: FormatInfo;
-        const DSN6: FormatInfo;
         const All: FormatInfo[];
     }
 }
@@ -16173,7 +16135,6 @@ declare namespace LiteMol.Bootstrap.Entity.Transformer.Density {
     interface ParseDataParams {
         id?: string;
         format: LiteMol.Core.Formats.FormatInfo;
-        normalize: boolean;
     }
     const ParseData: Tree.Transformer<Entity.Data.String | Entity.Data.Binary, Entity.Density.Data, ParseDataParams>;
     interface CreateFromCifParams {

@@ -43,6 +43,7 @@ namespace LiteMol.Extensions.DensityStreaming {
         private download: Bootstrap.Task.Running<ArrayBuffer> | undefined = void 0;
         private dataBox: Box | undefined = void 0;
 
+
         private types: FieldType[];
 
         private areBoxesSame(b: Box) {
@@ -176,15 +177,26 @@ namespace LiteMol.Extensions.DensityStreaming {
             return box;
         }
 
-        private update(info: Interactivity.Info ) {            
+        private isSameMolecule(info: Interactivity.Info.Selection) {
+            const sourceMolecule = Utils.Molecule.findMolecule(this.behaviour);
+            const infoMolecule = Utils.Molecule.findMolecule(info.source);
+            return sourceMolecule === infoMolecule;
+        }
+
+        private update(info: Interactivity.Info) {            
             if (!Interactivity.Molecule.isMoleculeModelInteractivity(info)) {
                 this.clear();
                 return;
             }
 
             Bootstrap.Command.Toast.Hide.dispatch(this.context, { key: ToastKey });
-                       
-            let i = info as Interactivity.Info.Selection;
+
+            let i = info as Interactivity.Info.Selection;            
+            if (!this.isSameMolecule(i)) {
+                this.clear();
+                return;
+            } 
+                                   
             let model = Utils.Molecule.findModel(i.source)!;
             let elems = i.elements;
             let m = model.props.model;
@@ -280,7 +292,7 @@ namespace LiteMol.Extensions.DensityStreaming {
 
             Bootstrap.Command.Toast.Show.dispatch(this.context, { key: ToastKey, title: 'Density', message: 'Streaming enabled, click on a residue or an atom to view the data.', timeoutMs: 30 * 1000 });
 
-            this.obs.push(this.context.behaviours.select.subscribe(e => {                
+            this.obs.push(this.context.behaviours.select.subscribe(e => {             
                 this.update(e);
             }));
         }

@@ -120,15 +120,16 @@ namespace LiteMol.Core.Geometry.MarchingCubes {
         triangleBuffer: Core.Utils.ChunkedArray<number>;
 
         private get3dOffsetFromEdgeInfo(index: Index) {
-            return (this.nX * (((this.k + index.k) % 2) * this.nY + this.j + index.j) + this.i + index.i) | 0;
+            return (this.nX * (((this.k + index.k) % 2) * this.nY + this.j + index.j) + this.i + index.i);
         }
 
         /**
          * This clears the "vertex index buffer" for the slice that will not be accessed anymore.
          */
         clearEdgeVertexIndexSlice(k: number) {
-            const start = 3 * (this.nX * ((k % 2) * this.nY)) | 0;
-            const end = 3 * (this.nX * ((k % 2) * this.nY + this.nY - 1) + this.nX - 1) | 0;
+            // clear either the top or bottom half of the buffer...
+            const start = k % 2 === 0 ? 0 : 3 * this.nX * this.nY;
+            const end = k % 2 === 0 ? 3 * this.nX * this.nY : this.verticesOnEdges.length;
             for (let i = start; i < end; i++) this.verticesOnEdges[i] = 0;
         }
 

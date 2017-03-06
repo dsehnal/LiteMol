@@ -56180,7 +56180,7 @@ var LiteMol;
 (function (LiteMol) {
     var Core;
     (function (Core) {
-        Core.VERSION = { number: "3.0.4", date: "Feb 17 2017" };
+        Core.VERSION = { number: "3.1.0", date: "March 6 2017" };
     })(Core = LiteMol.Core || (LiteMol.Core = {}));
 })(LiteMol || (LiteMol = {}));
 /*
@@ -57183,10 +57183,10 @@ var LiteMol;
             (function (TokenIndexBuilder) {
                 function resize(builder) {
                     // scale the size using golden ratio, because why not.
-                    var newBuffer = new Int32Array((1.61 * builder.tokens.length) | 0);
+                    var newBuffer = new Int32Array(Math.round(1.61 * builder.tokens.length));
                     newBuffer.set(builder.tokens);
                     builder.tokens = newBuffer;
-                    builder.tokensLenMinus2 = (newBuffer.length - 2) | 0;
+                    builder.tokensLenMinus2 = newBuffer.length - 2;
                 }
                 function addToken(builder, start, end) {
                     if (builder.count >= builder.tokensLenMinus2) {
@@ -57198,7 +57198,7 @@ var LiteMol;
                 TokenIndexBuilder.addToken = addToken;
                 function create(size) {
                     return {
-                        tokensLenMinus2: (size - 2) | 0,
+                        tokensLenMinus2: Math.round(size) - 2,
                         count: 0,
                         tokens: new Int32Array(size)
                     };
@@ -58820,61 +58820,6 @@ var LiteMol;
                     return Field3DZYX;
                 }());
                 Density.Field3DZYX = Field3DZYX;
-                var Data;
-                (function (Data) {
-                    function create(cellSize, cellAngles, origin, hasSkewMatrix, skewMatrix, data, dataDimensions, basis, valuesInfo, attributes) {
-                        return {
-                            cellSize: cellSize,
-                            cellAngles: cellAngles,
-                            origin: origin,
-                            hasSkewMatrix: hasSkewMatrix,
-                            skewMatrix: skewMatrix,
-                            data: data,
-                            basis: basis,
-                            dataDimensions: dataDimensions,
-                            valuesInfo: valuesInfo,
-                            attributes: attributes ? attributes : {},
-                            isNormalized: false
-                        };
-                    }
-                    Data.create = create;
-                    function normalize(densityData) {
-                        if (densityData.isNormalized)
-                            return;
-                        var data = densityData.data, _a = densityData.valuesInfo, mean = _a.mean, sigma = _a.sigma;
-                        var min = Number.POSITIVE_INFINITY, max = Number.NEGATIVE_INFINITY;
-                        for (var i = 0, _l = data.length; i < _l; i++) {
-                            var v = (data.getAt(i) - mean) / sigma;
-                            data.setAt(i, v);
-                            if (v < min)
-                                min = v;
-                            if (v > max)
-                                max = v;
-                        }
-                        densityData.valuesInfo.min = min;
-                        densityData.valuesInfo.max = max;
-                        densityData.isNormalized = true;
-                    }
-                    Data.normalize = normalize;
-                    function denormalize(densityData) {
-                        if (!densityData.isNormalized)
-                            return;
-                        var data = densityData.data, _a = densityData.valuesInfo, mean = _a.mean, sigma = _a.sigma;
-                        var min = Number.POSITIVE_INFINITY, max = Number.NEGATIVE_INFINITY;
-                        for (var i = 0, _l = data.length; i < _l; i++) {
-                            var v = sigma * data.getAt(i) + mean;
-                            data.setAt(i, v);
-                            if (v < min)
-                                min = v;
-                            if (v > max)
-                                max = v;
-                        }
-                        densityData.valuesInfo.min = min;
-                        densityData.valuesInfo.max = max;
-                        densityData.isNormalized = false;
-                    }
-                    Data.denormalize = denormalize;
-                })(Data = Density.Data || (Density.Data = {}));
             })(Density = Formats.Density || (Formats.Density = {}));
         })(Formats = Core.Formats || (Core.Formats = {}));
     })(Core = LiteMol.Core || (LiteMol.Core = {}));
@@ -58913,13 +58858,14 @@ var LiteMol;
                          * Inspired by PyMOL implementation of the parser.
                          */
                         function parse(buffer) {
-                            var headerSize = 1024, endian = false, headerView = new DataView(buffer, 0, headerSize), warnings = [];
+                            var headerSize = 1024, headerView = new DataView(buffer, 0, headerSize), warnings = [];
+                            var endian = false;
                             var mode = headerView.getInt32(3 * 4, false);
                             if (mode !== 2) {
                                 endian = true;
                                 mode = headerView.getInt32(3 * 4, true);
                                 if (mode !== 2) {
-                                    return Formats.ParserResult.error("Only CCP4 modes 0 and 2 are supported.");
+                                    return Formats.ParserResult.error("Only CCP4 mode 2 is supported.");
                                 }
                             }
                             var readInt = function (o) { return headerView.getInt32(o * 4, endian); }, readFloat = function (o) { return headerView.getFloat32(o * 4, endian); };
@@ -58959,8 +58905,8 @@ var LiteMol;
                                     return Formats.ParserResult.error("File is MUCH larger than expected and doesn't match header.");
                                 }
                             }
-                            //let mapp = readInt(52);
-                            //let mapStr = String.fromCharCode((mapp & 0xFF)) + String.fromCharCode(((mapp >> 8) & 0xFF)) + String.fromCharCode(((mapp >> 16) & 0xFF)) + String.fromCharCode(((mapp >> 24) & 0xFF));
+                            //const mapp = readInt(52);
+                            //const mapStr = String.fromCharCode((mapp & 0xFF)) + String.fromCharCode(((mapp >> 8) & 0xFF)) + String.fromCharCode(((mapp >> 16) & 0xFF)) + String.fromCharCode(((mapp >> 24) & 0xFF));
                             // pretend we've checked the MAP string at offset 52
                             // pretend we've read the symmetry data
                             if (header.grid[0] === 0 && header.extent[0] > 0) {
@@ -58988,20 +58934,16 @@ var LiteMol;
                                 header.cellDimensions[2] = 1.0;
                             }
                             var alpha = (Math.PI / 180.0) * header.cellAngles[0], beta = (Math.PI / 180.0) * header.cellAngles[1], gamma = (Math.PI / 180.0) * header.cellAngles[2];
-                            var xScale = header.cellDimensions[0] / header.grid[0], yScale = header.cellDimensions[1] / header.grid[1], zScale = header.cellDimensions[2] / header.grid[2];
+                            var xScale = header.cellDimensions[0], yScale = header.cellDimensions[1], zScale = header.cellDimensions[2];
                             var z1 = Math.cos(beta), z2 = (Math.cos(alpha) - Math.cos(beta) * Math.cos(gamma)) / Math.sin(gamma), z3 = Math.sqrt(1.0 - z1 * z1 - z2 * z2);
                             var xAxis = [xScale, 0.0, 0.0], yAxis = [Math.cos(gamma) * yScale, Math.sin(gamma) * yScale, 0.0], zAxis = [z1 * zScale, z2 * zScale, z3 * zScale];
                             var indices = [0, 0, 0];
                             indices[header.crs2xyz[0] - 1] = 0;
                             indices[header.crs2xyz[1] - 1] = 1;
                             indices[header.crs2xyz[2] - 1] = 2;
-                            var origin;
+                            var originGrid;
                             if (header.origin2k[0] === 0.0 && header.origin2k[1] === 0.0 && header.origin2k[2] === 0.0) {
-                                origin = [
-                                    xAxis[0] * header.nxyzStart[indices[0]] + yAxis[0] * header.nxyzStart[indices[1]] + zAxis[0] * header.nxyzStart[indices[2]],
-                                    yAxis[1] * header.nxyzStart[indices[1]] + zAxis[1] * header.nxyzStart[indices[2]],
-                                    zAxis[2] * header.nxyzStart[indices[2]]
-                                ];
+                                originGrid = [header.nxyzStart[indices[0]], header.nxyzStart[indices[1]], header.nxyzStart[indices[2]]];
                             }
                             else {
                                 // Use ORIGIN records rather than old n[xyz]start records
@@ -59009,24 +58951,30 @@ var LiteMol;
                                 // XXX the ORIGIN field is only used by the EM community, and
                                 //     has undefined meaning for non-orthogonal maps and/or
                                 //     non-cubic voxels, etc.
-                                origin = [header.origin2k[indices[0]], header.origin2k[indices[1]], header.origin2k[indices[2]]];
+                                originGrid = [header.origin2k[indices[0]], header.origin2k[indices[1]], header.origin2k[indices[2]]];
                             }
                             var extent = [header.extent[indices[0]], header.extent[indices[1]], header.extent[indices[2]]];
-                            var skewMatrix = new Float32Array(16), i, j;
-                            for (i = 0; i < 3; i++) {
-                                for (j = 0; j < 3; j++) {
-                                    skewMatrix[4 * j + i] = header.skewMatrix[3 * i + j];
-                                }
-                                skewMatrix[12 + i] = header.skewTranslation[i];
-                            }
                             var nativeEndian = new Uint16Array(new Uint8Array([0x12, 0x34]).buffer)[0] === 0x3412;
                             var rawData = endian === nativeEndian
                                 ? readRawData1(new Float32Array(buffer, headerSize + header.symBytes, extent[0] * extent[1] * extent[2]), endian, extent, header.extent, indices, header.mean)
                                 : readRawData(new DataView(buffer, headerSize + header.symBytes), endian, extent, header.extent, indices, header.mean);
                             var field = new Density.Field3DZYX(rawData.data, extent);
-                            var data = Density.Data.create(header.cellDimensions, header.cellAngles, origin, header.skewFlag !== 0, skewMatrix, field, extent, { x: xAxis, y: yAxis, z: zAxis }, 
-                            //[header.nxyzStart[indices[0]], header.nxyzStart[indices[1]], header.nxyzStart[indices[2]]],
-                            { min: header.min, max: header.max, mean: header.mean, sigma: rawData.sigma }, { spacegroupIndex: header.spacegroupNumber - 1 });
+                            var data = {
+                                spacegroup: {
+                                    number: header.spacegroupNumber,
+                                    size: header.cellDimensions,
+                                    angles: header.cellAngles,
+                                    basis: { x: xAxis, y: yAxis, z: zAxis }
+                                },
+                                box: {
+                                    origin: [originGrid[0] / header.grid[0], originGrid[1] / header.grid[1], originGrid[2] / header.grid[2]],
+                                    dimensions: [extent[0] / header.grid[0], extent[1] / header.grid[1], extent[2] / header.grid[2]],
+                                    sampleCount: extent
+                                },
+                                data: field,
+                                valuesInfo: { min: header.min, max: header.max, mean: header.mean, sigma: rawData.sigma },
+                                attributes: {}
+                            };
                             return Formats.ParserResult.success(data, warnings);
                         }
                         Parser.parse = parse;
@@ -59141,25 +59089,40 @@ var LiteMol;
                                 spacegroupNumber: getNum('spacegroup_number') | 0,
                             };
                             var alpha = (Math.PI / 180.0) * header.cellAngles[0], beta = (Math.PI / 180.0) * header.cellAngles[1], gamma = (Math.PI / 180.0) * header.cellAngles[2];
-                            var xScale = header.cellSize[0] / header.grid[0], yScale = header.cellSize[1] / header.grid[1], zScale = header.cellSize[2] / header.grid[2];
+                            var xScale = header.cellSize[0], yScale = header.cellSize[1], zScale = header.cellSize[2];
                             var z1 = Math.cos(beta), z2 = (Math.cos(alpha) - Math.cos(beta) * Math.cos(gamma)) / Math.sin(gamma), z3 = Math.sqrt(1.0 - z1 * z1 - z2 * z2);
                             var xAxis = [xScale, 0.0, 0.0], yAxis = [Math.cos(gamma) * yScale, Math.sin(gamma) * yScale, 0.0], zAxis = [z1 * zScale, z2 * zScale, z3 * zScale];
                             var indices = [0, 0, 0];
                             indices[header.axisOrder[0]] = 0;
                             indices[header.axisOrder[1]] = 1;
                             indices[header.axisOrder[2]] = 2;
-                            var d = [header.origin[indices[0]], header.origin[indices[1]], header.origin[indices[2]]];
-                            var origin = [
-                                xAxis[0] * d[0] + yAxis[0] * d[1] + zAxis[0] * d[2],
-                                yAxis[1] * d[1] + zAxis[1] * d[2],
-                                zAxis[2] * d[2]
-                            ];
+                            var originGrid = [header.origin[indices[0]], header.origin[indices[1]], header.origin[indices[2]]];
                             var extent = [header.extent[indices[0]], header.extent[indices[1]], header.extent[indices[2]]];
                             var rawData = readRawData1(block.getCategory('_density_data').getColumn('values'), extent, header.extent, indices, header.mean);
                             var field = new Density.Field3DZYX(rawData.data, extent);
-                            var data = Density.Data.create(header.cellSize, header.cellAngles, origin, false, void 0, field, extent, { x: xAxis, y: yAxis, z: zAxis }, 
-                            //[header.axisOrder[indices[0]], header.axisOrder[indices[1]], header.axisOrder[indices[2]]],
-                            { min: rawData.min, max: rawData.max, mean: header.mean, sigma: header.sigma }, { spacegroupIndex: header.spacegroupNumber - 1, name: header.name });
+                            // const data = Data.create(
+                            //     header.cellSize, header.cellAngles, origin,
+                            //     false, <any>void 0, field, extent,
+                            //     { x: xAxis, y: yAxis, z: zAxis },
+                            //     //[header.axisOrder[indices[0]], header.axisOrder[indices[1]], header.axisOrder[indices[2]]],
+                            //     { min: rawData.min, max: rawData.max, mean: header.mean, sigma: header.sigma },
+                            //     { spacegroupIndex: header.spacegroupNumber - 1, name: header.name });
+                            var data = {
+                                spacegroup: {
+                                    number: header.spacegroupNumber,
+                                    size: header.cellSize,
+                                    angles: header.cellAngles,
+                                    basis: { x: xAxis, y: yAxis, z: zAxis }
+                                },
+                                box: {
+                                    origin: [originGrid[0] / header.grid[0], originGrid[1] / header.grid[1], originGrid[2] / header.grid[2]],
+                                    dimensions: [extent[0] / header.grid[0], extent[1] / header.grid[1], extent[2] / header.grid[2]],
+                                    sampleCount: extent
+                                },
+                                data: field,
+                                valuesInfo: { min: rawData.min, max: rawData.max, mean: header.mean, sigma: header.sigma },
+                                attributes: {}
+                            };
                             return Formats.ParserResult.success(data);
                         }
                         Parser.parse = parse;
@@ -59205,229 +59168,6 @@ var LiteMol;
         (function (Formats) {
             var Density;
             (function (Density) {
-                var DSN6;
-                (function (DSN6) {
-                    function parse(buffer) {
-                        return Parser.parse(buffer);
-                    }
-                    DSN6.parse = parse;
-                    function remove(arrOriginal, elementToRemove) {
-                        return arrOriginal.filter(function (el) { return el !== elementToRemove; });
-                    }
-                    /**
-                     * Parses DSN6 files.
-                     */
-                    var Parser;
-                    (function (Parser) {
-                        /**
-                         * Parse DNS6 file.
-                         */
-                        function parse(buffer) {
-                            var headerSize = 512, endian = false, 
-                            //headerView = new DataView(buffer, 0, headerSize),
-                            headerView = new Uint8Array(buffer, 0, headerSize), 
-                            //sheaderView = String.fromCharCode.apply(null, new Uint8Array(headerView)),
-                            sheaderView = String.fromCharCode.apply(null, headerView), n1 = sheaderView.search('origin'), n2 = sheaderView.search('extent'), n3 = sheaderView.search('grid'), n4 = sheaderView.search('cell'), n5 = sheaderView.search('prod'), n6 = sheaderView.search('plus'), n7 = sheaderView.search('sigma'), sn1 = sheaderView.substring(n1 + 'origin'.length, n2).replace(' ', '').split(' '), sn1xx = remove(sn1, ''), sn2 = sheaderView.substring(n2 + 'extent'.length, n3).split(' '), sn2xx = remove(sn2, ''), sn3 = sheaderView.substring(n3 + 'grid'.length, n4).split(' '), sn3xx = remove(sn3, ''), sn4 = sheaderView.substring(n4 + 'cell'.length, n5).split(' '), sn4xx = remove(sn4, ''), sn5 = sheaderView.substring(n5 + 'prod'.length, n6).split(' '), sn5xx = remove(sn5, ''), sn6 = sheaderView.substring(n6 + 'plus'.length, n7).split(' '), sn6xx = remove(sn6, ''), warnings = [];
-                            var mode = 0;
-                            var header = {
-                                extent: sn2xx.map(function (v) { return parseInt(v); }),
-                                mode: mode,
-                                nxyzStart: [0, 0, 0],
-                                grid: sn3xx.map(function (v) { return parseInt(v); }),
-                                cellDimensions: sn4xx.slice(0, 3).map(function (v) { return parseFloat(v); }),
-                                cellAngles: sn4xx.slice(3, 6).map(function (v) { return parseFloat(v); }),
-                                crs2xyz: [1, 2, 3],
-                                min: 0.0,
-                                max: 0.0,
-                                mean: 0.0,
-                                symBytes: 0,
-                                skewFlag: 0,
-                                skewMatrix: 0,
-                                skewTranslation: 0,
-                                origin2k: sn1xx.map(function (v) { return parseFloat(v); }),
-                                prod: sn5xx.map(function (v) { return parseFloat(v); })[0],
-                                plus: sn6xx.map(function (v) { return parseFloat(v); })[0]
-                            };
-                            var dataOffset = 512;
-                            if (dataOffset !== headerSize + header.symBytes) {
-                                if (dataOffset === headerSize) {
-                                    warnings.push("File contains bogus symmetry record.");
-                                }
-                                else if (dataOffset < headerSize) {
-                                    return Formats.ParserResult.error("File appears truncated and doesn't match header.");
-                                }
-                                else if ((dataOffset > headerSize) && (dataOffset < (1024 * 1024))) {
-                                    // Fix for loading SPIDER files which are larger than usual
-                                    // In this specific case, we must absolutely trust the symBytes record
-                                    dataOffset = headerSize + header.symBytes;
-                                    warnings.push("File is larger than expected and doesn't match header. Continuing file load, good luck!");
-                                }
-                                else {
-                                    return Formats.ParserResult.error("File is MUCH larger than expected and doesn't match header.");
-                                }
-                            }
-                            // pretend we've checked the MAP string at offset 52
-                            // pretend we've read the symmetry data
-                            if (header.grid[0] === 0 && header.extent[0] > 0) {
-                                header.grid[0] = header.extent[0] - 1;
-                                warnings.push("Fixed X interval count.");
-                            }
-                            if (header.grid[1] === 0 && header.extent[1] > 0) {
-                                header.grid[1] = header.extent[1] - 1;
-                                warnings.push("Fixed Y interval count.");
-                            }
-                            if (header.grid[2] === 0 && header.extent[2] > 0) {
-                                header.grid[2] = header.extent[2] - 1;
-                                warnings.push("Fixed Z interval count.");
-                            }
-                            if (header.crs2xyz[0] === 0 && header.crs2xyz[1] === 0 && header.crs2xyz[2] === 0) {
-                                warnings.push("All crs2xyz records are zero. Setting crs2xyz to 1, 2, 3.");
-                                header.crs2xyz = [1, 2, 3];
-                            }
-                            if (header.cellDimensions[0] === 0.0 &&
-                                header.cellDimensions[1] === 0.0 &&
-                                header.cellDimensions[2] === 0.0) {
-                                warnings.push("Cell dimensions are all zero. Setting to 1.0, 1.0, 1.0. Map file will not align with other structures.");
-                                header.cellDimensions[0] = 1.0;
-                                header.cellDimensions[1] = 1.0;
-                                header.cellDimensions[2] = 1.0;
-                            }
-                            var alpha = (Math.PI / 180.0) * header.cellAngles[0], beta = (Math.PI / 180.0) * header.cellAngles[1], gamma = (Math.PI / 180.0) * header.cellAngles[2];
-                            var xScale = header.cellDimensions[0] / header.grid[0], yScale = header.cellDimensions[1] / header.grid[1], zScale = header.cellDimensions[2] / header.grid[2];
-                            var z1 = Math.cos(beta), z2 = (Math.cos(alpha) - Math.cos(beta) * Math.cos(gamma)) / Math.sin(gamma), z3 = Math.sqrt(1.0 - z1 * z1 - z2 * z2);
-                            var xAxis = [xScale, 0.0, 0.0], yAxis = [Math.cos(gamma) * yScale, Math.sin(gamma) * yScale, 0.0], zAxis = [z1 * zScale, z2 * zScale, z3 * zScale];
-                            var indices = [0, 0, 0];
-                            indices[header.crs2xyz[0] - 1] = 0;
-                            indices[header.crs2xyz[1] - 1] = 1;
-                            indices[header.crs2xyz[2] - 1] = 2;
-                            var origin;
-                            if (header.origin2k[0] === 0.0 && header.origin2k[1] === 0.0 && header.origin2k[2] === 0.0) {
-                                origin = [
-                                    xAxis[0] * header.nxyzStart[indices[0]] + yAxis[0] * header.nxyzStart[indices[1]] + zAxis[0] * header.nxyzStart[indices[2]],
-                                    yAxis[1] * header.nxyzStart[indices[1]] + zAxis[1] * header.nxyzStart[indices[2]],
-                                    zAxis[2] * header.nxyzStart[indices[2]]
-                                ];
-                            }
-                            else {
-                                // Use ORIGIN records rather than old n[xyz]start records
-                                //   http://www2.mrc-lmb.cam.ac.uk/image2000.html
-                                // XXX the ORIGIN field is only used by the EM community, and
-                                //     has undefined meaning for non-orthogonal maps and/or
-                                //     non-cubic voxels, etc.
-                                origin = [header.origin2k[indices[0]], header.origin2k[indices[1]], header.origin2k[indices[2]]];
-                            }
-                            var extent = [header.extent[indices[0]], header.extent[indices[1]], header.extent[indices[2]]];
-                            var skewMatrix = new Float32Array(16), i, j;
-                            for (i = 0; i < 3; i++) {
-                                for (j = 0; j < 3; j++) {
-                                    skewMatrix[4 * j + i] = 0.0; //header.skewMatrix[3 * i + j];
-                                }
-                                skewMatrix[12 + i] = 0.0; //header.skewTranslation[i];
-                            }
-                            var nativeEndian = new Uint16Array(new Uint8Array([0x12, 0x34]).buffer)[0] === 0x3412;
-                            endian = nativeEndian;
-                            var rawData = readRawData(new Uint8Array(buffer, headerSize + header.symBytes), endian, extent, header.extent, indices, header.mean, header.prod, header.plus);
-                            var field = new Density.Field3DZYX(rawData.data, extent);
-                            var data = Density.Data.create(header.cellDimensions, header.cellAngles, origin, header.skewFlag !== 0, skewMatrix, field, extent, { x: xAxis, y: yAxis, z: zAxis }, 
-                            //[header.nxyzStart[indices[0]], header.nxyzStart[indices[1]], header.nxyzStart[indices[2]]],
-                            { min: rawData.minj, max: rawData.maxj, mean: rawData.meanj, sigma: rawData.sigma }, { prod: header.prod, plus: header.plus }); //! added attributes property to store additional information
-                            return Formats.ParserResult.success(data, warnings);
-                        }
-                        Parser.parse = parse;
-                        //////////////////////////////////////////////////////////////////////////////////////////
-                        function readRawData(bytes, endian, extent, headerExtent, indices, mean, prod, plus) {
-                            //! DataView is generally a LOT slower than Uint8Array. For performance reasons I think it would be better to use that.
-                            //! Endian has no effect on individual bytes anyway to my knowledge.
-                            var mX, mY, mZ, cX, cY, cZ, xSize, xySize, offset = 0, v = 0.1, sigma = 0.0, t = 0.1, mi, mj, mk, x, y, z, minj = 0, maxj = 0, meanj = 0, block_size = 8, block_sizez = 8, block_sizey = 8, block_sizex = 8, bsize3 = block_size * block_size * block_size;
-                            //! I think this will need some fixing, because the values are non-integer
-                            //! A small perf trick: use 'value | 0' to tell the runtime the value is an integer.
-                            mX = headerExtent[0] / 8;
-                            mY = headerExtent[1] / 8;
-                            mZ = headerExtent[2] / 8;
-                            //In case of extra cubes
-                            /*
-                            if (headerExtent[0]%8>0) mX++;
-                            if (headerExtent[1]%8>0) mY++;
-                            if (headerExtent[2]%8>0) mZ++;
-                            xxtra=(headerExtent[0]%8);
-                            yxtra=(headerExtent[1]%8);
-                            zxtra=(headerExtent[2]%8);
-                            */
-                            var data = new Float32Array(8 * mX * 8 * mY * 8 * mZ);
-                            xSize = 8 * mX;
-                            xySize = 8 * 8 * mX * mY; //extent[0] * extent[1];
-                            minj = 0.0;
-                            maxj = 0.0;
-                            meanj = 0.0;
-                            //////////////////////////////////////////////////////////////
-                            for (mi = 0; mi < (bsize3 * mX * mY * mZ); mi++) {
-                                v = (bytes[mi] - plus) / prod;
-                                meanj += v;
-                                if (v < minj)
-                                    minj = v;
-                                if (v > maxj)
-                                    maxj = v;
-                            }
-                            //meanj/=(mX*mY*mZ*bsize3);
-                            meanj /= (bsize3 * mX * mY * mZ);
-                            for (cZ = 0; cZ < mZ; cZ++) {
-                                for (cY = 0; cY < mY; cY++) {
-                                    for (cX = 0; cX < mX; cX++) {
-                                        //! cX is suppoed to change the fastest because of the memory layout of the 1D array 
-                                        //if(xxtra>0 && mZ-cZ<=1.0) block_sizez=zxtra;
-                                        //if(xxtra>0 && mY-cY<=1.0) block_sizey=yxtra;
-                                        //if(xxtra>0 && mX-cX<=1.0) block_sizex=xxtra;
-                                        //! changed the ordering mi == X coord, was Z; mk == Z coord, was X
-                                        for (mk = 0; mk < block_sizez; mk++) {
-                                            for (mj = 0; mj < block_sizey; mj++) {
-                                                for (mi = 0; mi < block_sizex; mi++) {
-                                                    v = (bytes[offset + mi + 8 * mj + 8 * 8 * mk] - plus) / prod;
-                                                    //offset+=1;
-                                                    x = (block_sizex * cX + mi);
-                                                    y = (block_sizey * cY + mj);
-                                                    z = (block_sizez * cZ + mk);
-                                                    //! swapped x and z here.
-                                                    data[x + xSize * y + xySize * z] = v;
-                                                    t = v - meanj;
-                                                    sigma += t * t;
-                                                }
-                                            }
-                                        }
-                                        offset += bsize3;
-                                    }
-                                }
-                            }
-                            sigma /= (bsize3 * mX * mY * mZ);
-                            sigma = Math.sqrt(sigma);
-                            //  console.log(sigma);
-                            //  console.log(minj);
-                            //  console.log(maxj);
-                            //  console.log(meanj);
-                            return {
-                                data: data,
-                                sigma: sigma,
-                                minj: minj,
-                                maxj: maxj,
-                                meanj: meanj
-                            };
-                        }
-                    })(Parser || (Parser = {}));
-                })(DSN6 = Density.DSN6 || (Density.DSN6 = {}));
-            })(Density = Formats.Density || (Formats.Density = {}));
-        })(Formats = Core.Formats || (Core.Formats = {}));
-    })(Core = LiteMol.Core || (LiteMol.Core = {}));
-})(LiteMol || (LiteMol = {}));
-/*
- * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
- */
-var LiteMol;
-(function (LiteMol) {
-    var Core;
-    (function (Core) {
-        var Formats;
-        (function (Formats) {
-            var Density;
-            (function (Density) {
                 function parse(data, name, parser) {
                     var _this = this;
                     return Core.computation(function (ctx) { return __awaiter(_this, void 0, void 0, function () {
@@ -59444,8 +59184,7 @@ var LiteMol;
                 var SupportedFormats;
                 (function (SupportedFormats) {
                     SupportedFormats.CCP4 = { name: 'CCP4', shortcuts: ['ccp4', 'map'], extensions: ['.ccp4', '.map'], isBinary: true, parse: function (data) { return parse(data, 'CCP4', function (d) { return Density.CCP4.parse(d); }); } };
-                    SupportedFormats.DSN6 = { name: 'DSN6', shortcuts: ['dsn6'], extensions: ['.dsn6'], isBinary: true, parse: function (data) { return parse(data, 'DSN6', function (d) { return Density.DSN6.parse(d); }); } };
-                    SupportedFormats.All = [SupportedFormats.CCP4, SupportedFormats.DSN6];
+                    SupportedFormats.All = [SupportedFormats.CCP4];
                 })(SupportedFormats = Density.SupportedFormats || (Density.SupportedFormats = {}));
             })(Density = Formats.Density || (Formats.Density = {}));
         })(Formats = Core.Formats || (Core.Formats = {}));
@@ -60433,14 +60172,15 @@ var LiteMol;
                         this.verticesOnEdges = new Int32Array(3 * this.nX * this.nY * 2);
                     }
                     MarchingCubesState.prototype.get3dOffsetFromEdgeInfo = function (index) {
-                        return (this.nX * (((this.k + index.k) % 2) * this.nY + this.j + index.j) + this.i + index.i) | 0;
+                        return (this.nX * (((this.k + index.k) % 2) * this.nY + this.j + index.j) + this.i + index.i);
                     };
                     /**
                      * This clears the "vertex index buffer" for the slice that will not be accessed anymore.
                      */
                     MarchingCubesState.prototype.clearEdgeVertexIndexSlice = function (k) {
-                        var start = 3 * (this.nX * ((k % 2) * this.nY)) | 0;
-                        var end = 3 * (this.nX * ((k % 2) * this.nY + this.nY - 1) + this.nX - 1) | 0;
+                        // clear either the top or bottom half of the buffer...
+                        var start = k % 2 === 0 ? 0 : 3 * this.nX * this.nY;
+                        var end = k % 2 === 0 ? 3 * this.nX * this.nY : this.verticesOnEdges.length;
                         for (var i = start; i < end; i++)
                             this.verticesOnEdges[i] = 0;
                     };
@@ -64835,7 +64575,7 @@ var LiteMol;
 (function (LiteMol) {
     var Visualization;
     (function (Visualization) {
-        Visualization.VERSION = { number: "1.6.4", date: "Feb 4 2017" };
+        Visualization.VERSION = { number: "1.6.5", date: "March 6 2017" };
     })(Visualization = LiteMol.Visualization || (LiteMol.Visualization = {}));
 })(LiteMol || (LiteMol = {}));
 var LiteMol;
@@ -67221,7 +66961,7 @@ var LiteMol;
                 for (var i = 0, _b = ctx.vertexCount; i < _b; i++) {
                     var id = ids[i];
                     if (id >= 0) {
-                        Visualization.Selection.Picking.assignPickColor(id, color);
+                        Visualization.Selection.Picking.assignPickColor(id + 1, color);
                         pickColorBuffer[i * 4] = color.r;
                         pickColorBuffer[i * 4 + 1] = color.g;
                         pickColorBuffer[i * 4 + 2] = color.b;
@@ -67424,7 +67164,9 @@ var LiteMol;
                     return Visualization.Selection.applyActionToBuffer(this.geometry.vertexStateBuffer, isOn ? 3 /* Highlight */ : 4 /* RemoveHighlight */);
                 };
                 Model.prototype.getPickElements = function (pickId) {
-                    return [pickId];
+                    if (!pickId)
+                        return [];
+                    return [pickId - 1];
                 };
                 Model.prototype.getBoundingSphereOfSelection = function (indices) {
                     if (!this.geometry.vertexToElementMap)
@@ -69948,7 +69690,7 @@ var LiteMol;
 (function (LiteMol) {
     var Bootstrap;
     (function (Bootstrap) {
-        Bootstrap.VERSION = { number: "1.3.3", date: "Feb 17 2017" };
+        Bootstrap.VERSION = { number: "1.3.4", date: "March 6 2017" };
     })(Bootstrap = LiteMol.Bootstrap || (LiteMol.Bootstrap = {}));
 })(LiteMol || (LiteMol = {}));
 /*
@@ -72824,28 +72566,37 @@ var LiteMol;
                         [min[0] + dx, min[1], min[2] + dz],
                         [min[0], min[1] + dy, min[2] + dz],
                         [min[0] + dx, min[1] + dy, min[2] + dz]
-                    ];
-                    var bottomLeft = data.dataDimensions.slice(0), topRight = [0, 0, 0];
+                    ].map(function (c) {
+                        var f = new LiteMol.Visualization.THREE.Vector3().fromArray(c).applyMatrix4(toFrac);
+                        return [f.x, f.y, f.z];
+                    });
+                    var bottomLeftFrac = corners[0].slice(), topRightFrac = corners[0].slice();
+                    // bounding box in fractional space.
                     for (var _i = 0, corners_1 = corners; _i < corners_1.length; _i++) {
-                        var v = corners_1[_i];
-                        var f = new LiteMol.Visualization.THREE.Vector3().fromArray(v).applyMatrix4(toFrac), af = [f.x, f.y, f.z];
+                        var c = corners_1[_i];
                         for (var i = 0; i < 3; i++) {
-                            bottomLeft[i] = Math.max(0, Math.min(bottomLeft[i], Math.floor(af[i]) | 0));
-                            topRight[i] = Math.min(data.dataDimensions[i], Math.max(topRight[i], Math.ceil(af[i]) | 0));
+                            bottomLeftFrac[i] = Math.min(bottomLeftFrac[i], c[i]);
+                            topRightFrac[i] = Math.max(topRightFrac[i], c[i]);
                         }
                     }
-                    return {
-                        bottomLeft: bottomLeft,
-                        topRight: topRight
-                    };
+                    var _a = data.box, origin = _a.origin, dimensions = _a.dimensions, sampleCount = _a.sampleCount;
+                    var bottomLeft = [0, 0, 0], topRight = [0, 0, 0];
+                    // convert to the sample space.
+                    for (var i = 0; i < 3; i++) {
+                        var c = Math.floor(sampleCount[i] * (bottomLeftFrac[i] - origin[i]) / dimensions[i]);
+                        bottomLeft[i] = Math.min(Math.max(c, 0), sampleCount[i]);
+                        c = Math.ceil(sampleCount[i] * (topRightFrac[i] - origin[i]) / dimensions[i]);
+                        topRight[i] = Math.min(Math.max(c, 0), sampleCount[i]);
+                    }
+                    return { bottomLeft: bottomLeft, topRight: topRight };
                 }
                 function create(parent, transform, style) {
                     var _this = this;
                     var name = style.taskType === 'Background' ? parent.props.label : "Density Surface (" + parent.props.label + ")";
                     return Bootstrap.Task.create(name, Visualization.Style.getTaskType(style), function (ctx) { return __awaiter(_this, void 0, void 0, function () {
-                        var params, source, data, basis, fromFrac, toFrac, min, max, offsets, isSigma, isoValue, surface, theme, model, label;
-                        return __generator(this, function (_a) {
-                            switch (_a.label) {
+                        var params, source, data, basis, _a, sampleCount, origin, dimensions, scale, translate, fromFrac, toFrac, dataTransform, min, max, offsets, isSigma, isoValue, surface, theme, model, label;
+                        return __generator(this, function (_b) {
+                            switch (_b.label) {
                                 case 0:
                                     params = style.params;
                                     source = Bootstrap.Tree.Node.findClosestNodeOfType(parent, [Bootstrap.Entity.Density.Data]);
@@ -72853,10 +72604,13 @@ var LiteMol;
                                         throw 'Cannot create density visual on ' + parent.props.label;
                                     }
                                     data = source.props.data;
-                                    basis = data.basis;
+                                    basis = data.spacegroup.basis;
+                                    _a = data.box, sampleCount = _a.sampleCount, origin = _a.origin, dimensions = _a.dimensions;
+                                    scale = new LiteMol.Visualization.THREE.Matrix4().makeScale(dimensions[0] / (sampleCount[0]), dimensions[1] / (sampleCount[1]), dimensions[2] / (sampleCount[2]));
+                                    translate = new LiteMol.Visualization.THREE.Matrix4().makeTranslation(origin[0], origin[1], origin[2]);
                                     fromFrac = new LiteMol.Visualization.THREE.Matrix4().set(basis.x[0], basis.y[0], basis.z[0], 0.0, 0.0, basis.y[1], basis.z[1], 0.0, 0.0, 0.0, basis.z[2], 0.0, 0.0, 0.0, 0.0, 1.0);
-                                    fromFrac.setPosition(new LiteMol.Visualization.THREE.Vector3(data.origin[0], data.origin[1], data.origin[2]));
                                     toFrac = new LiteMol.Visualization.THREE.Matrix4().getInverse(fromFrac);
+                                    dataTransform = fromFrac.multiply(translate).multiply(scale);
                                     if (params.bottomLeft && params.topRight) {
                                         offsets = getOffsets(data, params.bottomLeft, params.topRight, toFrac);
                                         min = offsets.bottomLeft;
@@ -72864,7 +72618,7 @@ var LiteMol;
                                     }
                                     else {
                                         min = [0, 0, 0];
-                                        max = data.dataDimensions;
+                                        max = data.box.sampleCount;
                                     }
                                     if (!(min[0] - max[0]) || !(min[1] - max[1]) || !(min[2] - max[2])) {
                                         throw { warn: true, message: 'Empty box.' };
@@ -72880,20 +72634,20 @@ var LiteMol;
                                             topRight: max
                                         }).run(ctx)];
                                 case 1:
-                                    surface = _a.sent();
-                                    return [4 /*yield*/, Geom.Surface.transform(surface, fromFrac.elements).run(ctx)];
+                                    surface = _b.sent();
+                                    return [4 /*yield*/, Geom.Surface.transform(surface, dataTransform.elements).run(ctx)];
                                 case 2:
-                                    surface = _a.sent();
-                                    return [4 /*yield*/, Geom.Surface.laplacianSmooth(surface, params.smoothing, 4).run(ctx)];
+                                    surface = _b.sent();
+                                    return [4 /*yield*/, Geom.Surface.laplacianSmooth(surface, params.smoothing, 8).run(ctx)];
                                 case 3:
-                                    surface = _a.sent();
+                                    surface = _b.sent();
                                     theme = style.theme.template.provider(source, Visualization.Theme.getProps(style.theme));
                                     return [4 /*yield*/, ctx.updateProgress('Creating visual...')];
                                 case 4:
-                                    _a.sent();
+                                    _b.sent();
                                     return [4 /*yield*/, LiteMol.Visualization.Surface.Model.create(source, { surface: surface, theme: theme, parameters: { isWireframe: style.params.isWireframe } }).run(ctx)];
                                 case 5:
-                                    model = _a.sent();
+                                    model = _b.sent();
                                     label = "Surface, " + Bootstrap.Utils.round(params.isoValue, 2) + (isSigma ? ' \u03C3' : '');
                                     return [2 /*return*/, Bootstrap.Entity.Density.Visual.create(transform, { label: label, model: model, style: style, isSelectable: !style.isNotSelectable })];
                             }
@@ -73853,7 +73607,7 @@ var LiteMol;
                         description: 'Parse density from binary data.',
                         from: [Entity.Data.String, Entity.Data.Binary],
                         to: [Entity.Density.Data],
-                        isUpdatable: true,
+                        isUpdatable: false,
                         defaultParams: function () { return ({ format: LiteMol.Core.Formats.Density.SupportedFormats.CCP4, normalize: false }); }
                     }, function (bigCtx, a, t) {
                         return Bootstrap.Task.create("Create Density (" + a.props.label + ")", 'Background', function (ctx) { return __awaiter(_this, void 0, void 0, function () {
@@ -73866,30 +73620,8 @@ var LiteMol;
                                         if (data.isError) {
                                             throw data.toString();
                                         }
-                                        if (t.params.normalize) {
-                                            data.result.normalize();
-                                        }
-                                        e = Entity.Density.Data.create(t, { label: t.params.id ? t.params.id : 'Density Data', data: data.result, description: t.params.normalize ? 'Normalized' : '' });
+                                        e = Entity.Density.Data.create(t, { label: t.params.id ? t.params.id : 'Density Data', data: data.result });
                                         return [2 /*return*/, e];
-                                }
-                            });
-                        }); });
-                    }, function (ctx, b, t) {
-                        if (b.props.data.isNormalized === t.params.normalize)
-                            return Bootstrap.Task.resolve('Density', 'Background', Bootstrap.Tree.Node.Null);
-                        return Bootstrap.Task.create('Update Density', 'Normal', function (ctx) { return __awaiter(_this, void 0, void 0, function () {
-                            var data;
-                            return __generator(this, function (_a) {
-                                switch (_a.label) {
-                                    case 0: return [4 /*yield*/, ctx.updateProgress('Updating...')];
-                                    case 1:
-                                        _a.sent();
-                                        data = b.props.data;
-                                        if (data.isNormalized)
-                                            LiteMol.Core.Formats.Density.Data.denormalize(data);
-                                        else
-                                            LiteMol.Core.Formats.Density.Data.normalize(data);
-                                        return [2 /*return*/, Entity.Density.Data.create(t, { label: t.params.id ? t.params.id : 'Density Data', data: data, description: t.params.normalize ? 'Normalized' : '' })];
                                 }
                             });
                         }); });
@@ -76057,7 +75789,7 @@ var LiteMol;
 (function (LiteMol) {
     var Plugin;
     (function (Plugin) {
-        Plugin.VERSION = { number: "1.3.1", date: "Feb 4 2017" };
+        Plugin.VERSION = { number: "1.3.2", date: "March 6 2017" };
     })(Plugin = LiteMol.Plugin || (LiteMol.Plugin = {}));
 })(LiteMol || (LiteMol = {}));
 /*
@@ -77815,7 +77547,6 @@ var LiteMol;
                         ParseData.prototype.renderControls = function () {
                             var _this = this;
                             var params = this.params;
-                            var normalize = params.normalize;
                             var round = LiteMol.Bootstrap.Utils.round;
                             if (this.isUpdate) {
                                 var data = this.controller.entity.props.data;
@@ -77823,12 +77554,10 @@ var LiteMol;
                                     Plugin.React.createElement(Plugin.Controls.RowText, { label: 'Format', value: params.format.name }),
                                     Plugin.React.createElement(Plugin.Controls.RowText, { label: 'Sigma', value: round(data.valuesInfo.sigma, 3) }),
                                     Plugin.React.createElement(Plugin.Controls.RowText, { label: 'Mean', value: round(data.valuesInfo.mean, 3) }),
-                                    Plugin.React.createElement(Plugin.Controls.RowText, { label: 'Value Range', value: "[" + round(data.valuesInfo.min, 3) + ", " + round(data.valuesInfo.max, 3) + "]" }),
-                                    Plugin.React.createElement(Plugin.Controls.Toggle, { onChange: function (v) { return _this.controller.updateParams({ normalize: v }); }, value: normalize, label: 'Normalized' }));
+                                    Plugin.React.createElement(Plugin.Controls.RowText, { label: 'Value Range', value: "[" + round(data.valuesInfo.min, 3) + ", " + round(data.valuesInfo.max, 3) + "]" }));
                             }
                             return Plugin.React.createElement("div", null,
-                                Plugin.React.createElement(Plugin.Controls.OptionsGroup, { options: LiteMol.Core.Formats.Density.SupportedFormats.All, caption: function (s) { return s.name; }, current: params.format, onChange: function (o) { return _this.updateParams({ format: o }); }, label: 'Format' }),
-                                Plugin.React.createElement(Plugin.Controls.Toggle, { onChange: function (v) { return _this.controller.updateParams({ normalize: v }); }, value: normalize, label: 'Normalized' }));
+                                Plugin.React.createElement(Plugin.Controls.OptionsGroup, { options: LiteMol.Core.Formats.Density.SupportedFormats.All, caption: function (s) { return s.name; }, current: params.format, onChange: function (o) { return _this.updateParams({ format: o }); }, label: 'Format' }));
                         };
                         return ParseData;
                     }(Transform.ControllerBase));

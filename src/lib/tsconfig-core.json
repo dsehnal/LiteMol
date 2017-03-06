@@ -46,7 +46,6 @@
     "./Core/Formats/Density/Data.ts",
     "./Core/Formats/Density/CCP4.ts",
     "./Core/Formats/Density/CIF.ts",
-    "./Core/Formats/Density/DSN6.ts",
     "./Core/Formats/Density/Formats.ts",
     // GEOMETRY
     "./Core/Geometry/LinearAlgebra.ts",

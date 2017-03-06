@@ -1,4 +1,7 @@
-﻿# 1.3.3
+﻿# 1.3.4
+* Updated to reflect density data model changes.
+
+# 1.3.3
 * Better controls for UI layout regions.
 
 # 1.3.2
