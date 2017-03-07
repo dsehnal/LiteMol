@@ -60240,7 +60240,10 @@ var LiteMol;
                         var id = Core.Utils.ChunkedArray.add3(this.vertexBuffer, li + t * (li - hi), lj + t * (lj - hj), lk + t * (lk - hk)) | 0;
                         this.verticesOnEdges[edgeId] = id + 1;
                         if (this.annotate) {
-                            Core.Utils.ChunkedArray.add(this.annotationBuffer, this.annotationField.get(this.i, this.j, this.k));
+                            var a_1 = t < 0.5 ? this.annotationField.get(li, lj, lk) : this.annotationField.get(hi, hj, hk);
+                            if (a_1 < 0)
+                                a_1 = t < 0.5 ? this.annotationField.get(hi, hj, hk) : this.annotationField.get(li, lj, lk);
+                            Core.Utils.ChunkedArray.add(this.annotationBuffer, a_1);
                         }
                         return id;
                     };
@@ -60871,14 +60874,10 @@ var LiteMol;
                                 for (var i = mini; i < maxi; i++) {
                                     var tX = cx + i * this.dX, xx = yy + tX * tX, offset = oY + i;
                                     var v = strSq / (0.000001 + xx) - 1;
-                                    //let offset = nX * (k * nY + j) + i;
                                     if (xx < this.distanceField[offset]) {
                                         this.proximityMap[offset] = aI;
                                         this.distanceField[offset] = xx;
                                     }
-                                    //if (xx >= maxRsq) continue;
-                                    //let v = strength / Math.sqrt(0.000001 + zz) - 1;
-                                    //v = Math.Exp(-((Dist/AtomRadius)*(Dist/AtomRadius)));
                                     if (v > 0) {
                                         this.field[offset] += v;
                                     }

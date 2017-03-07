@@ -157,7 +157,9 @@ namespace LiteMol.Core.Geometry.MarchingCubes {
             this.verticesOnEdges[edgeId] = id + 1;
 
             if (this.annotate) {
-                Utils.ChunkedArray.add(this.annotationBuffer, this.annotationField!.get(this.i, this.j, this.k));
+                let a = t < 0.5 ? this.annotationField!.get(li, lj, lk) : this.annotationField!.get(hi, hj, hk);
+                if (a < 0) a = t < 0.5 ? this.annotationField!.get(hi, hj, hk) : this.annotationField!.get(li, lj, lk);
+                Utils.ChunkedArray.add(this.annotationBuffer, a);
             }
 
             return id;

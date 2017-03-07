@@ -182,15 +182,10 @@ namespace LiteMol.Core.Geometry.MolecularSurface {
                             offset = oY + i;
 
                         let v = strSq / (0.000001 + xx) - 1;
-                        //let offset = nX * (k * nY + j) + i;
                         if (xx < this.distanceField[offset]) {
                             this.proximityMap[offset] = aI;
                             this.distanceField[offset] = xx;
                         }
-
-                        //if (xx >= maxRsq) continue;
-                        //let v = strength / Math.sqrt(0.000001 + zz) - 1;
-                        //v = Math.Exp(-((Dist/AtomRadius)*(Dist/AtomRadius)));
 
                         if (v > 0) {
                             this.field[offset] += v;
