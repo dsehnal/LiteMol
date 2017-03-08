@@ -16,7 +16,7 @@ namespace LiteMol.Bootstrap.Entity.Transformer.Density {
         description: 'Parse density from binary data.',
         from: [Entity.Data.String, Entity.Data.Binary],
         to: [Entity.Density.Data],
-        isUpdatable: false,
+        isUpdatable: true,
         defaultParams: () => ({ format: LiteMol.Core.Formats.Density.SupportedFormats.CCP4, normalize: false })
     }, (bigCtx, a, t) => {
         return Task.create<Entity.Density.Data>(`Create Density (${a.props.label})`, 'Background', async ctx => {

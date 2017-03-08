@@ -73652,7 +73652,7 @@ var LiteMol;
                         description: 'Parse density from binary data.',
                         from: [Entity.Data.String, Entity.Data.Binary],
                         to: [Entity.Density.Data],
-                        isUpdatable: false,
+                        isUpdatable: true,
                         defaultParams: function () { return ({ format: LiteMol.Core.Formats.Density.SupportedFormats.CCP4, normalize: false }); }
                     }, function (bigCtx, a, t) {
                         return Bootstrap.Task.create("Create Density (" + a.props.label + ")", 'Background', function (ctx) { return __awaiter(_this, void 0, void 0, function () {
