@@ -1916,6 +1916,9 @@ declare namespace LiteMol.Core.Formats.Density {
         set(i: number, j: number, k: number, v: number): void;
         fill(v: number): void;
     }
+    /**
+     * A field with the Z axis being the slowest and the X being the fastest.
+     */
     class Field3DZYX implements Field3D {
         data: number[];
         dimensions: number[];
@@ -1944,6 +1947,7 @@ declare namespace LiteMol.Core.Formats.Density {
      * Represents electron density data.
      */
     interface Data {
+        name?: string;
         spacegroup: Spacegroup;
         box: {
             /** Origin of the data block in fractional coords. */
@@ -1965,12 +1969,6 @@ declare namespace LiteMol.Core.Formats.Density {
             max: number;
             mean: number;
             sigma: number;
-        };
-        /**
-         * Additional attributes.
-         */
-        attributes: {
-            [key: string]: any;
         };
     }
     function createSpacegroup(number: number, size: number[], angles: number[]): Spacegroup;

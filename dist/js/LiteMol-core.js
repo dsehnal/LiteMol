@@ -13784,6 +13784,9 @@ var LiteMol;
                         data[i] = value;
                     }
                 }
+                /**
+                 * A field with the Z axis being the slowest and the X being the fastest.
+                 */
                 var Field3DZYX = (function () {
                     function Field3DZYX(data, dimensions) {
                         this.data = data;
@@ -13975,17 +13978,13 @@ var LiteMol;
                                     sampleCount: extent
                                 },
                                 data: field,
-                                valuesInfo: { min: header.min, max: header.max, mean: header.mean, sigma: rawData.sigma },
-                                attributes: {}
+                                valuesInfo: { min: header.min, max: header.max, mean: header.mean, sigma: rawData.sigma }
                             };
                             return Formats.ParserResult.success(data, warnings);
                         }
                         Parser.parse = parse;
                         function readRawData1(view, endian, extent, headerExtent, indices, mean) {
                             var data = new Float32Array(extent[0] * extent[1] * extent[2]), coord = [0, 0, 0], mX, mY, mZ, cX, cY, cZ, xSize, xySize, offset = 0, v = 0.1, sigma = 0.0, t = 0.1, iX = indices[0], iY = indices[1], iZ = indices[2];
-                            //mX = extent[indices[0]];
-                            //mY = extent[indices[1]];  
-                            //mZ = extent[indices[2]];
                             mX = headerExtent[0];
                             mY = headerExtent[1];
                             mZ = headerExtent[2];
@@ -14070,14 +14069,13 @@ var LiteMol;
                     var Parser;
                     (function (Parser) {
                         function parse(block) {
-                            console.log('parsing new', block);
                             var info = block.getCategory('_volume_data_3d_info');
                             if (!info)
                                 return Formats.ParserResult.error('_volume_data_3d_info category is missing.');
                             if (!block.getCategory('_volume_data_3d'))
                                 return Formats.ParserResult.error('_volume_data_3d category is missing.');
                             function getVector3(name) {
-                                var ret = [];
+                                var ret = [0, 0, 0];
                                 for (var i = 0; i < 3; i++) {
                                     ret[i] = info.getColumn(name + "[" + i + "]").getFloat(0);
                                 }
@@ -14093,8 +14091,8 @@ var LiteMol;
                                 spacegroupNumber: getNum('spacegroup_number') | 0,
                                 cellSize: getVector3('spacegroup_cell_size'),
                                 cellAngles: getVector3('spacegroup_cell_angles'),
-                                mean: getNum('global_mean'),
-                                sigma: getNum('global_sigma'),
+                                mean: getNum('mean_sampled'),
+                                sigma: getNum('sigma_sampled')
                             };
                             var indices = [0, 0, 0];
                             indices[header.axisOrder[0]] = 0;
@@ -14104,9 +14102,10 @@ var LiteMol;
                                 return [xs[indices[0]], xs[indices[1]], xs[indices[2]]];
                             }
                             var sampleCount = normalizeOrder(header.sampleCount);
-                            var rawData = readRawData1(block.getCategory('_volume_data_3d').getColumn('values'), sampleCount, header.sampleCount, indices, header.mean);
+                            var rawData = readValues(block.getCategory('_volume_data_3d').getColumn('values'), sampleCount, header.sampleCount, indices);
                             var field = new Density.Field3DZYX(rawData.data, sampleCount);
                             var data = {
+                                name: header.name,
                                 spacegroup: Density.createSpacegroup(header.spacegroupNumber, header.cellSize, header.cellAngles),
                                 box: {
                                     origin: normalizeOrder(header.origin),
@@ -14114,10 +14113,8 @@ var LiteMol;
                                     sampleCount: sampleCount
                                 },
                                 data: field,
-                                valuesInfo: { min: rawData.min, max: rawData.max, mean: header.mean, sigma: header.sigma },
-                                attributes: {}
+                                valuesInfo: { min: rawData.min, max: rawData.max, mean: header.mean, sigma: header.sigma }
                             };
-                            console.log(data);
                             return Formats.ParserResult.success(data);
                         }
                         Parser.parse = parse;
@@ -14152,43 +14149,45 @@ var LiteMol;
                             indices[header.axisOrder[1]] = 1;
                             indices[header.axisOrder[2]] = 2;
                             var originGrid = [header.origin[indices[0]], header.origin[indices[1]], header.origin[indices[2]]];
-                            var extent = [header.extent[indices[0]], header.extent[indices[1]], header.extent[indices[2]]];
-                            var rawData = readRawData1(block.getCategory('_density_data').getColumn('values'), extent, header.extent, indices, header.mean);
-                            var field = new Density.Field3DZYX(rawData.data, extent);
+                            var xyzSampleCount = [header.extent[indices[0]], header.extent[indices[1]], header.extent[indices[2]]];
+                            var rawData = readValues(block.getCategory('_density_data').getColumn('values'), xyzSampleCount, header.extent, indices);
+                            var field = new Density.Field3DZYX(rawData.data, xyzSampleCount);
                             var data = {
+                                name: header.name,
                                 spacegroup: Density.createSpacegroup(header.spacegroupNumber, header.cellSize, header.cellAngles),
                                 box: {
                                     origin: [originGrid[0] / header.grid[0], originGrid[1] / header.grid[1], originGrid[2] / header.grid[2]],
-                                    dimensions: [extent[0] / header.grid[0], extent[1] / header.grid[1], extent[2] / header.grid[2]],
-                                    sampleCount: extent
+                                    dimensions: [xyzSampleCount[0] / header.grid[0], xyzSampleCount[1] / header.grid[1], xyzSampleCount[2] / header.grid[2]],
+                                    sampleCount: xyzSampleCount
                                 },
                                 data: field,
-                                valuesInfo: { min: rawData.min, max: rawData.max, mean: header.mean, sigma: header.sigma },
-                                attributes: {}
+                                valuesInfo: { min: rawData.min, max: rawData.max, mean: header.mean, sigma: header.sigma }
                             };
                             return Formats.ParserResult.success(data);
                         }
                         Parser.parseLegacy = parseLegacy;
-                        function readRawData1(col, extent, headerExtent, indices, mean) {
-                            var data = new Float32Array(extent[0] * extent[1] * extent[2]), coord = [0, 0, 0], mX, mY, mZ, cX, cY, cZ, xSize, xySize, offset = 0, v = 0.1, min = Number.POSITIVE_INFINITY, max = Number.NEGATIVE_INFINITY, iX = indices[0], iY = indices[1], iZ = indices[2];
-                            mX = headerExtent[0];
-                            mY = headerExtent[1];
-                            mZ = headerExtent[2];
-                            xSize = extent[0];
-                            xySize = extent[0] * extent[1];
-                            for (cZ = 0; cZ < mZ; cZ++) {
+                        function readValues(col, xyzSampleCount, sampleCount, axisIndices) {
+                            var data = new Float32Array(xyzSampleCount[0] * xyzSampleCount[1] * xyzSampleCount[2]);
+                            var coord = [0, 0, 0];
+                            var iX = axisIndices[0], iY = axisIndices[1], iZ = axisIndices[2];
+                            var mX = sampleCount[0], mY = sampleCount[1], mZ = sampleCount[2];
+                            var xSize = xyzSampleCount[0];
+                            var xySize = xyzSampleCount[0] * xyzSampleCount[1];
+                            var offset = 0;
+                            var min = col.getFloat(0), max = min;
+                            for (var cZ = 0; cZ < mZ; cZ++) {
                                 coord[2] = cZ;
-                                for (cY = 0; cY < mY; cY++) {
+                                for (var cY = 0; cY < mY; cY++) {
                                     coord[1] = cY;
-                                    for (cX = 0; cX < mX; cX++) {
+                                    for (var cX = 0; cX < mX; cX++) {
                                         coord[0] = cX;
-                                        v = col.getFloat(offset);
+                                        var v = col.getFloat(offset);
+                                        offset += 1;
+                                        data[coord[iX] + coord[iY] * xSize + coord[iZ] * xySize] = v;
                                         if (v < min)
                                             min = v;
                                         else if (v > max)
                                             max = v;
-                                        data[coord[iX] + coord[iY] * xSize + coord[iZ] * xySize] = v;
-                                        offset += 1;
                                     }
                                 }
                             }
@@ -14860,8 +14859,8 @@ var LiteMol;
                 function computeNormalsImmediate(surface) {
                     if (surface.normals)
                         return;
-                    var normals = new Float32Array(surface.vertices.length), v = surface.vertices, triangles = surface.triangleIndices, f, i;
-                    for (i = 0; i < triangles.length; i += 3) {
+                    var normals = new Float32Array(surface.vertices.length), v = surface.vertices, triangles = surface.triangleIndices;
+                    for (var i = 0; i < triangles.length; i += 3) {
                         var a = 3 * triangles[i], b = 3 * triangles[i + 1], c = 3 * triangles[i + 2];
                         var nx = v[a + 2] * (v[b + 1] - v[c + 1]) + v[b + 2] * v[c + 1] - v[b + 1] * v[c + 2] + v[a + 1] * (-v[b + 2] + v[c + 2]), ny = -(v[b + 2] * v[c]) + v[a + 2] * (-v[b] + v[c]) + v[a] * (v[b + 2] - v[c + 2]) + v[b] * v[c + 2], nz = v[a + 1] * (v[b] - v[c]) + v[b + 1] * v[c] - v[b] * v[c + 1] + v[a] * (-v[b + 1] + v[b + 1]);
                         normals[a] += nx;
@@ -14874,11 +14873,11 @@ var LiteMol;
                         normals[c + 1] += ny;
                         normals[c + 2] += nz;
                     }
-                    for (i = 0; i < normals.length; i += 3) {
+                    for (var i = 0; i < normals.length; i += 3) {
                         var nx = normals[i];
                         var ny = normals[i + 1];
                         var nz = normals[i + 2];
-                        f = 1.0 / Math.sqrt(nx * nx + ny * ny + nz * nz);
+                        var f = 1.0 / Math.sqrt(nx * nx + ny * ny + nz * nz);
                         normals[i] *= f;
                         normals[i + 1] *= f;
                         normals[i + 2] *= f;
@@ -15233,7 +15232,11 @@ var LiteMol;
                         if (ret > 0)
                             return (ret - 1) | 0;
                         var edge = MarchingCubes.CubeEdges[edgeNum];
-                        var a = edge.a, b = edge.b, li = a.i + this.i, lj = a.j + this.j, lk = a.k + this.k, hi = b.i + this.i, hj = b.j + this.j, hk = b.k + this.k, v0 = this.scalarField.get(li, lj, lk), v1 = this.scalarField.get(hi, hj, hk), t = (this.isoLevel - v0) / (v0 - v1);
+                        var a = edge.a, b = edge.b;
+                        var li = a.i + this.i, lj = a.j + this.j, lk = a.k + this.k;
+                        var hi = b.i + this.i, hj = b.j + this.j, hk = b.k + this.k;
+                        var v0 = this.scalarField.get(li, lj, lk), v1 = this.scalarField.get(hi, hj, hk);
+                        var t = (this.isoLevel - v0) / (v0 - v1);
                         var id = Core.Utils.ChunkedArray.add3(this.vertexBuffer, li + t * (li - hi), lj + t * (lj - hj), lk + t * (lk - hk)) | 0;
                         this.verticesOnEdges[edgeId] = id + 1;
                         if (this.annotate) {

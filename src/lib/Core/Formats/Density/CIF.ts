@@ -12,13 +12,12 @@ namespace LiteMol.Core.Formats.Density.CIF {
 
     namespace Parser {
         export function parse(block: Formats.CIF.DataBlock): ParserResult<Data> {
-            console.log('parsing new', block);
             const info = block.getCategory('_volume_data_3d_info');
             if (!info) return ParserResult.error<Data>('_volume_data_3d_info category is missing.');
             if (!block.getCategory('_volume_data_3d')) return ParserResult.error<Data>('_volume_data_3d category is missing.');
 
             function getVector3(name: string) {
-                const ret:number[] = [];
+                const ret:number[] = [0, 0, 0];
                 for (let i = 0; i < 3; i++) {
                     ret[i] = info!.getColumn(`${name}[${i}]`).getFloat(0);
                 }
@@ -40,8 +39,8 @@ namespace LiteMol.Core.Formats.Density.CIF {
                 cellSize: getVector3('spacegroup_cell_size'),
                 cellAngles: getVector3('spacegroup_cell_angles'),
 
-                mean: getNum('global_mean'),
-                sigma: getNum('global_sigma'),
+                mean: getNum('mean_sampled'),
+                sigma: getNum('sigma_sampled')
             };
             
             const indices = [0, 0, 0];
@@ -55,10 +54,11 @@ namespace LiteMol.Core.Formats.Density.CIF {
                         
             const sampleCount = normalizeOrder(header.sampleCount);
 
-            const rawData = readRawData1(block.getCategory('_volume_data_3d')!.getColumn('values'), sampleCount, header.sampleCount, indices, header.mean);            
+            const rawData = readValues(block.getCategory('_volume_data_3d')!.getColumn('values'), sampleCount, header.sampleCount, indices);            
             const field = new Field3DZYX(<any>rawData.data, sampleCount);                    
-                                     
+                                
             const data: Data = {
+                name: header.name!,
                 spacegroup: createSpacegroup(header.spacegroupNumber, header.cellSize, header.cellAngles),
                 box: {
                     origin: normalizeOrder(header.origin),
@@ -66,11 +66,8 @@ namespace LiteMol.Core.Formats.Density.CIF {
                     sampleCount
                 },
                 data: field,
-                valuesInfo: { min: rawData.min, max: rawData.max, mean: header.mean, sigma: header.sigma },
-                attributes: { }
+                valuesInfo: { min: rawData.min, max: rawData.max, mean: header.mean, sigma: header.sigma }
             };
-
-            console.log(data);
             
             return ParserResult.success(data);
         }
@@ -109,54 +106,49 @@ namespace LiteMol.Core.Formats.Density.CIF {
             indices[header.axisOrder[2]] = 2;
                         
             const originGrid = [header.origin[indices[0]], header.origin[indices[1]], header.origin[indices[2]]]            
-            const extent = [header.extent[indices[0]], header.extent[indices[1]], header.extent[indices[2]]];
+            const xyzSampleCount = [header.extent[indices[0]], header.extent[indices[1]], header.extent[indices[2]]];
 
-            const rawData = readRawData1(block.getCategory('_density_data')!.getColumn('values'), extent, header.extent, indices, header.mean);            
-            const field = new Field3DZYX(<any>rawData.data, extent);                    
+            const rawData = readValues(block.getCategory('_density_data')!.getColumn('values'), xyzSampleCount, header.extent, indices);            
+            const field = new Field3DZYX(<any>rawData.data, xyzSampleCount);                    
                                      
             const data: Data = {
+                name: header.name!,
                 spacegroup: createSpacegroup(header.spacegroupNumber, header.cellSize, header.cellAngles),
                 box: {
                     origin: [originGrid[0] / header.grid[0], originGrid[1] / header.grid[1], originGrid[2] / header.grid[2]],
-                    dimensions: [extent[0] / header.grid[0], extent[1] / header.grid[1], extent[2] / header.grid[2]],
-                    sampleCount: extent
+                    dimensions: [xyzSampleCount[0] / header.grid[0], xyzSampleCount[1] / header.grid[1], xyzSampleCount[2] / header.grid[2]],
+                    sampleCount: xyzSampleCount
                 },
                 data: field,
-                valuesInfo: { min: rawData.min, max: rawData.max, mean: header.mean, sigma: header.sigma },
-                attributes: { }
+                valuesInfo: { min: rawData.min, max: rawData.max, mean: header.mean, sigma: header.sigma }
             };
             
             return ParserResult.success(data);
         }
 
-        function readRawData1(col: Formats.CIF.Column, extent: number[], headerExtent: number[], indices: number[], mean: number) {
-            let data = new Float32Array(extent[0] * extent[1] * extent[2]),
-                coord = [0, 0, 0],
-                mX: number, mY: number, mZ: number,
-                cX: number, cY: number, cZ: number,
-                xSize: number, xySize: number,
-                offset = 0, v = 0.1,
-                min = Number.POSITIVE_INFINITY, max = Number.NEGATIVE_INFINITY,
-                iX = indices[0], iY = indices[1], iZ = indices[2];
+        function readValues(col: Formats.CIF.Column, xyzSampleCount: number[], sampleCount: number[], axisIndices: number[]) {
+            const data = new Float32Array(xyzSampleCount[0] * xyzSampleCount[1] * xyzSampleCount[2]);
+            const coord = [0, 0, 0];
+            const iX = axisIndices[0], iY = axisIndices[1], iZ = axisIndices[2];
+            const mX = sampleCount[0], mY = sampleCount[1], mZ = sampleCount[2];
 
-            mX = headerExtent[0];
-            mY = headerExtent[1];
-            mZ = headerExtent[2];
-
-            xSize = extent[0];
-            xySize = extent[0] * extent[1];
+            const xSize = xyzSampleCount[0];
+            const xySize = xyzSampleCount[0] * xyzSampleCount[1];
             
-            for (cZ = 0; cZ < mZ; cZ++) {
-                coord[2] = cZ;
-                for (cY = 0; cY < mY; cY++) {
+            let offset = 0;
+            let min = col.getFloat(0), max = min;
+
+            for (let cZ = 0; cZ < mZ; cZ++) {
+                coord[2] = cZ;                                
+                for (let cY = 0; cY < mY; cY++) {
                     coord[1] = cY;
-                    for (cX = 0; cX < mX; cX++) {
-                        coord[0] = cX;
-                        v = col.getFloat(offset);
+                    for (let cX = 0; cX < mX; cX++) {
+                        coord[0] = cX;                        
+                        const v = col.getFloat(offset);
+                        offset += 1;
+                        data[coord[iX] + coord[iY] * xSize + coord[iZ] * xySize] = v;
                         if (v < min) min = v;
                         else if (v > max) max = v;
-                        data[coord[iX] + coord[iY] * xSize + coord[iZ] * xySize] = v;
-                        offset += 1;
                     }
                 }
             }

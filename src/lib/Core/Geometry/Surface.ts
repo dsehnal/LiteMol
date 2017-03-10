@@ -49,15 +49,14 @@ namespace LiteMol.Core.Geometry {
         export function computeNormalsImmediate(surface: Surface) {
             if (surface.normals) return;
             
-            let normals = new Float32Array(surface.vertices.length),
-                v = surface.vertices, triangles = surface.triangleIndices,
-                f: number, i: number;
-            for (i = 0; i < triangles.length; i += 3) {
-                let a = 3 * triangles[i],
+            const normals = new Float32Array(surface.vertices.length),
+                v = surface.vertices, triangles = surface.triangleIndices;
+            for (let i = 0; i < triangles.length; i += 3) {
+                const a = 3 * triangles[i],
                     b = 3 * triangles[i + 1],
                     c = 3 * triangles[i + 2];
                     
-                let nx = v[a + 2] * (v[b + 1] - v[c + 1]) + v[b + 2] * v[c + 1] - v[b + 1] * v[c + 2] + v[a + 1] * (-v[b + 2] + v[c + 2]),
+                const nx = v[a + 2] * (v[b + 1] - v[c + 1]) + v[b + 2] * v[c + 1] - v[b + 1] * v[c + 2] + v[a + 1] * (-v[b + 2] + v[c + 2]),
                     ny = -(v[b + 2] * v[c]) + v[a + 2] * (-v[b] + v[c]) + v[a] * (v[b + 2] - v[c + 2]) + v[b] * v[c + 2],
                     nz = v[a + 1] * (v[b] - v[c]) + v[b + 1] * v[c] - v[b] * v[c + 1] + v[a] * (-v[b + 1] + v[b + 1]);
 
@@ -66,11 +65,11 @@ namespace LiteMol.Core.Geometry {
                 normals[c] += nx; normals[c + 1] += ny; normals[c + 2] += nz;
             }
 
-            for (i = 0; i < normals.length; i += 3) {
-                let nx = normals[i]; 
-                let ny = normals[i + 1]; 
-                let nz = normals[i + 2];
-                f = 1.0 / Math.sqrt(nx * nx + ny * ny + nz * nz);
+            for (let i = 0; i < normals.length; i += 3) {
+                const nx = normals[i]; 
+                const ny = normals[i + 1]; 
+                const nz = normals[i + 2];
+                const f = 1.0 / Math.sqrt(nx * nx + ny * ny + nz * nz);
                 normals[i] *= f; normals[i + 1] *= f; normals[i + 2] *= f;
             }
             surface.normals = normals;
@@ -95,13 +94,13 @@ namespace LiteMol.Core.Geometry {
         }
 
         function laplacianSmoothIter(surface: Surface, vertexCounts: Int32Array, vs: Float32Array, vertexWeight: number) {
-            let triCount = surface.triangleIndices.length,
+            const triCount = surface.triangleIndices.length,
                 src = surface.vertices;
             
-            let triangleIndices = surface.triangleIndices;    
+            const triangleIndices = surface.triangleIndices;    
             
             for (let i = 0; i < triCount; i += 3) {
-                let a = triangleIndices[i],
+                const a = triangleIndices[i],
                     b = triangleIndices[i + 1],
                     c = triangleIndices[i + 2];
 
@@ -115,9 +114,9 @@ namespace LiteMol.Core.Geometry {
                 addVertex(src, b, vs, c);
             }
 
-            let vw = 2 * vertexWeight;
+            const vw = 2 * vertexWeight;
             for (let i = 0, _b = surface.vertexCount; i < _b; i++) {
-                let n = vertexCounts[i] + vw;                
+                const n = vertexCounts[i] + vw;            
                 vs[3 * i] = (vs[3 * i] + vw * src[3 * i]) / n;
                 vs[3 * i + 1] = (vs[3 * i + 1] + vw * src[3 * i + 1]) / n;
                 vs[3 * i + 2] = (vs[3 * i + 2] + vw * src[3 * i + 2]) / n;
@@ -127,15 +126,15 @@ namespace LiteMol.Core.Geometry {
         async function laplacianSmoothComputation(ctx: Computation.Context, surface: Surface, iterCount: number, vertexWeight: number) {
             await ctx.updateProgress('Smoothing surface...', true);
                 
-            let vertexCounts = new Int32Array(surface.vertexCount),
+            const vertexCounts = new Int32Array(surface.vertexCount),
                 triCount = surface.triangleIndices.length;
             
-            let tris = surface.triangleIndices;
+            const tris = surface.triangleIndices;
             for (let i = 0; i < triCount; i++) {
                 // in a triangle 2 edges touch each vertex, hence the constant.
                 vertexCounts[tris[i]] += 2;
             }
-            
+
             let vs = new Float32Array(surface.vertices.length);
             let started = Utils.PerformanceMonitor.currentTime();
             await ctx.updateProgress('Smoothing surface...', true);
@@ -145,16 +144,16 @@ namespace LiteMol.Core.Geometry {
                 }
                 surface.normals = void 0;
                 laplacianSmoothIter(surface, vertexCounts, vs, vertexWeight);
-                let t = surface.vertices;
+                const t = surface.vertices;
                 surface.vertices = <any>vs;
                 vs = <any>t;
                 
-                let time = Utils.PerformanceMonitor.currentTime();
+                const time = Utils.PerformanceMonitor.currentTime();
                 if (time - started > Computation.UpdateProgressDelta) {
                     started = time;
                     await ctx.updateProgress('Smoothing surface...', true, i + 1, iterCount);
                 }
-            }                            
+            }         
             return surface;
         }
 
@@ -178,7 +177,7 @@ namespace LiteMol.Core.Geometry {
                 }                
                 await ctx.updateProgress('Computing bounding sphere...');                
                   
-                let vertices = surface.vertices;          
+                const vertices = surface.vertices;          
                 let x = 0, y = 0, z = 0;
                 for (let i = 0, _c = surface.vertices.length; i < _c; i += 3) {
                     x += vertices[i];
@@ -190,9 +189,9 @@ namespace LiteMol.Core.Geometry {
                 z /= surface.vertexCount;
                 let r = 0;
                 for (let i = 0, _c = vertices.length; i < _c; i += 3) {
-                    let dx = x - vertices[i];
-                    let dy = y - vertices[i + 1];
-                    let dz = z - vertices[i + 2];
+                    const dx = x - vertices[i];
+                    const dy = y - vertices[i + 1];
+                    const dz = z - vertices[i + 2];
                     r = Math.max(r, dx * dx + dy * dy + dz * dz);
                 }
                 surface.boundingSphere = {
@@ -204,9 +203,9 @@ namespace LiteMol.Core.Geometry {
         }
 
         export function transformImmediate(surface: Surface, t: number[]) {
-            let p = { x: 0.1, y: 0.1, z: 0.1 }                    
-            let m = LinearAlgebra.Matrix4.transformVector3;
-            let vertices = surface.vertices;
+            const p = { x: 0.1, y: 0.1, z: 0.1 }                    
+            const m = LinearAlgebra.Matrix4.transformVector3;
+            const vertices = surface.vertices;
             for (let i = 0, _c = surface.vertices.length; i < _c; i += 3) {
                 p.x = vertices[i];
                 p.y = vertices[i + 1];

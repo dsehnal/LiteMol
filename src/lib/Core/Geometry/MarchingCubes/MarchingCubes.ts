@@ -134,21 +134,20 @@ namespace LiteMol.Core.Geometry.MarchingCubes {
         }
 
         private interpolate(edgeNum: number) {
-            let info = EdgeIdInfo[edgeNum],
+            const info = EdgeIdInfo[edgeNum],
                 edgeId = 3 * this.get3dOffsetFromEdgeInfo(info) + info.e;
 
-            let ret = this.verticesOnEdges[edgeId];
+            const ret = this.verticesOnEdges[edgeId];
             if (ret > 0) return (ret - 1) | 0;
 
-            let edge = CubeEdges[edgeNum];
-            let a = edge.a, b = edge.b,
-                li = a.i + this.i, lj = a.j + this.j, lk = a.k + this.k,
-                hi = b.i + this.i, hj = b.j + this.j, hk = b.k + this.k,
-                v0 = this.scalarField.get(li, lj, lk),
-                v1 = this.scalarField.get(hi, hj, hk),
-                t = (this.isoLevel - v0) / (v0 - v1);
+            const edge = CubeEdges[edgeNum];
+            const a = edge.a, b = edge.b;
+            const li = a.i + this.i, lj = a.j + this.j, lk = a.k + this.k;
+            const hi = b.i + this.i, hj = b.j + this.j, hk = b.k + this.k;
+            const v0 = this.scalarField.get(li, lj, lk), v1 = this.scalarField.get(hi, hj, hk);
+            const t = (this.isoLevel - v0) / (v0 - v1);
 
-            let id = Utils.ChunkedArray.add3(
+            const id = Utils.ChunkedArray.add3(
                 this.vertexBuffer,
                 li + t * (li - hi),
                 lj + t * (lj - hj),

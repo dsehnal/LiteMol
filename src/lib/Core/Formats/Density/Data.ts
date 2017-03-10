@@ -22,6 +22,9 @@ namespace LiteMol.Core.Formats.Density {
         } 
     }
 
+    /**
+     * A field with the Z axis being the slowest and the X being the fastest.
+     */
     export class Field3DZYX implements Field3D {        
         private nX: number;
         private nY: number;
@@ -69,6 +72,8 @@ namespace LiteMol.Core.Formats.Density {
      * Represents electron density data.
      */
     export interface Data {
+        name?: string,
+
         spacegroup: Spacegroup,
       
         box: {
@@ -85,17 +90,12 @@ namespace LiteMol.Core.Formats.Density {
         /**
          * 3D volumetric data.
          */
-        data: Field3D;
+        data: Field3D,
 
         /**
          * Information about the min/max/mean/sigma values.
          */
-        valuesInfo: { min: number; max: number; mean: number; sigma: number };
-        
-        /** 
-         * Additional attributes.
-         */
-        attributes: { [key: string]: any }          
+        valuesInfo: { min: number; max: number; mean: number; sigma: number }  
     }
 
     export function createSpacegroup(number: number, size: number[], angles: number[]): Spacegroup {

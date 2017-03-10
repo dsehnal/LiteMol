@@ -100,6 +100,7 @@ namespace LiteMol.Bootstrap.Visualization.Density {
                     bottomLeft: min,
                     topRight: max
                 }).run(ctx);
+
             surface = await Geom.Surface.transform(surface, <number[]><any>dataTransform.elements).run(ctx);
             surface = await Geom.Surface.laplacianSmooth(surface, params.smoothing, 8).run(ctx);
                              

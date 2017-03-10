@@ -49,7 +49,7 @@ namespace LiteMol.Bootstrap.Entity.Transformer.Density {
             if (data.isError) {
                 throw data.toString();
             }
-            return Entity.Density.Data.create(t, { label: t.params.id ? t.params.id : 'Density Data', data: data.result, description: data.result.attributes['name'] });        
+            return Entity.Density.Data.create(t, { label: t.params.id ? t.params.id : 'Density Data', data: data.result, description: data.result.name });        
         }).setReportTime(true);
     });
 
@@ -67,7 +67,7 @@ namespace LiteMol.Bootstrap.Entity.Transformer.Density {
         isUpdatable: false,
         defaultParams: () => (<any>{ })
     }, (ctx, a, t) => {
-        let e = Entity.Density.Data.create(t, { label: t.params.id ? t.params.id : 'Density Data', data: t.params.data, description: t.params.data.attributes['name'] });
+        let e = Entity.Density.Data.create(t, { label: t.params.id ? t.params.id : 'Density Data', data: t.params.data, description: t.params.data.name });
         return Task.resolve<Entity.Density.Data>('Create Density', 'Background', e);
     });
 

@@ -146,8 +146,7 @@ namespace LiteMol.Core.Formats.Density.CCP4 {
                     sampleCount: extent
                 },
                 data: field,
-                valuesInfo: { min: header.min, max: header.max, mean: header.mean, sigma: rawData.sigma },
-                attributes: { }
+                valuesInfo: { min: header.min, max: header.max, mean: header.mean, sigma: rawData.sigma }
             };
                                                  
             return ParserResult.success(data, warnings);
@@ -162,9 +161,6 @@ namespace LiteMol.Core.Formats.Density.CCP4 {
                 offset = 0, v = 0.1, sigma = 0.0, t = 0.1,
                 iX = indices[0], iY = indices[1], iZ = indices[2];
 
-            //mX = extent[indices[0]];
-            //mY = extent[indices[1]];  
-            //mZ = extent[indices[2]];
             mX = headerExtent[0];
             mY = headerExtent[1];
             mZ = headerExtent[2];
