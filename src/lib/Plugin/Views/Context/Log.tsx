@@ -9,6 +9,8 @@ namespace LiteMol.Plugin.Views.Context {
 
     export class Log extends View<Bootstrap.Components.Context.Log, {}, {}> {
 
+        private wrapper: HTMLDivElement | undefined = void 0;
+
         componentWillMount() {
             super.componentWillMount();
             this.subscribe(Bootstrap.Event.Common.LayoutChanged.getStream(this.controller.context), () => this.scrollToBottom());
@@ -19,15 +21,15 @@ namespace LiteMol.Plugin.Views.Context {
         }
         
         private scrollToBottom() {
-            let log = this.refs['log'] as HTMLElement;      
+            const log = this.wrapper;      
             if (log) log.scrollTop = log.scrollHeight - log.clientHeight - 1;
         }
 
         render() {
-            let entries = this.controller.latestState.entries;
+            const entries = this.controller.latestState.entries;
             
             return <div className='lm-log-wrap'>
-                <div className='lm-log' ref='log'>
+                <div className='lm-log' ref={log => this.wrapper = log}>
                     <ul className='lm-list-unstyled'>
                         {entries.map((entry, i, arr) => {
 

@@ -103,10 +103,11 @@ namespace LiteMol.Plugin.Views.Visualization {
 
     export class Viewport extends View<Bootstrap.Components.Visualization.Viewport, {}, { noWebGl?: boolean, showLogo?: boolean }> {
 
+        private host3d: HTMLDivElement | undefined = void 0;
         state =  { noWebGl: false, showLogo: true };
         
         componentDidMount() {
-            if (!this.controller.init(this.refs['host-3d'] as HTMLElement)) {
+            if (!this.host3d || !this.controller.init(this.host3d)) {
                 this.setState({ noWebGl: true });
             }
             this.handleLogo();
@@ -153,7 +154,7 @@ namespace LiteMol.Plugin.Views.Visualization {
             if (this.state.noWebGl) return this.renderMissing();
             
             return <div className='lm-viewport'>
-                <div ref='host-3d' className='lm-viewport-host3d' />
+                <div ref={host => this.host3d = host} className='lm-viewport-host3d' />
                 {this.state.showLogo ? <Logo /> : void 0}
                 <ViewportControls controller={this.controller} />
             </div>;

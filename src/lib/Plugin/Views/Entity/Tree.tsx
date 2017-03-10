@@ -28,11 +28,11 @@ namespace LiteMol.Plugin.Views.Entity {
 
         private renderedVersion = -1;
         private ctx: Bootstrap.Context;
+        private root: HTMLDivElement | undefined = void 0;
         
         private ensureVisible() {
             if (this.ctx.currentEntity === this.props.node) {
-                let node = this.refs['root'] as Element;
-                this.props.tree.scrollIntoView(node);
+                if (this.root) this.props.tree.scrollIntoView(this.root);
             }
         }
         
@@ -79,7 +79,8 @@ namespace LiteMol.Plugin.Views.Entity {
             let title = props.label;
             if (props.description) title += ' (' + props.description + ')';
 
-            return <div className={'lm-entity-tree-entry-body' + (this.ctx.currentEntity === entity ? ' lm-entity-tree-entry-current' : '') + (this.isOnCurrentPath() ? ' lm-entity-tree-entry-current-path' : '')} ref='root'>
+            return <div className={'lm-entity-tree-entry-body' + (this.ctx.currentEntity === entity ? ' lm-entity-tree-entry-current' : '') + (this.isOnCurrentPath() ? ' lm-entity-tree-entry-current-path' : '')} 
+                        ref={root => this.root = root}>
                 <Badge type={entity.type.info} />
                 <div className='lm-entity-tree-entry-label-wrap'>
                     <Controls.Button  onClick={() => Bootstrap.Command.Entity.SetCurrent.dispatch(this.ctx, entity) }
@@ -188,25 +189,23 @@ namespace LiteMol.Plugin.Views.Entity {
         } 
     }
     
-    export class Tree extends View<Bootstrap.Components.Component<{}>, {}, {}> {
-        
-        
-        private renderedVersion = -1;
+    export class Tree extends View<Bootstrap.Components.Component<{}>, {}, {}> {private renderedVersion = -1;
+        private root: HTMLDivElement | undefined = void 0;
         
         scrollIntoView(element: Element) {
-            let node = this.refs['chilren'] as Element;
+            const node = this.root;
             if (!node || !element) return;
             
             try {
-                let parent = node.getBoundingClientRect();
-                let rect = element.getBoundingClientRect();
-                let scrollTop = node.scrollTop;             
+                const parent = node.getBoundingClientRect();
+                const rect = element.getBoundingClientRect();
+                const scrollTop = node.scrollTop;             
                 
                 if (rect.top < parent.top) {
-                    let d = parent.top - rect.top;
+                    const d = parent.top - rect.top;
                     node.scrollTop = scrollTop - d;
                 } else if (rect.bottom > parent.bottom) {
-                    let d = rect.bottom - parent.bottom;
+                    const d = rect.bottom - parent.bottom;
                     node.scrollTop = scrollTop + d;
                 }
             } catch(e) {
@@ -215,8 +214,8 @@ namespace LiteMol.Plugin.Views.Entity {
         }
         
         componentWillMount() {                        
-            let node = this.controller.context.tree.root;
-            let ctx = node.tree!.context;
+            const node = this.controller.context.tree.root;
+            const ctx = node.tree!.context;
             //this.state.version = node.version;                            
             this.subscribe(Bootstrap.Event.Tree.NodeUpdated.getStream(ctx), e => {
                 if (e.data === node) {
@@ -238,7 +237,7 @@ namespace LiteMol.Plugin.Views.Entity {
                 children.push(<Entity key={c.id} node={c} tree={this} />);
             }
             
-            return <div className='lm-entity-tree' ref='root'>
+            return <div className='lm-entity-tree' ref={root => this.root = root}>
                 <Entity key={root.id} node={root} tree={this} />
                 <div className='lm-entity-tree-children'>
                     {children.length ? children : this.splash }

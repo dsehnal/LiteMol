@@ -16767,6 +16767,8 @@ declare namespace LiteMol.Plugin.Controls {
         bounds: number[];
     }
     class SliderBase extends React.Component<SliderBaseProps, SliderBaseState> {
+        private sliderElement;
+        private handleElements;
         constructor(props: SliderBaseProps);
         static defaultProps: SliderBaseProps;
         private dragOffset;
@@ -16993,6 +16995,7 @@ declare namespace LiteMol.Plugin.Views.Transform.Density {
 }
 declare namespace LiteMol.Plugin.Views.Context {
     class Log extends View<Bootstrap.Components.Context.Log, {}, {}> {
+        private wrapper;
         componentWillMount(): void;
         componentDidUpdate(): void;
         private scrollToBottom();
@@ -17019,6 +17022,7 @@ declare namespace LiteMol.Plugin.Views.Entity {
     }) => JSX.Element;
     class Tree extends View<Bootstrap.Components.Component<{}>, {}, {}> {
         private renderedVersion;
+        private root;
         scrollIntoView(element: Element): void;
         componentWillMount(): void;
         private splash;
@@ -17075,6 +17079,7 @@ declare namespace LiteMol.Plugin.Views.Visualization {
         noWebGl?: boolean;
         showLogo?: boolean;
     }> {
+        private host3d;
         state: {
             noWebGl: boolean;
             showLogo: boolean;

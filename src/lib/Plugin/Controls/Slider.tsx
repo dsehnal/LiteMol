@@ -196,6 +196,9 @@ namespace LiteMol.Plugin.Controls {
     }
 
     export class SliderBase extends React.Component<SliderBaseProps, SliderBaseState> {
+        private sliderElement: HTMLElement | undefined = void 0;
+        private handleElements: (HTMLElement | undefined)[] = [];
+
         constructor(props: SliderBaseProps) {
             super(props);
 
@@ -437,7 +440,7 @@ namespace LiteMol.Plugin.Controls {
         }
 
         getSliderLength() {
-            const slider = this.refs['slider'] as HTMLElement;
+            const slider = this.sliderElement;
             if (!slider) {
                 return 0;
             }
@@ -446,7 +449,7 @@ namespace LiteMol.Plugin.Controls {
         }
 
         getSliderStart() {
-            const slider = this.refs['slider'] as HTMLElement;
+            const slider = this.sliderElement as HTMLElement;
             const rect = slider.getBoundingClientRect();
 
             return this.props.vertical ? rect.top : rect.left;
@@ -500,10 +503,16 @@ namespace LiteMol.Plugin.Controls {
         }
 
         isEventFromHandle(e: Event) {
-            return this.state.bounds.some((x, i) => (
-                this.refs[`handle-${i}`] &&
-                e.target === ReactDOM.findDOMNode(this.refs[`handle-${i}`])
-            ));
+            for (const h of this.handleElements) {
+                if (h === e.target) return true;
+            }
+            return false;
+
+            // return this.state.bounds.some((x, i) => e.target 
+            
+            // (
+            //     //this.handleElements[i] && e.target === ReactDOM.findDOMNode(this.handleElements[i])
+            // ));
         }
 
         isValueOutOfBounds(value: number, props: SliderBaseProps) {
@@ -652,6 +661,7 @@ namespace LiteMol.Plugin.Controls {
                 vertical,
             };
 
+            this.handleElements = [];
             const handles = bounds.map((v, i) => React.cloneElement(customHandle!, {
                 ...commonHandleProps,
                 className: handlesClassNames[i],
@@ -660,7 +670,7 @@ namespace LiteMol.Plugin.Controls {
                 dragging: handle === i,
                 index: i,
                 key: i,
-                ref: `handle-${i}`,
+                ref: (h: any) => this.handleElements.push(h)  //`handle-${i}`,
             }));
             if (!range) { handles.shift(); }
 
@@ -688,7 +698,7 @@ namespace LiteMol.Plugin.Controls {
             });
 
             return (
-                <div ref="slider" className={sliderClassName}
+                <div ref={e => this.sliderElement = e} className={sliderClassName}
                     onTouchStart={disabled ? noop : this.onTouchStart.bind(this)}
                     onMouseDown={disabled ? noop : this.onMouseDown.bind(this)}
                     >

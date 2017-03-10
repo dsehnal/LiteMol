@@ -76243,6 +76243,8 @@ var LiteMol;
                 __extends(SliderBase, _super);
                 function SliderBase(props) {
                     var _this = _super.call(this, props) || this;
+                    _this.sliderElement = void 0;
+                    _this.handleElements = [];
                     _this.dragOffset = 0;
                     _this.startPosition = 0;
                     _this.startValue = 0;
@@ -76451,14 +76453,14 @@ var LiteMol;
                     return precision;
                 };
                 SliderBase.prototype.getSliderLength = function () {
-                    var slider = this.refs['slider'];
+                    var slider = this.sliderElement;
                     if (!slider) {
                         return 0;
                     }
                     return this.props.vertical ? slider.clientHeight : slider.clientWidth;
                 };
                 SliderBase.prototype.getSliderStart = function () {
-                    var slider = this.refs['slider'];
+                    var slider = this.sliderElement;
                     var rect = slider.getBoundingClientRect();
                     return this.props.vertical ? rect.top : rect.left;
                 };
@@ -76498,9 +76500,16 @@ var LiteMol;
                     this.setState({ handle: null });
                 };
                 SliderBase.prototype.isEventFromHandle = function (e) {
-                    var _this = this;
-                    return this.state.bounds.some(function (x, i) { return (_this.refs["handle-" + i] &&
-                        e.target === Plugin.ReactDOM.findDOMNode(_this.refs["handle-" + i])); });
+                    for (var _i = 0, _a = this.handleElements; _i < _a.length; _i++) {
+                        var h = _a[_i];
+                        if (h === e.target)
+                            return true;
+                    }
+                    return false;
+                    // return this.state.bounds.some((x, i) => e.target 
+                    // (
+                    //     //this.handleElements[i] && e.target === ReactDOM.findDOMNode(this.handleElements[i])
+                    // ));
                 };
                 SliderBase.prototype.isValueOutOfBounds = function (value, props) {
                     return value < props.min || value > props.max;
@@ -76620,7 +76629,9 @@ var LiteMol;
                         tipFormatter: tipFormatter,
                         vertical: vertical,
                     };
-                    var handles = bounds.map(function (v, i) { return Plugin.React.cloneElement(customHandle, __assign({}, commonHandleProps, { className: handlesClassNames[i], value: v, offset: offsets[i], dragging: handle === i, index: i, key: i, ref: "handle-" + i })); });
+                    this.handleElements = [];
+                    var handles = bounds.map(function (v, i) { return Plugin.React.cloneElement(customHandle, __assign({}, commonHandleProps, { className: handlesClassNames[i], value: v, offset: offsets[i], dragging: handle === i, index: i, key: i, ref: function (h) { return _this.handleElements.push(h); } //`handle-${i}`,
+                     })); });
                     if (!range) {
                         handles.shift();
                     }
@@ -76644,7 +76655,7 @@ var LiteMol;
                         _c[prefixCls + "-vertical"] = this.props.vertical,
                         _c[className] = !!className,
                         _c));
-                    return (Plugin.React.createElement("div", { ref: "slider", className: sliderClassName, onTouchStart: disabled ? noop : this.onTouchStart.bind(this), onMouseDown: disabled ? noop : this.onMouseDown.bind(this) },
+                    return (Plugin.React.createElement("div", { ref: function (e) { return _this.sliderElement = e; }, className: sliderClassName, onTouchStart: disabled ? noop : this.onTouchStart.bind(this), onMouseDown: disabled ? noop : this.onMouseDown.bind(this) },
                         Plugin.React.createElement("div", { className: prefixCls + "-rail" }),
                         tracks,
                         Plugin.React.createElement(Steps, { prefixCls: prefixCls, vertical: vertical, marks: marks, dots: dots, step: step, included: isIncluded, lowerBound: bounds[0], upperBound: bounds[bounds.length - 1], max: max, min: min }),
@@ -77752,7 +77763,9 @@ var LiteMol;
                 var Log = (function (_super) {
                     __extends(Log, _super);
                     function Log() {
-                        return _super !== null && _super.apply(this, arguments) || this;
+                        var _this = _super !== null && _super.apply(this, arguments) || this;
+                        _this.wrapper = void 0;
+                        return _this;
                     }
                     Log.prototype.componentWillMount = function () {
                         var _this = this;
@@ -77763,14 +77776,15 @@ var LiteMol;
                         this.scrollToBottom();
                     };
                     Log.prototype.scrollToBottom = function () {
-                        var log = this.refs['log'];
+                        var log = this.wrapper;
                         if (log)
                             log.scrollTop = log.scrollHeight - log.clientHeight - 1;
                     };
                     Log.prototype.render = function () {
+                        var _this = this;
                         var entries = this.controller.latestState.entries;
                         return Plugin.React.createElement("div", { className: 'lm-log-wrap' },
-                            Plugin.React.createElement("div", { className: 'lm-log', ref: 'log' },
+                            Plugin.React.createElement("div", { className: 'lm-log', ref: function (log) { return _this.wrapper = log; } },
                                 Plugin.React.createElement("ul", { className: 'lm-list-unstyled' }, entries.map(function (entry, i, arr) {
                                     var msg;
                                     var e = entry;
@@ -77987,12 +78001,13 @@ var LiteMol;
                     function Entity() {
                         var _this = _super !== null && _super.apply(this, arguments) || this;
                         _this.renderedVersion = -1;
+                        _this.root = void 0;
                         return _this;
                     }
                     Entity.prototype.ensureVisible = function () {
                         if (this.ctx.currentEntity === this.props.node) {
-                            var node = this.refs['root'];
-                            this.props.tree.scrollIntoView(node);
+                            if (this.root)
+                                this.props.tree.scrollIntoView(this.root);
                         }
                     };
                     Entity.prototype.componentDidMount = function () {
@@ -78038,7 +78053,7 @@ var LiteMol;
                         var title = props.label;
                         if (props.description)
                             title += ' (' + props.description + ')';
-                        return Plugin.React.createElement("div", { className: 'lm-entity-tree-entry-body' + (this.ctx.currentEntity === entity ? ' lm-entity-tree-entry-current' : '') + (this.isOnCurrentPath() ? ' lm-entity-tree-entry-current-path' : ''), ref: 'root' },
+                        return Plugin.React.createElement("div", { className: 'lm-entity-tree-entry-body' + (this.ctx.currentEntity === entity ? ' lm-entity-tree-entry-current' : '') + (this.isOnCurrentPath() ? ' lm-entity-tree-entry-current-path' : ''), ref: function (root) { return _this.root = root; } },
                             Plugin.React.createElement(Entity_2.Badge, { type: entity.type.info }),
                             Plugin.React.createElement("div", { className: 'lm-entity-tree-entry-label-wrap' },
                                 Plugin.React.createElement(Plugin.Controls.Button, { onClick: function () { return LiteMol.Bootstrap.Command.Entity.SetCurrent.dispatch(_this.ctx, entity); }, customClass: 'lm-entity-tree-entry-label', style: 'link', title: title },
@@ -78126,11 +78141,12 @@ var LiteMol;
                     function Tree() {
                         var _this = _super !== null && _super.apply(this, arguments) || this;
                         _this.renderedVersion = -1;
+                        _this.root = void 0;
                         _this.splash = Entity_2.SplashInfo.Info();
                         return _this;
                     }
                     Tree.prototype.scrollIntoView = function (element) {
-                        var node = this.refs['chilren'];
+                        var node = this.root;
                         if (!node || !element)
                             return;
                         try {
@@ -78162,6 +78178,7 @@ var LiteMol;
                         });
                     };
                     Tree.prototype.render = function () {
+                        var _this = this;
                         var root = this.controller.context.tree.root;
                         this.renderedVersion = root.version;
                         var children = [];
@@ -78171,7 +78188,7 @@ var LiteMol;
                                 continue;
                             children.push(Plugin.React.createElement(Entity, { key: c.id, node: c, tree: this }));
                         }
-                        return Plugin.React.createElement("div", { className: 'lm-entity-tree', ref: 'root' },
+                        return Plugin.React.createElement("div", { className: 'lm-entity-tree', ref: function (root) { return _this.root = root; } },
                             Plugin.React.createElement(Entity, { key: root.id, node: root, tree: this }),
                             Plugin.React.createElement("div", { className: 'lm-entity-tree-children' }, children.length ? children : this.splash));
                     };
@@ -78418,11 +78435,12 @@ var LiteMol;
                     __extends(Viewport, _super);
                     function Viewport() {
                         var _this = _super !== null && _super.apply(this, arguments) || this;
+                        _this.host3d = void 0;
                         _this.state = { noWebGl: false, showLogo: true };
                         return _this;
                     }
                     Viewport.prototype.componentDidMount = function () {
-                        if (!this.controller.init(this.refs['host-3d'])) {
+                        if (!this.host3d || !this.controller.init(this.host3d)) {
                             this.setState({ noWebGl: true });
                         }
                         this.handleLogo();
@@ -78464,10 +78482,11 @@ var LiteMol;
                         }
                     };
                     Viewport.prototype.render = function () {
+                        var _this = this;
                         if (this.state.noWebGl)
                             return this.renderMissing();
                         return Plugin.React.createElement("div", { className: 'lm-viewport' },
-                            Plugin.React.createElement("div", { ref: 'host-3d', className: 'lm-viewport-host3d' }),
+                            Plugin.React.createElement("div", { ref: function (host) { return _this.host3d = host; }, className: 'lm-viewport-host3d' }),
                             this.state.showLogo ? Plugin.React.createElement(Visualization.Logo, null) : void 0,
                             Plugin.React.createElement(ViewportControls, { controller: this.controller }));
                     };
