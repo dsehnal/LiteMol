@@ -16,7 +16,7 @@ namespace LiteMol.Bootstrap.Behaviour.Molecule {
         private behaviour: Entity.Behaviour.Any = <any>void 0;
         private ref: string = Utils.generateUUID();
         private download: Task.Running<ArrayBuffer> | undefined = void 0;
-        private cache = new CoordinateStreaming.Cache(100);
+        private cache = Utils.LRUCache.create<ArrayBuffer>(100);
         
         server: string;
         
@@ -78,13 +78,13 @@ namespace LiteMol.Bootstrap.Behaviour.Molecule {
              
             this.download = Utils.ajaxGetArrayBuffer(url).runWithContext(this.context);
                        
-            let cached = this.cache.get(url); 
+            let cached = Utils.LRUCache.get(this.cache, url); 
             if (cached) {
                 this.create(cached, transform);
             } else {                        
                 this.context.performance.start(this.ref);
                 this.download.result.then(data => {            
-                    this.cache.add(url, data);
+                    Utils.LRUCache.set(this.cache, url, data);
                     this.context.performance.end(this.ref);
                     this.context.logger.info(`Streaming done in ${this.context.performance.formatTime(this.ref)}`);
                     this.create(data, transform);
@@ -116,8 +116,7 @@ namespace LiteMol.Bootstrap.Behaviour.Molecule {
         }
     }   
     
-    export namespace CoordinateStreaming {
-        
+    export namespace CoordinateStreaming {        
         export function normalizeServerName(s: string) {
             if (s[s.length - 1] !== '/') return s;
             if (s.length > 0) return s.substr(0, s.length - 1);
@@ -126,43 +125,6 @@ namespace LiteMol.Bootstrap.Behaviour.Molecule {
         
         export function getBaseUrl(id: string, server: string) {
             return `${normalizeServerName(server)}/${id.trim().toLocaleLowerCase()}/cartoon?encoding=bcif&lowPrecisionCoords=1`; 
-        }
-        
-        export class CacheEntry implements Utils.LinkedElement<CacheEntry> {
-            previous: CacheEntry | null = null; 
-            next: CacheEntry | null = null; 
-            inList: boolean; 
-            
-            constructor(public key: string, public data: ArrayBuffer) {
-                
-            }
-        }
-        
-        export class Cache {
-            
-            private count = 0;
-            entries = new Utils.LinkedList<CacheEntry>();
-            
-            get(key: string) {
-                for (let e = this.entries.first; e; e = e.next) {
-                    if (e.key === key) return e.data;
-                }
-                return void 0;
-            }
-            
-            add(key: string, data: ArrayBuffer): ArrayBuffer {
-                if (this.count > this.size) {
-                    this.entries.remove(this.entries.first!);
-                }
-                let e = new CacheEntry(key, data);
-                this.entries.addLast(e);
-                return data;
-            }
-            
-            constructor(public size: number) {
-                if (size < 1) size = 1;
-            }            
-        }
-        
+        }     
     }
 }

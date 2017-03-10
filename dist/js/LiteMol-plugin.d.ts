@@ -15079,6 +15079,23 @@ declare namespace LiteMol.Bootstrap {
     export import Zlib = LiteMolZlib;
 }
 declare namespace LiteMol.Bootstrap.Utils {
+    /** Last recently used cache */
+    interface LRUCache<T> {
+        entries: LinkedList<LRUCache.Entry<T>>;
+        capacity: number;
+    }
+    namespace LRUCache {
+        interface Entry<T> extends LinkedElement<Entry<T>> {
+            key: string;
+            data: T;
+        }
+        function entry<T>(key: string, data: T): Entry<T>;
+        function create<T>(capacity: number): LRUCache<T>;
+        function get<T>(cache: LRUCache<T>, key: string): T | undefined;
+        function set<T>(cache: LRUCache<T>, key: string, data: T): T;
+    }
+}
+declare namespace LiteMol.Bootstrap.Utils {
     enum DataCompressionMethod {
         None = 0,
         Gzip = 1,
@@ -15119,6 +15136,7 @@ declare namespace LiteMol.Bootstrap.Utils {
         inList: boolean;
     }
     class LinkedList<T extends LinkedElement<T>> {
+        count: number;
         first: T | null;
         private last;
         addFirst(item: T): void;
@@ -16292,22 +16310,6 @@ declare namespace LiteMol.Bootstrap.Behaviour.Molecule {
     namespace CoordinateStreaming {
         function normalizeServerName(s: string): string;
         function getBaseUrl(id: string, server: string): string;
-        class CacheEntry implements Utils.LinkedElement<CacheEntry> {
-            key: string;
-            data: ArrayBuffer;
-            previous: CacheEntry | null;
-            next: CacheEntry | null;
-            inList: boolean;
-            constructor(key: string, data: ArrayBuffer);
-        }
-        class Cache {
-            size: number;
-            private count;
-            entries: Utils.LinkedList<CacheEntry>;
-            get(key: string): ArrayBuffer | undefined;
-            add(key: string, data: ArrayBuffer): ArrayBuffer;
-            constructor(size: number);
-        }
     }
 }
 declare namespace LiteMol.Bootstrap.Behaviour {

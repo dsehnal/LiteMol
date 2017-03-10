@@ -13,6 +13,7 @@ namespace LiteMol.Bootstrap.Utils {
 
     export class LinkedList<T extends LinkedElement<T>> {
 
+        count: number = 0;
         first: T | null = null;
         private last: T | null = null;
 
@@ -21,6 +22,7 @@ namespace LiteMol.Bootstrap.Utils {
             if (this.first) this.first.previous = item;
             item.next = this.first;
             this.first = item;
+            this.count++;
         }
 
         addLast(item: T) {
@@ -33,6 +35,7 @@ namespace LiteMol.Bootstrap.Utils {
                 this.first = item;
             }
             item.inList = true;
+            this.count++;
         }
 
         remove(item: T) {
@@ -56,6 +59,7 @@ namespace LiteMol.Bootstrap.Utils {
 
             item.next = null;
             item.previous = null;
+            this.count--;
         }
     }
 }

@@ -69761,6 +69761,58 @@ var LiteMol;
         var Utils;
         (function (Utils) {
             "use strict";
+            var LRUCache;
+            (function (LRUCache) {
+                function entry(key, data) {
+                    return {
+                        previous: null,
+                        next: null,
+                        inList: false,
+                        key: key,
+                        data: data
+                    };
+                }
+                LRUCache.entry = entry;
+                function create(capacity) {
+                    return {
+                        entries: new Utils.LinkedList(),
+                        capacity: Math.max(1, capacity)
+                    };
+                }
+                LRUCache.create = create;
+                function get(cache, key) {
+                    for (var e = cache.entries.first; e; e = e.next) {
+                        if (e.key === key) {
+                            cache.entries.remove(e);
+                            cache.entries.addLast(e);
+                            return e.data;
+                        }
+                    }
+                    return void 0;
+                }
+                LRUCache.get = get;
+                function set(cache, key, data) {
+                    if (cache.entries.count >= cache.capacity) {
+                        cache.entries.remove(cache.entries.first);
+                    }
+                    cache.entries.addLast(entry(key, data));
+                    return data;
+                }
+                LRUCache.set = set;
+            })(LRUCache = Utils.LRUCache || (Utils.LRUCache = {}));
+        })(Utils = Bootstrap.Utils || (Bootstrap.Utils = {}));
+    })(Bootstrap = LiteMol.Bootstrap || (LiteMol.Bootstrap = {}));
+})(LiteMol || (LiteMol = {}));
+/*
+ * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ */
+var LiteMol;
+(function (LiteMol) {
+    var Bootstrap;
+    (function (Bootstrap) {
+        var Utils;
+        (function (Utils) {
+            "use strict";
             var DataCompressionMethod;
             (function (DataCompressionMethod) {
                 DataCompressionMethod[DataCompressionMethod["None"] = 0] = "None";
@@ -70036,6 +70088,7 @@ var LiteMol;
             "use strict";
             var LinkedList = (function () {
                 function LinkedList() {
+                    this.count = 0;
                     this.first = null;
                     this.last = null;
                 }
@@ -70045,6 +70098,7 @@ var LiteMol;
                         this.first.previous = item;
                     item.next = this.first;
                     this.first = item;
+                    this.count++;
                 };
                 LinkedList.prototype.addLast = function (item) {
                     if (this.last != null) {
@@ -70056,6 +70110,7 @@ var LiteMol;
                         this.first = item;
                     }
                     item.inList = true;
+                    this.count++;
                 };
                 LinkedList.prototype.remove = function (item) {
                     if (!item.inList)
@@ -70075,6 +70130,7 @@ var LiteMol;
                     }
                     item.next = null;
                     item.previous = null;
+                    this.count--;
                 };
                 return LinkedList;
             }());
@@ -74454,7 +74510,7 @@ var LiteMol;
                         this.behaviour = void 0;
                         this.ref = Bootstrap.Utils.generateUUID();
                         this.download = void 0;
-                        this.cache = new CoordinateStreaming.Cache(100);
+                        this.cache = Bootstrap.Utils.LRUCache.create(100);
                         this.style = {
                             type: 'BallsAndSticks',
                             taskType: 'Silent',
@@ -74506,14 +74562,14 @@ var LiteMol;
                             + "encoding=bcif&"
                             + "lowPrecisionCoords=1";
                         this.download = Bootstrap.Utils.ajaxGetArrayBuffer(url).runWithContext(this.context);
-                        var cached = this.cache.get(url);
+                        var cached = Bootstrap.Utils.LRUCache.get(this.cache, url);
                         if (cached) {
                             this.create(cached, transform);
                         }
                         else {
                             this.context.performance.start(this.ref);
                             this.download.result.then(function (data) {
-                                _this.cache.add(url, data);
+                                Bootstrap.Utils.LRUCache.set(_this.cache, url, data);
                                 _this.context.performance.end(_this.ref);
                                 _this.context.logger.info("Streaming done in " + _this.context.performance.formatTime(_this.ref));
                                 _this.create(data, transform);
@@ -74555,42 +74611,6 @@ var LiteMol;
                         return normalizeServerName(server) + "/" + id.trim().toLocaleLowerCase() + "/cartoon?encoding=bcif&lowPrecisionCoords=1";
                     }
                     CoordinateStreaming.getBaseUrl = getBaseUrl;
-                    var CacheEntry = (function () {
-                        function CacheEntry(key, data) {
-                            this.key = key;
-                            this.data = data;
-                            this.previous = null;
-                            this.next = null;
-                        }
-                        return CacheEntry;
-                    }());
-                    CoordinateStreaming.CacheEntry = CacheEntry;
-                    var Cache = (function () {
-                        function Cache(size) {
-                            this.size = size;
-                            this.count = 0;
-                            this.entries = new Bootstrap.Utils.LinkedList();
-                            if (size < 1)
-                                size = 1;
-                        }
-                        Cache.prototype.get = function (key) {
-                            for (var e = this.entries.first; e; e = e.next) {
-                                if (e.key === key)
-                                    return e.data;
-                            }
-                            return void 0;
-                        };
-                        Cache.prototype.add = function (key, data) {
-                            if (this.count > this.size) {
-                                this.entries.remove(this.entries.first);
-                            }
-                            var e = new CacheEntry(key, data);
-                            this.entries.addLast(e);
-                            return data;
-                        };
-                        return Cache;
-                    }());
-                    CoordinateStreaming.Cache = Cache;
                 })(CoordinateStreaming = Molecule.CoordinateStreaming || (Molecule.CoordinateStreaming = {}));
             })(Molecule = Behaviour.Molecule || (Behaviour.Molecule = {}));
         })(Behaviour = Bootstrap.Behaviour || (Bootstrap.Behaviour = {}));
