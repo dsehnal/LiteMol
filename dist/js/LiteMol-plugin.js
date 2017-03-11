@@ -72780,6 +72780,11 @@ var LiteMol;
                     IsoValueType[IsoValueType["Sigma"] = 0] = "Sigma";
                     IsoValueType[IsoValueType["Absolute"] = 1] = "Absolute";
                 })(IsoValueType = Density.IsoValueType || (Density.IsoValueType = {}));
+                function areNonIsoParamsSame(a, b) {
+                    return a.bottomLeft === b.bottomLeft && b.topRight === b.topRight
+                        && a.smoothing === b.smoothing && a.isWireframe === b.isWireframe;
+                }
+                Density.areNonIsoParamsSame = areNonIsoParamsSame;
                 var Style;
                 (function (Style) {
                     function create(params) {
@@ -73781,8 +73786,9 @@ var LiteMol;
                         var params = t.params;
                         return Bootstrap.Visualization.Density.create(a, t, params.style).setReportTime(Bootstrap.Visualization.Style.getTaskType(t.params.style) === 'Normal');
                     }, function (ctx, b, t) {
-                        var oldParams = b.transform.params;
-                        if (oldParams.style.type !== t.params.style.type || !Bootstrap.Utils.deepEqual(oldParams.style.params, t.params.style.params))
+                        var oldStyle = b.transform.params.style;
+                        var newStyle = t.params.style;
+                        if (oldStyle.type !== t.params.style.type)
                             return void 0;
                         var parent = Bootstrap.Tree.Node.findClosestNodeOfType(b, [Entity.Density.Data]);
                         if (!parent)
@@ -73790,8 +73796,10 @@ var LiteMol;
                         var model = b.props.model;
                         if (!model)
                             return void 0;
-                        if (!Bootstrap.Utils.deepEqual(oldParams.style.theme, t.params.style.theme)) {
-                            var ti = t.params.style.theme;
+                        if (!compareVisualParams(parent.props.data, oldStyle.params, newStyle.params))
+                            return void 0;
+                        if (!Bootstrap.Utils.deepEqual(oldStyle.theme, t.params.style.theme)) {
+                            var ti = newStyle.theme;
                             var theme = ti.template.provider(parent, Bootstrap.Visualization.Theme.getProps(ti));
                             model.applyTheme(theme);
                             b.props.style.theme = ti;
@@ -73819,25 +73827,37 @@ var LiteMol;
                         return Bootstrap.Task.resolve('Behaviour', 'Background', Entity.Density.InteractiveSurface.create(t, { label: (params.id ? t.params.id : 'Interactive') + ", " + Bootstrap.Utils.round(params.style.params.isoValue, 2) + (isSigma ? ' \u03C3' : ''), behaviour: b }));
                     }, function (ctx, b, t) {
                         var oldParams = b.transform.params;
-                        var params = t.params;
-                        if (oldParams.style.type !== params.style.type || !Bootstrap.Utils.deepEqual(oldParams.style.params, params.style.params))
+                        var newParams = t.params;
+                        if (oldParams.style.type !== newParams.style.type)
                             return void 0;
-                        if (oldParams.isoSigmaMin !== params.isoSigmaMin
-                            || oldParams.isoSigmaMax !== params.isoSigmaMax
-                            || oldParams.minRadius !== params.minRadius
-                            || oldParams.maxRadius !== params.maxRadius
-                            || oldParams.radius !== params.radius
-                            || oldParams.showFull !== params.showFull) {
+                        if (oldParams.isoSigmaMin !== newParams.isoSigmaMin
+                            || oldParams.isoSigmaMax !== newParams.isoSigmaMax
+                            || oldParams.minRadius !== newParams.minRadius
+                            || oldParams.maxRadius !== newParams.maxRadius
+                            || oldParams.radius !== newParams.radius
+                            || oldParams.showFull !== newParams.showFull) {
                             return void 0;
                         }
                         var parent = Bootstrap.Tree.Node.findClosestNodeOfType(b, [Entity.Density.Data]);
                         if (!parent)
                             return void 0;
-                        var ti = params.style.theme;
+                        if (!compareVisualParams(parent.props.data, oldParams.style.params, newParams.style.params))
+                            return void 0;
+                        var ti = newParams.style.theme;
                         b.props.behaviour.updateTheme(ti);
                         Entity.nodeUpdated(b);
                         return Bootstrap.Task.resolve(t.transformer.info.name, 'Background', Bootstrap.Tree.Node.Null);
                     });
+                    function compareVisualParams(data, a, b) {
+                        if (!Bootstrap.Visualization.Density.areNonIsoParamsSame(a, b))
+                            return false;
+                        var valuesInfo = data.valuesInfo;
+                        var oldIso = a.isoValueType === Bootstrap.Visualization.Density.IsoValueType.Absolute
+                            ? a.isoValue : valuesInfo.mean + valuesInfo.sigma * a.isoValue;
+                        var newIso = b.isoValueType === Bootstrap.Visualization.Density.IsoValueType.Absolute
+                            ? b.isoValue : valuesInfo.mean + valuesInfo.sigma * b.isoValue;
+                        return Math.abs(oldIso - newIso) < 1e-6;
+                    }
                 })(Density = Transformer.Density || (Transformer.Density = {}));
             })(Transformer = Entity.Transformer || (Entity.Transformer = {}));
         })(Entity = Bootstrap.Entity || (Bootstrap.Entity = {}));
@@ -77651,6 +77671,13 @@ var LiteMol;
                             var data = LiteMol.Bootstrap.Tree.Node.findClosestNodeOfType(this.transformSourceEntity, [LiteMol.Bootstrap.Entity.Density.Data]);
                             var params = this.params.style.params;
                             var isSigma = params.isoValueType !== LiteMol.Bootstrap.Visualization.Density.IsoValueType.Absolute;
+                            var values = data.props.data.valuesInfo;
+                            var min = isSigma
+                                ? (values.min - values.mean) / values.sigma
+                                : values.min;
+                            var max = isSigma
+                                ? (values.max - values.mean) / values.sigma
+                                : values.max;
                             return Plugin.React.createElement(IsoValue, { view: this, onChangeValue: function (v) { return _this.controller.updateStyleParams({ isoValue: v }); }, onChangeType: function (v) {
                                     if (v === params.isoValueType)
                                         return;
@@ -77660,7 +77687,7 @@ var LiteMol;
                                     else {
                                         _this.controller.updateStyleParams({ isoValue: isoValueAbsoluteToSigma(data.props.data, params.isoValue, -5, 5), isoValueType: v });
                                     }
-                                }, min: isSigma ? -5 : data.props.data.valuesInfo.min, max: isSigma ? 5 : data.props.data.valuesInfo.max, isSigma: params.isoValueType !== LiteMol.Bootstrap.Visualization.Density.IsoValueType.Absolute, value: params.isoValue });
+                                }, min: min, max: max, isSigma: isSigma, value: params.isoValue });
                         };
                         CreateVisual.prototype.colors = function () {
                             var _this = this;
@@ -77706,7 +77733,7 @@ var LiteMol;
                                     else {
                                         _this.controller.updateStyleParams({ isoValue: isoValueAbsoluteToSigma(data.props.data, visualParams.isoValue, params.isoSigmaMin, params.isoSigmaMax), isoValueType: v });
                                     }
-                                }, min: isSigma ? params.isoSigmaMin : data.props.data.valuesInfo.min, max: isSigma ? params.isoSigmaMax : data.props.data.valuesInfo.max, isSigma: visualParams.isoValueType !== LiteMol.Bootstrap.Visualization.Density.IsoValueType.Absolute, value: visualParams.isoValue });
+                                }, min: isSigma ? params.isoSigmaMin : data.props.data.valuesInfo.min, max: isSigma ? params.isoSigmaMax : data.props.data.valuesInfo.max, isSigma: isSigma, value: visualParams.isoValue });
                         };
                         CreateVisualBehaviour.prototype.colors = function () {
                             var _this = this;

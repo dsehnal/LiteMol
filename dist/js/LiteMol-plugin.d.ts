@@ -15809,6 +15809,7 @@ declare namespace LiteMol.Bootstrap.Visualization.Density {
         smoothing: number;
         isWireframe: boolean;
     }
+    function areNonIsoParamsSame(a: Params, b: Params): boolean;
     type Style = Visualization.Style<'Density', Params>;
     namespace Style {
         function create(params: {

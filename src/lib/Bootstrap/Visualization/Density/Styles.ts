@@ -19,6 +19,11 @@ namespace LiteMol.Bootstrap.Visualization.Density {
         isWireframe: boolean
     }
     
+    export function areNonIsoParamsSame(a: Params, b: Params) {
+        return a.bottomLeft === b.bottomLeft && b.topRight === b.topRight 
+            && a.smoothing === b.smoothing && a.isWireframe === b.isWireframe;
+    }
+
     export type Style = Visualization.Style<'Density', Params>
     
     export namespace Style {    
