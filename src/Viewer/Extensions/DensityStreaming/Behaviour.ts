@@ -31,6 +31,7 @@ namespace LiteMol.Extensions.DensityStreaming {
         private selectionBox: Box | undefined = void 0;
         private modelBoundingBox: Box | undefined = void 0;
         private channels: { [name: string]: Channel } | undefined = void 0;
+        private cache = Bootstrap.Utils.LRUCache.create<{ [name: string]: Channel }>(25);
 
         private types: FieldType[];
 
@@ -220,12 +221,21 @@ namespace LiteMol.Extensions.DensityStreaming {
             }
             url += `?detail=${this.params.detailLevel}`;
 
+            const channels = Bootstrap.Utils.LRUCache.get(this.cache, url);
+            if (channels) {
+                this.clear();
+                this.channels = channels;
+                if (this.params.source === 'EMD') this.createEmd();
+                else this.createXray();
+                return;
+            }
+
             this.download = Utils.ajaxGetArrayBuffer(url, 'Density').runWithContext(this.context);
             this.download.result.then(data => {
                 this.clear();
                 this.channels = this.parseChannels(data);
                 if (!this.channels) return;
-
+                Bootstrap.Utils.LRUCache.set(this.cache, url, this.channels);
                 if (this.params.source === 'EMD') this.createEmd();
                 else this.createXray();
             });
