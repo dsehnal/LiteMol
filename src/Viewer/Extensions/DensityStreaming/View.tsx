@@ -43,22 +43,26 @@ namespace LiteMol.Extensions.DensityStreaming {
             const isSigma = params.isoValueType === Bootstrap.Visualization.Density.IsoValueType.Sigma;
             const label = isSigma ? `${type} \u03C3` : type;
             const valuesIndex = params.header.channels.indexOf(IsoInfo[type].dataKey);
-            const valuesInfo = params.header.sampling[0].valuesInfo[valuesIndex];
+            const baseValuesInfo = params.header.sampling[0].valuesInfo[valuesIndex];
+            const sampledValuesInfo = params.header.sampling[params.header.sampling.length - 1].valuesInfo[valuesIndex];
             const isoInfo = IsoInfo[type];
             const value = params.isoValues[type]!;
+
+            const sigmaMin = (sampledValuesInfo.min - sampledValuesInfo.mean) / sampledValuesInfo.sigma;
+            const sigmaMax = (sampledValuesInfo.max - sampledValuesInfo.mean) / sampledValuesInfo.sigma;
 
             let min, max;
             if (isSigma) {
                 if (type === 'EMD') {
-                    min = valuesInfo.mean + valuesInfo.sigma * valuesInfo.min;
-                    max = valuesInfo.mean + valuesInfo.sigma * valuesInfo.max;
+                    min = Math.max((baseValuesInfo.min - baseValuesInfo.mean) / baseValuesInfo.sigma, sigmaMin);
+                    max = Math.min((baseValuesInfo.max - baseValuesInfo.mean) / baseValuesInfo.sigma, sigmaMax);
                 } else {
                     min = isoInfo.min;
                     max = isoInfo.max;
                 }               
             } else {
-                min = valuesInfo.min;
-                max = valuesInfo.max;
+                min = Math.max(baseValuesInfo.mean + sigmaMin * baseValuesInfo.sigma, baseValuesInfo.min);
+                max = Math.min(baseValuesInfo.mean + sigmaMax * baseValuesInfo.sigma, baseValuesInfo.max);
             }
 
             return <Controls.Slider label={label} onChange={v => this.updateIso(type, v)} min={min} max={max} value={value} step={0.001} />;
