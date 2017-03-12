@@ -24,14 +24,19 @@
     "./Version.ts",
     "./App/DataSources.ts",
     "./App/ValidatorDB.ts",
+
+    "./Extensions/DensityStreaming/DataModel.ts",
     "./Extensions/DensityStreaming/Entity.ts",
-    "./Extensions//DensityStreaming/Behaviour.ts",
-    "./Extensions//DensityStreaming/View.tsx",
+    "./Extensions/DensityStreaming/Behaviour.ts",
+    "./Extensions/DensityStreaming/View.tsx",
+
     "./PDBe/Data.ts",
     "./PDBe/Density.ts",
     "./PDBe/Validation.ts",
     "./PDBe/SequenceAnnotation.ts",
     "./PDBe/Views.tsx",
+
+    "./App/Examples.ts",
     "./App/Spec.ts",
     
     "./App/App.ts"

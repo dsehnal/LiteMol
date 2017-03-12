@@ -13,7 +13,7 @@ namespace LiteMol.Extensions.DensityStreaming {
     export class CreateView extends LiteMol.Plugin.Views.Transform.ControllerBase<Bootstrap.Components.Transform.Controller<CreateParams>> {
 
         protected renderControls() {            
-            let params = this.params;                                   
+            const params = this.params;                                   
             return <div>
                 <Controls.OptionsGroup 
                     options={FieldSources} caption={s => s} 
@@ -24,7 +24,7 @@ namespace LiteMol.Extensions.DensityStreaming {
         }        
     }   
 
-    const IsoInfo: {[F in FieldType]: { min: number, max: number, dataKey: DataType } } = {
+    export const IsoInfo: {[F in FieldType]: { min: number, max: number, dataKey: DataType } } = {
         'EMD': { min: -5, max: 5, dataKey: 'EM' },
         '2Fo-Fc': { min: 0, max: 2, dataKey: '2FO-FC' },
         'Fo-Fc(+ve)': { min: 0, max: 5, dataKey: 'FO-FC' },
@@ -33,24 +33,43 @@ namespace LiteMol.Extensions.DensityStreaming {
 
     export class StreamingView extends LiteMol.Plugin.Views.Transform.ControllerBase<Bootstrap.Components.Transform.DensityVisual<CreateStreamingParams, FieldType>> {
 
+        private updateIso(type: FieldType, v: number) {
+            const isoValues = { ...this.params.isoValues, [type]: v };
+            this.controller.autoUpdateParams({ isoValues });
+        }
+
         private iso(type: FieldType) {
-            let params = this.params[type]!.params;
-            let isSigma = params.isoValueType === Bootstrap.Visualization.Density.IsoValueType.Sigma
-            let label = isSigma ? `${type} \u03C3` : type;
+            const params = this.params;
+            const isSigma = params.isoValueType === Bootstrap.Visualization.Density.IsoValueType.Sigma;
+            const label = isSigma ? `${type} \u03C3` : type;
+            const valuesIndex = params.header.channels.indexOf(IsoInfo[type].dataKey);
+            const valuesInfo = params.header.sampling[0].valuesInfo[valuesIndex];
+            const isoInfo = IsoInfo[type];
+            const value = params.isoValues[type]!;
 
-            let info = this.params.info.data[IsoInfo[type].dataKey]!;
+            let min, max;
+            if (isSigma) {
+                if (type === 'EMD') {
+                    min = valuesInfo.mean + valuesInfo.sigma * valuesInfo.min;
+                    max = valuesInfo.mean + valuesInfo.sigma * valuesInfo.max;
+                } else {
+                    min = isoInfo.min;
+                    max = isoInfo.max;
+                }               
+            } else {
+                min = valuesInfo.min;
+                max = valuesInfo.max;
+            }
 
-            return <Controls.Slider label={label} onChange={v => this.controller.updateStyleParams({ isoValue: v  }, type)}
-                min={isSigma ? IsoInfo[type].min : info.min} max={isSigma ? IsoInfo[type].max : info.max}
-                value={params.isoValue} step={0.001}  />
+            return <Controls.Slider label={label} onChange={v => this.updateIso(type, v)} min={min} max={max} value={value} step={0.001} />;
         }
 
         private style(type: FieldType) {
-            let showTypeOptions = this.getPersistentState('showTypeOptions-' + type, false);
+            const showTypeOptions = this.getPersistentState('showTypeOptions-' + type, false);
 
-            let theme = this.params[type]!.theme;
-            let params = this.params[type]!.params;
-            let color = theme.colors!.get('Uniform');
+            const theme = this.params[type]!.theme;
+            const params = this.params[type]!.params;
+            const color = theme.colors!.get('Uniform');
             
             return <Controls.ExpandableGroup
                     select={this.iso(type)}
@@ -64,16 +83,72 @@ namespace LiteMol.Extensions.DensityStreaming {
                     isExpanded={showTypeOptions} />;
         }
 
+        private details() {
+            const { availablePrecisions } = this.params.header; 
+            if (availablePrecisions.length < 2) return void 0;
+            const params = this.params;
+            const detailLevel = params.detailLevel;
+            const options = availablePrecisions.map(p => { 
+                const d = `${Math.ceil(p.maxVoxels ** (1/3))}`;
+                return `${d} \u00D7 ${d} \u00D7 ${d}`;
+            })
+            return <Controls.OptionsGroup  options={options}  caption={s => s}  current={options[detailLevel]}
+                title='Determines the detail level of the surface.'
+                onChange={o => this.autoUpdateParams({ detailLevel: options.indexOf(o) }) } label='Max Voxels' />
+        }
+
+        private updateValueType(toSigma: boolean) {
+            const params = this.params; 
+            const isSigma = params.isoValueType === Bootstrap.Visualization.Density.IsoValueType.Sigma;
+            if (isSigma === toSigma) return;
+
+            const newValues: { [F in FieldType]?: number } = {};            
+            for (const k of Object.getOwnPropertyNames(params.isoValues)) {
+                const valuesIndex = params.header.channels.indexOf(IsoInfo[k as FieldType].dataKey);
+                const valuesInfo = params.header.sampling[0].valuesInfo[valuesIndex];
+                const value = params.isoValues[k as FieldType]!;
+                newValues[k as FieldType] = toSigma 
+                    ? (value - valuesInfo.mean) / valuesInfo.sigma
+                    : valuesInfo.mean + valuesInfo.sigma * value;
+            }
+            this.controller.autoUpdateParams({ 
+                isoValueType: toSigma ? Bootstrap.Visualization.Density.IsoValueType.Sigma : Bootstrap.Visualization.Density.IsoValueType.Absolute,
+                isoValues: newValues
+            });
+        }
+
+        private displayType() {
+            const showDisplayOptions = this.getPersistentState('showDisplayOptions', false);
+            const params = this.params; 
+            const isSigma = params.isoValueType === Bootstrap.Visualization.Density.IsoValueType.Sigma;
+
+            const show = <Controls.OptionsGroup 
+                    options={['Everything', 'Around Selection'] as CreateStreamingParams.DisplayTypeKind[]} 
+                    caption={s => s} 
+                    current={params.displayType}
+                    onChange={o => this.autoUpdateParams({ displayType: o }) } 
+                    label='Show' />;
+            
+            return <Controls.ExpandableGroup
+                    select={show}
+                    expander={<Controls.ControlGroupExpander isExpanded={showDisplayOptions} onChange={e => this.setPersistentState('showDisplayOptions', e) }  />}
+                    options={[
+                        this.details(),
+                        <Controls.Toggle onChange={v => this.updateValueType(v)} value={isSigma} label='Relative (\u03C3)' title='Specify contour level as relative (\u03C3) or absolute value.' />
+                    ]}
+                    isExpanded={showDisplayOptions} />;
+        }
+
         protected renderControls() {            
-            let params = this.params;                                   
+            const params = this.params;                                   
             return <div>
-                {
-                    params.source === 'EMD'
+                { params.source === 'EMD'
                     ? [this.style('EMD')]
-                    : [this.style('2Fo-Fc'), this.style('Fo-Fc(+ve)'), this.style('Fo-Fc(-ve)')]
-                }
-                <Controls.Slider label='Radius' onChange={v => this.autoUpdateParams({ radius: v })} 
-                    min={params.minRadius !== void 0 ? params.minRadius : 0} max={params.maxRadius !== void 0 ? params.maxRadius : 10} step={0.005} value={params.radius} />
+                    : [this.style('2Fo-Fc'), this.style('Fo-Fc(+ve)'), this.style('Fo-Fc(-ve)')] }
+                { params.displayType === 'Everything'
+                    ? void 0
+                    : <Controls.Slider label='Radius' onChange={v => this.autoUpdateParams({ radius: v })} min={0} max={params.maxRadius} step={0.005} value={params.radius} /> }
+                {this.displayType()}
             </div>
         }        
     }   

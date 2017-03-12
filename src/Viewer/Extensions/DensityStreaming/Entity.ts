@@ -12,20 +12,6 @@ namespace LiteMol.Extensions.DensityStreaming {
     export interface Streaming extends Entity<Entity.Behaviour.Props<Behaviour>> { }
     export const Streaming = Entity.create<Entity.Behaviour.Props<Behaviour>>({ name: 'Interactive Surface', typeClass: 'Behaviour', shortName: 'B_DS', description: 'Behaviour that downloads density data for molecule selection on demand.' });
 
-    type DataInfo = { maxQueryRegion: number[], data: {[K in DataType]?: { mean: number, sigma: number, min: number, max: number } } }
-
-    export interface CreateStreamingParamsBase {
-        minRadius: number;
-        maxRadius: number;
-        radius: number,
-        server: string,
-        source: FieldSource,
-        id: string,
-        info: DataInfo
-    }
-
-    export type CreateStreamingParams = CreateStreamingParamsBase & {[F in FieldType]?: Bootstrap.Visualization.Density.Style }
-
     export const CreateStreaming = Tree.Transformer.create<Entity.Molecule.Molecule, Streaming, CreateStreamingParams>({
         id: 'density-streaming-create-streaming',
         name: 'Density Streaming',
@@ -36,31 +22,12 @@ namespace LiteMol.Extensions.DensityStreaming {
         defaultParams: () => <any>{},
         customController: (ctx, t, e) => new Bootstrap.Components.Transform.DensityVisual(ctx, t, e) as Bootstrap.Components.Transform.Controller<any>
     }, (ctx, a, t) => {
-        let params = t.params;
-        let b = new Behaviour(ctx, {
-            styles: {
-                'EMD': params['EMD'],
-                '2Fo-Fc': params['2Fo-Fc'],
-                'Fo-Fc(+ve)': params['Fo-Fc(+ve)'],
-                'Fo-Fc(-ve)': params['Fo-Fc(-ve)']
-            },
-            source: t.params.source,
-            id: t.params.id,
-            radius: t.params.radius,
-            server: t.params.server,
-            maxQueryRegion: t.params.info.maxQueryRegion
-        });
+        const b = new Behaviour(ctx, t.params);
         return Bootstrap.Task.resolve('Behaviour', 'Background', Streaming.create(t, { label: `Density Streaming`, behaviour: b }));
     }, (ctx, b, t) => {
-        let oldParams = b.transform.params as CreateStreamingParams;
-        let params = t.params;
-
-        if (oldParams.radius !== params.radius) return void 0;
-
         return Bootstrap.Task.create<Tree.Node.Any>('Density', 'Background', async ctx => {
-            await ctx.updateProgress('Updating styles...');
             try {
-                await b.props.behaviour.invalidateStyles(params);
+                await b.props.behaviour.invalidateParams(t.params);
             } catch (e) {
             } finally {
                 Entity.nodeUpdated(b);
@@ -83,7 +50,7 @@ namespace LiteMol.Extensions.DensityStreaming {
         to: [Entity.Action],
         defaultParams: (ctx, e) => {
             let source: FieldSource = 'X-ray';
-            let method = (e.props.molecule.properties.experimentMethod || '').toLowerCase();
+            const method = (e.props.molecule.properties.experimentMethod || '').toLowerCase();
             if (method.indexOf('microscopy') >= 0) source = 'EMD';
             return { server: ctx.settings.get('extensions.densityStreaming.defaultServer'), id: e.props.molecule.id, source };
         },
@@ -109,11 +76,10 @@ namespace LiteMol.Extensions.DensityStreaming {
         };
     }
 
-    function doAction(m: Entity.Molecule.Molecule, params: CreateParams, info: DataInfo, sourceId?: string, contourLevel?: number): DensityAction {
-        let radius = info.maxQueryRegion.reduce((m, v) => Math.min(m, v), info.maxQueryRegion[0]) / 2 - 3;
-        let taskType: Bootstrap.Task.Type = 'Silent';
+    function doAction(m: Entity.Molecule.Molecule, params: CreateParams, header: ServerDataFormat.Header, sourceId?: string, contourLevel?: number): DensityAction {
+        const taskType: Bootstrap.Task.Type = 'Silent';
 
-        let styles: {[F in FieldType]?: Bootstrap.Visualization.Density.Style } = params.source === 'EMD'
+        const styles: {[F in FieldType]?: Bootstrap.Visualization.Density.Style } = params.source === 'EMD'
             ? {
                 'EMD': Bootstrap.Visualization.Density.Style.create({
                     isoValue: contourLevel !== void 0 ? contourLevel : 1.5,
@@ -151,14 +117,21 @@ namespace LiteMol.Extensions.DensityStreaming {
                 })
             };
 
-        let streaming: CreateStreamingParams = {
-            minRadius: 0,
-            maxRadius: params.source === 'X-ray' ? Math.min(10, radius) : Math.min(50, radius),
-            radius: Math.min(5, radius),
+        const streaming: CreateStreamingParams = {
+            maxRadius: params.source === 'X-ray' ? 10 : 50,
             server: params.server,
             source: params.source,
             id: sourceId ? sourceId : params.id,
-            info,
+            header,
+            isoValueType: params.source === 'X-ray' || contourLevel === void 0
+                ? Bootstrap.Visualization.Density.IsoValueType.Sigma 
+                : Bootstrap.Visualization.Density.IsoValueType.Absolute,
+            isoValues:  params.source === 'X-ray' 
+                ? { '2Fo-Fc': 1.5, 'Fo-Fc(+ve)': 3, 'Fo-Fc(-ve)': -3 }
+                : { 'EMD': contourLevel !== void 0 ? contourLevel : 1.5 },
+            displayType: params.source === 'X-ray' ? 'Around Selection' : 'Everything',
+            detailLevel: Math.min(2, header.availablePrecisions.length - 1),
+            radius: params.source === 'X-ray' ? 5 : 15,
             ...styles
         }
 
@@ -172,15 +145,16 @@ namespace LiteMol.Extensions.DensityStreaming {
         let server = params.server.trim();
         if (server[server.length - 1] !== '/') server += '/';
 
-        let uri = `${server}${params.source}/${sourceId ? sourceId : params.id}`;
+        const uri = `${server}${params.source}/${sourceId ? sourceId : params.id}`;
 
-        let s = await Bootstrap.Utils.ajaxGetString(uri, 'DensityServer').run(ctx)
+        const s = await Bootstrap.Utils.ajaxGetString(uri, 'DensityServer').run(ctx)
         try {
-            let json = JSON.parse(s);
-            if (!json.isAvailable) {
+            const header = JSON.parse(s) as ServerDataFormat.Header;
+            if (!header.isAvailable) {
                 return fail(m, `Density streaming is not available for '${params.source}/${params.id}'.`);
             }
-            return doAction(m, params, { maxQueryRegion: json.maxQueryRegion, data: json.dataInfo }, sourceId, contourLevel);
+            header.channels = header.channels.map(c => c.toUpperCase());
+            return doAction(m, params, header, sourceId, contourLevel);
         } catch (e) {
             return fail(e, 'DensityServer API call failed.');
         }
@@ -188,11 +162,11 @@ namespace LiteMol.Extensions.DensityStreaming {
 
     async function doEmdbId(m: Entity.Molecule.Molecule, ctx: Bootstrap.Context, params: CreateParams, id: string) {
         id = id.trim();
-        let s = await Bootstrap.Utils.ajaxGetString(`https://www.ebi.ac.uk/pdbe/api/emdb/entry/map/EMD-${id}`, 'EMDB API').run(ctx);
+        const s = await Bootstrap.Utils.ajaxGetString(`https://www.ebi.ac.uk/pdbe/api/emdb/entry/map/EMD-${id}`, 'EMDB API').run(ctx);
         try {
-            let json = JSON.parse(s);
+            const json = JSON.parse(s);
+            const e = json['EMD-' + id];
             let contour: number | undefined = void 0;
-            let e = json['EMD-' + id];
             if (e && e[0] && e[0].map && e[0].map.contour_level && e[0].map.contour_level.value !== void 0) {
                 contour = +e[0].map.contour_level.value;
             }
@@ -203,14 +177,14 @@ namespace LiteMol.Extensions.DensityStreaming {
     }
 
     async function doEmd(m: Entity.Molecule.Molecule, ctx: Bootstrap.Context, params: CreateParams) {
-        let id = params.id.trim().toLowerCase();
-        let s = await Bootstrap.Utils.ajaxGetString(`https://www.ebi.ac.uk/pdbe/api/pdb/entry/summary/${id}`, 'PDB API').run(ctx);
+        const id = params.id.trim().toLowerCase();
+        const s = await Bootstrap.Utils.ajaxGetString(`https://www.ebi.ac.uk/pdbe/api/pdb/entry/summary/${id}`, 'PDB API').run(ctx);
         try {
-            let json = JSON.parse(s);
+            const json = JSON.parse(s);
+            const e = json[id];
             let emdbId: string;
-            let e = json[id];
             if (e && e[0] && e[0].related_structures) {
-                let emdb = e[0].related_structures.filter((s: any) => s.resource === 'EMDB');
+                const emdb = e[0].related_structures.filter((s: any) => s.resource === 'EMDB');
                 if (!emdb.length) {
                     return fail(m, `No related EMDB entry found for '${id}'.`);
                 }

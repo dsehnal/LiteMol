@@ -19,6 +19,7 @@
   "files": [
     "../../dist/js/LiteMol-plugin.d.ts",
 
+    "../../src/Viewer/Extensions/DensityStreaming/DataModel.ts",
     "../../src/Viewer/Extensions/DensityStreaming/Entity.ts",
     "../../src/Viewer/Extensions/DensityStreaming/Behaviour.ts",
     "../../src/Viewer/Extensions/DensityStreaming/View.tsx",

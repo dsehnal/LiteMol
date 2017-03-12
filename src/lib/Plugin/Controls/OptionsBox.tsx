@@ -33,7 +33,7 @@ namespace LiteMol.Plugin.Controls {
                     this.props.onChange(this.current);
                 }}>
                 {(this.props.options.map as any)((o: any, i: number) => {
-                    return <option key={i} value={`` + i} selected={i === idx}>{cap(o) }</option>
+                    return <option key={i} value={`` + i} selected={i === idx}>{cap(o)}</option>
                 }) }
             </select>
         }
