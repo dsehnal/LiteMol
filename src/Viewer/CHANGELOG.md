@@ -1,3 +1,7 @@
+# 1.4.0
+* Updated Density Streaming to work with the new DensityServer.
+* Added examples.
+
 # 1.3.2
 * Fixed Density Streaming to work on multiple structures at the same time.
 

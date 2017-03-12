@@ -16254,6 +16254,8 @@ declare namespace LiteMol.Bootstrap.Behaviour {
         register(behaviour: Entity.Behaviour.Any): void;
     }
     function SetEntityToCurrentWhenAdded(context: Context): void;
+    /** An ugly hack that will be removed when the time comes */
+    let SuppressCreateVisualWhenModelIsAdded: boolean;
     function CreateVisualWhenModelIsAdded(context: Context): void;
     function ApplySelectionToVisual(context: Context): void;
     function ApplyInteractivitySelection(context: Context): void;

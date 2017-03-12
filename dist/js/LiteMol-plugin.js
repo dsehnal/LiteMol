@@ -74174,9 +74174,11 @@ var LiteMol;
                 });
             }
             Behaviour.SetEntityToCurrentWhenAdded = SetEntityToCurrentWhenAdded;
+            /** An ugly hack that will be removed when the time comes */
+            Behaviour.SuppressCreateVisualWhenModelIsAdded = false;
             function CreateVisualWhenModelIsAdded(context) {
                 Bootstrap.Event.Tree.NodeAdded.getStream(context).subscribe(function (e) {
-                    if (!Bootstrap.Tree.Node.is(e.data, Bootstrap.Entity.Molecule.Model) || e.data.isHidden) {
+                    if (Behaviour.SuppressCreateVisualWhenModelIsAdded || !Bootstrap.Tree.Node.is(e.data, Bootstrap.Entity.Molecule.Model) || e.data.isHidden) {
                         return;
                     }
                     var prms = Bootstrap.Entity.Transformer.Molecule.CreateMacromoleculeVisual.info.defaultParams(context, e.data);

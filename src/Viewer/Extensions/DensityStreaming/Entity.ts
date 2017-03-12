@@ -36,12 +36,6 @@ namespace LiteMol.Extensions.DensityStreaming {
         });
     });
 
-    export interface CreateParams {
-        server: string,
-        id: string,
-        source: FieldSource
-    }
-
     export const Create = Bootstrap.Tree.Transformer.actionWithContext<Entity.Molecule.Molecule, Entity.Action, CreateParams, undefined>({
         id: 'density-streaming-create',
         name: 'Density Streaming',
@@ -60,7 +54,7 @@ namespace LiteMol.Extensions.DensityStreaming {
         }
     }, (context, a, t) => {
         switch (t.params.source) {
-            case 'X-ray': return doCS(a, context, t.params);
+            case 'X-ray': return enableStreaming(a, context, t.params);
             case 'EMD': return doEmd(a, context, t.params);
             default: return fail(a, 'Unknown data source.');
         }
@@ -132,7 +126,8 @@ namespace LiteMol.Extensions.DensityStreaming {
             displayType: params.source === 'X-ray' ? 'Around Selection' : 'Everything',
             detailLevel: Math.min(2, header.availablePrecisions.length - 1),
             radius: params.source === 'X-ray' ? 5 : 15,
-            ...styles
+            ...styles,
+            ...params.initialStreamingParams
         }
 
         return {
@@ -141,7 +136,7 @@ namespace LiteMol.Extensions.DensityStreaming {
         };
     }
 
-    async function doCS(m: Entity.Molecule.Molecule, ctx: Bootstrap.Context, params: CreateParams, sourceId?: string, contourLevel?: number) {
+    async function enableStreaming(m: Entity.Molecule.Molecule, ctx: Bootstrap.Context, params: CreateParams, sourceId?: string, contourLevel?: number) {
         let server = params.server.trim();
         if (server[server.length - 1] !== '/') server += '/';
 
@@ -170,7 +165,7 @@ namespace LiteMol.Extensions.DensityStreaming {
             if (e && e[0] && e[0].map && e[0].map.contour_level && e[0].map.contour_level.value !== void 0) {
                 contour = +e[0].map.contour_level.value;
             }
-            return await doCS(m, ctx, params, id, contour);
+            return await enableStreaming(m, ctx, params, id, contour);
         } catch (e) {
             return fail(m, 'EMDB API call failed.');
         }

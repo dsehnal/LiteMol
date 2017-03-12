@@ -21,12 +21,14 @@ namespace LiteMol.Bootstrap.Behaviour {
             Command.Entity.SetCurrent.dispatch(context, e);
         });
     }   
-            
+    
+    /** An ugly hack that will be removed when the time comes */
+    export let SuppressCreateVisualWhenModelIsAdded:boolean = false;
     export function CreateVisualWhenModelIsAdded(context: Context) {
         Event.Tree.NodeAdded.getStream(context).subscribe(e => {
-            if (!Tree.Node.is(e.data, Entity.Molecule.Model) || (e.data as Entity.Any).isHidden) {
+            if (SuppressCreateVisualWhenModelIsAdded || !Tree.Node.is(e.data, Entity.Molecule.Model) || (e.data as Entity.Any).isHidden) {
                 return;
-            } 
+            }             
             let prms = Entity.Transformer.Molecule.CreateMacromoleculeVisual.info.defaultParams(context, e.data)!;
             Command.Tree.ApplyTransform.dispatch(context, { node: e.data, transform: Entity.Transformer.Molecule.CreateMacromoleculeVisual.create(prms) }) 
         });

@@ -14,6 +14,13 @@ namespace LiteMol.Extensions.DensityStreaming {
     export type FieldType = '2Fo-Fc' | 'Fo-Fc(-ve)' | 'Fo-Fc(+ve)' | 'EMD'
     export const FieldSources: FieldSource[] = ['X-ray', 'EMD' ]  
 
+    export interface CreateParams {
+        server: string,
+        id: string,
+        source: FieldSource,
+        initialStreamingParams?: Partial<CreateStreamingParams>
+    }
+
     export type CreateStreamingParams = {
         readonly maxRadius: number,
         readonly server: string,

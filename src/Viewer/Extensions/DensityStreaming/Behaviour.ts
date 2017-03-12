@@ -221,6 +221,8 @@ namespace LiteMol.Extensions.DensityStreaming {
             }
             url += `?detail=${this.params.detailLevel}`;
 
+            
+
             const channels = Bootstrap.Utils.LRUCache.get(this.cache, url);
             if (channels) {
                 this.clear();

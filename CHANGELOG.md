@@ -5,7 +5,12 @@ This a global changelog that outlines overal changes in LiteMol.
 Each component also has its separate changelog 
 ([Core](src/lib/Core/CHANGELOG.md), [Visualization](src/lib/Visualization/CHANGELOG.md), [Bootstrap](src/lib/Bootstrap/CHANGELOG.md), [Plugin](src/lib/Plugin/CHANGELOG.md), [Viewer](src/Viewer/CHANGELOG.md)).
 
-2.1.0
+2.2.0-preview
+-----------
+
+* Added support to the latest version of the DensityServer that supports downsampling. As a result, surfaces for the entire structures can be visualised almost instantly.
+
+2.1.0-preview
 -----------
 
 * Updated the density data model.

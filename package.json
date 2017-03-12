@@ -1,6 +1,6 @@
 {
   "name": "litemol",
-  "version": "2.1.0-preview",
+  "version": "2.2.0-preview",
   "description": "A library/plugin for handling 3D structural molecular data (not only) in the browser.",
   "scripts": {},
   "main": "index.js",

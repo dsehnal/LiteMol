@@ -40,5 +40,11 @@ namespace LiteMol.Viewer {
             let t = plugin.createTransform().add(plugin.root, DataSources.DownloadMolecule, { id: downloadUrl, format });
             plugin.applyTransform(t);
         }
+
+        let example = getParam('example', '[a-z0-9\-]+').toLowerCase().trim();
+        switch (example) {
+            case 'zika-cryo-em': Examples.Zika(plugin); break;
+            case 'hiv1': Examples.HIV1Capsid(plugin); break;
+        }
     })();
 }
