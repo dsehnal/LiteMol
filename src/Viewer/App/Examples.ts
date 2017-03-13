@@ -34,7 +34,7 @@ namespace LiteMol.Viewer.Examples {
             });
 
             const params: Extensions.DensityStreaming.SetupParams = { 
-                server: 'http://localhost:1337/DensityServer/',
+                server: 'https://webchem.ncbr.muni.cz/DensityServer/', //'http://localhost:1337/DensityServer/',
                 id: '5ire',
                 source: 'EMD',
                 initialStreamingParams: { 
@@ -77,6 +77,44 @@ namespace LiteMol.Viewer.Examples {
         });
     }
 
+    export async function HIV1Protease(plugin: Plugin.Controller) {
+        LiteMol.Bootstrap.Behaviour.SuppressCreateVisualWhenModelIsAdded = true;
+        plugin.setLayoutState({ hideControls: true });
+
+        const molecule = plugin.createTransform()
+            .add(plugin.root, Transformer.Data.Download, { url: `https://webchemdev.ncbr.muni.cz/CoordinateServer/2f80/full?encoding=bcif&lowPrecisionCoords=1`, type: 'Binary', id: '5ire' })
+            .then(Transformer.Molecule.CreateFromData, { format: LiteMol.Core.Formats.Molecule.SupportedFormats.mmBCIF }, { ref: 'molecule', isBinding: true })
+            .then(Transformer.Molecule.CreateModel, { modelIndex: 0 })
+            .then(Transformer.Molecule.CreateMacromoleculeVisual, { het: true, polymer: true, water: false }, { });
+   
+        await plugin.applyTransform(molecule);
+        LiteMol.Bootstrap.Behaviour.SuppressCreateVisualWhenModelIsAdded = false;
+
+        const annotation = plugin.createTransform()
+            .add('molecule', Viewer.PDBe.Validation.DownloadAndCreate, { reportRef: 'validation' });
+        
+        const annotationTransform = plugin.applyTransform(annotation);
+
+        const streamingParams: Extensions.DensityStreaming.SetupParams = { 
+            server: 'https://webchem.ncbr.muni.cz/DensityServer/',
+            id: '2f80',
+            source: 'X-ray'
+        };
+        const streaming = plugin.createTransform()
+            .add('molecule', Extensions.DensityStreaming.Setup, streamingParams);
+
+        plugin.applyTransform(streaming);
+
+        await annotationTransform;
+        function applyColoring() {
+            const coloring = plugin.createTransform().add('validation', Viewer.PDBe.Validation.ApplyTheme, { })
+            plugin.applyTransform(coloring);
+        }
+
+        applyColoring();
+        plugin.subscribe(Bootstrap.Command.Visual.ResetScene, () => setTimeout(() => applyColoring(), 25));
+    }
+
     export async function LigandInteraction_3a4x(plugin: Plugin.Controller) {
         plugin.setLayoutState({ hideControls: true });
 
@@ -116,8 +154,23 @@ namespace LiteMol.Viewer.Examples {
         const annotation = plugin.createTransform()
             .add('molecule', Viewer.ValidatorDB.DownloadAndCreate, { reportRef: 'validation' });
         
-        await plugin.applyTransform(annotation);
+        const annotationTransform = plugin.applyTransform(annotation);
 
+        const streamingParams: Extensions.DensityStreaming.SetupParams = { 
+            server: 'https://webchem.ncbr.muni.cz/DensityServer/',
+            id: '3a4x',
+            source: 'X-ray',
+            initialStreamingParams: { 
+                displayType: 'Everything',
+                showEverythingExtent: 0
+            }
+        };
+        const streaming = plugin.createTransform()
+            .add('molecule', Extensions.DensityStreaming.Setup, streamingParams);
+
+        plugin.applyTransform(streaming);
+
+        await annotationTransform;
         function applyColoring() {
             const coloring = plugin.createTransform().add('validation', Viewer.ValidatorDB.ApplyTheme, { })
             plugin.applyTransform(coloring);

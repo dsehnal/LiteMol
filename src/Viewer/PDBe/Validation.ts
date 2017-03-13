@@ -195,7 +195,7 @@ namespace LiteMol.Viewer.PDBe.Validation {
         }       
     );
         
-    export const DownloadAndCreate = Bootstrap.Tree.Transformer.action<Entity.Molecule.Molecule, Entity.Action, { }>({
+    export const DownloadAndCreate = Bootstrap.Tree.Transformer.action<Entity.Molecule.Molecule, Entity.Action, { reportRef?: string }>({
         id: 'pdbe-validation-download-and-create',
         name: 'PDBe Validation Report',
         description: 'Download Validation Report from PDBe',
@@ -206,7 +206,7 @@ namespace LiteMol.Viewer.PDBe.Validation {
         let id = a.props.molecule.id.trim().toLocaleLowerCase();                    
         let action = Bootstrap.Tree.Transform.build()
             .add(a, Transformer.Data.Download, { url: `https://www.ebi.ac.uk/pdbe/api/validation/residuewise_outlier_summary/entry/${id}`, type: 'String', id, description: 'Validation Data', title: 'Validation' })
-            .then(Create, { id }, { isBinding: true });
+            .then(Create, { id }, { isBinding: true, ref: t.params.reportRef });
 
         return action;
     }, "Validation report loaded. Hovering over residue will now contain validation info. To apply validation coloring, select the entity in the tree and apply it the right panel.");

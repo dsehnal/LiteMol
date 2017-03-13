@@ -32,6 +32,8 @@ namespace LiteMol.Extensions.DensityStreaming {
         private modelBoundingBox: Box | undefined = void 0;
         private channels: { [name: string]: Channel } | undefined = void 0;
         private cache = Bootstrap.Utils.LRUCache.create<{ [name: string]: Channel }>(25);
+        private performance = new Core.Utils.PerformanceMonitor();
+        private wasCached = false;
 
         private types: FieldType[];
 
@@ -96,6 +98,11 @@ namespace LiteMol.Extensions.DensityStreaming {
             return Bootstrap.Tree.Transform.apply(this.context, b).run();
         }
 
+        private finish() {
+            this.performance.end('query');
+            this.context.logger.info(`[Density] Streaming done in ${this.performance.formatTime('query')}${this.wasCached ? ' (cached)' : ''}.`);
+        }
+
         private async createXray() {
             try {
                 if (!this.channels) return;
@@ -123,6 +130,7 @@ namespace LiteMol.Extensions.DensityStreaming {
                 await b;
                 await c;
 
+                this.finish();
                 this.groupDone(ref, true);
             } catch (e) {
                 this.context.logger.error('[Density] ' + e);
@@ -147,7 +155,7 @@ namespace LiteMol.Extensions.DensityStreaming {
                     .then(Transformer.Density.CreateVisual, { style: styles['EMD'] }, { ref: ref + 'EMD' });
                 
                 Bootstrap.Tree.Transform.apply(this.context, action).run()
-                    .then(() => this.groupDone(ref, true))
+                    .then(() => { this.finish(); this.groupDone(ref, true); })
                     .catch(() => this.groupDone(ref, false));
             } catch (e) {
                 this.context.logger.error('[Density] ' + e);
@@ -221,12 +229,13 @@ namespace LiteMol.Extensions.DensityStreaming {
             }
             url += `?detail=${this.params.detailLevel}`;
 
-
+            this.performance.start('query');
 
             const channels = Bootstrap.Utils.LRUCache.get(this.cache, url);
             if (channels) {
                 this.clear();
                 this.channels = channels;
+                this.wasCached = true;
                 if (this.params.source === 'EMD') this.createEmd();
                 else this.createXray();
                 return;
@@ -237,6 +246,7 @@ namespace LiteMol.Extensions.DensityStreaming {
                 this.clear();
                 this.channels = this.parseChannels(data);
                 if (!this.channels) return;
+                this.wasCached = false;
                 Bootstrap.Utils.LRUCache.set(this.cache, url, this.channels);
                 if (this.params.source === 'EMD') this.createEmd();
                 else this.createXray();
