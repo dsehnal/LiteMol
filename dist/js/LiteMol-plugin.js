@@ -72410,6 +72410,7 @@ var LiteMol;
                     Default.ElementSymbolThemeTemplate = Default.Themes.filter(function (t) { return t.name === 'Element Symbol'; })[0];
                     Default.SurfaceThemeTemplate = Default.Themes.filter(function (t) { return t.name === 'Uniform Color'; })[0];
                     Default.UniformThemeTemplate = Default.Themes.filter(function (t) { return t.name === 'Uniform Color'; })[0];
+                    Default.RainbowEntityThemeTemplate = Default.Themes.filter(function (t) { return t.name === 'Rainbow (Entity)'; })[0];
                 })(Default = Molecule.Default || (Molecule.Default = {}));
             })(Molecule = Visualization.Molecule || (Visualization.Molecule = {}));
         })(Visualization = Bootstrap.Visualization || (Bootstrap.Visualization = {}));

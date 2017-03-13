@@ -43,7 +43,7 @@ namespace LiteMol.Viewer.Examples {
                         isoValueType: Vis.Density.IsoValueType.Absolute,
                         color: LiteMol.Visualization.Color.fromHex(0x999999),
                         isWireframe: false,
-                        transparency: { alpha: 0.2 },
+                        transparency: { alpha: 0.1 },
                         taskType: 'Background'
                     }),
                     isoValues: { 'EMD': 3 },
@@ -58,14 +58,23 @@ namespace LiteMol.Viewer.Examples {
     }
 
     export function HIV1Capsid(plugin: Plugin.Controller) {
+        LiteMol.Bootstrap.Behaviour.SuppressCreateVisualWhenModelIsAdded = true;
         plugin.setLayoutState({ hideControls: true });
 
         const molecule = plugin.createTransform()
             .add(plugin.root, Transformer.Data.Download, { url: `https://webchemdev.ncbr.muni.cz/CoordinateServer/3j3q/cartoon?encoding=bcif&lowPrecisionCoords=1`, type: 'Binary', id: '5ire' })
             .then(Transformer.Molecule.CreateFromData, { format: LiteMol.Core.Formats.Molecule.SupportedFormats.mmBCIF }, { ref: 'molecule', isBinding: true })
-            .then(Transformer.Molecule.CreateModel, { modelIndex: 0 });
+            .then(Transformer.Molecule.CreateModel, { modelIndex: 0 })
+            .then(Transformer.Molecule.CreateMacromoleculeVisual, { het: true, polymer: true, water: false, polymerRef: 'polymer' }, { });
    
-        plugin.applyTransform(molecule);
+        plugin.applyTransform(molecule).then(() => {
+            LiteMol.Bootstrap.Behaviour.SuppressCreateVisualWhenModelIsAdded = false;                
+            const theme = { 
+                template: Vis.Molecule.Default.RainbowEntityThemeTemplate
+            };
+            (plugin.context.transforms.getController(Transformer.Molecule.CreateVisual, plugin.selectEntities('polymer')[0]) as Bootstrap.Components.Transform.MoleculeVisual)
+                .updateStyleTheme(theme);
+        });
     }
 
     export async function LigandInteraction_3a4x(plugin: Plugin.Controller) {

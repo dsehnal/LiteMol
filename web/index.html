@@ -144,7 +144,7 @@
 				<div class="row voffset">
 					<div class="col-md-6">
 						<div class="lm-section-image">
-							<img class="center-block img-responsive" src="assets/img/features/modes.png" id="viewer-feature-preview" />
+							<img class="center-block img-responsive" src="assets/img/features/lm-modes.png" id="viewer-feature-preview" />
 						</div>
 					</div>
 					<div class="col-md-6">
@@ -323,8 +323,7 @@
 			<div class="container bloc-lg" style="padding: 25px 50px 100px 50px">
 				<div class="row">
 					<div class="col-md-12" style="padding: 0 60px">
-						<img class="center-block img-responsive" src="assets/img/DensityServer.png" style="max-height: 92px;" alt="DensityServer"
-						/>
+						<img class="center-block img-responsive" src="assets/img/DensityServer.png" style="max-height: 92px;" alt="DensityServer" />
 						<h3 class="mg-md text-center tc-dark-jungle-green-2 lm-section-heading">
 							On-demand 3D volumetric data streaming
 						</h3>
@@ -333,7 +332,7 @@
 				<div class="row voffset">
 					<div class="col-md-6">
 						<div class="dens-section-image">
-							<img class="center-block img-responsive" src="assets/img/features/densityserver.png" />
+							<img class="center-block img-responsive" src="assets/img/features/ds-slice.png" id='ds-feature-preview' />
 						</div>
 					</div>
 					<div class="col-md-6 text-justify">
@@ -345,7 +344,10 @@
 						</p>
 						<p>
 							The service provides <i>near-instant</i> access to any reasonably sized slice of 
-							density data (e.g. 5 angstrom radius around a ligand).
+							density data (e.g. 5 angstrom radius around a ligand) in full resolution 
+							<a class="ds-feature-preview" title="Preview feature" data-preview-feature="slice" href="#"><i class="fa fa-search" aria-hidden="true"></i></a>
+							or a downsampled surface of the entire structure 
+							<a class="ds-feature-preview" title="Preview feature" data-preview-feature="full" href="#"><i class="fa fa-search" aria-hidden="true"></i></a>.
 						</p>
 						<p>
 							Like <a onclick="scrollToTarget('#coordinateserver')">CoordinateServer</a>, it uses the <a onclick="scrollToTarget('#binarycif')">BinaryCIF</a> format to

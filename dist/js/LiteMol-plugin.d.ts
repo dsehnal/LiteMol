@@ -15750,6 +15750,7 @@ declare namespace LiteMol.Bootstrap.Visualization.Molecule {
         const ElementSymbolThemeTemplate: Theme.Template;
         const SurfaceThemeTemplate: Theme.Template;
         const UniformThemeTemplate: Theme.Template;
+        const RainbowEntityThemeTemplate: Theme.Template;
     }
 }
 declare namespace LiteMol.Bootstrap.Visualization.Molecule {

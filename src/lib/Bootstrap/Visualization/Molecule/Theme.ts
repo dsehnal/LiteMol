@@ -174,5 +174,6 @@ namespace LiteMol.Bootstrap.Visualization.Molecule {
         export const ElementSymbolThemeTemplate = Themes.filter(t => t.name === 'Element Symbol')[0];
         export const SurfaceThemeTemplate = Themes.filter(t => t.name === 'Uniform Color')[0];
         export const UniformThemeTemplate = Themes.filter(t => t.name === 'Uniform Color')[0];
+        export const RainbowEntityThemeTemplate = Themes.filter(t => t.name === 'Rainbow (Entity)')[0];
     }
 }
