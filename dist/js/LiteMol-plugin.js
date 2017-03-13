@@ -74298,6 +74298,8 @@ var LiteMol;
                 "use strict";
                 var Query = LiteMol.Core.Structure.Query;
                 var Transforms = Bootstrap.Entity.Transformer;
+                /** An ugly hack that will be removed when the time comes */
+                Molecule.SuppressShowInteractionOnSelect = false;
                 function ShowInteractionOnSelect(radius) {
                     return function (context) {
                         var lastRef = void 0;
@@ -74324,7 +74326,7 @@ var LiteMol;
                             }
                         }
                         context.behaviours.click.subscribe(function (info) {
-                            if (Bootstrap.Interactivity.isEmpty(info)) {
+                            if (Molecule.SuppressShowInteractionOnSelect || Bootstrap.Interactivity.isEmpty(info)) {
                                 clean();
                                 return;
                             }

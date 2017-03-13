@@ -16263,6 +16263,8 @@ declare namespace LiteMol.Bootstrap.Behaviour {
     function FocusCameraOnSelect(context: Context): void;
 }
 declare namespace LiteMol.Bootstrap.Behaviour.Molecule {
+    /** An ugly hack that will be removed when the time comes */
+    let SuppressShowInteractionOnSelect: boolean;
     function ShowInteractionOnSelect(radius: number): (context: Context) => void;
     function HighlightElementInfo(context: Context): void;
     function DistanceToLastClickedElement(context: Context): void;

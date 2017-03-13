@@ -14,7 +14,7 @@ namespace LiteMol.Extensions.DensityStreaming {
     export type FieldType = '2Fo-Fc' | 'Fo-Fc(-ve)' | 'Fo-Fc(+ve)' | 'EMD'
     export const FieldSources: FieldSource[] = ['X-ray', 'EMD' ]  
 
-    export interface CreateParams {
+    export interface SetupParams {
         server: string,
         id: string,
         source: FieldSource,
@@ -31,7 +31,10 @@ namespace LiteMol.Extensions.DensityStreaming {
         detailLevel: number,
         radius: number,
         isoValueType: Bootstrap.Visualization.Density.IsoValueType,
-        isoValues: { [F in FieldType]?: number }
+        isoValues: { [F in FieldType]?: number },
+        showEverythingExtent: number,
+        // do not use /cell query on EMD
+        forceBox?: boolean
     } & { [F in FieldType]?: Bootstrap.Visualization.Density.Style }
 
     export namespace CreateStreamingParams {

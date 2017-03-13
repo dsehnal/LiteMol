@@ -36,7 +36,7 @@ namespace LiteMol.Extensions.DensityStreaming {
         });
     });
 
-    export const Create = Bootstrap.Tree.Transformer.actionWithContext<Entity.Molecule.Molecule, Entity.Action, CreateParams, undefined>({
+    export const Setup = Bootstrap.Tree.Transformer.actionWithContext<Entity.Molecule.Molecule, Entity.Action, SetupParams, undefined>({
         id: 'density-streaming-create',
         name: 'Density Streaming',
         description: 'On demand download of density data when a residue or atom is selected.',
@@ -70,7 +70,7 @@ namespace LiteMol.Extensions.DensityStreaming {
         };
     }
 
-    function doAction(m: Entity.Molecule.Molecule, params: CreateParams, header: ServerDataFormat.Header, sourceId?: string, contourLevel?: number): DensityAction {
+    function doAction(m: Entity.Molecule.Molecule, params: SetupParams, header: ServerDataFormat.Header, sourceId?: string, contourLevel?: number): DensityAction {
         const taskType: Bootstrap.Task.Type = 'Silent';
 
         const styles: {[F in FieldType]?: Bootstrap.Visualization.Density.Style } = params.source === 'EMD'
@@ -126,6 +126,7 @@ namespace LiteMol.Extensions.DensityStreaming {
             displayType: params.source === 'X-ray' ? 'Around Selection' : 'Everything',
             detailLevel: Math.min(2, header.availablePrecisions.length - 1),
             radius: params.source === 'X-ray' ? 5 : 15,
+            showEverythingExtent: 3,
             ...styles,
             ...params.initialStreamingParams
         }
@@ -136,7 +137,7 @@ namespace LiteMol.Extensions.DensityStreaming {
         };
     }
 
-    async function enableStreaming(m: Entity.Molecule.Molecule, ctx: Bootstrap.Context, params: CreateParams, sourceId?: string, contourLevel?: number) {
+    async function enableStreaming(m: Entity.Molecule.Molecule, ctx: Bootstrap.Context, params: SetupParams, sourceId?: string, contourLevel?: number) {
         let server = params.server.trim();
         if (server[server.length - 1] !== '/') server += '/';
 
@@ -155,7 +156,7 @@ namespace LiteMol.Extensions.DensityStreaming {
         }
     }
 
-    async function doEmdbId(m: Entity.Molecule.Molecule, ctx: Bootstrap.Context, params: CreateParams, id: string) {
+    async function doEmdbId(m: Entity.Molecule.Molecule, ctx: Bootstrap.Context, params: SetupParams, id: string) {
         id = id.trim();
         const s = await Bootstrap.Utils.ajaxGetString(`https://www.ebi.ac.uk/pdbe/api/emdb/entry/map/EMD-${id}`, 'EMDB API').run(ctx);
         try {
@@ -171,7 +172,7 @@ namespace LiteMol.Extensions.DensityStreaming {
         }
     }
 
-    async function doEmd(m: Entity.Molecule.Molecule, ctx: Bootstrap.Context, params: CreateParams) {
+    async function doEmd(m: Entity.Molecule.Molecule, ctx: Bootstrap.Context, params: SetupParams) {
         const id = params.id.trim().toLowerCase();
         const s = await Bootstrap.Utils.ajaxGetString(`https://www.ebi.ac.uk/pdbe/api/pdb/entry/summary/${id}`, 'PDB API').run(ctx);
         try {

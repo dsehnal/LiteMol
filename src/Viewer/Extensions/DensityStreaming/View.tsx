@@ -10,7 +10,7 @@ namespace LiteMol.Extensions.DensityStreaming {
     import Controls = LiteMol.Plugin.Controls 
     
 
-    export class CreateView extends LiteMol.Plugin.Views.Transform.ControllerBase<Bootstrap.Components.Transform.Controller<CreateParams>> {
+    export class CreateView extends LiteMol.Plugin.Views.Transform.ControllerBase<Bootstrap.Components.Transform.Controller<SetupParams>> {
 
         protected renderControls() {            
             const params = this.params;                                   

@@ -8,8 +8,11 @@ namespace LiteMol.Bootstrap.Behaviour.Molecule {
     
     import Query = Core.Structure.Query;
     import Transforms = Entity.Transformer;
-    export function ShowInteractionOnSelect(radius: number) {
-        
+
+    /** An ugly hack that will be removed when the time comes */
+    export let SuppressShowInteractionOnSelect:boolean = false;
+
+    export function ShowInteractionOnSelect(radius: number) {        
         return (context: Context) => {
             let lastRef: string | undefined = void 0;
             let ambRef: string | undefined = void 0;
@@ -39,7 +42,7 @@ namespace LiteMol.Bootstrap.Behaviour.Molecule {
             }
 
             context.behaviours.click.subscribe(info => {
-                if (Interactivity.isEmpty(info)) {
+                if (SuppressShowInteractionOnSelect || Interactivity.isEmpty(info)) {
                     clean(); 
                     return;
                 }

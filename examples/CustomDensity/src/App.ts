@@ -25,7 +25,7 @@ namespace LiteMol.Custom {
 
                 { transformer: DownloadAndCreate, view: LiteMol.Plugin.Views.Transform.Data.WithIdField, initiallyCollapsed: false },
 
-                { transformer: Extensions.DensityStreaming.Create, view: Extensions.DensityStreaming.CreateView },
+                { transformer: Extensions.DensityStreaming.Setup, view: Extensions.DensityStreaming.CreateView },
                 { transformer: Extensions.DensityStreaming.CreateStreaming, view: Extensions.DensityStreaming.StreamingView }
             ],
             behaviours: [

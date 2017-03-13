@@ -45,6 +45,7 @@ namespace LiteMol.Viewer {
         switch (example) {
             case 'zika-cryo-em': Examples.Zika(plugin); break;
             case 'hiv1': Examples.HIV1Capsid(plugin); break;
+            case '3a4x-lig': Examples.LigandInteraction_3a4x(plugin); break;
         }
     })();
 }

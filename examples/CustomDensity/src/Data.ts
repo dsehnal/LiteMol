@@ -69,7 +69,7 @@ namespace LiteMol.Custom {
                 }, { ref: 'density-2fo-fc' }); 
         } else {
             // Enable the streaming
-            action.add('molecule', Extensions.DensityStreaming.Create, {
+            action.add('molecule', Extensions.DensityStreaming.Setup, {
                 server: 'https://webchem.ncbr.muni.cz/DensityServer/',
                 id,
                 source: determineSource(context)

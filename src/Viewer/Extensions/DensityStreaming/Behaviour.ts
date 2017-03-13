@@ -46,7 +46,7 @@ namespace LiteMol.Extensions.DensityStreaming {
         private getModelBoundingBox(): Box {
             if (this.modelBoundingBox) return this.modelBoundingBox;
             const sourceMolecule = Utils.Molecule.findMolecule(this.behaviour)!;
-            const { bottomLeft: a, topRight: b } = Utils.Molecule.getBox(sourceMolecule.props.molecule.models[0], sourceMolecule.props.molecule.models[0].data.atoms.indices, 3);
+            const { bottomLeft: a, topRight: b } = Utils.Molecule.getBox(sourceMolecule.props.molecule.models[0], sourceMolecule.props.molecule.models[0].data.atoms.indices, this.params.showEverythingExtent);
             this.modelBoundingBox = { a, b};
             return this.modelBoundingBox;
         }
@@ -221,7 +221,7 @@ namespace LiteMol.Extensions.DensityStreaming {
             }
             url += `?detail=${this.params.detailLevel}`;
 
-            
+
 
             const channels = Bootstrap.Utils.LRUCache.get(this.cache, url);
             if (channels) {
@@ -272,7 +272,8 @@ namespace LiteMol.Extensions.DensityStreaming {
 
             if (this.params.displayType === 'Everything') {
                 if (this.params.source === 'EMD') {
-                    this.query();
+                    if (this.params.forceBox) this.query(this.getModelBoundingBox());
+                    else this.query();
                 } else {
                     this.query(this.getModelBoundingBox());
                 }

@@ -234,7 +234,7 @@ namespace LiteMol.Viewer.ValidatorDB {
         }       
     );
         
-    export const DownloadAndCreate = Bootstrap.Tree.Transformer.action<Entity.Molecule.Molecule, Entity.Action, { }>({
+    export const DownloadAndCreate = Bootstrap.Tree.Transformer.action<Entity.Molecule.Molecule, Entity.Action, { reportRef?: string }>({
         id: 'validatordb-download-and-create',
         name: 'Ligand Validation Report',
         description: 'Download Validation Report from ValidatorDB',
@@ -245,7 +245,7 @@ namespace LiteMol.Viewer.ValidatorDB {
         let id = a.props.molecule.id.trim().toLocaleLowerCase();                    
         let action = Bootstrap.Tree.Transform.build()
             .add(a, Transformer.Data.Download, { url: `https://webchem.ncbr.muni.cz/Platform/ValidatorDb/Data/${id}?source=ByStructure`, type: 'String', id, description: 'Validation Data', title: 'Validation' })
-            .then(Create, { id }, { isBinding: true });
+            .then(Create, { id }, { isBinding: true, ref: t.params.reportRef });
 
         return action;
     }, "Validation report loaded. Hovering over residue will now contain validation info. To apply validation coloring, select the 'Ligand Validation Report' entity in the tree and apply it the right panel. " +
@@ -259,7 +259,7 @@ namespace LiteMol.Viewer.ValidatorDB {
         to: [Entity.Action],
         defaultParams: () => ({})  
     }, (context, a, t) => {        
-            return Bootstrap.Task.create<Entity.Action>('Validation Coloring', 'Background', async ctx => {            
+        return Bootstrap.Task.create<Entity.Action>('Validation Coloring', 'Background', async ctx => {            
             let molecule = Bootstrap.Tree.Node.findAncestor(a, Bootstrap.Entity.Molecule.Molecule);
             if (!molecule)  {
                 throw 'No suitable parent found.';
