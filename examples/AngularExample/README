@@ -1,0 +1,2 @@
+usage:
+ <density-display data-model="<url_to_pdb>" data-fofc="<url_to_fofc>" data-twofofc="<url_to_2fofc>"></density-display>  
