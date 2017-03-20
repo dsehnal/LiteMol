@@ -56180,7 +56180,7 @@ var LiteMol;
 (function (LiteMol) {
     var Core;
     (function (Core) {
-        Core.VERSION = { number: "3.1.0", date: "March 6 2017" };
+        Core.VERSION = { number: "3.1.1", date: "March 20 2017" };
     })(Core = LiteMol.Core || (LiteMol.Core = {}));
 })(LiteMol || (LiteMol = {}));
 /*
@@ -57479,7 +57479,7 @@ var LiteMol;
                     function isResidueNucleotide(atoms, residues, entities, index) {
                         if (aminoAcidNames[residues.name[index]] || entities.type[residues.entityIndex[index]] !== 'polymer')
                             return false;
-                        var o5 = false, c3 = false, n3 = false, p = false, names = atoms.name, assigned = 0;
+                        var names = atoms.name, assigned = 0;
                         var start = residues.atomStartIndex[index], end = residues.atomEndIndex[index];
                         // test for single atom instances
                         if (end - start === 1 && !residues.isHet[start] && names[start] === 'P') {
@@ -57487,26 +57487,14 @@ var LiteMol;
                         }
                         for (var i = start; i < end; i++) {
                             var n = names[i];
-                            if (!o5 && n === "O5'") {
-                                o5 = true;
+                            if (n === "O5'" || n === "C3'" || n === "N3" || n === "P") {
                                 assigned++;
                             }
-                            else if (!c3 && n === "C3'") {
-                                c3 = true;
-                                assigned++;
+                            if (assigned >= 3) {
+                                return true;
                             }
-                            else if (!n3 && n === 'N3') {
-                                n3 = true;
-                                assigned++;
-                            }
-                            else if (!p && n === 'P') {
-                                p = true;
-                                assigned++;
-                            }
-                            if (assigned === 4)
-                                break;
                         }
-                        return o5 && c3 && n3 && p;
+                        return false;
                     }
                     function analyzeSecondaryStructure(atoms, residues, entities, start, end, elements) {
                         var asymId = residues.asymId, entityIndex = residues.entityIndex, currentType = 0 /* None */, currentElementStartIndex = start, currentResidueIndex = start, residueCount = end;

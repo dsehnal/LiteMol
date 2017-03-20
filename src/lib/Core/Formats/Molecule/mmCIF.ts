@@ -398,9 +398,7 @@ namespace LiteMol.Core.Formats.Molecule.mmCIF {
 
         if (aminoAcidNames[residues.name[index]] || entities.type[residues.entityIndex[index]] !== 'polymer') return false;
 
-        let o5 = false, c3 = false, n3 = false, p = false,
-            names = atoms.name, assigned = 0;
-        
+        let names = atoms.name, assigned = 0;        
         let start = residues.atomStartIndex[index], end = residues.atomEndIndex[index];
 
         // test for single atom instances
@@ -410,22 +408,14 @@ namespace LiteMol.Core.Formats.Molecule.mmCIF {
 
         for (let i = start; i < end; i++) {
             let n = names[i];
-            if (!o5 && n === `O5'`) {
-                o5 = true;
-                assigned++;
-            } else if (!c3 && n === `C3'`) {
-                c3 = true;
-                assigned++;
-            } else if (!n3 && n === 'N3') {
-                n3 = true;
-                assigned++;
-            } else if (!p && n === 'P') {
-                p = true;
+            if (n === `O5'` || n === `C3'` || n === `N3` || n === `P`) {
                 assigned++;
             }
-            if (assigned === 4) break;
+            if (assigned >= 3) {
+                return true;
+            }
         }
-        return o5 && c3 && n3 && p;
+        return false;
     }
 
     function analyzeSecondaryStructure(atoms: Structure.AtomTable, residues: Structure.ResidueTable, entities: Structure.EntityTable, start: number, end: number, elements: Structure.SecondaryStructureElement[]) {
