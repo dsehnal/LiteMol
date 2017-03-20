@@ -1,0 +1,25 @@
+{
+  "compileOnSave": false,
+  "compilerOptions": {
+    "noImplicitAny": true,
+    "noEmitOnError": true,
+    "removeComments": false,
+    "sourceMap": false,
+    "declaration": false,
+    "strictNullChecks": true,
+    "noImplicitThis": true,
+    "lib": [ "es5", "es2015.collection", "dom", "es2015.promise" ],
+    "target": "es5",
+    "jsx": "react",
+    "module": "none",
+    "types": [],
+    "skipDefaultLibCheck": true,
+    "out": "LiteMol-example.js"
+  },
+  "files": [
+    "../../dist/js/LiteMol-plugin.d.ts",
+
+    "src/App.ts",
+    "src/Directive.ts"
+  ]
+}

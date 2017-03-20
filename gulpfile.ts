@@ -64,7 +64,8 @@ var ExampleNames = [
     'SimpleController',
     'BinaryCIFInspect',
     'Transforms',
-    'Channels'
+    'Channels',
+    'AngularExample'
 ];
 
 var ViewerAndExamplesTasks = [];
