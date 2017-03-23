@@ -43,7 +43,7 @@ namespace LiteMol.Viewer.Examples {
                         isoValueType: Vis.Density.IsoValueType.Absolute,
                         color: LiteMol.Visualization.Color.fromHex(0x999999),
                         isWireframe: false,
-                        transparency: { alpha: 0.1 },
+                        transparency: { alpha: 0.2 },
                         taskType: 'Background'
                     }),
                     isoValues: { 'EMD': 3 },
