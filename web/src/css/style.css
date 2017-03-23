@@ -10,7 +10,7 @@ body{
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
 }
-a{color: #2C9ED5, transition: all 0.5s ease;}
+a{color: #2C9ED5; transition: all 0.2s ease;}
 a:hover{text-decoration: none; cursor:pointer;}
 
 a,button{outline: none!important;} /* Prevent ugly blue glow on chrome and safari */
@@ -299,7 +299,7 @@ a,button{outline: none!important;} /* Prevent ugly blue glow on chrome and safar
 	padding: 15px 15px;
 }
 .navbar .nav{
-	padding-top: 2px;
+	padding-top: 0;
 	margin-right: -16px;
 	float:right;
 	z-index:1;
@@ -335,6 +335,9 @@ a,button{outline: none!important;} /* Prevent ugly blue glow on chrome and safar
 	float:right;
 }
 @media (min-width: 768px){
+	.twitter-menu-label {
+		display: none;
+	}
 	.site-navigation{
 		position:absolute;
 		top:50%;
@@ -343,7 +346,7 @@ a,button{outline: none!important;} /* Prevent ugly blue glow on chrome and safar
 		-webkit-transform:translateY(-50%);
 	}
 	.navbar .nav {
-		max-width:70%}
+		max-width:100%}
 	.nav-center.navbar .nav {
 		max-width:100%}
 	.nav > li .dropdown-menu a,.nav > li .dropdown-menu a:hover{
