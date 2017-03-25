@@ -7,10 +7,13 @@ namespace LiteMol.Viewer.Examples {
     import Transformer = LiteMol.Bootstrap.Entity.Transformer
     import Vis = Bootstrap.Visualization
 
+    function hideControlsIfNarrow(plugin: Plugin.Controller) {
+        if (document.body.clientWidth < 825) plugin.setLayoutState({ hideControls: true });
+    }
+
     export function Zika(plugin: Plugin.Controller) {
         LiteMol.Bootstrap.Behaviour.SuppressCreateVisualWhenModelIsAdded = true;
-
-        plugin.setLayoutState({ hideControls: true });
+        hideControlsIfNarrow(plugin);
 
         const molecule = plugin.createTransform()
             .add(plugin.root, Transformer.Data.Download, { url: `https://webchemdev.ncbr.muni.cz/CoordinateServer/5ire/full?encoding=bcif&lowPrecisionCoords=1`, type: 'Binary', id: '5ire' })
@@ -59,7 +62,7 @@ namespace LiteMol.Viewer.Examples {
 
     export function HIV1Capsid(plugin: Plugin.Controller) {
         LiteMol.Bootstrap.Behaviour.SuppressCreateVisualWhenModelIsAdded = true;
-        plugin.setLayoutState({ hideControls: true });
+        hideControlsIfNarrow(plugin);
 
         const molecule = plugin.createTransform()
             .add(plugin.root, Transformer.Data.Download, { url: `https://webchemdev.ncbr.muni.cz/CoordinateServer/3j3q/cartoon?encoding=bcif&lowPrecisionCoords=1`, type: 'Binary', id: '5ire' })
@@ -79,16 +82,23 @@ namespace LiteMol.Viewer.Examples {
 
     export async function HIV1Protease(plugin: Plugin.Controller) {
         LiteMol.Bootstrap.Behaviour.SuppressCreateVisualWhenModelIsAdded = true;
-        plugin.setLayoutState({ hideControls: true });
-
+        hideControlsIfNarrow(plugin);
+        
         const molecule = plugin.createTransform()
             .add(plugin.root, Transformer.Data.Download, { url: `https://webchemdev.ncbr.muni.cz/CoordinateServer/2f80/full?encoding=bcif&lowPrecisionCoords=1`, type: 'Binary', id: '5ire' })
             .then(Transformer.Molecule.CreateFromData, { format: LiteMol.Core.Formats.Molecule.SupportedFormats.mmBCIF }, { ref: 'molecule', isBinding: true })
             .then(Transformer.Molecule.CreateModel, { modelIndex: 0 })
-            .then(Transformer.Molecule.CreateMacromoleculeVisual, { het: true, polymer: true, water: false }, { });
+            .then(Transformer.Molecule.CreateMacromoleculeVisual, { het: true, polymer: true, water: false, hetRef: 'het-visual', polymerRef: 'polymer-visual' }, { });
    
         await plugin.applyTransform(molecule);
         LiteMol.Bootstrap.Behaviour.SuppressCreateVisualWhenModelIsAdded = false;
+
+        plugin.command(Bootstrap.Command.Molecule.CreateSelectInteraction, { 
+            entity: plugin.selectEntities('het-visual')[0], 
+            query: Core.Structure.Query.atomsById(1625)
+        });
+
+        plugin.command(Bootstrap.Command.Entity.Focus, plugin.selectEntities('polymer-visual'));
 
         const annotation = plugin.createTransform()
             .add('molecule', Viewer.PDBe.Validation.DownloadAndCreate, { reportRef: 'validation' });
@@ -108,18 +118,18 @@ namespace LiteMol.Viewer.Examples {
         await annotationTransform;
         function applyColoring() {
             const coloring = plugin.createTransform().add('validation', Viewer.PDBe.Validation.ApplyTheme, { })
-            plugin.applyTransform(coloring);
+            return plugin.applyTransform(coloring);
         }
 
-        applyColoring();
+        await applyColoring();
         plugin.subscribe(Bootstrap.Command.Visual.ResetScene, () => setTimeout(() => applyColoring(), 25));
+
     }
 
-    export async function LigandInteraction_3a4x(plugin: Plugin.Controller) {
-        plugin.setLayoutState({ hideControls: true });
-
+    export async function LigandInteraction_3a4x(plugin: Plugin.Controller) {        
         LiteMol.Bootstrap.Behaviour.SuppressCreateVisualWhenModelIsAdded = true;
         LiteMol.Bootstrap.Behaviour.Molecule.SuppressShowInteractionOnSelect = true;
+        hideControlsIfNarrow(plugin);
 
         const styleAmb: Vis.Molecule.Style<Vis.Molecule.BallsAndSticksParams> = {
             type: 'BallsAndSticks',
