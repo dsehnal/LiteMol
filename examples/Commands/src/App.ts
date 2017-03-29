@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ */
+
 namespace LiteMolPluginInstance {
     
     // For the plugin CSS, look to Plugin/Skin
@@ -261,6 +265,31 @@ namespace LiteMolPluginInstance {
             // alternatively, you can do this
             //Command.Molecule.FocusQuery.dispatch(plugin.context, { model: selectNodes('model')[0] as any, query })
         });
+    });
+
+    addButton('Color Sequences', () => {
+        let model = plugin.selectEntities('model')[0] as Bootstrap.Entity.Molecule.Model;
+        if (!model) return;
+
+        const coloring: CustomTheme.ColorDefinition = {
+            base: { r: 255, g: 255, b: 255 },
+            entries: [
+                { entity_id: '1', struct_asym_id: 'A', start_residue_number: 10, end_residue_number: 25, color: { r: 255, g: 128, b: 64 } },
+                { entity_id: '1', struct_asym_id: 'A', start_residue_number: 40, end_residue_number: 60, color: { r: 64, g: 128, b: 255 } }
+            ]
+        }
+
+        const theme = CustomTheme.createTheme(model.props.model, coloring);
+        // instead of "polymer-visual", "model" or any valid ref can be used: all "child" visuals will be colored.
+        CustomTheme.applyTheme(plugin, 'polymer-visual', theme); 
+
+        // in "real" applications, it is a good idea to cache the theme object.
+
+        // this coloring will be reset when the camera position is updated and needs to be updated manually
+        // by subsribing to the appropriate command:
+        //
+        //   plugin.subscribe(Bootstrap.Command.Visual.ResetScene, () => setTimeout(() => CustomTheme.applyTheme(plugin, 'polymer-visual', theme), 25));
+        //
     });
     
     addButton('Focus Query',  () => {

@@ -25,6 +25,7 @@
     "../../src/Viewer/PDBe/Validation.ts",
         
     "./src/CustomTransformView.tsx",    
+    "./src/CustomTheme.ts",
     "./src/App.ts"
   ]
 }
