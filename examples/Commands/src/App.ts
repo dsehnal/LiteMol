@@ -285,8 +285,8 @@ namespace LiteMolPluginInstance {
 
         // in "real" applications, it is a good idea to cache the theme object.
 
-        // this coloring will be reset when the camera position is updated and needs to be updated manually
-        // by subsribing to the appropriate command:
+        // this coloring will be reset when the camera position is reset and needs to be updated manually
+        // by subscribing to the appropriate command:
         //
         //   plugin.subscribe(Bootstrap.Command.Visual.ResetScene, () => setTimeout(() => CustomTheme.applyTheme(plugin, 'polymer-visual', theme), 25));
         //
