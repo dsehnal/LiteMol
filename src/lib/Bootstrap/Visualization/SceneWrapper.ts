@@ -48,9 +48,14 @@ namespace LiteMol.Bootstrap.Visualization {
         resetThemesAndHighlight(sel?: Bootstrap.Tree.Selector<Bootstrap.Entity.Any>) {            
             if (!sel) {            
                 this.originalThemes.forEach((t, id) => {
-                    this.entries.get(id)!.props.model.applyTheme(t);
+                    const model = this.entries.get(id)!.props.model;
+                    if (!model.theme.isSticky) {
+                        model.applyTheme(t);
+                        this.originalThemes.delete(id);
+                    } else {
+                        this.originalThemes.set(id, model.theme);
+                    }
                 });
-                this.originalThemes.clear();
                 this.entries.forEach(v => v.props.model.highlight(false));
                 this.scene.scene.forceRender();
                 return;
@@ -61,9 +66,14 @@ namespace LiteMol.Bootstrap.Visualization {
                 if (!Entity.isVisual(e) || !this.originalThemes.has(e.id)) continue;
                 let v = e as Visual;
                 let t = this.originalThemes.get(v.id)!;
-                v.props.model.applyTheme(t);
-                v.props.model.highlight(false);       
-                this.originalThemes.delete(v.id);         
+                const model = v.props.model;
+                if (!model.theme.isSticky) {
+                    model.applyTheme(t);
+                    this.originalThemes.delete(v.id);         
+                } else {
+                    this.originalThemes.set(v.id, model.theme);
+                }
+                model.highlight(false);       
             }    
             this.scene.scene.forceRender();
         }
@@ -115,7 +125,10 @@ namespace LiteMol.Bootstrap.Visualization {
             Command.Visual.UpdateBasicTheme.getStream(context).subscribe(e => {
                 if (!this.entries.get(e.data.visual.id) || !Entity.isVisual(e.data.visual))  return;                
                 let v = e.data.visual as Entity.Visual.Any;
-                if (!this.originalThemes.get(v.id)) {
+
+                if (e.data.theme.isSticky) {
+                    this.originalThemes.set(v.id, e.data.theme);
+                } else if (!this.originalThemes.get(v.id)) {
                     this.originalThemes.set(v.id, v.props.model.theme);
                 }
                 v.props.model.applyTheme(e.data.theme);                

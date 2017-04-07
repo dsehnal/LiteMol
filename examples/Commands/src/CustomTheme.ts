@@ -69,7 +69,8 @@ namespace LiteMolPluginInstance.CustomTheme {
         colors.set('Highlight', highlightColor);   
 
         const mapping = Visualization.Theme.createColorMapMapping(i => map[i], mapper.colorMap, fallbackColor);
-        return Visualization.Theme.createMapping(mapping, { colors });
+        // make the theme "sticky" so that it persist "ResetScene" command.
+        return Visualization.Theme.createMapping(mapping, { colors, isSticky: true });
     }
 
     export function applyTheme(plugin: LiteMol.Plugin.Controller, modelRef: string, theme: Visualization.Theme) {

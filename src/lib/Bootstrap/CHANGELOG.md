@@ -1,4 +1,7 @@
-﻿# 1.3.4
+﻿# 1.3.5
+* Sticky custom theme support.
+
+# 1.3.4
 * Updated to reflect density data model changes.
 
 # 1.3.3

@@ -1,4 +1,7 @@
-﻿# 1.6.5
+﻿# 1.6.6
+* Sticky theme support.
+
+# 1.6.5
 * Fixed a bug in surface picking.
 
 # 1.6.4

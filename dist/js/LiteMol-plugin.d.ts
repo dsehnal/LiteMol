@@ -14249,6 +14249,7 @@ declare namespace LiteMol.Visualization {
         transparency: Theme.Transparency;
         interactive: boolean;
         disableFog: boolean;
+        isSticky: boolean;
         setElementColor(index: number, target: Color): void;
     }
     namespace Theme {
@@ -14257,6 +14258,7 @@ declare namespace LiteMol.Visualization {
             transparency?: Theme.Transparency;
             interactive?: boolean;
             disableFog?: boolean;
+            isSticky?: boolean;
         }
         interface Transparency {
             alpha?: number;

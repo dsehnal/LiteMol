@@ -64611,7 +64611,7 @@ var LiteMol;
 (function (LiteMol) {
     var Visualization;
     (function (Visualization) {
-        Visualization.VERSION = { number: "1.6.5", date: "March 6 2017" };
+        Visualization.VERSION = { number: "1.6.6", date: "April 7 2017" };
     })(Visualization = LiteMol.Visualization || (LiteMol.Visualization = {}));
 })(LiteMol || (LiteMol = {}));
 var LiteMol;
@@ -64871,7 +64871,7 @@ var LiteMol;
             Theme.getColor = getColor;
             function createUniform(props) {
                 if (props === void 0) { props = {}; }
-                var colors = props.colors, _a = props.transparency, transparency = _a === void 0 ? Default.Transparency : _a, _b = props.interactive, interactive = _b === void 0 ? true : _b, _c = props.disableFog, disableFog = _c === void 0 ? false : _c;
+                var colors = props.colors, _a = props.transparency, transparency = _a === void 0 ? Default.Transparency : _a, _b = props.interactive, interactive = _b === void 0 ? true : _b, _c = props.disableFog, disableFog = _c === void 0 ? false : _c, _d = props.isSticky, isSticky = _d === void 0 ? false : _d;
                 var finalColors = LiteMol.Core.Utils.FastMap.create();
                 if (colors) {
                     colors.forEach(function (c, n) { return finalColors.set(n, c); });
@@ -64886,6 +64886,7 @@ var LiteMol;
                     transparency: transparency,
                     interactive: interactive,
                     disableFog: disableFog,
+                    isSticky: isSticky,
                     setElementColor: function (index, target) {
                         Color.copy(uniform, target);
                     }
@@ -64894,12 +64895,13 @@ var LiteMol;
             Theme.createUniform = createUniform;
             function createMapping(mapping, props) {
                 if (props === void 0) { props = {}; }
-                var _a = props.colors, colors = _a === void 0 ? LiteMol.Core.Utils.FastMap.create() : _a, _b = props.transparency, transparency = _b === void 0 ? Default.Transparency : _b, _c = props.interactive, interactive = _c === void 0 ? true : _c, _d = props.disableFog, disableFog = _d === void 0 ? false : _d;
+                var _a = props.colors, colors = _a === void 0 ? LiteMol.Core.Utils.FastMap.create() : _a, _b = props.transparency, transparency = _b === void 0 ? Default.Transparency : _b, _c = props.interactive, interactive = _c === void 0 ? true : _c, _d = props.disableFog, disableFog = _d === void 0 ? false : _d, _e = props.isSticky, isSticky = _e === void 0 ? false : _e;
                 return {
                     colors: colors,
                     transparency: transparency ? transparency : Default.Transparency,
                     interactive: interactive,
                     disableFog: disableFog,
+                    isSticky: isSticky,
                     setElementColor: function (index, target) {
                         mapping.setColor(mapping.getProperty(index), target);
                     }
@@ -69726,7 +69728,7 @@ var LiteMol;
 (function (LiteMol) {
     var Bootstrap;
     (function (Bootstrap) {
-        Bootstrap.VERSION = { number: "1.3.4", date: "March 6 2017" };
+        Bootstrap.VERSION = { number: "1.3.5", date: "April 7 2017" };
     })(Bootstrap = LiteMol.Bootstrap || (LiteMol.Bootstrap = {}));
 })(LiteMol || (LiteMol = {}));
 /*
@@ -71987,7 +71989,10 @@ var LiteMol;
                         if (!_this.entries.get(e.data.visual.id) || !Bootstrap.Entity.isVisual(e.data.visual))
                             return;
                         var v = e.data.visual;
-                        if (!_this.originalThemes.get(v.id)) {
+                        if (e.data.theme.isSticky) {
+                            _this.originalThemes.set(v.id, e.data.theme);
+                        }
+                        else if (!_this.originalThemes.get(v.id)) {
                             _this.originalThemes.set(v.id, v.props.model.theme);
                         }
                         v.props.model.applyTheme(e.data.theme);
@@ -72027,9 +72032,15 @@ var LiteMol;
                     var _this = this;
                     if (!sel) {
                         this.originalThemes.forEach(function (t, id) {
-                            _this.entries.get(id).props.model.applyTheme(t);
+                            var model = _this.entries.get(id).props.model;
+                            if (!model.theme.isSticky) {
+                                model.applyTheme(t);
+                                _this.originalThemes.delete(id);
+                            }
+                            else {
+                                _this.originalThemes.set(id, model.theme);
+                            }
                         });
-                        this.originalThemes.clear();
                         this.entries.forEach(function (v) { return v.props.model.highlight(false); });
                         this.scene.scene.forceRender();
                         return;
@@ -72041,9 +72052,15 @@ var LiteMol;
                             continue;
                         var v = e;
                         var t = this.originalThemes.get(v.id);
-                        v.props.model.applyTheme(t);
-                        v.props.model.highlight(false);
-                        this.originalThemes.delete(v.id);
+                        var model = v.props.model;
+                        if (!model.theme.isSticky) {
+                            model.applyTheme(t);
+                            this.originalThemes.delete(v.id);
+                        }
+                        else {
+                            this.originalThemes.set(v.id, model.theme);
+                        }
+                        model.highlight(false);
                     }
                     this.scene.scene.forceRender();
                 };
@@ -72223,7 +72240,8 @@ var LiteMol;
                         colors: colors,
                         transparency: theme.transparency,
                         interactive: theme.interactive,
-                        disableFog: theme.disableFog
+                        disableFog: theme.disableFog,
+                        isSticky: true
                     };
                 }
                 Theme.getProps = getProps;

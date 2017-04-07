@@ -84,7 +84,8 @@ namespace LiteMol.Bootstrap.Visualization {
                 colors,
                 transparency: theme.transparency,
                 interactive: theme.interactive,
-                disableFog: theme.disableFog
+                disableFog: theme.disableFog,
+                isSticky: true
             };
         }
     }
