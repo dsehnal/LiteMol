@@ -14,8 +14,8 @@ namespace LiteMol.Viewer {
             'molecule.model.defaultQuery': `residuesByName('GLY', 'ALA')`,
             'molecule.model.defaultAssemblyName': '1', 
             'molecule.coordinateStreaming.defaultId': '5iv5',
-            'molecule.coordinateStreaming.defaultServer': 'https://webchemdev.ncbr.muni.cz/CoordinateServer',
-            'molecule.downloadBinaryCIFFromCoordinateServer.server': 'https://webchemdev.ncbr.muni.cz/CoordinateServer',
+            'molecule.coordinateStreaming.defaultServer': 'https://webchem.ncbr.muni.cz/CoordinateServer',
+            'molecule.downloadBinaryCIFFromCoordinateServer.server': 'https://webchem.ncbr.muni.cz/CoordinateServer',
             'molecule.coordinateStreaming.defaultRadius': 10,
             'density.defaultVisualBehaviourRadius': 5,
 
@@ -23,9 +23,9 @@ namespace LiteMol.Viewer {
         },
         transforms: [
             // Root transforms -- things that load data.
-            { transformer: PDBe.Data.DownloadMolecule, view: Views.Transform.Data.WithIdField },
+            { transformer: PDBe.Data.DownloadBinaryCIFFromCoordinateServer, view: Viewer.PDBe.Views.DownloadBinaryCIFFromCoordinateServerView },
             { transformer: PDBe.Data.DownloadDensity, view: PDBe.Views.DownloadDensityView },
-            { transformer: PDBe.Data.DownloadBinaryCIFFromCoordinateServer, view: Viewer.PDBe.Views.DownloadBinaryCIFFromCoordinateServerView, initiallyCollapsed: true },
+            { transformer: PDBe.Data.DownloadMolecule, view: Views.Transform.Data.WithIdField, initiallyCollapsed: true },
             { transformer: Transformer.Molecule.CoordinateStreaming.InitStreaming, view: Views.Transform.Molecule.InitCoordinateStreaming, initiallyCollapsed: true },
             { transformer: DataSources.DownloadMolecule, view: Views.Transform.Molecule.DownloadFromUrl, initiallyCollapsed: true },
             { transformer: Transformer.Molecule.OpenMoleculeFromFile, view: Views.Transform.Molecule.OpenFile, initiallyCollapsed: true },                

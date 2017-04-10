@@ -1,3 +1,6 @@
+# 1.4.1
+* BinaryCIF is now the default format.
+
 # 1.4.0
 * Updated Density Streaming to work with the new DensityServer.
 * Added examples.

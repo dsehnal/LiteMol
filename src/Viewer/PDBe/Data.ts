@@ -13,7 +13,7 @@ namespace LiteMol.Viewer.PDBe.Data {
     // straigtforward
     export const DownloadMolecule = Transformer.Molecule.downloadMoleculeSource({ 
         sourceId: 'pdbe-molecule', 
-        name: 'PDBe', 
+        name: 'PDBe (mmCIF)', 
         description: 'Download a molecule from PDBe.',  
         defaultId: '1cbs',
         specificFormat: LiteMol.Core.Formats.Molecule.SupportedFormats.mmCIF,
@@ -26,13 +26,14 @@ namespace LiteMol.Viewer.PDBe.Data {
         lowPrecisionCoords?: boolean,
         serverUrl?: string
     }
+
     export const DownloadBinaryCIFFromCoordinateServer = Bootstrap.Tree.Transformer.action<Entity.Root, Entity.Action, DownloadBinaryCIFFromCoordinateServerParams>({
         id: 'molecule-download-bcif-from-coordinate-server',
-        name: 'Molecule (BinaryCIF)',
-        description: 'Download full or cartoon representation of a PDB entry from the CoordinateServer.',
+        name: 'Download Molecule',
+        description: 'Download full or cartoon representation of a PDB entry using the BinaryCIF format.',
         from: [Entity.Root],
         to: [Entity.Action],
-        defaultParams: (ctx) => ({ id: '5iv5', type: 'Cartoon', lowPrecisionCoords: true, serverUrl: ctx.settings.get('molecule.downloadBinaryCIFFromCoordinateServer.server') ? ctx.settings.get('molecule.downloadBinaryCIFFromCoordinateServer.server') : 'https://webchemdev.ncbr.muni.cz/CoordinateServer' }),
+        defaultParams: (ctx) => ({ id: '1cbs', type: 'Full', lowPrecisionCoords: true, serverUrl: ctx.settings.get('molecule.downloadBinaryCIFFromCoordinateServer.server') ? ctx.settings.get('molecule.downloadBinaryCIFFromCoordinateServer.server') : 'https://webchem.ncbr.muni.cz/CoordinateServer' }),
         validateParams: p => (!p.id || !p.id.trim().length) ? ['Enter Id'] : (!p.serverUrl || !p.serverUrl.trim().length) ? ['Enter CoordinateServer base URL'] : void 0,  
     }, (context, a, t) => {
         let query = t.params.type === 'Cartoon' ? 'cartoon' : 'full';
