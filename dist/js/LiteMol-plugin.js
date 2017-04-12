@@ -73403,7 +73403,14 @@ var LiteMol;
                         to: [Entity.Molecule.Model],
                         defaultParams: function (ctx) { return ({ type: 'Interaction', radius: 5.0 }); },
                         isUpdatable: true,
-                        isApplicable: function (m) { return !!(m && m.props.model.data.symmetryInfo); }
+                        isApplicable: function (m) {
+                            if (!m || !m.props.model.data.symmetryInfo)
+                                return false;
+                            var info = m.props.model.data.symmetryInfo;
+                            if (info.cellSize[0] === 1 && info.cellSize[1] === 1 && info.cellSize[2] === 1)
+                                return false;
+                            return true;
+                        }
                     }, function (ctx, a, t) {
                         return Bootstrap.Task.create("Create Model (" + a.props.label + ")", 'Background', function (ctx) { return __awaiter(_this, void 0, void 0, function () {
                             var i, radius, symm;

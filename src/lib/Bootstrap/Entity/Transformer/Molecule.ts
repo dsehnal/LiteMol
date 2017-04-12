@@ -238,7 +238,12 @@ namespace LiteMol.Bootstrap.Entity.Transformer.Molecule {
         to: [Entity.Molecule.Model],
         defaultParams: ctx => ({ type: 'Interaction', radius: 5.0 }),
         isUpdatable: true,
-        isApplicable: m => !!(m && m.props.model.data.symmetryInfo)
+        isApplicable: m => {
+            if (!m || !m.props.model.data.symmetryInfo) return false;
+            const info = m.props.model.data.symmetryInfo;
+            if (info.cellSize[0] === 1 && info.cellSize[1] === 1 && info.cellSize[2] === 1) return false;
+            return true;
+        }
     }, (ctx, a, t) => {
         return Task.create<Entity.Molecule.Model>(`Create Model (${a.props.label})`, 'Background', async ctx => {
             let i = a.props.model.data.symmetryInfo;

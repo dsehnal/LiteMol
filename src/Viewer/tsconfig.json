@@ -36,6 +36,7 @@
     "./PDBe/SequenceAnnotation.ts",
     "./PDBe/Views.tsx",
 
+    "./App/Views.tsx",
     "./App/Examples.ts",
     "./App/Spec.ts",
     
