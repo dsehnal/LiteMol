@@ -57,12 +57,13 @@ namespace LiteMol.Viewer.PDBe.Views {
         }
         
         protected renderControls() {            
-            const params = this.params;                                   
+            const params = this.params; 
+            const label = params.sourceId === 'emdb-id' ? 'EMDB Id' : 'PDB Id';
             return <div>
                 <Controls.OptionsGroup 
                     options={Data.DensitySources} caption={s => (Data.DensitySourceLabels as any)[s]} 
                     current={params.sourceId} onChange={(o) => this.updateParams({ sourceId: o }) } label='Source' title='Determines where to obtain the data.' />
-                <Controls.TextBoxGroup value={this.getId()} onChange={(v) => this.updateId(v)} label='Id' onEnter={e => this.applyEnter(e) } placeholder='Enter id...' />
+                <Controls.TextBoxGroup value={this.getId()} onChange={(v) => this.updateId(v)} label={label} onEnter={e => this.applyEnter(e) } placeholder='Enter id...' />
             </div>
         }        
     }

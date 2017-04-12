@@ -14,9 +14,9 @@ namespace LiteMol.Viewer.PDBe.Data {
     import Visualization = Bootstrap.Visualization;
          
     export const DensitySourceLabels = {
-        'electron-density': 'Electron Density',
-        'emdb-pdbid': 'EMDB (from PDB ID)',
-        'emdb-id': 'EMDB'
+        'electron-density': 'X-ray (from PDB Id)',
+        'emdb-pdbid': 'EMDB (from PDB Id)',
+        'emdb-id': 'EMDB (from EMDB Id)'
     }
     export const DensitySources: (keyof typeof DensitySourceLabels)[] = ['electron-density', 'emdb-pdbid', 'emdb-id'];
     export interface DownloadDensityParams {
