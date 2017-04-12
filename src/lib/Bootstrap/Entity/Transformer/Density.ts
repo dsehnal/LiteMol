@@ -17,7 +17,7 @@ namespace LiteMol.Bootstrap.Entity.Transformer.Density {
         from: [Entity.Data.String, Entity.Data.Binary],
         to: [Entity.Density.Data],
         isUpdatable: true,
-        defaultParams: () => ({ format: LiteMol.Core.Formats.Density.SupportedFormats.CCP4, normalize: false })
+        defaultParams: () => ({ format: LiteMol.Core.Formats.Density.SupportedFormats.CCP4 })
     }, (bigCtx, a, t) => {
         return Task.create<Entity.Density.Data>(`Create Density (${a.props.label})`, 'Background', async ctx => {
             let data = await Task.fromComputation(`Parse Density (${a.props.label})`, 'Normal', t.params.format!.parse(a.props.data)).setReportTime(true).run(bigCtx);
