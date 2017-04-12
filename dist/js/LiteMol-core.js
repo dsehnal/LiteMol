@@ -11177,7 +11177,7 @@ var LiteMol;
 (function (LiteMol) {
     var Core;
     (function (Core) {
-        Core.VERSION = { number: "3.1.1", date: "March 20 2017" };
+        Core.VERSION = { number: "3.1.2", date: "April 12 2017" };
     })(Core = LiteMol.Core || (LiteMol.Core = {}));
 })(LiteMol || (LiteMol = {}));
 /*
@@ -18258,10 +18258,10 @@ var LiteMol;
                         createOperators(operators, list, i - 1, current);
                     }
                 }
-                function getAssemblyTransforms(model, operators) {
+                function getAssemblyTransforms(model, operators, offset) {
                     var info = model.data.assemblyInfo;
                     var transforms = [];
-                    var index = 0;
+                    var index = offset;
                     for (var _i = 0, operators_1 = operators; _i < operators_1.length; _i++) {
                         var op = operators_1[_i];
                         var m = Mat4.identity();
@@ -18273,12 +18273,12 @@ var LiteMol;
                     }
                     return transforms;
                 }
-                function getAssemblyParts(model, residueMask, currentTransforms, state) {
+                function getAssemblyParts(model, residueMask, currentTransforms, state, transformOffset) {
                     var _a = model.data, chains = _a.chains, entities = _a.entities, residues = _a.residues;
                     var residueIndices = state.residueIndices, operatorIndices = state.operatorIndices;
                     var atomCount = 0, chainCount = 0, entityCount = 0;
                     for (var eI = 0, _eC = entities.count; eI < _eC; eI++) {
-                        var opIndex = state.transformsOffset; //0;
+                        var opIndex = transformOffset;
                         var chainAdded = false;
                         for (var _i = 0, currentTransforms_1 = currentTransforms; _i < currentTransforms_1.length; _i++) {
                             var _ = currentTransforms_1[_i];
@@ -18306,21 +18306,14 @@ var LiteMol;
                     state.atomCount += atomCount;
                     state.chainCount += chainCount;
                     state.entityCount += entityCount;
-                    // return {
-                    //     residues: residueIndices.compact(),
-                    //     operators: operatorIndices.compact(),
-                    //     atomCount,
-                    //     chainCount,
-                    //     entityCount
-                    // };
                 }
                 function buildAssemblyEntry(model, entry, state) {
                     var ops = [], currentOp = [];
                     for (var i_2 = 0; i_2 < entry.operators.length; i_2++)
                         currentOp[i_2] = '';
                     createOperators(entry.operators, ops, entry.operators.length - 1, currentOp);
-                    var transforms = getAssemblyTransforms(model, ops);
-                    state.transformsOffset += state.transforms.length;
+                    var transformOffset = state.transforms.length;
+                    var transforms = getAssemblyTransforms(model, ops, state.transforms.length);
                     (_a = state.transforms).push.apply(_a, transforms);
                     var asymIds = Core.Utils.FastSet.create();
                     entry.asymIds.forEach(function (id) { return asymIds.add(id); });
@@ -18330,7 +18323,7 @@ var LiteMol;
                     for (var i = 0; i < residueCount; i++) {
                         mask[i] = asymIds.has(residueAsymIds[i]);
                     }
-                    getAssemblyParts(model, mask, transforms, state);
+                    getAssemblyParts(model, mask, transforms, state, transformOffset);
                     var _a;
                 }
                 SymmetryHelpers.buildAssemblyEntry = buildAssemblyEntry;
@@ -18340,7 +18333,6 @@ var LiteMol;
                         chainCount: 0,
                         entityCount: 0,
                         transforms: [],
-                        transformsOffset: 0,
                         mask: new Int8Array(model.data.residues.count),
                         residueIndices: Core.Utils.ChunkedArray.create(function (s) { return new Int32Array(s); }, model.data.residues.count, 1),
                         operatorIndices: Core.Utils.ChunkedArray.create(function (s) { return new Int32Array(s); }, model.data.residues.count, 1)

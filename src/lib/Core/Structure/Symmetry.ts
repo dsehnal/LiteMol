@@ -800,12 +800,12 @@ namespace LiteMol.Core.Structure {
             }
         }
 
-        function getAssemblyTransforms(model: Molecule.Model, operators: string[][]) {
+        function getAssemblyTransforms(model: Molecule.Model, operators: string[][], offset: number) {
             let info = model.data.assemblyInfo;
 
             let transforms: SymmetryTransform[] = [];
             
-            let index = 0;
+            let index = offset;
             for (let op of operators) {
                 var m = Mat4.identity();
                 for (var i = 0; i < op.length; i++) {
@@ -823,14 +823,13 @@ namespace LiteMol.Core.Structure {
             chainCount: number,
             entityCount: number,
 
-            transformsOffset: number,
             transforms: SymmetryTransform[],
             mask: Int8Array,
             residueIndices: Utils.ChunkedArray<number>,
             operatorIndices: Utils.ChunkedArray<number>
         }
 
-        function getAssemblyParts(model: Molecule.Model, residueMask: Int8Array, currentTransforms: SymmetryTransform[], state: AssemblyBuildState) {
+        function getAssemblyParts(model: Molecule.Model, residueMask: Int8Array, currentTransforms: SymmetryTransform[], state: AssemblyBuildState, transformOffset: number) {
 
             let { chains, entities, residues } = model.data;
 
@@ -842,7 +841,7 @@ namespace LiteMol.Core.Structure {
                 entityCount = 0;
 
             for (let eI = 0, _eC = entities.count; eI < _eC; eI++) {
-                let opIndex = state.transformsOffset;  //0;
+                let opIndex = transformOffset;
                 let chainAdded = false;
                 for (let _ of currentTransforms) {
                     for (let cI = entities.chainStartIndex[eI], _cC = entities.chainEndIndex[eI]; cI < _cC; cI++) {
@@ -873,25 +872,16 @@ namespace LiteMol.Core.Structure {
             state.atomCount += atomCount;
             state.chainCount += chainCount;
             state.entityCount += entityCount;
-            // return {
-            //     residues: residueIndices.compact(),
-            //     operators: operatorIndices.compact(),
-
-            //     atomCount,
-            //     chainCount,
-            //     entityCount
-            // };
         }
 
         export function buildAssemblyEntry(model: Molecule.Model, entry: AssemblyGenEntry, state: AssemblyBuildState) {
-
             let ops: string[][] = [],
                 currentOp: string[] = [];
             for (let i = 0; i < entry.operators.length; i++) currentOp[i] = '';
             createOperators(entry.operators, ops, entry.operators.length - 1, currentOp);
 
-            let transforms = getAssemblyTransforms(model, ops);
-            state.transformsOffset += state.transforms.length;
+            const transformOffset = state.transforms.length;
+            let transforms = getAssemblyTransforms(model, ops, state.transforms.length);
             state.transforms.push(...transforms);
 
             let asymIds = Utils.FastSet.create();
@@ -903,8 +893,7 @@ namespace LiteMol.Core.Structure {
             for (var i = 0; i < residueCount; i++) {
                 mask[i] = <any>asymIds.has(residueAsymIds[i]);
             }
-
-            getAssemblyParts(model, mask, transforms, state);
+            getAssemblyParts(model, mask, transforms, state, transformOffset);
         }
 
         export function buildAssembly(model: Molecule.Model, assembly: AssemblyGen) {
@@ -913,7 +902,6 @@ namespace LiteMol.Core.Structure {
                 chainCount: 0,
                 entityCount: 0,
                 transforms: [],
-                transformsOffset: 0,
                 mask: new Int8Array(model.data.residues.count),
                 residueIndices: Utils.ChunkedArray.create<number>(s => new Int32Array(s), model.data.residues.count, 1),
                 operatorIndices: Utils.ChunkedArray.create<number>(s => new Int32Array(s), model.data.residues.count, 1)

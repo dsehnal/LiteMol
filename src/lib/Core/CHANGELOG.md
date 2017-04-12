@@ -1,4 +1,7 @@
-﻿# 3.1.1
+﻿# 3.1.2
+* Fixed an assembly generation issue.
+
+# 3.1.1
 * More robust nucleotide detection.
 
 # 3.1.0
