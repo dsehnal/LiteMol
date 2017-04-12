@@ -108,7 +108,18 @@ namespace LiteMol.Viewer.Examples {
         const streamingParams: Extensions.DensityStreaming.SetupParams = { 
             server: 'https://webchem.ncbr.muni.cz/DensityServer/',
             id: '2f80',
-            source: 'X-ray'
+            source: 'X-ray', 
+            initialStreamingParams: {
+                radius: 1.5,
+                '2Fo-Fc': Bootstrap.Visualization.Density.Style.create({
+                    isoValue: 1.5,
+                    isoValueType: Bootstrap.Visualization.Density.IsoValueType.Sigma,
+                    color: LiteMol.Visualization.Color.fromHex(0x3362B2),
+                    isWireframe: true,
+                    transparency: { alpha: 0.4 },
+                    taskType: 'Background'
+                })
+            }
         };
         const streaming = plugin.createTransform()
             .add('molecule', Extensions.DensityStreaming.Setup, streamingParams);
@@ -121,9 +132,8 @@ namespace LiteMol.Viewer.Examples {
             return plugin.applyTransform(coloring);
         }
 
-        await applyColoring();
+        setTimeout(() => applyColoring(), 50);
         plugin.subscribe(Bootstrap.Command.Visual.ResetScene, () => setTimeout(() => applyColoring(), 25));
-
     }
 
     export async function LigandInteraction_3a4x(plugin: Plugin.Controller) {        
