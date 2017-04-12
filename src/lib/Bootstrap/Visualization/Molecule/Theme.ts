@@ -24,9 +24,9 @@ namespace LiteMol.Bootstrap.Visualization.Molecule {
     
     export function createPaletteThemeProvider(provider: (m: Core.Structure.Molecule.Model) => { index: number[], property: any[] }, pallete: LiteMol.Visualization.Color[]) {
         return function (e: Entity.Any, props?: LiteMol.Visualization.Theme.Props) {
-            let model = Utils.Molecule.findModel(e)!.props.model;
-            let map = provider(model);
-            let mapping = Vis.Theme.createPalleteMapping(mappingClosure(map.index, map.property), pallete);
+            const model = Utils.Molecule.findModel(e)!.props.model;
+            const map = provider(model);
+            const mapping = Vis.Theme.createPalleteMapping(mappingClosure(map.index, map.property), pallete);
             return Vis.Theme.createMapping(mapping, props);   
         }
     }
@@ -34,9 +34,9 @@ namespace LiteMol.Bootstrap.Visualization.Molecule {
     export function uniformThemeProvider(e: Entity.Any, props?: LiteMol.Visualization.Theme.Props) {
         if (props && props.colors) {
             if (!props.colors.get('Bond') && props.colors.get('Uniform')) {
-                let oldColors = props.colors;
+                const oldColors = props.colors;
                 props = Utils.assign({}, props);
-                let newColors = Core.Utils.FastMap.create<any, LiteMol.Visualization.Color>();
+                const newColors = Core.Utils.FastMap.create<any, LiteMol.Visualization.Color>();
                 props.colors = newColors;
                 oldColors.forEach((color, key) => newColors.set(key, color));
                 newColors.set('Bond', props.colors.get('Uniform')!);
@@ -48,9 +48,9 @@ namespace LiteMol.Bootstrap.Visualization.Molecule {
     export function createColorMapThemeProvider(
         provider: (m: Core.Structure.Molecule.Model) => { index: number[], property: any[] }, colorMap: LiteMol.Visualization.Theme.ColorMap, fallbackColor: LiteMol.Visualization.Color) {
         return function (e: Entity.Any, props?: LiteMol.Visualization.Theme.Props) {            
-            let model = Utils.Molecule.findModel(e)!.props.model;
-            let map = provider(model);
-            let mapping = Vis.Theme.createColorMapMapping(mappingClosure(map.index, map.property), colorMap, fallbackColor);
+            const model = Utils.Molecule.findModel(e)!.props.model;
+            const map = provider(model);
+            const mapping = Vis.Theme.createColorMapMapping(mappingClosure(map.index, map.property), colorMap, fallbackColor);
             return Vis.Theme.createMapping(mapping, props);   
         }
     }
@@ -94,33 +94,56 @@ namespace LiteMol.Bootstrap.Visualization.Molecule {
         'Selection': Vis.Color.fromHex(0x968000),
     });  
 
-    function makeRainbow(model: Core.Structure.Molecule.Model, groups: (m: Core.Structure.Molecule.Model) => Core.Structure.ChainTable | Core.Structure.EntityTable) {
-        let rC = model.data.residues.count;
-        let { r, g, b } = { r: new Float32Array(rC), g: new Float32Array(rC), b: new Float32Array(rC) };
-        let { count, residueStartIndex, residueEndIndex } = groups(model);
-        let cC = rainbowPalette.length - 1;
-        let color = Vis.Color.fromHex(0);
+    function makeRainbow(
+        model: Core.Structure.Molecule.Model, 
+        groupsSource: (m: Core.Structure.Molecule.Model) => Core.Structure.ChainTable | Core.Structure.EntityTable,
+        groupId: (t: Core.Structure.ChainTable | Core.Structure.EntityTable, i: number) => string) {
+            
+        const rC = model.data.residues.count;
+        const { r, g, b } = { r: new Float32Array(rC), g: new Float32Array(rC), b: new Float32Array(rC) };
+        const groups = groupsSource(model);
+        const { count, residueStartIndex, residueEndIndex } = groups;
+        const cC = rainbowPalette.length - 1;
+        const color = Vis.Color.fromHex(0);
+        const strips = Core.Utils.FastMap.create<string, { count: number, index: number }>();
 
         for (let cI = 0; cI < count; cI++) {
-            let s = residueStartIndex[cI], e = residueEndIndex[cI], l = e - s, max = l - 1;
-            if (max <= 1) max = 1;
+            const id = groupId(groups, cI);
+            const l = residueEndIndex[cI] - residueStartIndex[cI];
+            if (strips.has(id)) {
+                strips.get(id)!.count += l;
+            } else {
+                strips.set(id, { index: 0, count: l });
+            }
+        }
+
+        strips.forEach(s => s.count = Math.max(s.count - 1, 1));
+
+        for (let cI = 0; cI < count; cI++) {
+            const s = residueStartIndex[cI], l = residueEndIndex[cI] - s;
+            const strip = strips.get(groupId(groups, cI))!;
+            const max = strip.count;
+
             for (let i = 0; i < l; i++) {                
-                let t = cC * i / max;
-                let low = Math.floor(t), high = Math.ceil(t);
+                const t = cC * strip.index / max;
+                const low = Math.floor(t), high = Math.ceil(t);
                 Vis.Color.interpolate(rainbowPalette[low], rainbowPalette[high], t - low, color);
                 r[s + i] = color.r;
                 g[s + i] = color.g;
                 b[s + i] = color.b;
+                strip.index++;
             }
         }
         return { r, g, b };
     }
 
-    function createRainbowProvider(groups: (m: Core.Structure.Molecule.Model) => Core.Structure.ChainTable | Core.Structure.EntityTable) {
+    function createRainbowProvider(
+        groups: (m: Core.Structure.Molecule.Model) => Core.Structure.ChainTable | Core.Structure.EntityTable, 
+        groupId: (t: Core.Structure.ChainTable | Core.Structure.EntityTable, i: number) => string) {
         return function (e: Entity.Any, props?: LiteMol.Visualization.Theme.Props) {     
-            let model = Utils.Molecule.findModel(e)!.props.model;
-            let colors = makeRainbow(model, groups);
-            let mapping = new RainbowMapping(model, colors);
+            const model = Utils.Molecule.findModel(e)!.props.model;
+            const colors = makeRainbow(model, groups, groupId);
+            const mapping = new RainbowMapping(model, colors);
             return Vis.Theme.createMapping(mapping, props);   
         }
     }
@@ -156,12 +179,12 @@ namespace LiteMol.Bootstrap.Visualization.Molecule {
                 name: 'Rainbow (Chain)',
                 description: 'Color each chain using rainbow palette.',
                 colors: RainbowBaseColors,
-                provider: createRainbowProvider(m => m.data.chains)
+                provider: createRainbowProvider(m => m.data.chains, (t, i) => `${(t as Core.Structure.ChainTable).asymId[i]} ${(t as Core.Structure.ChainTable).entityId[i]}` )
             }, {
                 name: 'Rainbow (Entity)',
                 description: 'Color each entity using rainbow palette.',
                 colors: RainbowBaseColors,
-                provider: createRainbowProvider(m => m.data.entities)
+                provider: createRainbowProvider(m => m.data.entities, (t, i) => (t as Core.Structure.EntityTable).entityId[i])
             }, {
                 name: 'Uniform Color',
                 description: 'Same color everywhere.',

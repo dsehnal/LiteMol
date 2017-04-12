@@ -69720,7 +69720,7 @@ var LiteMol;
 (function (LiteMol) {
     var Bootstrap;
     (function (Bootstrap) {
-        Bootstrap.VERSION = { number: "1.3.5", date: "April 7 2017" };
+        Bootstrap.VERSION = { number: "1.3.6", date: "April 13 2017" };
     })(Bootstrap = LiteMol.Bootstrap || (LiteMol.Bootstrap = {}));
 })(LiteMol || (LiteMol = {}));
 /*
@@ -72330,31 +72330,45 @@ var LiteMol;
                     'Highlight': Vis.Color.fromHex(0xFFFFFF),
                     'Selection': Vis.Color.fromHex(0x968000),
                 });
-                function makeRainbow(model, groups) {
+                function makeRainbow(model, groupsSource, groupId) {
                     var rC = model.data.residues.count;
                     var _a = { r: new Float32Array(rC), g: new Float32Array(rC), b: new Float32Array(rC) }, r = _a.r, g = _a.g, b = _a.b;
-                    var _b = groups(model), count = _b.count, residueStartIndex = _b.residueStartIndex, residueEndIndex = _b.residueEndIndex;
+                    var groups = groupsSource(model);
+                    var count = groups.count, residueStartIndex = groups.residueStartIndex, residueEndIndex = groups.residueEndIndex;
                     var cC = rainbowPalette.length - 1;
                     var color = Vis.Color.fromHex(0);
+                    var strips = LiteMol.Core.Utils.FastMap.create();
                     for (var cI = 0; cI < count; cI++) {
-                        var s = residueStartIndex[cI], e = residueEndIndex[cI], l = e - s, max = l - 1;
-                        if (max <= 1)
-                            max = 1;
+                        var id = groupId(groups, cI);
+                        var l = residueEndIndex[cI] - residueStartIndex[cI];
+                        if (strips.has(id)) {
+                            strips.get(id).count += l;
+                        }
+                        else {
+                            strips.set(id, { index: 0, count: l });
+                        }
+                    }
+                    strips.forEach(function (s) { return s.count = Math.max(s.count - 1, 1); });
+                    for (var cI = 0; cI < count; cI++) {
+                        var s = residueStartIndex[cI], l = residueEndIndex[cI] - s;
+                        var strip = strips.get(groupId(groups, cI));
+                        var max = strip.count;
                         for (var i = 0; i < l; i++) {
-                            var t = cC * i / max;
+                            var t = cC * strip.index / max;
                             var low = Math.floor(t), high = Math.ceil(t);
                             Vis.Color.interpolate(rainbowPalette[low], rainbowPalette[high], t - low, color);
                             r[s + i] = color.r;
                             g[s + i] = color.g;
                             b[s + i] = color.b;
+                            strip.index++;
                         }
                     }
                     return { r: r, g: g, b: b };
                 }
-                function createRainbowProvider(groups) {
+                function createRainbowProvider(groups, groupId) {
                     return function (e, props) {
                         var model = Bootstrap.Utils.Molecule.findModel(e).props.model;
-                        var colors = makeRainbow(model, groups);
+                        var colors = makeRainbow(model, groups, groupId);
                         var mapping = new RainbowMapping(model, colors);
                         return Vis.Theme.createMapping(mapping, props);
                     };
@@ -72391,12 +72405,12 @@ var LiteMol;
                             name: 'Rainbow (Chain)',
                             description: 'Color each chain using rainbow palette.',
                             colors: RainbowBaseColors,
-                            provider: createRainbowProvider(function (m) { return m.data.chains; })
+                            provider: createRainbowProvider(function (m) { return m.data.chains; }, function (t, i) { return t.asymId[i] + " " + t.entityId[i]; })
                         }, {
                             name: 'Rainbow (Entity)',
                             description: 'Color each entity using rainbow palette.',
                             colors: RainbowBaseColors,
-                            provider: createRainbowProvider(function (m) { return m.data.entities; })
+                            provider: createRainbowProvider(function (m) { return m.data.entities; }, function (t, i) { return t.entityId[i]; })
                         }, {
                             name: 'Uniform Color',
                             description: 'Same color everywhere.',

@@ -1,4 +1,7 @@
-﻿# 1.3.5
+﻿# 1.3.6
+* Fixed rainbow color theme to work correctly on out-of-order chains and entities.
+
+# 1.3.5
 * Sticky custom theme support.
 
 # 1.3.4
