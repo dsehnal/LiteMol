@@ -43,7 +43,7 @@ namespace LiteMol.Plugin.Controls {
         state = { isExpanded: false };
 
         render() {        
-            let picker = this.state.isExpanded ? <ColorPicker {...this.props} /> : void 0;
+            let picker = this.state.isExpanded ? <ColorPicker {...this.props as any} /> : void 0;
             let clr = this.props.color;
             let pos = this.props.position ? this.props.position : 'above';
              //onMouseLeave={() => this.setState({isExpanded: false}) }>

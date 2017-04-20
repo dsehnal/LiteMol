@@ -164,7 +164,7 @@ namespace LiteMol.Example.Channels.UI {
             return <Section header={this.props.header} count={(this.props.channels || '').length}>
                 <div className='show-all'><button onClick={() => this.show(true)} disabled={this.state.isBusy}>All</button><button onClick={() => this.show(false)} disabled={this.state.isBusy}>None</button></div>
                 { this.props.channels && this.props.channels.length > 0
-                    ? this.props.channels.map((c, i) => <Channel key={i} channel={c} {...this.props} />)
+                    ? this.props.channels.map((c, i) => <Channel key={i} channel={c} {...this.props as any} />)
                     : 'None'}
             </Section>
         }
@@ -177,7 +177,7 @@ namespace LiteMol.Example.Channels.UI {
             let c = this.props.channel;
             let len = c.Profile[c.Profile.length - 1].Distance;
             let bneck = c.Profile.reduce((b: number, n: any) => Math.min(b, n.Radius), Number.POSITIVE_INFINITY);
-            return <Renderable label={<span><b>{c.Id + 1}</b>, {`Length: ${len} Å, Bottleneck: ${bneck} Å`}</span>} element={c} toggle={State.showChannelVisuals} {...this.props} />
+            return <Renderable label={<span><b>{c.Id + 1}</b>, {`Length: ${len} Å, Bottleneck: ${bneck} Å`}</span>} element={c} toggle={State.showChannelVisuals} {...this.props as any} />
         }
     }
 
@@ -194,7 +194,7 @@ namespace LiteMol.Example.Channels.UI {
             return <Section header={this.props.header} count={(this.props.cavities || '').length}>
                 <div className='show-all'><button onClick={() => this.show(true)} disabled={this.state.isBusy}>All</button><button onClick={() => this.show(false)} disabled={this.state.isBusy}>None</button></div>
                 { this.props.cavities && this.props.cavities.length > 0
-                    ? this.props.cavities.map((c, i) => <Cavity key={i} cavity={c} {...this.props} />)
+                    ? this.props.cavities.map((c, i) => <Cavity key={i} cavity={c} {...this.props as any} />)
                     : 'None'}
             </Section>
         }
@@ -206,7 +206,7 @@ namespace LiteMol.Example.Channels.UI {
         render() {
             let c = this.props.cavity;
             return <div>
-                <Renderable label={<span><b>{c.Id}</b>, {`Volume: ${c.Volume | 0} Å`}<sup>3</sup></span>} element={c} toggle={State.showCavityVisuals} {...this.props} />
+                <Renderable label={<span><b>{c.Id}</b>, {`Volume: ${c.Volume | 0} Å`}<sup>3</sup></span>} element={c} toggle={State.showCavityVisuals} {...this.props as any} />
             </div>
         }
     }
