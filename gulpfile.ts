@@ -43,17 +43,27 @@ function BuildCSS(minify: boolean) {
 
 function Uglify() {
     var plugin =  gulp.src(['./dist/js/LiteMol-plugin.js'])
-        .pipe(plugins.uglify()())
+        .pipe(plugins.uglify()({compress: false, preserveComments: 'license' }))
         .pipe(plugins.rename()('LiteMol-plugin.min.js'))
         .pipe(gulp.dest('./dist/js'));
 
     var core = gulp.src(['./dist/js/LiteMol-core.js'])
-        .pipe(plugins.uglify()())
+        .pipe(plugins.uglify()({compress: false, preserveComments: 'license' }))
         .pipe(plugins.rename()('LiteMol-core.min.js'))
         .pipe(gulp.dest('./dist/js'));
 
-   
+    var viewer = gulp.src(['./build/Viewer/LiteMol-viewer.js'])
+        .pipe(plugins.uglify()({compress: false, preserveComments: 'license' }))
+        .pipe(plugins.rename()('LiteMol-viewer.min.js'))
+        .pipe(gulp.dest('./build/web/Viewer'));
+
     return plugins.merge()(BuildCSS(true).concat([plugin, core]));
+}
+
+function MinAssets() {
+    var assetsJs = gulp.src(['./dist/js/*.min.js']).pipe(gulp.dest('./build/web/assets/js'));
+    var assetsCss = gulp.src(['./dist/css/*.min.css']).pipe(gulp.dest('./build/web/assets/css'));
+    return plugins.merge()([assetsJs, assetsCss]);
 }
 
 var ExampleNames = [
@@ -210,7 +220,8 @@ gulp.task('Web-assemble', [], WebAssemble);
 gulp.task('Web-assemble-inline', ['Plugin', 'CSS', 'ViewerAndExamples-inline'], WebAssemble);
 gulp.task('Web-inline', ['Web-assemble-inline'], WebVersions);
 
-gulp.task('Dist-min', [], Uglify);
+gulp.task('Dist-uglify', [], Uglify);
+gulp.task('Dist-min', ['Dist-uglify'], MinAssets);
 
 gulp.task('default', [
     'Clean',
