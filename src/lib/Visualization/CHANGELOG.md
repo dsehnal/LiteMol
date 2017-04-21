@@ -1,4 +1,7 @@
-﻿# 1.6.6
+﻿# 1.6.7
+* Ability to customize maximum H bond length.
+
+# 1.6.6
 * Sticky theme support.
 
 # 1.6.5

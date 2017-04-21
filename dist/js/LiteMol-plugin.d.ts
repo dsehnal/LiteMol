@@ -14781,6 +14781,10 @@ declare namespace LiteMol.Visualization.Molecule.BallsAndSticks {
         atomRadius?: (i: number) => number;
         hideBonds?: boolean;
         bondRadius?: number;
+        customMaxBondLengths?: {
+            get(e: string): number | undefined;
+            has(e: string): boolean;
+        };
     }
     const DefaultBallsAndSticksModelParameters: Parameters;
     class Model extends Visualization.Model {
@@ -15777,6 +15781,9 @@ declare namespace LiteMol.Bootstrap.Visualization.Molecule {
         vdwScaling?: number;
         atomRadius?: number;
         bondRadius: number;
+        customMaxBondLengths?: {
+            [e: string]: number;
+        };
     }
     interface SurfaceParams {
         probeRadius: number;

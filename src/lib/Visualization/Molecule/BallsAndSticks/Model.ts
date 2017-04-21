@@ -10,13 +10,15 @@ namespace LiteMol.Visualization.Molecule.BallsAndSticks {
         atomRadius?: (i: number) => number;
         hideBonds?: boolean;
         bondRadius?: number;
+        customMaxBondLengths?: { get(e: string): number | undefined, has(e: string): boolean };
     }
     
     export const DefaultBallsAndSticksModelParameters: Parameters = {
         tessalation: 3,
         atomRadius: () => 0.4,
         hideBonds: false,
-        bondRadius: 0.15
+        bondRadius: 0.15,
+        customMaxBondLengths: void 0
     }
 
     export class Model extends Visualization.Model {

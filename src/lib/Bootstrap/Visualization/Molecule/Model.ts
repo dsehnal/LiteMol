@@ -60,17 +60,26 @@ namespace LiteMol.Bootstrap.Visualization.Molecule {
         } (parameters.vdwScaling!, vdw);
     }
     
-    function createBallsAndSticksParams(tessalation: number, model: Structure.Molecule.Model, parameters: BallsAndSticksParams) {        
-        return <MolVis.BallsAndSticks.Parameters>{
+    function createBallsAndSticksParams(tessalation: number, model: Structure.Molecule.Model, parameters: BallsAndSticksParams): MolVis.BallsAndSticks.Parameters { 
+        let customMaxBondLengths: Core.Utils.FastMap<string, number> | undefined = void 0;
+        if (parameters.customMaxBondLengths) {
+            const keys = Object.getOwnPropertyNames(parameters.customMaxBondLengths);
+            if (keys.length > 0) customMaxBondLengths = Core.Utils.FastMap.create<string, number>();
+            for (const key of keys) {
+                customMaxBondLengths!.set(key, parameters.customMaxBondLengths[key]);
+            }
+        }
+        return {
             tessalation,
             bondRadius: parameters.bondRadius,
             hideBonds: false,
-            atomRadius: makeRadiusFunc(model, parameters)            
+            atomRadius: makeRadiusFunc(model, parameters),
+            customMaxBondLengths
         };
     }
     
-    function createVDWBallsParams(tessalation: number, model: Structure.Molecule.Model) {        
-        return <MolVis.BallsAndSticks.Parameters>{
+    function createVDWBallsParams(tessalation: number, model: Structure.Molecule.Model): MolVis.BallsAndSticks.Parameters {        
+        return {
             tessalation,
             bondRadius: 0,
             hideBonds: true,

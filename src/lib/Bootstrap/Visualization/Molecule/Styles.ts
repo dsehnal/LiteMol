@@ -31,7 +31,8 @@ namespace LiteMol.Bootstrap.Visualization.Molecule {
         useVDW: boolean,
         vdwScaling?: number,
         atomRadius?: number,
-        bondRadius: number
+        bondRadius: number,
+        customMaxBondLengths?: { [e: string]: number }
     }
     
     export interface SurfaceParams {
@@ -42,8 +43,7 @@ namespace LiteMol.Bootstrap.Visualization.Molecule {
         isWireframe: boolean
     }
     
-    export namespace Default {
-        
+    export namespace Default {        
         export const DetailParams:DetailParams = { detail: 'Automatic' }
         
         export const BallsAndSticksParams: BallsAndSticksParams = {
@@ -51,6 +51,7 @@ namespace LiteMol.Bootstrap.Visualization.Molecule {
             vdwScaling: 0.22,
             atomRadius: 0.35,
             bondRadius: 0.09,
+            customMaxBondLengths: void 0,
             detail: 'Automatic'
         };
         

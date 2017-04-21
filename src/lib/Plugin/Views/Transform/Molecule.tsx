@@ -149,6 +149,10 @@ namespace LiteMol.Plugin.Views.Transform.Molecule {
             
             controls.push(<Controls.Slider label='Bond Rds' onChange={v => this.controller.updateStyleParams({ bondRadius: v }) }  
                     min={0.05} max={1} step={0.01} value={p.bondRadius!} title='Bond Radius'  />);
+
+            const maxHbondLength = p.customMaxBondLengths && p.customMaxBondLengths['H'] ? p.customMaxBondLengths['H'] : 1.15;
+            controls.push(<Controls.Slider label='H Bond Len' onChange={v => this.controller.updateStyleParams({ customMaxBondLengths: { ...p.customMaxBondLengths, 'H': v } }) }  
+                    min={0.9} max={1.5} step={0.01} value={maxHbondLength} title='Maximum H bond length'  />);
             
             controls.push(<Controls.OptionsGroup options={Bootstrap.Visualization.Molecule.DetailTypes} caption={s => s} current={p.detail}
                     onChange={(o) => this.controller.updateStyleParams({ detail: o }) } label='Detail' />);

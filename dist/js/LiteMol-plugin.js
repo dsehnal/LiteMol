@@ -67493,7 +67493,8 @@ var LiteMol;
                     tessalation: 3,
                     atomRadius: function () { return 0.4; },
                     hideBonds: false,
-                    bondRadius: 0.15
+                    bondRadius: 0.15,
+                    customMaxBondLengths: void 0
                 };
                 var Model = (function (_super) {
                     __extends(Model, _super);
@@ -67620,7 +67621,7 @@ var LiteMol;
                         return stickCount;
                     }
                     BallsAndSticksHelper.addPrecomputedBonds = addPrecomputedBonds;
-                    function analyze(molecule, atomIndices) {
+                    function analyze(molecule, atomIndices, params) {
                         var indices, atomCount = 0;
                         indices = atomIndices;
                         atomCount = indices.length;
@@ -67644,6 +67645,9 @@ var LiteMol;
                             };
                         }
                         var tree = LiteMol.Core.Geometry.SubdivisionTree3D.create(indices, function (i, add) { add(cX[i], cY[i], cZ[i]); }), ctx = LiteMol.Core.Geometry.SubdivisionTree3D.createContextRadius(tree, bondLength + 1, false), pA = new Visualization.THREE.Vector3(), pB = new Visualization.THREE.Vector3(), processed = LiteMol.Core.Utils.FastSet.create(), buffer = ctx.buffer;
+                        var maxHbondLength = params.customMaxBondLengths && params.customMaxBondLengths.has('H')
+                            ? params.customMaxBondLengths.get('H')
+                            : 1.15;
                         while (startAtomIndex < atomCount) {
                             var rIndex = atomResidueIndex[indices[startAtomIndex]];
                             endAtomIndex = startAtomIndex;
@@ -67690,7 +67694,7 @@ var LiteMol;
                                             continue;
                                         var altB = altLoc[idx];
                                         if (isHA || isHB) {
-                                            if (len < 1.1 && (!altA || !altB || altA === altB)) {
+                                            if (len <= maxHbondLength && (!altA || !altB || altA === altB)) {
                                                 ChunkedArray.add3(builder, atom, idx, 1);
                                                 stickCount++;
                                             }
@@ -67858,7 +67862,7 @@ var LiteMol;
                         this.state = state;
                         this.model = this.state.model;
                         this.atomIndices = this.state.atomIndices;
-                        this.info = BallsAndSticksHelper.analyze(this.state.model, this.state.atomIndices);
+                        this.info = BallsAndSticksHelper.analyze(this.state.model, this.state.atomIndices, this.state.params);
                         this.bondMapBuilder = new Visualization.Selection.VertexMapBuilder(this.info.residueCount);
                         this.bondBufferSize = this.state.bondTemplateVertexBufferLength * this.info.stickCount;
                         this.bondVertices = new Float32Array(this.bondBufferSize);
@@ -72465,6 +72469,7 @@ var LiteMol;
                         vdwScaling: 0.22,
                         atomRadius: 0.35,
                         bondRadius: 0.09,
+                        customMaxBondLengths: void 0,
                         detail: 'Automatic'
                     };
                     Default.SurfaceParams = {
@@ -72563,11 +72568,22 @@ var LiteMol;
                     }(parameters.vdwScaling, vdw);
                 }
                 function createBallsAndSticksParams(tessalation, model, parameters) {
+                    var customMaxBondLengths = void 0;
+                    if (parameters.customMaxBondLengths) {
+                        var keys = Object.getOwnPropertyNames(parameters.customMaxBondLengths);
+                        if (keys.length > 0)
+                            customMaxBondLengths = LiteMol.Core.Utils.FastMap.create();
+                        for (var _i = 0, keys_3 = keys; _i < keys_3.length; _i++) {
+                            var key = keys_3[_i];
+                            customMaxBondLengths.set(key, parameters.customMaxBondLengths[key]);
+                        }
+                    }
                     return {
                         tessalation: tessalation,
                         bondRadius: parameters.bondRadius,
                         hideBonds: false,
-                        atomRadius: makeRadiusFunc(model, parameters)
+                        atomRadius: makeRadiusFunc(model, parameters),
+                        customMaxBondLengths: customMaxBondLengths
                     };
                 }
                 function createVDWBallsParams(tessalation, model) {
@@ -77579,6 +77595,8 @@ var LiteMol;
                                 controls.push(Plugin.React.createElement(Plugin.Controls.Slider, { label: 'Atom Rds', onChange: function (v) { return _this.controller.updateStyleParams({ atomRadius: v }); }, min: 0.05, max: 2, step: 0.01, value: p.atomRadius, title: 'Atom Radius' }));
                             }
                             controls.push(Plugin.React.createElement(Plugin.Controls.Slider, { label: 'Bond Rds', onChange: function (v) { return _this.controller.updateStyleParams({ bondRadius: v }); }, min: 0.05, max: 1, step: 0.01, value: p.bondRadius, title: 'Bond Radius' }));
+                            var maxHbondLength = p.customMaxBondLengths && p.customMaxBondLengths['H'] ? p.customMaxBondLengths['H'] : 1.15;
+                            controls.push(Plugin.React.createElement(Plugin.Controls.Slider, { label: 'H Bond Len', onChange: function (v) { return _this.controller.updateStyleParams({ customMaxBondLengths: __assign({}, p.customMaxBondLengths, { 'H': v }) }); }, min: 0.9, max: 1.5, step: 0.01, value: maxHbondLength, title: 'Maximum H bond length' }));
                             controls.push(Plugin.React.createElement(Plugin.Controls.OptionsGroup, { options: LiteMol.Bootstrap.Visualization.Molecule.DetailTypes, caption: function (s) { return s; }, current: p.detail, onChange: function (o) { return _this.controller.updateStyleParams({ detail: o }); }, label: 'Detail' }));
                             return controls;
                         };

@@ -25,13 +25,13 @@ namespace LiteMol.Visualization.Molecule.BallsAndSticks {
             return stickCount;
         }
 
-        export function analyze(molecule: Core.Structure.Molecule.Model, atomIndices: number[]) {
+        export function analyze(molecule: Core.Structure.Molecule.Model, atomIndices: number[], params: Parameters) {
             let indices: Int32Array,
                 atomCount = 0;
 
             indices = <any>atomIndices;
             atomCount = indices.length;
-
+            
             let atoms = molecule.data.atoms,
                 { x:cX, y:cY, z:cZ } = molecule.positions,
                 elementSymbol = atoms.elementSymbol,
@@ -71,6 +71,10 @@ namespace LiteMol.Visualization.Molecule.BallsAndSticks {
                 pA = new THREE.Vector3(), pB = new THREE.Vector3(),
                 processed = Core.Utils.FastSet.create<number>(),
                 buffer = ctx.buffer;
+
+            const maxHbondLength = params.customMaxBondLengths && params.customMaxBondLengths.has('H') 
+                ? params.customMaxBondLengths.get('H')!
+                : 1.15;
 
             while (startAtomIndex < atomCount) {
 
@@ -140,7 +144,7 @@ namespace LiteMol.Visualization.Molecule.BallsAndSticks {
                             let altB = altLoc[idx];
 
                             if (isHA || isHB) {
-                                if (len < 1.1 && (!altA || !altB || altA === altB)) {
+                                if (len <= maxHbondLength && (!altA || !altB || altA === altB)) {
                                     ChunkedArray.add3(builder, atom, idx, 1);
                                     stickCount++;
                                 }
@@ -302,7 +306,7 @@ namespace LiteMol.Visualization.Molecule.BallsAndSticks {
     class BondsBuildState {
         model = this.state.model;
         atomIndices = this.state.atomIndices;
-        info = BallsAndSticksHelper.analyze(this.state.model, this.state.atomIndices);
+        info = BallsAndSticksHelper.analyze(this.state.model, this.state.atomIndices, this.state.params);
 
         bondMapBuilder = new Selection.VertexMapBuilder(this.info.residueCount);
 
