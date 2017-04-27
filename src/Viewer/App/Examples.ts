@@ -9,15 +9,15 @@ namespace LiteMol.Viewer.Examples {
 
     export const ExampleMap: { [name: string]: { name: string, provider: (plugin: Plugin.Controller) => void } } = {
         'zika-cryo-em': {
-            name: 'Zika Virus + Cryo-EM data',
+            name: 'Zika Virus + Cryo-EM Map',
             provider: Zika
         },
         '3a4x-lig': {
-            name: 'PDB ID 3A4X ligand validation',
+            name: 'PDB ID 3A4X Ligand Validation',
             provider: LigandInteraction_3a4x
         },
         'hiv1-protease': {
-            name: 'HIV-1 Protease + validation + X-ray density',
+            name: 'HIV-1 Protease + PDBe Validation + X-ray Density',
             provider: HIV1Protease
         },
         'hiv1-capsid': {
@@ -42,7 +42,7 @@ namespace LiteMol.Viewer.Examples {
         let example = Examples.ExampleMap[t.params.exampleId];
         if (example) example.provider(new Plugin.Controller(context.plugin!));
         
-        // an ugly hack to hide add button from the UI.
+        // an ugly hack to temporarily hide add button from the UIs
         const delay = t.params.exampleId === 'hiv1-capsid' ? 10000 : 2500;        
         return Bootstrap.Tree.Transform.build().add(a, Transformer.Basic.Delay, { timeoutMs: delay });
     });
