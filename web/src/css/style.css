@@ -929,13 +929,13 @@ img.lm-hero-logo-small {
     .nav > li{
         margin-top: 0;
         border-bottom:1px solid rgba(0,0,0,.1);
-        background:rgba(0,0,0,.05);
+        background: white;/*rgba(0,0,0,.5);*/
         text-align: left;
         padding-left:15px;
         width:100%;
     }
     .nav > li:hover{
-        background:rgba(0,0,0,.08);
+        background: white;/*rgba(0,0,0,.55);*/
     }
     .dropdown .dropdown a .caret{   
         float: none;
