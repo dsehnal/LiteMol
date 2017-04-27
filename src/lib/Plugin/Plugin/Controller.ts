@@ -58,7 +58,7 @@ namespace LiteMol.Plugin {
     import Transformer = Entity.Transformer;
 
     export class Controller {
-        private _instance: Instance;
+        private _instance: Bootstrap.Plugin.Instance;
 
         get instance() { return this._instance; }
         get context() { return this._instance.context; }
@@ -190,7 +190,7 @@ namespace LiteMol.Plugin {
             this._instance = <any>void 0;
         }
 
-        constructor(options: PluginControllerOptions) {
+        private ofOptions(options: PluginControllerOptions) {
             const spec = options.customSpecification ? options.customSpecification : getDefaultSpecification();
 
             if (!options.customSpecification) {
@@ -216,6 +216,18 @@ namespace LiteMol.Plugin {
 
             if (options.layoutState) {
                 this.setLayoutState(options.layoutState);
+            }
+        }
+
+        private ofInstace(instance: Bootstrap.Plugin.Instance) {
+            this._instance = instance;
+        }
+
+        constructor(optionsOrInstance: PluginControllerOptions | Bootstrap.Plugin.Instance) {
+            if ((optionsOrInstance as Instance).getTransformerInfo) {
+                this.ofInstace(optionsOrInstance as Instance);
+            } else {
+                this.ofOptions(optionsOrInstance as PluginControllerOptions);
             }
         }
     }

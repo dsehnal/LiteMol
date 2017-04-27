@@ -49,4 +49,18 @@ namespace LiteMol.Bootstrap.Entity.Transformer.Basic {
         }  
         return Task.resolve('Group', 'Silent', group);
     }); 
+
+    export const Delay = Transformer.create<Entity.Root, Entity.Action, { timeoutMs: number }>({
+        id: 'basic-delay',
+        name: 'Delay',
+        description: 'A transformer that delays by the specified timeout and does nothing.',
+        from: [],
+        to: [Entity.Action],
+        validateParams: () => void 0,  
+        defaultParams: () => ({ timeoutMs: 1000 })
+    }, (ctx, a, t) => {        
+        return Task.create('Delay', 'Silent', ctx => new Promise(res => {
+            setTimeout(() => res(Tree.Node.Null), t.params.timeoutMs);
+        }))
+    }); 
 }

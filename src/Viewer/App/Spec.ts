@@ -26,6 +26,7 @@ namespace LiteMol.Viewer {
             { transformer: DataSources.ObtainMolecule, view: Viewer.Views.ObtainDownload },
             //{ transformer: PDBe.Data.DownloadBinaryCIFFromCoordinateServer, view: Viewer.PDBe.Views.DownloadBinaryCIFFromCoordinateServerView },
             { transformer: PDBe.Data.DownloadDensity, view: PDBe.Views.DownloadDensityView },
+            { transformer: Examples.LoadExample, view: Viewer.Views.LoadExample },
             //{ transformer: PDBe.Data.DownloadMolecule, view: Views.Transform.Data.WithIdField, initiallyCollapsed: true },
             { transformer: Transformer.Molecule.CoordinateStreaming.InitStreaming, view: Views.Transform.Molecule.InitCoordinateStreaming, initiallyCollapsed: true },
             //{ transformer: DataSources.DownloadMolecule, view: Views.Transform.Molecule.DownloadFromUrl, initiallyCollapsed: true },

@@ -39,7 +39,7 @@ namespace LiteMol.Plugin {
         private componentMap = Core.Utils.FastMap.create<string, Bootstrap.Components.ComponentInfo>();  
         private transformersInfo = Core.Utils.FastMap.create<string, TransformerInfo>(); 
                   
-        context = new Bootstrap.Context(this);
+        context: Bootstrap.Context = new Bootstrap.Context(this);
         
         private compose() {            
             for (let s of Object.keys(this.spec.settings)) {

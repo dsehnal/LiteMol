@@ -41,12 +41,7 @@ namespace LiteMol.Viewer {
             plugin.applyTransform(t);
         }
 
-        let example = getParam('example', '[a-z0-9\-]+').toLowerCase().trim();
-        switch (example) {
-            case 'zika-cryo-em': Examples.Zika(plugin); break;
-            case 'hiv1-capsid': Examples.HIV1Capsid(plugin); break;
-            case 'hiv1-protease': Examples.HIV1Protease(plugin); break;
-            case '3a4x-lig': Examples.LigandInteraction_3a4x(plugin); break;
-        }
+        let example = Examples.ExampleMap[getParam('example', '[a-z0-9\-]+').toLowerCase().trim()];
+        if (example) example.provider(plugin);
     })();
 }

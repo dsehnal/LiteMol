@@ -13,6 +13,8 @@ namespace LiteMol.Bootstrap.Plugin {
     }
 
     export interface Instance {
-        getTransformerInfo(transformer: Bootstrap.Tree.Transformer.Any): TransformerInfo;
+        getTransformerInfo(transformer: Bootstrap.Tree.Transformer.Any): TransformerInfo,
+        readonly context: Context,
+        destroy(): void
     }
 }

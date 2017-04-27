@@ -73196,6 +73196,19 @@ var LiteMol;
                         }
                         return Bootstrap.Task.resolve('Group', 'Silent', group);
                     });
+                    Basic.Delay = Transformer.create({
+                        id: 'basic-delay',
+                        name: 'Delay',
+                        description: 'A transformer that delays by the specified timeout and does nothing.',
+                        from: [],
+                        to: [Entity.Action],
+                        validateParams: function () { return void 0; },
+                        defaultParams: function () { return ({ timeoutMs: 1000 }); }
+                    }, function (ctx, a, t) {
+                        return Bootstrap.Task.create('Delay', 'Silent', function (ctx) { return new LiteMol.Promise(function (res) {
+                            setTimeout(function () { return res(Bootstrap.Tree.Node.Null); }, t.params.timeoutMs);
+                        }); });
+                    });
                 })(Basic = Transformer_1.Basic || (Transformer_1.Basic = {}));
             })(Transformer = Entity.Transformer || (Entity.Transformer = {}));
         })(Entity = Bootstrap.Entity || (Bootstrap.Entity = {}));
@@ -78816,27 +78829,12 @@ var LiteMol;
         var Entity = LiteMol.Bootstrap.Entity;
         var Transformer = Entity.Transformer;
         var Controller = (function () {
-            function Controller(options) {
-                var spec = options.customSpecification ? options.customSpecification : Plugin.getDefaultSpecification();
-                if (!options.customSpecification) {
-                    spec.behaviours.push(LiteMol.Bootstrap.Behaviour.GoogleAnalytics(options.analyticsId ? options.analyticsId : 'UA-77062725-1'));
-                }
-                var target;
-                if (options.target instanceof HTMLElement) {
-                    target = options.target;
+            function Controller(optionsOrInstance) {
+                if (optionsOrInstance.getTransformerInfo) {
+                    this.ofInstace(optionsOrInstance);
                 }
                 else {
-                    target = document.querySelector(options.target);
-                }
-                if (!target) {
-                    throw new Error("options.target cannot be undefined.");
-                }
-                this._instance = new Plugin.Instance(spec, target);
-                if (options.viewportBackground) {
-                    this.setViewportBackground(options.viewportBackground);
-                }
-                if (options.layoutState) {
-                    this.setLayoutState(options.layoutState);
+                    this.ofOptions(optionsOrInstance);
                 }
             }
             Object.defineProperty(Controller.prototype, "instance", {
@@ -78967,6 +78965,32 @@ var LiteMol;
                     return;
                 this._instance.destroy();
                 this._instance = void 0;
+            };
+            Controller.prototype.ofOptions = function (options) {
+                var spec = options.customSpecification ? options.customSpecification : Plugin.getDefaultSpecification();
+                if (!options.customSpecification) {
+                    spec.behaviours.push(LiteMol.Bootstrap.Behaviour.GoogleAnalytics(options.analyticsId ? options.analyticsId : 'UA-77062725-1'));
+                }
+                var target;
+                if (options.target instanceof HTMLElement) {
+                    target = options.target;
+                }
+                else {
+                    target = document.querySelector(options.target);
+                }
+                if (!target) {
+                    throw new Error("options.target cannot be undefined.");
+                }
+                this._instance = new Plugin.Instance(spec, target);
+                if (options.viewportBackground) {
+                    this.setViewportBackground(options.viewportBackground);
+                }
+                if (options.layoutState) {
+                    this.setLayoutState(options.layoutState);
+                }
+            };
+            Controller.prototype.ofInstace = function (instance) {
+                this._instance = instance;
             };
             return Controller;
         }());

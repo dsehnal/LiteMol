@@ -16041,6 +16041,9 @@ declare namespace LiteMol.Bootstrap.Entity.Transformer.Basic {
         isCollapsed?: boolean;
     }
     const CreateGroup: Transformer<Any, Root, CreateGroupParams>;
+    const Delay: Transformer<Root, Action, {
+        timeoutMs: number;
+    }>;
 }
 declare namespace LiteMol.Bootstrap.Entity.Transformer.Molecule {
     interface DownloadMoleculeSourceParams {
@@ -16573,6 +16576,8 @@ declare namespace LiteMol.Bootstrap.Plugin {
     }
     interface Instance {
         getTransformerInfo(transformer: Bootstrap.Tree.Transformer.Any): TransformerInfo;
+        readonly context: Context;
+        destroy(): void;
     }
 }
 declare namespace LiteMol.Bootstrap {
@@ -17218,7 +17223,7 @@ declare namespace LiteMol.Plugin {
         private target;
         private componentMap;
         private transformersInfo;
-        context: Context;
+        context: Bootstrap.Context;
         private compose();
         getTransformerInfo(transformer: Bootstrap.Tree.Transformer.Any): TransformerInfo;
         destroy(): void;
@@ -17279,7 +17284,7 @@ declare namespace LiteMol.Plugin {
     import Entity = Bootstrap.Entity;
     class Controller {
         private _instance;
-        readonly instance: Instance;
+        readonly instance: Bootstrap.Plugin.Instance;
         readonly context: Context;
         readonly root: Entity.Any;
         /**
@@ -17343,7 +17348,9 @@ declare namespace LiteMol.Plugin {
          * The controller becomes unusable as a result.
          */
         destroy(): void;
-        constructor(options: PluginControllerOptions);
+        private ofOptions(options);
+        private ofInstace(instance);
+        constructor(optionsOrInstance: PluginControllerOptions | Bootstrap.Plugin.Instance);
     }
     function create(options: PluginControllerOptions): Controller;
 }

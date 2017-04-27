@@ -7,8 +7,61 @@ namespace LiteMol.Viewer.Examples {
     import Transformer = LiteMol.Bootstrap.Entity.Transformer
     import Vis = Bootstrap.Visualization
 
+    export const ExampleMap: { [name: string]: { name: string, provider: (plugin: Plugin.Controller) => void } } = {
+        'zika-cryo-em': {
+            name: 'Zika Virus + Cryo-EM data',
+            provider: Zika
+        },
+        '3a4x-lig': {
+            name: 'PDB ID 3A4X ligand validation',
+            provider: LigandInteraction_3a4x
+        },
+        'hiv1-protease': {
+            name: 'HIV-1 Protease + validation + X-ray density',
+            provider: HIV1Protease
+        },
+        'hiv1-capsid': {
+            name: 'HIV-1 Capsid Cartoon Model',
+            provider: HIV1Capsid
+        } 
+    }
+
+    export const ExampleIds = Object.getOwnPropertyNames(ExampleMap);
+
+    export interface LoadExampleParams { exampleId: string } 
+    export const LoadExample = Bootstrap.Tree.Transformer.action<Bootstrap.Entity.Root, Bootstrap.Entity.Action, LoadExampleParams>({
+        id: 'viewer-load-example',
+        name: 'Examples',
+        description: 'Clears the scene and loads the selected example',
+        from: [Bootstrap.Entity.Root],
+        to: [Bootstrap.Entity.Action],
+        defaultParams: () => ({ exampleId: ExampleIds[0] })
+    }, (context, a, t) => {  
+        Bootstrap.Command.Tree.RemoveNode.dispatch(context, context.tree.root);
+
+        let example = Examples.ExampleMap[t.params.exampleId];
+        if (example) example.provider(new Plugin.Controller(context.plugin!));
+        
+        // an ugly hack to hide add button from the UI.
+        const delay = t.params.exampleId === 'hiv1-capsid' ? 10000 : 2500;        
+        return Bootstrap.Tree.Transform.build().add(a, Transformer.Basic.Delay, { timeoutMs: delay });
+    });
+    
     function hideControlsIfNarrow(plugin: Plugin.Controller) {
         if (document.body.clientWidth < 825) plugin.setLayoutState({ hideControls: true });
+    }
+
+    function unsubscribeOnDelete(plugin: Plugin.Controller, subProvider: () => { dispose: () => void }, ref: string) {
+        let sub = subProvider();
+        let del = plugin.subscribe(Bootstrap.Event.Tree.NodeRemoved, e => {
+            if (!del || !sub || e.data.ref !== ref) return;
+            sub.dispose();
+            sub = void 0 as any;
+            if (del) {
+                del.dispose();
+                del = void 0 as any;
+            }
+        });
     }
 
     export function Zika(plugin: Plugin.Controller) {
@@ -60,7 +113,7 @@ namespace LiteMol.Viewer.Examples {
         });
     }
 
-    export function HIV1Capsid(plugin: Plugin.Controller) {
+    function HIV1Capsid(plugin: Plugin.Controller) {
         LiteMol.Bootstrap.Behaviour.SuppressCreateVisualWhenModelIsAdded = true;
         hideControlsIfNarrow(plugin);
 
@@ -78,14 +131,18 @@ namespace LiteMol.Viewer.Examples {
             (plugin.context.transforms.getController(Transformer.Molecule.CreateVisual, plugin.selectEntities('polymer')[0]) as Bootstrap.Components.Transform.MoleculeVisual)
                 .updateStyleTheme(theme);
         });
+
+        return molecule;
     }
 
-    export async function HIV1Protease(plugin: Plugin.Controller) {
+    async function HIV1Protease(plugin: Plugin.Controller) {
         LiteMol.Bootstrap.Behaviour.SuppressCreateVisualWhenModelIsAdded = true;
         hideControlsIfNarrow(plugin);
         
+        const rootRef = 'hiv1-protease-data';
+
         const molecule = plugin.createTransform()
-            .add(plugin.root, Transformer.Data.Download, { url: `https://webchem.ncbr.muni.cz/CoordinateServer/2f80/full?encoding=bcif&lowPrecisionCoords=1`, type: 'Binary', id: '5ire' })
+            .add(plugin.root, Transformer.Data.Download, { url: `https://webchem.ncbr.muni.cz/CoordinateServer/2f80/full?encoding=bcif&lowPrecisionCoords=1`, type: 'Binary', id: '5ire' }, { ref: rootRef })
             .then(Transformer.Molecule.CreateFromData, { format: LiteMol.Core.Formats.Molecule.SupportedFormats.mmBCIF }, { ref: 'molecule', isBinding: true })
             .then(Transformer.Molecule.CreateModel, { modelIndex: 0 })
             .then(Transformer.Molecule.CreateMacromoleculeVisual, { het: true, polymer: true, water: false, hetRef: 'het-visual', polymerRef: 'polymer-visual' }, { });
@@ -101,7 +158,7 @@ namespace LiteMol.Viewer.Examples {
         plugin.command(Bootstrap.Command.Entity.Focus, plugin.selectEntities('polymer-visual'));
 
         const annotation = plugin.createTransform()
-            .add('molecule', Viewer.PDBe.Validation.DownloadAndCreate, { reportRef: 'validation' });
+            .add('molecule', Viewer.PDBe.Validation.DownloadAndCreate, { reportRef: 'hiv1-validation' });
         
         const annotationTransform = plugin.applyTransform(annotation);
 
@@ -128,15 +185,18 @@ namespace LiteMol.Viewer.Examples {
 
         await annotationTransform;
         function applyColoring() {
-            const coloring = plugin.createTransform().add('validation', Viewer.PDBe.Validation.ApplyTheme, { })
+            const coloring = plugin.createTransform().add('hiv1-validation', Viewer.PDBe.Validation.ApplyTheme, { })
             return plugin.applyTransform(coloring);
         }
 
         setTimeout(() => applyColoring(), 50);
-        plugin.subscribe(Bootstrap.Command.Visual.ResetScene, () => setTimeout(() => applyColoring(), 25));
+        unsubscribeOnDelete(
+            plugin, 
+            () => plugin.subscribe(Bootstrap.Command.Visual.ResetScene, () => setTimeout(() => applyColoring(), 25)), 
+            rootRef);
     }
 
-    export async function LigandInteraction_3a4x(plugin: Plugin.Controller) {        
+    async function LigandInteraction_3a4x(plugin: Plugin.Controller) {        
         LiteMol.Bootstrap.Behaviour.SuppressCreateVisualWhenModelIsAdded = true;
         LiteMol.Bootstrap.Behaviour.Molecule.SuppressShowInteractionOnSelect = true;
         hideControlsIfNarrow(plugin);
@@ -155,9 +215,11 @@ namespace LiteMol.Viewer.Examples {
             theme: { template: Vis.Molecule.Default.UniformThemeTemplate, colors: Vis.Molecule.Default.UniformThemeTemplate.colors!.set('Uniform', { r: 0.4, g: 0.4, b: 0.4 }), transparency: { alpha: 1.0 } }
         } 
 
+        const rootRef = '3a4x-ligint-data';
+
         const query = Core.Structure.Query.residues({ entityId: '2', authAsymId: 'B', authSeqNumber: 2 });
         const model = plugin.createTransform()
-            .add(plugin.root, Transformer.Data.Download, { url: `https://webchem.ncbr.muni.cz/CoordinateServer/3a4x/ligandInteraction?modelId=1&entityId=2&authAsymId=B&authSeqNumber=2&insCode=&radius=5&atomSitesOnly=1&encoding=bcif&lowPrecisionCoords=1`, type: 'Binary', id: '3a4x' })
+            .add(plugin.root, Transformer.Data.Download, { url: `https://webchem.ncbr.muni.cz/CoordinateServer/3a4x/ligandInteraction?modelId=1&entityId=2&authAsymId=B&authSeqNumber=2&insCode=&radius=5&atomSitesOnly=1&encoding=bcif&lowPrecisionCoords=1`, type: 'Binary', id: '3a4x' }, { ref: rootRef })
             .then(Transformer.Molecule.CreateFromData, { format: LiteMol.Core.Formats.Molecule.SupportedFormats.mmBCIF }, { ref: 'molecule', isBinding: true })        
             .then(Transformer.Molecule.CreateModel, { modelIndex: 0 });
 
@@ -197,7 +259,10 @@ namespace LiteMol.Viewer.Examples {
         }
 
         applyColoring();
-        plugin.subscribe(Bootstrap.Command.Visual.ResetScene, () => setTimeout(() => applyColoring(), 25));
+        unsubscribeOnDelete(
+            plugin, 
+            () => plugin.subscribe(Bootstrap.Command.Visual.ResetScene, () => setTimeout(() => applyColoring(), 25)), 
+            rootRef);
     }
 
 }

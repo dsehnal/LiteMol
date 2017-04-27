@@ -9,6 +9,13 @@ namespace LiteMol.Viewer.Views {
 
     import Controls = LiteMol.Plugin.Controls 
     
+    export class LoadExample extends LiteMol.Plugin.Views.Transform.ControllerBase<Bootstrap.Components.Transform.Controller<Viewer.Examples.LoadExampleParams>> {
+        protected renderControls() {            
+            const exampleId = this.params.exampleId;
+            return <Controls.OptionsGroup options={Examples.ExampleIds} caption={s => Examples.ExampleMap[s].name} current={exampleId}
+                onChange={exampleId => this.updateParams({ exampleId }) } label='Name' />;
+        }
+    }
 
     export class ObtainDownload extends LiteMol.Plugin.Views.Transform.ControllerBase<Bootstrap.Components.Transform.Controller<DataSources.MoleculeDownloadParams>> {
         private updateSourceParams(newSrc: Partial<DataSources.ObtainDownloadSource>) {
