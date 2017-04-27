@@ -1,3 +1,6 @@
+# 1.4.3
+* Updated PDBe Validation Report support to the latest version of the API.
+
 # 1.4.2
 * Simplified downloading/opening molecule data.
 * PDBe Validation Reports are no longer applied to HET residues.

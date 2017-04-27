@@ -12,7 +12,7 @@ namespace LiteMol.Viewer.PDBe.Validation {
     namespace Api {        
         export function getResidueId(seqNumber: number, insCode: string | null) {
             var id = seqNumber.toString();
-            if ((insCode || "").length !== 0) id += " " + insCode;
+            if ((insCode || "").length !== 0 && insCode !== " ") id += " " + insCode;
             return id;
         }
 
@@ -30,11 +30,11 @@ namespace LiteMol.Viewer.PDBe.Validation {
             const report: any = {};
             if (!data.molecules) return report;
             for (const entity of data.molecules) {
-                const chains: any = {};
+                const chains: any = report[entity.entity_id.toString()] || {};
                 for (const chain of entity.chains) {
-                    const models: any = {};
+                    const models: any = chains[chain.struct_asym_id] || {};
                     for (const model of chain.models) {
-                        const residues: any = {};
+                        const residues: any = models[model.model_id.toString()] || {};
                         for (const residue of model.residues) {
                             const id = getResidueId(residue.residue_number, residue.author_insertion_code),
                                 entry = residues[id];
@@ -42,8 +42,7 @@ namespace LiteMol.Viewer.PDBe.Validation {
                             if (entry) {
                                 entry.residues.push(residue);
                                 entry.numIssues = Math.max(entry.numIssues, residue.outlier_types.length);
-                            }
-                            else {
+                            } else {
                                 residues[id] = {
                                     residues: [residue],
                                     numIssues: residue.outlier_types.length
@@ -54,7 +53,7 @@ namespace LiteMol.Viewer.PDBe.Validation {
                     }
                     chains[chain.struct_asym_id] = models;
                 }
-                report[entity.entity_id.toString()] = chains;                        
+                report[entity.entity_id.toString()] = chains; 
             }         
             return report;  
         }
