@@ -769,6 +769,25 @@ li{
 	max-width: 80%;
 }
 
+.lm-showcase-image {
+	float: left;
+	width: 25%;
+	max-width: 25%;
+	text-align: center;
+	display: block;
+}
+
+.lm-showcase-image img {
+	width: 75%;
+	max-width: 75%;
+	height: auto;
+	opacity: 0.75;
+}
+
+.lm-showcase-image img:hover {
+	opacity: 1.0;
+}
+
 .dens-section-image {
     display: block;
     text-align: center;    
