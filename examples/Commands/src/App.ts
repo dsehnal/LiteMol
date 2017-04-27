@@ -203,7 +203,7 @@ namespace LiteMolPluginInstance {
         let ambQ =  Query.residues({ name: 'REA' }).ambientResidues(5); // adjust the radius
 
         let id = '1cbs:REA'
-        let url = `https://webchemdev.ncbr.muni.cz/CoordinateServer/1cbs/ligandInteraction?name=REA`; // here you will fill in the full server etc ...
+        let url = `https://webchem.ncbr.muni.cz/CoordinateServer/1cbs/ligandInteraction?name=REA`; // here you will fill in the full server etc ...
         let action = Transform.build()
             .add(plugin.context.tree.root, Transformer.Data.Download, { url, type: 'String', id })
             .then(Transformer.Data.ParseCif, { id }, { isBinding: true })
@@ -439,7 +439,7 @@ namespace LiteMolPluginInstance {
                 'molecule.model.defaultQuery': `residues({ name: 'ALA' })`,
                 'molecule.model.defaultAssemblyName': '1', 
                 'molecule.coordinateStreaming.defaultId': '1jj2',
-                'molecule.coordinateStreaming.defaultServer': 'https://webchemdev.ncbr.muni.cz/CoordinateServer/',
+                'molecule.coordinateStreaming.defaultServer': 'https://webchem.ncbr.muni.cz/CoordinateServer/',
                 'molecule.coordinateStreaming.defaultRadius': 10,
                 'density.defaultVisualBehaviourRadius': 5
             },

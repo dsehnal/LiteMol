@@ -18,7 +18,7 @@ namespace LiteMol.Custom {
                 'molecule.model.defaultQuery': `residues({ name: 'ALA' })`,
                 'molecule.model.defaultAssemblyName': '1', 
                 'molecule.coordinateStreaming.defaultId': '1jj2',
-                'molecule.coordinateStreaming.defaultServer': 'https://webchemdev.ncbr.muni.cz/CoordinateServer/',
+                'molecule.coordinateStreaming.defaultServer': 'https://webchem.ncbr.muni.cz/CoordinateServer/',
                 'molecule.coordinateStreaming.defaultRadius': 10,
                 'density.defaultVisualBehaviourRadius': 5
             },

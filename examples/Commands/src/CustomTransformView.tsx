@@ -21,7 +21,7 @@ namespace LiteMol.Example {
         // this is for demonstration only, for dynamic options, store them in the transform params or in the underlying entity props.
         private servers = [
             { name: 'PDBe', url: 'https://wwwdev.ebi.ac.uk/pdbe/coordinates/' },
-            { name: 'WebChem', url: 'https://webchemdev.ncbr.muni.cz/CoordinateServer/' }
+            { name: 'WebChem', url: 'https://webchem.ncbr.muni.cz/CoordinateServer/' }
         ]
                 
         protected renderControls() {            

@@ -78731,7 +78731,7 @@ var LiteMol;
                 sourceId: 'url-molecule',
                 name: 'URL',
                 description: 'Download a molecule from the specified URL (if the host server supports cross domain requests).',
-                defaultId: 'https://webchemdev.ncbr.muni.cz/CoordinateServer/1tqn/cartoon',
+                defaultId: 'https://webchem.ncbr.muni.cz/CoordinateServer/1tqn/cartoon',
                 urlTemplate: function (id) { return id; },
                 isFullUrl: true
             });
@@ -78743,7 +78743,7 @@ var LiteMol;
                     'molecule.model.defaultQuery': "residues({ name: 'ALA' })",
                     'molecule.model.defaultAssemblyName': '1',
                     'molecule.coordinateStreaming.defaultId': '1jj2',
-                    'molecule.coordinateStreaming.defaultServer': 'https://webchemdev.ncbr.muni.cz/CoordinateServer',
+                    'molecule.coordinateStreaming.defaultServer': 'https://webchem.ncbr.muni.cz/CoordinateServer',
                     'molecule.coordinateStreaming.defaultRadius': 10,
                     'density.defaultVisualBehaviourRadius': 5
                 },

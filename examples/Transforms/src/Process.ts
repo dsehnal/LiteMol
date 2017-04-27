@@ -16,7 +16,7 @@ namespace LiteMol.Example.Transforms {
                     let t = plugin.createTransform();
 
                     // download cartoon representation data from the CoordinateServer and parse the result
-                    let model = t.add(plugin.root, Transformer.Data.Download, { url: `https://webchemdev.ncbr.muni.cz/CoordinateServer/${id}/cartoon?encoding=bcif`, type: 'Binary', id })
+                    let model = t.add(plugin.root, Transformer.Data.Download, { url: `https://webchem.ncbr.muni.cz/CoordinateServer/${id}/cartoon?encoding=bcif`, type: 'Binary', id })
                         .then(Transformer.Molecule.CreateFromData, { format: Core.Formats.Molecule.SupportedFormats.mmBCIF }, { isBinding: true })
                         .then(Transformer.Molecule.CreateModel, { modelIndex: 0 }, { ref: id /* makes it easier to reference later */ });
 
