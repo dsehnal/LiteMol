@@ -1,4 +1,7 @@
-﻿# 3.1.2
+﻿# 3.1.3
+* Fixed a issue in the PDB parser where ATOM/HETATM records without temperature factor would not be parsed.
+
+# 3.1.2
 * Fixed an assembly generation issue.
 
 # 3.1.1

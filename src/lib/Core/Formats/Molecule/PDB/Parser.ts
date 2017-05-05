@@ -60,7 +60,7 @@ namespace LiteMol.Core.Formats.Molecule.PDB {
             let length = end - start;
 
             // invalid atom record
-            if (length < 66) return false;
+            if (length < 60) return false;
 
             //COLUMNS        DATA TYPE       CONTENTS                            
             //--------------------------------------------------------------------------------
@@ -140,9 +140,13 @@ namespace LiteMol.Core.Formats.Molecule.PDB {
 
             //61 - 66        Real(6.2)       Temperature factor (Default = 0.0).                   
 
-            start = startPos + 60;
-            this.trim(start, start + 6);
-            TokenIndexBuilder.addToken(tokens, this.trimmedToken.start, this.trimmedToken.end);
+            if (length >= 66) {
+                start = startPos + 60;
+                this.trim(start, start + 6);
+                TokenIndexBuilder.addToken(tokens, this.trimmedToken.start, this.trimmedToken.end);
+            } else {
+                TokenIndexBuilder.addToken(tokens, 0, 0);
+            }
 
             //73 - 76        LString(4)      Segment identifier, left-justified.   
 

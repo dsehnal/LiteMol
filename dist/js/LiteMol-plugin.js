@@ -56188,7 +56188,7 @@ var LiteMol;
 (function (LiteMol) {
     var Core;
     (function (Core) {
-        Core.VERSION = { number: "3.1.2", date: "April 12 2017" };
+        Core.VERSION = { number: "3.1.3", date: "May 5 2017" };
     })(Core = LiteMol.Core || (LiteMol.Core = {}));
 })(LiteMol || (LiteMol = {}));
 /*
@@ -58304,7 +58304,7 @@ var LiteMol;
                             var end = this.moveToEndOfLine();
                             var length = end - start;
                             // invalid atom record
-                            if (length < 66)
+                            if (length < 60)
                                 return false;
                             //COLUMNS        DATA TYPE       CONTENTS                            
                             //--------------------------------------------------------------------------------
@@ -58360,9 +58360,14 @@ var LiteMol;
                             this.trim(start, start + 6);
                             Formats.TokenIndexBuilder.addToken(tokens, this.trimmedToken.start, this.trimmedToken.end);
                             //61 - 66        Real(6.2)       Temperature factor (Default = 0.0).                   
-                            start = startPos + 60;
-                            this.trim(start, start + 6);
-                            Formats.TokenIndexBuilder.addToken(tokens, this.trimmedToken.start, this.trimmedToken.end);
+                            if (length >= 66) {
+                                start = startPos + 60;
+                                this.trim(start, start + 6);
+                                Formats.TokenIndexBuilder.addToken(tokens, this.trimmedToken.start, this.trimmedToken.end);
+                            }
+                            else {
+                                Formats.TokenIndexBuilder.addToken(tokens, 0, 0);
+                            }
                             //73 - 76        LString(4)      Segment identifier, left-justified.   
                             // ignored
                             //77 - 78        LString(2)      Element symbol, right-justified.   
