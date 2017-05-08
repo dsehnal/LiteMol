@@ -161,7 +161,7 @@ namespace LiteMol.Bootstrap.Interactivity.Molecule {
     export function formatInfoShort(info: SelectionInfo | undefined) {
         if (!info || !info.atoms.length) return ``;
         if (info.atoms.length === 1) {
-            return `<span><b>${formatAtomShort(info.atoms[0])}<b> ${formatMolecule(info)}</span>`;
+            return `<span><b>${formatAtomShort(info.atoms[0])}</b> ${formatMolecule(info)}</span>`;
         } else if (info.residues.length === 1) {
             return `<span><b>${formatResidue(info.residues[0])}</b> ${formatMolecule(info)}</span>`;
         } else {
