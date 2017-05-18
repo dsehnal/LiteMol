@@ -25,7 +25,7 @@ namespace LiteMol.Extensions.DensityStreaming {
     }   
 
     export const IsoInfo: {[F in FieldType]: { min: number, max: number, dataKey: DataType } } = {
-        'EMD': { min: -5, max: 5, dataKey: 'EM' },
+        'EM': { min: -5, max: 5, dataKey: 'EM' },
         '2Fo-Fc': { min: 0, max: 2, dataKey: '2FO-FC' },
         'Fo-Fc(+ve)': { min: 0, max: 5, dataKey: 'FO-FC' },
         'Fo-Fc(-ve)': { min: -5, max: 0, dataKey: 'FO-FC' },
@@ -53,7 +53,7 @@ namespace LiteMol.Extensions.DensityStreaming {
 
             let min, max;
             if (isSigma) {
-                if (type === 'EMD') {
+                if (type === 'EM') {
                     min = Math.max((baseValuesInfo.min - baseValuesInfo.mean) / baseValuesInfo.sigma, sigmaMin);
                     max = Math.min((baseValuesInfo.max - baseValuesInfo.mean) / baseValuesInfo.sigma, sigmaMax);
                 } else {
@@ -146,8 +146,8 @@ namespace LiteMol.Extensions.DensityStreaming {
         protected renderControls() {            
             const params = this.params;                                   
             return <div>
-                { params.source === 'EMD'
-                    ? [this.style('EMD')]
+                { params.source === 'EM'
+                    ? [this.style('EM')]
                     : [this.style('2Fo-Fc'), this.style('Fo-Fc(+ve)'), this.style('Fo-Fc(-ve)')] }
                 { params.displayType === 'Everything'
                     ? void 0

@@ -30,7 +30,7 @@ namespace LiteMol.Custom {
         let e = ctx.select('molecule')[0] as Entity.Molecule.Molecule;
         let source: Extensions.DensityStreaming.FieldSource = 'X-ray';
         let method = (e.props.molecule.properties.experimentMethod || '').toLowerCase();
-        if (method.indexOf('microscopy') >= 0) source = 'EMD';
+        if (method.indexOf('microscopy') >= 0) source = 'EM';
         return source;
     }
 

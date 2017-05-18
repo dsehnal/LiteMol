@@ -1,3 +1,6 @@
+# 1.4.4
+* Updated DensityServer mapping.
+
 # 1.4.3
 * Updated PDBe Validation Report support to the latest version of the API.
 

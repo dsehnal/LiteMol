@@ -96,9 +96,9 @@ namespace LiteMol.Viewer.Examples {
             const params: Extensions.DensityStreaming.SetupParams = { 
                 server: 'https://webchem.ncbr.muni.cz/DensityServer/', //'http://localhost:1337/DensityServer/',
                 id: '5ire',
-                source: 'EMD',
+                source: 'EM',
                 initialStreamingParams: { 
-                    'EMD': Vis.Density.Style.create({
+                    'EM': Vis.Density.Style.create({
                         isoValue: 3,
                         isoValueType: Vis.Density.IsoValueType.Absolute,
                         color: LiteMol.Visualization.Color.fromHex(0x999999),
@@ -106,7 +106,7 @@ namespace LiteMol.Viewer.Examples {
                         transparency: { alpha: 0.2 },
                         taskType: 'Background'
                     }),
-                    isoValues: { 'EMD': 3 },
+                    isoValues: { 'EM': 3 },
                     detailLevel: 4
                 }
             };
@@ -137,14 +137,12 @@ namespace LiteMol.Viewer.Examples {
                 };
                 (plugin.context.transforms.getController(Transformer.Molecule.CreateVisual, plugin.selectEntities('polymer')[0]) as Bootstrap.Components.Transform.MoleculeVisual)
                     .updateStyleTheme(theme);
-                (plugin.context.transforms.getController(Transformer.Molecule.CreateVisual, plugin.selectEntities('het')[0]) as Bootstrap.Components.Transform.MoleculeVisual)
-                    .updateStyleTheme(theme);
             });
 
             const params: Extensions.DensityStreaming.SetupParams = { 
                 server: 'https://webchem.ncbr.muni.cz/DensityServer/', //'http://localhost:1337/DensityServer/',
                 id: '5va1',
-                source: 'EMD',
+                source: 'EM',
                 initialStreamingParams: { 
                     detailLevel: 4
                 }
@@ -161,7 +159,7 @@ namespace LiteMol.Viewer.Examples {
         hideControlsIfNarrow(plugin);
 
         const molecule = plugin.createTransform()
-            .add(plugin.root, Transformer.Data.Download, { url: `https://webchem.ncbr.muni.cz/CoordinateServer/3j3q/cartoon?encoding=bcif&lowPrecisionCoords=1`, type: 'Binary', id: '5ire' })
+            .add(plugin.root, Transformer.Data.Download, { url: `https://webchem.ncbr.muni.cz/CoordinateServer/3j3q/cartoon?encoding=bcif&lowPrecisionCoords=1`, type: 'Binary', id: '3j3q' })
             .then(Transformer.Molecule.CreateFromData, { format: LiteMol.Core.Formats.Molecule.SupportedFormats.mmBCIF }, { ref: 'molecule', isBinding: true })
             .then(Transformer.Molecule.CreateModel, { modelIndex: 0 })
             .then(Transformer.Molecule.CreateMacromoleculeVisual, { het: true, polymer: true, water: false, polymerRef: 'polymer' }, { });
@@ -185,7 +183,7 @@ namespace LiteMol.Viewer.Examples {
         const rootRef = 'hiv1-protease-data';
 
         const molecule = plugin.createTransform()
-            .add(plugin.root, Transformer.Data.Download, { url: `https://webchem.ncbr.muni.cz/CoordinateServer/2f80/full?encoding=bcif&lowPrecisionCoords=1`, type: 'Binary', id: '5ire' }, { ref: rootRef })
+            .add(plugin.root, Transformer.Data.Download, { url: `https://webchem.ncbr.muni.cz/CoordinateServer/2f80/full?encoding=bcif&lowPrecisionCoords=1`, type: 'Binary', id: '2f80' }, { ref: rootRef })
             .then(Transformer.Molecule.CreateFromData, { format: LiteMol.Core.Formats.Molecule.SupportedFormats.mmBCIF }, { ref: 'molecule', isBinding: true })
             .then(Transformer.Molecule.CreateModel, { modelIndex: 0 })
             .then(Transformer.Molecule.CreateMacromoleculeVisual, { het: true, polymer: true, water: false, hetRef: 'het-visual', polymerRef: 'polymer-visual' }, { });

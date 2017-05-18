@@ -45,8 +45,12 @@ namespace LiteMol.Extensions.DensityStreaming {
         defaultParams: (ctx, e) => {
             let source: FieldSource = 'X-ray';
             const method = (e.props.molecule.properties.experimentMethod || '').toLowerCase();
-            if (method.indexOf('microscopy') >= 0) source = 'EMD';
-            return { server: ctx.settings.get('extensions.densityStreaming.defaultServer'), id: e.props.molecule.id, source };
+            if (method.indexOf('microscopy') >= 0) source = 'EM';
+            return { 
+                server: ctx.settings.get('extensions.densityStreaming.defaultServer'), 
+                id: e.props.molecule.id, 
+                source 
+            };
         },
         validateParams: p => {
             if (!p.server.trim().length) return ['Enter Server'];
@@ -55,7 +59,7 @@ namespace LiteMol.Extensions.DensityStreaming {
     }, (context, a, t) => {
         switch (t.params.source) {
             case 'X-ray': return enableStreaming(a, context, t.params);
-            case 'EMD': return doEmd(a, context, t.params);
+            case 'EM': return doEm(a, context, t.params);
             default: return fail(a, 'Unknown data source.');
         }
     });
@@ -73,9 +77,9 @@ namespace LiteMol.Extensions.DensityStreaming {
     function doAction(m: Entity.Molecule.Molecule, params: SetupParams, header: ServerDataFormat.Header, sourceId?: string, contourLevel?: number): DensityAction {
         const taskType: Bootstrap.Task.Type = 'Silent';
 
-        const styles: {[F in FieldType]?: Bootstrap.Visualization.Density.Style } = params.source === 'EMD'
+        const styles: {[F in FieldType]?: Bootstrap.Visualization.Density.Style } = params.source === 'EM'
             ? {
-                'EMD': Bootstrap.Visualization.Density.Style.create({
+                'EM': Bootstrap.Visualization.Density.Style.create({
                     isoValue: contourLevel !== void 0 ? contourLevel : 1.5,
                     isoValueType: contourLevel !== void 0 ? Bootstrap.Visualization.Density.IsoValueType.Absolute : Bootstrap.Visualization.Density.IsoValueType.Sigma,
                     color: LiteMol.Visualization.Color.fromHex(0x638F8F),
@@ -122,7 +126,7 @@ namespace LiteMol.Extensions.DensityStreaming {
                 : Bootstrap.Visualization.Density.IsoValueType.Absolute,
             isoValues:  params.source === 'X-ray' 
                 ? { '2Fo-Fc': 1.5, 'Fo-Fc(+ve)': 3, 'Fo-Fc(-ve)': -3 }
-                : { 'EMD': contourLevel !== void 0 ? contourLevel : 1.5 },
+                : { 'EM': contourLevel !== void 0 ? contourLevel : 1.5 },
             displayType: params.source === 'X-ray' ? 'Around Selection' : 'Everything',
             detailLevel: Math.min(2, header.availablePrecisions.length - 1),
             radius: params.source === 'X-ray' ? 5 : 15,
@@ -158,10 +162,10 @@ namespace LiteMol.Extensions.DensityStreaming {
 
     async function doEmdbId(m: Entity.Molecule.Molecule, ctx: Bootstrap.Context, params: SetupParams, id: string) {
         id = id.trim();
-        const s = await Bootstrap.Utils.ajaxGetString(`https://www.ebi.ac.uk/pdbe/api/emdb/entry/map/EMD-${id}`, 'EMDB API').run(ctx);
+        const s = await Bootstrap.Utils.ajaxGetString(`https://www.ebi.ac.uk/pdbe/api/emdb/entry/map/${id}`, 'EMDB API').run(ctx);
         try {
             const json = JSON.parse(s);
-            const e = json['EMD-' + id];
+            const e = json[id];
             let contour: number | undefined = void 0;
             if (e && e[0] && e[0].map && e[0].map.contour_level && e[0].map.contour_level.value !== void 0) {
                 contour = +e[0].map.contour_level.value;
@@ -172,7 +176,7 @@ namespace LiteMol.Extensions.DensityStreaming {
         }
     }
 
-    async function doEmd(m: Entity.Molecule.Molecule, ctx: Bootstrap.Context, params: SetupParams) {
+    async function doEm(m: Entity.Molecule.Molecule, ctx: Bootstrap.Context, params: SetupParams) {
         const id = params.id.trim().toLowerCase();
         const s = await Bootstrap.Utils.ajaxGetString(`https://www.ebi.ac.uk/pdbe/api/pdb/entry/summary/${id}`, 'PDB API').run(ctx);
         try {
@@ -184,7 +188,7 @@ namespace LiteMol.Extensions.DensityStreaming {
                 if (!emdb.length) {
                     return fail(m, `No related EMDB entry found for '${id}'.`);
                 }
-                emdbId = emdb[0].accession.split('-')[1];
+                emdbId = emdb[0].accession;
             } else {
                 return fail(m, `No related EMDB entry found for '${id}'.`);
             }

@@ -447,10 +447,6 @@ namespace LiteMolPluginInstance {
                 // These are the controls that are available in the UI. Removing any of them wont break anything, but the user 
                 // be able to create a particular thing if he deletes something.
                 
-                // Root transforms -- things that load data.
-                { transformer: LiteMol.Viewer.PDBe.Data.DownloadMolecule, view: Views.Transform.Data.WithIdField },
-                { transformer: LiteMol.Viewer.PDBe.Data.DownloadDensity, view: Views.Transform.Data.WithIdField },
-                
                 { transformer: LiteMol.Viewer.DataSources.DownloadMolecule, view: Views.Transform.Data.WithUrlIdField },
                 { transformer: Transformer.Molecule.OpenMoleculeFromFile, view: Views.Transform.Molecule.OpenFile },                
                 { transformer: Transformer.Data.Download, view: Views.Transform.Data.Download },

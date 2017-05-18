@@ -137,7 +137,7 @@ namespace LiteMol.Extensions.DensityStreaming {
             }
         }
 
-        private createEmd() {
+        private createEm() {
             try {
                 if (!this.channels) return;
 
@@ -151,8 +151,8 @@ namespace LiteMol.Extensions.DensityStreaming {
                 const styles = this.params;
                 
                 action.add(this.behaviour, Transformer.Basic.CreateGroup, { label: 'Density' }, { ref, isHidden: true })
-                    .then(Transformer.Density.CreateFromData, { id: 'EMD', data: emd })
-                    .then(Transformer.Density.CreateVisual, { style: styles['EMD'] }, { ref: ref + 'EMD' });
+                    .then(Transformer.Density.CreateFromData, { id: 'EM', data: emd })
+                    .then(Transformer.Density.CreateVisual, { style: styles['EM'] }, { ref: ref + 'EM' });
                 
                 Bootstrap.Tree.Transform.apply(this.context, action).run()
                     .then(() => { this.finish(); this.groupDone(ref, true); })
@@ -198,7 +198,7 @@ namespace LiteMol.Extensions.DensityStreaming {
             const cif = Core.Formats.CIF.Binary.parse(data);
             if (cif.isError || !this.checkResult(cif.result)) return this.noChannels();
 
-            if (this.params.source === 'EMD') {
+            if (this.params.source === 'EM') {
                 const ch = Behaviour.getChannel(cif.result, 'EM');
                 if (!ch) return this.noChannels();
                 return { 'EM': ch };
@@ -236,7 +236,7 @@ namespace LiteMol.Extensions.DensityStreaming {
                 this.clear();
                 this.channels = channels;
                 this.wasCached = true;
-                if (this.params.source === 'EMD') this.createEmd();
+                if (this.params.source === 'EM') this.createEm();
                 else this.createXray();
                 return;
             }
@@ -248,7 +248,7 @@ namespace LiteMol.Extensions.DensityStreaming {
                 if (!this.channels) return;
                 this.wasCached = false;
                 Bootstrap.Utils.LRUCache.set(this.cache, url, this.channels);
-                if (this.params.source === 'EMD') this.createEmd();
+                if (this.params.source === 'EM') this.createEm();
                 else this.createXray();
             });
         }
@@ -281,7 +281,7 @@ namespace LiteMol.Extensions.DensityStreaming {
             Bootstrap.Command.Toast.Hide.dispatch(this.context, { key: ToastKey });
 
             if (this.params.displayType === 'Everything') {
-                if (this.params.source === 'EMD') {
+                if (this.params.source === 'EM') {
                     if (this.params.forceBox) this.query(this.getModelBoundingBox());
                     else this.query();
                 } else {
@@ -400,8 +400,8 @@ namespace LiteMol.Extensions.DensityStreaming {
             this.server = params.server;
             if (this.server[this.server.length - 1] === '/') this.server = this.server.substr(0, this.server.length - 1);
 
-            if (params.source === 'EMD') {
-                this.types = ['EMD'];
+            if (params.source === 'EM') {
+                this.types = ['EM'];
             } else {
                 this.types = ['2Fo-Fc', 'Fo-Fc(+ve)', 'Fo-Fc(-ve)'];
             }
