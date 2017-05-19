@@ -136,7 +136,7 @@ namespace LiteMol.Extensions.DensityStreaming {
         }
 
         return {
-            action: Bootstrap.Tree.Transform.build().add(m, CreateStreaming, streaming),
+            action: Bootstrap.Tree.Transform.build().add(m, CreateStreaming, streaming, { ref: params.streamingEntityRef }),
             context: void 0
         };
     }

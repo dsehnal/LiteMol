@@ -81,6 +81,7 @@ namespace LiteMol.Viewer.Examples {
                 .add('molecule', Transformer.Molecule.CreateModel, { modelIndex: 0 })
                 .then(Transformer.Molecule.CreateAssembly, { name: '1' })
                 .then(Transformer.Molecule.CreateMacromoleculeVisual, { het: true, polymer: true, water: false, hetRef: 'het', polymerRef: 'polymer' }, { })
+            
             plugin.applyTransform(model).then(() => {
                 LiteMol.Bootstrap.Behaviour.SuppressCreateVisualWhenModelIsAdded = false;                
                 const theme = { 
@@ -91,6 +92,11 @@ namespace LiteMol.Viewer.Examples {
                     .updateStyleTheme(theme);
                 (plugin.context.transforms.getController(Transformer.Molecule.CreateVisual, plugin.selectEntities('het')[0]) as Bootstrap.Components.Transform.MoleculeVisual)
                     .updateStyleTheme(theme);
+
+                const streamingEntity = plugin.selectEntities('5ire_density_streaming')[0];
+                if (streamingEntity) {
+                    plugin.command(Bootstrap.Command.Entity.SetCurrent, streamingEntity);
+                }
             });
 
             const params: Extensions.DensityStreaming.SetupParams = { 
@@ -108,7 +114,8 @@ namespace LiteMol.Viewer.Examples {
                     }),
                     isoValues: { 'EM': 3 },
                     detailLevel: 4
-                }
+                },
+                streamingEntityRef: '5ire_density_streaming'
             };
             const streaming = plugin.createTransform()
                 .add('molecule', Extensions.DensityStreaming.Setup, params);
@@ -137,6 +144,11 @@ namespace LiteMol.Viewer.Examples {
                 };
                 (plugin.context.transforms.getController(Transformer.Molecule.CreateVisual, plugin.selectEntities('polymer')[0]) as Bootstrap.Components.Transform.MoleculeVisual)
                     .updateStyleTheme(theme);
+
+                const streamingEntity = plugin.selectEntities('5va1_density_streaming')[0];
+                if (streamingEntity) {
+                    plugin.command(Bootstrap.Command.Entity.SetCurrent, streamingEntity);
+                }
             });
 
             const params: Extensions.DensityStreaming.SetupParams = { 
@@ -145,7 +157,8 @@ namespace LiteMol.Viewer.Examples {
                 source: 'EM',
                 initialStreamingParams: { 
                     detailLevel: 4
-                }
+                },
+                streamingEntityRef: '5va1_density_streaming'
             };
             const streaming = plugin.createTransform()
                 .add('molecule', Extensions.DensityStreaming.Setup, params);

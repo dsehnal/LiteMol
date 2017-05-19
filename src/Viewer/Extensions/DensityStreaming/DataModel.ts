@@ -18,7 +18,8 @@ namespace LiteMol.Extensions.DensityStreaming {
         server: string,
         id: string,
         source: FieldSource,
-        initialStreamingParams?: Partial<CreateStreamingParams>
+        initialStreamingParams?: Partial<CreateStreamingParams>,
+        streamingEntityRef?: string
     }
 
     export type CreateStreamingParams = {
