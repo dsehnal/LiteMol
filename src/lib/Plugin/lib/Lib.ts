@@ -6,7 +6,7 @@ namespace LiteMol.Plugin {
     "use strict";
     
     export import React = __LiteMolReact;
-    declare var __LiteMolReactDOM: typeof __LiteMolReact.__DOM;
+    //declare var __LiteMolReactDOM: typeof __LiteMolReact.__DOM;
     export const ReactDOM = __LiteMolReactDOM;
     
     export namespace Controls {

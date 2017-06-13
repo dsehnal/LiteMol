@@ -1,11 +1,20 @@
 // Type definitions for React v15.0
 // Project: http://facebook.github.io/react/
-// Definitions by: Asana <https://asana.com>, AssureSign <http://www.assuresign.com>, Microsoft <https://microsoft.com>, John Reilly <https://github.com/johnnyreilly/>, Benoit Benezech <https://github.com/bbenezech>, Patricio Zavolinsky <https://github.com/pzavolinsky>
+// Definitions by: Asana <https://asana.com>, AssureSign <http://www.assuresign.com>, Microsoft <https://microsoft.com>, John Reilly <https://github.com/johnnyreilly/>, Benoit Benezech <https://github.com/bbenezech>, Patricio Zavolinsky <https://github.com/pzavolinsky>, Digiguru <https://github.com/digiguru>, Eric Anderson <https://github.com/ericanderson>
 // Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
-// TypeScript Version: 2.1
+// TypeScript Version: 2.2
 
-//export = React;
-//export as namespace React;
+type NativeAnimationEvent = AnimationEvent;
+type NativeClipboardEvent = ClipboardEvent;
+type NativeCompositionEvent = CompositionEvent;
+type NativeDragEvent = DragEvent;
+type NativeFocusEvent = FocusEvent;
+type NativeKeyboardEvent = KeyboardEvent;
+type NativeMouseEvent = MouseEvent;
+type NativeTouchEvent = TouchEvent;
+type NativeTransitionEvent = TransitionEvent;
+type NativeUIEvent = UIEvent;
+type NativeWheelEvent = WheelEvent;
 
 declare namespace __LiteMolReact {
 
@@ -13,7 +22,8 @@ declare namespace __LiteMolReact {
     // React Elements
     // ----------------------------------------------------------------------
 
-    type ReactType = string | ComponentClass<any> | StatelessComponent<any>;
+    type ReactType = string | ComponentType<any>;
+    type ComponentType<P> = ComponentClass<P> | StatelessComponent<P>;
 
     type Key = string | number;
     type Ref<T> = string | ((instance: T) => any);
@@ -166,12 +176,13 @@ declare namespace __LiteMolReact {
     type ReactInstance = Component<any, any> | Element;
 
     // Base component for plain JS classes
-    class Component<P, S> implements ComponentLifecycle<P, S> {
+    interface Component<P, S> extends ComponentLifecycle<P, S> { }
+    class Component<P, S> {
         constructor(props?: P, context?: any);
         setState<K extends keyof S>(f: (prevState: S, props: P) => Pick<S, K>, callback?: () => any): void;
         setState<K extends keyof S>(state: Pick<S, K>, callback?: () => any): void;
         forceUpdate(callBack?: () => any): void;
-        render(): JSX.Element | null;
+        render(): JSX.Element | null | false;
 
         // React.Props<T> is now deprecated, which means that the `children`
         // property is not available on `P` by default, even though you can
@@ -212,7 +223,7 @@ declare namespace __LiteMolReact {
     }
 
     interface ComponentClass<P> {
-        new (props?: P, context?: any): Component<P, ComponentState>;
+        new(props?: P, context?: any): Component<P, ComponentState>;
         propTypes?: ValidationMap<P>;
         contextTypes?: ValidationMap<any>;
         childContextTypes?: ValidationMap<any>;
@@ -221,7 +232,7 @@ declare namespace __LiteMolReact {
     }
 
     interface ClassicComponentClass<P> extends ComponentClass<P> {
-        new (props?: P, context?: any): ClassicComponent<P, ComponentState>;
+        new(props?: P, context?: any): ClassicComponent<P, ComponentState>;
         getDefaultProps?(): P;
     }
 
@@ -242,15 +253,15 @@ declare namespace __LiteMolReact {
     interface ComponentLifecycle<P, S> {
         componentWillMount?(): void;
         componentDidMount?(): void;
-        componentWillReceiveProps?(nextProps: P, nextContext: any): void;
-        shouldComponentUpdate?(nextProps: P, nextState: S, nextContext: any): boolean;
-        componentWillUpdate?(nextProps: P, nextState: S, nextContext: any): void;
-        componentDidUpdate?(prevProps: P, prevState: S, prevContext: any): void;
+        componentWillReceiveProps?(nextProps: Readonly<P>, nextContext: any): void;
+        shouldComponentUpdate?(nextProps: Readonly<P>, nextState: Readonly<S>, nextContext: any): boolean;
+        componentWillUpdate?(nextProps: Readonly<P>, nextState: Readonly<S>, nextContext: any): void;
+        componentDidUpdate?(prevProps: Readonly<P>, prevState: Readonly<S>, prevContext: any): void;
         componentWillUnmount?(): void;
     }
 
     interface Mixin<P, S> extends ComponentLifecycle<P, S> {
-        mixins?: Mixin<P, S>;
+        mixins?: Mixin<P, S>[];
         statics?: {
             [key: string]: any;
         };
@@ -289,23 +300,27 @@ declare namespace __LiteMolReact {
         persist(): void;
         // If you thought this should be `EventTarget & T`, see https://github.com/DefinitelyTyped/DefinitelyTyped/pull/12239
         target: EventTarget;
-        timeStamp: Date;
+        timeStamp: number;
         type: string;
     }
 
     interface ClipboardEvent<T> extends SyntheticEvent<T> {
         clipboardData: DataTransfer;
+        nativeEvent: NativeClipboardEvent;
     }
 
     interface CompositionEvent<T> extends SyntheticEvent<T> {
         data: string;
+        nativeEvent: NativeCompositionEvent;
     }
 
     interface DragEvent<T> extends MouseEvent<T> {
         dataTransfer: DataTransfer;
+        nativeEvent: NativeDragEvent;
     }
 
     interface FocusEvent<T> extends SyntheticEvent<T> {
+        nativeEvent: NativeFocusEvent;
         relatedTarget: EventTarget;
     }
 
@@ -326,6 +341,7 @@ declare namespace __LiteMolReact {
         locale: string;
         location: number;
         metaKey: boolean;
+        nativeEvent: NativeKeyboardEvent;
         repeat: boolean;
         shiftKey: boolean;
         which: number;
@@ -340,6 +356,7 @@ declare namespace __LiteMolReact {
         ctrlKey: boolean;
         getModifierState(key: string): boolean;
         metaKey: boolean;
+        nativeEvent: NativeMouseEvent;
         pageX: number;
         pageY: number;
         relatedTarget: EventTarget;
@@ -354,6 +371,7 @@ declare namespace __LiteMolReact {
         ctrlKey: boolean;
         getModifierState(key: string): boolean;
         metaKey: boolean;
+        nativeEvent: NativeTouchEvent;
         shiftKey: boolean;
         targetTouches: TouchList;
         touches: TouchList;
@@ -361,6 +379,7 @@ declare namespace __LiteMolReact {
 
     interface UIEvent<T> extends SyntheticEvent<T> {
         detail: number;
+        nativeEvent: NativeUIEvent;
         view: AbstractView;
     }
 
@@ -369,18 +388,21 @@ declare namespace __LiteMolReact {
         deltaX: number;
         deltaY: number;
         deltaZ: number;
+        nativeEvent: NativeWheelEvent;
     }
 
     interface AnimationEvent<T> extends SyntheticEvent<T> {
         animationName: string;
-        pseudoElement: string;
         elapsedTime: number;
+        nativeEvent: NativeAnimationEvent;
+        pseudoElement: string;
     }
 
     interface TransitionEvent<T> extends SyntheticEvent<T> {
+        elapsedTime: number;
+        nativeEvent: NativeTransitionEvent;
         propertyName: string;
         pseudoElement: string;
-        elapsedTime: number;
     }
 
     //
@@ -437,7 +459,7 @@ declare namespace __LiteMolReact {
     interface ChangeTargetHTMLProps<T extends HTMLElement> extends ChangeTargetHTMLAttributes<T>, ClassAttributes<T> {
     }
 
-    interface SVGProps extends SVGAttributes<SVGElement>, ClassAttributes<SVGElement> {
+    interface SVGProps<T> extends SVGAttributes<T>, ClassAttributes<T> {
     }
 
     interface DOMAttributes<T> {
@@ -627,17 +649,17 @@ declare namespace __LiteMolReact {
         /**
          * Aligns a flex container's lines within the flex container when there is extra space in the cross-axis, similar to how justify-content aligns individual items within the main-axis.
          */
-        alignContent?: CSSWideKeyword | any;
+        alignContent?: CSSWideKeyword | "flex-start" | "flex-end" | "center" | "space-between" | "space-around" | "stretch";
 
         /**
          * Sets the default alignment in the cross axis for all of the flex container's items, including anonymous flex items, similarly to how justify-content aligns items along the main axis.
          */
-        alignItems?: CSSWideKeyword | any;
+        alignItems?: CSSWideKeyword | "flex-start" | "flex-end" | "center" | "baseline" | "stretch";
 
         /**
          * Allows the default alignment to be overridden for individual flex items.
          */
-        alignSelf?: CSSWideKeyword | any;
+        alignSelf?: CSSWideKeyword | "auto" | "flex-start" | "flex-end" | "center" | "baseline" | "stretch";
 
         /**
          * This property allows precise alignment of elements, such as graphics, that do not have a baseline-table or lack the desired baseline in their baseline-table. With the alignment-adjust property, the position of the baseline identified by the alignment-baseline can be explicitly determined. It also determines precisely the alignment point for each glyph within a textual element.
@@ -943,6 +965,12 @@ declare namespace __LiteMolReact {
         boxFlexGroup?: CSSWideKeyword | number;
 
         /**
+         * Cast a drop shadow from the frame of almost any element.
+         * MDN: https://developer.mozilla.org/en-US/docs/Web/CSS/box-shadow
+         */
+        boxShadow?: CSSWideKeyword | any;
+
+        /**
          * The CSS break-after property allows you to force a break on multi-column layouts. More specifically, it allows you to force a break after an element. It allows you to determine if a break should occur, and what type of break it should be. The break-after CSS property describes how the page, column or region break behaves after the generated box. If there is no generated box, the property is ignored.
          */
         breakAfter?: CSSWideKeyword | any;
@@ -1100,12 +1128,12 @@ declare namespace __LiteMolReact {
         /**
          * The flex-direction CSS property describes how flex items are placed in the flex container, by setting the direction of the flex container's main axis.
          */
-        flexDirection?: CSSWideKeyword | any;
+        flexDirection?: CSSWideKeyword | "row" | "row-reverse" | "column" | "column-reverse";
 
         /**
          * The flex-flow CSS property defines the flex container's main and cross axis. It is a shorthand property for the flex-direction and flex-wrap properties.
          */
-        flexFlow?: CSSWideKeyword | any;
+        flexFlow?: CSSWideKeyword | string;
 
         /**
          * Specifies the flex grow factor of a flex item.
@@ -1137,6 +1165,12 @@ declare namespace __LiteMolReact {
         flexShrink?: CSSWideKeyword | number;
 
         /**
+         * Specifies whether flex items are forced into a single line or can be wrapped onto multiple lines. If wrapping is allowed, this property also enables you to control the direction in which lines are stacked.
+         * See CSS flex-wrap property https://drafts.csswg.org/css-flexbox-1/#flex-wrap-property
+         */
+        flexWrap?: CSSWideKeyword | "nowrap" | "wrap" | "wrap-reverse";
+
+        /**
          * Elements which have the style float are floated horizontally. These elements can move as far to the left or right of the containing element. All elements after the floating element will flow around it, but elements before the floating element are not impacted. If several floating elements are placed after each other, they will float next to each other as long as there is room.
          */
         float?: CSSWideKeyword | any;
@@ -1166,9 +1200,9 @@ declare namespace __LiteMolReact {
          * See CSS 3 font-size property https://www.w3.org/TR/css-fonts-3/#propdef-font-size
          */
         fontSize?: CSSWideKeyword |
-                   "xx-small" | "x-small" | "small" | "medium" | "large" | "x-large" | "xx-large" |
-                   "larger" | "smaller" |
-                   CSSLength | CSSPercentage;
+        "xx-small" | "x-small" | "small" | "medium" | "large" | "x-large" | "xx-large" |
+        "larger" | "smaller" |
+        CSSLength | CSSPercentage;
 
         /**
          * The font-size-adjust property adjusts the font-size of the fallback fonts defined with font-family, so that the x-height is the same no matter what font is used. This preserves the readability of the text when fallback happens.
@@ -1181,8 +1215,8 @@ declare namespace __LiteMolReact {
          * See CSS 3 font-stretch property https://drafts.csswg.org/css-fonts-3/#propdef-font-stretch
          */
         fontStretch?: CSSWideKeyword |
-                      "normal" | "ultra-condensed" | "extra-condensed" | "condensed" | "semi-condensed" |
-                      "semi-expanded" | "expanded" | "extra-expanded" | "ultra-expanded";
+        "normal" | "ultra-condensed" | "extra-condensed" | "condensed" | "semi-condensed" |
+        "semi-expanded" | "expanded" | "extra-expanded" | "ultra-expanded";
 
         /**
          * The font-style property allows normal, italic, or oblique faces to be selected. Italic forms are generally cursive in nature while oblique faces are typically sloped versions of the regular face. Oblique faces can be simulated by artificially sloping the glyphs of the regular face.
@@ -1296,7 +1330,7 @@ declare namespace __LiteMolReact {
          * along the main-axis of their container.
          * See CSS justify-content property https://www.w3.org/TR/css-flexbox-1/#justify-content-property
          */
-        justifyContent?: CSSWideKeyword | "flex-start" | "flex-end" | "center" | "space-between" | "space-around";
+        justifyContent?: CSSWideKeyword | "flex-start" | "flex-end" | "center" | "space-between" | "space-around" | "space-evenly";
 
         layoutGrid?: CSSWideKeyword | any;
 
@@ -1492,7 +1526,7 @@ declare namespace __LiteMolReact {
         /**
          * The overflow property controls how extra content exceeding the bounding box of an element is rendered. It can be used in conjunction with an element that has a fixed width and height, to eliminate text-induced page distortion.
          */
-        overflow?: CSSWideKeyword | any;
+        overflow?: CSSWideKeyword | "auto" | "hidden" | "scroll" | "visible";
 
         /**
          * Specifies the preferred scrolling methods for elements that overflow.
@@ -1502,12 +1536,12 @@ declare namespace __LiteMolReact {
         /**
          * Controls how extra content exceeding the x-axis of the bounding box of an element is rendered.
          */
-        overflowX?: CSSWideKeyword | any;
+        overflowX?: CSSWideKeyword | "auto" | "hidden" | "scroll" | "visible";
 
         /**
          * Controls how extra content exceeding the y-axis of the bounding box of an element is rendered.
          */
-        overflowY?: CSSWideKeyword | any;
+        overflowY?: CSSWideKeyword | "auto" | "hidden" | "scroll" | "visible";
 
         /**
          * The padding optional CSS property sets the required padding space on one to four sides of an element. The padding area is the space between an element and its border. Negative values are not allowed but decimal values are permitted. The element size is treated as fixed, and the content of the element shifts toward the center as padding is increased.
@@ -1587,7 +1621,7 @@ declare namespace __LiteMolReact {
         /**
          * The position property controls the type of positioning used by an element within its parent elements. The effect of the position property depends on a lot of factors, for example the position property of parent elements.
          */
-        position?: CSSWideKeyword | any;
+        position?: CSSWideKeyword | "static" | "relative" | "absolute" | "fixed" | "sticky";
 
         /**
          * Obsolete: unsupported.
@@ -2042,6 +2076,7 @@ declare namespace __LiteMolReact {
         // React-specific Attributes
         defaultChecked?: boolean;
         defaultValue?: string | string[];
+        suppressContentEditableWarning?: boolean;
 
         // Standard HTML Attributes
         accept?: string;
@@ -2061,6 +2096,7 @@ declare namespace __LiteMolReact {
         charSet?: string;
         challenge?: string;
         checked?: boolean;
+        cite?: string;
         classID?: string;
         className?: string;
         cols?: number;
@@ -2146,6 +2182,7 @@ declare namespace __LiteMolReact {
         shape?: string;
         size?: number;
         sizes?: string;
+        slot?: string;
         span?: number;
         spellCheck?: boolean;
         src?: string;
@@ -2203,7 +2240,29 @@ declare namespace __LiteMolReact {
     //   - "number | string"
     //   - "string"
     //   - union of string literals
-    interface SVGAttributes<T> extends HTMLAttributes<T> {
+    interface SVGAttributes<T> extends DOMAttributes<T> {
+        // Attributes which also defined in HTMLAttributes
+        // See comment in SVGDOMPropertyConfig.js
+        className?: string;
+        color?: string;
+        height?: number | string;
+        id?: string;
+        lang?: string;
+        max?: number | string;
+        media?: string;
+        method?: string;
+        min?: number | string;
+        name?: string;
+        style?: CSSProperties;
+        target?: string;
+        type?: string;
+        width?: number | string;
+
+        // Other HTML properties supported by SVG elements in browsers
+        role?: string;
+        tabIndex?: number;
+
+        // SVG Specific attributes
         accentHeight?: number | string;
         accumulate?: "none" | "sum";
         additive?: "replace" | "sum";
@@ -2396,7 +2455,6 @@ declare namespace __LiteMolReact {
         textRendering?: number | string;
         to?: number | string;
         transform?: string;
-        type?: string;
         u1?: number | string;
         u2?: number | string;
         underlinePosition?: number | string;
@@ -2568,6 +2626,7 @@ declare namespace __LiteMolReact {
 
         // SVG
         svg: SVGFactory;
+        animate: SVGFactory;
         circle: SVGFactory;
         defs: SVGFactory;
         ellipse: SVGFactory;
@@ -2601,9 +2660,7 @@ declare namespace __LiteMolReact {
         isRequired: Validator<T>;
     }
 
-    interface ValidationMap<T> {
-        [key: string]: Validator<T>;
-    }
+    type ValidationMap<T> = {[K in keyof T]?: Validator<T> };
 
     interface ReactPropTypes {
         any: Requireable<any>;
@@ -2669,9 +2726,10 @@ declare namespace JSX {
 
     interface Element extends React.ReactElement<any> { }
     interface ElementClass extends React.Component<any, any> {
-        render(): JSX.Element | null;
+        render(): JSX.Element | null | false;
     }
     interface ElementAttributesProperty { props: {}; }
+    interface ElementChildrenAttribute { children: {}; }
 
     interface IntrinsicAttributes extends React.Attributes { }
     interface IntrinsicClassAttributes<T> extends React.ClassAttributes<T> { }
@@ -2794,59 +2852,60 @@ declare namespace JSX {
         wbr: React.HTMLProps<HTMLElement>;
 
         // SVG
-        svg: React.SVGProps;
+        svg: React.SVGProps<SVGSVGElement>;
 
-        circle: React.SVGProps;
-        clipPath: React.SVGProps;
-        defs: React.SVGProps;
-        desc: React.SVGProps;
-        ellipse: React.SVGProps;
-        feBlend: React.SVGProps;
-        feColorMatrix: React.SVGProps;
-        feComponentTransfer: React.SVGProps;
-        feComposite: React.SVGProps;
-        feConvolveMatrix: React.SVGProps;
-        feDiffuseLighting: React.SVGProps;
-        feDisplacementMap: React.SVGProps;
-        feDistantLight: React.SVGProps;
-        feFlood: React.SVGProps;
-        feFuncA: React.SVGProps;
-        feFuncB: React.SVGProps;
-        feFuncG: React.SVGProps;
-        feFuncR: React.SVGProps;
-        feGaussianBlur: React.SVGProps;
-        feImage: React.SVGProps;
-        feMerge: React.SVGProps;
-        feMergeNode: React.SVGProps;
-        feMorphology: React.SVGProps;
-        feOffset: React.SVGProps;
-        fePointLight: React.SVGProps;
-        feSpecularLighting: React.SVGProps;
-        feSpotLight: React.SVGProps;
-        feTile: React.SVGProps;
-        feTurbulence: React.SVGProps;
-        filter: React.SVGProps;
-        foreignObject: React.SVGProps;
-        g: React.SVGProps;
-        image: React.SVGProps;
-        line: React.SVGProps;
-        linearGradient: React.SVGProps;
-        marker: React.SVGProps;
-        mask: React.SVGProps;
-        metadata: React.SVGProps;
-        path: React.SVGProps;
-        pattern: React.SVGProps;
-        polygon: React.SVGProps;
-        polyline: React.SVGProps;
-        radialGradient: React.SVGProps;
-        rect: React.SVGProps;
-        stop: React.SVGProps;
-        switch: React.SVGProps;
-        symbol: React.SVGProps;
-        text: React.SVGProps;
-        textPath: React.SVGProps;
-        tspan: React.SVGProps;
-        use: React.SVGProps;
-        view: React.SVGProps;
+        animate: React.SVGProps<SVGElement>; // TODO: It is SVGAnimateElement but is not in TypeScript's lib.dom.d.ts for now.
+        circle: React.SVGProps<SVGCircleElement>;
+        clipPath: React.SVGProps<SVGClipPathElement>;
+        defs: React.SVGProps<SVGDefsElement>;
+        desc: React.SVGProps<SVGDescElement>;
+        ellipse: React.SVGProps<SVGEllipseElement>;
+        feBlend: React.SVGProps<SVGFEBlendElement>;
+        feColorMatrix: React.SVGProps<SVGFEColorMatrixElement>;
+        feComponentTransfer: React.SVGProps<SVGFEComponentTransferElement>;
+        feComposite: React.SVGProps<SVGFECompositeElement>;
+        feConvolveMatrix: React.SVGProps<SVGFEConvolveMatrixElement>;
+        feDiffuseLighting: React.SVGProps<SVGFEDiffuseLightingElement>;
+        feDisplacementMap: React.SVGProps<SVGFEDisplacementMapElement>;
+        feDistantLight: React.SVGProps<SVGFEDistantLightElement>;
+        feFlood: React.SVGProps<SVGFEFloodElement>;
+        feFuncA: React.SVGProps<SVGFEFuncAElement>;
+        feFuncB: React.SVGProps<SVGFEFuncBElement>;
+        feFuncG: React.SVGProps<SVGFEFuncGElement>;
+        feFuncR: React.SVGProps<SVGFEFuncRElement>;
+        feGaussianBlur: React.SVGProps<SVGFEGaussianBlurElement>;
+        feImage: React.SVGProps<SVGFEImageElement>;
+        feMerge: React.SVGProps<SVGFEMergeElement>;
+        feMergeNode: React.SVGProps<SVGFEMergeNodeElement>;
+        feMorphology: React.SVGProps<SVGFEMorphologyElement>;
+        feOffset: React.SVGProps<SVGFEOffsetElement>;
+        fePointLight: React.SVGProps<SVGFEPointLightElement>;
+        feSpecularLighting: React.SVGProps<SVGFESpecularLightingElement>;
+        feSpotLight: React.SVGProps<SVGFESpotLightElement>;
+        feTile: React.SVGProps<SVGFETileElement>;
+        feTurbulence: React.SVGProps<SVGFETurbulenceElement>;
+        filter: React.SVGProps<SVGFilterElement>;
+        foreignObject: React.SVGProps<SVGForeignObjectElement>;
+        g: React.SVGProps<SVGGElement>;
+        image: React.SVGProps<SVGImageElement>;
+        line: React.SVGProps<SVGLineElement>;
+        linearGradient: React.SVGProps<SVGLinearGradientElement>;
+        marker: React.SVGProps<SVGMarkerElement>;
+        mask: React.SVGProps<SVGMaskElement>;
+        metadata: React.SVGProps<SVGMetadataElement>;
+        path: React.SVGProps<SVGPathElement>;
+        pattern: React.SVGProps<SVGPatternElement>;
+        polygon: React.SVGProps<SVGPolygonElement>;
+        polyline: React.SVGProps<SVGPolylineElement>;
+        radialGradient: React.SVGProps<SVGRadialGradientElement>;
+        rect: React.SVGProps<SVGRectElement>;
+        stop: React.SVGProps<SVGStopElement>;
+        switch: React.SVGProps<SVGSwitchElement>;
+        symbol: React.SVGProps<SVGSymbolElement>;
+        text: React.SVGProps<SVGTextElement>;
+        textPath: React.SVGProps<SVGTextPathElement>;
+        tspan: React.SVGProps<SVGTSpanElement>;
+        use: React.SVGProps<SVGUseElement>;
+        view: React.SVGProps<SVGViewElement>;
     }
 }

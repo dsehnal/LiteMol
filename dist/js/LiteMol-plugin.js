@@ -58185,36 +58185,36 @@ var LiteMol;
                                 this.writeRange(modelToken, cifTokens);
                             }
                         };
+                        ModelData.COLUMNS = [
+                            "_atom_site.group_PDB",
+                            "_atom_site.id",
+                            "_atom_site.type_symbol",
+                            "_atom_site.label_atom_id",
+                            "_atom_site.label_alt_id",
+                            "_atom_site.label_comp_id",
+                            "_atom_site.label_asym_id",
+                            "_atom_site.label_entity_id",
+                            "_atom_site.label_seq_id",
+                            "_atom_site.pdbx_PDB_ins_code",
+                            "_atom_site.Cartn_x",
+                            "_atom_site.Cartn_y",
+                            "_atom_site.Cartn_z",
+                            "_atom_site.occupancy",
+                            "_atom_site.B_iso_or_equiv",
+                            "_atom_site.Cartn_x_esd",
+                            "_atom_site.Cartn_y_esd",
+                            "_atom_site.Cartn_z_esd",
+                            "_atom_site.occupancy_esd",
+                            "_atom_site.B_iso_or_equiv_esd",
+                            "_atom_site.pdbx_formal_charge",
+                            "_atom_site.auth_seq_id",
+                            "_atom_site.auth_comp_id",
+                            "_atom_site.auth_asym_id",
+                            "_atom_site.auth_atom_id",
+                            "_atom_site.pdbx_PDB_model_num"
+                        ];
                         return ModelData;
                     }());
-                    ModelData.COLUMNS = [
-                        "_atom_site.group_PDB",
-                        "_atom_site.id",
-                        "_atom_site.type_symbol",
-                        "_atom_site.label_atom_id",
-                        "_atom_site.label_alt_id",
-                        "_atom_site.label_comp_id",
-                        "_atom_site.label_asym_id",
-                        "_atom_site.label_entity_id",
-                        "_atom_site.label_seq_id",
-                        "_atom_site.pdbx_PDB_ins_code",
-                        "_atom_site.Cartn_x",
-                        "_atom_site.Cartn_y",
-                        "_atom_site.Cartn_z",
-                        "_atom_site.occupancy",
-                        "_atom_site.B_iso_or_equiv",
-                        "_atom_site.Cartn_x_esd",
-                        "_atom_site.Cartn_y_esd",
-                        "_atom_site.Cartn_z_esd",
-                        "_atom_site.occupancy_esd",
-                        "_atom_site.B_iso_or_equiv_esd",
-                        "_atom_site.pdbx_formal_charge",
-                        "_atom_site.auth_seq_id",
-                        "_atom_site.auth_comp_id",
-                        "_atom_site.auth_asym_id",
-                        "_atom_site.auth_atom_id",
-                        "_atom_site.pdbx_PDB_model_num"
-                    ];
                     PDB.ModelData = ModelData;
                     var ModelsData = (function () {
                         function ModelsData(models) {
@@ -58410,7 +58410,7 @@ var LiteMol;
                             while (tokenizer.position < length) {
                                 var cont = true;
                                 switch (data.charCodeAt(tokenizer.position)) {
-                                    case 65:
+                                    case 65:// A 
                                         if (tokenizer.startsWith(tokenizer.position, "ATOM")) {
                                             if (!modelAtomTokens) {
                                                 modelAtomTokens = Formats.TokenIndexBuilder.create(4096);
@@ -58421,14 +58421,14 @@ var LiteMol;
                                                 return err;
                                         }
                                         break;
-                                    case 67:
+                                    case 67:// C
                                         if (tokenizer.startsWith(tokenizer.position, "CRYST1")) {
                                             var start = tokenizer.position;
                                             var end = tokenizer.moveToEndOfLine();
                                             cryst = new PDB.CrystStructureInfo(data.substring(start, end));
                                         }
                                         break;
-                                    case 69:
+                                    case 69:// E 
                                         if (tokenizer.startsWith(tokenizer.position, "ENDMDL") && atomCount > 0) {
                                             if (models.length === 0) {
                                                 modelIdToken = { start: data.length + 3, end: data.length + 4 };
@@ -58448,7 +58448,7 @@ var LiteMol;
                                             }
                                         }
                                         break;
-                                    case 72:
+                                    case 72:// H 
                                         if (tokenizer.startsWith(tokenizer.position, "HETATM")) {
                                             if (!modelAtomTokens) {
                                                 modelAtomTokens = Formats.TokenIndexBuilder.create(4096);
@@ -58459,7 +58459,7 @@ var LiteMol;
                                                 return err;
                                         }
                                         break;
-                                    case 77:
+                                    case 77://M
                                         if (tokenizer.startsWith(tokenizer.position, "MODEL")) {
                                             if (atomCount > 0) {
                                                 if (models.length === 0) {
@@ -65099,130 +65099,130 @@ var LiteMol;
                 }
                 bufferAttribute.needsUpdate = true;
             };
+            MaterialsHelper.pickVertexShader = [
+                "attribute vec4 pColor;",
+                "varying vec4 pC;",
+                "void main() {",
+                "pC = pColor;",
+                "gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );",
+                "}"
+            ].join('\n');
+            MaterialsHelper.pickFragmentShader = [
+                "varying vec4 pC;",
+                "void main() {",
+                "gl_FragColor = pC;",
+                "}"
+            ].join('\n');
+            MaterialsHelper.shader = {
+                uniforms: Visualization.THREE.UniformsUtils.merge([
+                    Visualization.THREE.UniformsLib["common"],
+                    Visualization.THREE.UniformsLib["bump"],
+                    Visualization.THREE.UniformsLib["normalmap"],
+                    Visualization.THREE.UniformsLib["fog"],
+                    Visualization.THREE.UniformsLib["lights"],
+                    Visualization.THREE.UniformsLib["shadowmap"],
+                    {
+                        "emissive": { type: "c", value: new Visualization.THREE.Color(0x000000) },
+                        "specular": { type: "c", value: new Visualization.THREE.Color(0x111111) },
+                        "shininess": { type: "f", value: 2 },
+                        "wrapRGB": { type: "v3", value: new Visualization.THREE.Vector3(1, 1, 1) },
+                        "highlightColor": { type: "v3", value: new Visualization.THREE.Vector3(1, 1, 0) },
+                        "selectionColor": { type: "v3", value: new Visualization.THREE.Vector3(1, 0, 0) },
+                    }
+                ]),
+                vertexShader: [
+                    "#define PHONG",
+                    "varying vec3 vViewPosition;",
+                    "#ifndef FLAT_SHADED",
+                    "	varying vec3 vNormal;",
+                    "#endif",
+                    Visualization.THREE.ShaderChunk["common"],
+                    Visualization.THREE.ShaderChunk["map_pars_vertex"],
+                    Visualization.THREE.ShaderChunk["lightmap_pars_vertex"],
+                    Visualization.THREE.ShaderChunk["envmap_pars_vertex"],
+                    Visualization.THREE.ShaderChunk["lights_phong_pars_vertex"],
+                    Visualization.THREE.ShaderChunk["color_pars_vertex"],
+                    Visualization.THREE.ShaderChunk["morphtarget_pars_vertex"],
+                    Visualization.THREE.ShaderChunk["skinning_pars_vertex"],
+                    Visualization.THREE.ShaderChunk["shadowmap_pars_vertex"],
+                    Visualization.THREE.ShaderChunk["logdepthbuf_pars_vertex"],
+                    "attribute float vState;",
+                    "varying float vS;",
+                    "void main() {",
+                    "   vS = vState;",
+                    Visualization.THREE.ShaderChunk["map_vertex"],
+                    Visualization.THREE.ShaderChunk["lightmap_vertex"],
+                    Visualization.THREE.ShaderChunk["color_vertex"],
+                    Visualization.THREE.ShaderChunk["morphnormal_vertex"],
+                    Visualization.THREE.ShaderChunk["skinbase_vertex"],
+                    Visualization.THREE.ShaderChunk["skinnormal_vertex"],
+                    Visualization.THREE.ShaderChunk["defaultnormal_vertex"],
+                    "#ifndef FLAT_SHADED",
+                    "	vNormal = normalize( transformedNormal );",
+                    "#endif",
+                    Visualization.THREE.ShaderChunk["morphtarget_vertex"],
+                    Visualization.THREE.ShaderChunk["skinning_vertex"],
+                    Visualization.THREE.ShaderChunk["default_vertex"],
+                    Visualization.THREE.ShaderChunk["logdepthbuf_vertex"],
+                    "	vViewPosition = -mvPosition.xyz;",
+                    Visualization.THREE.ShaderChunk["worldpos_vertex"],
+                    Visualization.THREE.ShaderChunk["envmap_vertex"],
+                    Visualization.THREE.ShaderChunk["lights_phong_vertex"],
+                    Visualization.THREE.ShaderChunk["shadowmap_vertex"],
+                    "}"
+                ].join("\n"),
+                fragmentShader: [
+                    "#define PHONG",
+                    "uniform vec3 diffuse;",
+                    "uniform vec3 emissive;",
+                    "uniform vec3 specular;",
+                    "uniform float shininess;",
+                    "uniform float opacity;",
+                    "uniform vec3 highlightColor;",
+                    "uniform vec3 selectionColor;",
+                    Visualization.THREE.ShaderChunk["common"],
+                    Visualization.THREE.ShaderChunk["color_pars_fragment"],
+                    Visualization.THREE.ShaderChunk["map_pars_fragment"],
+                    Visualization.THREE.ShaderChunk["alphamap_pars_fragment"],
+                    Visualization.THREE.ShaderChunk["lightmap_pars_fragment"],
+                    Visualization.THREE.ShaderChunk["envmap_pars_fragment"],
+                    Visualization.THREE.ShaderChunk["fog_pars_fragment"],
+                    Visualization.THREE.ShaderChunk["lights_phong_pars_fragment"],
+                    Visualization.THREE.ShaderChunk["shadowmap_pars_fragment"],
+                    Visualization.THREE.ShaderChunk["bumpmap_pars_fragment"],
+                    Visualization.THREE.ShaderChunk["normalmap_pars_fragment"],
+                    Visualization.THREE.ShaderChunk["specularmap_pars_fragment"],
+                    Visualization.THREE.ShaderChunk["logdepthbuf_pars_fragment"],
+                    "varying float vS;",
+                    "void main() {",
+                    "	vec3 outgoingLight = vec3( 0.0 );",
+                    "	vec4 diffuseColor;",
+                    "   if (vS < 0.33) { diffuseColor = vec4( vColor, opacity ); }",
+                    "   else if (vS - floor(vS + 0.1) > 0.33) { diffuseColor = vec4(highlightColor, opacity); }",
+                    "	else { diffuseColor = vec4(selectionColor, opacity); }",
+                    Visualization.THREE.ShaderChunk["logdepthbuf_fragment"],
+                    Visualization.THREE.ShaderChunk["map_fragment"],
+                    //THREE.ShaderChunk["color_fragment"], 
+                    Visualization.THREE.ShaderChunk["alphamap_fragment"],
+                    Visualization.THREE.ShaderChunk["alphatest_fragment"],
+                    Visualization.THREE.ShaderChunk["specularmap_fragment"],
+                    Visualization.THREE.ShaderChunk["lights_phong_fragment"],
+                    Visualization.THREE.ShaderChunk["lightmap_fragment"],
+                    Visualization.THREE.ShaderChunk["envmap_fragment"],
+                    Visualization.THREE.ShaderChunk["shadowmap_fragment"],
+                    Visualization.THREE.ShaderChunk["linear_to_gamma_fragment"],
+                    Visualization.THREE.ShaderChunk["fog_fragment"],
+                    "#ifdef USE_FOG",
+                    "   if (diffuseColor.a > 0.99) { gl_FragColor = vec4( outgoingLight, diffuseColor.a ); }",
+                    "   else { gl_FragColor = vec4( outgoingLight, (1.0 - fogFactor) * diffuseColor.a ); }",
+                    "#else",
+                    "	gl_FragColor = vec4( outgoingLight, diffuseColor.a );",
+                    "#endif",
+                    "}"
+                ].join("\n")
+            };
             return MaterialsHelper;
         }());
-        MaterialsHelper.pickVertexShader = [
-            "attribute vec4 pColor;",
-            "varying vec4 pC;",
-            "void main() {",
-            "pC = pColor;",
-            "gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );",
-            "}"
-        ].join('\n');
-        MaterialsHelper.pickFragmentShader = [
-            "varying vec4 pC;",
-            "void main() {",
-            "gl_FragColor = pC;",
-            "}"
-        ].join('\n');
-        MaterialsHelper.shader = {
-            uniforms: Visualization.THREE.UniformsUtils.merge([
-                Visualization.THREE.UniformsLib["common"],
-                Visualization.THREE.UniformsLib["bump"],
-                Visualization.THREE.UniformsLib["normalmap"],
-                Visualization.THREE.UniformsLib["fog"],
-                Visualization.THREE.UniformsLib["lights"],
-                Visualization.THREE.UniformsLib["shadowmap"],
-                {
-                    "emissive": { type: "c", value: new Visualization.THREE.Color(0x000000) },
-                    "specular": { type: "c", value: new Visualization.THREE.Color(0x111111) },
-                    "shininess": { type: "f", value: 2 },
-                    "wrapRGB": { type: "v3", value: new Visualization.THREE.Vector3(1, 1, 1) },
-                    "highlightColor": { type: "v3", value: new Visualization.THREE.Vector3(1, 1, 0) },
-                    "selectionColor": { type: "v3", value: new Visualization.THREE.Vector3(1, 0, 0) },
-                }
-            ]),
-            vertexShader: [
-                "#define PHONG",
-                "varying vec3 vViewPosition;",
-                "#ifndef FLAT_SHADED",
-                "	varying vec3 vNormal;",
-                "#endif",
-                Visualization.THREE.ShaderChunk["common"],
-                Visualization.THREE.ShaderChunk["map_pars_vertex"],
-                Visualization.THREE.ShaderChunk["lightmap_pars_vertex"],
-                Visualization.THREE.ShaderChunk["envmap_pars_vertex"],
-                Visualization.THREE.ShaderChunk["lights_phong_pars_vertex"],
-                Visualization.THREE.ShaderChunk["color_pars_vertex"],
-                Visualization.THREE.ShaderChunk["morphtarget_pars_vertex"],
-                Visualization.THREE.ShaderChunk["skinning_pars_vertex"],
-                Visualization.THREE.ShaderChunk["shadowmap_pars_vertex"],
-                Visualization.THREE.ShaderChunk["logdepthbuf_pars_vertex"],
-                "attribute float vState;",
-                "varying float vS;",
-                "void main() {",
-                "   vS = vState;",
-                Visualization.THREE.ShaderChunk["map_vertex"],
-                Visualization.THREE.ShaderChunk["lightmap_vertex"],
-                Visualization.THREE.ShaderChunk["color_vertex"],
-                Visualization.THREE.ShaderChunk["morphnormal_vertex"],
-                Visualization.THREE.ShaderChunk["skinbase_vertex"],
-                Visualization.THREE.ShaderChunk["skinnormal_vertex"],
-                Visualization.THREE.ShaderChunk["defaultnormal_vertex"],
-                "#ifndef FLAT_SHADED",
-                "	vNormal = normalize( transformedNormal );",
-                "#endif",
-                Visualization.THREE.ShaderChunk["morphtarget_vertex"],
-                Visualization.THREE.ShaderChunk["skinning_vertex"],
-                Visualization.THREE.ShaderChunk["default_vertex"],
-                Visualization.THREE.ShaderChunk["logdepthbuf_vertex"],
-                "	vViewPosition = -mvPosition.xyz;",
-                Visualization.THREE.ShaderChunk["worldpos_vertex"],
-                Visualization.THREE.ShaderChunk["envmap_vertex"],
-                Visualization.THREE.ShaderChunk["lights_phong_vertex"],
-                Visualization.THREE.ShaderChunk["shadowmap_vertex"],
-                "}"
-            ].join("\n"),
-            fragmentShader: [
-                "#define PHONG",
-                "uniform vec3 diffuse;",
-                "uniform vec3 emissive;",
-                "uniform vec3 specular;",
-                "uniform float shininess;",
-                "uniform float opacity;",
-                "uniform vec3 highlightColor;",
-                "uniform vec3 selectionColor;",
-                Visualization.THREE.ShaderChunk["common"],
-                Visualization.THREE.ShaderChunk["color_pars_fragment"],
-                Visualization.THREE.ShaderChunk["map_pars_fragment"],
-                Visualization.THREE.ShaderChunk["alphamap_pars_fragment"],
-                Visualization.THREE.ShaderChunk["lightmap_pars_fragment"],
-                Visualization.THREE.ShaderChunk["envmap_pars_fragment"],
-                Visualization.THREE.ShaderChunk["fog_pars_fragment"],
-                Visualization.THREE.ShaderChunk["lights_phong_pars_fragment"],
-                Visualization.THREE.ShaderChunk["shadowmap_pars_fragment"],
-                Visualization.THREE.ShaderChunk["bumpmap_pars_fragment"],
-                Visualization.THREE.ShaderChunk["normalmap_pars_fragment"],
-                Visualization.THREE.ShaderChunk["specularmap_pars_fragment"],
-                Visualization.THREE.ShaderChunk["logdepthbuf_pars_fragment"],
-                "varying float vS;",
-                "void main() {",
-                "	vec3 outgoingLight = vec3( 0.0 );",
-                "	vec4 diffuseColor;",
-                "   if (vS < 0.33) { diffuseColor = vec4( vColor, opacity ); }",
-                "   else if (vS - floor(vS + 0.1) > 0.33) { diffuseColor = vec4(highlightColor, opacity); }",
-                "	else { diffuseColor = vec4(selectionColor, opacity); }",
-                Visualization.THREE.ShaderChunk["logdepthbuf_fragment"],
-                Visualization.THREE.ShaderChunk["map_fragment"],
-                //THREE.ShaderChunk["color_fragment"], 
-                Visualization.THREE.ShaderChunk["alphamap_fragment"],
-                Visualization.THREE.ShaderChunk["alphatest_fragment"],
-                Visualization.THREE.ShaderChunk["specularmap_fragment"],
-                Visualization.THREE.ShaderChunk["lights_phong_fragment"],
-                Visualization.THREE.ShaderChunk["lightmap_fragment"],
-                Visualization.THREE.ShaderChunk["envmap_fragment"],
-                Visualization.THREE.ShaderChunk["shadowmap_fragment"],
-                Visualization.THREE.ShaderChunk["linear_to_gamma_fragment"],
-                Visualization.THREE.ShaderChunk["fog_fragment"],
-                "#ifdef USE_FOG",
-                "   if (diffuseColor.a > 0.99) { gl_FragColor = vec4( outgoingLight, diffuseColor.a ); }",
-                "   else { gl_FragColor = vec4( outgoingLight, (1.0 - fogFactor) * diffuseColor.a ); }",
-                "#else",
-                "	gl_FragColor = vec4( outgoingLight, diffuseColor.a );",
-                "#endif",
-                "}"
-            ].join("\n")
-        };
         Visualization.MaterialsHelper = MaterialsHelper;
     })(Visualization = LiteMol.Visualization || (LiteMol.Visualization = {}));
 })(LiteMol || (LiteMol = {}));
@@ -66183,10 +66183,10 @@ var LiteMol;
                 while (this.parentElement.lastChild)
                     this.parentElement.removeChild(this.parentElement.lastChild);
             };
+            Scene.hoverEvent = 'hover';
+            Scene.selectEvent = 'select';
             return Scene;
         }());
-        Scene.hoverEvent = 'hover';
-        Scene.selectEvent = 'select';
         Visualization.Scene = Scene;
     })(Visualization = LiteMol.Visualization || (LiteMol.Visualization = {}));
 })(LiteMol || (LiteMol = {}));
@@ -68868,14 +68868,14 @@ var LiteMol;
                             var z = a * p1.z + b * p2.z + c * p3.z;
                             target.set(x, y, z);
                         };
+                        CartoonAsymUnit.ZhangHelixDistance = [5.45, 5.18, 6.37];
+                        CartoonAsymUnit.ZhangHelixDelta = 2.1;
+                        CartoonAsymUnit.ZhangSheetDistance = [6.1, 10.4, 13.0];
+                        CartoonAsymUnit.ZhangSheetDelta = 1.42;
+                        CartoonAsymUnit.ZhangP1 = new Visualization.THREE.Vector3(0, 0, 0);
+                        CartoonAsymUnit.ZhangP2 = new Visualization.THREE.Vector3(0, 0, 0);
                         return CartoonAsymUnit;
                     }());
-                    CartoonAsymUnit.ZhangHelixDistance = [5.45, 5.18, 6.37];
-                    CartoonAsymUnit.ZhangHelixDelta = 2.1;
-                    CartoonAsymUnit.ZhangSheetDistance = [6.1, 10.4, 13.0];
-                    CartoonAsymUnit.ZhangSheetDelta = 1.42;
-                    CartoonAsymUnit.ZhangP1 = new Visualization.THREE.Vector3(0, 0, 0);
-                    CartoonAsymUnit.ZhangP2 = new Visualization.THREE.Vector3(0, 0, 0);
                     Geometry.CartoonAsymUnit = CartoonAsymUnit;
                     var CartoonsGeometryParams = (function () {
                         function CartoonsGeometryParams() {
@@ -68890,9 +68890,9 @@ var LiteMol;
                             this.arrowWidth = 1.7;
                             this.tessalation = 2;
                         }
+                        CartoonsGeometryParams.Default = new CartoonsGeometryParams();
                         return CartoonsGeometryParams;
                     }());
-                    CartoonsGeometryParams.Default = new CartoonsGeometryParams();
                     Geometry.CartoonsGeometryParams = CartoonsGeometryParams;
                     var CartoonsGeometryState = (function () {
                         function CartoonsGeometryState(params, residueCount) {
@@ -69723,9 +69723,9 @@ var LiteMol;
                     ret.b = minColor.b + (maxColor.b - minColor.b) * t;
                     return ret;
                 };
+                Palette.previous = Palette.randomMix({ r: 0.75, g: 0, b: 0.25 }, { r: 1, g: 0.5, b: 0 }, { r: 0, g: 0.35, b: 1 }, 0.5);
                 return Palette;
             }());
-            Palette.previous = Palette.randomMix({ r: 0.75, g: 0, b: 0.25 }, { r: 1, g: 0.5, b: 0 }, { r: 0, g: 0.35, b: 1 }, 0.5);
             Utils.Palette = Palette;
         })(Utils = Visualization.Utils || (Visualization.Utils = {}));
     })(Visualization = LiteMol.Visualization || (LiteMol.Visualization = {}));
@@ -69932,10 +69932,10 @@ var LiteMol;
                         this.pool.push();
                     }
                 };
+                RequestPool.pool = [];
+                RequestPool.poolSize = 15;
                 return RequestPool;
             }());
-            RequestPool.pool = [];
-            RequestPool.poolSize = 15;
             function processAjax(ctx, asArrayBuffer, decompressGzip, e) {
                 return __awaiter(this, void 0, void 0, function () {
                     var req, buff, gzip, data, text, status_1;
@@ -75955,6 +75955,7 @@ var LiteMol;
     (function (Plugin) {
         "use strict";
         Plugin.React = __LiteMolReact;
+        //declare var __LiteMolReactDOM: typeof __LiteMolReact.__DOM;
         Plugin.ReactDOM = __LiteMolReactDOM;
         var Controls;
         (function (Controls) {
@@ -76753,28 +76754,28 @@ var LiteMol;
                         children));
                     var _c;
                 };
+                SliderBase.defaultProps = {
+                    prefixCls: 'lm-slider-base',
+                    className: '',
+                    min: 0,
+                    max: 100,
+                    step: 1,
+                    marks: {},
+                    handle: Plugin.React.createElement(Handle, { className: '', vertical: false, offset: 0, tipFormatter: function (v) { return v; }, value: 0, index: 0 }),
+                    onBeforeChange: noop,
+                    onChange: noop,
+                    onAfterChange: noop,
+                    tipFormatter: function (value, index) { return value; },
+                    included: true,
+                    disabled: false,
+                    dots: false,
+                    range: false,
+                    vertical: false,
+                    allowCross: true,
+                    pushable: false,
+                };
                 return SliderBase;
             }(Plugin.React.Component));
-            SliderBase.defaultProps = {
-                prefixCls: 'lm-slider-base',
-                className: '',
-                min: 0,
-                max: 100,
-                step: 1,
-                marks: {},
-                handle: Plugin.React.createElement(Handle, { className: '', vertical: false, offset: 0, tipFormatter: function (v) { return v; }, value: 0, index: 0 }),
-                onBeforeChange: noop,
-                onChange: noop,
-                onAfterChange: noop,
-                tipFormatter: function (value, index) { return value; },
-                included: true,
-                disabled: false,
-                dots: false,
-                range: false,
-                vertical: false,
-                allowCross: true,
-                pushable: false,
-            };
             Controls.SliderBase = SliderBase;
             var Marks = function (_a) {
                 var className = _a.className, vertical = _a.vertical, marks = _a.marks, included = _a.included, upperBound = _a.upperBound, lowerBound = _a.lowerBound, max = _a.max, min = _a.min;

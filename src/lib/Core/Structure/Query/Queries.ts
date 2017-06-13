@@ -479,7 +479,7 @@ namespace LiteMol.Core.Structure.Query {
             let _what = Builder.toQuery(what);
             return (ctx: Context) => {
                 let src = _what(ctx).fragments,
-                    indices = Utils.FastSet.create(),
+                    indices = Utils.FastSet.create<number>(),
                     j = 0, atoms: number[];
 
                 for (let i = 0; i < src.length; i++) {

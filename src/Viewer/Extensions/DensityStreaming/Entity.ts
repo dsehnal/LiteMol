@@ -115,7 +115,7 @@ namespace LiteMol.Extensions.DensityStreaming {
                 })
             };
 
-        const streaming: CreateStreamingParams = {
+        const streaming: Partial<CreateStreamingParams> = {
             maxRadius: params.source === 'X-ray' ? 10 : 50,
             server: params.server,
             source: params.source,

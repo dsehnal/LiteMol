@@ -79,7 +79,7 @@ namespace LiteMol.Bootstrap.Tree {
                 
                 let a = this.getTarget(node);
                 let validationFailed = this.validate(a, t);
-                if (validationFailed) return validationFailed;  
+                if (validationFailed) return validationFailed as Task<B>;  
                 
                 Event.Tree.TransformerApply.dispatch(context, { a, t });        
 
@@ -206,7 +206,7 @@ namespace LiteMol.Bootstrap.Tree {
                     } catch (e) {
                         rej(e);
                     }
-                }));
+                })) as Task<B>;
             }) 
         }
 
@@ -229,7 +229,7 @@ namespace LiteMol.Bootstrap.Tree {
                     } catch (e) {
                         rej(e);
                     }                   
-                }));
+                })) as Task<B>;
             }) 
         }
     }
