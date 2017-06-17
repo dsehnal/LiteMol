@@ -70,7 +70,7 @@ namespace LiteMol.Core {
              * Checks if the computation was aborted. If so, throws.
              * Otherwise, updates the progress.
              */
-            updateProgress(msg: string, abort?: boolean | (() => void), current?: number, max?: number): void
+            updateProgress(msg: string, abort?: boolean | (() => void), current?: number, max?: number): Promise<void>
         }
 
         export interface Running<A> {

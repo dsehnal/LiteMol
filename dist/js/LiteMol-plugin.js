@@ -64876,7 +64876,7 @@ var LiteMol;
             Theme.getColor = getColor;
             function createUniform(props) {
                 if (props === void 0) { props = {}; }
-                var colors = props.colors, _a = props.transparency, transparency = _a === void 0 ? Default.Transparency : _a, _b = props.interactive, interactive = _b === void 0 ? true : _b, _c = props.disableFog, disableFog = _c === void 0 ? false : _c, _d = props.isSticky, isSticky = _d === void 0 ? false : _d;
+                var colors = props.colors, _a = props.variables, variables = _a === void 0 ? LiteMol.Core.Utils.FastMap.create() : _a, _b = props.transparency, transparency = _b === void 0 ? Default.Transparency : _b, _c = props.interactive, interactive = _c === void 0 ? true : _c, _d = props.disableFog, disableFog = _d === void 0 ? false : _d, _e = props.isSticky, isSticky = _e === void 0 ? false : _e;
                 var finalColors = LiteMol.Core.Utils.FastMap.create();
                 if (colors) {
                     colors.forEach(function (c, n) { return finalColors.set(n, c); });
@@ -64888,6 +64888,7 @@ var LiteMol;
                 }
                 return {
                     colors: finalColors,
+                    variables: variables,
                     transparency: transparency,
                     interactive: interactive,
                     disableFog: disableFog,
@@ -64900,9 +64901,10 @@ var LiteMol;
             Theme.createUniform = createUniform;
             function createMapping(mapping, props) {
                 if (props === void 0) { props = {}; }
-                var _a = props.colors, colors = _a === void 0 ? LiteMol.Core.Utils.FastMap.create() : _a, _b = props.transparency, transparency = _b === void 0 ? Default.Transparency : _b, _c = props.interactive, interactive = _c === void 0 ? true : _c, _d = props.disableFog, disableFog = _d === void 0 ? false : _d, _e = props.isSticky, isSticky = _e === void 0 ? false : _e;
+                var _a = props.colors, colors = _a === void 0 ? LiteMol.Core.Utils.FastMap.create() : _a, _b = props.variables, variables = _b === void 0 ? LiteMol.Core.Utils.FastMap.create() : _b, _c = props.transparency, transparency = _c === void 0 ? Default.Transparency : _c, _d = props.interactive, interactive = _d === void 0 ? true : _d, _e = props.disableFog, disableFog = _e === void 0 ? false : _e, _f = props.isSticky, isSticky = _f === void 0 ? false : _f;
                 return {
                     colors: colors,
+                    variables: variables,
                     transparency: transparency ? transparency : Default.Transparency,
                     interactive: interactive,
                     disableFog: disableFog,
@@ -67480,6 +67482,573 @@ var LiteMol;
             }(Visualization.Model));
             Lines.Model = Model;
         })(Lines = Visualization.Lines || (Visualization.Lines = {}));
+    })(Visualization = LiteMol.Visualization || (LiteMol.Visualization = {}));
+})(LiteMol || (LiteMol = {}));
+/*
+ * Copyright (c) 2017 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ */
+var LiteMol;
+(function (LiteMol) {
+    var Visualization;
+    (function (Visualization) {
+        var Labels;
+        (function (Labels) {
+            'use strict';
+            Labels.DefaultTextAtlasParams = {
+                font: ['sans-serif'],
+                size: 36,
+                style: 'normal',
+                variant: 'normal',
+                weight: 'normal',
+                outline: 0,
+                width: 2048,
+                height: 2048
+            };
+            var TextAtlasCache = LiteMol.Core.Utils.FastMap.create();
+            function getTextAtlas(params) {
+                var hash = JSON.stringify(params);
+                if (TextAtlasCache.has(hash))
+                    return TextAtlasCache.get(hash);
+                var atlas = new TextAtlas(params);
+                TextAtlasCache.set(hash, atlas);
+                return atlas;
+            }
+            Labels.getTextAtlas = getTextAtlas;
+            var TextAtlas = (function () {
+                function TextAtlas(params) {
+                    this.gamma = 1;
+                    this.mapped = LiteMol.Core.Utils.FastMap.create();
+                    this.state = { scratchW: 0, scratchH: 0, currentX: 0, currentY: 0 };
+                    this.lineHeight = 0;
+                    this.params = LiteMol.Core.Utils.extend({}, params, Labels.DefaultTextAtlasParams);
+                    if (typeof navigator !== 'undefined') {
+                        var ua = navigator.userAgent;
+                        if (ua.match(/Chrome/) && ua.match(/OS X/)) {
+                            this.gamma = 0.5;
+                        }
+                    }
+                    this.build();
+                    this.populate();
+                    this.texture = new Visualization.THREE.Texture(this.canvas.canvas2);
+                    this.texture.flipY = false;
+                    this.texture.needsUpdate = true;
+                    // no need to hold the reference.
+                    this.canvas = void 0;
+                }
+                TextAtlas.prototype.build = function () {
+                    var params = this.params;
+                    // Prepare line-height with room for outline and descenders/ascenders
+                    var lineHeight = params.size + 2 * params.outline + Math.round(params.size / 4);
+                    var maxWidth = params.width / 4;
+                    // Prepare scratch canvas
+                    var canvas = document.createElement("canvas");
+                    canvas.width = maxWidth;
+                    canvas.height = lineHeight;
+                    var ctx = canvas.getContext("2d");
+                    ctx.font = params.style + " " + params.variant + " " + params.weight + " " + params.size + "px " + params.font;
+                    ctx.fillStyle = "#FF0000";
+                    ctx.textAlign = "left";
+                    ctx.textBaseline = "bottom";
+                    ctx.lineJoin = "round";
+                    var colors = [];
+                    var dilate = params.outline * 3;
+                    for (var i = 0; i < dilate; ++i) {
+                        // 8 rgb levels = 1 step = .5 pixel increase
+                        var val = Math.max(0, -i * 8 + 128 - (+(!i)) * 8);
+                        var hex = ("00" + val.toString(16)).slice(-2);
+                        colors.push("#" + hex + hex + hex);
+                    }
+                    var scratch = new Uint8Array(maxWidth * lineHeight * 2);
+                    var data = new Uint8Array(params.width * params.height * 4);
+                    var canvas2 = document.createElement('canvas');
+                    canvas2.width = params.width;
+                    canvas2.height = params.height;
+                    var ctx2 = canvas2.getContext('2d');
+                    this.canvas = {
+                        canvas: canvas, ctx: ctx,
+                        canvas2: canvas2, ctx2: ctx2,
+                        maxWidth: maxWidth,
+                        colors: colors,
+                        scratch: scratch,
+                        data: data
+                    };
+                    this.lineHeight = lineHeight;
+                };
+                TextAtlas.prototype.map = function (text) {
+                    if (this.mapped.has(text))
+                        return this.mapped.get(text);
+                    this.draw(text);
+                    var state = this.state;
+                    if (state.currentX + state.scratchW > this.params.width) {
+                        state.currentX = 0;
+                        state.currentY += state.scratchH;
+                    }
+                    if (state.currentY + state.scratchH > this.params.height) {
+                        console.warn("TextAtlas canvas to small");
+                    }
+                    var metrics = {
+                        x: state.currentX,
+                        y: state.currentY,
+                        w: state.scratchW,
+                        h: state.scratchH
+                    };
+                    this.mapped.set(text, metrics);
+                    this.canvas.ctx2.drawImage(this.canvas.canvas, 0, 0, state.scratchW, state.scratchH, state.currentX, state.currentY, state.scratchW, state.scratchH);
+                    state.currentX += state.scratchW;
+                    return metrics;
+                };
+                TextAtlas.prototype.getTextMetrics = function (text) {
+                    return this.mapped.has(text) ? this.mapped.get(text) : this.placeholder;
+                };
+                TextAtlas.prototype.draw = function (text) {
+                    var _a = this, params = _a.params, canvas = _a.canvas;
+                    var h = this.lineHeight;
+                    var o = params.outline;
+                    var ctx = canvas.ctx;
+                    var dst = canvas.scratch;
+                    var max = canvas.maxWidth;
+                    var colors = canvas.colors;
+                    // Bottom aligned, take outline into account
+                    var x = o;
+                    var y = h - params.outline;
+                    // Measure text
+                    var m = ctx.measureText(text);
+                    var w = Math.min(max, Math.ceil(m.width + 2 * x + 1));
+                    // Clear scratch area
+                    ctx.clearRect(0, 0, w, h);
+                    var i, il, j, imageData, data;
+                    if (params.outline === 0) {
+                        ctx.fillText(text, x, y);
+                        imageData = ctx.getImageData(0, 0, w, h);
+                        data = imageData.data;
+                        j = 3; // Skip to alpha channel
+                        for (i = 0, il = data.length / 4; i < il; ++i) {
+                            dst[i] = data[j];
+                            j += 4;
+                        }
+                    }
+                    else {
+                        ctx.globalCompositeOperation = "source-over";
+                        // Draw strokes of decreasing width to create
+                        // nested outlines (absolute distance)
+                        for (i = o + 1; i > 0; --i) {
+                            // Eliminate odd strokes once past > 1px,
+                            // don't need the detail
+                            j = i > 1 ? i * 2 - 2 : i;
+                            ctx.strokeStyle = colors[j - 1];
+                            ctx.lineWidth = j;
+                            ctx.strokeText(text, x, y);
+                        }
+                        ctx.globalCompositeOperation = "multiply";
+                        ctx.fillStyle = "#FF00FF";
+                        ctx.fillText(text, x, y);
+                        imageData = ctx.getImageData(0, 0, w, h);
+                        data = imageData.data;
+                        j = 0;
+                        var gamma = this.gamma;
+                        for (i = 0, il = data.length / 4; i < il; ++i) {
+                            // Get value + mask
+                            var a = data[j];
+                            var mask = a ? data[j + 1] / a : 1;
+                            if (gamma === 0.5) {
+                                mask = Math.sqrt(mask);
+                            }
+                            mask = Math.min(1, Math.max(0, mask));
+                            // Blend between positive/outside and negative/inside
+                            var b = 256 - a;
+                            var c = b + (a - b) * mask;
+                            // Clamp (slight expansion to hide errors around the transition)
+                            dst[i] = Math.max(0, Math.min(255, c + 2));
+                            data[j + 3] = dst[i];
+                            j += 4;
+                        }
+                    }
+                    ctx.putImageData(imageData, 0, 0);
+                    this.state.scratchW = w;
+                    this.state.scratchH = h;
+                };
+                TextAtlas.prototype.populate = function () {
+                    // Replacement Character
+                    this.placeholder = this.map(String.fromCharCode(0xFFFD));
+                    // Basic Latin
+                    for (var i = 0x0000; i < 0x007F; ++i) {
+                        this.map(String.fromCharCode(i));
+                    }
+                    // Latin-1 Supplement
+                    for (var i = 0x0080; i < 0x00FF; ++i) {
+                        this.map(String.fromCharCode(i));
+                    }
+                    // Greek and Coptic
+                    for (var i = 0x0370; i < 0x03FF; ++i) {
+                        this.map(String.fromCharCode(i));
+                    }
+                    // Cyrillic
+                    for (var i = 0x0400; i < 0x04FF; ++i) {
+                        this.map(String.fromCharCode(i));
+                    }
+                    // Angstrom Sign
+                    this.map(String.fromCharCode(0x212B));
+                };
+                return TextAtlas;
+            }());
+            Labels.TextAtlas = TextAtlas;
+        })(Labels = Visualization.Labels || (Visualization.Labels = {}));
+    })(Visualization = LiteMol.Visualization || (LiteMol.Visualization = {}));
+})(LiteMol || (LiteMol = {}));
+/*
+ * Copyright (c) 2017 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ */
+var LiteMol;
+(function (LiteMol) {
+    var Visualization;
+    (function (Visualization) {
+        var Labels;
+        (function (Labels) {
+            var Geometry;
+            (function (Geometry) {
+                'use strict';
+                function create(params) {
+                    var state = initState(params);
+                    calcVertices(state);
+                    makeMapping(state);
+                    var idx = makeIndexBuffer(state);
+                    var geometry = new Visualization.THREE.BufferGeometry();
+                    geometry.addAttribute('position', new Visualization.THREE.BufferAttribute(state.vertices, 3));
+                    geometry.addAttribute('index', new Visualization.THREE.BufferAttribute(idx, 1));
+                    geometry.addAttribute('color', new Visualization.THREE.BufferAttribute(new Float32Array(state.quadCount * 4 * 3), 3));
+                    geometry.addAttribute('mapping', new Visualization.THREE.BufferAttribute(state.mapping, 2));
+                    geometry.addAttribute('inputTexCoord', new Visualization.THREE.BufferAttribute(state.texCoords, 2));
+                    geometry.addAttribute('inputSize', new Visualization.THREE.BufferAttribute(state.size, 1));
+                    return { geometry: geometry, texture: state.textAtlas.texture, options: state.options };
+                }
+                Geometry.create = create;
+                function initState(params) {
+                    var options = LiteMol.Core.Utils.extend({}, params.options, Labels.DefaultLabelsOptions);
+                    var charCount = 0;
+                    for (var _i = 0, _a = params.labels; _i < _a.length; _i++) {
+                        var t = _a[_i];
+                        charCount += t.length;
+                    }
+                    var textAtlas = Labels.getTextAtlas({
+                        font: [options.fontFamily],
+                        style: options.fontStyle,
+                        weight: options.fontWeight,
+                        size: options.fontSize,
+                        outline: options.useSDF ? 5 : 0
+                    });
+                    var quadCount = charCount + (options.showBackground ? params.labels.length : 0);
+                    return {
+                        positions: params.positions,
+                        inputSizes: params.sizes,
+                        labels: params.labels,
+                        options: options,
+                        textAtlas: textAtlas,
+                        charCount: charCount,
+                        quadCount: quadCount,
+                        vertices: new Float32Array(quadCount * 4 * 3),
+                        size: new Float32Array(quadCount * 4),
+                        texCoords: new Float32Array(quadCount * 4 * 2),
+                        mapping: new Float32Array(quadCount * 4 * 2)
+                    };
+                }
+                function calcVertices(state) {
+                    var text = state.labels;
+                    var _a = state.positions, x = _a.x, y = _a.y, z = _a.z;
+                    var vertices = state.vertices, size = state.size, inputSizes = state.inputSizes;
+                    var showBackground = state.options.showBackground;
+                    var iCharAll = 0;
+                    for (var v = 0; v < text.length; ++v) {
+                        var txt = text[v];
+                        var nChar = txt.length;
+                        if (showBackground)
+                            nChar += 1;
+                        for (var iChar = 0; iChar < nChar; ++iChar, ++iCharAll) {
+                            for (var m = 0; m < 4; m++) {
+                                var j = iCharAll * 4 * 3 + (3 * m);
+                                vertices[j] = x[v];
+                                vertices[j + 1] = y[v];
+                                vertices[j + 2] = z[v];
+                                size[iCharAll * 4 + m] = inputSizes[v];
+                            }
+                        }
+                    }
+                }
+                function makeMapping(state) {
+                    var ta = state.textAtlas;
+                    var text = state.labels;
+                    var attachment = state.options.attachment;
+                    var outline = ta.params.outline, lineHeight = ta.lineHeight;
+                    var margin = (ta.lineHeight * state.options.backgroundMargin * 0.1) - 10;
+                    var inputTexCoord = state.texCoords;
+                    var inputMapping = state.mapping;
+                    var iCharAll = 0;
+                    var c, i, txt, xadvance, iChar, nChar, xShift, yShift;
+                    for (var v = 0; v < text.length; ++v) {
+                        txt = text[v];
+                        xadvance = 0;
+                        nChar = txt.length;
+                        // calculate width
+                        for (iChar = 0; iChar < nChar; ++iChar) {
+                            c = ta.getTextMetrics(txt[iChar]);
+                            xadvance += c.w - 2 * outline;
+                        }
+                        // attachment
+                        if (attachment.indexOf("top") === 0) {
+                            yShift = ta.lineHeight / 1.25;
+                        }
+                        else if (attachment.indexOf("middle") === 0) {
+                            yShift = ta.lineHeight / 2.5;
+                        }
+                        else {
+                            yShift = 0; // "bottom"
+                        }
+                        if (attachment.indexOf("right") > 0) {
+                            xShift = xadvance;
+                        }
+                        else if (attachment.indexOf("center") > 0) {
+                            xShift = xadvance / 2;
+                        }
+                        else {
+                            xShift = 0; // "left"
+                        }
+                        xShift += outline;
+                        yShift += outline;
+                        // background
+                        if (state.options.showBackground) {
+                            i = iCharAll * 2 * 4;
+                            inputMapping[i + 0] = -lineHeight / 6 - xShift - margin; // top left
+                            inputMapping[i + 1] = lineHeight - yShift + margin;
+                            inputMapping[i + 2] = -lineHeight / 6 - xShift - margin; // bottom left
+                            inputMapping[i + 3] = 0 - 1.2 * yShift - margin;
+                            inputMapping[i + 4] = xadvance + lineHeight / 6 - xShift + 2 * outline + margin; // top right
+                            inputMapping[i + 5] = lineHeight - yShift + margin;
+                            inputMapping[i + 6] = xadvance + lineHeight / 6 - xShift + 2 * outline + margin; // bottom right
+                            inputMapping[i + 7] = 0 - 1.2 * yShift - margin;
+                            inputTexCoord[i + 0] = 10;
+                            inputTexCoord[i + 2] = 10;
+                            inputTexCoord[i + 4] = 10;
+                            inputTexCoord[i + 6] = 10;
+                            iCharAll += 1;
+                        }
+                        xadvance = 0;
+                        for (iChar = 0; iChar < nChar; ++iChar, ++iCharAll) {
+                            c = ta.getTextMetrics(txt[iChar]);
+                            i = iCharAll * 2 * 4;
+                            inputMapping[i + 0] = xadvance - xShift; // top left
+                            inputMapping[i + 1] = c.h - yShift;
+                            inputMapping[i + 2] = xadvance - xShift; // bottom left
+                            inputMapping[i + 3] = 0 - yShift;
+                            inputMapping[i + 4] = xadvance + c.w - xShift; // top right
+                            inputMapping[i + 5] = c.h - yShift;
+                            inputMapping[i + 6] = xadvance + c.w - xShift; // bottom right
+                            inputMapping[i + 7] = 0 - yShift;
+                            var texWidth = ta.params.width;
+                            var texHeight = ta.params.height;
+                            inputTexCoord[i + 0] = c.x / texWidth; // top left
+                            inputTexCoord[i + 1] = c.y / texHeight;
+                            inputTexCoord[i + 2] = c.x / texWidth; // bottom left
+                            inputTexCoord[i + 3] = (c.y + c.h) / texHeight;
+                            inputTexCoord[i + 4] = (c.x + c.w) / texWidth; // top right
+                            inputTexCoord[i + 5] = c.y / texHeight;
+                            inputTexCoord[i + 6] = (c.x + c.w) / texWidth; // bottom right
+                            inputTexCoord[i + 7] = (c.y + c.h) / texHeight;
+                            xadvance += c.w - 2 * outline;
+                        }
+                    }
+                }
+                function makeIndexBuffer(state) {
+                    var buffer = new Uint32Array(state.quadCount * 2 * 3);
+                    var o = 0;
+                    for (var i = 0; i < state.quadCount; i++) {
+                        buffer[o++] = 4 * i;
+                        buffer[o++] = 4 * i + 1;
+                        buffer[o++] = 4 * i + 2;
+                        buffer[o++] = 4 * i + 1;
+                        buffer[o++] = 4 * i + 3;
+                        buffer[o++] = 4 * i + 2;
+                    }
+                    return buffer;
+                }
+            })(Geometry = Labels.Geometry || (Labels.Geometry = {}));
+        })(Labels = Visualization.Labels || (Visualization.Labels = {}));
+    })(Visualization = LiteMol.Visualization || (LiteMol.Visualization = {}));
+})(LiteMol || (LiteMol = {}));
+/*
+ * Copyright (c) 2017 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ */
+var LiteMol;
+(function (LiteMol) {
+    var Visualization;
+    (function (Visualization) {
+        var Labels;
+        (function (Labels) {
+            var Material;
+            (function (Material) {
+                Material.VERTEX_SHADER = "\nuniform float xOffset;\nuniform float yOffset;\nuniform float zOffset;\n\nvarying vec2 texCoord;\n\nattribute vec2 mapping;\nattribute vec2 inputTexCoord;\nattribute float inputSize;\n\n" + Visualization.THREE.ShaderChunk["color_pars_vertex"] + "\n" + Visualization.THREE.ShaderChunk["common"] + "\n\nfloat matrixScale( in mat4 m ){\n    vec4 r = m[ 0 ];\n    return sqrt( r[ 0 ] * r[ 0 ] + r[ 1 ] * r[ 1 ] + r[ 2 ] * r[ 2 ] );\n}\n\nvoid main(void){\n\n    " + Visualization.THREE.ShaderChunk["color_vertex"] + "\n\n    texCoord = inputTexCoord;\n\n    float scale = matrixScale( modelViewMatrix );\n\n    float _zOffset = zOffset * scale;\n    if( texCoord.x == 10.0 ){\n         _zOffset -= 0.001;\n    }\n\n    vec3 pos = position;\n    vec4 cameraPos = modelViewMatrix * vec4( pos, 1.0 );\n    vec4 cameraCornerPos = vec4( cameraPos.xyz, 1.0 );\n    cameraCornerPos.xy += mapping * inputSize * 0.01 * scale;\n    cameraCornerPos.x += xOffset * scale;\n    cameraCornerPos.y += yOffset * scale;\n    cameraCornerPos.xyz += normalize( -cameraCornerPos.xyz ) * _zOffset;\n\n    gl_Position = projectionMatrix * cameraCornerPos;\n    //gl_Position.xyz = position.xyz;\n}\n";
+                Material.FRAGMENT_SHADER = "\n#extension GL_OES_standard_derivatives : enable\n\nuniform sampler2D fontTexture;\nuniform float showBorder;\nuniform vec3 borderColor;\nuniform float borderWidth;\nuniform vec3 backgroundColor;\nuniform float backgroundOpacity;\n\nvarying vec2 texCoord;\n\n" + Visualization.THREE.ShaderChunk["common"] + "\n" + Visualization.THREE.ShaderChunk["color_pars_fragment"] + "\n" + Visualization.THREE.ShaderChunk["fog_pars_fragment"] + "\n\nconst float smoothness = 16.0;\nconst float gamma = 2.2;\n\nvoid main(){\n    vec4 finalColor;\n\n    if( texCoord.x > 1.0 ){\n        finalColor = vec4( backgroundColor, backgroundOpacity );\n    }else{\n        // // retrieve signed distance\n        float sdf = texture2D( fontTexture, texCoord ).a;\n        if( showBorder > 0.5 ) sdf += borderWidth;\n\n        // // perform adaptive anti-aliasing of the edges\n        float w = clamp(\n            smoothness * ( abs( dFdx( texCoord.x ) ) + abs( dFdy( texCoord.y ) ) ),\n            0.0,\n            0.5\n        );\n        float a = smoothstep( 0.5 - w, 0.5 + w, sdf );\n\n        // // gamma correction for linear attenuation\n        a = pow( a, 1.0 / gamma );\n        if( a < 0.2 ) discard;\n        //a *= opacity;\n\n        vec3 outgoingLight = vColor;\n        if( showBorder > 0.5 && sdf < ( 0.5 + borderWidth ) ){\n            outgoingLight = borderColor;\n        }\n\n        finalColor = vec4( outgoingLight, a );    \n    }\n\n    //gl_FragColor = finalColor;\n    vec3 outgoingLight = finalColor.rgb;\n\n    " + Visualization.THREE.ShaderChunk["fog_fragment"] + "\n    \n    #ifdef USE_FOG\n    //    if (finalColor.a > 0.99) { gl_FragColor = vec4(outgoingLight, (1.0 - fogFactor)); }\n    //    else { gl_FragColor = vec4( outgoingLight.rgb, (1.0 - fogFactor) * finalColor.a ); }\n       float alpha = (1.0 - fogFactor) * finalColor.a;\n       if (alpha < 0.2) discard;\n       gl_FragColor = vec4( outgoingLight.rgb, alpha );\n       //gl_FragColor = finalColor;\n    #else\n      gl_FragColor = finalColor;\n    #endif\n}\n";
+            })(Material = Labels.Material || (Labels.Material = {}));
+        })(Labels = Visualization.Labels || (Visualization.Labels = {}));
+    })(Visualization = LiteMol.Visualization || (LiteMol.Visualization = {}));
+})(LiteMol || (LiteMol = {}));
+/*
+ * Copyright (c) 2017 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ */
+var LiteMol;
+(function (LiteMol) {
+    var Visualization;
+    (function (Visualization) {
+        var Labels;
+        (function (Labels) {
+            var Material;
+            (function (Material) {
+                'use strict';
+                function create(texture) {
+                    var uniforms = Visualization.THREE.UniformsUtils.merge([
+                        Visualization.THREE.UniformsLib["common"],
+                        Visualization.THREE.UniformsLib["fog"],
+                        {
+                            "fontTexture": { type: "t", value: texture },
+                            "xOffset": { type: "f", value: 0 },
+                            "yOffset": { type: "f", value: 0 },
+                            "zOffset": { type: "f", value: 0 },
+                            "showBorder": { type: "f", value: 0.0 },
+                            "borderWidth": { type: "f", value: 5.0 },
+                            "borderColor": { type: "v3", value: new Visualization.THREE.Vector3(0, 0, 0) },
+                            "backgroundColor": { type: "v3", value: new Visualization.THREE.Vector3(0, 0, 0) },
+                            "backgroundOpacity": { type: "f", value: 0.5 },
+                        }
+                    ]);
+                    uniforms.fontTexture.value = texture;
+                    var ret = new Visualization.THREE.ShaderMaterial({
+                        uniforms: uniforms,
+                        attributes: {
+                            "mapping": { type: 'v2', value: null },
+                            "inputTexCoord": { type: 'v2', value: null },
+                            "inputSize": { type: 'f', value: null }
+                        },
+                        lights: false,
+                        fog: true,
+                        vertexShader: Material.VERTEX_SHADER,
+                        fragmentShader: Material.FRAGMENT_SHADER,
+                        shading: Visualization.THREE.NoShading,
+                        side: Visualization.THREE.DoubleSide,
+                        vertexColors: Visualization.THREE.VertexColors,
+                        blending: Visualization.THREE.NormalBlending,
+                        transparent: false,
+                        wireframe: false,
+                        linewidth: 1
+                    });
+                    return ret;
+                }
+                Material.create = create;
+            })(Material = Labels.Material || (Labels.Material = {}));
+        })(Labels = Visualization.Labels || (Visualization.Labels = {}));
+    })(Visualization = LiteMol.Visualization || (LiteMol.Visualization = {}));
+})(LiteMol || (LiteMol = {}));
+/*
+ * Copyright (c) 2017 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ */
+var LiteMol;
+(function (LiteMol) {
+    var Visualization;
+    (function (Visualization) {
+        var Labels;
+        (function (Labels) {
+            'use strict';
+            Labels.DefaultLabelsOptions = {
+                fontFamily: 'sans-serif',
+                fontSize: 32,
+                fontStyle: 'normal',
+                fontWeight: 'normal',
+                useSDF: true,
+                attachment: 'middle-center',
+                showBackground: true,
+                backgroundMargin: 1.0
+            };
+            var Model = (function (_super) {
+                __extends(Model, _super);
+                function Model() {
+                    return _super !== null && _super.apply(this, arguments) || this;
+                }
+                Model.prototype.applySelectionInternal = function (indices, action) { return false; };
+                Model.prototype.getPickElements = function (pickId) { return []; };
+                ;
+                Model.prototype.highlightElement = function (pickId, highlight) { return false; };
+                Model.prototype.highlightInternal = function (isOn) { return false; };
+                Model.prototype.applyColoring = function (theme) {
+                    var color = this.geometry.attributes.color.array;
+                    var o = 0, t = { r: 0.1, g: 0.1, b: 0.1 };
+                    var i = 0;
+                    for (var _i = 0, _a = this.labels; _i < _a.length; _i++) {
+                        var l = _a[_i];
+                        var count = l.length * 4;
+                        if (this.options.showBackground)
+                            count += 4;
+                        theme.setElementColor(i, t);
+                        for (var j = 0; j < count; j++) {
+                            color[o++] = t.r;
+                            color[o++] = t.g;
+                            color[o++] = t.b;
+                        }
+                        i++;
+                    }
+                    this.geometry.attributes.color.needsUpdate = true;
+                };
+                Model.prototype.applyThemeInternal = function (theme) {
+                    this.applyColoring(theme);
+                    var backgroundColor = theme.colors.get('Background') || Visualization.Color.fromHexString('#333333');
+                    var backgroundOpacity = theme.variables.get('backgroundOpacity') !== void 0 ? theme.variables.get('backgroundOpacity') : 0.5;
+                    var borderColor = theme.colors.get('Border') || Visualization.Color.fromHexString('#222222');
+                    var borderWidth = theme.variables.get('borderWidth') !== void 0 ? theme.variables.get('borderWidth') : 0.05;
+                    var showBorder = theme.variables.get('showBorder') ? 1.0 : 0.0;
+                    var uniforms = this.material.uniforms;
+                    uniforms.xOffset.value = theme.variables.get('xOffset') || 0;
+                    uniforms.yOffset.value = theme.variables.get('yOffset') || 0;
+                    uniforms.zOffset.value = theme.variables.get('zOffset') || 0;
+                    uniforms.backgroundColor.value = new Visualization.THREE.Vector3(backgroundColor.r, backgroundColor.g, backgroundColor.b);
+                    uniforms.backgroundOpacity.value = backgroundOpacity;
+                    uniforms.borderColor.value = new Visualization.THREE.Vector3(borderColor.r, borderColor.g, borderColor.b);
+                    uniforms.borderWidth.value = borderWidth;
+                    uniforms.showBorder.value = showBorder;
+                    this.material.transparent = this.options.showBackground && backgroundOpacity < 1.0,
+                        this.material.fog = !theme.disableFog;
+                    this.material.needsUpdate = true;
+                };
+                Model.create = function (entity, params) {
+                    var _this = this;
+                    return LiteMol.Core.computation(function (ctx) { return __awaiter(_this, void 0, void 0, function () {
+                        var _a, geometry, texture, options, model;
+                        return __generator(this, function (_b) {
+                            switch (_b.label) {
+                                case 0: return [4 /*yield*/, ctx.updateProgress('Creating labels geometry...')];
+                                case 1:
+                                    _b.sent();
+                                    _a = Labels.Geometry.create(params), geometry = _a.geometry, texture = _a.texture, options = _a.options;
+                                    return [4 /*yield*/, ctx.updateProgress('Creating labels model...')];
+                                case 2:
+                                    _b.sent();
+                                    model = new Model();
+                                    model.options = options;
+                                    model.labels = params.labels;
+                                    model.geometry = geometry;
+                                    model.material = Labels.Material.create(texture);
+                                    model.entity = entity;
+                                    model.object = new Visualization.THREE.Mesh(geometry, model.material);
+                                    model.object.renderOrder = 1;
+                                    geometry.computeBoundingSphere();
+                                    model.centroid = geometry.boundingSphere.center;
+                                    model.radius = geometry.boundingSphere.radius + 4;
+                                    model.applyTheme(params.theme);
+                                    model.disposeList = [geometry, texture, model.material];
+                                    return [2 /*return*/, model];
+                            }
+                        });
+                    }); });
+                };
+                return Model;
+            }(Visualization.Model));
+            Labels.Model = Model;
+        })(Labels = Visualization.Labels || (Visualization.Labels = {}));
     })(Visualization = LiteMol.Visualization || (LiteMol.Visualization = {}));
 })(LiteMol || (LiteMol = {}));
 /*

@@ -184,7 +184,6 @@ namespace LiteMol.Visualization {
             this.renderer.setClearColor(new THREE.Color(options.clearColor!.r, options.clearColor!.g, options.clearColor!.b));
             this.renderer.autoClear = true;
             this.renderer.sortObjects = false;
-            
 
             this.mouseInfo = new MouseInfo(this.renderState, this.renderer.domElement);
 

@@ -223,6 +223,18 @@ gulp.task('Web-inline', ['Web-assemble-inline'], WebVersions);
 gulp.task('Dist-uglify', [], Uglify);
 gulp.task('Dist-min', ['Dist-uglify'], MinAssets);
 
+gulp.task('No-examples', [
+    'Clean',
+    CoreTask,
+    PluginTask,
+    'Viewer-inline',
+    'CSS',
+    'Web-inline',
+    'PackageVersion'
+], function () {
+    console.log('Done');
+});
+
 gulp.task('default', [
     'Clean',
     CoreTask,

@@ -87,6 +87,12 @@
     "./Visualization/Lines/Geometry.ts",
     "./Visualization/Lines/Model.ts",
 
+    "./Visualization/Labels/Atlas.ts",
+    "./Visualization/Labels/Geometry.ts",
+    "./Visualization/Labels/Shaders.ts",
+    "./Visualization/Labels/Material.ts",
+    "./Visualization/Labels/Model.ts",
+
     "./Visualization/Molecule/BallsAndSticks/Model.ts",
     "./Visualization/Molecule/BallsAndSticks/Geometry.ts",
     "./Visualization/Molecule/Cartoons/Geometry.ts",

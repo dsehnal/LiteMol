@@ -12955,7 +12955,7 @@ declare namespace LiteMol.Core {
              * Checks if the computation was aborted. If so, throws.
              * Otherwise, updates the progress.
              */
-            updateProgress(msg: string, abort?: boolean | (() => void), current?: number, max?: number): void;
+            updateProgress(msg: string, abort?: boolean | (() => void), current?: number, max?: number): Promise<void>;
         }
         interface Running<A> {
             progress: Rx.Observable<Progress>;
@@ -14304,6 +14304,7 @@ declare namespace LiteMol.Visualization {
     }
     interface Theme {
         colors: Theme.ColorMap;
+        variables: Theme.VariableMap;
         transparency: Theme.Transparency;
         interactive: boolean;
         disableFog: boolean;
@@ -14313,6 +14314,7 @@ declare namespace LiteMol.Visualization {
     namespace Theme {
         interface Props {
             colors?: ColorMap;
+            variables?: VariableMap;
             transparency?: Theme.Transparency;
             interactive?: boolean;
             disableFog?: boolean;
@@ -14325,6 +14327,10 @@ declare namespace LiteMol.Visualization {
         interface ColorMap {
             get(key: any): Color | undefined;
             forEach(f: (value: Color, key: any) => void): void;
+        }
+        interface VariableMap {
+            get(key: any): any | undefined;
+            forEach(f: (value: any, key: any) => void): void;
         }
         namespace Default {
             const HighlightColor: Color;
@@ -14831,6 +14837,93 @@ declare namespace LiteMol.Visualization.Lines {
             theme: Theme;
             props?: Model.Props;
         }): Core.Computation<Model>;
+    }
+}
+declare namespace LiteMol.Visualization.Labels {
+    /**
+     * Text atlas adapted from https://github.com/arose/ngl
+     * MIT License Copyright (C) 2014+ Alexander Rose
+     */
+    interface TextAtlasParams {
+        font: string[];
+        size: number;
+        style: string;
+        variant: string;
+        weight: string;
+        outline: number;
+        width: number;
+        height: number;
+    }
+    const DefaultTextAtlasParams: TextAtlasParams;
+    function getTextAtlas(params: Partial<TextAtlasParams>): TextAtlas;
+    interface MappedMetrics {
+        x: number;
+        y: number;
+        w: number;
+        h: number;
+    }
+    class TextAtlas {
+        params: TextAtlasParams;
+        private gamma;
+        private mapped;
+        private state;
+        private placeholder;
+        lineHeight: number;
+        private canvas;
+        texture: THREE.Texture;
+        constructor(params: Partial<TextAtlasParams>);
+        private build();
+        private map(text);
+        getTextMetrics(text: string): MappedMetrics;
+        private draw(text);
+        private populate();
+    }
+}
+declare namespace LiteMol.Visualization.Labels.Geometry {
+    function create(params: LabelsParams): {
+        geometry: THREE.BufferGeometry;
+        texture: THREE.Texture;
+        options: LabelsOptions;
+    };
+}
+declare namespace LiteMol.Visualization.Labels.Material {
+    const VERTEX_SHADER: string;
+    const FRAGMENT_SHADER: string;
+}
+declare namespace LiteMol.Visualization.Labels.Material {
+    function create(texture: THREE.Texture): THREE.ShaderMaterial;
+}
+declare namespace LiteMol.Visualization.Labels {
+    interface LabelsOptions {
+        fontFamily: "sans-serif" | "monospace" | "serif";
+        fontSize: number;
+        fontStyle: "normal" | "italic";
+        fontWeight: "normal" | "bold";
+        useSDF: boolean;
+        attachment: "bottom-left" | "bottom-center" | "bottom-right" | "middle-left" | "middle-center" | "middle-right" | "top-left" | "top-center" | "top-right";
+        showBackground: boolean;
+        backgroundMargin: number;
+    }
+    const DefaultLabelsOptions: LabelsOptions;
+    interface LabelsParams {
+        positions: Core.Structure.PositionTable;
+        sizes: number[];
+        labels: string[];
+        options?: Partial<LabelsOptions>;
+        theme: Theme;
+    }
+    class Model extends Visualization.Model {
+        private geometry;
+        private material;
+        private labels;
+        private options;
+        protected applySelectionInternal(indices: number[], action: Selection.Action): boolean;
+        getPickElements(pickId: number): number[];
+        highlightElement(pickId: number, highlight: boolean): boolean;
+        protected highlightInternal(isOn: boolean): boolean;
+        private applyColoring(theme);
+        protected applyThemeInternal(theme: Theme): void;
+        static create(entity: any, params: LabelsParams): Core.Computation<Model>;
     }
 }
 declare namespace LiteMol.Visualization.Molecule.BallsAndSticks {

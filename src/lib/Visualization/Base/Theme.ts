@@ -123,6 +123,7 @@ namespace LiteMol.Visualization {
     
     export interface Theme {
         colors: Theme.ColorMap,
+        variables: Theme.VariableMap,
         transparency: Theme.Transparency,
         interactive: boolean,
         disableFog: boolean,
@@ -134,6 +135,7 @@ namespace LiteMol.Visualization {
         
         export interface Props {
             colors?: ColorMap,
+            variables?: VariableMap,
             transparency?: Theme.Transparency,
             interactive?: boolean,
             disableFog?: boolean,
@@ -143,6 +145,7 @@ namespace LiteMol.Visualization {
         export interface Transparency { alpha?: number; writeDepth?: boolean }
 
         export interface ColorMap { get(key: any): Color | undefined, forEach(f: (value: Color, key: any) => void): void }
+        export interface VariableMap { get(key: any): any | undefined, forEach(f: (value: any, key: any) => void): void }
         
         export namespace Default {
             export const HighlightColor: Color = { r: 1.0, g: 1.0, b: 0 }; 
@@ -170,7 +173,7 @@ namespace LiteMol.Visualization {
         }
         
         export function createUniform(props: Props = {}): Theme {            
-            let { colors, transparency = Default.Transparency, interactive = true, disableFog = false, isSticky = false } = props;
+            let { colors, variables = Core.Utils.FastMap.create<string, any>(), transparency = Default.Transparency, interactive = true, disableFog = false, isSticky = false } = props;
             
             let finalColors = Core.Utils.FastMap.create<any, Color>();
             if (colors) {
@@ -185,6 +188,7 @@ namespace LiteMol.Visualization {
             
             return {
                 colors: finalColors,
+                variables,
                 transparency,
                 interactive,
                 disableFog,
@@ -196,10 +200,11 @@ namespace LiteMol.Visualization {
         }
         
         export function createMapping(mapping: ElementMapping, props: Props = {}): Theme {
-            let { colors = Core.Utils.FastMap.create<string, Color>(), transparency = Default.Transparency, interactive = true, disableFog = false, isSticky = false } = props;
+            let { colors = Core.Utils.FastMap.create<string, Color>(), variables = Core.Utils.FastMap.create<string, any>(), transparency = Default.Transparency, interactive = true, disableFog = false, isSticky = false } = props;
                         
             return {
                 colors,
+                variables,
                 transparency: transparency ? transparency : Default.Transparency,
                 interactive,
                 disableFog,
