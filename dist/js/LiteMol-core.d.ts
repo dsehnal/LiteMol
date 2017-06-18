@@ -2740,6 +2740,7 @@ declare namespace LiteMol.Core.Structure.Query {
         authSeqNumber?: number;
         insCode?: string | null;
     }
+    function allAtoms(): Builder;
     function atomsByElement(...elements: string[]): Builder;
     function atomsByName(...names: string[]): Builder;
     function atomsById(...ids: number[]): Builder;
@@ -2787,6 +2788,7 @@ declare namespace LiteMol.Core.Structure.Query {
      */
     namespace Compiler {
         function compileEverything(): (ctx: Context) => FragmentSeq;
+        function compileAllAtoms(): (ctx: Context) => FragmentSeq;
         function compileAtoms(elements: string[] | number[], sel: (model: Structure.Molecule.Model) => string[] | number[]): (ctx: Context) => FragmentSeq;
         function compileAtomIndices(indices: number[]): (ctx: Context) => FragmentSeq;
         function compileFromIndices(complement: boolean, indices: number[], tableProvider: (molecule: Structure.Molecule.Model) => {

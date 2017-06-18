@@ -232,7 +232,7 @@ namespace LiteMol.Visualization.Surface {
         let geometry = new THREE.BufferGeometry();
         geometry.addAttribute('position', new THREE.BufferAttribute(ctx.data.vertices, 3));
         geometry.addAttribute('normal', new THREE.BufferAttribute(ctx.data.normals, 3));
-        geometry.addAttribute('color', new THREE.BufferAttribute(new Float32Array(3 * ctx.data.vertices.length), 3));
+        geometry.addAttribute('color', new THREE.BufferAttribute(new Float32Array(ctx.data.vertices.length), 3));
 
         if (isWireframe) {
             geometry.addAttribute('index', buildWireframeIndices(ctx));

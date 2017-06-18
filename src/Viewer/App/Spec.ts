@@ -50,6 +50,8 @@ namespace LiteMol.Viewer {
             
             { transformer: Transformer.Molecule.CreateMacromoleculeVisual, view: Views.Transform.Empty },
             { transformer: Transformer.Molecule.CreateVisual, view: Views.Transform.Molecule.CreateVisual },
+
+            { transformer: Transformer.Molecule.CreateLabels, view: Views.Transform.Molecule.CreateLabels },
             
             // density transforms
             { transformer: Transformer.Density.CreateFromCif, view: Views.Transform.Molecule.CreateFromMmCif },

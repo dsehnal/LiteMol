@@ -56188,7 +56188,7 @@ var LiteMol;
 (function (LiteMol) {
     var Core;
     (function (Core) {
-        Core.VERSION = { number: "3.1.3", date: "May 5 2017" };
+        Core.VERSION = { number: "3.1.4", date: "June 18 2017" };
     })(Core = LiteMol.Core || (LiteMol.Core = {}));
 })(LiteMol || (LiteMol = {}));
 /*
@@ -63955,6 +63955,8 @@ var LiteMol;
                     }
                     Builder.toQuery = toQuery;
                 })(Builder = Query.Builder || (Query.Builder = {}));
+                function allAtoms() { return Builder.build(function () { return Compiler.compileAllAtoms(); }); }
+                Query.allAtoms = allAtoms;
                 function atomsByElement() {
                     var elements = [];
                     for (var _i = 0; _i < arguments.length; _i++) {
@@ -64141,6 +64143,17 @@ var LiteMol;
                         };
                     }
                     Compiler.compileEverything = compileEverything;
+                    function compileAllAtoms() {
+                        return function (ctx) {
+                            var fragments = new Query.FragmentSeqBuilder(ctx);
+                            for (var i = 0, _b = ctx.structure.data.atoms.count; i < _b; i++) {
+                                if (ctx.hasAtom(i))
+                                    fragments.add(Query.Fragment.ofIndex(ctx, i));
+                            }
+                            return fragments.getSeq();
+                        };
+                    }
+                    Compiler.compileAllAtoms = compileAllAtoms;
                     function compileAtoms(elements, sel) {
                         return function (ctx) {
                             var set = Core.Utils.FastSet.ofArray(elements), data = sel(ctx.structure), fragments = new Query.FragmentSeqBuilder(ctx);
@@ -64616,7 +64629,7 @@ var LiteMol;
 (function (LiteMol) {
     var Visualization;
     (function (Visualization) {
-        Visualization.VERSION = { number: "1.6.6", date: "April 7 2017" };
+        Visualization.VERSION = { number: "1.7.0", date: "June 18 2017" };
     })(Visualization = LiteMol.Visualization || (LiteMol.Visualization = {}));
 })(LiteMol || (LiteMol = {}));
 var LiteMol;
@@ -67064,7 +67077,7 @@ var LiteMol;
                 var geometry = new Visualization.THREE.BufferGeometry();
                 geometry.addAttribute('position', new Visualization.THREE.BufferAttribute(ctx.data.vertices, 3));
                 geometry.addAttribute('normal', new Visualization.THREE.BufferAttribute(ctx.data.normals, 3));
-                geometry.addAttribute('color', new Visualization.THREE.BufferAttribute(new Float32Array(3 * ctx.data.vertices.length), 3));
+                geometry.addAttribute('color', new Visualization.THREE.BufferAttribute(new Float32Array(ctx.data.vertices.length), 3));
                 if (isWireframe) {
                     geometry.addAttribute('index', buildWireframeIndices(ctx));
                 }
@@ -67707,6 +67720,10 @@ var LiteMol;
             var Geometry;
             (function (Geometry) {
                 'use strict';
+                /**
+                 * Adapted from https://github.com/arose/ngl
+                 * MIT License Copyright (C) 2014+ Alexander Rose
+                 */
                 function create(params) {
                     var state = initState(params);
                     calcVertices(state);
@@ -67736,7 +67753,7 @@ var LiteMol;
                         size: options.fontSize,
                         outline: options.useSDF ? 5 : 0
                     });
-                    var quadCount = charCount + (options.showBackground ? params.labels.length : 0);
+                    var quadCount = charCount + params.labels.length /* bg */;
                     return {
                         positions: params.positions,
                         inputSizes: params.sizes,
@@ -67755,13 +67772,10 @@ var LiteMol;
                     var text = state.labels;
                     var _a = state.positions, x = _a.x, y = _a.y, z = _a.z;
                     var vertices = state.vertices, size = state.size, inputSizes = state.inputSizes;
-                    var showBackground = state.options.showBackground;
                     var iCharAll = 0;
                     for (var v = 0; v < text.length; ++v) {
                         var txt = text[v];
-                        var nChar = txt.length;
-                        if (showBackground)
-                            nChar += 1;
+                        var nChar = txt.length + 1 /* bg */;
                         for (var iChar = 0; iChar < nChar; ++iChar, ++iCharAll) {
                             for (var m = 0; m < 4; m++) {
                                 var j = iCharAll * 4 * 3 + (3 * m);
@@ -67813,23 +67827,21 @@ var LiteMol;
                         }
                         xShift += outline;
                         yShift += outline;
-                        // background
-                        if (state.options.showBackground) {
-                            i = iCharAll * 2 * 4;
-                            inputMapping[i + 0] = -lineHeight / 6 - xShift - margin; // top left
-                            inputMapping[i + 1] = lineHeight - yShift + margin;
-                            inputMapping[i + 2] = -lineHeight / 6 - xShift - margin; // bottom left
-                            inputMapping[i + 3] = 0 - 1.2 * yShift - margin;
-                            inputMapping[i + 4] = xadvance + lineHeight / 6 - xShift + 2 * outline + margin; // top right
-                            inputMapping[i + 5] = lineHeight - yShift + margin;
-                            inputMapping[i + 6] = xadvance + lineHeight / 6 - xShift + 2 * outline + margin; // bottom right
-                            inputMapping[i + 7] = 0 - 1.2 * yShift - margin;
-                            inputTexCoord[i + 0] = 10;
-                            inputTexCoord[i + 2] = 10;
-                            inputTexCoord[i + 4] = 10;
-                            inputTexCoord[i + 6] = 10;
-                            iCharAll += 1;
-                        }
+                        // background            
+                        i = iCharAll * 2 * 4;
+                        inputMapping[i + 0] = -lineHeight / 6 - xShift - margin; // top left
+                        inputMapping[i + 1] = lineHeight - yShift + margin;
+                        inputMapping[i + 2] = -lineHeight / 6 - xShift - margin; // bottom left
+                        inputMapping[i + 3] = 0 - 1.2 * yShift - margin;
+                        inputMapping[i + 4] = xadvance + lineHeight / 6 - xShift + 2 * outline + margin; // top right
+                        inputMapping[i + 5] = lineHeight - yShift + margin;
+                        inputMapping[i + 6] = xadvance + lineHeight / 6 - xShift + 2 * outline + margin; // bottom right
+                        inputMapping[i + 7] = 0 - 1.2 * yShift - margin;
+                        inputTexCoord[i + 0] = 10;
+                        inputTexCoord[i + 2] = 10;
+                        inputTexCoord[i + 4] = 10;
+                        inputTexCoord[i + 6] = 10;
+                        iCharAll += 1;
                         xadvance = 0;
                         for (iChar = 0; iChar < nChar; ++iChar, ++iCharAll) {
                             c = ta.getTextMetrics(txt[iChar]);
@@ -67884,8 +67896,12 @@ var LiteMol;
         (function (Labels) {
             var Material;
             (function (Material) {
-                Material.VERTEX_SHADER = "\nuniform float xOffset;\nuniform float yOffset;\nuniform float zOffset;\n\nvarying vec2 texCoord;\n\nattribute vec2 mapping;\nattribute vec2 inputTexCoord;\nattribute float inputSize;\n\n" + Visualization.THREE.ShaderChunk["color_pars_vertex"] + "\n" + Visualization.THREE.ShaderChunk["common"] + "\n\nfloat matrixScale( in mat4 m ){\n    vec4 r = m[ 0 ];\n    return sqrt( r[ 0 ] * r[ 0 ] + r[ 1 ] * r[ 1 ] + r[ 2 ] * r[ 2 ] );\n}\n\nvoid main(void){\n\n    " + Visualization.THREE.ShaderChunk["color_vertex"] + "\n\n    texCoord = inputTexCoord;\n\n    float scale = matrixScale( modelViewMatrix );\n\n    float _zOffset = zOffset * scale;\n    if( texCoord.x == 10.0 ){\n         _zOffset -= 0.001;\n    }\n\n    vec3 pos = position;\n    vec4 cameraPos = modelViewMatrix * vec4( pos, 1.0 );\n    vec4 cameraCornerPos = vec4( cameraPos.xyz, 1.0 );\n    cameraCornerPos.xy += mapping * inputSize * 0.01 * scale;\n    cameraCornerPos.x += xOffset * scale;\n    cameraCornerPos.y += yOffset * scale;\n    cameraCornerPos.xyz += normalize( -cameraCornerPos.xyz ) * _zOffset;\n\n    gl_Position = projectionMatrix * cameraCornerPos;\n    //gl_Position.xyz = position.xyz;\n}\n";
-                Material.FRAGMENT_SHADER = "\n#extension GL_OES_standard_derivatives : enable\n\nuniform sampler2D fontTexture;\nuniform float showBorder;\nuniform vec3 borderColor;\nuniform float borderWidth;\nuniform vec3 backgroundColor;\nuniform float backgroundOpacity;\n\nvarying vec2 texCoord;\n\n" + Visualization.THREE.ShaderChunk["common"] + "\n" + Visualization.THREE.ShaderChunk["color_pars_fragment"] + "\n" + Visualization.THREE.ShaderChunk["fog_pars_fragment"] + "\n\nconst float smoothness = 16.0;\nconst float gamma = 2.2;\n\nvoid main(){\n    vec4 finalColor;\n\n    if( texCoord.x > 1.0 ){\n        finalColor = vec4( backgroundColor, backgroundOpacity );\n    }else{\n        // // retrieve signed distance\n        float sdf = texture2D( fontTexture, texCoord ).a;\n        if( showBorder > 0.5 ) sdf += borderWidth;\n\n        // // perform adaptive anti-aliasing of the edges\n        float w = clamp(\n            smoothness * ( abs( dFdx( texCoord.x ) ) + abs( dFdy( texCoord.y ) ) ),\n            0.0,\n            0.5\n        );\n        float a = smoothstep( 0.5 - w, 0.5 + w, sdf );\n\n        // // gamma correction for linear attenuation\n        a = pow( a, 1.0 / gamma );\n        if( a < 0.2 ) discard;\n        //a *= opacity;\n\n        vec3 outgoingLight = vColor;\n        if( showBorder > 0.5 && sdf < ( 0.5 + borderWidth ) ){\n            outgoingLight = borderColor;\n        }\n\n        finalColor = vec4( outgoingLight, a );    \n    }\n\n    //gl_FragColor = finalColor;\n    vec3 outgoingLight = finalColor.rgb;\n\n    " + Visualization.THREE.ShaderChunk["fog_fragment"] + "\n    \n    #ifdef USE_FOG\n    //    if (finalColor.a > 0.99) { gl_FragColor = vec4(outgoingLight, (1.0 - fogFactor)); }\n    //    else { gl_FragColor = vec4( outgoingLight.rgb, (1.0 - fogFactor) * finalColor.a ); }\n       float alpha = (1.0 - fogFactor) * finalColor.a;\n       if (alpha < 0.2) discard;\n       gl_FragColor = vec4( outgoingLight.rgb, alpha );\n       //gl_FragColor = finalColor;\n    #else\n      gl_FragColor = finalColor;\n    #endif\n}\n";
+                /**
+                 * Adapted from https://github.com/arose/ngl
+                 * MIT License Copyright (C) 2014+ Alexander Rose
+                 */
+                Material.VERTEX_SHADER = "\nuniform float xOffset;\nuniform float yOffset;\nuniform float zOffset;\nuniform float sizeFactor;\n\nvarying vec2 texCoord;\n\nattribute vec2 mapping;\nattribute vec2 inputTexCoord;\nattribute float inputSize;\n\n" + Visualization.THREE.ShaderChunk["color_pars_vertex"] + "\n" + Visualization.THREE.ShaderChunk["common"] + "\n\nfloat matrixScale( in mat4 m ){\n    vec4 r = m[ 0 ];\n    return sqrt( r[ 0 ] * r[ 0 ] + r[ 1 ] * r[ 1 ] + r[ 2 ] * r[ 2 ] );\n}\n\nvoid main(void){\n\n    " + Visualization.THREE.ShaderChunk["color_vertex"] + "\n\n    texCoord = inputTexCoord;\n\n    float scale = matrixScale( modelViewMatrix );\n\n    float _zOffset = zOffset * scale;\n    if( texCoord.x == 10.0 ){\n         _zOffset -= 0.001;\n    }\n\n    vec3 pos = position;\n    vec4 cameraPos = modelViewMatrix * vec4( pos, 1.0 );\n    vec4 cameraCornerPos = vec4( cameraPos.xyz, 1.0 );\n    cameraCornerPos.xy += mapping * inputSize * sizeFactor * 0.01 * scale;\n    cameraCornerPos.x += xOffset * scale;\n    cameraCornerPos.y += yOffset * scale;\n    cameraCornerPos.xyz += normalize( -cameraCornerPos.xyz ) * _zOffset;\n\n    gl_Position = projectionMatrix * cameraCornerPos;\n    //gl_Position.xyz = position.xyz;\n}\n";
+                Material.FRAGMENT_SHADER = "\n#extension GL_OES_standard_derivatives : enable\n\nuniform sampler2D fontTexture;\nuniform vec3 outlineColor;\nuniform float outlineWidth;\nuniform vec3 backgroundColor;\nuniform float backgroundOpacity;\n\nvarying vec2 texCoord;\n\n" + Visualization.THREE.ShaderChunk["common"] + "\n" + Visualization.THREE.ShaderChunk["color_pars_fragment"] + "\n" + Visualization.THREE.ShaderChunk["fog_pars_fragment"] + "\n\nconst float smoothness = 16.0;\nconst float gamma = 2.2;\n\nvoid main(){\n    vec4 finalColor;\n\n    if( texCoord.x > 1.0 ){\n        if (backgroundOpacity < 0.05) discard;\n        finalColor = vec4( backgroundColor, backgroundOpacity );\n    }else{\n        // retrieve signed distance\n        float sdf = texture2D( fontTexture, texCoord ).a + outlineWidth;\n\n        // perform adaptive anti-aliasing of the edges\n        float w = clamp(\n            smoothness * ( abs( dFdx( texCoord.x ) ) + abs( dFdy( texCoord.y ) ) ),\n            0.0,\n            0.5\n        );\n        float a = smoothstep( 0.5 - w, 0.5 + w, sdf );\n\n        // gamma correction for linear attenuation\n        a = pow( a, 1.0 / gamma );\n        if( a < 0.2 ) discard;\n        //a *= opacity;\n\n        vec3 outgoingLight = vColor;\n        if( outlineWidth > 0.0 && sdf < ( 0.5 + outlineWidth ) ){\n            outgoingLight = outlineColor;\n        }\n\n        finalColor = vec4( outgoingLight, a );    \n    }\n\n    //gl_FragColor = finalColor;\n    vec3 outgoingLight = finalColor.rgb;\n\n    " + Visualization.THREE.ShaderChunk["fog_fragment"] + "\n    \n    #ifdef USE_FOG\n       float alpha = (1.0 - fogFactor) * finalColor.a;\n       if (alpha < 0.05) discard;\n       gl_FragColor = vec4( outgoingLight.rgb, alpha );\n    #else\n      gl_FragColor = finalColor;\n    #endif\n}\n";
             })(Material = Labels.Material || (Labels.Material = {}));
         })(Labels = Visualization.Labels || (Visualization.Labels = {}));
     })(Visualization = LiteMol.Visualization || (LiteMol.Visualization = {}));
@@ -67911,9 +67927,9 @@ var LiteMol;
                             "xOffset": { type: "f", value: 0 },
                             "yOffset": { type: "f", value: 0 },
                             "zOffset": { type: "f", value: 0 },
-                            "showBorder": { type: "f", value: 0.0 },
-                            "borderWidth": { type: "f", value: 5.0 },
-                            "borderColor": { type: "v3", value: new Visualization.THREE.Vector3(0, 0, 0) },
+                            "sizeFactor": { type: "f", value: 1.0 },
+                            "outlineWidth": { type: "f", value: 0.0 },
+                            "outlineColor": { type: "v3", value: new Visualization.THREE.Vector3(0, 0, 0) },
                             "backgroundColor": { type: "v3", value: new Visualization.THREE.Vector3(0, 0, 0) },
                             "backgroundOpacity": { type: "f", value: 0.5 },
                         }
@@ -67962,7 +67978,6 @@ var LiteMol;
                 fontWeight: 'normal',
                 useSDF: true,
                 attachment: 'middle-center',
-                showBackground: true,
                 backgroundMargin: 1.0
             };
             var Model = (function (_super) {
@@ -67981,9 +67996,7 @@ var LiteMol;
                     var i = 0;
                     for (var _i = 0, _a = this.labels; _i < _a.length; _i++) {
                         var l = _a[_i];
-                        var count = l.length * 4;
-                        if (this.options.showBackground)
-                            count += 4;
+                        var count = l.length * 4 + 4 /* background */;
                         theme.setElementColor(i, t);
                         for (var j = 0; j < count; j++) {
                             color[o++] = t.r;
@@ -67998,19 +68011,19 @@ var LiteMol;
                     this.applyColoring(theme);
                     var backgroundColor = theme.colors.get('Background') || Visualization.Color.fromHexString('#333333');
                     var backgroundOpacity = theme.variables.get('backgroundOpacity') !== void 0 ? theme.variables.get('backgroundOpacity') : 0.5;
-                    var borderColor = theme.colors.get('Border') || Visualization.Color.fromHexString('#222222');
-                    var borderWidth = theme.variables.get('borderWidth') !== void 0 ? theme.variables.get('borderWidth') : 0.05;
-                    var showBorder = theme.variables.get('showBorder') ? 1.0 : 0.0;
+                    var outlineColor = theme.colors.get('Outline') || Visualization.Color.fromHexString('#222222');
+                    var outlineWidth = theme.variables.get('outlineWidth') ? +theme.variables.get('outlineWidth') : 0.0;
+                    var sizeFactor = theme.variables.get('sizeFactor') ? +theme.variables.get('sizeFactor') : 1.0;
                     var uniforms = this.material.uniforms;
                     uniforms.xOffset.value = theme.variables.get('xOffset') || 0;
                     uniforms.yOffset.value = theme.variables.get('yOffset') || 0;
                     uniforms.zOffset.value = theme.variables.get('zOffset') || 0;
                     uniforms.backgroundColor.value = new Visualization.THREE.Vector3(backgroundColor.r, backgroundColor.g, backgroundColor.b);
                     uniforms.backgroundOpacity.value = backgroundOpacity;
-                    uniforms.borderColor.value = new Visualization.THREE.Vector3(borderColor.r, borderColor.g, borderColor.b);
-                    uniforms.borderWidth.value = borderWidth;
-                    uniforms.showBorder.value = showBorder;
-                    this.material.transparent = this.options.showBackground && backgroundOpacity < 1.0,
+                    uniforms.outlineColor.value = new Visualization.THREE.Vector3(outlineColor.r, outlineColor.g, outlineColor.b);
+                    uniforms.outlineWidth.value = outlineWidth;
+                    uniforms.sizeFactor.value = sizeFactor;
+                    this.material.transparent = backgroundOpacity < 1.0,
                         this.material.fog = !theme.disableFog;
                     this.material.needsUpdate = true;
                 };
@@ -68039,7 +68052,7 @@ var LiteMol;
                                     model.centroid = geometry.boundingSphere.center;
                                     model.radius = geometry.boundingSphere.radius + 4;
                                     model.applyTheme(params.theme);
-                                    model.disposeList = [geometry, texture, model.material];
+                                    model.disposeList = [geometry, model.material];
                                     return [2 /*return*/, model];
                             }
                         });
@@ -70103,16 +70116,18 @@ var LiteMol;
         var Primitive;
         (function (Primitive) {
             "use strict";
-            var LA = LiteMol.Core.Geometry.LinearAlgebra;
-            function createSphereSurface(center, radius, tessalation) {
-                var geom = new Visualization.THREE.IcosahedronGeometry(radius, tessalation);
-                var surface = Visualization.GeometryHelper.toSurface(geom);
-                if (center.x !== 0 || center.y !== 0 || center.z !== 0) {
-                    LiteMol.Core.Geometry.Surface.transformImmediate(surface, LA.Matrix4.fromTranslation(LA.Matrix4.empty(), [center.x, center.y, center.z]));
-                }
-                return surface;
+            function createSphereSurface(sphere) {
+                var _a = sphere.tessalation, tessalation = _a === void 0 ? 0 : _a;
+                var geom = new Visualization.THREE.IcosahedronGeometry(1.0, tessalation);
+                return Visualization.GeometryHelper.toSurface(geom);
             }
             Primitive.createSphereSurface = createSphereSurface;
+            function createTubeSurface(tube) {
+                var a = tube.a, b = tube.b, _a = tube.tessalation, tessalation = _a === void 0 ? 4 : _a;
+                var geom = new Visualization.THREE.TubeGeometry(new Visualization.THREE.LineCurve3(new Visualization.THREE.Vector3(a.x, a.y, a.z), new Visualization.THREE.Vector3(b.x, b.y, b.z)), 2, tube.radius, tessalation);
+                return Visualization.GeometryHelper.toSurface(geom);
+            }
+            Primitive.createTubeSurface = createTubeSurface;
         })(Primitive = Visualization.Primitive || (Visualization.Primitive = {}));
     })(Visualization = LiteMol.Visualization || (LiteMol.Visualization = {}));
 })(LiteMol || (LiteMol = {}));
@@ -70130,32 +70145,44 @@ var LiteMol;
             function buildSurface(shapes) {
                 var _this = this;
                 return LiteMol.Core.computation(function (ctx) { return __awaiter(_this, void 0, void 0, function () {
-                    var uniqueSpheres, _i, shapes_1, s, size, _a, shapes_2, s, sphere, vertices, normals, triangles, annotation, vOffset, nOffset, tOffset, aOffset, v, transform, vs, _c, shapes_3, s, surface, startVOffset, i, _b, i, _b, i, _b, ts, i, _b, i, _b, ret;
-                    return __generator(this, function (_d) {
-                        switch (_d.label) {
+                    var uniqueSpheres, shapeSurfaces, _i, shapes_1, s, sphere, tube, size, _a, shapeSurfaces_1, s, _c, s_1, g, vertices, normals, triangles, annotation, vOffset, nOffset, tOffset, aOffset, v, transform, vs, shapeIndex, _d, shapes_2, s, surfaces, startVOffset, surface, i, _b, surface, i, _b, surface, i, _b, _e, surfaces_1, surface, i, _b, ts, i, _b, i, _b, ret;
+                    return __generator(this, function (_f) {
+                        switch (_f.label) {
                             case 0: return [4 /*yield*/, ctx.updateProgress('Building surface...')];
                             case 1:
-                                _d.sent();
+                                _f.sent();
                                 uniqueSpheres = LiteMol.Core.Utils.FastMap.create();
+                                shapeSurfaces = [];
                                 for (_i = 0, shapes_1 = shapes; _i < shapes_1.length; _i++) {
                                     s = shapes_1[_i];
-                                    if (s.type !== 'Sphere' || uniqueSpheres.has(s.tessalation || 0))
-                                        continue;
-                                    uniqueSpheres.set(s.tessalation || 0, Primitive.createSphereSurface({ x: 0, y: 0, z: 0 }, 1, s.tessalation || 0));
-                                }
-                                size = { vertexCount: 0, triangleCount: 0 };
-                                for (_a = 0, shapes_2 = shapes; _a < shapes_2.length; _a++) {
-                                    s = shapes_2[_a];
                                     switch (s.type) {
                                         case 'Sphere':
-                                            sphere = uniqueSpheres.get(s.tessalation || 0);
-                                            size.vertexCount += sphere.vertexCount;
-                                            size.triangleCount += sphere.triangleCount;
+                                            if (uniqueSpheres.has(s.tessalation || 0))
+                                                shapeSurfaces.push([uniqueSpheres.get(s.tessalation || 0)]);
+                                            else {
+                                                sphere = Primitive.createSphereSurface(s);
+                                                uniqueSpheres.set(s.tessalation || 0, sphere);
+                                                shapeSurfaces.push([sphere]);
+                                            }
                                             break;
-                                        case 'Surface':
-                                            size.vertexCount += s.surface.vertexCount;
-                                            size.triangleCount += s.surface.triangleCount;
+                                        case 'Tube': {
+                                            tube = Primitive.createTubeSurface(s);
+                                            shapeSurfaces.push([tube]);
                                             break;
+                                        }
+                                        case 'Surface': {
+                                            shapeSurfaces.push([s.surface]);
+                                            break;
+                                        }
+                                    }
+                                }
+                                size = { vertexCount: 0, triangleCount: 0 };
+                                for (_a = 0, shapeSurfaces_1 = shapeSurfaces; _a < shapeSurfaces_1.length; _a++) {
+                                    s = shapeSurfaces_1[_a];
+                                    for (_c = 0, s_1 = s; _c < s_1.length; _c++) {
+                                        g = s_1[_c];
+                                        size.vertexCount += g.vertexCount;
+                                        size.triangleCount += g.triangleCount;
                                     }
                                 }
                                 vertices = new Float32Array(size.vertexCount * 3);
@@ -70165,13 +70192,14 @@ var LiteMol;
                                 vOffset = 0, nOffset = 0, tOffset = 0, aOffset = 0;
                                 v = new Visualization.THREE.Vector3();
                                 transform = new Visualization.THREE.Matrix4();
-                                for (_c = 0, shapes_3 = shapes; _c < shapes_3.length; _c++) {
-                                    s = shapes_3[_c];
-                                    surface = void 0;
+                                shapeIndex = 0;
+                                for (_d = 0, shapes_2 = shapes; _d < shapes_2.length; _d++) {
+                                    s = shapes_2[_d];
+                                    surfaces = shapeSurfaces[shapeIndex++];
                                     startVOffset = (vOffset / 3) | 0;
                                     switch (s.type) {
-                                        case 'Sphere':
-                                            surface = uniqueSpheres.get(s.tessalation || 0);
+                                        case 'Sphere': {
+                                            surface = surfaces[0];
                                             vs = surface.vertices;
                                             for (i = 0, _b = surface.vertexCount * 3; i < _b; i += 3) {
                                                 v.x = vs[i], v.y = vs[i + 1], v.z = vs[i + 2];
@@ -70182,25 +70210,38 @@ var LiteMol;
                                                 vertices[vOffset++] = v.z;
                                             }
                                             break;
-                                        case 'Surface':
-                                            surface = s.surface;
+                                        }
+                                        case 'Tube': {
+                                            surface = surfaces[0];
+                                            vs = surface.vertices;
+                                            for (i = 0, _b = vs.length; i < _b; i++) {
+                                                vertices[vOffset++] = vs[i];
+                                            }
+                                            break;
+                                        }
+                                        case 'Surface': {
+                                            surface = surfaces[0];
                                             Surface.computeNormalsImmediate(surface);
                                             vs = surface.vertices;
                                             for (i = 0, _b = vs.length; i < _b; i++) {
                                                 vertices[vOffset++] = vs[i];
                                             }
                                             break;
+                                        }
                                     }
-                                    vs = surface.normals;
-                                    for (i = 0, _b = vs.length; i < _b; i++) {
-                                        normals[nOffset++] = vs[i];
-                                    }
-                                    ts = surface.triangleIndices;
-                                    for (i = 0, _b = ts.length; i < _b; i++) {
-                                        triangles[tOffset++] = startVOffset + ts[i];
-                                    }
-                                    for (i = 0, _b = surface.vertexCount; i < _b; i++) {
-                                        annotation[aOffset++] = s.id;
+                                    for (_e = 0, surfaces_1 = surfaces; _e < surfaces_1.length; _e++) {
+                                        surface = surfaces_1[_e];
+                                        vs = surface.normals;
+                                        for (i = 0, _b = vs.length; i < _b; i++) {
+                                            normals[nOffset++] = vs[i];
+                                        }
+                                        ts = surface.triangleIndices;
+                                        for (i = 0, _b = ts.length; i < _b; i++) {
+                                            triangles[tOffset++] = startVOffset + ts[i];
+                                        }
+                                        for (i = 0, _b = surface.vertexCount; i < _b; i++) {
+                                            annotation[aOffset++] = s.id;
+                                        }
                                     }
                                 }
                                 ret = {
@@ -70306,7 +70347,7 @@ var LiteMol;
 (function (LiteMol) {
     var Bootstrap;
     (function (Bootstrap) {
-        Bootstrap.VERSION = { number: "1.3.6", date: "April 13 2017" };
+        Bootstrap.VERSION = { number: "1.4.0", date: "June 18 2017" };
     })(Bootstrap = LiteMol.Bootstrap || (LiteMol.Bootstrap = {}));
 })(LiteMol || (LiteMol = {}));
 /*
@@ -72793,29 +72834,16 @@ var LiteMol;
             })(Style = Visualization.Style || (Visualization.Style = {}));
             var Theme;
             (function (Theme) {
-                function mergeProps(theme, props) {
-                    var colors = theme.colors || Bootstrap.Immutable.Map();
-                    if (props.colors) {
-                        for (var _i = 0, _a = Object.keys(props.colors); _i < _a.length; _i++) {
-                            var c = _a[_i];
-                            colors.set(c, props.colors[c]);
-                        }
-                    }
-                    var ret = Bootstrap.Utils.shallowClone(theme);
-                    ret.colors = colors;
-                    if (props.transparency)
-                        ret.transparency = props.transparency;
-                    if (props.interactive !== void 0)
-                        ret.interactive = props.interactive;
-                    return ret;
-                }
-                Theme.mergeProps = mergeProps;
                 function getProps(theme) {
                     var colors = LiteMol.Core.Utils.FastMap.create();
                     if (theme.colors)
                         theme.colors.forEach(function (c, n) { return colors.set(n, c); });
+                    var variables = LiteMol.Core.Utils.FastMap.create();
+                    if (theme.variables)
+                        theme.variables.forEach(function (c, n) { return variables.set(n, c); });
                     return {
                         colors: colors,
+                        variables: variables,
                         transparency: theme.transparency,
                         interactive: theme.interactive,
                         disableFog: theme.disableFog,
@@ -73258,6 +73286,157 @@ var LiteMol;
     })(Bootstrap = LiteMol.Bootstrap || (LiteMol.Bootstrap = {}));
 })(LiteMol || (LiteMol = {}));
 /*
+ * Copyright (c) 2017 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ */
+var LiteMol;
+(function (LiteMol) {
+    var Bootstrap;
+    (function (Bootstrap) {
+        var Visualization;
+        (function (Visualization) {
+            var Labels;
+            (function (Labels) {
+                "use strict";
+                function createMoleculeLabels(parent, transform, style) {
+                    var _this = this;
+                    return Bootstrap.Task.create('Labels', 'Background', function (ctx) { return __awaiter(_this, void 0, void 0, function () {
+                        var params, theme, labelsParams, model;
+                        return __generator(this, function (_a) {
+                            switch (_a.label) {
+                                case 0:
+                                    params = style.params;
+                                    theme = style.theme.template.provider(parent, Visualization.Theme.getProps(style.theme));
+                                    labelsParams = Bootstrap.Utils.Molecule.create3DLabelsParams(parent, params, theme);
+                                    return [4 /*yield*/, ctx.updateProgress('Creating labels...')];
+                                case 1:
+                                    _a.sent();
+                                    return [4 /*yield*/, LiteMol.Visualization.Labels.Model.create(parent, labelsParams).run(ctx)];
+                                case 2:
+                                    model = _a.sent();
+                                    return [2 /*return*/, Bootstrap.Entity.Visual.Labels.create(transform, { label: 'Labels', model: model, style: style, isSelectable: false })];
+                            }
+                        });
+                    }); });
+                }
+                Labels.createMoleculeLabels = createMoleculeLabels;
+                function createGenericLabels(parent, transform, params) {
+                    var _this = this;
+                    return Bootstrap.Task.create('Labels', 'Background', function (ctx) { return __awaiter(_this, void 0, void 0, function () {
+                        var theme, labelsParams, model;
+                        return __generator(this, function (_a) {
+                            switch (_a.label) {
+                                case 0: return [4 /*yield*/, ctx.updateProgress('Creating labels...')];
+                                case 1:
+                                    _a.sent();
+                                    theme = params.style.theme.template.provider(parent, Visualization.Theme.getProps(params.style.theme));
+                                    labelsParams = {
+                                        positions: params.positions,
+                                        sizes: params.sizes,
+                                        labels: params.labels,
+                                        options: params.options,
+                                        theme: theme
+                                    };
+                                    return [4 /*yield*/, LiteMol.Visualization.Labels.Model.create(parent, labelsParams).run(ctx)];
+                                case 2:
+                                    model = _a.sent();
+                                    return [2 /*return*/, Bootstrap.Entity.Visual.Labels.create(transform, { label: 'Labels', model: model, style: params.style, isSelectable: false })];
+                            }
+                        });
+                    }); });
+                }
+                Labels.createGenericLabels = createGenericLabels;
+            })(Labels = Visualization.Labels || (Visualization.Labels = {}));
+        })(Visualization = Bootstrap.Visualization || (Bootstrap.Visualization = {}));
+    })(Bootstrap = LiteMol.Bootstrap || (LiteMol.Bootstrap = {}));
+})(LiteMol || (LiteMol = {}));
+/*
+ * Copyright (c) 2017 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ */
+var LiteMol;
+(function (LiteMol) {
+    var Bootstrap;
+    (function (Bootstrap) {
+        var Visualization;
+        (function (Visualization) {
+            var Labels;
+            (function (Labels) {
+                "use strict";
+                var Style;
+                (function (Style) {
+                    function moleculeHasOnlyThemeChanged(oldS, newS) {
+                        return Bootstrap.Utils.deepEqual(oldS.params, newS.params);
+                    }
+                    Style.moleculeHasOnlyThemeChanged = moleculeHasOnlyThemeChanged;
+                    function createMoleculeStyle(params) {
+                        return {
+                            type: 'Labels',
+                            params: {
+                                kind: params.kind,
+                                labelsOptions: params.labelsOptions ? params.labelsOptions : Default.MoleculeLabels.params.labelsOptions
+                            },
+                            theme: params.theme ? params.theme : Default.MoleculeLabels.theme,
+                        };
+                    }
+                    Style.createMoleculeStyle = createMoleculeStyle;
+                })(Style = Labels.Style || (Labels.Style = {}));
+                var Default;
+                (function (Default) {
+                    var Vis = LiteMol.Visualization;
+                    var uniformColors = Bootstrap.Immutable.Map({
+                        'Uniform': Vis.Color.fromHexString('#eaeaea'),
+                        'Background': Vis.Color.fromHexString('#777777'),
+                        'Outline': Vis.Color.fromHexString('#333333')
+                    });
+                    var uniformVariables = Bootstrap.Immutable.Map({
+                        'xOffset': 0.0,
+                        'yOffset': 0.0,
+                        'zOffset': 0.6,
+                        'sizeFactor': 1.5,
+                        'backgroundOpacity': 0.0,
+                        'outlineWidth': 0.1
+                    });
+                    function uniformThemeProvider(e, props) {
+                        return Vis.Theme.createUniform(props);
+                    }
+                    var Themes = [{
+                            name: 'Uniform Color',
+                            description: 'Same color everywhere.',
+                            colors: uniformColors,
+                            variables: uniformVariables,
+                            provider: uniformThemeProvider
+                        }
+                    ];
+                    var Transparency = { alpha: 1.0, writeDepth: false };
+                    Default.Theme = Themes[0];
+                    Default.MoleculeLabels = {
+                        type: 'Labels',
+                        params: {
+                            kind: 'Residue-Full-Id',
+                            labelsOptions: Vis.Labels.DefaultLabelsOptions
+                        },
+                        theme: {
+                            template: Default.Theme,
+                            colors: Default.Theme.colors,
+                            variables: Default.Theme.variables,
+                            transparency: Transparency, interactive: false, disableFog: false
+                        }
+                    };
+                    Default.GenericLabels = {
+                        type: 'Labels',
+                        params: Vis.Labels.DefaultLabelsOptions,
+                        theme: {
+                            template: Default.Theme,
+                            colors: Default.Theme.colors,
+                            variables: Default.Theme.variables,
+                            transparency: Transparency, interactive: false, disableFog: false
+                        }
+                    };
+                })(Default = Labels.Default || (Labels.Default = {}));
+            })(Labels = Visualization.Labels || (Visualization.Labels = {}));
+        })(Visualization = Bootstrap.Visualization || (Bootstrap.Visualization = {}));
+    })(Bootstrap = LiteMol.Bootstrap || (LiteMol.Bootstrap = {}));
+})(LiteMol || (LiteMol = {}));
+/*
  * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
 var LiteMol;
@@ -73401,7 +73580,7 @@ var LiteMol;
                     function create(params) {
                         var colors = Default.Theme.colors.set('Uniform', params.color);
                         return {
-                            type: {},
+                            type: 'Density',
                             taskType: params.taskType,
                             params: { isoValue: params.isoValue, isoValueType: params.isoValueType, smoothing: 1, isWireframe: !!params.isWireframe },
                             theme: { template: Default.Theme, colors: colors, transparency: params.transparency ? params.transparency : Default.Transparency, interactive: false, disableFog: !!params.disableFog }
@@ -73649,6 +73828,7 @@ var LiteMol;
             var Visual;
             (function (Visual) {
                 Visual.Surface = Entity.create({ name: 'Surface Visual', typeClass: 'Visual', shortName: 'V_S', description: 'A surface visual.' }, { isFocusable: true });
+                Visual.Labels = Entity.create({ name: 'Labels Visual', typeClass: 'Visual', shortName: 'V_L', description: '3D labels.' }, { isFocusable: false });
             })(Visual = Entity.Visual || (Entity.Visual = {}));
             /* Molecule */
             var Molecule;
@@ -74154,7 +74334,81 @@ var LiteMol;
                         }
                         return g;
                     });
+                    Molecule.CreateLabels = Bootstrap.Tree.Transformer.create({
+                        id: 'molecule-create-labels',
+                        name: 'Labels',
+                        description: 'Create a labels for a molecule or a selection.',
+                        from: [Entity.Molecule.Model, Entity.Molecule.Selection, Entity.Molecule.Visual],
+                        to: [Entity.Visual.Labels],
+                        isUpdatable: true,
+                        defaultParams: function (ctx) { return ({ style: Bootstrap.Visualization.Labels.Default.MoleculeLabels }); },
+                        validateParams: function (p) { return !p.style ? ['Specify Style'] : void 0; },
+                        customController: function (ctx, t, e) { return new Bootstrap.Components.Transform.MoleculeLabels(ctx, t, e); }
+                    }, function (ctx, a, t) {
+                        var params = t.params;
+                        return Bootstrap.Visualization.Labels.createMoleculeLabels(a, t, params.style).setReportTime(false);
+                    }, function (ctx, b, t) {
+                        var oldParams = b.transform.params;
+                        var newParams = t.params;
+                        if (!Bootstrap.Visualization.Labels.Style.moleculeHasOnlyThemeChanged(oldParams.style, newParams.style))
+                            return void 0;
+                        var model = b.props.model;
+                        var a = Bootstrap.Tree.Node.findClosestNodeOfType(b, [Entity.Molecule.Model, Entity.Molecule.Selection, Entity.Molecule.Visual]);
+                        if (!a)
+                            return void 0;
+                        var theme = newParams.style.theme.template.provider(a, Bootstrap.Visualization.Theme.getProps(newParams.style.theme));
+                        model.applyTheme(theme);
+                        Entity.nodeUpdated(b);
+                        return Bootstrap.Task.resolve(t.transformer.info.name, 'Background', Bootstrap.Tree.Node.Null);
+                    });
                 })(Molecule = Transformer.Molecule || (Transformer.Molecule = {}));
+            })(Transformer = Entity.Transformer || (Entity.Transformer = {}));
+        })(Entity = Bootstrap.Entity || (Bootstrap.Entity = {}));
+    })(Bootstrap = LiteMol.Bootstrap || (LiteMol.Bootstrap = {}));
+})(LiteMol || (LiteMol = {}));
+/*
+ * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ */
+var LiteMol;
+(function (LiteMol) {
+    var Bootstrap;
+    (function (Bootstrap) {
+        var Entity;
+        (function (Entity) {
+            var Transformer;
+            (function (Transformer) {
+                var Labels;
+                (function (Labels) {
+                    Labels.Create = Bootstrap.Tree.Transformer.create({
+                        id: 'labels-create',
+                        name: 'Labels',
+                        description: 'Create a labels for a molecule or a selection.',
+                        from: [],
+                        to: [Entity.Visual.Labels],
+                        isUpdatable: false,
+                        defaultParams: function (ctx) { return ({}); },
+                        customController: function (ctx, t, e) { return new Bootstrap.Components.Transform.MoleculeLabels(ctx, t, e); }
+                    }, function (ctx, a, t) {
+                        return Bootstrap.Visualization.Labels.createGenericLabels(a, t, t.params).setReportTime(false);
+                    }, function (ctx, b, t) {
+                        var oldParams = b.transform.params;
+                        var newParams = t.params;
+                        if (oldParams.positions !== newParams.positions
+                            || oldParams.sizes !== newParams.sizes
+                            || oldParams.labels !== newParams.labels
+                            || oldParams.options !== newParams.options) {
+                            return void 0;
+                        }
+                        var model = b.props.model;
+                        var a = Bootstrap.Tree.Node.findClosestNodeOfType(b, [Entity.Root]);
+                        if (!a)
+                            return void 0;
+                        var theme = newParams.style.theme.template.provider(a, Bootstrap.Visualization.Theme.getProps(newParams.style.theme));
+                        model.applyTheme(theme);
+                        Entity.nodeUpdated(b);
+                        return Bootstrap.Task.resolve(t.transformer.info.name, 'Background', Bootstrap.Tree.Node.Null);
+                    });
+                })(Labels = Transformer.Labels || (Transformer.Labels = {}));
             })(Transformer = Entity.Transformer || (Entity.Transformer = {}));
         })(Entity = Bootstrap.Entity || (Bootstrap.Entity = {}));
     })(Bootstrap = LiteMol.Bootstrap || (LiteMol.Bootstrap = {}));
@@ -74715,6 +74969,14 @@ var LiteMol;
                     into.y = 0;
                     into.z = 0;
                     var _a = m.positions, x = _a.x, y = _a.y, z = _a.z;
+                    if (indices.length === 0)
+                        return 0;
+                    if (indices.length === 1) {
+                        into.x = x[indices[0]];
+                        into.y = y[indices[0]];
+                        into.z = z[indices[0]];
+                        return 0;
+                    }
                     for (var _i = 0, indices_10 = indices; _i < indices_10.length; _i++) {
                         var i = indices_10[_i];
                         into.x += x[i];
@@ -74734,6 +74996,59 @@ var LiteMol;
                     return Math.sqrt(radius);
                 }
                 Molecule.getCentroidAndRadius = getCentroidAndRadius;
+                Molecule.Labels3DKinds = ['Residue-Name', 'Residue-Full-Id', 'Atom-Name', 'Atom-Element'];
+                Molecule.Labels3DKindLabels = {
+                    'Residue-Name': 'Residue Name',
+                    'Residue-Full-Id': 'Residue Full Id',
+                    'Atom-Name': 'Atom Name',
+                    'Atom-Element': 'Atom Element'
+                };
+                function labelProvider(options, model) {
+                    var _a = model.data.atoms, residueIndex = _a.residueIndex, chainIndex = _a.chainIndex, name = _a.name, elementSymbol = _a.elementSymbol;
+                    var _c = model.data.residues, residueName = _c.name, seqNumber = _c.seqNumber;
+                    var authAsymId = model.data.chains.authAsymId;
+                    switch (options.kind) {
+                        case 'Residue-Name': return function (i) { return residueName[residueIndex[i]]; };
+                        case 'Residue-Full-Id': return function (i) {
+                            var r = residueIndex[i], c = chainIndex[i];
+                            return residueName[r] + " " + authAsymId[c] + " " + seqNumber[r];
+                        };
+                        case 'Atom-Name': return function (i) { return name[i]; };
+                        case 'Atom-Element': return function (i) { return elementSymbol[i]; };
+                        default: return function (i) { return "" + i; };
+                    }
+                }
+                function create3DLabelsParams(entity, options, theme) {
+                    var ctx = findQueryContext(entity);
+                    var query = options.kind.indexOf('Residue') >= 0 ? LiteMol.Core.Structure.Query.residues() : LiteMol.Core.Structure.Query.allAtoms();
+                    var fs = query.compile()(ctx);
+                    var label = labelProvider(options, ctx.structure);
+                    var positions = LiteMol.Core.Utils.DataTable.ofDefinition(LiteMol.Core.Structure.Tables.Positions, fs.length);
+                    var x = positions.x, y = positions.y, z = positions.z;
+                    var labels = [];
+                    var sizes = new Float32Array(fs.length);
+                    var center = { x: 0.1, y: 0.1, z: 0.1 };
+                    var i = 0;
+                    for (var _i = 0, _a = fs.fragments; _i < _a.length; _i++) {
+                        var f = _a[_i];
+                        var l = label(f.atomIndices[0]);
+                        getCentroidAndRadius(ctx.structure, f.atomIndices, center);
+                        x[i] = center.x;
+                        y[i] = center.y;
+                        z[i] = center.z;
+                        labels[labels.length] = l;
+                        sizes[i] = 1.0;
+                        i++;
+                    }
+                    return {
+                        labels: labels,
+                        options: options.labelsOptions,
+                        positions: positions,
+                        sizes: sizes,
+                        theme: theme
+                    };
+                }
+                Molecule.create3DLabelsParams = create3DLabelsParams;
             })(Molecule = Utils.Molecule || (Utils.Molecule = {}));
         })(Utils = Bootstrap.Utils || (Bootstrap.Utils = {}));
     })(Bootstrap = LiteMol.Bootstrap || (LiteMol.Bootstrap = {}));
@@ -75775,12 +76090,12 @@ var LiteMol;
             var Transform;
             (function (Transform) {
                 "use strict";
-                var MoleculeVisual = (function (_super) {
-                    __extends(MoleculeVisual, _super);
-                    function MoleculeVisual() {
+                var VisualStyle = (function (_super) {
+                    __extends(VisualStyle, _super);
+                    function VisualStyle() {
                         return _super !== null && _super.apply(this, arguments) || this;
                     }
-                    MoleculeVisual.prototype.updateTemplate = function (key, all) {
+                    VisualStyle.prototype.updateTemplate = function (key, all) {
                         var s = all.get(key);
                         var latestTheme = this.latestState && this.latestState.params.style.theme;
                         var params = s.params;
@@ -75788,17 +76103,17 @@ var LiteMol;
                         var style = { type: s.type, params: params, theme: theme };
                         this.autoUpdateParams({ style: style });
                     };
-                    MoleculeVisual.prototype.updateStyleParams = function (params) {
+                    VisualStyle.prototype.updateStyleParams = function (params) {
                         var s = Bootstrap.Utils.shallowClone(this.latestState.params.style);
                         s.params = Bootstrap.Utils.merge(s.params, params);
                         this.autoUpdateParams({ style: s });
                     };
-                    MoleculeVisual.prototype.updateStyleTheme = function (theme) {
+                    VisualStyle.prototype.updateStyleTheme = function (theme) {
                         var s = Bootstrap.Utils.shallowClone(this.latestState.params.style);
                         s.theme = Bootstrap.Utils.merge(s.theme, theme);
                         this.autoUpdateParams({ style: s });
                     };
-                    MoleculeVisual.prototype.updateThemeColor = function (name, value) {
+                    VisualStyle.prototype.updateThemeColor = function (name, value) {
                         var oldTheme = this.latestState.params.style.theme;
                         if (!oldTheme)
                             return;
@@ -75808,13 +76123,23 @@ var LiteMol;
                         colors = colors.set(name, value);
                         this.updateStyleTheme({ colors: colors });
                     };
-                    MoleculeVisual.prototype.updateThemeTransparency = function (transparency) {
+                    VisualStyle.prototype.updateThemeVariable = function (name, value) {
+                        var oldTheme = this.latestState.params.style.theme;
+                        if (!oldTheme)
+                            return;
+                        var variables = oldTheme.variables;
+                        if (!variables)
+                            variables = Bootstrap.Immutable.Map();
+                        variables = variables.set(name, value);
+                        this.updateStyleTheme({ variables: variables });
+                    };
+                    VisualStyle.prototype.updateThemeTransparency = function (transparency) {
                         var oldTheme = this.latestState.params.style.theme;
                         if (!oldTheme)
                             return;
                         this.updateStyleTheme({ transparency: transparency });
                     };
-                    MoleculeVisual.prototype.getThemeInstance = function (template) {
+                    VisualStyle.prototype.getThemeInstance = function (template) {
                         var oldTheme = this.latestState.params.style.theme;
                         var defaultTransparency = Bootstrap.Visualization.Molecule.Default.ForType.get(this.latestState.params.style.type).theme.transparency;
                         if (!oldTheme)
@@ -75828,15 +76153,48 @@ var LiteMol;
                                 });
                             });
                         }
+                        var variables = template.variables;
+                        if (oldTheme.variables && variables) {
+                            variables = variables.withMutations(function (map) {
+                                oldTheme.variables.forEach(function (c, n) {
+                                    if (map.has(n))
+                                        map.set(n, c);
+                                });
+                            });
+                        }
                         var transparency = oldTheme.transparency ? oldTheme.transparency : defaultTransparency;
-                        return { template: template, colors: colors, transparency: transparency };
+                        return { template: template, colors: colors, variables: variables, transparency: transparency };
                     };
-                    MoleculeVisual.prototype.updateThemeDefinition = function (definition) {
+                    VisualStyle.prototype.updateThemeDefinition = function (definition) {
                         this.updateStyleTheme(this.getThemeInstance(definition));
                     };
-                    return MoleculeVisual;
+                    return VisualStyle;
                 }(Transform.Controller));
+                Transform.VisualStyle = VisualStyle;
+                var MoleculeVisual = (function (_super) {
+                    __extends(MoleculeVisual, _super);
+                    function MoleculeVisual() {
+                        return _super !== null && _super.apply(this, arguments) || this;
+                    }
+                    return MoleculeVisual;
+                }(VisualStyle));
                 Transform.MoleculeVisual = MoleculeVisual;
+                var MoleculeLabels = (function (_super) {
+                    __extends(MoleculeLabels, _super);
+                    function MoleculeLabels() {
+                        return _super !== null && _super.apply(this, arguments) || this;
+                    }
+                    return MoleculeLabels;
+                }(VisualStyle));
+                Transform.MoleculeLabels = MoleculeLabels;
+                var GenericLabels = (function (_super) {
+                    __extends(GenericLabels, _super);
+                    function GenericLabels() {
+                        return _super !== null && _super.apply(this, arguments) || this;
+                    }
+                    return GenericLabels;
+                }(VisualStyle));
+                Transform.GenericLabels = GenericLabels;
                 var DensityVisual = (function (_super) {
                     __extends(DensityVisual, _super);
                     function DensityVisual() {
@@ -76512,7 +76870,7 @@ var LiteMol;
 (function (LiteMol) {
     var Plugin;
     (function (Plugin) {
-        Plugin.VERSION = { number: "1.3.2", date: "March 6 2017" };
+        Plugin.VERSION = { number: "1.3.3", date: "June 18 2017" };
     })(Plugin = LiteMol.Plugin || (LiteMol.Plugin = {}));
 })(LiteMol || (LiteMol = {}));
 /*
@@ -78238,6 +78596,22 @@ var LiteMol;
                         return CreateVisual;
                     }(Transform.ControllerBase));
                     Molecule.CreateVisual = CreateVisual;
+                    var CreateLabels = (function (_super) {
+                        __extends(CreateLabels, _super);
+                        function CreateLabels() {
+                            return _super !== null && _super.apply(this, arguments) || this;
+                        }
+                        CreateLabels.prototype.renderControls = function () {
+                            var _this = this;
+                            var style = this.controller.latestState.params.style;
+                            var select = Plugin.React.createElement(Plugin.Controls.OptionsGroup, { options: LiteMol.Bootstrap.Utils.Molecule.Labels3DKinds, caption: function (k) { return LiteMol.Bootstrap.Utils.Molecule.Labels3DKindLabels[k]; }, current: style.params.kind, onChange: function (o) { return _this.controller.updateStyleParams({ kind: o }); }, label: 'Kind' });
+                            var showOptions = this.getPersistentState('showOptions', false);
+                            return Plugin.React.createElement("div", null,
+                                Plugin.React.createElement(Plugin.Controls.ExpandableGroup, { select: select, expander: Plugin.React.createElement(Plugin.Controls.ControlGroupExpander, { isExpanded: showOptions, onChange: function (e) { return _this.setPersistentState('showOptions', e); } }), options: Transform.Labels.optionsControls(this.controller), isExpanded: showOptions }));
+                        };
+                        return CreateLabels;
+                    }(Transform.ControllerBase));
+                    Molecule.CreateLabels = CreateLabels;
                 })(Molecule = Transform.Molecule || (Transform.Molecule = {}));
             })(Transform = Views.Transform || (Views.Transform = {}));
         })(Views = Plugin.Views || (Plugin.Views = {}));
@@ -78411,6 +78785,37 @@ var LiteMol;
                     }(Transform.ControllerBase));
                     Density.CreateVisualBehaviour = CreateVisualBehaviour;
                 })(Density = Transform.Density || (Transform.Density = {}));
+            })(Transform = Views.Transform || (Views.Transform = {}));
+        })(Views = Plugin.Views || (Plugin.Views = {}));
+    })(Plugin = LiteMol.Plugin || (LiteMol.Plugin = {}));
+})(LiteMol || (LiteMol = {}));
+/*
+ * Copyright (c) 2017 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ */
+var LiteMol;
+(function (LiteMol) {
+    var Plugin;
+    (function (Plugin) {
+        var Views;
+        (function (Views) {
+            var Transform;
+            (function (Transform) {
+                var Labels;
+                (function (Labels) {
+                    "use strict";
+                    function optionsControls(controller) {
+                        var style = controller.latestState.params.style;
+                        var colors = style.theme.colors
+                            .map(function (c, n) { return Plugin.React.createElement(Plugin.Controls.ToggleColorPicker, { key: n, label: n === 'Uniform' ? 'Font' : n, color: c, onChange: function (c) { return controller.updateThemeColor(n, c); } }); }).toArray();
+                        return [
+                            Plugin.React.createElement(Plugin.Controls.Slider, { label: 'Size', onChange: function (v) { return controller.updateThemeVariable('sizeFactor', v); }, min: 0.1, max: 10, step: 0.1, value: (style.theme.variables && style.theme.variables.get('sizeFactor')) || 1.0, title: 'Font size.' }),
+                            Plugin.React.createElement(Plugin.Controls.Slider, { label: 'Outline', onChange: function (v) { return controller.updateThemeVariable('outlineWidth', v); }, min: 0.0, max: 0.3, step: 0.001, value: (style.theme.variables && style.theme.variables.get('outlineWidth')) || 0.0, title: 'Font outline.' }),
+                            Plugin.React.createElement(Plugin.Controls.Slider, { label: 'Offset', onChange: function (v) { return controller.updateThemeVariable('zOffset', v); }, min: 0.0, max: 5.0, step: 0.1, value: (style.theme.variables && style.theme.variables.get('zOffset')) || 0.0, title: 'Label offset.' }),
+                            Plugin.React.createElement(Plugin.Controls.Slider, { label: 'Bg. Opacity', onChange: function (v) { return controller.updateThemeVariable('backgroundOpacity', v); }, min: 0.0, max: 1.0, step: 0.01, value: (style.theme.variables && style.theme.variables.get('backgroundOpacity')) || 0.0, title: 'Background opacity.' })
+                        ].concat(colors);
+                    }
+                    Labels.optionsControls = optionsControls;
+                })(Labels = Transform.Labels || (Transform.Labels = {}));
             })(Transform = Views.Transform || (Views.Transform = {}));
         })(Views = Plugin.Views || (Plugin.Views = {}));
     })(Plugin = LiteMol.Plugin || (LiteMol.Plugin = {}));

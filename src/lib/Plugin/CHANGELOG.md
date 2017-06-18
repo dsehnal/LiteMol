@@ -1,4 +1,7 @@
-﻿# 1.3.2
+﻿# 1.3.3
+* Added UI elements for labels.
+
+# 1.3.2
 * Removed the normalize option from parsing CCP4 data.
 
 # 1.3.1

@@ -40,48 +40,32 @@ namespace LiteMol.Bootstrap.Visualization {
         }
     }    
     
-    export namespace Theme {
-        
+    export namespace Theme {        
         export interface Template {
             name: string,
             description?: string,            
             colors?: Immutable.Map<string, LiteMol.Visualization.Color>,
+            variables?: Immutable.Map<string, any>,
             provider: (e: Entity.Any, props?: LiteMol.Visualization.Theme.Props) => LiteMol.Visualization.Theme            
         }
         
         export interface Instance {
             template: Template,
             colors?: Immutable.Map<string, LiteMol.Visualization.Color>,
+            variables?: Immutable.Map<string, any>,
             transparency?: TransparencyDescription,
             interactive?: boolean,
             disableFog?: boolean
         }
         
-        export interface Props {
-            colors?: { [name:string]: LiteMol.Visualization.Color },
-            transparency?: TransparencyDescription,
-            interactive?: boolean
-        }
-        
-        export function mergeProps(theme: Instance, props: Props) {
-            let colors = theme.colors || Immutable.Map<string, LiteMol.Visualization.Color>();
-            if (props.colors) {
-                for (let c of Object.keys(props.colors)) {
-                    colors.set(c, props.colors[c]);
-                }
-            }
-            let ret = Utils.shallowClone(theme);
-            ret.colors = colors;
-            if (props.transparency) ret.transparency = props.transparency;
-            if (props.interactive !== void 0) ret.interactive = props.interactive;
-            return ret;
-        }
-        
         export function getProps(theme: Instance): LiteMol.Visualization.Theme.Props {
-            let colors = Core.Utils.FastMap.create<string, LiteMol.Visualization.Color>();
+            const colors = Core.Utils.FastMap.create<string, LiteMol.Visualization.Color>();
             if (theme.colors) theme.colors.forEach((c,n) => colors.set(n!, c!));
+            const variables = Core.Utils.FastMap.create<string, any>();
+            if (theme.variables) theme.variables.forEach((c,n) => variables.set(n!, c!));
             return {
                 colors,
+                variables,
                 transparency: theme.transparency,
                 interactive: theme.interactive,
                 disableFog: theme.disableFog,

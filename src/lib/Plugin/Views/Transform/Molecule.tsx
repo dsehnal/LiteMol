@@ -223,4 +223,22 @@ namespace LiteMol.Plugin.Views.Transform.Molecule {
             </div>
         }        
     }
+
+    export class CreateLabels extends Transform.ControllerBase<Bootstrap.Components.Transform.MoleculeLabels> {        
+        renderControls() {
+            const style = this.controller.latestState.params.style;
+            const select = <Controls.OptionsGroup options={Bootstrap.Utils.Molecule.Labels3DKinds} 
+                caption={(k: string) => Bootstrap.Utils.Molecule.Labels3DKindLabels[k]} current={style.params.kind}
+                onChange={(o) => this.controller.updateStyleParams({ kind: o }) } label='Kind' />
+            const showOptions = this.getPersistentState('showOptions', false);
+
+            return <div>
+                <Controls.ExpandableGroup       
+                    select={select}
+                    expander={<Controls.ControlGroupExpander isExpanded={showOptions} onChange={e => this.setPersistentState('showOptions', e) }  />}
+                    options={Labels.optionsControls(this.controller)}
+                    isExpanded={showOptions} />
+            </div>;
+        }
+    }
 }

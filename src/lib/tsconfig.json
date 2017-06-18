@@ -159,6 +159,9 @@
     "./Bootstrap/Visualization/Molecule/Theme.ts", // must go before the rest in /Molecule?
     "./Bootstrap/Visualization/Molecule/Styles.ts",
     "./Bootstrap/Visualization/Molecule/Model.ts",    
+
+    "./Bootstrap/Visualization/Labels/Model.ts",    
+    "./Bootstrap/Visualization/Labels/Styles.ts",
     
     "./Bootstrap/Visualization/Density/Model.ts",    
     "./Bootstrap/Visualization/Density/Styles.ts", // last because it references others
@@ -170,6 +173,7 @@
     "./Bootstrap/Entity/Cache.ts",    
     "./Bootstrap/Entity/Transformer/Basic.ts", // basic goes 1st
     "./Bootstrap/Entity/Transformer/Molecule.ts",
+    "./Bootstrap/Entity/Transformer/Labels.ts",
     "./Bootstrap/Entity/Transformer/Data.ts",
     "./Bootstrap/Entity/Transformer/Density.ts",
     "./Bootstrap/Entity/Transformer/CoordinateStreaming.ts",
@@ -236,7 +240,8 @@
     "./Plugin/Views/Transform/View.tsx",    
     "./Plugin/Views/Transform/Data.tsx",    
     "./Plugin/Views/Transform/Molecule.tsx",
-    "./Plugin/Views/Transform/Density.tsx",        
+    "./Plugin/Views/Transform/Density.tsx",
+    "./Plugin/Views/Transform/Labels.tsx",        
     
     // VIEW -> CONTEXT
     "./Plugin/Views/Context/Log.tsx",

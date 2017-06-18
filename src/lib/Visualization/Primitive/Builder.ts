@@ -8,32 +8,49 @@ namespace LiteMol.Visualization.Primitive {
     import LA = Core.Geometry.LinearAlgebra
     import Surface = Core.Geometry.Surface
 
-    export type ShapeType = 'Sphere' | 'Surface'
-    export type Shape = 
-          { type: 'Sphere', center: LA.ObjectVec3, radius: number, id: number, tessalation?:number }
-        | { type: 'Surface', surface: Surface, id: number }
+    export type Shape = Shape.Sphere | Shape.Tube | Shape.Surface //  | Shape.Arrow
+
+    export namespace Shape {
+        export type Sphere = { type: 'Sphere', center: LA.ObjectVec3, radius: number, id: number, tessalation?:number }
+        export type Tube = { type: 'Tube', a: LA.ObjectVec3, b: LA.ObjectVec3, radius: number, id: number, tessalation?:number }
+        //export type Arrow = { type: 'Arrow', a: LA.ObjectVec3, b: LA.ObjectVec3, radius: number, id: number, slices?: number, segments?:number }
+        export type Surface = { type: 'Surface', surface: Core.Geometry.Surface, id: number }
+    }
 
     function buildSurface(shapes: Shape[]): Core.Computation<Surface> {
         return Core.computation<Surface>(async ctx => {
             await ctx.updateProgress('Building surface...')
-            let uniqueSpheres = Core.Utils.FastMap.create<number, Surface>();
-            for (let s of shapes) {
-                if (s.type !== 'Sphere' || uniqueSpheres.has(s.tessalation || 0)) continue;
-                uniqueSpheres.set(s.tessalation || 0, createSphereSurface({ x: 0, y: 0, z: 0}, 1, s.tessalation || 0));
+            
+            const uniqueSpheres = Core.Utils.FastMap.create<number, Surface>();
+            const shapeSurfaces: Surface[][] = [];
+
+            for (const s of shapes) {
+                switch (s.type) {
+                    case 'Sphere': 
+                        if (uniqueSpheres.has(s.tessalation || 0)) shapeSurfaces.push([uniqueSpheres.get(s.tessalation || 0)!]);
+                        else {
+                            const sphere = createSphereSurface(s);
+                            uniqueSpheres.set(s.tessalation || 0, sphere);
+                            shapeSurfaces.push([sphere]);
+                        }
+                        break;
+                    case 'Tube': {
+                        const tube = createTubeSurface(s);
+                        shapeSurfaces.push([tube]);
+                        break;
+                    }
+                    case 'Surface': {
+                        shapeSurfaces.push([s.surface])
+                        break;
+                    }
+                }
             }
 
             let size = { vertexCount: 0, triangleCount: 0 };
-            for (let s of shapes) {
-                switch (s.type) { 
-                    case 'Sphere':
-                        let sphere = uniqueSpheres.get(s.tessalation || 0)!;
-                        size.vertexCount += sphere.vertexCount;
-                        size.triangleCount += sphere.triangleCount;
-                        break;
-                    case 'Surface':
-                        size.vertexCount += s.surface.vertexCount;
-                        size.triangleCount += s.surface.triangleCount;
-                        break;
+            for (const s of shapeSurfaces) {
+                for (const g of s) {
+                    size.vertexCount += g.vertexCount;
+                    size.triangleCount += g.triangleCount;
                 }
             }
 
@@ -48,12 +65,13 @@ namespace LiteMol.Visualization.Primitive {
             let transform = new THREE.Matrix4();
             let vs: Float32Array;
 
-            for (let s of shapes) {
-                let surface: Surface | undefined = void 0;
+            let shapeIndex = 0;
+            for (const s of shapes) {
+                let surfaces: Surface[] = shapeSurfaces[shapeIndex++];
                 let startVOffset = (vOffset / 3) | 0;
                 switch (s.type) { 
-                    case 'Sphere':
-                        surface = uniqueSpheres.get(s.tessalation || 0)!;
+                    case 'Sphere': {
+                        const surface = surfaces[0];
                         vs = surface.vertices;
                         for (let i = 0, _b = surface.vertexCount * 3; i < _b; i += 3) {
                             v.x = vs[i], v.y = vs[i + 1], v.z = vs[i + 2];
@@ -64,28 +82,40 @@ namespace LiteMol.Visualization.Primitive {
                             vertices[vOffset++] = v.z;
                         }
                         break;
-                    case 'Surface': 
-                        surface = s.surface; 
+                    }
+                    case 'Tube': {
+                        const surface = surfaces[0]; 
+                        vs = surface.vertices;
+                        for (let i = 0, _b = vs.length; i < _b; i++) {
+                            vertices[vOffset++] = vs[i];
+                        }
+                        break;
+                    }
+                    case 'Surface': {
+                        const surface = surfaces[0]; 
                         Surface.computeNormalsImmediate(surface);
                         vs = surface.vertices;
                         for (let i = 0, _b = vs.length; i < _b; i++) {
                             vertices[vOffset++] = vs[i];
                         }
                         break;
+                    }
                 }
 
-                vs = surface!.normals!;
-                for (let i = 0, _b = vs.length; i < _b; i++) {
-                    normals[nOffset++] = vs[i];
-                }
+                for (const surface of surfaces) {
+                    vs = surface!.normals!;
+                    for (let i = 0, _b = vs.length; i < _b; i++) {
+                        normals[nOffset++] = vs[i];
+                    }
 
-                let ts = surface!.triangleIndices!;
-                for (let i = 0, _b = ts.length; i < _b; i++) {
-                    triangles[tOffset++] = startVOffset + ts[i];
-                }
+                    let ts = surface!.triangleIndices!;
+                    for (let i = 0, _b = ts.length; i < _b; i++) {
+                        triangles[tOffset++] = startVOffset + ts[i];
+                    }
 
-                for (let i = 0, _b = surface!.vertexCount; i < _b; i++) {
-                    annotation[aOffset++] = s.id;
+                    for (let i = 0, _b = surface!.vertexCount; i < _b; i++) {
+                        annotation[aOffset++] = s.id;
+                    }
                 }
             }
             

@@ -165,11 +165,20 @@ namespace LiteMol.Bootstrap.Utils.Molecule {
         }
     }
         
-    export function getCentroidAndRadius(m: Structure.Molecule.Model, indices: number[], into: Geometry.LinearAlgebra.ObjectVec3) {
+    export function getCentroidAndRadius(m: Structure.Molecule.Model, indices: number[], into: Geometry.LinearAlgebra.ObjectVec3) {        
         into.x = 0;
         into.y = 0;
         into.z = 0;
         let {x,y,z} = m.positions;
+        
+        if (indices.length === 0) return 0;
+        if (indices.length === 1) {
+            into.x = x[indices[0]];
+            into.y = y[indices[0]];
+            into.z = z[indices[0]];
+            return 0;
+        }
+        
         for (let i of indices) {
             into.x += x[i];
             into.y += y[i];
@@ -186,5 +195,66 @@ namespace LiteMol.Bootstrap.Utils.Molecule {
         }   
         return Math.sqrt(radius);
     }
-    
+
+    export interface Labels3DOptions {
+        kind: 'Residue-Name' | 'Residue-Full-Id' | 'Atom-Name' | 'Atom-Element',
+        labelsOptions: LiteMol.Visualization.Labels.LabelsOptions
+    }
+
+    export const Labels3DKinds: Labels3DOptions['kind'][] = [ 'Residue-Name', 'Residue-Full-Id', 'Atom-Name', 'Atom-Element' ]
+
+    export const Labels3DKindLabels: { [kind: string]: string } = {
+        'Residue-Name': 'Residue Name',
+        'Residue-Full-Id': 'Residue Full Id',
+        'Atom-Name': 'Atom Name',
+        'Atom-Element': 'Atom Element'
+    }
+
+    function labelProvider(options: Labels3DOptions, model: Core.Structure.Molecule.Model) {
+        const { residueIndex, chainIndex, name, elementSymbol } = model.data.atoms;
+        const { name: residueName, seqNumber } = model.data.residues;
+        const { authAsymId } = model.data.chains;
+        switch (options.kind) {
+            case 'Residue-Name': return (i: number) => residueName[residueIndex[i]];
+            case 'Residue-Full-Id': return (i: number) => {
+                const r = residueIndex[i], c = chainIndex[i];
+                return `${residueName[r]} ${authAsymId[c]} ${seqNumber[r]}`;
+            };
+            case 'Atom-Name': return (i: number) => name[i];
+            case 'Atom-Element': return (i: number) => elementSymbol[i];
+            default: return (i: number) => `${i}`;
+        }
+    }
+
+    export function create3DLabelsParams(entity: Entity.Any, options: Labels3DOptions, theme: LiteMol.Visualization.Theme): LiteMol.Visualization.Labels.LabelsParams {
+        const ctx = findQueryContext(entity);
+        const query = options.kind.indexOf('Residue') >= 0 ? Core.Structure.Query.residues() : Core.Structure.Query.allAtoms();
+        const fs = query.compile()(ctx);
+        const label = labelProvider(options, ctx.structure);
+
+
+        const positions = Core.Utils.DataTable.ofDefinition(Core.Structure.Tables.Positions, fs.length);
+        const { x, y, z } = positions;
+        const labels: string[] = [];
+        const sizes = new Float32Array(fs.length) as any as number[];
+        const center = { x: 0.1, y: 0.1, z: 0.1 };
+
+        let i = 0;
+        for (const f of fs.fragments) {
+            const l = label(f.atomIndices[0]);
+            getCentroidAndRadius(ctx.structure, f.atomIndices, center);
+            x[i] = center.x; y[i] = center.y; z[i] = center.z;
+            labels[labels.length] = l;
+            sizes[i] = 1.0;
+            i++;
+        }
+
+        return {
+            labels,
+            options: options.labelsOptions,
+            positions,
+            sizes,
+            theme
+        };
+    }    
 }

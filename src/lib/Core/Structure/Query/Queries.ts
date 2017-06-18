@@ -54,6 +54,7 @@ namespace LiteMol.Core.Structure.Query {
     export interface AsymIdSchema extends EntityIdSchema { asymId?: string; authAsymId?: string; }
     export interface ResidueIdSchema extends AsymIdSchema { name?: string; seqNumber?: number; authName?: string; authSeqNumber?: number; insCode?: string | null; }
     
+    export function allAtoms() { return Builder.build(() => Compiler.compileAllAtoms()); }
     export function atomsByElement(...elements: string[]) { return Builder.build(() => Compiler.compileAtoms(elements, m => m.data.atoms.elementSymbol)); }
     export function atomsByName(...names: string[]) { return Builder.build(() => Compiler.compileAtoms(names, m => m.data.atoms.name)); }
     export function atomsById(...ids: number[]) { return Builder.build(() => Compiler.compileAtoms(ids, m => m.data.atoms.id)); }  
@@ -155,6 +156,18 @@ namespace LiteMol.Core.Structure.Query {
                 
             };
         }
+
+        export function compileAllAtoms() {
+            return (ctx: Context) => {
+                const fragments = new FragmentSeqBuilder(ctx);
+                
+                for (let i = 0, _b = ctx.structure.data.atoms.count; i < _b; i++) {
+                    if (ctx.hasAtom(i)) fragments.add(Fragment.ofIndex(ctx, i));
+                }
+
+                return fragments.getSeq();
+            };
+        } 
 
         export function compileAtoms(elements: string[] | number[], sel: (model: Structure.Molecule.Model) => string[] | number[]) {
             return (ctx: Context) => {

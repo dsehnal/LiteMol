@@ -377,4 +377,36 @@ namespace LiteMol.Bootstrap.Entity.Transformer.Molecule {
         }
         return g;
     });
+
+    export interface CreateLabelsParams {
+        style: Visualization.Labels.Style<Utils.Molecule.Labels3DOptions>
+    }
+
+    export const CreateLabels = Tree.Transformer.create<Entity.Molecule.Model | Entity.Molecule.Selection | Entity.Molecule.Visual, Entity.Visual.Labels, CreateLabelsParams>({
+        id: 'molecule-create-labels',
+        name: 'Labels',
+        description: 'Create a labels for a molecule or a selection.',
+        from: [Entity.Molecule.Model, Entity.Molecule.Selection, Entity.Molecule.Visual],
+        to: [Entity.Visual.Labels],
+        isUpdatable: true,
+        defaultParams: ctx => ({ style: Visualization.Labels.Default.MoleculeLabels }),
+        validateParams: p => !p.style ? ['Specify Style'] : void 0,
+        customController: (ctx, t, e) => new Components.Transform.MoleculeLabels(ctx, t, e) as Components.Transform.Controller<any>
+    }, (ctx, a, t) => {
+        let params = t.params;
+        return Visualization.Labels.createMoleculeLabels(a, t, params.style).setReportTime(false);
+    }, (ctx, b, t) => {
+        const oldParams = b.transform.params;
+        const newParams = t.params;
+
+        if (!Visualization.Labels.Style.moleculeHasOnlyThemeChanged(oldParams.style, newParams.style)) return void 0;
+
+        const model = b.props.model;
+        const a = Tree.Node.findClosestNodeOfType(b, [Entity.Molecule.Model, Entity.Molecule.Selection, Entity.Molecule.Visual]);
+        if (!a) return void 0;
+        const theme = newParams.style.theme.template.provider(a, Visualization.Theme.getProps(newParams.style.theme));
+        model.applyTheme(theme);
+        Entity.nodeUpdated(b);
+        return Task.resolve(t.transformer.info.name, 'Background', Tree.Node.Null);
+    });
 }          

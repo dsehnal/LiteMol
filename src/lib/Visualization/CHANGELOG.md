@@ -1,4 +1,8 @@
-﻿# 1.6.7
+﻿# 1.7.0
+* Added support for labels.
+* Added support for additional primitives.
+
+# 1.6.7
 * Ability to customize maximum H bond length.
 
 # 1.6.6

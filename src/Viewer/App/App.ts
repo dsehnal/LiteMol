@@ -16,7 +16,7 @@ namespace LiteMol.Viewer {
     });
     plugin.context.logger.message(`LiteMol Viewer ${VERSION.number}`);  
 
-    let theme = getParam('theme', '[a-z]+').toLowerCase(); 
+    let theme = getParam('theme', '[a-z]+').toLowerCase() || 'light'; 
     if (theme === 'light') {
         plugin.setViewportBackground('#fff');
     }

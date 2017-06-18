@@ -1,4 +1,7 @@
-﻿# 1.3.6
+﻿# 1.4.0
+* Added support for labels.
+
+# 1.3.6
 * Fixed rainbow color theme to work correctly on out-of-order chains and entities.
 
 # 1.3.5

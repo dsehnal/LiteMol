@@ -1,5 +1,5 @@
 
-[![Version](https://img.shields.io/badge/Version-2.2.1_preview-blue.svg?style=flat)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/Version-2.3.0_preview-blue.svg?style=flat)](CHANGELOG.md)
 [![Latest Release](https://img.shields.io/badge/Latest%20Release-1.0-blue.svg?style=flat)](https://github.com/dsehnal/LiteMol/releases/tag/v1.0)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg?style=flat)](https://github.com/dsehnal/LiteMol/blob/master/LICENSE)
 
@@ -135,7 +135,7 @@ Migration summary can be found [here](docs/migrating/1-to-2.md).
 Short term goals 
 ---------
 
-These features are planned to be introduced during the first half of 2017. 
+These features are planned to be introduced during 2017.
 
 **Core features**
 * Improving extension support: 
@@ -144,8 +144,6 @@ These features are planned to be introduced during the first half of 2017.
   * _Will require breaking changes._
 * Support for saving and restoring the state of the application.
   * _Will require breaking changes._
-* More visual primitives (spheres, cylinders, arrows, etc.). This is partially implemented.
-* Support for labels in the 3D scene.  
 * Improved internal data representation of molecules.
   * _Will require breaking changes._
 

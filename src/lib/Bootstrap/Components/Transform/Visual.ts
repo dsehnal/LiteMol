@@ -8,26 +8,26 @@ namespace LiteMol.Bootstrap.Components.Transform {
  
     import Vis = Bootstrap.Visualization;
     
-    export class MoleculeVisual extends Controller<Bootstrap.Entity.Transformer.Molecule.CreateVisualParams> {          
+    export class VisualStyle<Params extends { style: Bootstrap.Visualization.Style<any, any> }> extends Controller<Params> {          
         updateTemplate(key: string, all: Map<string, Bootstrap.Visualization.Style.Any>) {                                                
             let s = all.get(key)!; 
             let latestTheme = this.latestState && this.latestState.params!.style!.theme;                 
             let params = s.params;
             let theme = latestTheme || this.getThemeInstance(s.theme!.template!);
-            let style: Bootstrap.Visualization.Molecule.Style<any> = { type: s.type, params, theme };
-            this.autoUpdateParams({ style });            
+            let style: Bootstrap.Visualization.Style<any, any> = { type: s.type, params, theme };
+            this.autoUpdateParams({ style } as any);            
         }
         
         updateStyleParams(params: any) {
             let s = Utils.shallowClone(this.latestState.params!.style)!;
             s.params = Utils.merge(s.params, params);            
-            this.autoUpdateParams({ style: s })
+            this.autoUpdateParams({ style: s } as any)
         }   
         
         updateStyleTheme(theme: Partial<Vis.Theme.Instance>) {
             let s = Utils.shallowClone(this.latestState.params!.style)!;
             s.theme = Utils.merge(s.theme, theme);
-            this.autoUpdateParams({ style: s });
+            this.autoUpdateParams({ style: s } as any);
         }
                 
         updateThemeColor(name: string, value: LiteMol.Visualization.Color) {            
@@ -37,6 +37,15 @@ namespace LiteMol.Bootstrap.Components.Transform {
             if (!colors) colors = Immutable.Map<string, LiteMol.Visualization.Color>();            
             colors = colors.set(name, value);
             this.updateStyleTheme({ colors });    
+        }
+
+        updateThemeVariable(name: string, value: any) {            
+            let oldTheme = this.latestState.params!.style!.theme;            
+            if (!oldTheme) return;           
+            let variables = oldTheme.variables;
+            if (!variables) variables = Immutable.Map<string, any>();            
+            variables = variables.set(name, value);
+            this.updateStyleTheme({ variables });
         }
         
         updateThemeTransparency(transparency: LiteMol.Visualization.Theme.Transparency) {
@@ -56,15 +65,27 @@ namespace LiteMol.Bootstrap.Components.Transform {
                         if (map.has(n!)) map.set(n!, c!);
                     });                    
                 });               
+            }  
+            let variables = template.variables;            
+            if (oldTheme.variables && variables) {
+                variables = variables.withMutations(map => {
+                    oldTheme!.variables!.forEach((c, n) => {
+                        if (map.has(n!)) map.set(n!, c!);
+                    });                    
+                });               
             }            
             let transparency = oldTheme.transparency ? oldTheme.transparency : defaultTransparency;            
-            return { template, colors, transparency };
+            return { template, colors, variables, transparency };
         }
         
         updateThemeDefinition(definition: Bootstrap.Visualization.Theme.Template) {            
             this.updateStyleTheme(this.getThemeInstance(definition));
         }       
     }   
+
+    export class MoleculeVisual extends VisualStyle<Bootstrap.Entity.Transformer.Molecule.CreateVisualParams> { }
+    export class MoleculeLabels extends VisualStyle<Bootstrap.Entity.Transformer.Molecule.CreateLabelsParams> { }
+    export class GenericLabels extends VisualStyle<Bootstrap.Entity.Transformer.Labels.CreateParams> { }
         
     export class DensityVisual<T, Styles> extends Controller<T> {    
         private cloneStyle(prop?: Styles) {

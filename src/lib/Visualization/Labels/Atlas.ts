@@ -6,7 +6,7 @@ namespace LiteMol.Visualization.Labels {
     'use strict';
 
     /**
-     * Text atlas adapted from https://github.com/arose/ngl
+     * Adapted from https://github.com/arose/ngl
      * MIT License Copyright (C) 2014+ Alexander Rose
      */
 

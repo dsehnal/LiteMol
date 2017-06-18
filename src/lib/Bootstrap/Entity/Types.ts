@@ -73,8 +73,12 @@ namespace LiteMol.Bootstrap.Entity {
         
         export interface Any extends Entity<Props<any>> { }  
 
-        export interface Surface extends Entity<Props<"Surface"> & { tag: any }> { }
-        export const Surface = create<Props<"Surface"> & { tag: any }>({ name: 'Surface Visual', typeClass: 'Visual', shortName: 'V_S', description: 'A surface visual.' }, { isFocusable: true });
+        export interface Surface extends Entity<Props<'Surface'> & { tag: any }> { }
+        export const Surface = create<Props<'Surface'> & { tag: any }>({ name: 'Surface Visual', typeClass: 'Visual', shortName: 'V_S', description: 'A surface visual.' }, { isFocusable: true });
+
+        export interface Labels extends Entity<Visual.Props<'Labels'>> { }
+        export const Labels = create<Visual.Props<'Labels'>>({ name: 'Labels Visual', typeClass: 'Visual', shortName: 'V_L', description: '3D labels.' }, { isFocusable: false });
+
     }
     
     /* Molecule */

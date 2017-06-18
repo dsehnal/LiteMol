@@ -14140,6 +14140,7 @@ declare namespace LiteMol.Core.Structure.Query {
         authSeqNumber?: number;
         insCode?: string | null;
     }
+    function allAtoms(): Builder;
     function atomsByElement(...elements: string[]): Builder;
     function atomsByName(...names: string[]): Builder;
     function atomsById(...ids: number[]): Builder;
@@ -14187,6 +14188,7 @@ declare namespace LiteMol.Core.Structure.Query {
      */
     namespace Compiler {
         function compileEverything(): (ctx: Context) => FragmentSeq;
+        function compileAllAtoms(): (ctx: Context) => FragmentSeq;
         function compileAtoms(elements: string[] | number[], sel: (model: Structure.Molecule.Model) => string[] | number[]): (ctx: Context) => FragmentSeq;
         function compileAtomIndices(indices: number[]): (ctx: Context) => FragmentSeq;
         function compileFromIndices(complement: boolean, indices: number[], tableProvider: (molecule: Structure.Molecule.Model) => {
@@ -14841,7 +14843,7 @@ declare namespace LiteMol.Visualization.Lines {
 }
 declare namespace LiteMol.Visualization.Labels {
     /**
-     * Text atlas adapted from https://github.com/arose/ngl
+     * Adapted from https://github.com/arose/ngl
      * MIT License Copyright (C) 2014+ Alexander Rose
      */
     interface TextAtlasParams {
@@ -14880,6 +14882,10 @@ declare namespace LiteMol.Visualization.Labels {
     }
 }
 declare namespace LiteMol.Visualization.Labels.Geometry {
+    /**
+     * Adapted from https://github.com/arose/ngl
+     * MIT License Copyright (C) 2014+ Alexander Rose
+     */
     function create(params: LabelsParams): {
         geometry: THREE.BufferGeometry;
         texture: THREE.Texture;
@@ -14887,6 +14893,10 @@ declare namespace LiteMol.Visualization.Labels.Geometry {
     };
 }
 declare namespace LiteMol.Visualization.Labels.Material {
+    /**
+     * Adapted from https://github.com/arose/ngl
+     * MIT License Copyright (C) 2014+ Alexander Rose
+     */
     const VERTEX_SHADER: string;
     const FRAGMENT_SHADER: string;
 }
@@ -14901,7 +14911,6 @@ declare namespace LiteMol.Visualization.Labels {
         fontWeight: "normal" | "bold";
         useSDF: boolean;
         attachment: "bottom-left" | "bottom-center" | "bottom-right" | "middle-left" | "middle-center" | "middle-right" | "top-left" | "top-center" | "top-right";
-        showBackground: boolean;
         backgroundMargin: number;
     }
     const DefaultLabelsOptions: LabelsOptions;
@@ -15183,23 +15192,35 @@ declare namespace LiteMol.Visualization.Molecule.Colors {
     const DefaultPallete: Color[];
 }
 declare namespace LiteMol.Visualization.Primitive {
-    function createSphereSurface(center: Core.Geometry.LinearAlgebra.ObjectVec3, radius: number, tessalation: number): Core.Geometry.Surface;
+    function createSphereSurface(sphere: Shape.Sphere): Core.Geometry.Surface;
+    function createTubeSurface(tube: Shape.Tube): Core.Geometry.Surface;
 }
 declare namespace LiteMol.Visualization.Primitive {
     import LA = Core.Geometry.LinearAlgebra;
     import Surface = Core.Geometry.Surface;
-    type ShapeType = 'Sphere' | 'Surface';
-    type Shape = {
-        type: 'Sphere';
-        center: LA.ObjectVec3;
-        radius: number;
-        id: number;
-        tessalation?: number;
-    } | {
-        type: 'Surface';
-        surface: Surface;
-        id: number;
-    };
+    type Shape = Shape.Sphere | Shape.Tube | Shape.Surface;
+    namespace Shape {
+        type Sphere = {
+            type: 'Sphere';
+            center: LA.ObjectVec3;
+            radius: number;
+            id: number;
+            tessalation?: number;
+        };
+        type Tube = {
+            type: 'Tube';
+            a: LA.ObjectVec3;
+            b: LA.ObjectVec3;
+            radius: number;
+            id: number;
+            tessalation?: number;
+        };
+        type Surface = {
+            type: 'Surface';
+            surface: Core.Geometry.Surface;
+            id: number;
+        };
+    }
     class Builder {
         private shapes;
         add(shape: Shape): this;
@@ -15868,23 +15889,17 @@ declare namespace LiteMol.Bootstrap.Visualization {
             name: string;
             description?: string;
             colors?: Immutable.Map<string, LiteMol.Visualization.Color>;
+            variables?: Immutable.Map<string, any>;
             provider: (e: Entity.Any, props?: LiteMol.Visualization.Theme.Props) => LiteMol.Visualization.Theme;
         }
         interface Instance {
             template: Template;
             colors?: Immutable.Map<string, LiteMol.Visualization.Color>;
+            variables?: Immutable.Map<string, any>;
             transparency?: TransparencyDescription;
             interactive?: boolean;
             disableFog?: boolean;
         }
-        interface Props {
-            colors?: {
-                [name: string]: LiteMol.Visualization.Color;
-            };
-            transparency?: TransparencyDescription;
-            interactive?: boolean;
-        }
-        function mergeProps(theme: Instance, props: Props): Instance;
         function getProps(theme: Instance): LiteMol.Visualization.Theme.Props;
     }
 }
@@ -15953,6 +15968,27 @@ declare namespace LiteMol.Bootstrap.Visualization.Molecule {
 }
 declare namespace LiteMol.Bootstrap.Visualization.Molecule {
     function create(source: Source, transform: Tree.Transform<Entity.Molecule.Model | Entity.Molecule.Selection, Entity.Molecule.Visual, any>, style: Style<any>): Task<Entity.Molecule.Visual>;
+}
+declare namespace LiteMol.Bootstrap.Visualization.Labels {
+    function createMoleculeLabels(parent: Entity.Any, transform: Tree.Transform<Entity.Any, Entity.Visual.Labels, any>, style: Style<Utils.Molecule.Labels3DOptions>): Task<Entity.Visual.Labels>;
+    function createGenericLabels(parent: Entity.Any, transform: Tree.Transform<Entity.Any, Entity.Visual.Labels, any>, params: Bootstrap.Entity.Transformer.Labels.CreateParams): Task<Entity.Visual.Labels>;
+}
+declare namespace LiteMol.Bootstrap.Visualization.Labels {
+    type Style<P> = Visualization.Style<'Labels', P>;
+    namespace Style {
+        function moleculeHasOnlyThemeChanged(oldS: Style<Utils.Molecule.Labels3DOptions>, newS: Style<Utils.Molecule.Labels3DOptions>): boolean;
+        function createMoleculeStyle(params: {
+            kind: Utils.Molecule.Labels3DOptions['kind'];
+            labelsOptions?: LiteMol.Visualization.Labels.LabelsOptions;
+            theme?: Theme.Instance;
+        }): Style<Utils.Molecule.Labels3DOptions>;
+    }
+    namespace Default {
+        import Vis = LiteMol.Visualization;
+        const Theme: Theme.Template;
+        const MoleculeLabels: Style<Utils.Molecule.Labels3DOptions>;
+        const GenericLabels: Style<Vis.Labels.LabelsOptions>;
+    }
 }
 declare namespace LiteMol.Bootstrap.Visualization.Density {
     function create(parent: Entity.Density.Data, transform: Tree.Transform<Entity.Density.Data, Entity.Density.Visual, any>, style: Style): Task<Entity.Density.Visual>;
@@ -16113,13 +16149,16 @@ declare namespace LiteMol.Bootstrap.Entity {
         }
         interface Any extends Entity<Props<any>> {
         }
-        interface Surface extends Entity<Props<"Surface"> & {
+        interface Surface extends Entity<Props<'Surface'> & {
             tag: any;
         }> {
         }
         const Surface: Type<Props<"Surface"> & {
             tag: any;
         }>;
+        interface Labels extends Entity<Visual.Props<'Labels'>> {
+        }
+        const Labels: Type<Props<"Labels">>;
     }
     namespace Molecule {
         interface Molecule extends Entity<{
@@ -16274,6 +16313,20 @@ declare namespace LiteMol.Bootstrap.Entity.Transformer.Molecule {
         waterRef?: string;
     }
     const CreateMacromoleculeVisual: Tree.Transformer<Entity.Molecule.Model, Action, CreateMacromoleculeVisualParams>;
+    interface CreateLabelsParams {
+        style: Visualization.Labels.Style<Utils.Molecule.Labels3DOptions>;
+    }
+    const CreateLabels: Tree.Transformer<Entity.Molecule.Model | Entity.Molecule.Selection | Entity.Molecule.Visual, Visual.Labels, CreateLabelsParams>;
+}
+declare namespace LiteMol.Bootstrap.Entity.Transformer.Labels {
+    interface CreateParams {
+        positions: Core.Structure.PositionTable;
+        sizes: number[];
+        labels: string[];
+        options: LiteMol.Visualization.Labels.LabelsOptions;
+        style: Visualization.Labels.Style<LiteMol.Visualization.Labels.LabelsOptions>;
+    }
+    const Create: Tree.Transformer<Root, Visual.Labels, CreateParams>;
 }
 declare namespace LiteMol.Bootstrap.Entity.Transformer.Data {
     interface DownloadParams {
@@ -16400,6 +16453,15 @@ declare namespace LiteMol.Bootstrap.Utils.Molecule {
         constructor(model: LiteMol.Core.Structure.Molecule.Model);
     }
     function getCentroidAndRadius(m: Structure.Molecule.Model, indices: number[], into: Geometry.LinearAlgebra.ObjectVec3): number;
+    interface Labels3DOptions {
+        kind: 'Residue-Name' | 'Residue-Full-Id' | 'Atom-Name' | 'Atom-Element';
+        labelsOptions: LiteMol.Visualization.Labels.LabelsOptions;
+    }
+    const Labels3DKinds: Labels3DOptions['kind'][];
+    const Labels3DKindLabels: {
+        [kind: string]: string;
+    };
+    function create3DLabelsParams(entity: Entity.Any, options: Labels3DOptions, theme: LiteMol.Visualization.Theme): LiteMol.Visualization.Labels.LabelsParams;
 }
 declare namespace LiteMol.Bootstrap.Behaviour {
     class Streams {
@@ -16579,14 +16641,23 @@ declare namespace LiteMol.Bootstrap.Components.Transform {
 }
 declare namespace LiteMol.Bootstrap.Components.Transform {
     import Vis = Bootstrap.Visualization;
-    class MoleculeVisual extends Controller<Bootstrap.Entity.Transformer.Molecule.CreateVisualParams> {
+    class VisualStyle<Params extends {
+        style: Bootstrap.Visualization.Style<any, any>;
+    }> extends Controller<Params> {
         updateTemplate(key: string, all: Map<string, Bootstrap.Visualization.Style.Any>): void;
         updateStyleParams(params: any): void;
         updateStyleTheme(theme: Partial<Vis.Theme.Instance>): void;
         updateThemeColor(name: string, value: LiteMol.Visualization.Color): void;
+        updateThemeVariable(name: string, value: any): void;
         updateThemeTransparency(transparency: LiteMol.Visualization.Theme.Transparency): void;
         private getThemeInstance(template);
         updateThemeDefinition(definition: Bootstrap.Visualization.Theme.Template): void;
+    }
+    class MoleculeVisual extends VisualStyle<Bootstrap.Entity.Transformer.Molecule.CreateVisualParams> {
+    }
+    class MoleculeLabels extends VisualStyle<Bootstrap.Entity.Transformer.Molecule.CreateLabelsParams> {
+    }
+    class GenericLabels extends VisualStyle<Bootstrap.Entity.Transformer.Labels.CreateParams> {
     }
     class DensityVisual<T, Styles> extends Controller<T> {
         private cloneStyle(prop?);
@@ -17144,6 +17215,9 @@ declare namespace LiteMol.Plugin.Views.Transform.Molecule {
         private createColors();
         protected renderControls(): JSX.Element;
     }
+    class CreateLabels extends Transform.ControllerBase<Bootstrap.Components.Transform.MoleculeLabels> {
+        renderControls(): JSX.Element;
+    }
 }
 declare namespace LiteMol.Plugin.Views.Transform.Density {
     import Transformer = Bootstrap.Entity.Transformer;
@@ -17161,6 +17235,9 @@ declare namespace LiteMol.Plugin.Views.Transform.Density {
         private show();
         protected renderControls(): JSX.Element;
     }
+}
+declare namespace LiteMol.Plugin.Views.Transform.Labels {
+    function optionsControls(controller: Bootstrap.Components.Transform.MoleculeLabels): JSX.Element[];
 }
 declare namespace LiteMol.Plugin.Views.Context {
     class Log extends View<Bootstrap.Components.Context.Log, {}, {}> {

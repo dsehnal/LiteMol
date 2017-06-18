@@ -75,6 +75,7 @@ var ExampleNames = [
     'BinaryCIFInspect',
     'Transforms',
     'Channels',
+    'PrimitivesAndLabels',
     'AngularExample'
 ];
 

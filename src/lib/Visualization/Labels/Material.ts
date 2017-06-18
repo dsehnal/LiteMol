@@ -14,9 +14,9 @@ namespace LiteMol.Visualization.Labels.Material {
                     "xOffset": { type: "f", value: 0 },
                     "yOffset": { type: "f", value: 0 },
                     "zOffset": { type: "f", value: 0 },
-                    "showBorder": { type: "f", value: 0.0 },
-                    "borderWidth": { type: "f", value: 5.0 },
-                    "borderColor": { type: "v3", value: new THREE.Vector3(0, 0, 0) },
+                    "sizeFactor": { type: "f", value: 1.0 },
+                    "outlineWidth": { type: "f", value: 0.0 },
+                    "outlineColor": { type: "v3", value: new THREE.Vector3(0, 0, 0) },
                     "backgroundColor": { type: "v3", value: new THREE.Vector3(0, 0, 0) },
                     "backgroundOpacity": { type: "f", value: 0.5 },
                 }

@@ -5,6 +5,11 @@
 namespace LiteMol.Visualization.Labels.Geometry {
     'use strict';
 
+    /**
+     * Adapted from https://github.com/arose/ngl
+     * MIT License Copyright (C) 2014+ Alexander Rose
+     */
+
     export function create(params: LabelsParams) {
         const state = initState(params);
         calcVertices(state);
@@ -49,7 +54,7 @@ namespace LiteMol.Visualization.Labels.Geometry {
             outline: options.useSDF ? 5 : 0
         });
 
-        const quadCount = charCount + (options.showBackground ? params.labels.length : 0)
+        const quadCount = charCount + params.labels.length /* bg */;
 
         return {
             positions: params.positions,
@@ -70,14 +75,12 @@ namespace LiteMol.Visualization.Labels.Geometry {
         const text = state.labels;
         const { x, y, z } = state.positions;
         const { vertices, size, inputSizes } = state;
-        const { showBackground } = state.options;
 
         let iCharAll = 0;
 
         for (let v = 0; v < text.length; ++v) {
             const txt = text[v];
-            let nChar = txt.length;
-            if (showBackground) nChar += 1;
+            let nChar = txt.length + 1 /* bg */;
 
             for (let iChar = 0; iChar < nChar; ++iChar, ++iCharAll) {
                 for (let m = 0; m < 4; m++) {
@@ -133,23 +136,21 @@ namespace LiteMol.Visualization.Labels.Geometry {
             xShift += outline;
             yShift += outline;
 
-            // background
-            if (state.options.showBackground) {
-                i = iCharAll * 2 * 4;
-                inputMapping[i + 0] = -lineHeight / 6 - xShift - margin;  // top left
-                inputMapping[i + 1] = lineHeight - yShift + margin;
-                inputMapping[i + 2] = -lineHeight / 6 - xShift - margin;  // bottom left
-                inputMapping[i + 3] = 0 - 1.2 * yShift - margin;
-                inputMapping[i + 4] = xadvance + lineHeight / 6 - xShift + 2 * outline + margin;  // top right
-                inputMapping[i + 5] = lineHeight - yShift + margin;
-                inputMapping[i + 6] = xadvance + lineHeight / 6 - xShift + 2 * outline + margin;  // bottom right
-                inputMapping[i + 7] = 0 - 1.2 * yShift - margin;
-                inputTexCoord[i + 0] = 10;
-                inputTexCoord[i + 2] = 10;
-                inputTexCoord[i + 4] = 10;
-                inputTexCoord[i + 6] = 10;
-                iCharAll += 1;
-            }
+            // background            
+            i = iCharAll * 2 * 4;
+            inputMapping[i + 0] = -lineHeight / 6 - xShift - margin;  // top left
+            inputMapping[i + 1] = lineHeight - yShift + margin;
+            inputMapping[i + 2] = -lineHeight / 6 - xShift - margin;  // bottom left
+            inputMapping[i + 3] = 0 - 1.2 * yShift - margin;
+            inputMapping[i + 4] = xadvance + lineHeight / 6 - xShift + 2 * outline + margin;  // top right
+            inputMapping[i + 5] = lineHeight - yShift + margin;
+            inputMapping[i + 6] = xadvance + lineHeight / 6 - xShift + 2 * outline + margin;  // bottom right
+            inputMapping[i + 7] = 0 - 1.2 * yShift - margin;
+            inputTexCoord[i + 0] = 10;
+            inputTexCoord[i + 2] = 10;
+            inputTexCoord[i + 4] = 10;
+            inputTexCoord[i + 6] = 10;
+            iCharAll += 1;
 
             xadvance = 0;
 

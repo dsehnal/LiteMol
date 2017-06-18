@@ -38,7 +38,7 @@ namespace LiteMol.Bootstrap.Visualization.Density {
         }): Style  {
             let colors = Default.Theme.colors!.set('Uniform', params.color);
             return <Style>{ 
-                type: {},
+                type: 'Density',
                 taskType: params.taskType,
                 params: { isoValue: params.isoValue, isoValueType: params.isoValueType, smoothing: 1, isWireframe: !!params.isWireframe }, 
                 theme: { template: Default.Theme, colors, transparency: params.transparency ? params.transparency : Default.Transparency, interactive: false, disableFog: !!params.disableFog }

@@ -11185,7 +11185,7 @@ var LiteMol;
 (function (LiteMol) {
     var Core;
     (function (Core) {
-        Core.VERSION = { number: "3.1.3", date: "May 5 2017" };
+        Core.VERSION = { number: "3.1.4", date: "June 18 2017" };
     })(Core = LiteMol.Core || (LiteMol.Core = {}));
 })(LiteMol || (LiteMol = {}));
 /*
@@ -18952,6 +18952,8 @@ var LiteMol;
                     }
                     Builder.toQuery = toQuery;
                 })(Builder = Query.Builder || (Query.Builder = {}));
+                function allAtoms() { return Builder.build(function () { return Compiler.compileAllAtoms(); }); }
+                Query.allAtoms = allAtoms;
                 function atomsByElement() {
                     var elements = [];
                     for (var _i = 0; _i < arguments.length; _i++) {
@@ -19138,6 +19140,17 @@ var LiteMol;
                         };
                     }
                     Compiler.compileEverything = compileEverything;
+                    function compileAllAtoms() {
+                        return function (ctx) {
+                            var fragments = new Query.FragmentSeqBuilder(ctx);
+                            for (var i = 0, _b = ctx.structure.data.atoms.count; i < _b; i++) {
+                                if (ctx.hasAtom(i))
+                                    fragments.add(Query.Fragment.ofIndex(ctx, i));
+                            }
+                            return fragments.getSeq();
+                        };
+                    }
+                    Compiler.compileAllAtoms = compileAllAtoms;
                     function compileAtoms(elements, sel) {
                         return function (ctx) {
                             var set = Core.Utils.FastSet.ofArray(elements), data = sel(ctx.structure), fragments = new Query.FragmentSeqBuilder(ctx);

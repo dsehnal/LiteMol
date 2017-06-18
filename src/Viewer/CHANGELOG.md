@@ -1,3 +1,7 @@
+# 1.5.0
+* Support for labels.
+* Default theme changed to light.
+
 # 1.4.4
 * Updated DensityServer mapping.
 

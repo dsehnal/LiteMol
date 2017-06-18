@@ -4,10 +4,16 @@
 
 namespace LiteMol.Visualization.Labels.Material {
 
+    /**
+     * Adapted from https://github.com/arose/ngl
+     * MIT License Copyright (C) 2014+ Alexander Rose
+     */
+
     export const VERTEX_SHADER = `
 uniform float xOffset;
 uniform float yOffset;
 uniform float zOffset;
+uniform float sizeFactor;
 
 varying vec2 texCoord;
 
@@ -39,7 +45,7 @@ void main(void){
     vec3 pos = position;
     vec4 cameraPos = modelViewMatrix * vec4( pos, 1.0 );
     vec4 cameraCornerPos = vec4( cameraPos.xyz, 1.0 );
-    cameraCornerPos.xy += mapping * inputSize * 0.01 * scale;
+    cameraCornerPos.xy += mapping * inputSize * sizeFactor * 0.01 * scale;
     cameraCornerPos.x += xOffset * scale;
     cameraCornerPos.y += yOffset * scale;
     cameraCornerPos.xyz += normalize( -cameraCornerPos.xyz ) * _zOffset;
@@ -53,9 +59,8 @@ void main(void){
 #extension GL_OES_standard_derivatives : enable
 
 uniform sampler2D fontTexture;
-uniform float showBorder;
-uniform vec3 borderColor;
-uniform float borderWidth;
+uniform vec3 outlineColor;
+uniform float outlineWidth;
 uniform vec3 backgroundColor;
 uniform float backgroundOpacity;
 
@@ -72,13 +77,13 @@ void main(){
     vec4 finalColor;
 
     if( texCoord.x > 1.0 ){
+        if (backgroundOpacity < 0.05) discard;
         finalColor = vec4( backgroundColor, backgroundOpacity );
     }else{
-        // // retrieve signed distance
-        float sdf = texture2D( fontTexture, texCoord ).a;
-        if( showBorder > 0.5 ) sdf += borderWidth;
+        // retrieve signed distance
+        float sdf = texture2D( fontTexture, texCoord ).a + outlineWidth;
 
-        // // perform adaptive anti-aliasing of the edges
+        // perform adaptive anti-aliasing of the edges
         float w = clamp(
             smoothness * ( abs( dFdx( texCoord.x ) ) + abs( dFdy( texCoord.y ) ) ),
             0.0,
@@ -86,14 +91,14 @@ void main(){
         );
         float a = smoothstep( 0.5 - w, 0.5 + w, sdf );
 
-        // // gamma correction for linear attenuation
+        // gamma correction for linear attenuation
         a = pow( a, 1.0 / gamma );
         if( a < 0.2 ) discard;
         //a *= opacity;
 
         vec3 outgoingLight = vColor;
-        if( showBorder > 0.5 && sdf < ( 0.5 + borderWidth ) ){
-            outgoingLight = borderColor;
+        if( outlineWidth > 0.0 && sdf < ( 0.5 + outlineWidth ) ){
+            outgoingLight = outlineColor;
         }
 
         finalColor = vec4( outgoingLight, a );    
@@ -105,12 +110,9 @@ void main(){
     ${THREE.ShaderChunk["fog_fragment"]}
     
     #ifdef USE_FOG
-    //    if (finalColor.a > 0.99) { gl_FragColor = vec4(outgoingLight, (1.0 - fogFactor)); }
-    //    else { gl_FragColor = vec4( outgoingLight.rgb, (1.0 - fogFactor) * finalColor.a ); }
        float alpha = (1.0 - fogFactor) * finalColor.a;
-       if (alpha < 0.2) discard;
+       if (alpha < 0.05) discard;
        gl_FragColor = vec4( outgoingLight.rgb, alpha );
-       //gl_FragColor = finalColor;
     #else
       gl_FragColor = finalColor;
     #endif

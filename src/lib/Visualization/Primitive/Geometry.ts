@@ -5,14 +5,17 @@
 namespace LiteMol.Visualization.Primitive {
     "use strict";
 
-    import LA = Core.Geometry.LinearAlgebra
+    export function createSphereSurface(sphere: Shape.Sphere) {
+        const { tessalation = 0 } = sphere;
+        const geom = new THREE.IcosahedronGeometry(1.0, tessalation);
+        return GeometryHelper.toSurface(geom);
+    }
 
-    export function createSphereSurface(center: Core.Geometry.LinearAlgebra.ObjectVec3, radius: number, tessalation: number) {
-        let geom = new THREE.IcosahedronGeometry(radius, tessalation);
-        let surface = GeometryHelper.toSurface(geom);
-        if (center.x !== 0 || center.y !== 0 || center.z !== 0) {
-            Core.Geometry.Surface.transformImmediate(surface, LA.Matrix4.fromTranslation(LA.Matrix4.empty(), [center.x, center.y, center.z]));
-        }
-        return surface;
+    export function createTubeSurface(tube: Shape.Tube) {
+        const { a, b, tessalation = 4 } = tube;
+        const geom = new THREE.TubeGeometry(
+            new THREE.LineCurve3(new THREE.Vector3(a.x, a.y, a.z), new THREE.Vector3(b.x, b.y, b.z)) as any,
+            2, tube.radius, tessalation);
+        return GeometryHelper.toSurface(geom);
     }
 }

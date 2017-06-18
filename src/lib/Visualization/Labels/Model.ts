@@ -14,7 +14,6 @@ namespace LiteMol.Visualization.Labels {
         attachment: "bottom-left" | "bottom-center" | "bottom-right" 
             | "middle-left" | "middle-center" | "middle-right" 
             | "top-left" | "top-center" | "top-right",
-        showBackground: boolean,
         backgroundMargin: number
     }   
 
@@ -25,7 +24,6 @@ namespace LiteMol.Visualization.Labels {
         fontWeight: 'normal',
         useSDF: true,
         attachment: 'middle-center',
-        showBackground: true,
         backgroundMargin: 1.0
     }
 
@@ -55,8 +53,7 @@ namespace LiteMol.Visualization.Labels {
             let o = 0, t: Color = { r: 0.1, g: 0.1, b: 0.1 };
             let i = 0;
             for (const l of this.labels) {
-                let count = l.length * 4;
-                if (this.options.showBackground) count += 4;
+                let count = l.length * 4 + 4 /* background */;
                 theme.setElementColor(i, t);
                 for (let j = 0; j < count; j++) {
                     color[o++] = t.r;
@@ -74,20 +71,21 @@ namespace LiteMol.Visualization.Labels {
             const backgroundColor = theme.colors.get('Background') || Color.fromHexString('#333333');
             const backgroundOpacity = theme.variables.get('backgroundOpacity') !== void 0 ? theme.variables.get('backgroundOpacity') : 0.5;
 
-            const borderColor = theme.colors.get('Border') || Color.fromHexString('#222222');
-            const borderWidth = theme.variables.get('borderWidth') !== void 0 ? theme.variables.get('borderWidth') : 0.05;
-            const showBorder = theme.variables.get('showBorder') ? 1.0 : 0.0;
+            const outlineColor = theme.colors.get('Outline') || Color.fromHexString('#222222');
+            const outlineWidth = theme.variables.get('outlineWidth') ? +theme.variables.get('outlineWidth') : 0.0;
 
+            const sizeFactor = theme.variables.get('sizeFactor') ? +theme.variables.get('sizeFactor') : 1.0;
+            
             const uniforms = this.material.uniforms;
             uniforms.xOffset.value = theme.variables.get('xOffset') || 0;
             uniforms.yOffset.value = theme.variables.get('yOffset') || 0;
             uniforms.zOffset.value = theme.variables.get('zOffset') || 0;
             uniforms.backgroundColor.value = new THREE.Vector3(backgroundColor.r, backgroundColor.g, backgroundColor.b);
             uniforms.backgroundOpacity.value = backgroundOpacity;
-            uniforms.borderColor.value = new THREE.Vector3(borderColor.r, borderColor.g, borderColor.b);
-            uniforms.borderWidth.value = borderWidth;
-            uniforms.showBorder.value = showBorder;
-            this.material.transparent = this.options.showBackground && backgroundOpacity < 1.0,
+            uniforms.outlineColor.value = new THREE.Vector3(outlineColor.r, outlineColor.g, outlineColor.b);
+            uniforms.outlineWidth.value = outlineWidth;
+            uniforms.sizeFactor.value = sizeFactor;
+            this.material.transparent = backgroundOpacity < 1.0,
             this.material.fog = !theme.disableFog;
             this.material.needsUpdate = true;
         }
@@ -112,7 +110,7 @@ namespace LiteMol.Visualization.Labels {
                 model.radius = geometry.boundingSphere.radius + 4;
                 model.applyTheme(params.theme);
 
-                model.disposeList = [ geometry, texture, model.material ];
+                model.disposeList = [ geometry, model.material ];
 
                 return model;
             });
