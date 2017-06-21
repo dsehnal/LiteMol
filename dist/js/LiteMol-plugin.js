@@ -70670,7 +70670,7 @@ var LiteMol;
 (function (LiteMol) {
     var Bootstrap;
     (function (Bootstrap) {
-        Bootstrap.VERSION = { number: "1.4.0", date: "June 18 2017" };
+        Bootstrap.VERSION = { number: "1.4.1", date: "June 22 2017" };
     })(Bootstrap = LiteMol.Bootstrap || (LiteMol.Bootstrap = {}));
 })(LiteMol || (LiteMol = {}));
 /*
@@ -74459,7 +74459,7 @@ var LiteMol;
                         id: 'molecule-create-selection',
                         name: 'Selection',
                         description: 'Create an atom selection.',
-                        from: [Entity.Molecule.Model, Entity.Molecule.Visual],
+                        from: [Entity.Molecule.Selection, Entity.Molecule.Model, Entity.Molecule.Visual],
                         to: [Entity.Molecule.Selection],
                         defaultParams: function (ctx) { return void 0; },
                     }, function (ctx, a, t) {
@@ -74632,19 +74632,19 @@ var LiteMol;
                         id: 'molecule-create-macromolecule-visual',
                         name: 'Macromolecule Visual',
                         description: 'Create a visual of a molecule that is split into polymer, HET, and water parts.',
-                        from: [Entity.Molecule.Model],
+                        from: [Entity.Molecule.Selection, Entity.Molecule.Model],
                         to: [Entity.Action],
                         validateParams: function (p) { return !p.polymer && !p.het && !p.water ? ['Select at least one component'] : void 0; },
                         defaultParams: function (ctx) { return ({ polymer: true, het: true, water: true }); },
                     }, function (context, a, t) {
                         var g = Bootstrap.Tree.Transform.build().add(a, Transformer.Basic.CreateGroup, { label: 'Group', description: 'Macromolecule' }, { ref: t.params.groupRef });
                         if (t.params.polymer) {
-                            var polymer = g.then(Molecule.CreateSelectionFromQuery, { query: LiteMol.Core.Structure.Query.nonHetPolymer(), name: 'Polymer', silent: true }, { isBinding: true });
-                            polymer.then(Molecule.CreateVisual, { style: Bootstrap.Visualization.Molecule.Default.ForType.get('Cartoons') }, { ref: t.params.polymerRef });
+                            g.then(Molecule.CreateSelectionFromQuery, { query: LiteMol.Core.Structure.Query.nonHetPolymer(), name: 'Polymer', silent: true }, { isBinding: true })
+                                .then(Molecule.CreateVisual, { style: Bootstrap.Visualization.Molecule.Default.ForType.get('Cartoons') }, { ref: t.params.polymerRef });
                         }
                         if (t.params.het) {
-                            var het = g.then(Molecule.CreateSelectionFromQuery, { query: LiteMol.Core.Structure.Query.hetGroups(), name: 'HET', silent: true }, { isBinding: true });
-                            het.then(Molecule.CreateVisual, { style: Bootstrap.Visualization.Molecule.Default.ForType.get('BallsAndSticks') }, { ref: t.params.hetRef });
+                            g.then(Molecule.CreateSelectionFromQuery, { query: LiteMol.Core.Structure.Query.hetGroups(), name: 'HET', silent: true }, { isBinding: true })
+                                .then(Molecule.CreateVisual, { style: Bootstrap.Visualization.Molecule.Default.ForType.get('BallsAndSticks') }, { ref: t.params.hetRef });
                         }
                         if (t.params.water) {
                             var style = {
@@ -74652,8 +74652,8 @@ var LiteMol;
                                 params: { useVDW: false, atomRadius: 0.23, bondRadius: 0.09, detail: 'Automatic' },
                                 theme: { template: Bootstrap.Visualization.Molecule.Default.ElementSymbolThemeTemplate, colors: Bootstrap.Visualization.Molecule.Default.ElementSymbolThemeTemplate.colors, transparency: { alpha: 0.25 } }
                             };
-                            var water = g.then(Molecule.CreateSelectionFromQuery, { query: LiteMol.Core.Structure.Query.entities({ type: 'water' }), name: 'Water', silent: true }, { isBinding: true });
-                            water.then(Molecule.CreateVisual, { style: style }, { ref: t.params.waterRef });
+                            g.then(Molecule.CreateSelectionFromQuery, { query: LiteMol.Core.Structure.Query.entities({ type: 'water' }), name: 'Water', silent: true }, { isBinding: true })
+                                .then(Molecule.CreateVisual, { style: style }, { ref: t.params.waterRef });
                         }
                         return g;
                     });

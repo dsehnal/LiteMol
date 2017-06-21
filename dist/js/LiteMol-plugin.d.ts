@@ -16310,7 +16310,7 @@ declare namespace LiteMol.Bootstrap.Entity.Transformer.Molecule {
         silent?: boolean;
         inFullContext?: boolean;
     }
-    const CreateSelectionFromQuery: Tree.Transformer<Entity.Molecule.Model | Entity.Molecule.Visual, Entity.Molecule.Selection, CreateSelectionFromQueryParams>;
+    const CreateSelectionFromQuery: Tree.Transformer<Entity.Molecule.Model | Entity.Molecule.Selection | Entity.Molecule.Visual, Entity.Molecule.Selection, CreateSelectionFromQueryParams>;
     interface CreateAssemblyParams {
         name: string;
     }
@@ -16343,7 +16343,7 @@ declare namespace LiteMol.Bootstrap.Entity.Transformer.Molecule {
         water?: boolean;
         waterRef?: string;
     }
-    const CreateMacromoleculeVisual: Tree.Transformer<Entity.Molecule.Model, Action, CreateMacromoleculeVisualParams>;
+    const CreateMacromoleculeVisual: Tree.Transformer<Entity.Molecule.Model | Entity.Molecule.Selection, Action, CreateMacromoleculeVisualParams>;
     interface CreateLabelsParams {
         style: Visualization.Labels.Style<Utils.Molecule.Labels3DOptions>;
     }

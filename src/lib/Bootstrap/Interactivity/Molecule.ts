@@ -170,7 +170,7 @@ namespace LiteMol.Bootstrap.Interactivity.Molecule {
     }
     
     export function isMoleculeModelInteractivity(info: Info): info is Info.Selection {
-        if (Interactivity.isEmpty(info)) return false;        
+        if (Interactivity.isEmpty(info)) return false;
         let modelOrSelection = Utils.Molecule.findModelOrSelection(info.source);
         if (!modelOrSelection) return false;
         return true;

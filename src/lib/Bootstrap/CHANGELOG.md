@@ -1,4 +1,7 @@
-﻿# 1.4.0
+﻿# 1.4.1
+* Fixed a bug in creating nested selections.
+
+# 1.4.0
 * Added support for labels.
 
 # 1.3.6

@@ -3,5 +3,5 @@
  */
 
 namespace LiteMol.Bootstrap {
-    export var VERSION = { number: "1.4.0", date: "June 18 2017" };
+    export var VERSION = { number: "1.4.1", date: "June 22 2017" };
 } 
