@@ -354,7 +354,7 @@ namespace LiteMol.Extensions.DensityStreaming {
             }
         }
 
-        async invalidateParams(newParams: CreateStreamingParams) {
+        async invalidateParams(newParams: CreateStreamingParams): Promise<void> {
             const oldParams = this.params;
 
             if (oldParams.displayType !== newParams.displayType 

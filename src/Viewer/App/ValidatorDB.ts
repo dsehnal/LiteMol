@@ -9,7 +9,7 @@ namespace LiteMol.Viewer.ValidatorDB {
     export interface Report extends Entity<Entity.Behaviour.Props<Interactivity.Behaviour>> { }
     export const Report = Entity.create<Entity.Behaviour.Props<Interactivity.Behaviour>>({ name: 'Ligand Validation Report', typeClass: 'Behaviour', shortName: 'VR', description: 'Represents ValidatorDB ligand validation report.' });
     
-    namespace Api {     
+    export namespace Api {    
 
         export type Report = {
             get(authAsymId: string): undefined | {
@@ -85,7 +85,7 @@ namespace LiteMol.Viewer.ValidatorDB {
         }
     }
     
-    namespace Interactivity {
+    export namespace Interactivity {
         
         export class Behaviour implements Bootstrap.Behaviour.Dynamic {
             private provider: Bootstrap.Interactivity.HighlightProvider;

@@ -16,7 +16,7 @@ namespace LiteMol.Viewer.PDBe.SequenceAnnotation {
     export interface Behaviour extends Entity<Entity.Behaviour.Props<Interactivity.Behaviour>> { }
     export const Behaviour = Entity.create<Entity.Behaviour.Props<Interactivity.Behaviour>>({ name: 'PDBe Sequence Annotation Behaviour', typeClass: 'Behaviour', shortName: 'SA', description: 'Represents PDBe sequence annoation behaviour.' });
         
-    namespace Interactivity {
+    export namespace Interactivity {
         
         export class Behaviour implements Bootstrap.Behaviour.Dynamic {
             private node: Entity.Behaviour.Any = <any>void 0;

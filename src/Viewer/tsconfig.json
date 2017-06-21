@@ -5,7 +5,7 @@
     "noEmitOnError": true,
     "removeComments": false,
     "sourceMap": false,
-    "declaration": false,
+    "declaration": true,
     "strictNullChecks": true,
     "noImplicitThis": true,
     "noUnusedLocals": true,
