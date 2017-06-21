@@ -1991,11 +1991,14 @@ declare namespace LiteMol.Core.Geometry.LinearAlgebra {
         y: number;
         z: number;
     };
+    type Matrix4 = number[];
+    type Vector3 = number[];
+    type Vector4 = number[];
     /**
      * Stores a 4x4 matrix in a column major (j * 4 + i indexing) format.
      */
     namespace Matrix4 {
-        function empty(): number[];
+        function zero(): number[];
         function identity(): number[];
         function ofRows(rows: number[][]): number[];
         function areEqual(a: number[], b: number[], eps: number): boolean;
@@ -2004,8 +2007,13 @@ declare namespace LiteMol.Core.Geometry.LinearAlgebra {
         function clone(a: number[]): number[];
         function invert(out: number[], a: number[]): number[] | null;
         function mul(out: number[], a: number[], b: number[]): number[];
+        function mul3(out: number[], a: number[], b: number[], c: number[]): number[];
         function translate(out: number[], a: number[], v: number[]): number[];
         function fromTranslation(out: number[], v: number[]): number[];
+        function rotate(out: number[], a: number[], rad: number, axis: number[]): number[] | null;
+        function fromRotation(out: number[], rad: number, axis: number[]): number[] | null;
+        function scale(out: number[], a: number[], v: number[]): number[];
+        function fromScaling(out: number[], v: number[]): number[];
         function transformVector3(out: {
             x: number;
             y: number;
@@ -2022,8 +2030,30 @@ declare namespace LiteMol.Core.Geometry.LinearAlgebra {
         function makeTable(m: number[]): string;
         function determinant(a: number[]): number;
     }
+    namespace Vector3 {
+        function obj(): ObjectVec3;
+        function zero(): number[];
+        function clone(a: number[]): number[];
+        function fromValues(x: number, y: number, z: number): number[];
+        function set(out: number[], x: number, y: number, z: number): number[];
+        function copy(out: number[], a: number[]): number[];
+        function add(out: number[], a: number[], b: number[]): number[];
+        function sub(out: number[], a: number[], b: number[]): number[];
+        function scale(out: number[], a: number[], b: number): number[];
+        function scaleAndAdd(out: number[], a: number[], b: number[], scale: number): number[];
+        function distance(a: number[], b: number[]): number;
+        function squaredDistance(a: number[], b: number[]): number;
+        function length(a: number[]): number;
+        function squaredLength(a: number[]): number;
+        function normalize(out: number[], a: number[]): number[];
+        function dot(a: number[], b: number[]): number;
+        function cross(out: number[], a: number[], b: number[]): number[];
+        function lerp(out: number[], a: number[], b: number[], t: number): number[];
+        function transformMat4(out: number[], a: number[], m: number[]): number[];
+        function angle(a: number[], b: number[]): number;
+    }
     namespace Vector4 {
-        function create(): number[];
+        function zero(): number[];
         function clone(a: number[]): number[];
         function fromValues(x: number, y: number, z: number, w: number): number[];
         function set(out: number[], x: number, y: number, z: number, w: number): number[];

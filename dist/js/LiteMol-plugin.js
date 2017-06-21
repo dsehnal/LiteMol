@@ -56188,7 +56188,7 @@ var LiteMol;
 (function (LiteMol) {
     var Core;
     (function (Core) {
-        Core.VERSION = { number: "3.1.4", date: "June 18 2017" };
+        Core.VERSION = { number: "3.1.5", date: "June 21 2017" };
     })(Core = LiteMol.Core || (LiteMol.Core = {}));
 })(LiteMol || (LiteMol = {}));
 /*
@@ -59258,20 +59258,20 @@ var LiteMol;
                  * copies of the Software, and to permit persons to whom the Software is
                  * furnished to do so, subject to the following conditions:
                  */
-                var makeArray = (typeof Float64Array !== 'undefined')
-                    ? function (size) { return (new Float64Array(size)); }
-                    : function (size) { return []; };
                 /**
                  * Stores a 4x4 matrix in a column major (j * 4 + i indexing) format.
                  */
                 var Matrix4;
                 (function (Matrix4) {
-                    function empty() {
-                        return makeArray(16);
+                    function zero() {
+                        // force double backing array by 0.1.
+                        var ret = [0.1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+                        ret[0] = 0.0;
+                        return ret;
                     }
-                    Matrix4.empty = empty;
+                    Matrix4.zero = zero;
                     function identity() {
-                        var out = makeArray(16);
+                        var out = zero();
                         out[0] = 1;
                         out[1] = 0;
                         out[2] = 0;
@@ -59292,7 +59292,7 @@ var LiteMol;
                     }
                     Matrix4.identity = identity;
                     function ofRows(rows) {
-                        var out = makeArray(16), i, j, r;
+                        var out = zero(), i, j, r;
                         for (i = 0; i < 4; i++) {
                             r = rows[i];
                             for (j = 0; j < 4; j++) {
@@ -59336,7 +59336,7 @@ var LiteMol;
                     }
                     Matrix4.copy = copy;
                     function clone(a) {
-                        return Matrix4.copy(Matrix4.empty(), a);
+                        return Matrix4.copy(Matrix4.zero(), a);
                     }
                     Matrix4.clone = clone;
                     function invert(out, a) {
@@ -59401,6 +59401,10 @@ var LiteMol;
                         return out;
                     }
                     Matrix4.mul = mul;
+                    function mul3(out, a, b, c) {
+                        return mul(out, mul(out, a, b), c);
+                    }
+                    Matrix4.mul3 = mul3;
                     function translate(out, a, v) {
                         var x = v[0], y = v[1], z = v[2], a00, a01, a02, a03, a10, a11, a12, a13, a20, a21, a22, a23;
                         if (a === out) {
@@ -59462,6 +59466,135 @@ var LiteMol;
                         return out;
                     }
                     Matrix4.fromTranslation = fromTranslation;
+                    function rotate(out, a, rad, axis) {
+                        var x = axis[0], y = axis[1], z = axis[2], len = Math.sqrt(x * x + y * y + z * z), s, c, t, a00, a01, a02, a03, a10, a11, a12, a13, a20, a21, a22, a23, b00, b01, b02, b10, b11, b12, b20, b21, b22;
+                        if (Math.abs(len) < 0.000001 /* Value */) {
+                            return null;
+                        }
+                        len = 1 / len;
+                        x *= len;
+                        y *= len;
+                        z *= len;
+                        s = Math.sin(rad);
+                        c = Math.cos(rad);
+                        t = 1 - c;
+                        a00 = a[0];
+                        a01 = a[1];
+                        a02 = a[2];
+                        a03 = a[3];
+                        a10 = a[4];
+                        a11 = a[5];
+                        a12 = a[6];
+                        a13 = a[7];
+                        a20 = a[8];
+                        a21 = a[9];
+                        a22 = a[10];
+                        a23 = a[11];
+                        // Construct the elements of the rotation matrix
+                        b00 = x * x * t + c;
+                        b01 = y * x * t + z * s;
+                        b02 = z * x * t - y * s;
+                        b10 = x * y * t - z * s;
+                        b11 = y * y * t + c;
+                        b12 = z * y * t + x * s;
+                        b20 = x * z * t + y * s;
+                        b21 = y * z * t - x * s;
+                        b22 = z * z * t + c;
+                        // Perform rotation-specific matrix multiplication
+                        out[0] = a00 * b00 + a10 * b01 + a20 * b02;
+                        out[1] = a01 * b00 + a11 * b01 + a21 * b02;
+                        out[2] = a02 * b00 + a12 * b01 + a22 * b02;
+                        out[3] = a03 * b00 + a13 * b01 + a23 * b02;
+                        out[4] = a00 * b10 + a10 * b11 + a20 * b12;
+                        out[5] = a01 * b10 + a11 * b11 + a21 * b12;
+                        out[6] = a02 * b10 + a12 * b11 + a22 * b12;
+                        out[7] = a03 * b10 + a13 * b11 + a23 * b12;
+                        out[8] = a00 * b20 + a10 * b21 + a20 * b22;
+                        out[9] = a01 * b20 + a11 * b21 + a21 * b22;
+                        out[10] = a02 * b20 + a12 * b21 + a22 * b22;
+                        out[11] = a03 * b20 + a13 * b21 + a23 * b22;
+                        if (a !== out) {
+                            out[12] = a[12];
+                            out[13] = a[13];
+                            out[14] = a[14];
+                            out[15] = a[15];
+                        }
+                        return out;
+                    }
+                    Matrix4.rotate = rotate;
+                    function fromRotation(out, rad, axis) {
+                        var x = axis[0], y = axis[1], z = axis[2], len = Math.sqrt(x * x + y * y + z * z), s, c, t;
+                        if (Math.abs(len) < 0.000001 /* Value */) {
+                            return null;
+                        }
+                        len = 1 / len;
+                        x *= len;
+                        y *= len;
+                        z *= len;
+                        s = Math.sin(rad);
+                        c = Math.cos(rad);
+                        t = 1 - c;
+                        // Perform rotation-specific matrix multiplication
+                        out[0] = x * x * t + c;
+                        out[1] = y * x * t + z * s;
+                        out[2] = z * x * t - y * s;
+                        out[3] = 0;
+                        out[4] = x * y * t - z * s;
+                        out[5] = y * y * t + c;
+                        out[6] = z * y * t + x * s;
+                        out[7] = 0;
+                        out[8] = x * z * t + y * s;
+                        out[9] = y * z * t - x * s;
+                        out[10] = z * z * t + c;
+                        out[11] = 0;
+                        out[12] = 0;
+                        out[13] = 0;
+                        out[14] = 0;
+                        out[15] = 1;
+                        return out;
+                    }
+                    Matrix4.fromRotation = fromRotation;
+                    function scale(out, a, v) {
+                        var x = v[0], y = v[1], z = v[2];
+                        out[0] = a[0] * x;
+                        out[1] = a[1] * x;
+                        out[2] = a[2] * x;
+                        out[3] = a[3] * x;
+                        out[4] = a[4] * y;
+                        out[5] = a[5] * y;
+                        out[6] = a[6] * y;
+                        out[7] = a[7] * y;
+                        out[8] = a[8] * z;
+                        out[9] = a[9] * z;
+                        out[10] = a[10] * z;
+                        out[11] = a[11] * z;
+                        out[12] = a[12];
+                        out[13] = a[13];
+                        out[14] = a[14];
+                        out[15] = a[15];
+                        return out;
+                    }
+                    Matrix4.scale = scale;
+                    function fromScaling(out, v) {
+                        out[0] = v[0];
+                        out[1] = 0;
+                        out[2] = 0;
+                        out[3] = 0;
+                        out[4] = 0;
+                        out[5] = v[1];
+                        out[6] = 0;
+                        out[7] = 0;
+                        out[8] = 0;
+                        out[9] = 0;
+                        out[10] = v[2];
+                        out[11] = 0;
+                        out[12] = 0;
+                        out[13] = 0;
+                        out[14] = 0;
+                        out[15] = 1;
+                        return out;
+                    }
+                    Matrix4.fromScaling = fromScaling;
                     function transformVector3(out, a, m) {
                         var x = a.x, y = a.y, z = a.z;
                         out.x = m[0] * x + m[4] * y + m[8] * z + m[12];
@@ -59492,19 +59625,190 @@ var LiteMol;
                     }
                     Matrix4.determinant = determinant;
                 })(Matrix4 = LinearAlgebra.Matrix4 || (LinearAlgebra.Matrix4 = {}));
-                var Vector4;
-                (function (Vector4) {
-                    function create() {
-                        var out = makeArray(4);
+                var Vector3;
+                (function (Vector3) {
+                    function obj() {
+                        var ret = { x: 0.1, y: 0.1, z: 0.1 };
+                        ret.x = 0;
+                        ret.y = 0;
+                        ret.z = 0;
+                        return ret;
+                    }
+                    Vector3.obj = obj;
+                    function zero() {
+                        var out = [0.1, 0.0, 0.0];
                         out[0] = 0;
-                        out[1] = 0;
-                        out[2] = 0;
-                        out[3] = 0;
                         return out;
                     }
-                    Vector4.create = create;
+                    Vector3.zero = zero;
+                    ;
                     function clone(a) {
-                        var out = makeArray(4);
+                        var out = zero();
+                        out[0] = a[0];
+                        out[1] = a[1];
+                        out[2] = a[2];
+                        return out;
+                    }
+                    Vector3.clone = clone;
+                    ;
+                    function fromValues(x, y, z) {
+                        var out = zero();
+                        out[0] = x;
+                        out[1] = y;
+                        out[2] = z;
+                        return out;
+                    }
+                    Vector3.fromValues = fromValues;
+                    ;
+                    function set(out, x, y, z) {
+                        out[0] = x;
+                        out[1] = y;
+                        out[2] = z;
+                        return out;
+                    }
+                    Vector3.set = set;
+                    ;
+                    function copy(out, a) {
+                        out[0] = a[0];
+                        out[1] = a[1];
+                        out[2] = a[2];
+                        return out;
+                    }
+                    Vector3.copy = copy;
+                    ;
+                    function add(out, a, b) {
+                        out[0] = a[0] + b[0];
+                        out[1] = a[1] + b[1];
+                        out[2] = a[2] + b[2];
+                        return out;
+                    }
+                    Vector3.add = add;
+                    ;
+                    function sub(out, a, b) {
+                        out[0] = a[0] - b[0];
+                        out[1] = a[1] - b[1];
+                        out[2] = a[2] - b[2];
+                        return out;
+                    }
+                    Vector3.sub = sub;
+                    ;
+                    function scale(out, a, b) {
+                        out[0] = a[0] * b;
+                        out[1] = a[1] * b;
+                        out[2] = a[2] * b;
+                        return out;
+                    }
+                    Vector3.scale = scale;
+                    ;
+                    function scaleAndAdd(out, a, b, scale) {
+                        out[0] = a[0] + (b[0] * scale);
+                        out[1] = a[1] + (b[1] * scale);
+                        out[2] = a[2] + (b[2] * scale);
+                        return out;
+                    }
+                    Vector3.scaleAndAdd = scaleAndAdd;
+                    ;
+                    function distance(a, b) {
+                        var x = b[0] - a[0], y = b[1] - a[1], z = b[2] - a[2];
+                        return Math.sqrt(x * x + y * y + z * z);
+                    }
+                    Vector3.distance = distance;
+                    ;
+                    function squaredDistance(a, b) {
+                        var x = b[0] - a[0], y = b[1] - a[1], z = b[2] - a[2];
+                        return x * x + y * y + z * z;
+                    }
+                    Vector3.squaredDistance = squaredDistance;
+                    ;
+                    function length(a) {
+                        var x = a[0], y = a[1], z = a[2];
+                        return Math.sqrt(x * x + y * y + z * z);
+                    }
+                    Vector3.length = length;
+                    ;
+                    function squaredLength(a) {
+                        var x = a[0], y = a[1], z = a[2];
+                        return x * x + y * y + z * z;
+                    }
+                    Vector3.squaredLength = squaredLength;
+                    ;
+                    function normalize(out, a) {
+                        var x = a[0], y = a[1], z = a[2];
+                        var len = x * x + y * y + z * z;
+                        if (len > 0) {
+                            len = 1 / Math.sqrt(len);
+                            out[0] = a[0] * len;
+                            out[1] = a[1] * len;
+                            out[2] = a[2] * len;
+                        }
+                        return out;
+                    }
+                    Vector3.normalize = normalize;
+                    ;
+                    function dot(a, b) {
+                        return a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
+                    }
+                    Vector3.dot = dot;
+                    ;
+                    function cross(out, a, b) {
+                        var ax = a[0], ay = a[1], az = a[2], bx = b[0], by = b[1], bz = b[2];
+                        out[0] = ay * bz - az * by;
+                        out[1] = az * bx - ax * bz;
+                        out[2] = ax * by - ay * bx;
+                        return out;
+                    }
+                    Vector3.cross = cross;
+                    ;
+                    function lerp(out, a, b, t) {
+                        var ax = a[0], ay = a[1], az = a[2];
+                        out[0] = ax + t * (b[0] - ax);
+                        out[1] = ay + t * (b[1] - ay);
+                        out[2] = az + t * (b[2] - az);
+                        return out;
+                    }
+                    Vector3.lerp = lerp;
+                    ;
+                    function transformMat4(out, a, m) {
+                        var x = a[0], y = a[1], z = a[2], w = m[3] * x + m[7] * y + m[11] * z + m[15];
+                        w = w || 1.0;
+                        out[0] = (m[0] * x + m[4] * y + m[8] * z + m[12]) / w;
+                        out[1] = (m[1] * x + m[5] * y + m[9] * z + m[13]) / w;
+                        out[2] = (m[2] * x + m[6] * y + m[10] * z + m[14]) / w;
+                        return out;
+                    }
+                    Vector3.transformMat4 = transformMat4;
+                    ;
+                    var angleTempA = zero(), angleTempB = zero();
+                    function angle(a, b) {
+                        copy(angleTempA, a);
+                        copy(angleTempB, b);
+                        normalize(angleTempA, angleTempA);
+                        normalize(angleTempB, angleTempB);
+                        var cosine = dot(angleTempA, angleTempB);
+                        if (cosine > 1.0) {
+                            return 0;
+                        }
+                        else if (cosine < -1.0) {
+                            return Math.PI;
+                        }
+                        else {
+                            return Math.acos(cosine);
+                        }
+                    }
+                    Vector3.angle = angle;
+                    ;
+                })(Vector3 = LinearAlgebra.Vector3 || (LinearAlgebra.Vector3 = {}));
+                var Vector4;
+                (function (Vector4) {
+                    function zero() {
+                        // force double backing array by 0.1.
+                        var ret = [0.1, 0, 0, 0];
+                        ret[0] = 0.0;
+                        return ret;
+                    }
+                    Vector4.zero = zero;
+                    function clone(a) {
+                        var out = zero();
                         out[0] = a[0];
                         out[1] = a[1];
                         out[2] = a[2];
@@ -59513,7 +59817,7 @@ var LiteMol;
                     }
                     Vector4.clone = clone;
                     function fromValues(x, y, z, w) {
-                        var out = makeArray(4);
+                        var out = zero();
                         out[0] = x;
                         out[1] = y;
                         out[2] = z;
@@ -60926,7 +61230,7 @@ var LiteMol;
                         });
                     };
                     MolecularIsoFieldComputation.prototype.finish = function () {
-                        var t = Geometry.LinearAlgebra.Matrix4.empty();
+                        var t = Geometry.LinearAlgebra.Matrix4.zero();
                         Geometry.LinearAlgebra.Matrix4.fromTranslation(t, [this.minX, this.minY, this.minZ]);
                         t[0] = this.dX;
                         t[5] = this.dY;
@@ -61358,7 +61662,7 @@ var LiteMol;
             var Spacegroup = (function () {
                 function Spacegroup(info) {
                     this.info = info;
-                    this.temp = Mat4.empty();
+                    this.temp = Mat4.zero();
                     this.tempV = new Float64Array(4);
                     if (SpacegroupTables.Spacegroup[info.spacegroupName] === void 0) {
                         throw "'" + info.spacegroupName + "' is not a spacegroup recognized by the library.";
@@ -61384,14 +61688,14 @@ var LiteMol;
                     //return target.copy(this.space.fromFrac).multiply(this.temp).multiply(this.operators[index]).multiply(this.space.toFrac);
                 };
                 Spacegroup.prototype.getSpace = function () {
-                    var toFrac = this.info.toFracTransform, fromFrac = Mat4.empty();
+                    var toFrac = this.info.toFracTransform, fromFrac = Mat4.zero();
                     Mat4.invert(fromFrac, toFrac);
                     return {
                         toFrac: toFrac,
                         fromFrac: fromFrac,
-                        baseX: Vec4.transform(Vec4.create(), Vec4.fromValues(1, 0, 0, 1), toFrac),
-                        baseY: Vec4.transform(Vec4.create(), Vec4.fromValues(0, 1, 0, 1), toFrac),
-                        baseZ: Vec4.transform(Vec4.create(), Vec4.fromValues(0, 0, 1, 1), toFrac)
+                        baseX: Vec4.transform(Vec4.zero(), Vec4.fromValues(1, 0, 0, 1), toFrac),
+                        baseY: Vec4.transform(Vec4.zero(), Vec4.fromValues(0, 1, 0, 1), toFrac),
+                        baseZ: Vec4.transform(Vec4.zero(), Vec4.fromValues(0, 0, 1, 1), toFrac)
                     };
                 };
                 Spacegroup.getOperator = function (ids) {
@@ -62797,7 +63101,7 @@ var LiteMol;
                         boundingInfo: boundingInfo,
                         spacegroup: spacegroup,
                         radius: radius,
-                        transform: Mat4.empty(),
+                        transform: Mat4.zero(),
                         transformed: { x: 0, y: 0, z: 0 },
                         i: 0, j: 0, k: 0, op: 0
                     };
@@ -63209,7 +63513,7 @@ var LiteMol;
                 function findMates(model, radius) {
                     var bounds = getBoudingSphere(model.positions, model.positions.indices);
                     var spacegroup = new Structure.Spacegroup(model.data.symmetryInfo);
-                    var t = Mat4.empty();
+                    var t = Mat4.zero();
                     var v = { x: 0, y: 0, z: 0 };
                     var transforms = [];
                     for (var i = -3; i <= 3; i++) {
@@ -63220,7 +63524,7 @@ var LiteMol;
                                     Mat4.transformVector3(v, bounds.center, t);
                                     if (getSphereDist(v, bounds.radius, bounds) > radius)
                                         continue;
-                                    var copy = Mat4.empty();
+                                    var copy = Mat4.zero();
                                     Mat4.copy(copy, t);
                                     transforms.push(createSymmetryTransform(i, j, k, op, copy));
                                 }
@@ -70119,13 +70423,17 @@ var LiteMol;
             function createSphereSurface(sphere) {
                 var _a = sphere.tessalation, tessalation = _a === void 0 ? 0 : _a;
                 var geom = new Visualization.THREE.IcosahedronGeometry(1.0, tessalation);
-                return Visualization.GeometryHelper.toSurface(geom);
+                var surf = Visualization.GeometryHelper.toSurface(geom);
+                geom.dispose();
+                return surf;
             }
             Primitive.createSphereSurface = createSphereSurface;
             function createTubeSurface(tube) {
                 var a = tube.a, b = tube.b, _a = tube.tessalation, tessalation = _a === void 0 ? 4 : _a;
                 var geom = new Visualization.THREE.TubeGeometry(new Visualization.THREE.LineCurve3(new Visualization.THREE.Vector3(a.x, a.y, a.z), new Visualization.THREE.Vector3(b.x, b.y, b.z)), 2, tube.radius, tessalation);
-                return Visualization.GeometryHelper.toSurface(geom);
+                var surf = Visualization.GeometryHelper.toSurface(geom);
+                geom.dispose();
+                return surf;
             }
             Primitive.createTubeSurface = createTubeSurface;
         })(Primitive = Visualization.Primitive || (Visualization.Primitive = {}));
@@ -70141,11 +70449,12 @@ var LiteMol;
         var Primitive;
         (function (Primitive) {
             'use strict';
+            var LA = LiteMol.Core.Geometry.LinearAlgebra;
             var Surface = LiteMol.Core.Geometry.Surface;
             function buildSurface(shapes) {
                 var _this = this;
                 return LiteMol.Core.computation(function (ctx) { return __awaiter(_this, void 0, void 0, function () {
-                    var uniqueSpheres, shapeSurfaces, _i, shapes_1, s, sphere, tube, size, _a, shapeSurfaces_1, s, _c, s_1, g, vertices, normals, triangles, annotation, vOffset, nOffset, tOffset, aOffset, v, transform, vs, shapeIndex, _d, shapes_2, s, surfaces, startVOffset, surface, i, _b, surface, i, _b, surface, i, _b, _e, surfaces_1, surface, i, _b, ts, i, _b, i, _b, ret;
+                    var uniqueSpheres, shapeSurfaces, _i, shapes_1, s, sphere, tube, size, _a, shapeSurfaces_1, s, _c, s_1, g, vertices, normals, triangles, annotation, vOffset, nOffset, tOffset, aOffset, v, scaleTransform, translateTransform, transform, vs, shapeIndex, _d, shapes_2, s, surfaces, startVOffset, surface, i, _b, surface, i, _b, surface, i, _b, i, _b, _e, surfaces_1, surface, i, _b, ts, i, _b, i, _b, ret;
                     return __generator(this, function (_f) {
                         switch (_f.label) {
                             case 0: return [4 /*yield*/, ctx.updateProgress('Building surface...')];
@@ -70190,8 +70499,8 @@ var LiteMol;
                                 triangles = new Uint32Array(size.triangleCount * 3);
                                 annotation = new Int32Array(size.vertexCount);
                                 vOffset = 0, nOffset = 0, tOffset = 0, aOffset = 0;
-                                v = new Visualization.THREE.Vector3();
-                                transform = new Visualization.THREE.Matrix4();
+                                v = LA.Vector3.obj();
+                                scaleTransform = LA.Matrix4.zero(), translateTransform = LA.Matrix4.zero(), transform = LA.Matrix4.zero();
                                 shapeIndex = 0;
                                 for (_d = 0, shapes_2 = shapes; _d < shapes_2.length; _d++) {
                                     s = shapes_2[_d];
@@ -70201,10 +70510,13 @@ var LiteMol;
                                         case 'Sphere': {
                                             surface = surfaces[0];
                                             vs = surface.vertices;
+                                            LA.Matrix4.fromScaling(scaleTransform, [s.radius, s.radius, s.radius]);
+                                            LA.Matrix4.fromTranslation(translateTransform, [s.center.x, s.center.y, s.center.z]);
+                                            LA.Matrix4.mul(transform, translateTransform, scaleTransform);
                                             for (i = 0, _b = surface.vertexCount * 3; i < _b; i += 3) {
                                                 v.x = vs[i], v.y = vs[i + 1], v.z = vs[i + 2];
-                                                v.applyMatrix4(transform.makeScale(s.radius, s.radius, s.radius));
-                                                v.applyMatrix4(transform.makeTranslation(s.center.x, s.center.y, s.center.z));
+                                                LA.Matrix4.transformVector3(v, v, transform);
+                                                //v.applyMatrix4(transform);
                                                 vertices[vOffset++] = v.x;
                                                 vertices[vOffset++] = v.y;
                                                 vertices[vOffset++] = v.z;
@@ -70223,8 +70535,19 @@ var LiteMol;
                                             surface = surfaces[0];
                                             Surface.computeNormalsImmediate(surface);
                                             vs = surface.vertices;
-                                            for (i = 0, _b = vs.length; i < _b; i++) {
-                                                vertices[vOffset++] = vs[i];
+                                            if (s.transform) {
+                                                for (i = 0, _b = vs.length; i < _b; i += 3) {
+                                                    v.x = vs[i], v.y = vs[i + 1], v.z = vs[i + 2];
+                                                    LA.Matrix4.transformVector3(v, v, s.transform);
+                                                    vertices[vOffset++] = v.x;
+                                                    vertices[vOffset++] = v.y;
+                                                    vertices[vOffset++] = v.z;
+                                                }
+                                            }
+                                            else {
+                                                for (i = 0, _b = vs.length; i < _b; i++) {
+                                                    vertices[vOffset++] = vs[i];
+                                                }
                                             }
                                             break;
                                         }

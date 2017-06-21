@@ -10,7 +10,7 @@ namespace LiteMol.Core.Structure {
 
     export class Spacegroup {
 
-        private temp = Mat4.empty();
+        private temp = Mat4.zero();
         private tempV = <number[]><any>new Float64Array(4);
         private space: { toFrac: number[]; fromFrac: number[]; baseX: number[]; baseY: number[]; baseZ: number[]; };
         private operators: number[][];        
@@ -34,16 +34,16 @@ namespace LiteMol.Core.Structure {
         private getSpace() {
 
             var toFrac = this.info.toFracTransform,
-                fromFrac = Mat4.empty();
+                fromFrac = Mat4.zero();
 
             Mat4.invert(fromFrac, toFrac);
                         
             return {
                 toFrac: toFrac,
                 fromFrac: fromFrac,
-                baseX: Vec4.transform(Vec4.create(), Vec4.fromValues(1, 0, 0, 1), toFrac),
-                baseY: Vec4.transform(Vec4.create(), Vec4.fromValues(0, 1, 0, 1), toFrac),
-                baseZ: Vec4.transform(Vec4.create(), Vec4.fromValues(0, 0, 1, 1), toFrac)
+                baseX: Vec4.transform(Vec4.zero(), Vec4.fromValues(1, 0, 0, 1), toFrac),
+                baseY: Vec4.transform(Vec4.zero(), Vec4.fromValues(0, 1, 0, 1), toFrac),
+                baseZ: Vec4.transform(Vec4.zero(), Vec4.fromValues(0, 0, 1, 1), toFrac)
             };
 
         }

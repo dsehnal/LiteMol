@@ -8,7 +8,9 @@ namespace LiteMol.Visualization.Primitive {
     export function createSphereSurface(sphere: Shape.Sphere) {
         const { tessalation = 0 } = sphere;
         const geom = new THREE.IcosahedronGeometry(1.0, tessalation);
-        return GeometryHelper.toSurface(geom);
+        const surf = GeometryHelper.toSurface(geom);
+        geom.dispose();
+        return surf;
     }
 
     export function createTubeSurface(tube: Shape.Tube) {
@@ -16,6 +18,8 @@ namespace LiteMol.Visualization.Primitive {
         const geom = new THREE.TubeGeometry(
             new THREE.LineCurve3(new THREE.Vector3(a.x, a.y, a.z), new THREE.Vector3(b.x, b.y, b.z)) as any,
             2, tube.radius, tessalation);
-        return GeometryHelper.toSurface(geom);
+        const surf = GeometryHelper.toSurface(geom);
+        geom.dispose();
+        return surf;
     }
 }

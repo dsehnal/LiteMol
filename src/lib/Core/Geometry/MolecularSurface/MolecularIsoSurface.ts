@@ -220,7 +220,7 @@ namespace LiteMol.Core.Geometry.MolecularSurface {
         }
 
         private finish() {            
-            let t = Geometry.LinearAlgebra.Matrix4.empty();
+            let t = Geometry.LinearAlgebra.Matrix4.zero();
             Geometry.LinearAlgebra.Matrix4.fromTranslation(t, [this.minX, this.minY, this.minZ]);
             t[0] = this.dX;
             t[5] = this.dY;

@@ -51,7 +51,7 @@ namespace LiteMol.Comparison.Base {
     }
 
     export function findMinimalRmsdTransform(data: RmsdTransformInput, into?: RmsdTransformResult) {
-        if (typeof into === "undefined") into = { bTransform: LA.Matrix4.empty(), rmsd: 0.0 };
+        if (typeof into === "undefined") into = { bTransform: LA.Matrix4.zero(), rmsd: 0.0 };
         findMinimalRmsdTransformImpl(new RmsdTransformState(data, into));
         return into;
     }

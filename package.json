@@ -28,7 +28,7 @@
   ],
   "license": "Apache-2.0",
   "devDependencies": {
-    "@types/gulp": "^3.8.32",
+    "@types/gulp": "^3.8.33",
     "byline": "^5.0.0",
     "gulp": "^3.9.1",
     "gulp-clean": "^0.3.2",

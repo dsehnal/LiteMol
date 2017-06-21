@@ -110,7 +110,7 @@ namespace LiteMol.Core.Structure {
                 boundingInfo,
                 spacegroup,
                 radius,
-                transform: Mat4.empty(),
+                transform: Mat4.zero(),
                 transformed: { x: 0, y: 0, z: 0 },
                 i: 0, j: 0, k: 0, op: 0
             };
@@ -712,7 +712,7 @@ namespace LiteMol.Core.Structure {
             let bounds = getBoudingSphere(model.positions, model.positions.indices);
 
             let spacegroup = new Spacegroup(model.data.symmetryInfo!);
-            let t = Mat4.empty();
+            let t = Mat4.zero();
             let v = { x: 0, y: 0, z: 0 };
 
             let transforms: SymmetryTransform[] = [];
@@ -728,7 +728,7 @@ namespace LiteMol.Core.Structure {
 
                             if (getSphereDist(v, bounds.radius, bounds) > radius) continue;
 
-                            let copy = Mat4.empty();
+                            let copy = Mat4.zero();
                             Mat4.copy(copy, t);
                             transforms.push(createSymmetryTransform(i, j, k, op, copy));
                         }
