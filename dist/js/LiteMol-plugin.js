@@ -70901,8 +70901,9 @@ var LiteMol;
                 function RequestPool() {
                 }
                 RequestPool.get = function () {
-                    if (this.pool.length)
+                    if (this.pool.length) {
                         return this.pool.pop();
+                    }
                     return new XMLHttpRequest();
                 };
                 RequestPool.emptyFunc = function () { };
@@ -70912,7 +70913,7 @@ var LiteMol;
                         req.onerror = RequestPool.emptyFunc;
                         req.onload = RequestPool.emptyFunc;
                         req.onprogress = RequestPool.emptyFunc;
-                        this.pool.push();
+                        this.pool.push(req);
                     }
                 };
                 RequestPool.pool = [];

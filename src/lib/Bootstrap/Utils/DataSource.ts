@@ -106,7 +106,9 @@ namespace LiteMol.Bootstrap.Utils {
         private static poolSize = 15;
 
         static get() {
-            if (this.pool.length) return this.pool.pop()!;
+            if (this.pool.length) {
+                return this.pool.pop()!;
+            } 
             return new XMLHttpRequest();
         }
 
@@ -118,7 +120,7 @@ namespace LiteMol.Bootstrap.Utils {
                 req.onerror = RequestPool.emptyFunc;
                 req.onload = RequestPool.emptyFunc;
                 req.onprogress = RequestPool.emptyFunc;
-                this.pool.push();
+                this.pool.push(req);
             }
         }
     }
