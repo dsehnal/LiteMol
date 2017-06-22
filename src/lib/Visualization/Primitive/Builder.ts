@@ -8,12 +8,14 @@ namespace LiteMol.Visualization.Primitive {
     import LA = Core.Geometry.LinearAlgebra
     import Surface = Core.Geometry.Surface
 
-    export type Shape = Shape.Sphere | Shape.Tube | Shape.Surface //  | Shape.Arrow
+    export type Shape = Shape.Sphere | Shape.Tube | Shape.Surface | Shape.DashedLine | Shape.Cone | Shape.Arrow
 
     export namespace Shape {
         export type Sphere = { type: 'Sphere', center: LA.ObjectVec3, radius: number, id: number, tessalation?:number }
-        export type Tube = { type: 'Tube', a: LA.ObjectVec3, b: LA.ObjectVec3, radius: number, id: number, tessalation?:number }
-        //export type Arrow = { type: 'Arrow', a: LA.ObjectVec3, b: LA.ObjectVec3, radius: number, id: number, slices?: number, segments?:number }
+        export type Tube = { type: 'Tube', a: LA.ObjectVec3, b: LA.ObjectVec3, radius: number, id: number, slices?:number }
+        export type DashedLine = { type: 'DashedLine', a: LA.ObjectVec3, b: LA.ObjectVec3, width: number, dashSize: number, id: number }
+        export type Arrow = { type: 'Arrow', a: LA.ObjectVec3, b: LA.ObjectVec3, radius: number, id: number, coneRadius: number, coneHeight: number, slices?: number }
+        export type Cone = { type: 'Cone', a: LA.ObjectVec3, b: LA.ObjectVec3, radius: number, id: number, slices?: number }
         export type Surface = { type: 'Surface', surface: Core.Geometry.Surface, id: number, scale?: number[], translation?: number[], rotation?: LA.Matrix4 }
     }
 
@@ -22,25 +24,29 @@ namespace LiteMol.Visualization.Primitive {
             await ctx.updateProgress('Building surface...')
             
             const uniqueSpheres = Core.Utils.FastMap.create<number, Surface>();
-            const shapeSurfaces: Surface[][] = [];
+            const shapeSurfaces: Surface[] = [];
 
             for (const s of shapes) {
                 switch (s.type) {
                     case 'Sphere': 
-                        if (uniqueSpheres.has(s.tessalation || 0)) shapeSurfaces.push([uniqueSpheres.get(s.tessalation || 0)!]);
+                        if (uniqueSpheres.has(s.tessalation || 0)) shapeSurfaces.push(uniqueSpheres.get(s.tessalation || 0)!);
                         else {
                             const sphere = createSphereSurface(s);
                             uniqueSpheres.set(s.tessalation || 0, sphere);
-                            shapeSurfaces.push([sphere]);
+                            shapeSurfaces.push(sphere);
                         }
                         break;
                     case 'Tube': {
                         const tube = createTubeSurface(s);
-                        shapeSurfaces.push([tube]);
+                        shapeSurfaces.push(tube);
+                        break;
+                    }
+                    case 'Cone': {
+                        shapeSurfaces.push(createCone(s));
                         break;
                     }
                     case 'Surface': {
-                        shapeSurfaces.push([s.surface])
+                        shapeSurfaces.push(s.surface)
                         break;
                     }
                 }
@@ -48,10 +54,8 @@ namespace LiteMol.Visualization.Primitive {
 
             let size = { vertexCount: 0, triangleCount: 0 };
             for (const s of shapeSurfaces) {
-                for (const g of s) {
-                    size.vertexCount += g.vertexCount;
-                    size.triangleCount += g.triangleCount;
-                }
+                size.vertexCount += s.vertexCount;
+                size.triangleCount += s.triangleCount;
             }
 
             let vertices = new Float32Array(size.vertexCount * 3);
@@ -67,11 +71,10 @@ namespace LiteMol.Visualization.Primitive {
 
             let shapeIndex = 0;
             for (const s of shapes) {
-                let surfaces: Surface[] = shapeSurfaces[shapeIndex++];
+                const surface = shapeSurfaces[shapeIndex++];
                 let startVOffset = (vOffset / 3) | 0;
                 switch (s.type) { 
                     case 'Sphere': {
-                        const surface = surfaces[0];
                         vs = surface.vertices;
                         LA.Matrix4.fromScaling(scaleTransform, [s.radius, s.radius, s.radius]);
                         LA.Matrix4.fromTranslation(translateTransform, [s.center.x, s.center.y, s.center.z]);
@@ -89,8 +92,8 @@ namespace LiteMol.Visualization.Primitive {
                         }
                         break;
                     }
-                    case 'Tube': {
-                        const surface = surfaces[0]; 
+                    case 'Tube': 
+                    case 'Cone': {
                         vs = surface.vertices;
                         for (let i = 0, _b = vs.length; i < _b; i++) {
                             vertices[vOffset++] = vs[i];
@@ -102,7 +105,6 @@ namespace LiteMol.Visualization.Primitive {
                         break;
                     }
                     case 'Surface': {
-                        const surface = surfaces[0]; 
                         if (!surface.normals) Surface.computeNormalsImmediate(surface);
                         vs = surface.vertices;
                         if (s.rotation || s.scale || s.translation) {
@@ -145,15 +147,13 @@ namespace LiteMol.Visualization.Primitive {
                     }
                 }
 
-                for (const surface of surfaces) {
-                    let ts = surface!.triangleIndices!;
-                    for (let i = 0, _b = ts.length; i < _b; i++) {
-                        triangles[tOffset++] = startVOffset + ts[i];
-                    }
+                let ts = surface!.triangleIndices!;
+                for (let i = 0, _b = ts.length; i < _b; i++) {
+                    triangles[tOffset++] = startVOffset + ts[i];
+                }
 
-                    for (let i = 0, _b = surface!.vertexCount; i < _b; i++) {
-                        annotation[aOffset++] = s.id;
-                    }
+                for (let i = 0, _b = surface!.vertexCount; i < _b; i++) {
+                    annotation[aOffset++] = s.id;
                 }
             }
             
@@ -179,6 +179,31 @@ namespace LiteMol.Visualization.Primitive {
         }
 
         buildSurface(): Core.Computation<Surface> {
+            let normalize = false;
+            for (const s of this.shapes) { 
+                if (s.type === 'DashedLine' || s.type === 'Arrow') {
+                    normalize = true;
+                    break;
+                }
+            }
+
+            if (normalize) {
+                const normalized = [];
+                for (const s of this.shapes) { 
+                    if (s.type === 'DashedLine') {
+                        for (const d of createDashes(s)) {
+                            normalized[normalized.length] = d;
+                        }
+                    } else if (s.type === 'Arrow') {
+                        for (const a of createArrow(s)) {
+                            normalized[normalized.length] = a;
+                        }
+                    } else {
+                        normalized[normalized.length] = s;
+                    }
+                }
+                return buildSurface(normalized);
+            }
             return buildSurface(this.shapes);
         }
 

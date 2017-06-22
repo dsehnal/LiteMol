@@ -454,6 +454,10 @@ namespace LiteMol.Core.Geometry.LinearAlgebra {
             return out;
         };
 
+        export function fromObj(v: ObjectVec3) {
+            return fromValues(v.x, v.y, v.z);
+        }
+
         export function fromValues(x: number, y: number, z: number) {
             let out = zero();
             out[0] = x;

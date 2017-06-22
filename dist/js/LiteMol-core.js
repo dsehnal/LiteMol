@@ -14668,6 +14668,10 @@ var LiteMol;
                     }
                     Vector3.clone = clone;
                     ;
+                    function fromObj(v) {
+                        return fromValues(v.x, v.y, v.z);
+                    }
+                    Vector3.fromObj = fromObj;
                     function fromValues(x, y, z) {
                         var out = zero();
                         out[0] = x;

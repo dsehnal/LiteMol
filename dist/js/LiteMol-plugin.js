@@ -59671,6 +59671,10 @@ var LiteMol;
                     }
                     Vector3.clone = clone;
                     ;
+                    function fromObj(v) {
+                        return fromValues(v.x, v.y, v.z);
+                    }
+                    Vector3.fromObj = fromObj;
                     function fromValues(x, y, z) {
                         var out = zero();
                         out[0] = x;
@@ -70445,6 +70449,7 @@ var LiteMol;
         var Primitive;
         (function (Primitive) {
             "use strict";
+            var LA = LiteMol.Core.Geometry.LinearAlgebra;
             function createSphereSurface(sphere) {
                 var _a = sphere.tessalation, tessalation = _a === void 0 ? 0 : _a;
                 var geom = new Visualization.THREE.IcosahedronGeometry(1.0, tessalation);
@@ -70454,13 +70459,74 @@ var LiteMol;
             }
             Primitive.createSphereSurface = createSphereSurface;
             function createTubeSurface(tube) {
-                var a = tube.a, b = tube.b, _a = tube.tessalation, tessalation = _a === void 0 ? 4 : _a;
-                var geom = new Visualization.THREE.TubeGeometry(new Visualization.THREE.LineCurve3(new Visualization.THREE.Vector3(a.x, a.y, a.z), new Visualization.THREE.Vector3(b.x, b.y, b.z)), 2, tube.radius, tessalation);
+                var a = tube.a, b = tube.b, _a = tube.slices, slices = _a === void 0 ? 12 : _a;
+                var geom = new Visualization.THREE.TubeGeometry(new Visualization.THREE.LineCurve3(new Visualization.THREE.Vector3(a.x, a.y, a.z), new Visualization.THREE.Vector3(b.x, b.y, b.z)), 2, tube.radius, slices);
                 var surf = Visualization.GeometryHelper.toSurface(geom);
                 geom.dispose();
                 return surf;
             }
             Primitive.createTubeSurface = createTubeSurface;
+            var coneAxis = [0, 1, 0], coneTransformRotation = LA.Matrix4.zero(), coneTransformTranslation = LA.Matrix4.zero(), coneTransformTranslation1 = LA.Matrix4.zero();
+            function createCone(cone) {
+                var vA = cone.a, vB = cone.b, radius = cone.radius, _a = cone.slices, slices = _a === void 0 ? 12 : _a;
+                var a = LA.Vector3.fromObj(vA), b = LA.Vector3.fromObj(vB);
+                var height = LA.Vector3.distance(a, b);
+                var geom = new Visualization.THREE.CylinderGeometry(0, radius, height, slices, 1);
+                var surf = Visualization.GeometryHelper.toSurface(geom);
+                geom.dispose();
+                var dir = LA.Vector3.sub(b, b, a);
+                var axis = LA.Vector3.cross(LA.Vector3.zero(), coneAxis, dir);
+                var angle = LA.Vector3.angle(coneAxis, dir);
+                LA.Matrix4.fromRotation(coneTransformRotation, angle, axis);
+                LA.Matrix4.fromTranslation(coneTransformTranslation1, [0, height / 2, 0]);
+                LA.Matrix4.fromTranslation(coneTransformTranslation, a);
+                LiteMol.Core.Geometry.Surface.transformImmediate(surf, LA.Matrix4.mul3(coneTransformTranslation, coneTransformTranslation, coneTransformRotation, coneTransformTranslation1));
+                LiteMol.Core.Geometry.Surface.computeNormalsImmediate(surf);
+                return surf;
+            }
+            Primitive.createCone = createCone;
+            function createArrow(arrow) {
+                var id = arrow.id, vA = arrow.a, vB = arrow.b, radius = arrow.radius, _a = arrow.slices, slices = _a === void 0 ? 12 : _a, coneHeight = arrow.coneHeight, coneRadius = arrow.coneRadius;
+                var a = LA.Vector3.fromObj(vA), b = LA.Vector3.fromObj(vB);
+                var len = LA.Vector3.distance(a, b);
+                var t = len - coneHeight;
+                var dir = LA.Vector3.normalize(b, LA.Vector3.sub(b, b, a));
+                var pivot = { x: a[0] + t * dir[0], y: a[1] + t * dir[1], z: a[2] + t * dir[2] };
+                return [
+                    { type: 'Cone', a: pivot, b: vB, id: id, radius: coneRadius, slices: slices },
+                    { type: 'Tube', a: vA, b: pivot, id: id, radius: radius, slices: slices },
+                ];
+            }
+            Primitive.createArrow = createArrow;
+            var unitCube = Visualization.GeometryHelper.toSurface(new Visualization.THREE.BoxGeometry(1, 1, 1));
+            function createDashes(line) {
+                var id = line.id, vA = line.a, vB = line.b, width = line.width, dashSize = line.dashSize;
+                var a = LA.Vector3.fromObj(vA), b = LA.Vector3.fromObj(vB);
+                var dist = LA.Vector3.distance(a, b);
+                var dir = LA.Vector3.sub(LA.Vector3.zero(), b, a);
+                LA.Vector3.normalize(dir, dir);
+                var numDashes = Math.ceil(dist / dashSize);
+                var delta = dist / (numDashes - 1);
+                var scale = [width, width, delta];
+                var up = [0, 0, 1];
+                var axis = LA.Vector3.cross(LA.Vector3.zero(), up, dir);
+                var angle = LA.Vector3.angle(up, dir);
+                var rotation = LA.Matrix4.fromRotation(LA.Matrix4.zero(), angle, axis);
+                var surfaces = [];
+                for (var i = 0; i < numDashes; i += 2) {
+                    var translation = [a[0] + dir[0] * delta * i, a[1] + dir[1] * delta * i, a[2] + dir[2] * delta * i];
+                    surfaces.push({
+                        type: 'Surface',
+                        id: id,
+                        surface: unitCube,
+                        rotation: rotation,
+                        scale: scale,
+                        translation: translation
+                    });
+                }
+                return surfaces;
+            }
+            Primitive.createDashes = createDashes;
         })(Primitive = Visualization.Primitive || (Visualization.Primitive = {}));
     })(Visualization = LiteMol.Visualization || (LiteMol.Visualization = {}));
 })(LiteMol || (LiteMol = {}));
@@ -70479,12 +70545,12 @@ var LiteMol;
             function buildSurface(shapes) {
                 var _this = this;
                 return LiteMol.Core.computation(function (ctx) { return __awaiter(_this, void 0, void 0, function () {
-                    var uniqueSpheres, shapeSurfaces, _i, shapes_1, s, sphere, tube, size, _a, shapeSurfaces_1, s, _c, s_1, g, vertices, normals, triangles, annotation, vOffset, nOffset, tOffset, aOffset, v, scaleTransform, translateTransform, rotateTransform, transform, vs, shapeIndex, _d, shapes_2, s, surfaces, startVOffset, surface, i, _b, ns, i, _b, surface, i, _b, ns, i, _b, surface, i, _b, ns, i, _b, i, _b, ns, i, _b, _e, surfaces_1, surface, ts, i, _b, i, _b, ret;
-                    return __generator(this, function (_f) {
-                        switch (_f.label) {
+                    var uniqueSpheres, shapeSurfaces, _i, shapes_1, s, sphere, tube, size, _a, shapeSurfaces_1, s, vertices, normals, triangles, annotation, vOffset, nOffset, tOffset, aOffset, v, scaleTransform, translateTransform, rotateTransform, transform, vs, shapeIndex, _c, shapes_2, s, surface, startVOffset, i, _b, ns, i, _b, i, _b, ns, i, _b, i, _b, ns, i, _b, i, _b, ns, i, _b, ts, i, _b, i, _b, ret;
+                    return __generator(this, function (_d) {
+                        switch (_d.label) {
                             case 0: return [4 /*yield*/, ctx.updateProgress('Building surface...')];
                             case 1:
-                                _f.sent();
+                                _d.sent();
                                 uniqueSpheres = LiteMol.Core.Utils.FastMap.create();
                                 shapeSurfaces = [];
                                 for (_i = 0, shapes_1 = shapes; _i < shapes_1.length; _i++) {
@@ -70492,20 +70558,24 @@ var LiteMol;
                                     switch (s.type) {
                                         case 'Sphere':
                                             if (uniqueSpheres.has(s.tessalation || 0))
-                                                shapeSurfaces.push([uniqueSpheres.get(s.tessalation || 0)]);
+                                                shapeSurfaces.push(uniqueSpheres.get(s.tessalation || 0));
                                             else {
                                                 sphere = Primitive.createSphereSurface(s);
                                                 uniqueSpheres.set(s.tessalation || 0, sphere);
-                                                shapeSurfaces.push([sphere]);
+                                                shapeSurfaces.push(sphere);
                                             }
                                             break;
                                         case 'Tube': {
                                             tube = Primitive.createTubeSurface(s);
-                                            shapeSurfaces.push([tube]);
+                                            shapeSurfaces.push(tube);
+                                            break;
+                                        }
+                                        case 'Cone': {
+                                            shapeSurfaces.push(Primitive.createCone(s));
                                             break;
                                         }
                                         case 'Surface': {
-                                            shapeSurfaces.push([s.surface]);
+                                            shapeSurfaces.push(s.surface);
                                             break;
                                         }
                                     }
@@ -70513,11 +70583,8 @@ var LiteMol;
                                 size = { vertexCount: 0, triangleCount: 0 };
                                 for (_a = 0, shapeSurfaces_1 = shapeSurfaces; _a < shapeSurfaces_1.length; _a++) {
                                     s = shapeSurfaces_1[_a];
-                                    for (_c = 0, s_1 = s; _c < s_1.length; _c++) {
-                                        g = s_1[_c];
-                                        size.vertexCount += g.vertexCount;
-                                        size.triangleCount += g.triangleCount;
-                                    }
+                                    size.vertexCount += s.vertexCount;
+                                    size.triangleCount += s.triangleCount;
                                 }
                                 vertices = new Float32Array(size.vertexCount * 3);
                                 normals = new Float32Array(size.vertexCount * 3);
@@ -70527,13 +70594,12 @@ var LiteMol;
                                 v = LA.Vector3.zero();
                                 scaleTransform = LA.Matrix4.zero(), translateTransform = LA.Matrix4.zero(), rotateTransform = LA.Matrix4.zero(), transform = LA.Matrix4.zero();
                                 shapeIndex = 0;
-                                for (_d = 0, shapes_2 = shapes; _d < shapes_2.length; _d++) {
-                                    s = shapes_2[_d];
-                                    surfaces = shapeSurfaces[shapeIndex++];
+                                for (_c = 0, shapes_2 = shapes; _c < shapes_2.length; _c++) {
+                                    s = shapes_2[_c];
+                                    surface = shapeSurfaces[shapeIndex++];
                                     startVOffset = (vOffset / 3) | 0;
                                     switch (s.type) {
                                         case 'Sphere': {
-                                            surface = surfaces[0];
                                             vs = surface.vertices;
                                             LA.Matrix4.fromScaling(scaleTransform, [s.radius, s.radius, s.radius]);
                                             LA.Matrix4.fromTranslation(translateTransform, [s.center.x, s.center.y, s.center.z]);
@@ -70551,8 +70617,8 @@ var LiteMol;
                                             }
                                             break;
                                         }
-                                        case 'Tube': {
-                                            surface = surfaces[0];
+                                        case 'Tube':
+                                        case 'Cone': {
                                             vs = surface.vertices;
                                             for (i = 0, _b = vs.length; i < _b; i++) {
                                                 vertices[vOffset++] = vs[i];
@@ -70564,7 +70630,6 @@ var LiteMol;
                                             break;
                                         }
                                         case 'Surface': {
-                                            surface = surfaces[0];
                                             if (!surface.normals)
                                                 Surface.computeNormalsImmediate(surface);
                                             vs = surface.vertices;
@@ -70606,15 +70671,12 @@ var LiteMol;
                                             break;
                                         }
                                     }
-                                    for (_e = 0, surfaces_1 = surfaces; _e < surfaces_1.length; _e++) {
-                                        surface = surfaces_1[_e];
-                                        ts = surface.triangleIndices;
-                                        for (i = 0, _b = ts.length; i < _b; i++) {
-                                            triangles[tOffset++] = startVOffset + ts[i];
-                                        }
-                                        for (i = 0, _b = surface.vertexCount; i < _b; i++) {
-                                            annotation[aOffset++] = s.id;
-                                        }
+                                    ts = surface.triangleIndices;
+                                    for (i = 0, _b = ts.length; i < _b; i++) {
+                                        triangles[tOffset++] = startVOffset + ts[i];
+                                    }
+                                    for (i = 0, _b = surface.vertexCount; i < _b; i++) {
+                                        annotation[aOffset++] = s.id;
                                     }
                                 }
                                 ret = {
@@ -70639,6 +70701,36 @@ var LiteMol;
                     return this;
                 };
                 Builder.prototype.buildSurface = function () {
+                    var normalize = false;
+                    for (var _i = 0, _a = this.shapes; _i < _a.length; _i++) {
+                        var s = _a[_i];
+                        if (s.type === 'DashedLine' || s.type === 'Arrow') {
+                            normalize = true;
+                            break;
+                        }
+                    }
+                    if (normalize) {
+                        var normalized = [];
+                        for (var _c = 0, _d = this.shapes; _c < _d.length; _c++) {
+                            var s = _d[_c];
+                            if (s.type === 'DashedLine') {
+                                for (var _e = 0, _f = Primitive.createDashes(s); _e < _f.length; _e++) {
+                                    var d = _f[_e];
+                                    normalized[normalized.length] = d;
+                                }
+                            }
+                            else if (s.type === 'Arrow') {
+                                for (var _g = 0, _h = Primitive.createArrow(s); _g < _h.length; _g++) {
+                                    var a = _h[_g];
+                                    normalized[normalized.length] = a;
+                                }
+                            }
+                            else {
+                                normalized[normalized.length] = s;
+                            }
+                        }
+                        return buildSurface(normalized);
+                    }
                     return buildSurface(this.shapes);
                 };
                 Builder.create = function () {

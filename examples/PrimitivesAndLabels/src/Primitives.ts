@@ -98,7 +98,7 @@ namespace LiteMol.PrimitivesAndLabels {
             const length = Math.sqrt(dx*dx + dy*dy + dz * dz);
             const center = { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2, z: (a.z + b.z) / 2 }
             tags.set(id, { kind: 'Connector', aResidueIndex: fs.fragments[reaIndex].residueIndices[0], bResidueIndex: fs.fragments[i].residueIndices[0], length, model, center });
-            shapes.add({ type: 'Tube', id, radius: 0.1, a, b, tessalation: 12 });
+            shapes.add({ type: 'Tube', id, radius: 0.1, a, b, slices: 12 });
         }
 
         return {

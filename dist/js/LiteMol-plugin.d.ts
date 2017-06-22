@@ -13435,6 +13435,7 @@ declare namespace LiteMol.Core.Geometry.LinearAlgebra {
         function obj(): ObjectVec3;
         function zero(): number[];
         function clone(a: number[]): number[];
+        function fromObj(v: ObjectVec3): number[];
         function fromValues(x: number, y: number, z: number): number[];
         function set(out: number[], x: number, y: number, z: number): number[];
         function copy(out: number[], a: number[]): number[];
@@ -15225,11 +15226,14 @@ declare namespace LiteMol.Visualization.Molecule.Colors {
 declare namespace LiteMol.Visualization.Primitive {
     function createSphereSurface(sphere: Shape.Sphere): Core.Geometry.Surface;
     function createTubeSurface(tube: Shape.Tube): Core.Geometry.Surface;
+    function createCone(cone: Shape.Cone): Core.Geometry.Surface;
+    function createArrow(arrow: Shape.Arrow): Shape[];
+    function createDashes(line: Shape.DashedLine): Shape.Surface[];
 }
 declare namespace LiteMol.Visualization.Primitive {
     import LA = Core.Geometry.LinearAlgebra;
     import Surface = Core.Geometry.Surface;
-    type Shape = Shape.Sphere | Shape.Tube | Shape.Surface;
+    type Shape = Shape.Sphere | Shape.Tube | Shape.Surface | Shape.DashedLine | Shape.Cone | Shape.Arrow;
     namespace Shape {
         type Sphere = {
             type: 'Sphere';
@@ -15244,7 +15248,33 @@ declare namespace LiteMol.Visualization.Primitive {
             b: LA.ObjectVec3;
             radius: number;
             id: number;
-            tessalation?: number;
+            slices?: number;
+        };
+        type DashedLine = {
+            type: 'DashedLine';
+            a: LA.ObjectVec3;
+            b: LA.ObjectVec3;
+            width: number;
+            dashSize: number;
+            id: number;
+        };
+        type Arrow = {
+            type: 'Arrow';
+            a: LA.ObjectVec3;
+            b: LA.ObjectVec3;
+            radius: number;
+            id: number;
+            coneRadius: number;
+            coneHeight: number;
+            slices?: number;
+        };
+        type Cone = {
+            type: 'Cone';
+            a: LA.ObjectVec3;
+            b: LA.ObjectVec3;
+            radius: number;
+            id: number;
+            slices?: number;
         };
         type Surface = {
             type: 'Surface';

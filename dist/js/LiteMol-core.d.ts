@@ -2035,6 +2035,7 @@ declare namespace LiteMol.Core.Geometry.LinearAlgebra {
         function obj(): ObjectVec3;
         function zero(): number[];
         function clone(a: number[]): number[];
+        function fromObj(v: ObjectVec3): number[];
         function fromValues(x: number, y: number, z: number): number[];
         function set(out: number[], x: number, y: number, z: number): number[];
         function copy(out: number[], a: number[]): number[];
