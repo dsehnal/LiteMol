@@ -14,7 +14,7 @@ namespace LiteMol.Visualization.Primitive {
         export type Sphere = { type: 'Sphere', center: LA.ObjectVec3, radius: number, id: number, tessalation?:number }
         export type Tube = { type: 'Tube', a: LA.ObjectVec3, b: LA.ObjectVec3, radius: number, id: number, tessalation?:number }
         //export type Arrow = { type: 'Arrow', a: LA.ObjectVec3, b: LA.ObjectVec3, radius: number, id: number, slices?: number, segments?:number }
-        export type Surface = { type: 'Surface', surface: Core.Geometry.Surface, id: number, transform: LA.Matrix4 }
+        export type Surface = { type: 'Surface', surface: Core.Geometry.Surface, id: number, scale?: number[], translation?: number[], rotation?: LA.Matrix4 }
     }
 
     function buildSurface(shapes: Shape[]): Core.Computation<Surface> {
@@ -61,8 +61,8 @@ namespace LiteMol.Visualization.Primitive {
 
             let vOffset = 0, nOffset = 0, tOffset = 0, aOffset = 0;
 
-            let v = LA.Vector3.obj();
-            let scaleTransform = LA.Matrix4.zero(), translateTransform = LA.Matrix4.zero(), transform = LA.Matrix4.zero();
+            let v = LA.Vector3.zero();
+            let scaleTransform = LA.Matrix4.zero(), translateTransform = LA.Matrix4.zero(), rotateTransform = LA.Matrix4.zero(), transform = LA.Matrix4.zero();
             let vs: Float32Array;
 
             let shapeIndex = 0;
@@ -77,12 +77,15 @@ namespace LiteMol.Visualization.Primitive {
                         LA.Matrix4.fromTranslation(translateTransform, [s.center.x, s.center.y, s.center.z]);
                         LA.Matrix4.mul(transform, translateTransform, scaleTransform);
                         for (let i = 0, _b = surface.vertexCount * 3; i < _b; i += 3) {
-                            v.x = vs[i], v.y = vs[i + 1], v.z = vs[i + 2];
-                            LA.Matrix4.transformVector3(v, v, transform);
-                            //v.applyMatrix4(transform);
-                            vertices[vOffset++] = v.x;
-                            vertices[vOffset++] = v.y;
-                            vertices[vOffset++] = v.z;
+                            v[0] = vs[i], v[1] = vs[i + 1], v[2] = vs[i + 2];
+                            LA.Vector3.transformMat4(v, v, transform);
+                            vertices[vOffset++] = v[0];
+                            vertices[vOffset++] = v[1];
+                            vertices[vOffset++] = v[2];
+                        }
+                        const ns = surface!.normals!;
+                        for (let i = 0, _b = ns.length; i < _b; i++) {
+                            normals[nOffset++] = ns[i];
                         }
                         break;
                     }
@@ -92,23 +95,50 @@ namespace LiteMol.Visualization.Primitive {
                         for (let i = 0, _b = vs.length; i < _b; i++) {
                             vertices[vOffset++] = vs[i];
                         }
+                        const ns = surface!.normals!;
+                        for (let i = 0, _b = ns.length; i < _b; i++) {
+                            normals[nOffset++] = ns[i];
+                        }
                         break;
                     }
                     case 'Surface': {
                         const surface = surfaces[0]; 
-                        Surface.computeNormalsImmediate(surface);
+                        if (!surface.normals) Surface.computeNormalsImmediate(surface);
                         vs = surface.vertices;
-                        if (s.transform) {
+                        if (s.rotation || s.scale || s.translation) {
+
+                            LA.Matrix4.fromScaling(scaleTransform, s.scale || [1, 1, 1]);
+                            LA.Matrix4.fromTranslation(translateTransform, s.translation || [0, 0, 0]);
+                            if (s.rotation) LA.Matrix4.copy(rotateTransform, s.rotation);
+                            else LA.Matrix4.fromIdentity(rotateTransform);
+
+                            LA.Matrix4.mul3(transform, translateTransform, rotateTransform, scaleTransform);
+
                             for (let i = 0, _b = vs.length; i < _b; i += 3) {
-                                v.x = vs[i], v.y = vs[i + 1], v.z = vs[i + 2];
-                                LA.Matrix4.transformVector3(v, v, s.transform);
-                                vertices[vOffset++] = v.x;
-                                vertices[vOffset++] = v.y;
-                                vertices[vOffset++] = v.z;
+                                v[0] = vs[i], v[1] = vs[i + 1], v[2] = vs[i + 2];
+                                LA.Vector3.transformMat4(v, v, transform);
+                                vertices[vOffset++] = v[0];
+                                vertices[vOffset++] = v[1];
+                                vertices[vOffset++] = v[2];
+                            }
+
+                            LA.Matrix4.mul(transform, rotateTransform, scaleTransform);
+                            const ns = surface!.normals!;
+                            for (let i = 0, _b = ns.length; i < _b; i += 3) {
+                                v[0] = ns[i], v[1] = ns[i + 1], v[2] = ns[i + 2];
+                                LA.Vector3.transformMat4(v, v, transform);
+                                LA.Vector3.normalize(v, v);
+                                normals[nOffset++] = v[0];
+                                normals[nOffset++] = v[1];
+                                normals[nOffset++] = v[2];
                             }
                         } else {
                             for (let i = 0, _b = vs.length; i < _b; i++) {
                                 vertices[vOffset++] = vs[i];
+                            }
+                            const ns = surface!.normals!;
+                            for (let i = 0, _b = ns.length; i < _b; i++) {
+                                normals[nOffset++] = ns[i];
                             }
                         }
                         break;
@@ -116,11 +146,6 @@ namespace LiteMol.Visualization.Primitive {
                 }
 
                 for (const surface of surfaces) {
-                    vs = surface!.normals!;
-                    for (let i = 0, _b = vs.length; i < _b; i++) {
-                        normals[nOffset++] = vs[i];
-                    }
-
                     let ts = surface!.triangleIndices!;
                     for (let i = 0, _b = ts.length; i < _b; i++) {
                         triangles[tOffset++] = startVOffset + ts[i];

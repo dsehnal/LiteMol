@@ -2000,10 +2000,11 @@ declare namespace LiteMol.Core.Geometry.LinearAlgebra {
     namespace Matrix4 {
         function zero(): number[];
         function identity(): number[];
+        function fromIdentity(mat: number[]): number[];
         function ofRows(rows: number[][]): number[];
         function areEqual(a: number[], b: number[], eps: number): boolean;
         function setValue(a: number[], i: number, j: number, value: number): void;
-        function copy(out: number[], a: any): number[];
+        function copy(out: number[], a: number[]): number[];
         function clone(a: number[]): number[];
         function invert(out: number[], a: number[]): number[] | null;
         function mul(out: number[], a: number[], b: number[]): number[];

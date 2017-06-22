@@ -14288,6 +14288,26 @@ var LiteMol;
                         return out;
                     }
                     Matrix4.identity = identity;
+                    function fromIdentity(mat) {
+                        mat[0] = 1;
+                        mat[1] = 0;
+                        mat[2] = 0;
+                        mat[3] = 0;
+                        mat[4] = 0;
+                        mat[5] = 1;
+                        mat[6] = 0;
+                        mat[7] = 0;
+                        mat[8] = 0;
+                        mat[9] = 0;
+                        mat[10] = 1;
+                        mat[11] = 0;
+                        mat[12] = 0;
+                        mat[13] = 0;
+                        mat[14] = 0;
+                        mat[15] = 1;
+                        return mat;
+                    }
+                    Matrix4.fromIdentity = fromIdentity;
                     function ofRows(rows) {
                         var out = zero(), i, j, r;
                         for (i = 0; i < 4; i++) {

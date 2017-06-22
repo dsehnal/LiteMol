@@ -55,6 +55,26 @@ namespace LiteMol.Core.Geometry.LinearAlgebra {
             return out;
         }
 
+        export function fromIdentity(mat: number[]): number[] {
+            mat[0] = 1;
+            mat[1] = 0;
+            mat[2] = 0;
+            mat[3] = 0;
+            mat[4] = 0;
+            mat[5] = 1;
+            mat[6] = 0;
+            mat[7] = 0;
+            mat[8] = 0;
+            mat[9] = 0;
+            mat[10] = 1;
+            mat[11] = 0;
+            mat[12] = 0;
+            mat[13] = 0;
+            mat[14] = 0;
+            mat[15] = 1;
+            return mat;
+        }
+
         export function ofRows(rows: number[][]): number[] {
             let out = zero(), i: number, j: number, r: number[];
             for (i = 0; i < 4; i++) {
@@ -79,7 +99,7 @@ namespace LiteMol.Core.Geometry.LinearAlgebra {
             a[4 * j + i] = value;
         }
 
-        export function copy(out: number[], a: any) {
+        export function copy(out: number[], a: number[]) {
             out[0] = a[0];
             out[1] = a[1];
             out[2] = a[2];

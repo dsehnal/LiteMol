@@ -59291,6 +59291,26 @@ var LiteMol;
                         return out;
                     }
                     Matrix4.identity = identity;
+                    function fromIdentity(mat) {
+                        mat[0] = 1;
+                        mat[1] = 0;
+                        mat[2] = 0;
+                        mat[3] = 0;
+                        mat[4] = 0;
+                        mat[5] = 1;
+                        mat[6] = 0;
+                        mat[7] = 0;
+                        mat[8] = 0;
+                        mat[9] = 0;
+                        mat[10] = 1;
+                        mat[11] = 0;
+                        mat[12] = 0;
+                        mat[13] = 0;
+                        mat[14] = 0;
+                        mat[15] = 1;
+                        return mat;
+                    }
+                    Matrix4.fromIdentity = fromIdentity;
                     function ofRows(rows) {
                         var out = zero(), i, j, r;
                         for (i = 0; i < 4; i++) {
@@ -70454,7 +70474,7 @@ var LiteMol;
             function buildSurface(shapes) {
                 var _this = this;
                 return LiteMol.Core.computation(function (ctx) { return __awaiter(_this, void 0, void 0, function () {
-                    var uniqueSpheres, shapeSurfaces, _i, shapes_1, s, sphere, tube, size, _a, shapeSurfaces_1, s, _c, s_1, g, vertices, normals, triangles, annotation, vOffset, nOffset, tOffset, aOffset, v, scaleTransform, translateTransform, transform, vs, shapeIndex, _d, shapes_2, s, surfaces, startVOffset, surface, i, _b, surface, i, _b, surface, i, _b, i, _b, _e, surfaces_1, surface, i, _b, ts, i, _b, i, _b, ret;
+                    var uniqueSpheres, shapeSurfaces, _i, shapes_1, s, sphere, tube, size, _a, shapeSurfaces_1, s, _c, s_1, g, vertices, normals, triangles, annotation, vOffset, nOffset, tOffset, aOffset, v, scaleTransform, translateTransform, rotateTransform, transform, vs, shapeIndex, _d, shapes_2, s, surfaces, startVOffset, surface, i, _b, ns, i, _b, surface, i, _b, ns, i, _b, surface, i, _b, ns, i, _b, i, _b, ns, i, _b, _e, surfaces_1, surface, ts, i, _b, i, _b, ret;
                     return __generator(this, function (_f) {
                         switch (_f.label) {
                             case 0: return [4 /*yield*/, ctx.updateProgress('Building surface...')];
@@ -70499,8 +70519,8 @@ var LiteMol;
                                 triangles = new Uint32Array(size.triangleCount * 3);
                                 annotation = new Int32Array(size.vertexCount);
                                 vOffset = 0, nOffset = 0, tOffset = 0, aOffset = 0;
-                                v = LA.Vector3.obj();
-                                scaleTransform = LA.Matrix4.zero(), translateTransform = LA.Matrix4.zero(), transform = LA.Matrix4.zero();
+                                v = LA.Vector3.zero();
+                                scaleTransform = LA.Matrix4.zero(), translateTransform = LA.Matrix4.zero(), rotateTransform = LA.Matrix4.zero(), transform = LA.Matrix4.zero();
                                 shapeIndex = 0;
                                 for (_d = 0, shapes_2 = shapes; _d < shapes_2.length; _d++) {
                                     s = shapes_2[_d];
@@ -70514,12 +70534,15 @@ var LiteMol;
                                             LA.Matrix4.fromTranslation(translateTransform, [s.center.x, s.center.y, s.center.z]);
                                             LA.Matrix4.mul(transform, translateTransform, scaleTransform);
                                             for (i = 0, _b = surface.vertexCount * 3; i < _b; i += 3) {
-                                                v.x = vs[i], v.y = vs[i + 1], v.z = vs[i + 2];
-                                                LA.Matrix4.transformVector3(v, v, transform);
-                                                //v.applyMatrix4(transform);
-                                                vertices[vOffset++] = v.x;
-                                                vertices[vOffset++] = v.y;
-                                                vertices[vOffset++] = v.z;
+                                                v[0] = vs[i], v[1] = vs[i + 1], v[2] = vs[i + 2];
+                                                LA.Vector3.transformMat4(v, v, transform);
+                                                vertices[vOffset++] = v[0];
+                                                vertices[vOffset++] = v[1];
+                                                vertices[vOffset++] = v[2];
+                                            }
+                                            ns = surface.normals;
+                                            for (i = 0, _b = ns.length; i < _b; i++) {
+                                                normals[nOffset++] = ns[i];
                                             }
                                             break;
                                         }
@@ -70529,24 +70552,50 @@ var LiteMol;
                                             for (i = 0, _b = vs.length; i < _b; i++) {
                                                 vertices[vOffset++] = vs[i];
                                             }
+                                            ns = surface.normals;
+                                            for (i = 0, _b = ns.length; i < _b; i++) {
+                                                normals[nOffset++] = ns[i];
+                                            }
                                             break;
                                         }
                                         case 'Surface': {
                                             surface = surfaces[0];
-                                            Surface.computeNormalsImmediate(surface);
+                                            if (!surface.normals)
+                                                Surface.computeNormalsImmediate(surface);
                                             vs = surface.vertices;
-                                            if (s.transform) {
+                                            if (s.rotation || s.scale || s.translation) {
+                                                LA.Matrix4.fromScaling(scaleTransform, s.scale || [1, 1, 1]);
+                                                LA.Matrix4.fromTranslation(translateTransform, s.translation || [0, 0, 0]);
+                                                if (s.rotation)
+                                                    LA.Matrix4.copy(rotateTransform, s.rotation);
+                                                else
+                                                    LA.Matrix4.fromIdentity(rotateTransform);
+                                                LA.Matrix4.mul3(transform, translateTransform, rotateTransform, scaleTransform);
                                                 for (i = 0, _b = vs.length; i < _b; i += 3) {
-                                                    v.x = vs[i], v.y = vs[i + 1], v.z = vs[i + 2];
-                                                    LA.Matrix4.transformVector3(v, v, s.transform);
-                                                    vertices[vOffset++] = v.x;
-                                                    vertices[vOffset++] = v.y;
-                                                    vertices[vOffset++] = v.z;
+                                                    v[0] = vs[i], v[1] = vs[i + 1], v[2] = vs[i + 2];
+                                                    LA.Vector3.transformMat4(v, v, transform);
+                                                    vertices[vOffset++] = v[0];
+                                                    vertices[vOffset++] = v[1];
+                                                    vertices[vOffset++] = v[2];
+                                                }
+                                                LA.Matrix4.mul(transform, rotateTransform, scaleTransform);
+                                                ns = surface.normals;
+                                                for (i = 0, _b = ns.length; i < _b; i += 3) {
+                                                    v[0] = ns[i], v[1] = ns[i + 1], v[2] = ns[i + 2];
+                                                    LA.Vector3.transformMat4(v, v, transform);
+                                                    LA.Vector3.normalize(v, v);
+                                                    normals[nOffset++] = v[0];
+                                                    normals[nOffset++] = v[1];
+                                                    normals[nOffset++] = v[2];
                                                 }
                                             }
                                             else {
                                                 for (i = 0, _b = vs.length; i < _b; i++) {
                                                     vertices[vOffset++] = vs[i];
+                                                }
+                                                ns = surface.normals;
+                                                for (i = 0, _b = ns.length; i < _b; i++) {
+                                                    normals[nOffset++] = ns[i];
                                                 }
                                             }
                                             break;
@@ -70554,10 +70603,6 @@ var LiteMol;
                                     }
                                     for (_e = 0, surfaces_1 = surfaces; _e < surfaces_1.length; _e++) {
                                         surface = surfaces_1[_e];
-                                        vs = surface.normals;
-                                        for (i = 0, _b = vs.length; i < _b; i++) {
-                                            normals[nOffset++] = vs[i];
-                                        }
                                         ts = surface.triangleIndices;
                                         for (i = 0, _b = ts.length; i < _b; i++) {
                                             triangles[tOffset++] = startVOffset + ts[i];
@@ -72878,6 +72923,8 @@ var LiteMol;
                 Molecule.formatInfoShort = formatInfoShort;
                 function isMoleculeModelInteractivity(info) {
                     if (Interactivity.isEmpty(info))
+                        return false;
+                    if (info.source.type.info.typeClass === Bootstrap.Entity.VisualClass && info.source.type !== Bootstrap.Entity.Molecule.Visual)
                         return false;
                     var modelOrSelection = Bootstrap.Utils.Molecule.findModelOrSelection(info.source);
                     if (!modelOrSelection)
