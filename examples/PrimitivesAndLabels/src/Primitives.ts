@@ -122,24 +122,24 @@ namespace LiteMol.PrimitivesAndLabels {
 
         const t = plugin.createTransform();
         
-        t.add('molecule', CreateBindingMap, {
+        t.add('model', CreateBindingMap, {
             label: 'Binding Map',
             tag: <SurfaceTag>{ type: 'BindingMap', tags },
             surface,
             isInteractive: true,
             theme
         }, { });
-        t.add('molecule', Bootstrap.Entity.Transformer.Labels.Create, labels);
+        t.add('model', Bootstrap.Entity.Transformer.Labels.Create, labels);
 
         plugin.applyTransform(t);
     }
 
     export interface CreateBindingMapProps { label?: string, tag?: any, surface?: Core.Geometry.Surface, theme?: Visualization.Theme, transparency?: Visualization.Theme.Transparency, isWireframe?: boolean, isInteractive?: boolean }
-    export const CreateBindingMap = Bootstrap.Tree.Transformer.create<Bootstrap.Entity.Molecule.Molecule, Bootstrap.Entity.Visual.Surface, CreateBindingMapProps>({
+    export const CreateBindingMap = Bootstrap.Tree.Transformer.create<Bootstrap.Entity.Molecule.Model, Bootstrap.Entity.Visual.Surface, CreateBindingMapProps>({
         id: 'primitives-and-labels-example-create-surface',
         name: 'Create Binding Map',
         description: 'Create a binding map.',
-        from: [Bootstrap.Entity.Molecule.Molecule],
+        from: [Bootstrap.Entity.Molecule.Model],
         to: [Bootstrap.Entity.Visual.Surface],
         defaultParams: () => ({}),
         isUpdatable: false

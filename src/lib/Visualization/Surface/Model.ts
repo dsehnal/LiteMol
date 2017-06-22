@@ -46,7 +46,11 @@ namespace LiteMol.Visualization.Surface {
         }
 
         highlightElement(pickId: number, highlight: boolean): boolean {
-            return this.applySelection(this.getPickElements(pickId), highlight ? Selection.Action.Highlight : Selection.Action.RemoveHighlight);
+            if (this.surface.annotation) {
+                return this.applySelection(this.getPickElements(pickId), highlight ? Selection.Action.Highlight : Selection.Action.RemoveHighlight);
+            } else {
+                return this.highlightInternal(highlight);
+            }
         }
                 
         protected highlightInternal(isOn: boolean) {

@@ -67540,7 +67540,12 @@ var LiteMol;
                     return true;
                 };
                 Model.prototype.highlightElement = function (pickId, highlight) {
-                    return this.applySelection(this.getPickElements(pickId), highlight ? 3 /* Highlight */ : 4 /* RemoveHighlight */);
+                    if (this.surface.annotation) {
+                        return this.applySelection(this.getPickElements(pickId), highlight ? 3 /* Highlight */ : 4 /* RemoveHighlight */);
+                    }
+                    else {
+                        return this.highlightInternal(highlight);
+                    }
                 };
                 Model.prototype.highlightInternal = function (isOn) {
                     return Visualization.Selection.applyActionToBuffer(this.geometry.vertexStateBuffer, isOn ? 3 /* Highlight */ : 4 /* RemoveHighlight */);

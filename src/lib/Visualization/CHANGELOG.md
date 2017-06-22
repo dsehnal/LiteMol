@@ -2,6 +2,7 @@
 * Added support for labels.
 * Added support for additional primitives.
 * Updated Surface primitive transforms.
+* Fixed surface highlighting.
 
 # 1.6.7
 * Ability to customize maximum H bond length.
