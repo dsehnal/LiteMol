@@ -6,7 +6,7 @@ namespace LiteMol.Comparison.Base {
     "use strict";
 
     import PositionTableSchema = Core.Structure.PositionTable;
-    import ObjectVec3 = Core.Geometry.LinearAlgebra.ObjectVec3;
+    import LA = Core.Geometry.LinearAlgebra;
 
     export namespace PositionTable {        
         export function transformToCentroidCoordinates(table: PositionTableSchema) {
@@ -15,27 +15,24 @@ namespace LiteMol.Comparison.Base {
             const atomsY = table.y;
             const atomsZ = table.z;
             for (let i = 0; i < table.count; i++) {
-                atomsX[i] -= centroid.x;
-                atomsY[i] -= centroid.y;
-                atomsZ[i] -= centroid.z;
+                atomsX[i] -= centroid[0];
+                atomsY[i] -= centroid[1];
+                atomsZ[i] -= centroid[2];
             }
         }
 
-        export function getCentroid(positions: PositionTableSchema): ObjectVec3 {
+        export function getCentroid(positions: PositionTableSchema): LA.Vector3 {
 
             let xs = positions.x, ys = positions.y, zs = positions.z;
-            let center = { x: 0, y: 0, z: 0 };
+            let center = LA.Vector3.zero();
 
             for (let i = 0, _l = positions.count; i < _l; i++) {
-                center.x += xs[i];
-                center.y += ys[i];
-                center.z += zs[i];
+                center[0] += xs[i];
+                center[1] += ys[i];
+                center[2] += zs[i];
             }
 
-            center.x /= positions.count;
-            center.y /= positions.count;
-            center.z /= positions.count;
-
+            LA.Vector3.scale(center, center, 1 / positions.count);
             return center;
         }
     }

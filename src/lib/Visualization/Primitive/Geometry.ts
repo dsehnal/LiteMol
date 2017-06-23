@@ -18,7 +18,7 @@ namespace LiteMol.Visualization.Primitive {
     export function createTubeSurface(tube: Shape.Tube) {
         const { a, b, slices = 12 } = tube;
         const geom = new THREE.TubeGeometry(
-            new THREE.LineCurve3(new THREE.Vector3(a.x, a.y, a.z), new THREE.Vector3(b.x, b.y, b.z)) as any,
+            new THREE.LineCurve3(new THREE.Vector3(a[0], a[1], a[2]), new THREE.Vector3(b[0], b[1], b[2])) as any,
             2, tube.radius, slices);
         const surf = GeometryHelper.toSurface(geom);
         geom.dispose();
@@ -27,8 +27,7 @@ namespace LiteMol.Visualization.Primitive {
 
     const coneAxis = [0, 1, 0], coneTransformRotation = LA.Matrix4.zero(), coneTransformTranslation = LA.Matrix4.zero(), coneTransformTranslation1 = LA.Matrix4.zero();
     export function createCone(cone: Shape.Cone) {
-        const { a:vA, b:vB, radius, slices = 12 } = cone;
-        const a = LA.Vector3.fromObj(vA), b = LA.Vector3.fromObj(vB);
+        const { a, b, radius, slices = 12 } = cone;
         const height = LA.Vector3.distance(a, b);
         const geom = new THREE.CylinderGeometry(0, radius, height, slices, 1);
         const surf = GeometryHelper.toSurface(geom);
@@ -48,23 +47,21 @@ namespace LiteMol.Visualization.Primitive {
     }
 
     export function createArrow(arrow: Shape.Arrow): Shape[] {
-        const { id, a:vA, b:vB, radius, slices = 12, coneHeight, coneRadius } = arrow;
-        const a = LA.Vector3.fromObj(vA), b = LA.Vector3.fromObj(vB);
+        const { id, a, b, radius, slices = 12, coneHeight, coneRadius } = arrow;
         const len = LA.Vector3.distance(a, b);
         const t = len - coneHeight;
         const dir = LA.Vector3.normalize(b,LA.Vector3.sub(b, b, a));
-        const pivot = { x: a[0] + t * dir[0], y: a[1] + t * dir[1], z: a[2] + t * dir[2] };
+        const pivot = [a[0] + t * dir[0], a[1] + t * dir[1], a[2] + t * dir[2]];
 
         return [
-            { type: 'Cone', a: pivot, b: vB, id, radius: coneRadius, slices },
-            { type: 'Tube', a: vA, b: pivot, id, radius, slices },
+            { type: 'Cone', a: pivot, b, id, radius: coneRadius, slices },
+            { type: 'Tube', a, b: pivot, id, radius, slices }
         ];
     }
 
     const unitCube = GeometryHelper.toSurface(new THREE.BoxGeometry(1, 1, 1));
     export function createDashes(line: Shape.DashedLine) {
-        const { id, a:vA, b:vB, width, dashSize } = line;
-        const a = LA.Vector3.fromObj(vA), b = LA.Vector3.fromObj(vB);
+        const { id, a, b, width, dashSize } = line;
         const dist = LA.Vector3.distance(a, b);
         const dir = LA.Vector3.sub(LA.Vector3.zero(), b, a);
         LA.Vector3.normalize(dir, dir);

@@ -7,6 +7,7 @@ namespace LiteMol.Bootstrap.Utils.Molecule {
     
     import Structure = LiteMol.Core.Structure;
     import Geometry = LiteMol.Core.Geometry;
+    import LA = Geometry.LinearAlgebra
     
     const __model = [Entity.Molecule.Model];
     export function findModel(entity: Entity.Any): Entity.Molecule.Model | undefined  {
@@ -165,32 +166,28 @@ namespace LiteMol.Bootstrap.Utils.Molecule {
         }
     }
         
-    export function getCentroidAndRadius(m: Structure.Molecule.Model, indices: number[], into: Geometry.LinearAlgebra.ObjectVec3) {        
-        into.x = 0;
-        into.y = 0;
-        into.z = 0;
+    export function getCentroidAndRadius(m: Structure.Molecule.Model, indices: number[], into: LA.Vector3) {        
+        LA.Vector3.set(into, 0, 0, 0);
         let {x,y,z} = m.positions;
         
         if (indices.length === 0) return 0;
         if (indices.length === 1) {
-            into.x = x[indices[0]];
-            into.y = y[indices[0]];
-            into.z = z[indices[0]];
+            LA.Vector3.set(into, x[indices[0]], y[indices[0]], z[indices[0]]);
             return 0;
         }
         
         for (let i of indices) {
-            into.x += x[i];
-            into.y += y[i];
-            into.z += z[i];
+            into[0] += x[i];
+            into[1] += y[i];
+            into[2] += z[i];
         }   
         let c = indices.length;     
-        into.x /= c;
-        into.y /= c;
-        into.z /= c;
+        into[0] /= c;
+        into[1] /= c;
+        into[2] /= c;
         let radius = 0;
         for (let i of indices) {
-            let dx = into.x - x[i], dy = into.y - y[i], dz = into.z - z[i];
+            let dx = into[0] - x[i], dy = into[1] - y[i], dz = into[2] - z[i];
             radius = Math.max(radius, dx * dx + dy * dy + dz * dz);
         }   
         return Math.sqrt(radius);
@@ -237,13 +234,13 @@ namespace LiteMol.Bootstrap.Utils.Molecule {
         const { x, y, z } = positions;
         const labels: string[] = [];
         const sizes = new Float32Array(fs.length) as any as number[];
-        const center = { x: 0.1, y: 0.1, z: 0.1 };
+        const center = LA.Vector3.zero();
 
         let i = 0;
         for (const f of fs.fragments) {
             const l = label(f.atomIndices[0]);
             getCentroidAndRadius(ctx.structure, f.atomIndices, center);
-            x[i] = center.x; y[i] = center.y; z[i] = center.z;
+            x[i] = center[0]; y[i] = center[1]; z[i] = center[2];
             labels[labels.length] = l;
             sizes[i] = 1.0;
             i++;

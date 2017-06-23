@@ -189,18 +189,18 @@ namespace LiteMol.Bootstrap.Visualization {
                 return;
             }
             
-            let center = { x: 0.1, y: 0.1, z: 0.1 };
+            let center = Core.Geometry.LinearAlgebra.Vector3.zero();
             let r = Utils.Molecule.getCentroidAndRadius(model.props.model, sel.props.indices, center);
-            this.scene.camera.focusOnPoint(center, r);           
+            this.scene.camera.focusOnPoint(Core.Geometry.LinearAlgebra.Vector3.toObj(center), r);           
         }
         
          private focusMoleculeModelOnQuery(what: { model: Bootstrap.Entity.Molecule.Model, query: Core.Structure.Query.Source }) {
             
             let q = Utils.Molecule.getModelAndIndicesFromQuery(what.model, what.query);
             if (!q || !q.indices.length) return;
-            let center = { x: 0.1, y: 0.1, z: 0.1 };
+            let center = Core.Geometry.LinearAlgebra.Vector3.zero();
             let r = Utils.Molecule.getCentroidAndRadius(q.model.props.model, q.indices, center);
-            this.scene.camera.focusOnPoint(center, r);           
+            this.scene.camera.focusOnPoint(Core.Geometry.LinearAlgebra.Vector3.toObj(center), r);           
         }
         
         constructor(element: HTMLElement, private context: Context, options?: LiteMol.Visualization.SceneOptions) {

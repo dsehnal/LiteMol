@@ -26,9 +26,6 @@ namespace LiteMol.Core.Structure {
             Mat4.fromTranslation(this.temp, this.tempV);           
             Mat4.mul(target, Mat4.mul(target, Mat4.mul(target, this.space.fromFrac, this.temp), this.operators[index]), this.space.toFrac);
             return target;
-
-            //this.temp.setPosition(this.tempV.set(i, j, k));
-            //return target.copy(this.space.fromFrac).multiply(this.temp).multiply(this.operators[index]).multiply(this.space.toFrac);
         }
 
         private getSpace() {

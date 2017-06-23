@@ -1986,11 +1986,6 @@ declare namespace LiteMol.Core.Formats.Density {
     }
 }
 declare namespace LiteMol.Core.Geometry.LinearAlgebra {
-    type ObjectVec3 = {
-        x: number;
-        y: number;
-        z: number;
-    };
     type Matrix4 = number[];
     type Vector3 = number[];
     type Vector4 = number[];
@@ -2015,27 +2010,22 @@ declare namespace LiteMol.Core.Geometry.LinearAlgebra {
         function fromRotation(out: number[], rad: number, axis: number[]): number[] | null;
         function scale(out: number[], a: number[], v: number[]): number[];
         function fromScaling(out: number[], v: number[]): number[];
-        function transformVector3(out: {
-            x: number;
-            y: number;
-            z: number;
-        }, a: {
-            x: number;
-            y: number;
-            z: number;
-        }, m: number[]): {
-            x: number;
-            y: number;
-            z: number;
-        };
         function makeTable(m: number[]): string;
         function determinant(a: number[]): number;
     }
     namespace Vector3 {
-        function obj(): ObjectVec3;
         function zero(): number[];
         function clone(a: number[]): number[];
-        function fromObj(v: ObjectVec3): number[];
+        function fromObj(v: {
+            x: number;
+            y: number;
+            z: number;
+        }): number[];
+        function toObj(v: number[]): {
+            x: number;
+            y: number;
+            z: number;
+        };
         function fromValues(x: number, y: number, z: number): number[];
         function set(out: number[], x: number, y: number, z: number): number[];
         function copy(out: number[], a: number[]): number[];
@@ -2182,7 +2172,7 @@ declare namespace LiteMol.Core.Geometry {
          * Bounding sphere.
          */
         boundingSphere?: {
-            center: Geometry.LinearAlgebra.ObjectVec3;
+            center: Geometry.LinearAlgebra.Vector3;
             radius: number;
         };
     }
@@ -2250,8 +2240,8 @@ declare namespace LiteMol.Core.Geometry.MolecularSurface {
     }
     interface MolecularIsoField {
         data: Geometry.MarchingCubes.MarchingCubesParameters;
-        bottomLeft: Geometry.LinearAlgebra.ObjectVec3;
-        topRight: Geometry.LinearAlgebra.ObjectVec3;
+        bottomLeft: Geometry.LinearAlgebra.Vector3;
+        topRight: Geometry.LinearAlgebra.Vector3;
         transform: number[];
         inputParameters: MolecularSurfaceInputParameters;
         parameters: MolecularIsoSurfaceParameters;
@@ -2453,7 +2443,7 @@ declare namespace LiteMol.Core.Structure {
         matrix: number[];
         id: string;
         isIdentity: boolean;
-        apply(v: Geometry.LinearAlgebra.ObjectVec3): void;
+        apply(v: Geometry.LinearAlgebra.Vector3): void;
         static applyToModelUnsafe(matrix: number[], m: Molecule.Model): void;
         constructor(matrix: number[], id: string, isIdentity: boolean);
     }
@@ -2501,7 +2491,7 @@ declare namespace LiteMol.Core.Structure {
                 readonly symmetryInfo?: SymmetryInfo;
                 readonly assemblyInfo?: AssemblyInfo;
             }
-            function withTransformedXYZ<T>(model: Model, ctx: T, transform: (ctx: T, x: number, y: number, z: number, out: Geometry.LinearAlgebra.ObjectVec3) => void): Model;
+            function withTransformedXYZ<T>(model: Model, ctx: T, transform: (ctx: T, x: number, y: number, z: number, out: Geometry.LinearAlgebra.Vector3) => void): Model;
         }
     }
 }

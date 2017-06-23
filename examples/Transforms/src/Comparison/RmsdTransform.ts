@@ -17,16 +17,16 @@ namespace LiteMol.Comparison.Base {
         a: Structure.PositionTable;
         b: Structure.PositionTable;
 
-        centerA?: LA.ObjectVec3;
-        centerB?: LA.ObjectVec3;
+        centerA?: LA.Vector3;
+        centerB?: LA.Vector3;
     }
 
     export class RmsdTransformState {
         a: Structure.PositionTable;
         b: Structure.PositionTable;
 
-        centerA: LA.ObjectVec3;
-        centerB: LA.ObjectVec3;
+        centerA: LA.Vector3;
+        centerB: LA.Vector3;
 
         evdCache: Evd.EvdCache = Evd.EvdCache.create(4);
 
@@ -71,8 +71,8 @@ namespace LiteMol.Comparison.Base {
 
         for (let i = 0, _l = state.a.count; i < _l; i++)
         {
-            let aX = xsA[i] - cA.x, aY = ysA[i] - cA.y, aZ = zsA[i] - cA.z;
-            let bX = xsB[i] - cB.x, bY = ysB[i] - cB.y, bZ = zsB[i] - cB.z;
+            let aX = xsA[i] - cA[0], aY = ysA[i] - cA[1], aZ = zsA[i] - cA[2];
+            let bX = xsB[i] - cB[0], bY = ysB[i] - cB[1], bZ = zsB[i] - cB[2];
 
             sizeSq += aX * aX + aY * aY + aZ * aZ + bX * bX + bY * bY + bZ * bZ;
             
@@ -124,9 +124,9 @@ namespace LiteMol.Comparison.Base {
 
         let m = state.translateB;
         // translation to center
-        LA.Matrix4.setValue(m, 0, 3, -state.centerB.x);
-        LA.Matrix4.setValue(m, 1, 3, -state.centerB.y);
-        LA.Matrix4.setValue(m, 2, 3, -state.centerB.z);
+        LA.Matrix4.setValue(m, 0, 3, -state.centerB[0]);
+        LA.Matrix4.setValue(m, 1, 3, -state.centerB[1]);
+        LA.Matrix4.setValue(m, 2, 3, -state.centerB[2]);
         
         m = state.rotateB;
         // rotation
@@ -145,9 +145,9 @@ namespace LiteMol.Comparison.Base {
 
         m = state.translateB;
         // translation to center
-        LA.Matrix4.setValue(m, 0, 3, state.centerA.x);
-        LA.Matrix4.setValue(m, 1, 3, state.centerA.y);
-        LA.Matrix4.setValue(m, 2, 3, state.centerA.z);
+        LA.Matrix4.setValue(m, 0, 3, state.centerA[0]);
+        LA.Matrix4.setValue(m, 1, 3, state.centerA[1]);
+        LA.Matrix4.setValue(m, 2, 3, state.centerA[2]);
         
         LA.Matrix4.mul(state.result.bTransform, state.translateB, state.tempMatrix); 
     }

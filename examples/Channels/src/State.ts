@@ -146,7 +146,7 @@ namespace LiteMol.Example.Channels.State {
         let s = Visualization.Primitive.Builder.create();
         let id = 0;
         for (let p of origins.Points) {
-            s.add({ type: 'Sphere', id: id++, radius: 1.69, center: { x: p.X, y: p.Y, z: p.Z } });
+            s.add({ type: 'Sphere', id: id++, radius: 1.69, center: [p.X, p.Y, p.Z] });
         }
         return s.buildSurface().run();        
     }

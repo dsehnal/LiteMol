@@ -9,8 +9,8 @@ namespace LiteMol.PrimitivesAndLabels {
     import Model = Core.Structure.Molecule.Model
     import LA = Core.Geometry.LinearAlgebra
 
-    export type PrimitiveTag = { kind: 'Center', residueIndex: number, model: Model, center: LA.ObjectVec3 } 
-        | { kind: 'Connector', aResidueIndex: number, bResidueIndex: number, center: LA.ObjectVec3, length: number, model: Model }
+    export type PrimitiveTag = { kind: 'Center', residueIndex: number, model: Model, center: LA.Vector3 } 
+        | { kind: 'Connector', aResidueIndex: number, bResidueIndex: number, center: LA.Vector3, length: number, model: Model }
     export type Tags = Core.Utils.FastMap<number, PrimitiveTag>
     export type SurfaceTag = { type: 'BindingMap', tags: Tags }
 
@@ -34,9 +34,9 @@ namespace LiteMol.PrimitivesAndLabels {
         tags.forEach(tag => {
             if (tag.kind !== 'Connector') return;
 
-            x[index] = tag.center.x;
-            y[index] = tag.center.y;
-            z[index] = tag.center.z;
+            x[index] = tag.center[0];
+            y[index] = tag.center[1];
+            z[index] = tag.center[2];
             labels.push(`${tag.length.toFixed(2)} Å`);
             sizes[index] = 0.75;
 
@@ -67,7 +67,7 @@ namespace LiteMol.PrimitivesAndLabels {
         const fs = pocketQ(model.queryContext);
 
         const centers = fs.fragments.map(f => {
-            const c = { x: 0, y: 0, z: 0 };
+            const c = LA.Vector3.zero();
             Bootstrap.Utils.Molecule.getCentroidAndRadius(model, f.atomIndices, c);
             return c;
         });
@@ -94,9 +94,8 @@ namespace LiteMol.PrimitivesAndLabels {
             if (i === reaIndex) continue;
             const id = i + centers.length;
             const a = centers[reaIndex], b = centers[i];
-            const dx = a.x - b.x, dy = a.y - b.y, dz = a.z - b.z;
-            const length = Math.sqrt(dx*dx + dy*dy + dz * dz);
-            const center = { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2, z: (a.z + b.z) / 2 }
+            const length = LA.Vector3.distance(a, b);
+            const center = LA.Vector3.lerp(LA.Vector3.zero(), a, b, 0.5);
             tags.set(id, { kind: 'Connector', aResidueIndex: fs.fragments[reaIndex].residueIndices[0], bResidueIndex: fs.fragments[i].residueIndices[0], length, model, center });
             shapes.add({ type: 'Tube', id, radius: 0.1, a, b, slices: 12 });
         }

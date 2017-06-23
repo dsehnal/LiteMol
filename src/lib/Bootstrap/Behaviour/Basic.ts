@@ -87,7 +87,7 @@ namespace LiteMol.Bootstrap.Behaviour {
         });
     }
     
-    const center = { x: 0, y: 0, z: 0 };
+    const center = Core.Geometry.LinearAlgebra.Vector3.zero();
     function updateCameraModel(context: Context, info: Interactivity.Info.Selection) {       
         let model = Utils.Molecule.findModel(info.source)!.props.model;
         if (!model) return;
@@ -99,11 +99,11 @@ namespace LiteMol.Bootstrap.Behaviour {
         let radius = Utils.Molecule.getCentroidAndRadius(model, elems!, center);      
         if (info.elements!.length === 1) {
             let a = info.elements![0];
-            center.x = model.positions.x[a];
-            center.y = model.positions.y[a];
-            center.z = model.positions.z[a];
+            center[0] = model.positions.x[a];
+            center[1] = model.positions.y[a];
+            center[2] = model.positions.z[a];
         }     
-        context.scene.camera.focusOnPoint(center, Math.max(radius, 7));
+        context.scene.camera.focusOnPoint(Core.Geometry.LinearAlgebra.Vector3.toObj(center), Math.max(radius, 7));
     }
 
     function updateCameraVisual(context: Context, info: Interactivity.Info) {
@@ -113,7 +113,7 @@ namespace LiteMol.Bootstrap.Behaviour {
         if (!m) return;
         let bs = m.getBoundingSphereOfSelection(info.elements);
         if (bs) {
-            context.scene.camera.focusOnPoint(bs.center, Math.max(bs.radius, 7));
+            context.scene.camera.focusOnPoint(Core.Geometry.LinearAlgebra.Vector3.toObj(bs.center), Math.max(bs.radius, 7));
         } else {
             context.scene.camera.focusOnModel(m);
         }

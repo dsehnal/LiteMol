@@ -10,23 +10,24 @@ namespace LiteMol.Core.Structure {
     namespace SymmetryHelpers {
 
         import Mat4 = Geometry.LinearAlgebra.Matrix4;
+        import Vec3 = Geometry.LinearAlgebra.Vector3;
 
-        type Vector3 = { x: number; y: number; z: number };
-
-        interface Sphere3 { center: Vector3, radius: number }
+        interface Sphere3 { center: Vec3, radius: number }
 
         function getBoudingSphere(arrays: { x: number[], y: number[], z: number[] }, indices: number[]): Sphere3 {
 
             let { x, y, z } = arrays;
-            let center = { x: 0, y: 0, z: 0 };
+            let center = Vec3.zero();
             for (let aI of indices) {
-                center.x += x[aI];
-                center.y += y[aI];
-                center.z += z[aI];
+                center[0] += x[aI];
+                center[1] += y[aI];
+                center[2] += z[aI];
             }
 
             let count = indices.length > 0 ? indices.length : 1;
-            center.x /= count; center.y /= count; center.z /= count;
+            center[0] /= count; 
+            center[1] /= count; 
+            center[2] /= count;
 
             let r = 0;
 
@@ -37,24 +38,18 @@ namespace LiteMol.Core.Structure {
             return { center, radius: Math.sqrt(r) };
         }
 
-        function newVec(): Vector3 { return { x: 0, y: 0, z: 0 } };
-
         interface BoundingData { x: number, y: number, z: number, r: number }
         type BoundingDataTable = DataTable<BoundingData>
 
-        function getSphereDist(c: Vector3, r: number, q: Sphere3) {
-            let dx = c.x - q.center.x,
-                dy = c.y - q.center.y,
-                dz = c.z - q.center.z;
-
-            return Math.sqrt(dx * dx + dy * dy + dz * dz) - (r + q.radius);
+        function getSphereDist(c: Vec3, r: number, q: Sphere3) {
+            return Vec3.distance(c, q.center) - (r + q.radius);
         }
 
         function isWithinRadius(
-            bounds: Sphere3, i: number, data: BoundingDataTable, t: number[], r: number, v: Vector3) {
+            bounds: Sphere3, i: number, data: BoundingDataTable, t: number[], r: number, v: Vec3) {
 
-            v.x = data.x[i]; v.y = data.y[i]; v.z = data.z[i];
-            Mat4.transformVector3(v, v, t);
+            v[0] = data.x[i]; v[1] = data.y[i]; v[2] = data.z[i];
+            Vec3.transformMat4(v, v, t);
 
 
             return getSphereDist(v, data.r[i], bounds) <= r;
@@ -72,12 +67,12 @@ namespace LiteMol.Core.Structure {
         }
 
         function indexedVectorDistSq(
-            aI: number, v: Vector3,
+            aI: number, v: Vec3,
             arrays: { x: number[]; y: number[]; z: number[]; }) {
 
-            let dx = arrays.x[aI] - v.x,
-                dy = arrays.y[aI] - v.y,
-                dz = arrays.z[aI] - v.z;
+            let dx = arrays.x[aI] - v[0],
+                dy = arrays.y[aI] - v[1],
+                dz = arrays.z[aI] - v[2];
 
             return dx * dx + dy * dy + dz * dz;
         }
@@ -97,7 +92,7 @@ namespace LiteMol.Core.Structure {
             radius: number,
 
             transform: number[],
-            transformed: Vector3,
+            transformed: Vec3,
             i: number,
             j: number,
             k: number,
@@ -111,13 +106,13 @@ namespace LiteMol.Core.Structure {
                 spacegroup,
                 radius,
                 transform: Mat4.zero(),
-                transformed: { x: 0, y: 0, z: 0 },
+                transformed: Vec3.zero(),
                 i: 0, j: 0, k: 0, op: 0
             };
         }
 
-        function symmetryContextMap(ctx: SymmetryContext, p: Vector3) {
-            return Mat4.transformVector3(ctx.transformed, p, ctx.transform);
+        function symmetryContextMap(ctx: SymmetryContext, p: Vec3) {
+            return Vec3.transformMat4(ctx.transformed, p, ctx.transform);
         }
 
         function symmetryContextGetTransform(ctx: SymmetryContext) {
@@ -183,67 +178,62 @@ namespace LiteMol.Core.Structure {
                 rZ = residueTable.addColumn('z', s => new Float64Array(s)),
                 rR = residueTable.addColumn('r', s => new Float64Array(s));
 
-            let allCenter = newVec(), allRadius = 0,
-                pivotCenter = newVec(), pivotRadius = 0,
+            let allCenter = Vec3.zero(), allRadius = 0,
+                pivotCenter = Vec3.zero(), pivotRadius = 0,
 
                 n = 0,
 
-                eCenter = newVec(), eRadius = 0,
-                cCenter = newVec(), cRadius = 0,
-                rCenter = newVec(), rRadius = 0;
+                eCenter = Vec3.zero(), eRadius = 0,
+                cCenter = Vec3.zero(), cRadius = 0,
+                rCenter = Vec3.zero(), rRadius = 0;
 
             for (let eI = 0, _eC = entities.count; eI < _eC; eI++) {
-
-                eCenter.x = 0; eCenter.y = 0; eCenter.z = 0;
+                Vec3.set(eCenter, 0, 0, 0);
 
                 for (let cI = entities.chainStartIndex[eI], _cC = entities.chainEndIndex[eI]; cI < _cC; cI++) {
-
-                    cCenter.x = 0; cCenter.y = 0; cCenter.z = 0;
+                    Vec3.set(cCenter, 0, 0, 0);
 
                     for (let rI = chains.residueStartIndex[cI], _rC = chains.residueEndIndex[cI]; rI < _rC; rI++) {
-
-                        rCenter.x = 0; rCenter.y = 0; rCenter.z = 0;
+                        Vec3.set(rCenter, 0, 0, 0);
 
                         for (let aI = residues.atomStartIndex[rI], _aC = residues.atomEndIndex[rI]; aI < _aC; aI++) {
-                            rCenter.x += x[aI];
-                            rCenter.y += y[aI];
-                            rCenter.z += z[aI];
+                            rCenter[0] += x[aI];
+                            rCenter[1] += y[aI];
+                            rCenter[2] += z[aI];
                         }
 
-                        allCenter.x += rCenter.x;
-                        allCenter.y += rCenter.y;
-                        allCenter.z += rCenter.z;
+                        Vec3.add(allCenter, allCenter, rCenter);
 
                         n = residues.atomEndIndex[rI] - residues.atomStartIndex[rI];
 
-                        cCenter.x += rCenter.x;
-                        cCenter.y += rCenter.y;
-                        cCenter.z += rCenter.z;
+                        Vec3.add(cCenter, cCenter, rCenter);
 
-                        rX[rI] = rCenter.x / n; rY[rI] = rCenter.y / n; rZ[rI] = rCenter.z / n;
+                        rX[rI] = rCenter[0] / n; rY[rI] = rCenter[1] / n; rZ[rI] = rCenter[2] / n;
                     }
 
-                    eCenter.x += cCenter.x;
-                    eCenter.y += cCenter.y;
-                    eCenter.z += cCenter.z;
+                    Vec3.add(eCenter, eCenter, cCenter);
 
                     n = chains.atomEndIndex[cI] - chains.atomStartIndex[cI];
-                    cX[cI] = cCenter.x / n; cY[cI] = cCenter.y / n; cZ[cI] = cCenter.z / n;
+                    cX[cI] = cCenter[0] / n; cY[cI] = cCenter[1] / n; cZ[cI] = cCenter[2] / n;
                 }
 
                 n = entities.atomEndIndex[eI] - entities.atomStartIndex[eI];
-                eX[eI] = eCenter.x / n; eY[eI] = eCenter.y / n; eZ[eI] = eCenter.z / n;
+                eX[eI] = eCenter[0] / n; eY[eI] = eCenter[1] / n; eZ[eI] = eCenter[2] / n;
             }
-            allCenter.x /= atoms.count; allCenter.y /= atoms.count; allCenter.z /= atoms.count;
+            allCenter[0] /= atoms.count; 
+            allCenter[1] /= atoms.count; 
+            allCenter[2] /= atoms.count;
 
             for (let aI of pivotIndices) {
-                pivotCenter.x += x[aI];
-                pivotCenter.y += y[aI];
-                pivotCenter.z += z[aI];
+                pivotCenter[0] += x[aI];
+                pivotCenter[1] += y[aI];
+                pivotCenter[2] += z[aI];
             }
 
             let pivotCount = pivotIndices.length > 0 ? pivotIndices.length : 1;
-            pivotCenter.x /= pivotCount; pivotCenter.y /= pivotCount; pivotCenter.z /= pivotCount;
+            pivotCenter[0] /= pivotCount; 
+            pivotCenter[1] /= pivotCount; 
+            pivotCenter[2] /= pivotCount;
 
 
             let eDA = { x: x, y: y, z: z, cX: <number[]><any>eX, cY: <number[]><any>eY, cZ: <number[]><any>eZ },
@@ -294,7 +284,6 @@ namespace LiteMol.Core.Structure {
         }
 
         function findSuitableTransforms(ctx: SymmetryContext) {
-
             let bounds = ctx.boundingInfo,
                 sg = ctx.spacegroup;
 
@@ -307,8 +296,6 @@ namespace LiteMol.Core.Structure {
                 for (let j = -3; j <= 3; j++) {
                     for (let k = -3; k <= 3; k++) {
                         for (let l = (i === 0 && j === 0 && k === 0 ? 1 : 0), lm = sg.operatorCount; l < lm; l++) {
-                            //for (let l = 0, lm = sg.operatorCount; l < lm; l++) {                            
-
                             sg.getOperatorMatrix(l, i, j, k, ctx.transform);
                             ctx.i = i;
                             ctx.k = k;
@@ -331,7 +318,6 @@ namespace LiteMol.Core.Structure {
         }
 
         function getSymmetryResidues(ctx: SymmetryContext, transforms: SymmetryTransform[]) {
-
             let bounds = ctx.boundingInfo,
                 radius = ctx.radius,
                 targetBounds = bounds.target;
@@ -344,7 +330,7 @@ namespace LiteMol.Core.Structure {
             let residueIndices = Utils.ChunkedArray.create<number>(s => new Int32Array(s), residues.count, 1),
                 operatorIndices = Utils.ChunkedArray.create<number>(s => new Int32Array(s), residues.count, 1);
 
-            let v = { x: 0, y: 0, z: 0 },
+            let v = Vec3.zero(),
                 opIndex = 0;
 
             let atomCount = 0,
@@ -352,17 +338,11 @@ namespace LiteMol.Core.Structure {
                 entityCount = 0;
 
             for (let eI = 0, _eC = entities.count; eI < _eC; eI++) {
-
-                //if (!isWithinRadius(hetBounds, eI, bounds.entities, t.transform, radius, v)) continue;
-
                 opIndex = 0;
                 let chainAdded = false;
                 for (let t of transforms) {
-
                     for (let cI = entities.chainStartIndex[eI], _cC = entities.chainEndIndex[eI]; cI < _cC; cI++) {
-
                         if (!isWithinRadius(targetBounds, cI, bounds.chains, t.transform, radius, v)) continue;
-
 
                         let residueAdded = false;
                         for (let rI = chains.residueStartIndex[cI], _rC = chains.residueEndIndex[cI]; rI < _rC; rI++) {
@@ -467,7 +447,7 @@ namespace LiteMol.Core.Structure {
 
             let assemblyResidueParts = assemblyParts.residues,
                 assemblyOpParts = assemblyParts.operators,
-                temp = { x: 0, y: 0, z: 0 },
+                temp = Geometry.LinearAlgebra.Vector3.zero(),
                 atomOffset = 0;
 
             let rI = assemblyResidueParts[0],
@@ -582,12 +562,12 @@ namespace LiteMol.Core.Structure {
 
                 for (let aI = residueAtomStartIndex[rI], _mAI = residueAtomEndIndex[rI]; aI < _mAI; aI++) {
 
-                    temp.x = x[aI]; temp.y = y[aI]; temp.z = z[aI];
-                    Mat4.transformVector3(temp, temp, transform.transform);
+                    Vec3.set(temp, x[aI], y[aI], z[aI]);
+                    Vec3.transformMat4(temp, temp, transform.transform);
 
-                    atomX![atomOffset] = temp.x;
-                    atomY![atomOffset] = temp.y;
-                    atomZ![atomOffset] = temp.z;
+                    atomX![atomOffset] = temp[0];
+                    atomY![atomOffset] = temp[1];
+                    atomZ![atomOffset] = temp[2];
                     atomId![atomOffset] = atomOffset + 1;
 
                     atomResidue![atomOffset] = residueOffset;
@@ -713,7 +693,7 @@ namespace LiteMol.Core.Structure {
 
             let spacegroup = new Spacegroup(model.data.symmetryInfo!);
             let t = Mat4.zero();
-            let v = { x: 0, y: 0, z: 0 };
+            let v = Vec3.zero();
 
             let transforms: SymmetryTransform[] = [];
 
@@ -724,7 +704,7 @@ namespace LiteMol.Core.Structure {
 
                             spacegroup.getOperatorMatrix(op, i, j, k, t);
 
-                            Mat4.transformVector3(v, bounds.center, t);
+                            Vec3.transformMat4(v, bounds.center, t);
 
                             if (getSphereDist(v, bounds.radius, bounds) > radius) continue;
 

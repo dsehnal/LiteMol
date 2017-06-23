@@ -42,7 +42,7 @@ namespace LiteMol.Core.Geometry {
         /**
          * Bounding sphere.
          */
-        boundingSphere?: { center: Geometry.LinearAlgebra.ObjectVec3, radius: number };
+        boundingSphere?: { center: Geometry.LinearAlgebra.Vector3, radius: number };
     }
     
     export namespace Surface {
@@ -195,7 +195,7 @@ namespace LiteMol.Core.Geometry {
                     r = Math.max(r, dx * dx + dy * dy + dz * dz);
                 }
                 surface.boundingSphere = {
-                    center: {x, y, z},
+                    center: LinearAlgebra.Vector3.fromValues(x, y, z),
                     radius: Math.sqrt(r)
                 }
                 return surface;
@@ -203,17 +203,17 @@ namespace LiteMol.Core.Geometry {
         }
 
         export function transformImmediate(surface: Surface, t: number[]) {
-            const p = { x: 0.1, y: 0.1, z: 0.1 }                    
-            const m = LinearAlgebra.Matrix4.transformVector3;
+            const p = LinearAlgebra.Vector3.zero();
+            const m = LinearAlgebra.Vector3.transformMat4;
             const vertices = surface.vertices;
             for (let i = 0, _c = surface.vertices.length; i < _c; i += 3) {
-                p.x = vertices[i];
-                p.y = vertices[i + 1];
-                p.z = vertices[i + 2];
+                p[0] = vertices[i];
+                p[1] = vertices[i + 1];
+                p[2] = vertices[i + 2];
                 m(p, p, t);
-                vertices[i] = p.x;
-                vertices[i + 1] = p.y;
-                vertices[i + 2] = p.z;
+                vertices[i] = p[0];
+                vertices[i + 1] = p[1];
+                vertices[i + 2] = p[2];
             }                    
             surface.normals = void 0;
             surface.boundingSphere = void 0;

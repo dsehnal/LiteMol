@@ -16,7 +16,6 @@ namespace LiteMol.Core.Geometry.LinearAlgebra {
      * furnished to do so, subject to the following conditions:
      */
 
-    export type ObjectVec3 = { x: number; y: number; z: number };
     export type Matrix4 = number[]
     export type Vector3 = number[]
     export type Vector4 = number[]
@@ -388,15 +387,6 @@ namespace LiteMol.Core.Geometry.LinearAlgebra {
             return out;
         }
 
-        export function transformVector3(out: { x: number, y: number, z: number }, a: { x: number, y: number, z: number }, m: number[]) {
-            let x = a.x, y = a.y, z = a.z;
-            out.x = m[0] * x + m[4] * y + m[8] * z + m[12];
-            out.y = m[1] * x + m[5] * y + m[9] * z + m[13];
-            out.z = m[2] * x + m[6] * y + m[10] * z + m[14];
-            //out[3] = m[3] * x + m[7] * y + m[11] * z + m[15] * w;
-            return out;
-        }
-
         export function makeTable(m: number[]) {
             let ret = '';
             for (let i = 0; i < 4; i++) {
@@ -434,12 +424,6 @@ namespace LiteMol.Core.Geometry.LinearAlgebra {
     }
 
     export namespace Vector3 {
-        export function obj(): ObjectVec3 {
-            let ret = { x: 0.1, y: 0.1, z: 0.1 };
-            ret.x = 0; ret.y = 0; ret.z = 0;
-            return ret;
-        }
-
         export function zero() {
             let out = [0.1, 0.0, 0.0];
             out[0] = 0;
@@ -454,8 +438,12 @@ namespace LiteMol.Core.Geometry.LinearAlgebra {
             return out;
         };
 
-        export function fromObj(v: ObjectVec3) {
+        export function fromObj(v: { x: number, y: number, z: number }) {
             return fromValues(v.x, v.y, v.z);
+        }
+
+        export function toObj(v: number[]) {
+            return { x: v[0], y: v[1], z: v[2] };
         }
 
         export function fromValues(x: number, y: number, z: number) {

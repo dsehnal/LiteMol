@@ -321,17 +321,17 @@ namespace LiteMol.Core.Structure {
     }
 
     export class Operator {
-        apply(v: Geometry.LinearAlgebra.ObjectVec3) {
-            Geometry.LinearAlgebra.Matrix4.transformVector3(v, v, this.matrix)
+        apply(v: Geometry.LinearAlgebra.Vector3) {
+            Geometry.LinearAlgebra.Vector3.transformMat4(v, v, this.matrix)
         }
 
         static applyToModelUnsafe(matrix: number[], m: Molecule.Model) {
-            let v = { x: 0.1, y: 0.1, z: 0.1 };
+            let v = Geometry.LinearAlgebra.Vector3.zero();
             let {x, y, z} = m.positions;
             for (let i = 0, _b = m.positions.count; i < _b; i++) {
-                v.x = x[i]; v.y = y[i]; v.z = z[i];
-                Geometry.LinearAlgebra.Matrix4.transformVector3(v, v, matrix);
-                x[i] = v.x; y[i] = v.y; z[i] = v.z;
+                v[0] = x[i]; v[1] = y[i]; v[2] = z[i];
+                Geometry.LinearAlgebra.Vector3.transformMat4(v, v, matrix);
+                x[i] = v[0]; y[i] = v[1]; z[i] = v[2];
             }
         }
 
@@ -408,18 +408,18 @@ namespace LiteMol.Core.Structure {
 
             export function withTransformedXYZ<T>(
                 model: Model, ctx: T, 
-                transform: (ctx: T, x: number, y: number, z: number, out: Geometry.LinearAlgebra.ObjectVec3) => void) {
+                transform: (ctx: T, x: number, y: number, z: number, out: Geometry.LinearAlgebra.Vector3) => void) {
 
-                let {x,y,z} = model.positions;
-                let tAtoms = model.positions.getBuilder(model.positions.count).seal();
-                let {x:tX, y:tY, z:tZ} = tAtoms;
-                let t = { x: 0.0, y: 0.0, z: 0.0 };
+                const {x,y,z} = model.positions;
+                const tAtoms = model.positions.getBuilder(model.positions.count).seal();
+                const {x:tX, y:tY, z:tZ} = tAtoms;
+                const t = Geometry.LinearAlgebra.Vector3.zero();
 
                 for (let i = 0, _l = model.positions.count; i < _l; i++) {
                     transform(ctx, x[i], y[i], z[i], t);
-                    tX[i] = t.x;
-                    tY[i] = t.y;
-                    tZ[i] = t.z;
+                    tX[i] = t[0];
+                    tY[i] = t[1];
+                    tZ[i] = t[2];
                 }
 
                 return create({

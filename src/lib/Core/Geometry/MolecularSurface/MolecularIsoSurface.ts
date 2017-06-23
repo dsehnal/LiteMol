@@ -45,8 +45,8 @@ namespace LiteMol.Core.Geometry.MolecularSurface {
     
     export interface MolecularIsoField {
         data: Geometry.MarchingCubes.MarchingCubesParameters,
-        bottomLeft: Geometry.LinearAlgebra.ObjectVec3,
-        topRight: Geometry.LinearAlgebra.ObjectVec3,
+        bottomLeft: Geometry.LinearAlgebra.Vector3,
+        topRight: Geometry.LinearAlgebra.Vector3,
         transform: number[],
         inputParameters: MolecularSurfaceInputParameters,
         parameters: MolecularIsoSurfaceParameters
@@ -232,8 +232,8 @@ namespace LiteMol.Core.Geometry.MolecularSurface {
                     annotationField: this.parameters.interactive ? new Formats.Density.Field3DZYX(<any>this.proximityMap, [this.nX, this.nY, this.nZ]) : void 0,
                     isoLevel: 0.05
                 },
-                bottomLeft: { x: this.minX, y: this.minY, z: this.minZ },
-                topRight: { x: this.maxX, y: this.maxY, z: this.maxZ },
+                bottomLeft: LinearAlgebra.Vector3.fromValues(this.minX, this.minY, this.minZ),
+                topRight: LinearAlgebra.Vector3.fromValues(this.maxX, this.maxY, this.maxZ),
                 transform: t,
                 inputParameters: this.inputParameters,
                 parameters: this.parameters

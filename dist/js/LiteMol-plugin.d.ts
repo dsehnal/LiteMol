@@ -13386,11 +13386,6 @@ declare namespace LiteMol.Core.Formats.Density {
     }
 }
 declare namespace LiteMol.Core.Geometry.LinearAlgebra {
-    type ObjectVec3 = {
-        x: number;
-        y: number;
-        z: number;
-    };
     type Matrix4 = number[];
     type Vector3 = number[];
     type Vector4 = number[];
@@ -13415,27 +13410,22 @@ declare namespace LiteMol.Core.Geometry.LinearAlgebra {
         function fromRotation(out: number[], rad: number, axis: number[]): number[] | null;
         function scale(out: number[], a: number[], v: number[]): number[];
         function fromScaling(out: number[], v: number[]): number[];
-        function transformVector3(out: {
-            x: number;
-            y: number;
-            z: number;
-        }, a: {
-            x: number;
-            y: number;
-            z: number;
-        }, m: number[]): {
-            x: number;
-            y: number;
-            z: number;
-        };
         function makeTable(m: number[]): string;
         function determinant(a: number[]): number;
     }
     namespace Vector3 {
-        function obj(): ObjectVec3;
         function zero(): number[];
         function clone(a: number[]): number[];
-        function fromObj(v: ObjectVec3): number[];
+        function fromObj(v: {
+            x: number;
+            y: number;
+            z: number;
+        }): number[];
+        function toObj(v: number[]): {
+            x: number;
+            y: number;
+            z: number;
+        };
         function fromValues(x: number, y: number, z: number): number[];
         function set(out: number[], x: number, y: number, z: number): number[];
         function copy(out: number[], a: number[]): number[];
@@ -13582,7 +13572,7 @@ declare namespace LiteMol.Core.Geometry {
          * Bounding sphere.
          */
         boundingSphere?: {
-            center: Geometry.LinearAlgebra.ObjectVec3;
+            center: Geometry.LinearAlgebra.Vector3;
             radius: number;
         };
     }
@@ -13650,8 +13640,8 @@ declare namespace LiteMol.Core.Geometry.MolecularSurface {
     }
     interface MolecularIsoField {
         data: Geometry.MarchingCubes.MarchingCubesParameters;
-        bottomLeft: Geometry.LinearAlgebra.ObjectVec3;
-        topRight: Geometry.LinearAlgebra.ObjectVec3;
+        bottomLeft: Geometry.LinearAlgebra.Vector3;
+        topRight: Geometry.LinearAlgebra.Vector3;
         transform: number[];
         inputParameters: MolecularSurfaceInputParameters;
         parameters: MolecularIsoSurfaceParameters;
@@ -13853,7 +13843,7 @@ declare namespace LiteMol.Core.Structure {
         matrix: number[];
         id: string;
         isIdentity: boolean;
-        apply(v: Geometry.LinearAlgebra.ObjectVec3): void;
+        apply(v: Geometry.LinearAlgebra.Vector3): void;
         static applyToModelUnsafe(matrix: number[], m: Molecule.Model): void;
         constructor(matrix: number[], id: string, isIdentity: boolean);
     }
@@ -13901,7 +13891,7 @@ declare namespace LiteMol.Core.Structure {
                 readonly symmetryInfo?: SymmetryInfo;
                 readonly assemblyInfo?: AssemblyInfo;
             }
-            function withTransformedXYZ<T>(model: Model, ctx: T, transform: (ctx: T, x: number, y: number, z: number, out: Geometry.LinearAlgebra.ObjectVec3) => void): Model;
+            function withTransformedXYZ<T>(model: Model, ctx: T, transform: (ctx: T, x: number, y: number, z: number, out: Geometry.LinearAlgebra.Vector3) => void): Model;
         }
     }
 }
@@ -14433,7 +14423,7 @@ declare namespace LiteMol.Visualization {
         applySelection(indices: number[], action: Selection.Action): boolean;
         getBoundingSphereOfSelection(indices: number[]): {
             radius: number;
-            center: Core.Geometry.LinearAlgebra.ObjectVec3;
+            center: Core.Geometry.LinearAlgebra.Vector3;
         } | undefined;
         abstract highlightElement(pickId: number, highlight: boolean): boolean;
         abstract getPickElements(pickId: number): number[];
@@ -14810,8 +14800,6 @@ declare namespace LiteMol.Visualization.Surface {
         pickGeometry: THREE.BufferGeometry;
         pickPlatesGeometry: THREE.BufferGeometry;
         vertexStateBuffer: THREE.BufferAttribute;
-        center: THREE.Vector3;
-        radius: number;
         dispose(): void;
         constructor();
     }
@@ -14832,7 +14820,7 @@ declare namespace LiteMol.Visualization.Surface {
         getPickElements(pickId: number): number[];
         getBoundingSphereOfSelection(indices: number[]): {
             radius: number;
-            center: Core.Geometry.LinearAlgebra.ObjectVec3;
+            center: Core.Geometry.LinearAlgebra.Vector3;
         } | undefined;
         applyThemeInternal(theme: Theme): void;
         protected getPickObjectVisibility(visible: boolean): boolean;
@@ -15237,31 +15225,31 @@ declare namespace LiteMol.Visualization.Primitive {
     namespace Shape {
         type Sphere = {
             type: 'Sphere';
-            center: LA.ObjectVec3;
+            center: LA.Vector3;
             radius: number;
             id: number;
             tessalation?: number;
         };
         type Tube = {
             type: 'Tube';
-            a: LA.ObjectVec3;
-            b: LA.ObjectVec3;
+            a: LA.Vector3;
+            b: LA.Vector3;
             radius: number;
             id: number;
             slices?: number;
         };
         type DashedLine = {
             type: 'DashedLine';
-            a: LA.ObjectVec3;
-            b: LA.ObjectVec3;
+            a: LA.Vector3;
+            b: LA.Vector3;
             width: number;
             dashSize: number;
             id: number;
         };
         type Arrow = {
             type: 'Arrow';
-            a: LA.ObjectVec3;
-            b: LA.ObjectVec3;
+            a: LA.Vector3;
+            b: LA.Vector3;
             radius: number;
             id: number;
             coneRadius: number;
@@ -15270,8 +15258,8 @@ declare namespace LiteMol.Visualization.Primitive {
         };
         type Cone = {
             type: 'Cone';
-            a: LA.ObjectVec3;
-            b: LA.ObjectVec3;
+            a: LA.Vector3;
+            b: LA.Vector3;
             radius: number;
             id: number;
             slices?: number;
@@ -16484,6 +16472,7 @@ declare namespace LiteMol.Bootstrap.Entity.Transformer.Molecule.CoordinateStream
 declare namespace LiteMol.Bootstrap.Utils.Molecule {
     import Structure = LiteMol.Core.Structure;
     import Geometry = LiteMol.Core.Geometry;
+    import LA = Geometry.LinearAlgebra;
     function findModel(entity: Entity.Any): Entity.Molecule.Model | undefined;
     function findModelOrSelection(entity: Entity.Any): Entity.Molecule.Model | Entity.Molecule.Selection | undefined;
     function findMolecule(entity: Entity.Any): Entity.Molecule.Molecule | undefined;
@@ -16516,7 +16505,7 @@ declare namespace LiteMol.Bootstrap.Utils.Molecule {
         radiusVisit(i: number): void;
         constructor(model: LiteMol.Core.Structure.Molecule.Model);
     }
-    function getCentroidAndRadius(m: Structure.Molecule.Model, indices: number[], into: Geometry.LinearAlgebra.ObjectVec3): number;
+    function getCentroidAndRadius(m: Structure.Molecule.Model, indices: number[], into: LA.Vector3): number;
     interface Labels3DOptions {
         kind: 'Residue-Name' | 'Residue-Full-Id' | 'Atom-Name' | 'Atom-Element';
         labelsOptions: LiteMol.Visualization.Labels.LabelsOptions;

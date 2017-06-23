@@ -10,6 +10,7 @@ Each component also has its separate changelog
 
 * Added support for labels in 3D scene.
 * Added more 3D primitives.
+* Removed "Object 3D vectors" in favor of array based vectors. (Should only break user code that uses 3D primitives)
 
 2.2.1-preview
 -----------

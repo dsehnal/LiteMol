@@ -296,9 +296,6 @@ namespace LiteMol.Visualization.Surface {
 
         vertexStateBuffer: THREE.BufferAttribute = <any>void 0;
 
-        center: THREE.Vector3 = new THREE.Vector3(0, 0, 0);
-        radius: number = 0;
-
         dispose() {
             this.geometry.dispose();
             if (this.pickGeometry) {

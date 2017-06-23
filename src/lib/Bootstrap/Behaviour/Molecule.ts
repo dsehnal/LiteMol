@@ -5,7 +5,6 @@
 namespace LiteMol.Bootstrap.Behaviour.Molecule {
     "use strict";
     
-    
     import Query = Core.Structure.Query;
     import Transforms = Entity.Transformer;
 

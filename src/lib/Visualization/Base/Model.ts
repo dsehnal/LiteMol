@@ -105,7 +105,7 @@ namespace LiteMol.Visualization {
             return changed;
         } 
 
-        getBoundingSphereOfSelection(indices: number[]): { radius: number, center: Core.Geometry.LinearAlgebra.ObjectVec3 } | undefined {
+        getBoundingSphereOfSelection(indices: number[]): { radius: number, center: Core.Geometry.LinearAlgebra.Vector3 } | undefined {
             return undefined;
         }
         

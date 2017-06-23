@@ -14612,15 +14612,6 @@ var LiteMol;
                         return out;
                     }
                     Matrix4.fromScaling = fromScaling;
-                    function transformVector3(out, a, m) {
-                        var x = a.x, y = a.y, z = a.z;
-                        out.x = m[0] * x + m[4] * y + m[8] * z + m[12];
-                        out.y = m[1] * x + m[5] * y + m[9] * z + m[13];
-                        out.z = m[2] * x + m[6] * y + m[10] * z + m[14];
-                        //out[3] = m[3] * x + m[7] * y + m[11] * z + m[15] * w;
-                        return out;
-                    }
-                    Matrix4.transformVector3 = transformVector3;
                     function makeTable(m) {
                         var ret = '';
                         for (var i = 0; i < 4; i++) {
@@ -14644,14 +14635,6 @@ var LiteMol;
                 })(Matrix4 = LinearAlgebra.Matrix4 || (LinearAlgebra.Matrix4 = {}));
                 var Vector3;
                 (function (Vector3) {
-                    function obj() {
-                        var ret = { x: 0.1, y: 0.1, z: 0.1 };
-                        ret.x = 0;
-                        ret.y = 0;
-                        ret.z = 0;
-                        return ret;
-                    }
-                    Vector3.obj = obj;
                     function zero() {
                         var out = [0.1, 0.0, 0.0];
                         out[0] = 0;
@@ -14672,6 +14655,10 @@ var LiteMol;
                         return fromValues(v.x, v.y, v.z);
                     }
                     Vector3.fromObj = fromObj;
+                    function toObj(v) {
+                        return { x: v[0], y: v[1], z: v[2] };
+                    }
+                    Vector3.toObj = toObj;
                     function fromValues(x, y, z) {
                         var out = zero();
                         out[0] = x;
@@ -15358,7 +15345,7 @@ var LiteMol;
                                         r = Math.max(r, dx * dx + dy * dy + dz * dz);
                                     }
                                     surface.boundingSphere = {
-                                        center: { x: x, y: y, z: z },
+                                        center: Geometry.LinearAlgebra.Vector3.fromValues(x, y, z),
                                         radius: Math.sqrt(r)
                                     };
                                     return [2 /*return*/, surface];
@@ -15368,17 +15355,17 @@ var LiteMol;
                 }
                 Surface.computeBoundingSphere = computeBoundingSphere;
                 function transformImmediate(surface, t) {
-                    var p = { x: 0.1, y: 0.1, z: 0.1 };
-                    var m = Geometry.LinearAlgebra.Matrix4.transformVector3;
+                    var p = Geometry.LinearAlgebra.Vector3.zero();
+                    var m = Geometry.LinearAlgebra.Vector3.transformMat4;
                     var vertices = surface.vertices;
                     for (var i = 0, _c = surface.vertices.length; i < _c; i += 3) {
-                        p.x = vertices[i];
-                        p.y = vertices[i + 1];
-                        p.z = vertices[i + 2];
+                        p[0] = vertices[i];
+                        p[1] = vertices[i + 1];
+                        p[2] = vertices[i + 2];
                         m(p, p, t);
-                        vertices[i] = p.x;
-                        vertices[i + 1] = p.y;
-                        vertices[i + 2] = p.z;
+                        vertices[i] = p[0];
+                        vertices[i + 1] = p[1];
+                        vertices[i + 2] = p[2];
                     }
                     surface.normals = void 0;
                     surface.boundingSphere = void 0;
@@ -16262,8 +16249,8 @@ var LiteMol;
                                 annotationField: this.parameters.interactive ? new Core.Formats.Density.Field3DZYX(this.proximityMap, [this.nX, this.nY, this.nZ]) : void 0,
                                 isoLevel: 0.05
                             },
-                            bottomLeft: { x: this.minX, y: this.minY, z: this.minZ },
-                            topRight: { x: this.maxX, y: this.maxY, z: this.maxZ },
+                            bottomLeft: Geometry.LinearAlgebra.Vector3.fromValues(this.minX, this.minY, this.minZ),
+                            topRight: Geometry.LinearAlgebra.Vector3.fromValues(this.maxX, this.maxY, this.maxZ),
                             transform: t,
                             inputParameters: this.inputParameters,
                             parameters: this.parameters
@@ -16597,19 +16584,19 @@ var LiteMol;
                     this.isIdentity = isIdentity;
                 }
                 Operator.prototype.apply = function (v) {
-                    Core.Geometry.LinearAlgebra.Matrix4.transformVector3(v, v, this.matrix);
+                    Core.Geometry.LinearAlgebra.Vector3.transformMat4(v, v, this.matrix);
                 };
                 Operator.applyToModelUnsafe = function (matrix, m) {
-                    var v = { x: 0.1, y: 0.1, z: 0.1 };
+                    var v = Core.Geometry.LinearAlgebra.Vector3.zero();
                     var _a = m.positions, x = _a.x, y = _a.y, z = _a.z;
                     for (var i = 0, _b = m.positions.count; i < _b; i++) {
-                        v.x = x[i];
-                        v.y = y[i];
-                        v.z = z[i];
-                        Core.Geometry.LinearAlgebra.Matrix4.transformVector3(v, v, matrix);
-                        x[i] = v.x;
-                        y[i] = v.y;
-                        z[i] = v.z;
+                        v[0] = x[i];
+                        v[1] = y[i];
+                        v[2] = z[i];
+                        Core.Geometry.LinearAlgebra.Vector3.transformMat4(v, v, matrix);
+                        x[i] = v[0];
+                        y[i] = v[1];
+                        z[i] = v[2];
                     }
                 };
                 return Operator;
@@ -16645,12 +16632,12 @@ var LiteMol;
                         var _a = model.positions, x = _a.x, y = _a.y, z = _a.z;
                         var tAtoms = model.positions.getBuilder(model.positions.count).seal();
                         var tX = tAtoms.x, tY = tAtoms.y, tZ = tAtoms.z;
-                        var t = { x: 0.0, y: 0.0, z: 0.0 };
+                        var t = Core.Geometry.LinearAlgebra.Vector3.zero();
                         for (var i = 0, _l = model.positions.count; i < _l; i++) {
                             transform(ctx, x[i], y[i], z[i], t);
-                            tX[i] = t.x;
-                            tY[i] = t.y;
-                            tZ[i] = t.z;
+                            tX[i] = t[0];
+                            tY[i] = t[1];
+                            tZ[i] = t[2];
                         }
                         return create({
                             id: model.id,
@@ -16705,8 +16692,6 @@ var LiteMol;
                     Mat4.fromTranslation(this.temp, this.tempV);
                     Mat4.mul(target, Mat4.mul(target, Mat4.mul(target, this.space.fromFrac, this.temp), this.operators[index]), this.space.toFrac);
                     return target;
-                    //this.temp.setPosition(this.tempV.set(i, j, k));
-                    //return target.copy(this.space.fromFrac).multiply(this.temp).multiply(this.operators[index]).multiply(this.space.toFrac);
                 };
                 Spacegroup.prototype.getSpace = function () {
                     var toFrac = this.info.toFracTransform, fromFrac = Mat4.zero();
@@ -18075,19 +18060,20 @@ var LiteMol;
             var SymmetryHelpers;
             (function (SymmetryHelpers) {
                 var Mat4 = Core.Geometry.LinearAlgebra.Matrix4;
+                var Vec3 = Core.Geometry.LinearAlgebra.Vector3;
                 function getBoudingSphere(arrays, indices) {
                     var x = arrays.x, y = arrays.y, z = arrays.z;
-                    var center = { x: 0, y: 0, z: 0 };
+                    var center = Vec3.zero();
                     for (var _i = 0, indices_1 = indices; _i < indices_1.length; _i++) {
                         var aI = indices_1[_i];
-                        center.x += x[aI];
-                        center.y += y[aI];
-                        center.z += z[aI];
+                        center[0] += x[aI];
+                        center[1] += y[aI];
+                        center[2] += z[aI];
                     }
                     var count = indices.length > 0 ? indices.length : 1;
-                    center.x /= count;
-                    center.y /= count;
-                    center.z /= count;
+                    center[0] /= count;
+                    center[1] /= count;
+                    center[2] /= count;
                     var r = 0;
                     for (var _a = 0, indices_2 = indices; _a < indices_2.length; _a++) {
                         var aI = indices_2[_a];
@@ -18095,17 +18081,14 @@ var LiteMol;
                     }
                     return { center: center, radius: Math.sqrt(r) };
                 }
-                function newVec() { return { x: 0, y: 0, z: 0 }; }
-                ;
                 function getSphereDist(c, r, q) {
-                    var dx = c.x - q.center.x, dy = c.y - q.center.y, dz = c.z - q.center.z;
-                    return Math.sqrt(dx * dx + dy * dy + dz * dz) - (r + q.radius);
+                    return Vec3.distance(c, q.center) - (r + q.radius);
                 }
                 function isWithinRadius(bounds, i, data, t, r, v) {
-                    v.x = data.x[i];
-                    v.y = data.y[i];
-                    v.z = data.z[i];
-                    Mat4.transformVector3(v, v, t);
+                    v[0] = data.x[i];
+                    v[1] = data.y[i];
+                    v[2] = data.z[i];
+                    Vec3.transformMat4(v, v, t);
                     return getSphereDist(v, data.r[i], bounds) <= r;
                 }
                 function indexedDistSq(aI, cI, arrays) {
@@ -18113,7 +18096,7 @@ var LiteMol;
                     return dx * dx + dy * dy + dz * dz;
                 }
                 function indexedVectorDistSq(aI, v, arrays) {
-                    var dx = arrays.x[aI] - v.x, dy = arrays.y[aI] - v.y, dz = arrays.z[aI] - v.z;
+                    var dx = arrays.x[aI] - v[0], dy = arrays.y[aI] - v[1], dz = arrays.z[aI] - v[2];
                     return dx * dx + dy * dy + dz * dz;
                 }
                 function createSymmetryContext(model, boundingInfo, spacegroup, radius) {
@@ -18123,12 +18106,12 @@ var LiteMol;
                         spacegroup: spacegroup,
                         radius: radius,
                         transform: Mat4.zero(),
-                        transformed: { x: 0, y: 0, z: 0 },
+                        transformed: Vec3.zero(),
                         i: 0, j: 0, k: 0, op: 0
                     };
                 }
                 function symmetryContextMap(ctx, p) {
-                    return Mat4.transformVector3(ctx.transformed, p, ctx.transform);
+                    return Vec3.transformMat4(ctx.transformed, p, ctx.transform);
                 }
                 function symmetryContextGetTransform(ctx) {
                     return createSymmetryTransform(ctx.i, ctx.j, ctx.k, ctx.op, Mat4.clone(ctx.transform));
@@ -18168,61 +18151,49 @@ var LiteMol;
                 function getBoundingInfo(model, pivotIndices) {
                     var atoms = model.data.atoms, residues = model.data.residues, chains = model.data.chains, entities = model.data.entities, _a = model.positions, x = _a.x, y = _a.y, z = _a.z;
                     var entityTable = DataTable.builder(entities.count), eX = entityTable.addColumn('x', function (s) { return new Float64Array(s); }), eY = entityTable.addColumn('y', function (s) { return new Float64Array(s); }), eZ = entityTable.addColumn('z', function (s) { return new Float64Array(s); }), eR = entityTable.addColumn('r', function (s) { return new Float64Array(s); }), chainTable = DataTable.builder(chains.count), cX = chainTable.addColumn('x', function (s) { return new Float64Array(s); }), cY = chainTable.addColumn('y', function (s) { return new Float64Array(s); }), cZ = chainTable.addColumn('z', function (s) { return new Float64Array(s); }), cR = chainTable.addColumn('r', function (s) { return new Float64Array(s); }), residueTable = DataTable.builder(residues.count), rX = residueTable.addColumn('x', function (s) { return new Float64Array(s); }), rY = residueTable.addColumn('y', function (s) { return new Float64Array(s); }), rZ = residueTable.addColumn('z', function (s) { return new Float64Array(s); }), rR = residueTable.addColumn('r', function (s) { return new Float64Array(s); });
-                    var allCenter = newVec(), allRadius = 0, pivotCenter = newVec(), pivotRadius = 0, n = 0, eCenter = newVec(), eRadius = 0, cCenter = newVec(), cRadius = 0, rCenter = newVec(), rRadius = 0;
+                    var allCenter = Vec3.zero(), allRadius = 0, pivotCenter = Vec3.zero(), pivotRadius = 0, n = 0, eCenter = Vec3.zero(), eRadius = 0, cCenter = Vec3.zero(), cRadius = 0, rCenter = Vec3.zero(), rRadius = 0;
                     for (var eI = 0, _eC = entities.count; eI < _eC; eI++) {
-                        eCenter.x = 0;
-                        eCenter.y = 0;
-                        eCenter.z = 0;
+                        Vec3.set(eCenter, 0, 0, 0);
                         for (var cI = entities.chainStartIndex[eI], _cC = entities.chainEndIndex[eI]; cI < _cC; cI++) {
-                            cCenter.x = 0;
-                            cCenter.y = 0;
-                            cCenter.z = 0;
+                            Vec3.set(cCenter, 0, 0, 0);
                             for (var rI = chains.residueStartIndex[cI], _rC = chains.residueEndIndex[cI]; rI < _rC; rI++) {
-                                rCenter.x = 0;
-                                rCenter.y = 0;
-                                rCenter.z = 0;
+                                Vec3.set(rCenter, 0, 0, 0);
                                 for (var aI = residues.atomStartIndex[rI], _aC = residues.atomEndIndex[rI]; aI < _aC; aI++) {
-                                    rCenter.x += x[aI];
-                                    rCenter.y += y[aI];
-                                    rCenter.z += z[aI];
+                                    rCenter[0] += x[aI];
+                                    rCenter[1] += y[aI];
+                                    rCenter[2] += z[aI];
                                 }
-                                allCenter.x += rCenter.x;
-                                allCenter.y += rCenter.y;
-                                allCenter.z += rCenter.z;
+                                Vec3.add(allCenter, allCenter, rCenter);
                                 n = residues.atomEndIndex[rI] - residues.atomStartIndex[rI];
-                                cCenter.x += rCenter.x;
-                                cCenter.y += rCenter.y;
-                                cCenter.z += rCenter.z;
-                                rX[rI] = rCenter.x / n;
-                                rY[rI] = rCenter.y / n;
-                                rZ[rI] = rCenter.z / n;
+                                Vec3.add(cCenter, cCenter, rCenter);
+                                rX[rI] = rCenter[0] / n;
+                                rY[rI] = rCenter[1] / n;
+                                rZ[rI] = rCenter[2] / n;
                             }
-                            eCenter.x += cCenter.x;
-                            eCenter.y += cCenter.y;
-                            eCenter.z += cCenter.z;
+                            Vec3.add(eCenter, eCenter, cCenter);
                             n = chains.atomEndIndex[cI] - chains.atomStartIndex[cI];
-                            cX[cI] = cCenter.x / n;
-                            cY[cI] = cCenter.y / n;
-                            cZ[cI] = cCenter.z / n;
+                            cX[cI] = cCenter[0] / n;
+                            cY[cI] = cCenter[1] / n;
+                            cZ[cI] = cCenter[2] / n;
                         }
                         n = entities.atomEndIndex[eI] - entities.atomStartIndex[eI];
-                        eX[eI] = eCenter.x / n;
-                        eY[eI] = eCenter.y / n;
-                        eZ[eI] = eCenter.z / n;
+                        eX[eI] = eCenter[0] / n;
+                        eY[eI] = eCenter[1] / n;
+                        eZ[eI] = eCenter[2] / n;
                     }
-                    allCenter.x /= atoms.count;
-                    allCenter.y /= atoms.count;
-                    allCenter.z /= atoms.count;
+                    allCenter[0] /= atoms.count;
+                    allCenter[1] /= atoms.count;
+                    allCenter[2] /= atoms.count;
                     for (var _i = 0, pivotIndices_1 = pivotIndices; _i < pivotIndices_1.length; _i++) {
                         var aI = pivotIndices_1[_i];
-                        pivotCenter.x += x[aI];
-                        pivotCenter.y += y[aI];
-                        pivotCenter.z += z[aI];
+                        pivotCenter[0] += x[aI];
+                        pivotCenter[1] += y[aI];
+                        pivotCenter[2] += z[aI];
                     }
                     var pivotCount = pivotIndices.length > 0 ? pivotIndices.length : 1;
-                    pivotCenter.x /= pivotCount;
-                    pivotCenter.y /= pivotCount;
-                    pivotCenter.z /= pivotCount;
+                    pivotCenter[0] /= pivotCount;
+                    pivotCenter[1] /= pivotCount;
+                    pivotCenter[2] /= pivotCount;
                     var eDA = { x: x, y: y, z: z, cX: eX, cY: eY, cZ: eZ }, cDA = { x: x, y: y, z: z, cX: cX, cY: cY, cZ: cZ }, rDA = { x: x, y: y, z: z, cX: rX, cY: rY, cZ: rZ };
                     for (var eI = 0, _eC = entities.count; eI < _eC; eI++) {
                         eRadius = 0;
@@ -18268,7 +18239,6 @@ var LiteMol;
                         for (var j = -3; j <= 3; j++) {
                             for (var k = -3; k <= 3; k++) {
                                 for (var l = (i === 0 && j === 0 && k === 0 ? 1 : 0), lm = sg.operatorCount; l < lm; l++) {
-                                    //for (let l = 0, lm = sg.operatorCount; l < lm; l++) {                            
                                     sg.getOperatorMatrix(l, i, j, k, ctx.transform);
                                     ctx.i = i;
                                     ctx.k = k;
@@ -18288,10 +18258,9 @@ var LiteMol;
                     var bounds = ctx.boundingInfo, radius = ctx.radius, targetBounds = bounds.target;
                     var model = ctx.model, residues = model.data.residues, chains = model.data.chains, entities = model.data.entities;
                     var residueIndices = Core.Utils.ChunkedArray.create(function (s) { return new Int32Array(s); }, residues.count, 1), operatorIndices = Core.Utils.ChunkedArray.create(function (s) { return new Int32Array(s); }, residues.count, 1);
-                    var v = { x: 0, y: 0, z: 0 }, opIndex = 0;
+                    var v = Vec3.zero(), opIndex = 0;
                     var atomCount = 0, chainCount = 0, entityCount = 0;
                     for (var eI = 0, _eC = entities.count; eI < _eC; eI++) {
-                        //if (!isWithinRadius(hetBounds, eI, bounds.entities, t.transform, radius, v)) continue;
                         opIndex = 0;
                         var chainAdded = false;
                         for (var _i = 0, transforms_1 = transforms; _i < transforms_1.length; _i++) {
@@ -18357,7 +18326,7 @@ var LiteMol;
                             };
                         }
                     }
-                    var assemblyResidueParts = assemblyParts.residues, assemblyOpParts = assemblyParts.operators, temp = { x: 0, y: 0, z: 0 }, atomOffset = 0;
+                    var assemblyResidueParts = assemblyParts.residues, assemblyOpParts = assemblyParts.operators, temp = Core.Geometry.LinearAlgebra.Vector3.zero(), atomOffset = 0;
                     var rI = assemblyResidueParts[0], currentChain = residueChainIndex[rI], currentEntity = residueEntityIndex[rI], currentOp = assemblyOpParts[0], currentAsymId, currentAuthAsymId;
                     // setup entity table
                     cloneRow(srcEntityData, residueEntityIndex[rI], entityData, 0, srcEntityData.length);
@@ -18443,13 +18412,11 @@ var LiteMol;
                         residueAsymId[residueOffset] = currentAsymId;
                         residueAuthAsymId[residueOffset] = currentAuthAsymId;
                         for (var aI = residueAtomStartIndex[rI], _mAI = residueAtomEndIndex[rI]; aI < _mAI; aI++) {
-                            temp.x = x[aI];
-                            temp.y = y[aI];
-                            temp.z = z[aI];
-                            Mat4.transformVector3(temp, temp, transform.transform);
-                            atomX[atomOffset] = temp.x;
-                            atomY[atomOffset] = temp.y;
-                            atomZ[atomOffset] = temp.z;
+                            Vec3.set(temp, x[aI], y[aI], z[aI]);
+                            Vec3.transformMat4(temp, temp, transform.transform);
+                            atomX[atomOffset] = temp[0];
+                            atomY[atomOffset] = temp[1];
+                            atomZ[atomOffset] = temp[2];
                             atomId[atomOffset] = atomOffset + 1;
                             atomResidue[atomOffset] = residueOffset;
                             atomChain[atomOffset] = chainOffset;
@@ -18535,14 +18502,14 @@ var LiteMol;
                     var bounds = getBoudingSphere(model.positions, model.positions.indices);
                     var spacegroup = new Structure.Spacegroup(model.data.symmetryInfo);
                     var t = Mat4.zero();
-                    var v = { x: 0, y: 0, z: 0 };
+                    var v = Vec3.zero();
                     var transforms = [];
                     for (var i = -3; i <= 3; i++) {
                         for (var j = -3; j <= 3; j++) {
                             for (var k = -3; k <= 3; k++) {
                                 for (var op = 0; op < spacegroup.operatorCount; op++) {
                                     spacegroup.getOperatorMatrix(op, i, j, k, t);
-                                    Mat4.transformVector3(v, bounds.center, t);
+                                    Vec3.transformMat4(v, bounds.center, t);
                                     if (getSphereDist(v, bounds.radius, bounds) > radius)
                                         continue;
                                     var copy = Mat4.zero();

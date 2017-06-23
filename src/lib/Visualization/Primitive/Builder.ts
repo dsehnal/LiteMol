@@ -11,11 +11,11 @@ namespace LiteMol.Visualization.Primitive {
     export type Shape = Shape.Sphere | Shape.Tube | Shape.Surface | Shape.DashedLine | Shape.Cone | Shape.Arrow
 
     export namespace Shape {
-        export type Sphere = { type: 'Sphere', center: LA.ObjectVec3, radius: number, id: number, tessalation?:number }
-        export type Tube = { type: 'Tube', a: LA.ObjectVec3, b: LA.ObjectVec3, radius: number, id: number, slices?:number }
-        export type DashedLine = { type: 'DashedLine', a: LA.ObjectVec3, b: LA.ObjectVec3, width: number, dashSize: number, id: number }
-        export type Arrow = { type: 'Arrow', a: LA.ObjectVec3, b: LA.ObjectVec3, radius: number, id: number, coneRadius: number, coneHeight: number, slices?: number }
-        export type Cone = { type: 'Cone', a: LA.ObjectVec3, b: LA.ObjectVec3, radius: number, id: number, slices?: number }
+        export type Sphere = { type: 'Sphere', center: LA.Vector3, radius: number, id: number, tessalation?:number }
+        export type Tube = { type: 'Tube', a: LA.Vector3, b: LA.Vector3, radius: number, id: number, slices?:number }
+        export type DashedLine = { type: 'DashedLine', a: LA.Vector3, b: LA.Vector3, width: number, dashSize: number, id: number }
+        export type Arrow = { type: 'Arrow', a: LA.Vector3, b: LA.Vector3, radius: number, id: number, coneRadius: number, coneHeight: number, slices?: number }
+        export type Cone = { type: 'Cone', a: LA.Vector3, b: LA.Vector3, radius: number, id: number, slices?: number }
         export type Surface = { type: 'Surface', surface: Core.Geometry.Surface, id: number, scale?: number[], translation?: number[], rotation?: LA.Matrix4 }
     }
 
@@ -77,7 +77,7 @@ namespace LiteMol.Visualization.Primitive {
                     case 'Sphere': {
                         vs = surface.vertices;
                         LA.Matrix4.fromScaling(scaleTransform, [s.radius, s.radius, s.radius]);
-                        LA.Matrix4.fromTranslation(translateTransform, [s.center.x, s.center.y, s.center.z]);
+                        LA.Matrix4.fromTranslation(translateTransform, s.center);
                         LA.Matrix4.mul(transform, translateTransform, scaleTransform);
                         for (let i = 0, _b = surface.vertexCount * 3; i < _b; i += 3) {
                             v[0] = vs[i], v[1] = vs[i + 1], v[2] = vs[i + 2];

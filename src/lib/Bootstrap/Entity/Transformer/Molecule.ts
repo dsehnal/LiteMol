@@ -284,11 +284,11 @@ namespace LiteMol.Bootstrap.Entity.Transformer.Molecule {
         return Task.create<Entity.Molecule.Model>(`Transform 3D (${a.props.label})`, 'Normal', async ctx => {
             await ctx.updateProgress('Transforming...');
             let m = a.props.model;
-            let tCtx = { t: t.params.transform!, v: { x: 0, y: 0, z: 0 } };
+            let tCtx = { t: t.params.transform!, v: Core.Geometry.LinearAlgebra.Vector3.zero() };
             let transformed = Core.Structure.Molecule.Model.withTransformedXYZ(m, tCtx, (ctx, x, y, z, out) => {
                 let v = ctx.v;
-                v.x = x; v.y = y; v.z = z;
-                Core.Geometry.LinearAlgebra.Matrix4.transformVector3(out, v, ctx.t);
+                Core.Geometry.LinearAlgebra.Vector3.set(v, x, y, z);
+                Core.Geometry.LinearAlgebra.Vector3.transformMat4(out, v, ctx.t);
             });
 
             return Entity.Molecule.Model.create(t, {
