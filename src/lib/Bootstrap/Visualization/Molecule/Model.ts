@@ -22,15 +22,14 @@ namespace LiteMol.Bootstrap.Visualization.Molecule {
         return Math.max(d, 0);
     }
 
-    function getSurfaceDensity(params: SurfaceParams, count: number) {
-        if (!!params.automaticDensity) {        
-            if (count < 1000) return 1.2;
-            if (count < 2500000) {                
-                // scale from 1000 to 2.5m so that f(1000)=1.2, f(100k)=0.75, f(2.5m) = 0.1
-                const a = -0.18610, b = 0.025298, c = 1.3608;
-                return a * Math.pow(count / 1000, 1 / 3) + b * Math.sqrt(count / 1000) + c;
-            }
-            return 0.1;
+    function getSurfaceDensity(params: SurfaceParams, model: Structure.Molecule.Model, indices: number[]) {
+        if (!!params.automaticDensity) {                
+            const { bottomLeft, topRight } = Utils.Molecule.getBox(model, indices, 0);
+            const box = Core.Geometry.LinearAlgebra.Vector3.sub(topRight, topRight, bottomLeft);
+            const density = ((99 ** 3) / (box[0] * box[1] * box[2])) ** (1 / 3);
+            if (density > 1.2) return 1.2;
+            if (density < 0.1) return 0.1;
+            return density;
         } 
         if (params.density !== void 0) return +params.density;
         return 1.0;
@@ -146,7 +145,7 @@ namespace LiteMol.Bootstrap.Visualization.Molecule {
                 atomIndices,
                 parameters:  {
                     atomRadius: Utils.vdwRadiusFromElementSymbol(model),
-                    density: getSurfaceDensity(params, atomIndices.length),
+                    density: getSurfaceDensity(params, model, atomIndices),
                     probeRadius: params.probeRadius,
                     smoothingIterations: params.smoothing,
                     interactive: true
