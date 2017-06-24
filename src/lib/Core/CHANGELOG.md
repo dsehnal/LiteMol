@@ -1,4 +1,7 @@
-﻿# 3.1.5
+﻿# 3.1.6
+* Added support for _struct_conn mmCIF category.
+
+# 3.1.5
 * Renamed Matrix4.empty and Vector4.create to Matrix4/Vector4.zero.
 * Added more linear algebra functions.
 * Removed ObjectVec3 from linear algebra.

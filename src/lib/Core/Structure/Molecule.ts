@@ -208,6 +208,62 @@ namespace LiteMol.Core.Structure {
     }
 
     /**
+     * Wraps _struct_conn mmCIF category.
+     */
+    export class StructConn {
+        private _index: Utils.FastMap<string, StructConn.Entry> | undefined = void 0;
+        
+        private static _key(rA: number, rB: number) {
+            if (rA < rB) return `${rA}-${rB}`;
+            return `${rB}-${rA}`;
+        }
+        
+        private getIndex() {
+            if (this._index) return this._index;
+            this._index = Utils.FastMap.create();
+            for (const e of this.entries) {
+                const ps = e.partners;
+                const l = ps.length;
+                for (let i = 0; i < l - 1; i++) {
+                    for (let j = i + i; j < l; j++) {
+                        this._index.set(StructConn._key(ps[i].residueIndex, ps[j].residueIndex), e);
+                    }
+                }
+            }
+            return this._index;
+        }
+
+        getEntry(residueAIndex: number, residueBIndex: number) {
+            return this.getIndex().get(StructConn._key(residueAIndex, residueBIndex));
+        }
+
+        constructor(public entries: StructConn.Entry[]) {
+
+        }
+    }
+
+    export namespace StructConn {
+        export type Type = 
+              'covale'
+            | 'covale_base'
+            | 'covale_phosphate'
+            | 'covale_sugar'
+            | 'disulf'
+            | 'hydrog'
+            | 'metalc'
+            | 'mismat'
+            | 'modres'
+            | 'saltbr'
+
+        export interface Entry {  
+            type: Type,
+            distance: number,
+            order: 'sing' | 'doub' | 'trip' | 'quad' | 'unknown',
+            partners: { residueIndex: number, atomIndex: number, symmetry:  string }[]
+        }
+    }
+
+    /**
      * Wraps an assembly operator.
      */
     export class AssemblyOperator { constructor(public id: string, public name: string, public operator: number[]) { } }
@@ -404,6 +460,7 @@ namespace LiteMol.Core.Structure {
                 readonly secondaryStructure: SecondaryStructureElement[],
                 readonly symmetryInfo?: SymmetryInfo,
                 readonly assemblyInfo?: AssemblyInfo,
+                readonly structConn?: StructConn
             }
 
             export function withTransformedXYZ<T>(

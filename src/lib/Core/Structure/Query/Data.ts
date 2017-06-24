@@ -2,9 +2,7 @@
  * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
 
-namespace LiteMol.Core.Structure {
-
-    
+namespace LiteMol.Core.Structure {    
     /**
      * The query is a mapping from a context to a sequence of fragments.
      */

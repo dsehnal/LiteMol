@@ -56162,6 +56162,7 @@ SOFTWARE.
 
 /***/ }
 /******/ ]);
+"use strict";
 /*
  * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
@@ -56188,7 +56189,7 @@ var LiteMol;
 (function (LiteMol) {
     var Core;
     (function (Core) {
-        Core.VERSION = { number: "3.1.5", date: "June 21 2017" };
+        Core.VERSION = { number: "3.1.6", date: "June 24 2017" };
     })(Core = LiteMol.Core || (LiteMol.Core = {}));
 })(LiteMol || (LiteMol = {}));
 /*
@@ -57298,8 +57299,8 @@ var LiteMol;
                     ];
                     function getAtomSiteColumns(category) {
                         var ret = Core.Utils.FastMap.create();
-                        for (var _i = 0, AtomSiteColumns_1 = AtomSiteColumns; _i < AtomSiteColumns_1.length; _i++) {
-                            var c = AtomSiteColumns_1[_i];
+                        for (var _a = 0, AtomSiteColumns_1 = AtomSiteColumns; _a < AtomSiteColumns_1.length; _a++) {
+                            var c = AtomSiteColumns_1[_a];
                             ret.set(c, category.getColumn(c));
                         }
                         return ret;
@@ -57548,8 +57549,8 @@ var LiteMol;
                     function splitNonconsecutiveSecondaryStructure(residues, elements) {
                         var ret = [];
                         var authSeqNumber = residues.authSeqNumber;
-                        for (var _i = 0, elements_1 = elements; _i < elements_1.length; _i++) {
-                            var s = elements_1[_i];
+                        for (var _a = 0, elements_1 = elements; _a < elements_1.length; _a++) {
+                            var s = elements_1[_a];
                             var partStart = s.startResidueIndex;
                             var end = s.endResidueIndex - 1;
                             for (var i = s.startResidueIndex; i < end; i++) {
@@ -57575,8 +57576,8 @@ var LiteMol;
                     }
                     function updateSSIndicesAndFilterEmpty(elements, structure) {
                         var residues = structure.residues, count = residues.count, asymId = residues.asymId, seqNumber = residues.seqNumber, insCode = residues.insCode, currentElement = void 0, key = '', starts = Core.Utils.FastMap.create(), ends = Core.Utils.FastMap.create();
-                        for (var _i = 0, elements_2 = elements; _i < elements_2.length; _i++) {
-                            var e = elements_2[_i];
+                        for (var _a = 0, elements_2 = elements; _a < elements_2.length; _a++) {
+                            var e = elements_2[_a];
                             key = e.startResidueId.asymId + ' ' + e.startResidueId.seqNumber;
                             if (e.startResidueId.insCode)
                                 key += ' ' + e.startResidueId.insCode;
@@ -57606,8 +57607,8 @@ var LiteMol;
                             currentElement.endResidueIndex = count;
                         }
                         var nonEmpty = [];
-                        for (var _a = 0, elements_3 = elements; _a < elements_3.length; _a++) {
-                            var e = elements_3[_a];
+                        for (var _b = 0, elements_3 = elements; _b < elements_3.length; _b++) {
+                            var e = elements_3[_b];
                             if (e.startResidueIndex < 0 || e.endResidueIndex < 0)
                                 continue;
                             if (e.type === 3 /* Sheet */ && e.length < 3)
@@ -57715,14 +57716,92 @@ var LiteMol;
                     function assignSecondaryStructureIndex(residues, ss) {
                         var ssIndex = residues.secondaryStructureIndex;
                         var index = 0;
-                        for (var _i = 0, ss_1 = ss; _i < ss_1.length; _i++) {
-                            var s = ss_1[_i];
+                        for (var _a = 0, ss_1 = ss; _a < ss_1.length; _a++) {
+                            var s = ss_1[_a];
                             for (var i = s.startResidueIndex; i < s.endResidueIndex; i++) {
                                 ssIndex[i] = index;
                             }
                             index++;
                         }
                         return ssIndex;
+                    }
+                    function findResidueIndexByLabel(structure, asymId, seqNumber, insCode) {
+                        var _a = structure.chains, _asymId = _a.asymId, residueStartIndex = _a.residueStartIndex, residueEndIndex = _a.residueEndIndex, cCount = _a.count;
+                        var _b = structure.residues, _seqNumber = _b.seqNumber, _insCode = _b.insCode;
+                        for (var cI = 0; cI < cCount; cI++) {
+                            if (_asymId[cI] !== asymId)
+                                continue;
+                            for (var rI = residueStartIndex[cI], _r = residueEndIndex[cI]; rI < _r; rI++) {
+                                if (_seqNumber[rI] === seqNumber && _insCode[rI] === insCode)
+                                    return rI;
+                            }
+                        }
+                        return -1;
+                    }
+                    function findAtomIndexByLabelName(atoms, structure, residueIndex, atomName, altLoc) {
+                        var _a = structure.residues, atomStartIndex = _a.atomStartIndex, atomEndIndex = _a.atomEndIndex;
+                        var _atomName = atoms.name, _altLoc = atoms.altLoc;
+                        for (var i = atomStartIndex[residueIndex], _i = atomEndIndex[residueIndex]; i <= _i; i++) {
+                            if (_atomName[i] === atomName && _altLoc[i] === altLoc)
+                                return i;
+                        }
+                        return -1;
+                    }
+                    function getStructConn(data, atoms, structure) {
+                        var cat = data.getCategory('_struct_conn');
+                        if (!cat)
+                            return void 0;
+                        var _idCols = function (i) { return ({
+                            label_asym_id: cat.getColumn('ptnr' + i + '_label_asym_id'),
+                            label_seq_id: cat.getColumn('ptnr' + i + '_label_seq_id'),
+                            label_atom_id: cat.getColumn('ptnr' + i + '_label_atom_id'),
+                            label_alt_id: cat.getColumn('pdbx_ptnr' + i + '_label_alt_id'),
+                            ins_code: cat.getColumn('pdbx_ptnr' + i + '_PDB_ins_code'),
+                            symmetry: cat.getColumn('ptnr' + i + '_symmetry')
+                        }); };
+                        var conn_type_id = cat.getColumn('conn_type_id');
+                        var pdbx_dist_value = cat.getColumn('pdbx_dist_value');
+                        var pdbx_value_order = cat.getColumn('pdbx_value_order');
+                        var p1 = _idCols(1);
+                        var p2 = _idCols(2);
+                        var p3 = _idCols(3);
+                        var _p = function (row, ps) {
+                            if (ps.label_asym_id.getValuePresence(row) !== 0 /* Present */)
+                                return void 0;
+                            var residueIndex = findResidueIndexByLabel(structure, ps.label_asym_id.getString(row), ps.label_seq_id.getInteger(row), ps.ins_code.getString(row));
+                            if (residueIndex < 0)
+                                return void 0;
+                            var atomIndex = findAtomIndexByLabelName(atoms, structure, residueIndex, ps.label_atom_id.getString(row), ps.label_alt_id.getString(row));
+                            if (atomIndex < 0)
+                                return void 0;
+                            return { residueIndex: residueIndex, atomIndex: atomIndex, symmetry: ps.symmetry.getString(row) || '1_555' };
+                        };
+                        var _ps = function (row) {
+                            var ret = [];
+                            var p = _p(row, p1);
+                            if (p)
+                                ret.push(p);
+                            p = _p(row, p2);
+                            if (p)
+                                ret.push(p);
+                            p = _p(row, p3);
+                            if (p)
+                                ret.push(p);
+                            return ret;
+                        };
+                        var entries = [];
+                        for (var i = 0; i < cat.rowCount; i++) {
+                            var partners = _ps(i);
+                            if (partners.length < 2)
+                                continue;
+                            entries.push({
+                                type: conn_type_id.getString(i),
+                                distance: pdbx_dist_value.getFloat(i),
+                                order: pdbx_value_order.getString(i) || 'unknown',
+                                partners: partners
+                            });
+                        }
+                        return new Core.Structure.StructConn(entries);
                     }
                     function parseOperatorList(value) {
                         // '(X0)(1-5)' becomes [['X0']['1', '2', '3', '4', '5']]
@@ -57876,6 +57955,7 @@ var LiteMol;
                                     secondaryStructure: ss,
                                     symmetryInfo: getSymmetryInfo(data),
                                     assemblyInfo: getAssemblyInfo(data),
+                                    structConn: getStructConn(data, atoms, structure)
                                 },
                                 positions: positions,
                                 source: Core.Structure.Molecule.Model.Source.File
@@ -61465,6 +61545,41 @@ var LiteMol;
             }());
             Structure.SymmetryInfo = SymmetryInfo;
             /**
+             * Wraps _struct_conn mmCIF category.
+             */
+            var StructConn = (function () {
+                function StructConn(entries) {
+                    this.entries = entries;
+                    this._index = void 0;
+                }
+                StructConn._key = function (rA, rB) {
+                    if (rA < rB)
+                        return rA + "-" + rB;
+                    return rB + "-" + rA;
+                };
+                StructConn.prototype.getIndex = function () {
+                    if (this._index)
+                        return this._index;
+                    this._index = Core.Utils.FastMap.create();
+                    for (var _i = 0, _a = this.entries; _i < _a.length; _i++) {
+                        var e = _a[_i];
+                        var ps = e.partners;
+                        var l = ps.length;
+                        for (var i = 0; i < l - 1; i++) {
+                            for (var j = i + i; j < l; j++) {
+                                this._index.set(StructConn._key(ps[i].residueIndex, ps[j].residueIndex), e);
+                            }
+                        }
+                    }
+                    return this._index;
+                };
+                StructConn.prototype.getEntry = function (residueAIndex, residueBIndex) {
+                    return this.getIndex().get(StructConn._key(residueAIndex, residueBIndex));
+                };
+                return StructConn;
+            }());
+            Structure.StructConn = StructConn;
+            /**
              * Wraps an assembly operator.
              */
             var AssemblyOperator = (function () {
@@ -63452,7 +63567,7 @@ var LiteMol;
                             bonds: {
                                 component: model.data.bonds.component
                             },
-                            secondaryStructure: ss,
+                            secondaryStructure: ss
                         },
                         positions: positionTable,
                         parent: model,

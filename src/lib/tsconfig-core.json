@@ -4,6 +4,7 @@
     "noImplicitAny": true,
     "noEmitOnError": true,
     "removeComments": false,
+    "alwaysStrict": true,
     "sourceMap": false,
     "declaration": true,
     "strictNullChecks": true,

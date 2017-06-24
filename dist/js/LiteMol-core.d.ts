@@ -2386,6 +2386,30 @@ declare namespace LiteMol.Core.Structure {
         constructor(spacegroupName: string, cellSize: number[], cellAngles: number[], toFracTransform: number[], isNonStandardCrytalFrame: boolean);
     }
     /**
+     * Wraps _struct_conn mmCIF category.
+     */
+    class StructConn {
+        entries: StructConn.Entry[];
+        private _index;
+        private static _key(rA, rB);
+        private getIndex();
+        getEntry(residueAIndex: number, residueBIndex: number): StructConn.Entry | undefined;
+        constructor(entries: StructConn.Entry[]);
+    }
+    namespace StructConn {
+        type Type = 'covale' | 'covale_base' | 'covale_phosphate' | 'covale_sugar' | 'disulf' | 'hydrog' | 'metalc' | 'mismat' | 'modres' | 'saltbr';
+        interface Entry {
+            type: Type;
+            distance: number;
+            order: 'sing' | 'doub' | 'trip' | 'quad' | 'unknown';
+            partners: {
+                residueIndex: number;
+                atomIndex: number;
+                symmetry: string;
+            }[];
+        }
+    }
+    /**
      * Wraps an assembly operator.
      */
     class AssemblyOperator {
@@ -2490,6 +2514,7 @@ declare namespace LiteMol.Core.Structure {
                 readonly secondaryStructure: SecondaryStructureElement[];
                 readonly symmetryInfo?: SymmetryInfo;
                 readonly assemblyInfo?: AssemblyInfo;
+                readonly structConn?: StructConn;
             }
             function withTransformedXYZ<T>(model: Model, ctx: T, transform: (ctx: T, x: number, y: number, z: number, out: Geometry.LinearAlgebra.Vector3) => void): Model;
         }

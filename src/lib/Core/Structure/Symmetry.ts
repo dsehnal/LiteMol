@@ -610,7 +610,7 @@ namespace LiteMol.Core.Structure {
                     bonds: {
                         component: model.data.bonds.component
                     },
-                    secondaryStructure: ss,
+                    secondaryStructure: ss
                 },
                 positions: positionTable,
                 parent: model,
