@@ -74457,6 +74457,7 @@ var LiteMol;
                 var Basic;
                 (function (Basic) {
                     "use strict";
+                    var _this = this;
                     var Transformer = Bootstrap.Tree.Transformer;
                     Basic.Root = Transformer.create({
                         id: 'root',
@@ -74507,6 +74508,41 @@ var LiteMol;
                     }, function (ctx, a, t) {
                         return Bootstrap.Task.create('Delay', 'Silent', function (ctx) { return new LiteMol.Promise(function (res) {
                             setTimeout(function () { return res(Bootstrap.Tree.Node.Null); }, t.params.timeoutMs);
+                        }); });
+                    });
+                    Basic.CreateSurfaceVisual = Bootstrap.Tree.Transformer.create({
+                        id: 'basic-create-surface-visual',
+                        name: 'Create Surface Visual',
+                        description: 'Create generic surface visual.',
+                        from: [],
+                        to: [Bootstrap.Entity.Visual.Surface],
+                        defaultParams: function () { return void 0; },
+                        isUpdatable: false
+                    }, function (context, a, t) {
+                        var theme = t.params.theme;
+                        var style = {
+                            type: 'Surface',
+                            taskType: t.params.taskType || 'Silent',
+                            isNotSelectable: !!t.params.isNotInteractive,
+                            params: {},
+                            theme: void 0
+                        };
+                        return Bootstrap.Task.create("Create Surface Visual", t.params.taskType || 'Silent', function (ctx) { return __awaiter(_this, void 0, void 0, function () {
+                            var model;
+                            return __generator(this, function (_a) {
+                                switch (_a.label) {
+                                    case 0: return [4 /*yield*/, LiteMol.Visualization.Surface.Model.create(a, { surface: t.params.surface, theme: theme, parameters: { isWireframe: t.params.isWireframe } }).run(ctx)];
+                                    case 1:
+                                        model = _a.sent();
+                                        return [2 /*return*/, Bootstrap.Entity.Visual.Surface.create(t, {
+                                                label: t.params.label || 'Surface',
+                                                model: model,
+                                                style: style,
+                                                isSelectable: !t.params.isNotInteractive,
+                                                tag: t.params.tag
+                                            })];
+                                }
+                            });
                         }); });
                     });
                 })(Basic = Transformer_1.Basic || (Transformer_1.Basic = {}));

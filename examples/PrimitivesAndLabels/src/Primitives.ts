@@ -105,15 +105,7 @@ namespace LiteMol.PrimitivesAndLabels {
             tags,
             theme: createTheme(tags),
             labels: createLabelsParams(tags, centers.length - 1)
-        };
-
-        // let s = Visualization.Primitive.Builder.create();
-        // let id = 0;
-        // for (let p of origins.Points) {
-        //     s.add({ type: 'Sphere', id: id++, radius: 1.69, center: { x: p.X, y: p.Y, z: p.Z } });
-        // }
-        // return s.buildSurface().run();        
-
+        }; 
     }
 
     export async function createBindingMap(plugin: Plugin.Controller, model: Model) {
@@ -121,40 +113,14 @@ namespace LiteMol.PrimitivesAndLabels {
 
         const t = plugin.createTransform();
         
-        t.add('model', CreateBindingMap, {
+        t.add('model', Transformer.Basic.CreateSurfaceVisual, {
             label: 'Binding Map',
             tag: <SurfaceTag>{ type: 'BindingMap', tags },
             surface,
-            isInteractive: true,
             theme
         }, { });
         t.add('model', Bootstrap.Entity.Transformer.Labels.Create, labels);
 
         plugin.applyTransform(t);
     }
-
-    export interface CreateBindingMapProps { label?: string, tag?: any, surface?: Core.Geometry.Surface, theme?: Visualization.Theme, transparency?: Visualization.Theme.Transparency, isWireframe?: boolean, isInteractive?: boolean }
-    export const CreateBindingMap = Bootstrap.Tree.Transformer.create<Bootstrap.Entity.Molecule.Model, Bootstrap.Entity.Visual.Surface, CreateBindingMapProps>({
-        id: 'primitives-and-labels-example-create-surface',
-        name: 'Create Binding Map',
-        description: 'Create a binding map.',
-        from: [Bootstrap.Entity.Molecule.Model],
-        to: [Bootstrap.Entity.Visual.Surface],
-        defaultParams: () => ({}),
-        isUpdatable: false
-    }, (context, a, t) => {
-        let theme = t.params.theme!;
-        let style: Bootstrap.Visualization.Style<'Surface', {}> = {
-            type: 'Surface',
-            taskType: 'Silent',
-            //isNotSelectable: false,
-            params: {},
-            theme: <any>void 0
-        };
-
-        return Bootstrap.Task.create<Bootstrap.Entity.Visual.Surface>(`Create Surface`, 'Silent', async ctx => {
-            let model = await LiteMol.Visualization.Surface.Model.create(t.params.tag, { surface: t.params.surface!, theme, parameters: { isWireframe: t.params.isWireframe! } }).run(ctx);
-            return Bootstrap.Entity.Visual.Surface.create(t, { label: t.params.label!, model, style, isSelectable: true, tag: t.params.tag });
-        });
-    });
 }

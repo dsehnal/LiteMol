@@ -100,13 +100,14 @@ namespace LiteMol.Example.Channels.State {
                 plugin.command(Bootstrap.Command.Tree.RemoveNode, element.__id);
             } else {
                 let surface = createSurface(element.Mesh);
-                t.add('mole-data', CreateSurface, {
+                t.add('mole-data', Transformer.Basic.CreateSurfaceVisual, {
                     label: label(element),
                     tag: { type, element },
                     surface,
-                    color: element.__color as Visualization.Color,
-                    isInteractive: true,
-                    transparency: { alpha }
+                    theme: Visualization.Theme.createUniform({ 
+                        colors: LiteMol.Core.Utils.FastMap.ofArray<string, LiteMol.Visualization.Color>([['Uniform', element.__color as Visualization.Color]]),
+                        transparency: { alpha }
+                    })
                 }, { ref: element.__id, isHidden: true });
                 needsApply = true;
             }
@@ -171,12 +172,13 @@ namespace LiteMol.Example.Channels.State {
         return new Promise((res, rej) => {
             createOriginsSurface(origins).then(surface => {
                 let t = plugin.createTransform()
-                    .add('mole-data', CreateSurface, {
+                    .add('mole-data', Transformer.Basic.CreateSurfaceVisual, {
                         label: 'Origins ' + origins.Type,
                         tag: { type: 'Origins', element: origins },
                         surface,
-                        isInteractive: true,
-                        color: origins.__color as Visualization.Color
+                        theme: Visualization.Theme.createUniform({ 
+                            colors: LiteMol.Core.Utils.FastMap.ofArray<string, LiteMol.Visualization.Color>([['Uniform', origins.__color as Visualization.Color]])
+                        })
                     }, { ref: origins.__id, isHidden: true });
                 
                 plugin.applyTransform(t).then(() => {
@@ -186,29 +188,4 @@ namespace LiteMol.Example.Channels.State {
             }).catch(rej);
         });
     }
-
-    export interface CreateSurfaceProps { label?: string, tag?: SurfaceTag, surface?: Core.Geometry.Surface, color?: Visualization.Color, transparency?: Visualization.Theme.Transparency, isWireframe?: boolean, isInteractive?: boolean }
-    export const CreateSurface = Bootstrap.Tree.Transformer.create<Bootstrap.Entity.Data.Json, Bootstrap.Entity.Visual.Surface, CreateSurfaceProps>({
-        id: 'mole-example-create-surface',
-        name: 'Create Surface',
-        description: 'Create a surface entity.',
-        from: [Bootstrap.Entity.Data.Json],
-        to: [Bootstrap.Entity.Visual.Surface],
-        defaultParams: () => ({}),
-        isUpdatable: false
-    }, (context, a, t) => {
-        let theme = Visualization.Theme.createUniform({ colors: LiteMol.Core.Utils.FastMap.ofArray<string, LiteMol.Visualization.Color>([['Uniform', t.params.color!]]), interactive: t.params.isInteractive, transparency: t.params.transparency });
-        let style: Bootstrap.Visualization.Style<'Surface', {}> = {
-            type: 'Surface',
-            taskType: 'Silent',
-            //isNotSelectable: false,
-            params: {},
-            theme: <any>void 0
-        };
-
-        return Bootstrap.Task.create<Bootstrap.Entity.Visual.Surface>(`Create Surface`, 'Silent', async ctx => {
-            let model = await LiteMol.Visualization.Surface.Model.create(t.params.tag, { surface: t.params.surface!, theme, parameters: { isWireframe: t.params.isWireframe! } }).run(ctx);
-            return Bootstrap.Entity.Visual.Surface.create(t, { label: t.params.label!, model, style, isSelectable: true, tag: t.params.tag });
-        });
-    });
 }

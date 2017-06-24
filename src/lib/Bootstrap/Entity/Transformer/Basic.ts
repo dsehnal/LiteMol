@@ -63,4 +63,43 @@ namespace LiteMol.Bootstrap.Entity.Transformer.Basic {
             setTimeout(() => res(Tree.Node.Null), t.params.timeoutMs);
         }))
     }); 
+
+    export interface CreateSurfaceVisualParams { 
+        surface: Core.Geometry.Surface, 
+        theme: LiteMol.Visualization.Theme, 
+        label?: string, 
+        tag?: any, 
+        isWireframe?: boolean, 
+        isNotInteractive?: boolean,
+        taskType?: Task.Type
+    }
+    export const CreateSurfaceVisual = Bootstrap.Tree.Transformer.create<Bootstrap.Entity.Root, Bootstrap.Entity.Visual.Surface, CreateSurfaceVisualParams>({
+        id: 'basic-create-surface-visual',
+        name: 'Create Surface Visual',
+        description: 'Create generic surface visual.',
+        from: [],
+        to: [Bootstrap.Entity.Visual.Surface],
+        defaultParams: () => void 0,
+        isUpdatable: false
+    }, (context, a, t) => {
+        let theme = t.params.theme!;
+        let style: Bootstrap.Visualization.Style<'Surface', {}> = {
+            type: 'Surface',
+            taskType: t.params.taskType || 'Silent',
+            isNotSelectable: !!t.params.isNotInteractive,
+            params: {},
+            theme: <any>void 0
+        };
+
+        return Bootstrap.Task.create<Bootstrap.Entity.Visual.Surface>(`Create Surface Visual`, t.params.taskType || 'Silent', async ctx => {
+            let model = await LiteMol.Visualization.Surface.Model.create(a, { surface: t.params.surface!, theme, parameters: { isWireframe: t.params.isWireframe! } }).run(ctx);
+            return Bootstrap.Entity.Visual.Surface.create(t, { 
+                label: t.params.label || 'Surface', 
+                model, 
+                style, 
+                isSelectable: !t.params.isNotInteractive,
+                tag: t.params.tag 
+            });
+        });
+    });
 }

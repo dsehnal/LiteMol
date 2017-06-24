@@ -16311,6 +16311,16 @@ declare namespace LiteMol.Bootstrap.Entity.Transformer.Basic {
     const Delay: Transformer<Root, Action, {
         timeoutMs: number;
     }>;
+    interface CreateSurfaceVisualParams {
+        surface: Core.Geometry.Surface;
+        theme: LiteMol.Visualization.Theme;
+        label?: string;
+        tag?: any;
+        isWireframe?: boolean;
+        isNotInteractive?: boolean;
+        taskType?: Task.Type;
+    }
+    const CreateSurfaceVisual: Transformer<Root, Visual.Surface, CreateSurfaceVisualParams>;
 }
 declare namespace LiteMol.Bootstrap.Entity.Transformer.Molecule {
     interface DownloadMoleculeSourceParams {
