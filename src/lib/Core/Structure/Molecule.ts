@@ -259,7 +259,7 @@ namespace LiteMol.Core.Structure {
             type: Type,
             distance: number,
             order: 'sing' | 'doub' | 'trip' | 'quad' | 'unknown',
-            partners: { residueIndex: number, atomIndex: number, symmetry:  string }[]
+            partners: { residueIndex: number, atomIndex: number, symmetry: string }[]
         }
     }
 

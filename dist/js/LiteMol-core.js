@@ -18552,7 +18552,10 @@ var LiteMol;
                     chainResidueEnd[chainOffset] = assemblyResidueParts.length;
                     chainAtomEnd[chainOffset] = atomOffset;
                     var finalAtoms = atomTable.seal(), finalResidues = residueTableBuilder.seal(), finalChains = chainTableBuilder.seal(), finalEntities = entityTableBuilder.seal();
-                    var ss = buildSS(model, assemblyParts, finalResidues);
+                    var secondaryStructure = buildSS(model, assemblyParts, finalResidues);
+                    var structConn = model.data.structConn
+                        ? buildStructConn(model.data.structConn, transforms, assemblyParts.residues, assemblyParts.operators, model.data.residues, finalResidues)
+                        : void 0;
                     return Structure.Molecule.Model.create({
                         id: model.id,
                         modelId: model.modelId,
@@ -18564,13 +18567,109 @@ var LiteMol;
                             bonds: {
                                 component: model.data.bonds.component
                             },
-                            secondaryStructure: ss
+                            secondaryStructure: secondaryStructure,
+                            structConn: structConn
                         },
                         positions: positionTable,
                         parent: model,
                         source: Structure.Molecule.Model.Source.Computed,
                         operators: transforms.map(function (t) { return new Structure.Operator(t.transform, t.id, t.isIdentity); })
                     });
+                }
+                function buildStructConn(structConn, ops, residueParts, residueOpParts, oldResidues, newResidues) {
+                    var entries = structConn.entries;
+                    var opsMap = Core.Utils.FastMap.create();
+                    for (var i = 0, __i = ops.length; i < __i; i++) {
+                        opsMap.set(ops[i].id, i);
+                    }
+                    var transformMap = Core.Utils.FastMap.create();
+                    for (var _i = 0, entries_1 = entries; _i < entries_1.length; _i++) {
+                        var e = entries_1[_i];
+                        for (var _a = 0, _b = e.partners; _a < _b.length; _a++) {
+                            var p = _b[_a];
+                            if (!transformMap.has(p.residueIndex)) {
+                                transformMap.set(p.residueIndex, Core.Utils.FastMap.create());
+                            }
+                        }
+                    }
+                    for (var i = 0, __i = residueParts.length; i < __i; i++) {
+                        var r = residueParts[i];
+                        if (!transformMap.has(r))
+                            continue;
+                        transformMap.get(r).set(residueOpParts[i], i);
+                    }
+                    var oldStart = oldResidues.atomStartIndex;
+                    var newStart = newResidues.atomStartIndex;
+                    var ret = [];
+                    for (var _c = 0, entries_2 = entries; _c < entries_2.length; _c++) {
+                        var e = entries_2[_c];
+                        var allId = true;
+                        for (var _d = 0, _e = e.partners; _d < _e.length; _d++) {
+                            var p = _e[_d];
+                            if (p.symmetry !== '1_555') {
+                                allId = false;
+                                break;
+                            }
+                        }
+                        if (allId) {
+                            var _loop_1 = function (opIndex, __oi) {
+                                var allMapped = true;
+                                for (var _i = 0, _a = e.partners; _i < _a.length; _i++) {
+                                    var p = _a[_i];
+                                    if (!transformMap.get(p.residueIndex).has(opIndex)) {
+                                        allMapped = false;
+                                        break;
+                                    }
+                                }
+                                if (!allMapped)
+                                    return "continue";
+                                ret.push({
+                                    distance: e.distance,
+                                    order: e.order,
+                                    type: e.type,
+                                    partners: e.partners.map(function (p) {
+                                        var rI = transformMap.get(p.residueIndex).get(opIndex);
+                                        return {
+                                            residueIndex: rI,
+                                            atomIndex: newStart[rI] + (p.atomIndex - oldStart[p.residueIndex]),
+                                            symmetry: p.symmetry
+                                        };
+                                    })
+                                });
+                            };
+                            for (var opIndex = 0, __oi = ops.length; opIndex < __oi; opIndex++) {
+                                _loop_1(opIndex, __oi);
+                            }
+                        }
+                        else {
+                            var partners = [];
+                            for (var _f = 0, _g = e.partners; _f < _g.length; _f++) {
+                                var p = _g[_f];
+                                if (!opsMap.has(p.symmetry))
+                                    break;
+                                var op = opsMap.get(p.symmetry);
+                                var m = transformMap.get(p.residueIndex);
+                                if (!m.has(op))
+                                    break;
+                                var rI = m.get(op);
+                                partners.push({
+                                    residueIndex: rI,
+                                    atomIndex: newStart[rI] + (p.atomIndex - oldStart[p.residueIndex]),
+                                    symmetry: p.symmetry
+                                });
+                            }
+                            if (partners.length === e.partners.length) {
+                                ret.push({
+                                    distance: e.distance,
+                                    order: e.order,
+                                    type: e.type,
+                                    partners: partners
+                                });
+                            }
+                        }
+                    }
+                    console.log(ret);
+                    return new Structure.StructConn(ret);
                 }
                 function buildSS(parent, assemblyParts, newResidues) {
                     var index = parent.data.residues.secondaryStructureIndex;

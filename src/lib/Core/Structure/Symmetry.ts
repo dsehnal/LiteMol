@@ -482,9 +482,7 @@ namespace LiteMol.Core.Structure {
             }
 
             for (let residueOffset = 0, _mi = assemblyResidueParts.length; residueOffset < _mi; residueOffset++) {
-
                 rI = assemblyResidueParts[residueOffset];
-
                 let opI = assemblyOpParts[residueOffset];
 
                 transform = transforms[opI];
@@ -592,12 +590,15 @@ namespace LiteMol.Core.Structure {
             chainResidueEnd[chainOffset] = assemblyResidueParts.length;
             chainAtomEnd[chainOffset] = atomOffset;
 
-            let finalAtoms = atomTable.seal(),
+            const finalAtoms = atomTable.seal(),
                 finalResidues = residueTableBuilder.seal(),
                 finalChains = chainTableBuilder.seal(),
                 finalEntities = entityTableBuilder.seal();
 
-            let ss = buildSS(model, assemblyParts, finalResidues);
+            const secondaryStructure = buildSS(model, assemblyParts, finalResidues);
+            const structConn = model.data.structConn 
+                ? buildStructConn(model.data.structConn, transforms, assemblyParts.residues, assemblyParts.operators, model.data.residues, finalResidues)
+                : void 0;
 
             return Molecule.Model.create({
                 id: model.id,
@@ -610,13 +611,104 @@ namespace LiteMol.Core.Structure {
                     bonds: {
                         component: model.data.bonds.component
                     },
-                    secondaryStructure: ss
+                    secondaryStructure,
+                    structConn
                 },
                 positions: positionTable,
                 parent: model,
                 source: Molecule.Model.Source.Computed,
                 operators: transforms.map(t => new Operator(t.transform, t.id, t.isIdentity))
             });
+        }
+
+        function buildStructConn(structConn: StructConn, ops: SymmetryTransform[], residueParts: number[], residueOpParts: number[],
+            oldResidues: ResidueTable, newResidues: ResidueTable) {            
+            const { entries } = structConn;
+
+            const opsMap = Utils.FastMap.create<string, number>();
+            for (let i = 0, __i = ops.length; i < __i; i++) {
+                opsMap.set(ops[i].id, i);
+            }
+
+            const transformMap = Utils.FastMap.create<number, Utils.FastMap<number, number>>();
+            for (const e of entries) {
+                for (const p of e.partners) {
+                    if (!transformMap.has(p.residueIndex)) {
+                        transformMap.set(p.residueIndex, Utils.FastMap.create());
+                    }
+                }
+            }
+
+            for (let i = 0, __i = residueParts.length; i < __i; i++) {
+                const r = residueParts[i];
+                if (!transformMap.has(r)) continue;
+                transformMap.get(r)!.set(residueOpParts[i], i);
+            }
+
+            const { atomStartIndex: oldStart } = oldResidues;
+            const { atomStartIndex: newStart } = newResidues;
+            const ret: StructConn.Entry[] = [];
+            for (const e of entries) {
+                let allId = true;
+                for (const p of e.partners) {
+                    if (p.symmetry !== '1_555') {
+                        allId = false;
+                        break;
+                    }
+                }
+
+                if (allId) {
+                    for (let opIndex = 0, __oi = ops.length; opIndex < __oi; opIndex++) {
+                        let allMapped = true;
+                        for (const p of e.partners) {
+                            if (!transformMap.get(p.residueIndex)!.has(opIndex)) {
+                                allMapped = false;
+                                break;
+                            }
+                        }
+                        if (!allMapped) continue;
+
+                        ret.push({
+                            distance: e.distance,
+                            order: e.order,
+                            type: e.type,
+                            partners: e.partners.map(p => {
+                                const rI = transformMap.get(p.residueIndex)!.get(opIndex)!;
+                                return {
+                                    residueIndex: rI,
+                                    atomIndex: newStart[rI] + (p.atomIndex - oldStart[p.residueIndex]),
+                                    symmetry: p.symmetry
+                                };
+                            })
+                        });
+                    }
+                } else {
+                    const partners: StructConn.Entry['partners'] = [];
+                    for (const p of e.partners) {
+                        if (!opsMap.has(p.symmetry)) break;
+                        const op = opsMap.get(p.symmetry)!;
+                        const m = transformMap.get(p.residueIndex)!;
+                        if (!m.has(op)) break;
+                        const rI = m.get(op)!;
+                        partners.push({
+                            residueIndex: rI,
+                            atomIndex: newStart[rI] + (p.atomIndex - oldStart[p.residueIndex]),
+                            symmetry: p.symmetry
+                        });
+                    }
+
+                    if (partners.length === e.partners.length) {
+                        ret.push({
+                            distance: e.distance,
+                            order: e.order,
+                            type: e.type,
+                            partners
+                        });
+                    }
+                }
+            }       
+
+            return new StructConn(ret);
         }
 
         function buildSS(parent: Molecule.Model,
@@ -701,7 +793,6 @@ namespace LiteMol.Core.Structure {
                 for (let j = -3; j <= 3; j++) {
                     for (let k = -3; k <= 3; k++) {
                         for (let op = 0; op < spacegroup.operatorCount; op++) {
-
                             spacegroup.getOperatorMatrix(op, i, j, k, t);
 
                             Vec3.transformMat4(v, bounds.center, t);
