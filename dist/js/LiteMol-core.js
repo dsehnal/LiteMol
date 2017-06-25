@@ -16564,15 +16564,22 @@ var LiteMol;
                         var l = ps.length;
                         for (var i = 0; i < l - 1; i++) {
                             for (var j = i + i; j < l; j++) {
-                                this._index.set(StructConn._key(ps[i].residueIndex, ps[j].residueIndex), e);
+                                var key = StructConn._key(ps[i].residueIndex, ps[j].residueIndex);
+                                if (this._index.has(key)) {
+                                    this._index.get(key).push(e);
+                                }
+                                else {
+                                    this._index.set(key, [e]);
+                                }
                             }
                         }
                     }
                     return this._index;
                 };
-                StructConn.prototype.getEntry = function (residueAIndex, residueBIndex) {
-                    return this.getIndex().get(StructConn._key(residueAIndex, residueBIndex));
+                StructConn.prototype.getEntries = function (residueAIndex, residueBIndex) {
+                    return this.getIndex().get(StructConn._key(residueAIndex, residueBIndex)) || StructConn._emptyEntry;
                 };
+                StructConn._emptyEntry = [];
                 return StructConn;
             }());
             Structure.StructConn = StructConn;
@@ -18668,7 +18675,6 @@ var LiteMol;
                             }
                         }
                     }
-                    console.log(ret);
                     return new Structure.StructConn(ret);
                 }
                 function buildSS(parent, assemblyParts, newResidues) {

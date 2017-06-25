@@ -211,7 +211,7 @@ namespace LiteMol.Core.Structure {
      * Wraps _struct_conn mmCIF category.
      */
     export class StructConn {
-        private _index: Utils.FastMap<string, StructConn.Entry> | undefined = void 0;
+        private _index: Utils.FastMap<string, StructConn.Entry[]> | undefined = void 0;
         
         private static _key(rA: number, rB: number) {
             if (rA < rB) return `${rA}-${rB}`;
@@ -226,19 +226,24 @@ namespace LiteMol.Core.Structure {
                 const l = ps.length;
                 for (let i = 0; i < l - 1; i++) {
                     for (let j = i + i; j < l; j++) {
-                        this._index.set(StructConn._key(ps[i].residueIndex, ps[j].residueIndex), e);
+                        const key = StructConn._key(ps[i].residueIndex, ps[j].residueIndex);
+                        if (this._index.has(key)) {
+                            this._index.get(key)!.push(e);
+                        } else {
+                            this._index.set(key, [e]);
+                        }
                     }
                 }
             }
             return this._index;
         }
 
-        getEntry(residueAIndex: number, residueBIndex: number) {
-            return this.getIndex().get(StructConn._key(residueAIndex, residueBIndex));
+        private static _emptyEntry = [];
+        getEntries(residueAIndex: number, residueBIndex: number): ReadonlyArray<StructConn.Entry> {
+            return this.getIndex().get(StructConn._key(residueAIndex, residueBIndex)) || StructConn._emptyEntry;
         }
 
         constructor(public entries: StructConn.Entry[]) {
-
         }
     }
 

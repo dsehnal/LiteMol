@@ -13793,7 +13793,8 @@ declare namespace LiteMol.Core.Structure {
         private _index;
         private static _key(rA, rB);
         private getIndex();
-        getEntry(residueAIndex: number, residueBIndex: number): StructConn.Entry | undefined;
+        private static _emptyEntry;
+        getEntries(residueAIndex: number, residueBIndex: number): ReadonlyArray<StructConn.Entry>;
         constructor(entries: StructConn.Entry[]);
     }
     namespace StructConn {
