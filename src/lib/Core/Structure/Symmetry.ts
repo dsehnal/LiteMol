@@ -596,8 +596,8 @@ namespace LiteMol.Core.Structure {
                 finalEntities = entityTableBuilder.seal();
 
             const secondaryStructure = buildSS(model, assemblyParts, finalResidues);
-            const structConn = model.data.structConn 
-                ? buildStructConn(model.data.structConn, transforms, assemblyParts.residues, assemblyParts.operators, model.data.residues, finalResidues)
+            const structConn = model.data.bonds.structConn 
+                ? buildStructConn(model.data.bonds.structConn, transforms, assemblyParts.residues, assemblyParts.operators, model.data.residues, finalResidues)
                 : void 0;
 
             return Molecule.Model.create({
@@ -609,10 +609,10 @@ namespace LiteMol.Core.Structure {
                     chains: finalChains,
                     entities: finalEntities,
                     bonds: {
+                        structConn,
                         component: model.data.bonds.component
                     },
-                    secondaryStructure,
-                    structConn
+                    secondaryStructure
                 },
                 positions: positionTable,
                 parent: model,

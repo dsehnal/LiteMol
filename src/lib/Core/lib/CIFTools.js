@@ -3,7 +3,7 @@
  */
 var CIFTools;
 (function (CIFTools) {
-    CIFTools.VERSION = { number: "1.1.5", date: "April 20 2017" };
+    CIFTools.VERSION = { number: "1.1.6", date: "June 26 2017" };
 })(CIFTools || (CIFTools = {}));
 /*
  * Copyright (c) 2016 - now David Sehnal, licensed under MIT License, See LICENSE file for more info.
@@ -2770,14 +2770,15 @@ var CIFTools;
                     if (value === 0) {
                         size += 1;
                     }
-                    else if (value === upperLimit || value === lowerLimit) {
-                        size += 2;
-                    }
                     else if (value > 0) {
                         size += Math.ceil(value / upperLimit);
+                        if (value % upperLimit === 0)
+                            size += 1;
                     }
                     else {
                         size += Math.ceil(value / lowerLimit);
+                        if (value % lowerLimit === 0)
+                            size += 1;
                     }
                 }
                 return size;

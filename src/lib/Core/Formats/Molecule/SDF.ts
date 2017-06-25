@@ -76,11 +76,11 @@ namespace LiteMol.Core.Formats.Molecule.SDF {
         bonds.atomBIndex[i] = Utils.FastNumberParsers.parseIntSkipTrailingWhitespace(line, 3, 6) - 1;
         
         switch (Utils.FastNumberParsers.parseIntSkipTrailingWhitespace(line, 6, 9)) {
-            case 1: bonds.type[i] = Structure.Bond.Type.Single; break;
-            case 2: bonds.type[i] = Structure.Bond.Type.Double; break;
-            case 3: bonds.type[i] = Structure.Bond.Type.Triple; break;
-            case 4: bonds.type[i] = Structure.Bond.Type.Aromatic; break;
-            default: bonds.type[i] = Structure.Bond.Type.Unknown; break;
+            case 1: bonds.type[i] = Structure.BondType.Single; break;
+            case 2: bonds.type[i] = Structure.BondType.Double; break;
+            case 3: bonds.type[i] = Structure.BondType.Triple; break;
+            case 4: bonds.type[i] = Structure.BondType.Aromatic; break;
+            default: bonds.type[i] = Structure.BondType.Unknown; break;
         }
     }
 
@@ -140,7 +140,7 @@ namespace LiteMol.Core.Formats.Molecule.SDF {
                 chains,
                 entities,
                 bonds: {
-                    covalent: state.bonds,
+                    input: state.bonds,
                 },
                 secondaryStructure: ss,
                 symmetryInfo: void 0,

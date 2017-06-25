@@ -1,4 +1,8 @@
-﻿# 3.1.6
+﻿# 3.2.0
+* Fixed bug in CIFTools.
+* Add more robust bond computation.
+
+# 3.1.6
 * Added support for _struct_conn mmCIF category.
 * Refactored geometry 3D search API and added spatial hash option.
 

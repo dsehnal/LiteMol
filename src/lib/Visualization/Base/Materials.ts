@@ -292,14 +292,21 @@ namespace LiteMol.Visualization {
 
         static getDefaultHighlightMaterial() {
             return new THREE.MeshPhongMaterial({ color: 0xFFFFFF, specular: 0xAAAAAA,/* ambient: 0xffffff,*/ shininess: 2, shading: THREE.SmoothShading, side: THREE.DoubleSide, metal: true });
-        }       
+        }      
 
+        static applyColorToBuffer(bufferAttribute: THREE.BufferAttribute, color: Color) {
+            let buffer = bufferAttribute.array;
 
+            for (let i = 0, __i = buffer.length; i < __i; i += 3) {
+                buffer[i] = color.r;
+                buffer[i + 1] = color.g;
+                buffer[i + 2] = color.b;
+            }
 
+            bufferAttribute.needsUpdate = true;
+        } 
 
-        static applyColorToMap(map: Selection.VertexMap, indices: number[], bufferAttribute: THREE.BufferAttribute, getter: (i: number, c: Color) => void) {
-
-
+        static applyColorToMap(map: Selection.VertexMap, bufferAttribute: THREE.BufferAttribute, getter: (i: number, c: Color) => void) {
             let buffer = bufferAttribute.array,
                 color = { r: 0.45, g: 0.45, b: 0.45 },
                 vertexRanges = map.vertexRanges;
@@ -329,7 +336,6 @@ namespace LiteMol.Visualization {
 
             bufferAttribute.needsUpdate = true;
         }
-
     }
 
 }

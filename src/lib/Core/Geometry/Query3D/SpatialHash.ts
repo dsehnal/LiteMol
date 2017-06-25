@@ -53,10 +53,10 @@ namespace LiteMol.Core.Geometry.Query3D {
                         const end = offset + count;
 
                         for (let i = offset; i < end; i++) {
-                            const idx = bucketArray[i]
-                            const dx = positions[3 * idx + 0] - x
-                            const dy = positions[3 * idx + 1] - y
-                            const dz = positions[3 * idx + 2] - z
+                            const idx = bucketArray[i];
+                            const dx = positions[3 * idx + 0] - x;
+                            const dy = positions[3 * idx + 1] - y;
+                            const dz = positions[3 * idx + 2] - z;
                             const distSq = dx * dx + dy * dy + dz * dz;
 
                             if (distSq <= rSq) {
@@ -82,7 +82,7 @@ namespace LiteMol.Core.Geometry.Query3D {
             const x = (positions[3 * i + 0] - minX) >> Constants.Exp;
             const y = (positions[3 * i + 1] - minY) >> Constants.Exp;
             const z = (positions[3 * i + 2] - minZ) >> Constants.Exp;
-            const idx = (((x * sY) + y) * sZ) + z
+            const idx = (((x * sY) + y) * sZ) + z;
             if ((grid[idx] += 1) === 1) {
                 bucketCount += 1
             }
@@ -146,7 +146,7 @@ namespace LiteMol.Core.Geometry.Query3D {
 
     export function createSpatialHash<T>(data: InputData<T>): LookupStructure<T> {
         const tree = build(data);
-        return function (radiusEstimate, includePriorities) {
+        return function (radiusEstimate) {
             const ctx = QueryContext.create(tree, data.elements);
             return function (x: number, y: number, z: number, radius: number) {
                 QueryContext.update(ctx, x, y, z, radius);

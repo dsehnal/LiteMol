@@ -27,7 +27,7 @@ namespace LiteMol.Core.Structure {
          */
         export class Context {
             private mask: Context.Mask;
-            private lazyTree: Geometry.Query3D.LookupStructure<number>;
+            private lazyLoopup3d: Geometry.Query3D.LookupStructure<number>;
 
             /**
              * Number of atoms in the current context.
@@ -49,11 +49,11 @@ namespace LiteMol.Core.Structure {
             structure: Molecule.Model;
 
             /**
-             * Get a kd-tree for the atoms in the current context.
+             * Get a 3d loopup structure for the atoms in the current context.
              */
-            get tree() {
-                if (!this.lazyTree) this.makeTree();
-                return this.lazyTree;
+            get lookup3d() {
+                if (!this.lazyLoopup3d) this.makeLookup3d();
+                return this.lazyLoopup3d;
             }
             
             /**
@@ -99,7 +99,7 @@ namespace LiteMol.Core.Structure {
                 this.mask = mask;
             }
 
-            private makeTree() {
+            private makeLookup3d() {
                 let data = new Int32Array(this.mask.size),
                     dataCount = 0,
                     {x, y, z} = this.structure.positions;
@@ -109,7 +109,7 @@ namespace LiteMol.Core.Structure {
                 }
 
                 const inputData = Geometry.Query3D.createInputData(data as any as number[], (i, add) => add(x[i], y[i], z[i]));
-                this.lazyTree = Geometry.Query3D.createSpatialHash(inputData);
+                this.lazyLoopup3d = Geometry.Query3D.createSpatialHash(inputData);
             }
         }
         

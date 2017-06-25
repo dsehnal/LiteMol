@@ -51,6 +51,7 @@ namespace LiteMol.Core.Utils {
             count: number,
             columns: ColumnDescriptor<Schema>[],
             addColumn<T>(name: keyof Schema, creator: (size: number) => T): T,
+            addRawColumn<T>(name: keyof Schema, creator: (size: number) => T, data: T): T,
             getRawData(): any[][],
 
             /**
@@ -125,7 +126,6 @@ namespace LiteMol.Core.Utils {
                 }
 
                 for (let col of srcColumns) {
-
                     let data = srcData[col.name];
                     if (Utils.ChunkedArray.is(data)) {
                         data = Utils.ChunkedArray.compact(data);
@@ -145,6 +145,13 @@ namespace LiteMol.Core.Utils {
 
             addColumn<T>(name: string, creator: (size: number) => T): T {
                 let c = creator(this.count);
+                Object.defineProperty(this, name, { enumerable: true, configurable: false, writable: false, value: c });
+                this.columns[this.columns.length] = { name, creator };
+                return c;
+            }
+
+            addRawColumn<T>(name: string, creator: (size: number) => T, data: T): T {
+                let c = data;
                 Object.defineProperty(this, name, { enumerable: true, configurable: false, writable: false, value: c });
                 this.columns[this.columns.length] = { name, creator };
                 return c;

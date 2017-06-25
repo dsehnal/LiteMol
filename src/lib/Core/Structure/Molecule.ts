@@ -84,31 +84,13 @@ namespace LiteMol.Core.Structure {
     export interface Bond {
         atomAIndex: number,
         atomBIndex: number,
-        type: Bond.Type
-    }
-
-    export namespace Bond {
-        export const enum Type {
-            Unknown = 0,
-
-            Single = 1,
-            Double = 2,
-            Triple = 3,
-            Aromatic = 4,
-
-            Metallic = 5,
-            Ion = 6,
-            Hydrogen = 7,
-            DisulfideBridge = 8
-        }
+        type: BondType
     }
 
     export class ComponentBondInfoEntry {
+        map: Utils.FastMap<string, Utils.FastMap<string, BondType>> = Utils.FastMap.create<string, Utils.FastMap<string, BondType>>();
 
-        map: Utils.FastMap<string, Utils.FastMap<string, Bond.Type>> = Utils.FastMap.create<string, Utils.FastMap<string, Bond.Type>>();
-
-        add(a: string, b: string, order: Bond.Type, swap = true) {
-
+        add(a: string, b: string, order: BondType, swap = true) {
             let e = this.map.get(a);
             if (e !== void 0) {
                 let f = e.get(b);
@@ -116,7 +98,7 @@ namespace LiteMol.Core.Structure {
                     e.set(b, order);
                 }
             } else {
-                let map = Utils.FastMap.create<string, Bond.Type>();
+                let map = Utils.FastMap.create<string, BondType>();
                 map.set(b, order);
                 this.map.set(a, map);
             }
@@ -211,36 +193,58 @@ namespace LiteMol.Core.Structure {
      * Wraps _struct_conn mmCIF category.
      */
     export class StructConn {
-        private _index: Utils.FastMap<string, StructConn.Entry[]> | undefined = void 0;
+        private _residuePairIndex: Utils.FastMap<string, StructConn.Entry[]> | undefined = void 0;
+        private _atomIndex: Utils.FastMap<number, StructConn.Entry[]> | undefined = void 0; 
         
-        private static _key(rA: number, rB: number) {
+        private static _resKey(rA: number, rB: number) {
             if (rA < rB) return `${rA}-${rB}`;
             return `${rB}-${rA}`;
         }
         
-        private getIndex() {
-            if (this._index) return this._index;
-            this._index = Utils.FastMap.create();
+        private getResiduePairIndex() {
+            if (this._residuePairIndex) return this._residuePairIndex;
+            this._residuePairIndex = Utils.FastMap.create();
             for (const e of this.entries) {
                 const ps = e.partners;
                 const l = ps.length;
                 for (let i = 0; i < l - 1; i++) {
                     for (let j = i + i; j < l; j++) {
-                        const key = StructConn._key(ps[i].residueIndex, ps[j].residueIndex);
-                        if (this._index.has(key)) {
-                            this._index.get(key)!.push(e);
+                        const key = StructConn._resKey(ps[i].residueIndex, ps[j].residueIndex);
+                        if (this._residuePairIndex.has(key)) {
+                            this._residuePairIndex.get(key)!.push(e);
                         } else {
-                            this._index.set(key, [e]);
+                            this._residuePairIndex.set(key, [e]);
                         }
                     }
                 }
             }
-            return this._index;
+            return this._residuePairIndex;
+        }
+
+        private getAtomIndex() {
+            if (this._atomIndex) return this._atomIndex;
+            this._atomIndex = Utils.FastMap.create();
+            for (const e of this.entries) {
+                for (const p of e.partners) {
+                    const key = p.atomIndex;
+                    if (this._atomIndex.has(key)) {
+                        this._atomIndex.get(key)!.push(e);
+                    } else {
+                        this._atomIndex.set(key, [e]);
+                    }                    
+                }
+            }
+            return this._atomIndex;
         }
 
         private static _emptyEntry = [];
-        getEntries(residueAIndex: number, residueBIndex: number): ReadonlyArray<StructConn.Entry> {
-            return this.getIndex().get(StructConn._key(residueAIndex, residueBIndex)) || StructConn._emptyEntry;
+        
+        getResidueEntries(residueAIndex: number, residueBIndex: number): ReadonlyArray<StructConn.Entry> {
+            return this.getResiduePairIndex().get(StructConn._resKey(residueAIndex, residueBIndex)) || StructConn._emptyEntry;
+        }
+
+        getAtomEntries(atomIndex: number): ReadonlyArray<StructConn.Entry> {
+            return this.getAtomIndex().get(atomIndex) || StructConn._emptyEntry;
         }
 
         constructor(public entries: StructConn.Entry[]) {
@@ -417,10 +421,9 @@ namespace LiteMol.Core.Structure {
         }
 
         export interface Bonds {
-            covalent?: BondTable,
-            nonCovalent?: BondTable,
-            computed?: BondTable
-            readonly component?: ComponentBondInfo,
+            readonly structConn?: StructConn,
+            readonly input?: BondTable,
+            readonly component?: ComponentBondInfo
         }
         
         export interface Model extends Model.Base {
@@ -436,6 +439,7 @@ namespace LiteMol.Core.Structure {
                     queryContext = Query.Context.ofStructure(ret as Model);
                     return queryContext;
                 }});
+                computeBonds(ret as Model, ret.data.atoms.indices);
                 return ret as Model;
             }
 
@@ -464,8 +468,7 @@ namespace LiteMol.Core.Structure {
                 readonly bonds: Bonds,
                 readonly secondaryStructure: SecondaryStructureElement[],
                 readonly symmetryInfo?: SymmetryInfo,
-                readonly assemblyInfo?: AssemblyInfo,
-                readonly structConn?: StructConn
+                readonly assemblyInfo?: AssemblyInfo
             }
 
             export function withTransformedXYZ<T>(

@@ -13071,6 +13071,7 @@ declare namespace LiteMol.Core.Utils {
             count: number;
             columns: ColumnDescriptor<Schema>[];
             addColumn<T>(name: keyof Schema, creator: (size: number) => T): T;
+            addRawColumn<T>(name: keyof Schema, creator: (size: number) => T, data: T): T;
             getRawData(): any[][];
             /**
              * This functions clones the table and defines all its column inside the constructor, hopefully making the JS engine
@@ -13517,7 +13518,7 @@ declare namespace LiteMol.Core.Geometry.Query3D {
         bounds: Box3D;
         positions: number[];
     }
-    type LookupStructure<T> = (radiusEstimate: number, includePriorities?: boolean) => QueryFunc<T>;
+    type LookupStructure<T> = (radiusEstimate: number) => QueryFunc<T>;
     /**
      * A helper to store boundary box.
      */
@@ -13697,25 +13698,12 @@ declare namespace LiteMol.Core.Structure {
     interface Bond {
         atomAIndex: number;
         atomBIndex: number;
-        type: Bond.Type;
-    }
-    namespace Bond {
-        const enum Type {
-            Unknown = 0,
-            Single = 1,
-            Double = 2,
-            Triple = 3,
-            Aromatic = 4,
-            Metallic = 5,
-            Ion = 6,
-            Hydrogen = 7,
-            DisulfideBridge = 8,
-        }
+        type: BondType;
     }
     class ComponentBondInfoEntry {
         id: string;
-        map: Utils.FastMap<string, Utils.FastMap<string, Bond.Type>>;
-        add(a: string, b: string, order: Bond.Type, swap?: boolean): void;
+        map: Utils.FastMap<string, Utils.FastMap<string, BondType>>;
+        add(a: string, b: string, order: BondType, swap?: boolean): void;
         constructor(id: string);
     }
     class ComponentBondInfo {
@@ -13765,11 +13753,14 @@ declare namespace LiteMol.Core.Structure {
      */
     class StructConn {
         entries: StructConn.Entry[];
-        private _index;
-        private static _key(rA, rB);
-        private getIndex();
+        private _residuePairIndex;
+        private _atomIndex;
+        private static _resKey(rA, rB);
+        private getResiduePairIndex();
+        private getAtomIndex();
         private static _emptyEntry;
-        getEntries(residueAIndex: number, residueBIndex: number): ReadonlyArray<StructConn.Entry>;
+        getResidueEntries(residueAIndex: number, residueBIndex: number): ReadonlyArray<StructConn.Entry>;
+        getAtomEntries(atomIndex: number): ReadonlyArray<StructConn.Entry>;
         constructor(entries: StructConn.Entry[]);
     }
     namespace StructConn {
@@ -13858,9 +13849,8 @@ declare namespace LiteMol.Core.Structure {
             experimentMethod?: string;
         }
         interface Bonds {
-            covalent?: BondTable;
-            nonCovalent?: BondTable;
-            computed?: BondTable;
+            readonly structConn?: StructConn;
+            readonly input?: BondTable;
             readonly component?: ComponentBondInfo;
         }
         interface Model extends Model.Base {
@@ -13890,11 +13880,28 @@ declare namespace LiteMol.Core.Structure {
                 readonly secondaryStructure: SecondaryStructureElement[];
                 readonly symmetryInfo?: SymmetryInfo;
                 readonly assemblyInfo?: AssemblyInfo;
-                readonly structConn?: StructConn;
             }
             function withTransformedXYZ<T>(model: Model, ctx: T, transform: (ctx: T, x: number, y: number, z: number, out: Geometry.LinearAlgebra.Vector3) => void): Model;
         }
     }
+}
+declare namespace LiteMol.Core.Structure {
+    const enum BondType {
+        Unknown = 0,
+        Single = 1,
+        Double = 2,
+        Triple = 3,
+        Aromatic = 4,
+        Metallic = 5,
+        Ion = 6,
+        Hydrogen = 7,
+        DisulfideBridge = 8,
+    }
+    interface BondComputationParameters {
+        maxHbondLength: number;
+        forceCompute: boolean;
+    }
+    function computeBonds(model: Molecule.Model, atomIndices: number[], params?: Partial<BondComputationParameters>): Utils.DataTable<Bond>;
 }
 declare namespace LiteMol.Core.Structure {
     class Spacegroup {
@@ -13943,7 +13950,7 @@ declare namespace LiteMol.Core.Structure {
          */
         class Context {
             private mask;
-            private lazyTree;
+            private lazyLoopup3d;
             /**
              * Number of atoms in the current context.
              */
@@ -13957,9 +13964,9 @@ declare namespace LiteMol.Core.Structure {
              */
             structure: Molecule.Model;
             /**
-             * Get a kd-tree for the atoms in the current context.
+             * Get a 3d loopup structure for the atoms in the current context.
              */
-            readonly tree: Geometry.Query3D.LookupStructure<number>;
+            readonly lookup3d: Geometry.Query3D.LookupStructure<number>;
             /**
              * Checks if an atom is included in the current context.
              */
@@ -13981,7 +13988,7 @@ declare namespace LiteMol.Core.Structure {
              */
             static ofAtomIndices(structure: Molecule.Model, atomIndices: number[]): Context;
             constructor(structure: Molecule.Model, mask: Context.Mask);
-            private makeTree();
+            private makeLookup3d();
         }
         namespace Context {
             /**
@@ -14393,7 +14400,8 @@ declare namespace LiteMol.Visualization {
         static getMeshMaterial(shading?: THREE.Shading, isWireframe?: boolean): THREE.ShaderMaterial;
         static getPhongVertexColorMaterial(): THREE.MeshPhongMaterial;
         static getDefaultHighlightMaterial(): THREE.MeshPhongMaterial;
-        static applyColorToMap(map: Selection.VertexMap, indices: number[], bufferAttribute: THREE.BufferAttribute, getter: (i: number, c: Color) => void): void;
+        static applyColorToBuffer(bufferAttribute: THREE.BufferAttribute, color: Color): void;
+        static applyColorToMap(map: Selection.VertexMap, bufferAttribute: THREE.BufferAttribute, getter: (i: number, c: Color) => void): void;
     }
 }
 declare namespace LiteMol.Visualization {
@@ -14996,7 +15004,6 @@ declare namespace LiteMol.Visualization.Molecule.BallsAndSticks {
         bondsGeometry: THREE.BufferGeometry;
         pickGeometry: THREE.BufferGeometry;
         atomVertexMap: Selection.VertexMap;
-        bondVertexMap: Selection.VertexMap;
         vertexStateBuffer: THREE.BufferAttribute;
         dispose(): void;
     }

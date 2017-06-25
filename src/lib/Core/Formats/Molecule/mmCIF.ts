@@ -923,17 +923,17 @@ namespace LiteMol.Core.Formats.Molecule.mmCIF {
                 entry = info.newEntry(id);
             }
 
-            let t: Structure.Bond.Type;
+            let t: Structure.BondType;
 
             switch (order.toLowerCase()) {
-                case 'sing': t = Structure.Bond.Type.Single; break;
+                case 'sing': t = Structure.BondType.Single; break;
                 case 'doub':
                 case 'delo':
-                    t = Structure.Bond.Type.Double;
+                    t = Structure.BondType.Double;
                     break;
-                case 'trip': t = Structure.Bond.Type.Triple; break;
-                case 'quad': t = Structure.Bond.Type.Aromatic; break;
-                default: t = Structure.Bond.Type.Unknown; break;
+                case 'trip': t = Structure.BondType.Triple; break;
+                case 'quad': t = Structure.BondType.Aromatic; break;
+                default: t = Structure.BondType.Unknown; break;
             }
 
             entry.add(nameA, nameB, t);
@@ -966,12 +966,12 @@ namespace LiteMol.Core.Formats.Molecule.mmCIF {
                     chains: structure.chains,
                     entities: structure.entities,
                     bonds: { 
+                        structConn: getStructConn(data, atoms, structure),
                         component: getComponentBonds(data.getCategory('_chem_comp_bond'))
                     },
                     secondaryStructure: ss,
                     symmetryInfo: getSymmetryInfo(data),
                     assemblyInfo: getAssemblyInfo(data),
-                    structConn: getStructConn(data, atoms, structure)
                 },
                 positions,
                 source: Structure.Molecule.Model.Source.File
