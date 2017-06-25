@@ -13457,90 +13457,6 @@ declare namespace LiteMol.Core.Geometry.LinearAlgebra {
     }
 }
 declare namespace LiteMol.Core.Geometry {
-    /**
-     * Basic shape of the result buffer for range queries.
-     */
-    interface SubdivisionTree3DResultBuffer {
-        count: number;
-        indices: number[];
-        hasPriorities: boolean;
-        priorities: number[] | undefined;
-        add(distSq: number, index: number): void;
-        reset(): void;
-    }
-    /**
-     * A buffer that only remembers the values.
-     */
-    namespace SubdivisionTree3DResultIndexBuffer {
-        function create(initialCapacity: number): SubdivisionTree3DResultBuffer;
-    }
-    /**
-     * A buffer that remembers values and priorities.
-     */
-    namespace SubdivisionTree3DResultPriorityBuffer {
-        function create(initialCapacity: number): SubdivisionTree3DResultBuffer;
-    }
-    /**
-     * Query context. Handles the actual querying.
-     */
-    interface SubdivisionTree3DQueryContext<T> {
-        tree: SubdivisionTree3D<T>;
-        pivot: number[];
-        radius: number;
-        radiusSq: number;
-        indices: number[];
-        positions: number[];
-        buffer: SubdivisionTree3DResultBuffer;
-        nearest(x: number, y: number, z: number, radius: number): void;
-    }
-    namespace SubdivisionTree3DQueryContext {
-        function create<T>(tree: SubdivisionTree3D<T>, buffer: SubdivisionTree3DResultBuffer): SubdivisionTree3DQueryContext<T>;
-    }
-    /**
-     * A kd-like tree to query 3D data.
-     */
-    interface SubdivisionTree3D<T> {
-        data: T[];
-        indices: number[];
-        positions: number[];
-        root: SubdivisionTree3DNode;
-    }
-    namespace SubdivisionTree3D {
-        /**
-         * Create a context used for querying the data.
-         */
-        function createContextRadius<T>(tree: SubdivisionTree3D<T>, radiusEstimate: number, includePriorities?: boolean): SubdivisionTree3DQueryContext<T>;
-        /**
-         * Takes data and a function that calls SubdivisionTree3DPositionBuilder.add(x, y, z) on each data element.
-         */
-        function create<T>(data: T[], f: (e: T, add: (x: number, y: number, z: number) => void) => void, leafSize?: number): SubdivisionTree3D<T>;
-    }
-    /**
-     * A tree node.
-     */
-    interface SubdivisionTree3DNode {
-        splitValue: number;
-        startIndex: number;
-        endIndex: number;
-        left: SubdivisionTree3DNode;
-        right: SubdivisionTree3DNode;
-    }
-    namespace SubdivisionTree3DNode {
-        function nearest<T>(node: SubdivisionTree3DNode, ctx: SubdivisionTree3DQueryContext<T>, dim: number): void;
-        function create(splitValue: number, startIndex: number, endIndex: number, left: SubdivisionTree3DNode, right: SubdivisionTree3DNode): SubdivisionTree3DNode;
-    }
-    /**
-     * A helper to store boundary box.
-     */
-    interface Box3D {
-        min: number[];
-        max: number[];
-    }
-    namespace Box3D {
-        function createInfinite(): Box3D;
-    }
-}
-declare namespace LiteMol.Core.Geometry {
     interface Surface {
         /**
          * Number of vertices.
@@ -13584,6 +13500,49 @@ declare namespace LiteMol.Core.Geometry {
         function transformImmediate(surface: Surface, t: number[]): void;
         function transform(surface: Surface, t: number[]): Computation<Surface>;
     }
+}
+declare namespace LiteMol.Core.Geometry.Query3D {
+    /**
+     * Query context. Handles the actual querying.
+     */
+    type QueryFunc<T> = (x: number, y: number, z: number, radius: number) => Result<T>;
+    interface Result<T> {
+        readonly count: number;
+        readonly elements: T[];
+        readonly squaredDistances: number[];
+    }
+    interface InputData<T> {
+        elements: T[];
+        indices: Int32Array;
+        bounds: Box3D;
+        positions: number[];
+    }
+    type LookupStructure<T> = (radiusEstimate: number, includePriorities?: boolean) => QueryFunc<T>;
+    interface ResultBuffer {
+        sourceElements: any[];
+        count: number;
+        elements: any[];
+        squaredDistances: number[];
+    }
+    namespace ResultBuffer {
+        function add(buffer: ResultBuffer, distSq: number, index: number): void;
+        function reset(buffer: ResultBuffer): void;
+        function create(sourceElements: any[]): ResultBuffer;
+    }
+    /**
+     * A helper to store boundary box.
+     */
+    interface Box3D {
+        min: number[];
+        max: number[];
+    }
+    namespace Box3D {
+        function createInfinite(): Box3D;
+    }
+    function createInputData<T>(elements: T[], f: (e: T, add: (x: number, y: number, z: number) => void) => void): InputData<T>;
+}
+declare namespace LiteMol.Core.Geometry.Query3D {
+    function createSubdivisionTree3D<T>(data: InputData<T>, leafSize?: number): LookupStructure<T>;
 }
 declare namespace LiteMol.Core.Geometry.MarchingCubes {
     /**
@@ -13984,7 +13943,7 @@ declare namespace LiteMol.Core.Structure {
             /**
              * Get a kd-tree for the atoms in the current context.
              */
-            readonly tree: Geometry.SubdivisionTree3D<number>;
+            readonly tree: Geometry.Query3D.LookupStructure<number>;
             /**
              * Checks if an atom is included in the current context.
              */

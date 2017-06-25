@@ -66,11 +66,10 @@ namespace LiteMol.Visualization.Molecule.BallsAndSticks {
                 };
             }
 
-            let tree = Core.Geometry.SubdivisionTree3D.create<number>(<any>indices, (i, add) => { add(cX[i], cY[i], cZ[i]) }),
-                ctx = Core.Geometry.SubdivisionTree3D.createContextRadius(tree, bondLength + 1, false),
+            let tree = Core.Geometry.Query3D.createSubdivisionTree3D(Core.Geometry.Query3D.createInputData(indices as any as number[], (i, add) => { add(cX[i], cY[i], cZ[i]) })),
+                nearest = tree(bondLength + 1, false),
                 pA = new THREE.Vector3(), pB = new THREE.Vector3(),
-                processed = Core.Utils.FastSet.create<number>(),
-                buffer = ctx.buffer;
+                processed = Core.Utils.FastSet.create<number>();
 
             const maxHbondLength = params.customMaxBondLengths && params.customMaxBondLengths.has('H') 
                 ? params.customMaxBondLengths.get('H')!
@@ -117,11 +116,8 @@ namespace LiteMol.Visualization.Molecule.BallsAndSticks {
                 }
 
                 for (let ii = startAtomIndex; ii < endAtomIndex; ii++) {
-
                     let atom = indices[ii];
-
-                    buffer.reset();
-                    ctx.nearest(cX[atom], cY[atom], cZ[atom], bondLength);
+                    const { elements, count } = nearest(cX[atom], cY[atom], cZ[atom], bondLength);
 
                     pA.set(cX[atom], cY[atom], cZ[atom]);
 
@@ -130,9 +126,8 @@ namespace LiteMol.Visualization.Molecule.BallsAndSticks {
                         altA = altLoc[atom],
                         isWater = entityType[atomEntityIndex[atom]] === waterType;
 
-                    let count = buffer.count;
                     for (let i = 0; i < count; i++) {
-                        let idx = indices[buffer.indices[i]];
+                        let idx = elements[i];
                         if (idx !== atom && !processed.has(idx)) {
 
                             es = elementSymbol[idx];

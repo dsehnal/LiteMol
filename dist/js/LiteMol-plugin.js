@@ -59967,291 +59967,6 @@ var LiteMol;
     (function (Core) {
         var Geometry;
         (function (Geometry) {
-            /**
-             * A buffer that only remembers the values.
-             */
-            var SubdivisionTree3DResultIndexBuffer;
-            (function (SubdivisionTree3DResultIndexBuffer) {
-                function ensureCapacity(buffer) {
-                    var newCapacity = buffer.capacity * 2 + 1, newIdx = new Int32Array(newCapacity), i;
-                    if (buffer.count < 32) {
-                        for (i = 0; i < buffer.count; i++) {
-                            newIdx[i] = buffer.indices[i];
-                        }
-                    }
-                    else {
-                        newIdx.set(buffer.indices);
-                    }
-                    buffer.indices = newIdx;
-                    buffer.capacity = newCapacity;
-                }
-                function add(distSq, index) {
-                    if (this.count + 1 >= this.capacity) {
-                        ensureCapacity(this);
-                    }
-                    this.indices[this.count++] = index;
-                }
-                function reset() {
-                    this.count = 0;
-                }
-                function create(initialCapacity) {
-                    if (initialCapacity < 1)
-                        initialCapacity = 1;
-                    return {
-                        indices: new Int32Array(initialCapacity),
-                        count: 0,
-                        capacity: initialCapacity,
-                        hasPriorities: false,
-                        priorities: void 0,
-                        add: add,
-                        reset: reset
-                    };
-                }
-                SubdivisionTree3DResultIndexBuffer.create = create;
-            })(SubdivisionTree3DResultIndexBuffer = Geometry.SubdivisionTree3DResultIndexBuffer || (Geometry.SubdivisionTree3DResultIndexBuffer = {}));
-            /**
-             * A buffer that remembers values and priorities.
-             */
-            var SubdivisionTree3DResultPriorityBuffer;
-            (function (SubdivisionTree3DResultPriorityBuffer) {
-                function ensureCapacity(buffer) {
-                    var newCapacity = buffer.capacity * 2 + 1, newIdx = new Int32Array(newCapacity), newPrio = new Float32Array(newCapacity), i;
-                    if (buffer.count < 32) {
-                        for (i = 0; i < buffer.count; i++) {
-                            newIdx[i] = buffer.indices[i];
-                            newPrio[i] = buffer.priorities[i];
-                        }
-                    }
-                    else {
-                        newIdx.set(buffer.indices);
-                        newPrio.set(buffer.priorities);
-                    }
-                    buffer.indices = newIdx;
-                    buffer.priorities = newPrio;
-                    buffer.capacity = newCapacity;
-                }
-                function add(distSq, index) {
-                    if (this.count + 1 >= this.capacity)
-                        ensureCapacity(this);
-                    this.priorities[this.count] = distSq;
-                    this.indices[this.count++] = index;
-                }
-                function reset() {
-                    this.count = 0;
-                }
-                function create(initialCapacity) {
-                    if (initialCapacity < 1)
-                        initialCapacity = 1;
-                    return {
-                        indices: new Int32Array(initialCapacity),
-                        count: 0,
-                        capacity: initialCapacity,
-                        hasPriorities: true,
-                        priorities: new Float32Array(initialCapacity),
-                        add: add,
-                        reset: reset
-                    };
-                }
-                SubdivisionTree3DResultPriorityBuffer.create = create;
-            })(SubdivisionTree3DResultPriorityBuffer = Geometry.SubdivisionTree3DResultPriorityBuffer || (Geometry.SubdivisionTree3DResultPriorityBuffer = {}));
-            var SubdivisionTree3DQueryContext;
-            (function (SubdivisionTree3DQueryContext) {
-                /**
-                 * Query the tree and store the result to this.buffer. Overwrites the old result.
-                 */
-                function nearest(x, y, z, radius) {
-                    this.pivot[0] = x;
-                    this.pivot[1] = y;
-                    this.pivot[2] = z;
-                    this.radius = radius;
-                    this.radiusSq = radius * radius;
-                    this.buffer.reset();
-                    SubdivisionTree3DNode.nearest(this.tree.root, this, 0);
-                }
-                function create(tree, buffer) {
-                    return {
-                        tree: tree,
-                        indices: tree.indices,
-                        positions: tree.positions,
-                        buffer: buffer,
-                        pivot: [0.1, 0.1, 0.1],
-                        radius: 1.1,
-                        radiusSq: 1.1 * 1.1,
-                        nearest: nearest
-                    };
-                }
-                SubdivisionTree3DQueryContext.create = create;
-            })(SubdivisionTree3DQueryContext = Geometry.SubdivisionTree3DQueryContext || (Geometry.SubdivisionTree3DQueryContext = {}));
-            var SubdivisionTree3D;
-            (function (SubdivisionTree3D) {
-                /**
-                 * Create a context used for querying the data.
-                 */
-                function createContextRadius(tree, radiusEstimate, includePriorities) {
-                    if (includePriorities === void 0) { includePriorities = false; }
-                    return SubdivisionTree3DQueryContext.create(tree, includePriorities
-                        ? SubdivisionTree3DResultPriorityBuffer.create(Math.max((radiusEstimate * radiusEstimate) | 0, 8))
-                        : SubdivisionTree3DResultIndexBuffer.create(Math.max((radiusEstimate * radiusEstimate) | 0, 8)));
-                }
-                SubdivisionTree3D.createContextRadius = createContextRadius;
-                /**
-                 * Takes data and a function that calls SubdivisionTree3DPositionBuilder.add(x, y, z) on each data element.
-                 */
-                function create(data, f, leafSize) {
-                    if (leafSize === void 0) { leafSize = 32; }
-                    var _a = SubdivisionTree3DBuilder.build(data, f, leafSize), root = _a.root, indices = _a.indices, positions = _a.positions;
-                    return { data: data, root: root, indices: indices, positions: positions };
-                }
-                SubdivisionTree3D.create = create;
-            })(SubdivisionTree3D = Geometry.SubdivisionTree3D || (Geometry.SubdivisionTree3D = {}));
-            var PositionBuilder;
-            (function (PositionBuilder) {
-                function add(builder, x, y, z) {
-                    builder.data[builder._count++] = x;
-                    builder.data[builder._count++] = y;
-                    builder.data[builder._count++] = z;
-                    builder.boundsMin[0] = Math.min(x, builder.boundsMin[0]);
-                    builder.boundsMin[1] = Math.min(y, builder.boundsMin[1]);
-                    builder.boundsMin[2] = Math.min(z, builder.boundsMin[2]);
-                    builder.boundsMax[0] = Math.max(x, builder.boundsMax[0]);
-                    builder.boundsMax[1] = Math.max(y, builder.boundsMax[1]);
-                    builder.boundsMax[2] = Math.max(z, builder.boundsMax[2]);
-                }
-                PositionBuilder.add = add;
-                function create(size) {
-                    var data = new Float32Array((size * 3) | 0);
-                    var bounds = Box3D.createInfinite();
-                    var boundsMin = bounds.min;
-                    var boundsMax = bounds.max;
-                    return { _count: 0, data: data, bounds: bounds, boundsMin: boundsMin, boundsMax: boundsMax };
-                }
-                PositionBuilder.create = create;
-            })(PositionBuilder || (PositionBuilder = {}));
-            var SubdivisionTree3DNode;
-            (function (SubdivisionTree3DNode) {
-                function nearestLeaf(node, ctx) {
-                    var pivot = ctx.pivot, indices = ctx.indices, positions = ctx.positions, rSq = ctx.radiusSq, dx, dy, dz, o, m, i;
-                    for (i = node.startIndex; i < node.endIndex; i++) {
-                        o = 3 * indices[i];
-                        dx = pivot[0] - positions[o];
-                        dy = pivot[1] - positions[o + 1];
-                        dz = pivot[2] - positions[o + 2];
-                        m = dx * dx + dy * dy + dz * dz;
-                        if (m <= rSq)
-                            ctx.buffer.add(m, indices[i]);
-                    }
-                }
-                function nearestNode(node, ctx, dim) {
-                    var pivot = ctx.pivot[dim], left = pivot < node.splitValue;
-                    if (left ? pivot + ctx.radius > node.splitValue : pivot - ctx.radius < node.splitValue) {
-                        nearest(node.left, ctx, (dim + 1) % 3);
-                        nearest(node.right, ctx, (dim + 1) % 3);
-                    }
-                    else if (left) {
-                        nearest(node.left, ctx, (dim + 1) % 3);
-                    }
-                    else {
-                        nearest(node.right, ctx, (dim + 1) % 3);
-                    }
-                }
-                function nearest(node, ctx, dim) {
-                    // check for empty.
-                    if (node.startIndex === node.endIndex)
-                        return;
-                    // is leaf?
-                    if (isNaN(node.splitValue))
-                        nearestLeaf(node, ctx);
-                    else
-                        nearestNode(node, ctx, dim);
-                }
-                SubdivisionTree3DNode.nearest = nearest;
-                function create(splitValue, startIndex, endIndex, left, right) {
-                    return { splitValue: splitValue, startIndex: startIndex, endIndex: endIndex, left: left, right: right };
-                }
-                SubdivisionTree3DNode.create = create;
-            })(SubdivisionTree3DNode = Geometry.SubdivisionTree3DNode || (Geometry.SubdivisionTree3DNode = {}));
-            var Box3D;
-            (function (Box3D) {
-                function createInfinite() {
-                    return {
-                        min: [Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE],
-                        max: [-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE]
-                    };
-                }
-                Box3D.createInfinite = createInfinite;
-            })(Box3D = Geometry.Box3D || (Geometry.Box3D = {}));
-            /**
-             * A helper to build the tree.
-             */
-            var SubdivisionTree3DBuilder;
-            (function (SubdivisionTree3DBuilder) {
-                function split(state, startIndex, endIndex, coord) {
-                    var delta = endIndex - startIndex + 1;
-                    if (delta <= 0) {
-                        return state.emptyNode;
-                    }
-                    else if (delta <= state.leafSize) {
-                        return SubdivisionTree3DNode.create(NaN, startIndex, endIndex + 1, state.emptyNode, state.emptyNode);
-                    }
-                    var min = state.bounds.min[coord], max = state.bounds.max[coord], median = 0.5 * (min + max), midIndex = 0, l = startIndex, r = endIndex, t, left, right;
-                    while (l < r) {
-                        t = state.indices[r];
-                        state.indices[r] = state.indices[l];
-                        state.indices[l] = t;
-                        while (l <= endIndex && state.positions[3 * state.indices[l] + coord] <= median)
-                            l++;
-                        while (r >= startIndex && state.positions[3 * state.indices[r] + coord] > median)
-                            r--;
-                    }
-                    midIndex = l - 1;
-                    state.bounds.max[coord] = median;
-                    left = split(state, startIndex, midIndex, (coord + 1) % 3);
-                    state.bounds.max[coord] = max;
-                    state.bounds.min[coord] = median;
-                    right = split(state, midIndex + 1, endIndex, (coord + 1) % 3);
-                    state.bounds.min[coord] = min;
-                    return SubdivisionTree3DNode.create(median, startIndex, endIndex + 1, left, right);
-                }
-                function createAdder(builder) {
-                    var add = PositionBuilder.add;
-                    return function (x, y, z) {
-                        add(builder, x, y, z);
-                    };
-                }
-                function build(data, f, leafSize) {
-                    var positions = PositionBuilder.create(data.length), indices = new Int32Array(data.length);
-                    var add = createAdder(positions);
-                    for (var i = 0; i < data.length; i++) {
-                        indices[i] = i;
-                        f(data[i], add);
-                    }
-                    // help gc
-                    add = void 0;
-                    var state = {
-                        bounds: positions.bounds,
-                        positions: positions.data,
-                        leafSize: leafSize,
-                        indices: indices,
-                        emptyNode: SubdivisionTree3DNode.create(NaN, -1, -1, void 0, void 0),
-                    };
-                    var root = split(state, 0, indices.length - 1, 0);
-                    state = void 0;
-                    return { root: root, indices: indices, positions: positions.data };
-                }
-                SubdivisionTree3DBuilder.build = build;
-            })(SubdivisionTree3DBuilder || (SubdivisionTree3DBuilder = {}));
-        })(Geometry = Core.Geometry || (Core.Geometry = {}));
-    })(Core = LiteMol.Core || (LiteMol.Core = {}));
-})(LiteMol || (LiteMol = {}));
-/*
- * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
- */
-var LiteMol;
-(function (LiteMol) {
-    var Core;
-    (function (Core) {
-        var Geometry;
-        (function (Geometry) {
             "use strict";
             var Surface;
             (function (Surface) {
@@ -60466,6 +60181,235 @@ var LiteMol;
                 }
                 Surface.transform = transform;
             })(Surface = Geometry.Surface || (Geometry.Surface = {}));
+        })(Geometry = Core.Geometry || (Core.Geometry = {}));
+    })(Core = LiteMol.Core || (LiteMol.Core = {}));
+})(LiteMol || (LiteMol = {}));
+/*
+ * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ */
+var LiteMol;
+(function (LiteMol) {
+    var Core;
+    (function (Core) {
+        var Geometry;
+        (function (Geometry) {
+            var Query3D;
+            (function (Query3D) {
+                var ResultBuffer;
+                (function (ResultBuffer) {
+                    function add(buffer, distSq, index) {
+                        buffer.squaredDistances[buffer.count] = distSq;
+                        buffer.elements[buffer.count++] = buffer.sourceElements[index];
+                    }
+                    ResultBuffer.add = add;
+                    function reset(buffer) { buffer.count = 0; }
+                    ResultBuffer.reset = reset;
+                    function create(sourceElements) {
+                        return {
+                            sourceElements: sourceElements,
+                            elements: [],
+                            count: 0,
+                            squaredDistances: []
+                        };
+                    }
+                    ResultBuffer.create = create;
+                })(ResultBuffer = Query3D.ResultBuffer || (Query3D.ResultBuffer = {}));
+                var Box3D;
+                (function (Box3D) {
+                    function createInfinite() {
+                        return {
+                            min: [Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE],
+                            max: [-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE]
+                        };
+                    }
+                    Box3D.createInfinite = createInfinite;
+                })(Box3D = Query3D.Box3D || (Query3D.Box3D = {}));
+                var PositionBuilder;
+                (function (PositionBuilder) {
+                    function add(builder, x, y, z) {
+                        builder.data[builder._count++] = x;
+                        builder.data[builder._count++] = y;
+                        builder.data[builder._count++] = z;
+                        builder.boundsMin[0] = Math.min(x, builder.boundsMin[0]);
+                        builder.boundsMin[1] = Math.min(y, builder.boundsMin[1]);
+                        builder.boundsMin[2] = Math.min(z, builder.boundsMin[2]);
+                        builder.boundsMax[0] = Math.max(x, builder.boundsMax[0]);
+                        builder.boundsMax[1] = Math.max(y, builder.boundsMax[1]);
+                        builder.boundsMax[2] = Math.max(z, builder.boundsMax[2]);
+                    }
+                    PositionBuilder.add = add;
+                    function create(size) {
+                        var data = new Float32Array((size * 3) | 0);
+                        var bounds = Box3D.createInfinite();
+                        var boundsMin = bounds.min;
+                        var boundsMax = bounds.max;
+                        return { _count: 0, data: data, bounds: bounds, boundsMin: boundsMin, boundsMax: boundsMax };
+                    }
+                    PositionBuilder.create = create;
+                    function createAdder(builder) {
+                        var add = PositionBuilder.add;
+                        return function (x, y, z) {
+                            add(builder, x, y, z);
+                        };
+                    }
+                    PositionBuilder.createAdder = createAdder;
+                })(PositionBuilder || (PositionBuilder = {}));
+                function createInputData(elements, f) {
+                    var positions = PositionBuilder.create(elements.length);
+                    var indices = new Int32Array(elements.length);
+                    var add = PositionBuilder.createAdder(positions);
+                    for (var i = 0; i < elements.length; i++) {
+                        indices[i] = i;
+                        f(elements[i], add);
+                    }
+                    return { elements: elements, positions: positions.data, bounds: positions.bounds, indices: indices };
+                }
+                Query3D.createInputData = createInputData;
+            })(Query3D = Geometry.Query3D || (Geometry.Query3D = {}));
+        })(Geometry = Core.Geometry || (Core.Geometry = {}));
+    })(Core = LiteMol.Core || (LiteMol.Core = {}));
+})(LiteMol || (LiteMol = {}));
+/*
+ * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ */
+var LiteMol;
+(function (LiteMol) {
+    var Core;
+    (function (Core) {
+        var Geometry;
+        (function (Geometry) {
+            var Query3D;
+            (function (Query3D) {
+                var SubdivisionTree3DQueryContext;
+                (function (SubdivisionTree3DQueryContext) {
+                    /**
+                     * Query the tree and store the result to this.buffer. Overwrites the old result.
+                     */
+                    function nearest(ctx, x, y, z, radius) {
+                        ctx.pivot[0] = x;
+                        ctx.pivot[1] = y;
+                        ctx.pivot[2] = z;
+                        ctx.radius = radius;
+                        ctx.radiusSq = radius * radius;
+                        Query3D.ResultBuffer.reset(ctx.buffer);
+                        SubdivisionTree3DNode.nearest(ctx.tree.root, ctx, 0);
+                    }
+                    SubdivisionTree3DQueryContext.nearest = nearest;
+                    function create(tree, buffer) {
+                        return {
+                            tree: tree,
+                            indices: tree.indices,
+                            positions: tree.positions,
+                            buffer: buffer,
+                            pivot: [0.1, 0.1, 0.1],
+                            radius: 1.1,
+                            radiusSq: 1.1 * 1.1
+                        };
+                    }
+                    SubdivisionTree3DQueryContext.create = create;
+                })(SubdivisionTree3DQueryContext || (SubdivisionTree3DQueryContext = {}));
+                var SubdivisionTree3DNode;
+                (function (SubdivisionTree3DNode) {
+                    function nearestLeaf(node, ctx) {
+                        var pivot = ctx.pivot, indices = ctx.indices, positions = ctx.positions, rSq = ctx.radiusSq, dx, dy, dz, o, m, i;
+                        for (i = node.startIndex; i < node.endIndex; i++) {
+                            o = 3 * indices[i];
+                            dx = pivot[0] - positions[o];
+                            dy = pivot[1] - positions[o + 1];
+                            dz = pivot[2] - positions[o + 2];
+                            m = dx * dx + dy * dy + dz * dz;
+                            if (m <= rSq)
+                                Query3D.ResultBuffer.add(ctx.buffer, m, indices[i]);
+                        }
+                    }
+                    function nearestNode(node, ctx, dim) {
+                        var pivot = ctx.pivot[dim], left = pivot < node.splitValue;
+                        if (left ? pivot + ctx.radius > node.splitValue : pivot - ctx.radius < node.splitValue) {
+                            nearest(node.left, ctx, (dim + 1) % 3);
+                            nearest(node.right, ctx, (dim + 1) % 3);
+                        }
+                        else if (left) {
+                            nearest(node.left, ctx, (dim + 1) % 3);
+                        }
+                        else {
+                            nearest(node.right, ctx, (dim + 1) % 3);
+                        }
+                    }
+                    function nearest(node, ctx, dim) {
+                        // check for empty.
+                        if (node.startIndex === node.endIndex)
+                            return;
+                        // is leaf?
+                        if (isNaN(node.splitValue))
+                            nearestLeaf(node, ctx);
+                        else
+                            nearestNode(node, ctx, dim);
+                    }
+                    SubdivisionTree3DNode.nearest = nearest;
+                    function create(splitValue, startIndex, endIndex, left, right) {
+                        return { splitValue: splitValue, startIndex: startIndex, endIndex: endIndex, left: left, right: right };
+                    }
+                    SubdivisionTree3DNode.create = create;
+                })(SubdivisionTree3DNode || (SubdivisionTree3DNode = {}));
+                /**
+                 * A helper to build the tree.
+                 */
+                var SubdivisionTree3DBuilder;
+                (function (SubdivisionTree3DBuilder) {
+                    function split(state, startIndex, endIndex, coord) {
+                        var delta = endIndex - startIndex + 1;
+                        if (delta <= 0) {
+                            return state.emptyNode;
+                        }
+                        else if (delta <= state.leafSize) {
+                            return SubdivisionTree3DNode.create(NaN, startIndex, endIndex + 1, state.emptyNode, state.emptyNode);
+                        }
+                        var min = state.bounds.min[coord], max = state.bounds.max[coord], median = 0.5 * (min + max), midIndex = 0, l = startIndex, r = endIndex, t, left, right;
+                        while (l < r) {
+                            t = state.indices[r];
+                            state.indices[r] = state.indices[l];
+                            state.indices[l] = t;
+                            while (l <= endIndex && state.positions[3 * state.indices[l] + coord] <= median)
+                                l++;
+                            while (r >= startIndex && state.positions[3 * state.indices[r] + coord] > median)
+                                r--;
+                        }
+                        midIndex = l - 1;
+                        state.bounds.max[coord] = median;
+                        left = split(state, startIndex, midIndex, (coord + 1) % 3);
+                        state.bounds.max[coord] = max;
+                        state.bounds.min[coord] = median;
+                        right = split(state, midIndex + 1, endIndex, (coord + 1) % 3);
+                        state.bounds.min[coord] = min;
+                        return SubdivisionTree3DNode.create(median, startIndex, endIndex + 1, left, right);
+                    }
+                    function build(_a, leafSize) {
+                        var elements = _a.elements, positions = _a.positions, bounds = _a.bounds, indices = _a.indices;
+                        var state = {
+                            bounds: bounds,
+                            positions: positions,
+                            leafSize: leafSize,
+                            indices: indices,
+                            emptyNode: SubdivisionTree3DNode.create(NaN, -1, -1, void 0, void 0),
+                        };
+                        var root = split(state, 0, indices.length - 1, 0);
+                        return { root: root, indices: indices, positions: positions };
+                    }
+                    SubdivisionTree3DBuilder.build = build;
+                })(SubdivisionTree3DBuilder || (SubdivisionTree3DBuilder = {}));
+                function createSubdivisionTree3D(data, leafSize) {
+                    if (leafSize === void 0) { leafSize = 32; }
+                    var tree = SubdivisionTree3DBuilder.build(data, leafSize);
+                    return function (radiusEstimate, includePriorities) {
+                        var ctx = SubdivisionTree3DQueryContext.create(tree, Query3D.ResultBuffer.create(data.elements));
+                        return function (x, y, z, radius) {
+                            SubdivisionTree3DQueryContext.nearest(ctx, x, y, z, radius);
+                            return ctx.buffer;
+                        };
+                    };
+                }
+                Query3D.createSubdivisionTree3D = createSubdivisionTree3D;
+            })(Query3D = Geometry.Query3D || (Geometry.Query3D = {}));
         })(Geometry = Core.Geometry || (Core.Geometry = {}));
     })(Core = LiteMol.Core || (LiteMol.Core = {}));
 })(LiteMol || (LiteMol = {}));
@@ -61780,6 +61724,53 @@ var LiteMol;
         })(Structure = Core.Structure || (Core.Structure = {}));
     })(Core = LiteMol.Core || (LiteMol.Core = {}));
 })(LiteMol || (LiteMol = {}));
+// /*
+//  * Copyright (c) 2017 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+//  */
+// namespace LiteMol.Core.Structure {
+//     'use strict';
+//     export const enum BondType {
+//         Unknown = 0,
+//         Single = 1,
+//         Double = 2,
+//         Triple = 3,
+//         Aromatic = 4,
+//         Metallic = 5,
+//         Ion = 6,
+//         Hydrogen = 7,
+//         DisulfideBridge = 8
+//     }
+//     const Metals = ['LI', 'NA', 'K', 'RB', 'CS', 'FR', 'BE', 'MG', 'CA', 'SR', 'BA', 'RA','AL', 'GA', 'IN', 'SN', 'TL', 'PB', 'BI', 'SC', 'TI', 'V', 'CR', 'MN', 'FE', 'CO', 'NI', 'CU', 'ZN', 'Y', 'ZR', 'NB', 'MO', 'TC', 'RU', 'RH', 'PD', 'AG', 'CD', 'LA', 'HF', 'TA', 'W', 'RE', 'OS', 'IR', 'PT', 'AU', 'HG', 'AC', 'RF', 'DB', 'SG', 'BH', 'HS', 'MT', 'CE', 'PR', 'ND', 'PM', 'SM', 'EU', 'GD', 'TB', 'DY', 'HO', 'ER', 'TM', 'YB', 'LU', 'TH', 'PA', 'U', 'NP', 'PU', 'AM', 'CM', 'BK', 'CF', 'ES', 'FM', 'MD', 'NO', 'LR'];
+//     const MetalsSet = Utils.FastSet.ofArray(Metals);
+//     const ElementIndex: { [e: string]: number | undefined } = {'H':0,'h':0,'D':1,'d':1,'He':2,'HE':2,'he':2,'Li':3,'LI':3,'li':3,'Be':4,'BE':4,'be':4,'B':5,'b':5,'C':6,'c':6,'N':7,'n':7,'O':8,'o':8,'F':9,'f':9,'Ne':10,'NE':10,'ne':10,'Na':11,'NA':11,'na':11,'Mg':12,'MG':12,'mg':12,'Al':13,'AL':13,'al':13,'Si':14,'SI':14,'si':14,'P':15,'p':15,'S':16,'s':16,'Cl':17,'CL':17,'cl':17,'Ar':18,'AR':18,'ar':18,'K':19,'k':19,'Ca':20,'CA':20,'ca':20,'Sc':21,'SC':21,'sc':21,'Ti':22,'TI':22,'ti':22,'V':23,'v':23,'Cr':24,'CR':24,'cr':24,'Mn':25,'MN':25,'mn':25,'Fe':26,'FE':26,'fe':26,'Co':27,'CO':27,'co':27,'Ni':28,'NI':28,'ni':28,'Cu':29,'CU':29,'cu':29,'Zn':30,'ZN':30,'zn':30,'Ga':31,'GA':31,'ga':31,'Ge':32,'GE':32,'ge':32,'As':33,'AS':33,'as':33,'Se':34,'SE':34,'se':34,'Br':35,'BR':35,'br':35,'Kr':36,'KR':36,'kr':36,'Rb':37,'RB':37,'rb':37,'Sr':38,'SR':38,'sr':38,'Y':39,'y':39,'Zr':40,'ZR':40,'zr':40,'Nb':41,'NB':41,'nb':41,'Mo':42,'MO':42,'mo':42,'Tc':43,'TC':43,'tc':43,'Ru':44,'RU':44,'ru':44,'Rh':45,'RH':45,'rh':45,'Pd':46,'PD':46,'pd':46,'Ag':47,'AG':47,'ag':47,'Cd':48,'CD':48,'cd':48,'In':49,'IN':49,'in':49,'Sn':50,'SN':50,'sn':50,'Sb':51,'SB':51,'sb':51,'Te':52,'TE':52,'te':52,'I':53,'i':53,'Xe':54,'XE':54,'xe':54,'Cs':55,'CS':55,'cs':55,'Ba':56,'BA':56,'ba':56,'La':57,'LA':57,'la':57,'Ce':58,'CE':58,'ce':58,'Pr':59,'PR':59,'pr':59,'Nd':60,'ND':60,'nd':60,'Pm':61,'PM':61,'pm':61,'Sm':62,'SM':62,'sm':62,'Eu':63,'EU':63,'eu':63,'Gd':64,'GD':64,'gd':64,'Tb':65,'TB':65,'tb':65,'Dy':66,'DY':66,'dy':66,'Ho':67,'HO':67,'ho':67,'Er':68,'ER':68,'er':68,'Tm':69,'TM':69,'tm':69,'Yb':70,'YB':70,'yb':70,'Lu':71,'LU':71,'lu':71,'Hf':72,'HF':72,'hf':72,'Ta':73,'TA':73,'ta':73,'W':74,'w':74,'Re':75,'RE':75,'re':75,'Os':76,'OS':76,'os':76,'Ir':77,'IR':77,'ir':77,'Pt':78,'PT':78,'pt':78,'Au':79,'AU':79,'au':79,'Hg':80,'HG':80,'hg':80,'Tl':81,'TL':81,'tl':81,'Pb':82,'PB':82,'pb':82,'Bi':83,'BI':83,'bi':83,'Po':84,'PO':84,'po':84,'At':85,'AT':85,'at':85,'Rn':86,'RN':86,'rn':86,'Fr':87,'FR':87,'fr':87,'Ra':88,'RA':88,'ra':88,'Ac':89,'AC':89,'ac':89,'Th':90,'TH':90,'th':90,'Pa':91,'PA':91,'pa':91,'U':92,'u':92,'Np':93,'NP':93,'np':93,'Pu':94,'PU':94,'pu':94,'Am':95,'AM':95,'am':95,'Cm':96,'CM':96,'cm':96,'Bk':97,'BK':97,'bk':97,'Cf':98,'CF':98,'cf':98,'Es':99,'ES':99,'es':99,'Fm':100,'FM':100,'fm':100,'Md':101,'MD':101,'md':101,'No':102,'NO':102,'no':102,'Lr':103,'LR':103,'lr':103,'Rf':104,'RF':104,'rf':104,'Db':105,'DB':105,'db':105,'Sg':106,'SG':106,'sg':106,'Bh':107,'BH':107,'bh':107,'Hs':108,'HS':108,'hs':108,'Mt':109,'MT':109,'mt':109};
+//     const ElementBondingRadii: { [e: string]: number | undefined } = {0: 1.42, 1: 1.42, 2: 1.75, 3: 2, 4: 1.76, 5: 2, 6: 1.9, 7: 1.9, 8: 1.9, 9: 1.75, 10: 1.75, 11: 2, 12: 2.4, 13: 2.8, 14: 2.11, 15: 2.3, 16: 2.3, 17: 1.75, 18: 1.75, 19: 1, 20: 2.65, 21: 2.8, 22: 2.8, 23: 2.8, 24: 2.8, 25: 2.81, 26: 2.8, 27: 2.8, 28: 2.8, 29: 2.8, 30: 2.8, 31: 2.8, 32: 1.75, 33: 2.68, 34: 2.34, 35: 2.68, 36: 1.75, 37: 2.8, 38: 2.82, 39: 2.8, 40: 2.8, 41: 2.8, 42: 2.8, 43: 2.8, 44: 2.5, 45: 2.77, 46: 2.8, 47: 2.8, 48: 2.8, 49: 2.8, 50: 2.8, 51: 1.75, 52: 2.2, 53: 2.81, 54: 1.75, 55: 2.8, 56: 2.8, 57: 2.8, 58: 2.8, 59: 2.8, 60: 2.8, 61: 2.8, 62: 2.8, 63: 2.8, 64: 2.8, 65: 2.8, 66: 2.8, 67: 2.8, 68: 2.8, 69: 2.8, 70: 2.8, 71: 2.8, 72: 2.8, 73: 2.8, 74: 2.66, 75: 2.8, 76: 2.8, 77: 2.51, 78: 3.24, 79: 2.8, 80: 3, 81: 2.8, 82: 2.8, 83: 2.8, 84: 1.75, 85: 1.75, 86: 1.75, 87: 2.8, 88: 2.8, 89: 2.8, 90: 2.8, 91: 2.8, 92: 2.8, 93: 2.8, 94: 2.8, 95: 2.8, 96: 2.8, 97: 2.8, 98: 2.8, 99: 2.8, 100: 2.8, 101: 2.8, 102: 2.8, 103: 2.8, 104: 2.8, 105: 2.8, 106: 2.8, 107: 2.8, 108: 2.8, 109: 2.8};
+//     const ElementBondThresholds: { [e: number]: number[][] | undefined }  = {0: [[1.42,BondType.Single]], 1: [[1.42,BondType.Single]], 3: [[2.8,BondType.Metallic]], 4: [[2.8,BondType.Metallic]], 6: [[1.75,BondType.Single]], 7: [[1.6,BondType.Single]], 8: [[1.52,BondType.Single]], 11: [[2.8,BondType.Metallic]], 12: [[2.8,BondType.Metallic]], 13: [[2.8,BondType.Metallic]], 14: [[1.9,BondType.Single]], 15: [[1.9,BondType.Single]], 16: [[1.9,BondType.Single]], 17: [[1.8,BondType.Single]], 19: [[2.8,BondType.Metallic]], 20: [[2.8,BondType.Metallic]], 21: [[2.8,BondType.Metallic]], 22: [[2.8,BondType.Metallic]], 23: [[2.8,BondType.Metallic]], 24: [[2.8,BondType.Metallic]], 25: [[2.8,BondType.Metallic]], 26: [[2.8,BondType.Metallic]], 27: [[2.8,BondType.Metallic]], 28: [[2.8,BondType.Metallic]], 29: [[2.8,BondType.Metallic]], 30: [[2.8,BondType.Metallic]], 31: [[2.8,BondType.Metallic]], 33: [[2.68,BondType.Single]], 37: [[2.8,BondType.Metallic]], 38: [[2.8,BondType.Metallic]], 39: [[2.8,BondType.Metallic]], 40: [[2.8,BondType.Metallic]], 41: [[2.8,BondType.Metallic]], 42: [[2.8,BondType.Metallic]], 43: [[2.8,BondType.Metallic]], 44: [[2.8,BondType.Metallic]], 45: [[2.8,BondType.Metallic]], 46: [[2.8,BondType.Metallic]], 47: [[2.8,BondType.Metallic]], 48: [[2.8,BondType.Metallic]], 49: [[2.8,BondType.Metallic]], 50: [[2.8,BondType.Metallic]], 55: [[2.8,BondType.Metallic]], 56: [[2.8,BondType.Metallic]], 57: [[2.8,BondType.Metallic]], 58: [[2.8,BondType.Metallic]], 59: [[2.8,BondType.Metallic]], 60: [[2.8,BondType.Metallic]], 61: [[2.8,BondType.Metallic]], 62: [[2.8,BondType.Metallic]], 63: [[2.8,BondType.Metallic]], 64: [[2.8,BondType.Metallic]], 65: [[2.8,BondType.Metallic]], 66: [[2.8,BondType.Metallic]], 67: [[2.8,BondType.Metallic]], 68: [[2.8,BondType.Metallic]], 69: [[2.8,BondType.Metallic]], 70: [[2.8,BondType.Metallic]], 71: [[2.8,BondType.Metallic]], 72: [[2.8,BondType.Metallic]], 73: [[2.8,BondType.Metallic]], 74: [[2.8,BondType.Metallic]], 75: [[2.8,BondType.Metallic]], 76: [[2.8,BondType.Metallic]], 77: [[2.8,BondType.Metallic]], 78: [[2.8,BondType.Metallic]], 79: [[2.8,BondType.Metallic]], 80: [[2.8,BondType.Metallic]], 81: [[2.8,BondType.Metallic]], 82: [[2.8,BondType.Metallic]], 83: [[2.8,BondType.Metallic]], 87: [[2.8,BondType.Metallic]], 88: [[2.8,BondType.Metallic]], 89: [[2.8,BondType.Metallic]], 90: [[2.8,BondType.Metallic]], 91: [[2.8,BondType.Metallic]], 92: [[2.8,BondType.Metallic]], 93: [[2.8,BondType.Metallic]], 94: [[2.8,BondType.Metallic]], 95: [[2.8,BondType.Metallic]], 96: [[2.8,BondType.Metallic]], 97: [[2.8,BondType.Metallic]], 98: [[2.8,BondType.Metallic]], 99: [[2.8,BondType.Metallic]], 100: [[2.8,BondType.Metallic]], 101: [[2.8,BondType.Metallic]], 102: [[2.8,BondType.Metallic]], 103: [[2.8,BondType.Metallic]], 104: [[2.8,BondType.Metallic]], 105: [[2.8,BondType.Metallic]], 106: [[2.8,BondType.Metallic]], 107: [[2.8,BondType.Metallic]], 108: [[2.8,BondType.Metallic]], 109: [[2.8,BondType.Metallic]]};
+//     const ElementPairThresholds: { [e: number]: number[][] | undefined }  = {0: [[0.8,BondType.Single]], 15: [[1.31,BondType.Single]], 21: [[1.3,BondType.Single]], 28: [[1.3,BondType.Single]], 36: [[1.05,BondType.Single]], 45: [[1,BondType.Single]], 60: [[1.84,BondType.Single]], 71: [[1.88,BondType.Single]], 82: [[1.76,BondType.Single]], 83: [[1.56,BondType.Single]], 84: [[1.25,BondType.Triple],[1.4,BondType.Double],[1.75,BondType.Single]], 95: [[1.63,BondType.Single]], 96: [[1.68,BondType.Single]], 97: [[1.27,BondType.Double],[1.6,BondType.Single]], 110: [[1.36,BondType.Single]], 111: [[1.26,BondType.Double],[1.59,BondType.Single]], 112: [[1.55,BondType.Single]], 126: [[1.45,BondType.Single]], 144: [[1.6,BondType.Single]], 153: [[1.4,BondType.Single]], 180: [[1.55,BondType.Single]], 197: [[2.4,BondType.Metallic]], 215: [[1.49,BondType.Double],[1.98,BondType.Single]], 216: [[1.91,BondType.Single]], 218: [[2.24,BondType.Metallic]], 240: [[2.02,BondType.Metallic]], 259: [[2,BondType.Single]], 282: [[1.9,BondType.Single]], 480: [[2.3,BondType.Single]], 511: [[2.3,BondType.Single]], 544: [[2.3,BondType.Single]], 595: [[1.54,BondType.Single]], 612: [[2.1,BondType.Single]], 630: [[1,BondType.Single]], 786: [[2.6,BondType.Single]], 826: [[1.82,BondType.Double],[2.27,BondType.Single]], 867: [[2.1,BondType.Single]], 869: [[1.7,BondType.Single],[1.93,BondType.Single]], 910: [[2.06,BondType.Single]], 911: [[1.8,BondType.Double],[2.05,BondType.Single]], 954: [[1.53,BondType.Double],[1.62,BondType.Single]], 1241: [[2.68,BondType.Single]], 1291: [[2.33,BondType.Single]], 1431: [[1,BondType.Single]], 1717: [[2.14,BondType.Single]], 1776: [[2.48,BondType.Single]], 1838: [[2.1,BondType.Single]], 1899: [[1.68,BondType.Double],[1.72,BondType.Single]], 2380: [[2.34,BondType.Single]], 3356: [[2.44,BondType.Single]], 3662: [[2.11,BondType.Single]], 3747: [[2.36,BondType.Single]], 3749: [[2.6,BondType.Single]], 4672: [[2.75,BondType.Single]], 5724: [[2.73,BondType.Single]], 5921: [[2.63,BondType.Single]], 6476: [[2.84,BondType.Single]], 6705: [[2.87,BondType.Single]], 8964: [[2.81,BondType.Single]]};
+//     function pair(a: number, b: number) {
+//         if (a < b) return (a + b) * (a + b + 1) / 2 + b;
+//         else return (a + b) * (a + b + 1) / 2 + a;
+//     }
+//     const __empty: number[][] = [];
+//     function idx(e: string) {
+//         const i = ElementIndex[e];
+//         if (i === void 0) return -1;
+//         return i;
+//     }
+//     function pairThresholds(i: number, j: number) {
+//         if (i < 0 || j < 0) return __empty;
+//         const r = ElementPairThresholds[pair(i, j)];
+//         if (r === void 0) return __empty;
+//         return r;
+//     }
+//     function thresholds(i: number) {
+//         if (i < 0) return __empty;
+//         const r = ElementBondThresholds[i];
+//         if (r === void 0) return __empty;
+//         return r;
+//     }
+//     export function computeBonds(model: Molecule.Model, atomIndices: number[]) {
+//     }
+// } 
 /*
  * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
@@ -63999,7 +63990,8 @@ var LiteMol;
                             if (this.mask.has(i))
                                 data[dataCount++] = i;
                         }
-                        this.lazyTree = Core.Geometry.SubdivisionTree3D.create(data, function (i, add) { return add(x[i], y[i], z[i]); });
+                        var inputData = Core.Geometry.Query3D.createInputData(data, function (i, add) { return add(x[i], y[i], z[i]); });
+                        this.lazyTree = Core.Geometry.Query3D.createSubdivisionTree3D(inputData);
                     };
                     return Context;
                 }());
@@ -64994,16 +64986,16 @@ var LiteMol;
                     function compileAmbientResidues(where, radius) {
                         var _where = Builder.toQuery(where);
                         return function (ctx) {
-                            var src = _where(ctx), tree = ctx.tree, radiusCtx = Core.Geometry.SubdivisionTree3D.createContextRadius(tree, radius, false), buffer = radiusCtx.buffer, ret = new Query.HashFragmentSeqBuilder(ctx), _a = ctx.structure.positions, x = _a.x, y = _a.y, z = _a.z, residueIndex = ctx.structure.data.atoms.residueIndex, atomStart = ctx.structure.data.residues.atomStartIndex, atomEnd = ctx.structure.data.residues.atomEndIndex, treeData = tree.data;
+                            var src = _where(ctx), tree = ctx.tree, nearest = tree(radius, false), ret = new Query.HashFragmentSeqBuilder(ctx), _a = ctx.structure.positions, x = _a.x, y = _a.y, z = _a.z, residueIndex = ctx.structure.data.atoms.residueIndex, atomStart = ctx.structure.data.residues.atomStartIndex, atomEnd = ctx.structure.data.residues.atomEndIndex;
                             for (var _i = 0, _c = src.fragments; _i < _c.length; _i++) {
                                 var f = _c[_i];
                                 var residues_1 = Core.Utils.FastSet.create();
                                 for (var _d = 0, _e = f.atomIndices; _d < _e.length; _d++) {
                                     var i = _e[_d];
                                     residues_1.add(residueIndex[i]);
-                                    radiusCtx.nearest(x[i], y[i], z[i], radius);
-                                    for (var j = 0, _l = buffer.count; j < _l; j++) {
-                                        residues_1.add(residueIndex[treeData[buffer.indices[j]]]);
+                                    var _f = nearest(x[i], y[i], z[i], radius), elements = _f.elements, count = _f.count;
+                                    for (var j = 0; j < count; j++) {
+                                        residues_1.add(residueIndex[elements[j]]);
                                     }
                                 }
                                 var atomCount = { count: 0, start: atomStart, end: atomEnd };
@@ -68750,7 +68742,7 @@ var LiteMol;
                                 residueCount: residueCount
                             };
                         }
-                        var tree = LiteMol.Core.Geometry.SubdivisionTree3D.create(indices, function (i, add) { add(cX[i], cY[i], cZ[i]); }), ctx = LiteMol.Core.Geometry.SubdivisionTree3D.createContextRadius(tree, bondLength + 1, false), pA = new Visualization.THREE.Vector3(), pB = new Visualization.THREE.Vector3(), processed = LiteMol.Core.Utils.FastSet.create(), buffer = ctx.buffer;
+                        var tree = LiteMol.Core.Geometry.Query3D.createSubdivisionTree3D(LiteMol.Core.Geometry.Query3D.createInputData(indices, function (i, add) { add(cX[i], cY[i], cZ[i]); })), nearest = tree(bondLength + 1, false), pA = new Visualization.THREE.Vector3(), pB = new Visualization.THREE.Vector3(), processed = LiteMol.Core.Utils.FastSet.create();
                         var maxHbondLength = params.customMaxBondLengths && params.customMaxBondLengths.has('H')
                             ? params.customMaxBondLengths.get('H')
                             : 1.15;
@@ -68786,13 +68778,11 @@ var LiteMol;
                             }
                             for (var ii = startAtomIndex; ii < endAtomIndex; ii++) {
                                 var atom = indices[ii];
-                                buffer.reset();
-                                ctx.nearest(cX[atom], cY[atom], cZ[atom], bondLength);
+                                var _c = nearest(cX[atom], cY[atom], cZ[atom], bondLength), elements = _c.elements, count = _c.count;
                                 pA.set(cX[atom], cY[atom], cZ[atom]);
                                 var es = elementSymbol[atom], isHA = es === 'H' || es === 'D' || es === 'T', altA = altLoc[atom], isWater = entityType[atomEntityIndex[atom]] === waterType;
-                                var count = buffer.count;
                                 for (var i = 0; i < count; i++) {
-                                    var idx = indices[buffer.indices[i]];
+                                    var idx = elements[i];
                                     if (idx !== atom && !processed.has(idx)) {
                                         es = elementSymbol[idx];
                                         var len = pB.set(cX[idx], cY[idx], cZ[idx]).sub(pA).length(), isHB = es === 'H' || es === 'D' || es === 'T';

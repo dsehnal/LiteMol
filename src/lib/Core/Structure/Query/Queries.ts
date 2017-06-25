@@ -544,28 +544,26 @@ namespace LiteMol.Core.Structure.Query {
         }
 
         export function compileAmbientResidues(where: Source, radius: number) {
-
             let _where = Builder.toQuery(where);
             return (ctx: Context) => {
 
                 let src = _where(ctx),
                     tree = ctx.tree,
-                    radiusCtx = Geometry.SubdivisionTree3D.createContextRadius(tree, radius, false),
-                    buffer = radiusCtx.buffer, 
+                    nearest = tree(radius, false),
                     ret = new HashFragmentSeqBuilder(ctx),
                     { x, y, z } = ctx.structure.positions,
                     residueIndex = ctx.structure.data.atoms.residueIndex,
-                    atomStart = ctx.structure.data.residues.atomStartIndex, atomEnd = ctx.structure.data.residues.atomEndIndex, 
-                    treeData = tree.data;
+                    atomStart = ctx.structure.data.residues.atomStartIndex, atomEnd = ctx.structure.data.residues.atomEndIndex;
                 
                 for (let f of src.fragments) {
                     let residues = Utils.FastSet.create<number>();
                     for (let i of f.atomIndices) {
                         residues.add(residueIndex[i]);
-                        radiusCtx.nearest(x[i], y[i], z[i], radius);
+                        
+                        const { elements, count } = nearest(x[i], y[i], z[i], radius);
 
-                        for (let j = 0, _l = buffer.count; j < _l; j++) {
-                            residues.add(residueIndex[treeData[buffer.indices[j]]]);
+                        for (let j = 0; j < count; j++) {
+                            residues.add(residueIndex[elements[j]]);
                         }
                     }
                     

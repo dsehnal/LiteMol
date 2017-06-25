@@ -27,7 +27,7 @@ namespace LiteMol.Core.Structure {
          */
         export class Context {
             private mask: Context.Mask;
-            private lazyTree: Geometry.SubdivisionTree3D<number>;
+            private lazyTree: Geometry.Query3D.LookupStructure<number>;
 
             /**
              * Number of atoms in the current context.
@@ -107,7 +107,9 @@ namespace LiteMol.Core.Structure {
                 for (let i = 0, _b = this.structure.positions.count; i < _b; i++) {
                     if (this.mask.has(i)) data[dataCount++] = i;
                 }
-                this.lazyTree = Geometry.SubdivisionTree3D.create<number>(<any>data, (i, add) => add(x[i], y[i], z[i]));
+
+                const inputData = Geometry.Query3D.createInputData(data as any as number[], (i, add) => add(x[i], y[i], z[i]));
+                this.lazyTree = Geometry.Query3D.createSubdivisionTree3D(inputData);
             }
         }
         
