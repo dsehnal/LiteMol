@@ -109,7 +109,7 @@ namespace LiteMol.Core.Structure {
                 }
 
                 const inputData = Geometry.Query3D.createInputData(data as any as number[], (i, add) => add(x[i], y[i], z[i]));
-                this.lazyTree = Geometry.Query3D.createSubdivisionTree3D(inputData);
+                this.lazyTree = Geometry.Query3D.createSpatialHash(inputData);
             }
         }
         

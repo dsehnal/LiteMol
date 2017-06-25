@@ -24,31 +24,6 @@ namespace LiteMol.Core.Geometry.Query3D {
 
     export type LookupStructure<T> = (radiusEstimate: number, includePriorities?: boolean) => QueryFunc<T>
 
-    export interface ResultBuffer {
-        sourceElements: any[];
-        count: number;
-        elements: any[];
-        squaredDistances: number[];
-    }
-
-    export namespace ResultBuffer {
-        export function add(buffer: ResultBuffer, distSq: number, index: number) {
-            buffer.squaredDistances[buffer.count] = distSq;
-            buffer.elements[buffer.count++] = buffer.sourceElements[index];
-        }
-
-        export function reset(buffer: ResultBuffer) { buffer.count = 0; }
-
-        export function create(sourceElements: any[]): ResultBuffer {
-            return {
-                sourceElements,
-                elements: [],
-                count: 0,
-                squaredDistances: []
-            }
-        }
-    }
-
     /**
      * A helper to store boundary box.
      */
@@ -62,6 +37,65 @@ namespace LiteMol.Core.Geometry.Query3D {
             return {
                 min: [Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE],
                 max: [-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE]
+            }
+        }
+    }
+
+     /**
+     * Query context. Handles the actual querying.
+     */
+    export interface QueryContext<T> {
+        structure: T,
+        pivot: number[];
+        radius: number;
+        radiusSq: number;        
+        buffer: QueryContext.Buffer;
+    }  
+
+    export namespace QueryContext {
+        export interface Buffer {
+            sourceElements: any[];
+            count: number;
+            elements: any[];
+            squaredDistances: number[];
+        }
+
+        export function add<T>(ctx: QueryContext<T>, distSq: number, index: number) {
+            const buffer = ctx.buffer;
+            buffer.squaredDistances[buffer.count] = distSq;
+            buffer.elements[buffer.count++] = buffer.sourceElements[index];
+        }
+
+        function resetBuffer(buffer: Buffer) { buffer.count = 0; }
+
+        function createBuffer(sourceElements: any[]): Buffer {
+            return {
+                sourceElements,
+                elements: [],
+                count: 0,
+                squaredDistances: []
+            }
+        }
+
+        /**
+         * Query the tree and store the result to this.buffer. Overwrites the old result.
+         */
+        export function update<T>(ctx: QueryContext<T>, x: number, y: number, z: number, radius: number) {
+            ctx.pivot[0] = x;
+            ctx.pivot[1] = y;
+            ctx.pivot[2] = z;
+            ctx.radius = radius;
+            ctx.radiusSq = radius * radius;
+            resetBuffer(ctx.buffer);
+        }
+
+        export function create<T>(structure: T, sourceElements: any[]): QueryContext<T> {
+            return {
+                structure,
+                buffer: createBuffer(sourceElements),
+                pivot: [0.1, 0.1, 0.1],
+                radius: 1.1,
+                radiusSq: 1.1 * 1.1
             }
         }
     }

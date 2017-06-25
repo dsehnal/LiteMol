@@ -3,49 +3,6 @@
  */
 
 namespace LiteMol.Core.Geometry.Query3D {
-
-
-    /**
-     * Query context. Handles the actual querying.
-     */
-    interface SubdivisionTree3DQueryContext {
-        pivot: number[];
-        radius: number;
-        radiusSq: number;
-        indices: Int32Array;
-        positions: number[];
-        tree: SubdivisionTree3D;
-        buffer: ResultBuffer;
-    }  
-
-    namespace SubdivisionTree3DQueryContext {
-        /**
-         * Query the tree and store the result to this.buffer. Overwrites the old result.
-         */
-        export function nearest(ctx: SubdivisionTree3DQueryContext, x: number, y: number, z: number, radius: number) {
-            ctx.pivot[0] = x;
-            ctx.pivot[1] = y;
-            ctx.pivot[2] = z;
-            ctx.radius = radius;
-            ctx.radiusSq = radius * radius;
-            ResultBuffer.reset(ctx.buffer);
-
-            SubdivisionTree3DNode.nearest(ctx.tree.root, ctx, 0);
-        }
-
-        export function create(tree: SubdivisionTree3D, buffer: ResultBuffer): SubdivisionTree3DQueryContext {
-            return {
-                tree,
-                indices: tree.indices,
-                positions: tree.positions,
-                buffer: buffer,
-                pivot: [0.1, 0.1, 0.1],
-                radius: 1.1,
-                radiusSq: 1.1 * 1.1
-            }
-        }
-    }
-
     /**
      * A kd-like tree to query 3D data.
      */
@@ -67,10 +24,9 @@ namespace LiteMol.Core.Geometry.Query3D {
     }
 
     namespace SubdivisionTree3DNode {        
-        function nearestLeaf(node: SubdivisionTree3DNode, ctx: SubdivisionTree3DQueryContext) {
+        function nearestLeaf(node: SubdivisionTree3DNode, ctx: QueryContext<SubdivisionTree3D>) {
             let pivot = ctx.pivot,
-                indices = ctx.indices,
-                positions = ctx.positions,
+                { indices, positions } = ctx.structure,
                 rSq = ctx.radiusSq,
                 dx: number, dy: number, dz: number, o: number, m: number,
                 i: number;
@@ -79,11 +35,11 @@ namespace LiteMol.Core.Geometry.Query3D {
                 o = 3 * indices[i];
                 dx = pivot[0] - positions[o]; dy = pivot[1] - positions[o + 1]; dz = pivot[2] - positions[o + 2];
                 m = dx * dx + dy * dy + dz * dz;
-                if (m <= rSq) ResultBuffer.add(ctx.buffer, m, indices[i])
+                if (m <= rSq) QueryContext.add(ctx, m, indices[i])
             }
         }
 
-        function nearestNode(node: SubdivisionTree3DNode, ctx: SubdivisionTree3DQueryContext, dim: number) {
+        function nearestNode(node: SubdivisionTree3DNode, ctx: QueryContext<SubdivisionTree3D>, dim: number) {
             let pivot = ctx.pivot[dim], left = pivot < node.splitValue;
             if (left ? pivot + ctx.radius > node.splitValue : pivot - ctx.radius < node.splitValue) {
                 nearest(node.left, ctx, (dim + 1) % 3);
@@ -95,7 +51,7 @@ namespace LiteMol.Core.Geometry.Query3D {
             }
         }
 
-        export function nearest(node: SubdivisionTree3DNode, ctx: SubdivisionTree3DQueryContext, dim: number) {
+        export function nearest(node: SubdivisionTree3DNode, ctx: QueryContext<SubdivisionTree3D>, dim: number) {
             // check for empty.
             if (node.startIndex === node.endIndex) return;
             // is leaf?
@@ -165,12 +121,13 @@ namespace LiteMol.Core.Geometry.Query3D {
         }
     }
 
-    export function createSubdivisionTree3D<T>(data: InputData<T>, leafSize = 32): LookupStructure<T> {
+    export function createSubdivisionTree<T>(data: InputData<T>, leafSize = 32): LookupStructure<T> {
         const tree = SubdivisionTree3DBuilder.build(data, leafSize);
         return function (radiusEstimate, includePriorities) {
-            const ctx = SubdivisionTree3DQueryContext.create(tree, ResultBuffer.create(data.elements));
+            const ctx = QueryContext.create(tree, data.elements);
             return function(x: number, y: number, z: number, radius: number) { 
-                SubdivisionTree3DQueryContext.nearest(ctx, x, y, z, radius); 
+                QueryContext.update(ctx, x, y, z, radius);
+                SubdivisionTree3DNode.nearest(tree.root, ctx, 0); 
                 return ctx.buffer; 
             }
         };

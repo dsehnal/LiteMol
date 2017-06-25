@@ -13518,17 +13518,6 @@ declare namespace LiteMol.Core.Geometry.Query3D {
         positions: number[];
     }
     type LookupStructure<T> = (radiusEstimate: number, includePriorities?: boolean) => QueryFunc<T>;
-    interface ResultBuffer {
-        sourceElements: any[];
-        count: number;
-        elements: any[];
-        squaredDistances: number[];
-    }
-    namespace ResultBuffer {
-        function add(buffer: ResultBuffer, distSq: number, index: number): void;
-        function reset(buffer: ResultBuffer): void;
-        function create(sourceElements: any[]): ResultBuffer;
-    }
     /**
      * A helper to store boundary box.
      */
@@ -13539,10 +13528,37 @@ declare namespace LiteMol.Core.Geometry.Query3D {
     namespace Box3D {
         function createInfinite(): Box3D;
     }
+    /**
+    * Query context. Handles the actual querying.
+    */
+    interface QueryContext<T> {
+        structure: T;
+        pivot: number[];
+        radius: number;
+        radiusSq: number;
+        buffer: QueryContext.Buffer;
+    }
+    namespace QueryContext {
+        interface Buffer {
+            sourceElements: any[];
+            count: number;
+            elements: any[];
+            squaredDistances: number[];
+        }
+        function add<T>(ctx: QueryContext<T>, distSq: number, index: number): void;
+        /**
+         * Query the tree and store the result to this.buffer. Overwrites the old result.
+         */
+        function update<T>(ctx: QueryContext<T>, x: number, y: number, z: number, radius: number): void;
+        function create<T>(structure: T, sourceElements: any[]): QueryContext<T>;
+    }
     function createInputData<T>(elements: T[], f: (e: T, add: (x: number, y: number, z: number) => void) => void): InputData<T>;
 }
 declare namespace LiteMol.Core.Geometry.Query3D {
-    function createSubdivisionTree3D<T>(data: InputData<T>, leafSize?: number): LookupStructure<T>;
+    function createSubdivisionTree<T>(data: InputData<T>, leafSize?: number): LookupStructure<T>;
+}
+declare namespace LiteMol.Core.Geometry.Query3D {
+    function createSpatialHash<T>(data: InputData<T>): LookupStructure<T>;
 }
 declare namespace LiteMol.Core.Geometry.MarchingCubes {
     /**

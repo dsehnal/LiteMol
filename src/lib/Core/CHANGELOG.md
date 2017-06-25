@@ -1,5 +1,6 @@
 ﻿# 3.1.6
 * Added support for _struct_conn mmCIF category.
+* Refactored geometry 3D search API and added spatial hash option.
 
 # 3.1.5
 * Renamed Matrix4.empty and Vector4.create to Matrix4/Vector4.zero.

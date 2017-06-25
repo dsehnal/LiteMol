@@ -66,7 +66,7 @@ namespace LiteMol.Visualization.Molecule.BallsAndSticks {
                 };
             }
 
-            let tree = Core.Geometry.Query3D.createSubdivisionTree3D(Core.Geometry.Query3D.createInputData(indices as any as number[], (i, add) => { add(cX[i], cY[i], cZ[i]) })),
+            let tree = Core.Geometry.Query3D.createSpatialHash(Core.Geometry.Query3D.createInputData(indices as any as number[], (i, add) => { add(cX[i], cY[i], cZ[i]) })),
                 nearest = tree(bondLength + 1, false),
                 pA = new THREE.Vector3(), pB = new THREE.Vector3(),
                 processed = Core.Utils.FastSet.create<number>();

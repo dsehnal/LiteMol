@@ -60195,25 +60195,6 @@ var LiteMol;
         (function (Geometry) {
             var Query3D;
             (function (Query3D) {
-                var ResultBuffer;
-                (function (ResultBuffer) {
-                    function add(buffer, distSq, index) {
-                        buffer.squaredDistances[buffer.count] = distSq;
-                        buffer.elements[buffer.count++] = buffer.sourceElements[index];
-                    }
-                    ResultBuffer.add = add;
-                    function reset(buffer) { buffer.count = 0; }
-                    ResultBuffer.reset = reset;
-                    function create(sourceElements) {
-                        return {
-                            sourceElements: sourceElements,
-                            elements: [],
-                            count: 0,
-                            squaredDistances: []
-                        };
-                    }
-                    ResultBuffer.create = create;
-                })(ResultBuffer = Query3D.ResultBuffer || (Query3D.ResultBuffer = {}));
                 var Box3D;
                 (function (Box3D) {
                     function createInfinite() {
@@ -60224,6 +60205,46 @@ var LiteMol;
                     }
                     Box3D.createInfinite = createInfinite;
                 })(Box3D = Query3D.Box3D || (Query3D.Box3D = {}));
+                var QueryContext;
+                (function (QueryContext) {
+                    function add(ctx, distSq, index) {
+                        var buffer = ctx.buffer;
+                        buffer.squaredDistances[buffer.count] = distSq;
+                        buffer.elements[buffer.count++] = buffer.sourceElements[index];
+                    }
+                    QueryContext.add = add;
+                    function resetBuffer(buffer) { buffer.count = 0; }
+                    function createBuffer(sourceElements) {
+                        return {
+                            sourceElements: sourceElements,
+                            elements: [],
+                            count: 0,
+                            squaredDistances: []
+                        };
+                    }
+                    /**
+                     * Query the tree and store the result to this.buffer. Overwrites the old result.
+                     */
+                    function update(ctx, x, y, z, radius) {
+                        ctx.pivot[0] = x;
+                        ctx.pivot[1] = y;
+                        ctx.pivot[2] = z;
+                        ctx.radius = radius;
+                        ctx.radiusSq = radius * radius;
+                        resetBuffer(ctx.buffer);
+                    }
+                    QueryContext.update = update;
+                    function create(structure, sourceElements) {
+                        return {
+                            structure: structure,
+                            buffer: createBuffer(sourceElements),
+                            pivot: [0.1, 0.1, 0.1],
+                            radius: 1.1,
+                            radiusSq: 1.1 * 1.1
+                        };
+                    }
+                    QueryContext.create = create;
+                })(QueryContext = Query3D.QueryContext || (Query3D.QueryContext = {}));
                 var PositionBuilder;
                 (function (PositionBuilder) {
                     function add(builder, x, y, z) {
@@ -60280,38 +60301,10 @@ var LiteMol;
         (function (Geometry) {
             var Query3D;
             (function (Query3D) {
-                var SubdivisionTree3DQueryContext;
-                (function (SubdivisionTree3DQueryContext) {
-                    /**
-                     * Query the tree and store the result to this.buffer. Overwrites the old result.
-                     */
-                    function nearest(ctx, x, y, z, radius) {
-                        ctx.pivot[0] = x;
-                        ctx.pivot[1] = y;
-                        ctx.pivot[2] = z;
-                        ctx.radius = radius;
-                        ctx.radiusSq = radius * radius;
-                        Query3D.ResultBuffer.reset(ctx.buffer);
-                        SubdivisionTree3DNode.nearest(ctx.tree.root, ctx, 0);
-                    }
-                    SubdivisionTree3DQueryContext.nearest = nearest;
-                    function create(tree, buffer) {
-                        return {
-                            tree: tree,
-                            indices: tree.indices,
-                            positions: tree.positions,
-                            buffer: buffer,
-                            pivot: [0.1, 0.1, 0.1],
-                            radius: 1.1,
-                            radiusSq: 1.1 * 1.1
-                        };
-                    }
-                    SubdivisionTree3DQueryContext.create = create;
-                })(SubdivisionTree3DQueryContext || (SubdivisionTree3DQueryContext = {}));
                 var SubdivisionTree3DNode;
                 (function (SubdivisionTree3DNode) {
                     function nearestLeaf(node, ctx) {
-                        var pivot = ctx.pivot, indices = ctx.indices, positions = ctx.positions, rSq = ctx.radiusSq, dx, dy, dz, o, m, i;
+                        var pivot = ctx.pivot, _a = ctx.structure, indices = _a.indices, positions = _a.positions, rSq = ctx.radiusSq, dx, dy, dz, o, m, i;
                         for (i = node.startIndex; i < node.endIndex; i++) {
                             o = 3 * indices[i];
                             dx = pivot[0] - positions[o];
@@ -60319,7 +60312,7 @@ var LiteMol;
                             dz = pivot[2] - positions[o + 2];
                             m = dx * dx + dy * dy + dz * dz;
                             if (m <= rSq)
-                                Query3D.ResultBuffer.add(ctx.buffer, m, indices[i]);
+                                Query3D.QueryContext.add(ctx, m, indices[i]);
                         }
                     }
                     function nearestNode(node, ctx, dim) {
@@ -60397,18 +60390,150 @@ var LiteMol;
                     }
                     SubdivisionTree3DBuilder.build = build;
                 })(SubdivisionTree3DBuilder || (SubdivisionTree3DBuilder = {}));
-                function createSubdivisionTree3D(data, leafSize) {
+                function createSubdivisionTree(data, leafSize) {
                     if (leafSize === void 0) { leafSize = 32; }
                     var tree = SubdivisionTree3DBuilder.build(data, leafSize);
                     return function (radiusEstimate, includePriorities) {
-                        var ctx = SubdivisionTree3DQueryContext.create(tree, Query3D.ResultBuffer.create(data.elements));
+                        var ctx = Query3D.QueryContext.create(tree, data.elements);
                         return function (x, y, z, radius) {
-                            SubdivisionTree3DQueryContext.nearest(ctx, x, y, z, radius);
+                            Query3D.QueryContext.update(ctx, x, y, z, radius);
+                            SubdivisionTree3DNode.nearest(tree.root, ctx, 0);
                             return ctx.buffer;
                         };
                     };
                 }
-                Query3D.createSubdivisionTree3D = createSubdivisionTree3D;
+                Query3D.createSubdivisionTree = createSubdivisionTree;
+            })(Query3D = Geometry.Query3D || (Geometry.Query3D = {}));
+        })(Geometry = Core.Geometry || (Core.Geometry = {}));
+    })(Core = LiteMol.Core || (LiteMol.Core = {}));
+})(LiteMol || (LiteMol = {}));
+/*
+ * Copyright (c) 2017 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ */
+var LiteMol;
+(function (LiteMol) {
+    var Core;
+    (function (Core) {
+        var Geometry;
+        (function (Geometry) {
+            var Query3D;
+            (function (Query3D) {
+                /**
+                 * Adapted from https://github.com/arose/ngl
+                 * MIT License Copyright (C) 2014+ Alexander Rose
+                 */
+                function nearest(ctx) {
+                    var _a = ctx.structure, _b = _a.min, minX = _b[0], minY = _b[1], minZ = _b[2], _c = _a.size, sX = _c[0], sY = _c[1], sZ = _c[2], bucketOffset = _a.bucketOffset, bucketCounts = _a.bucketCounts, bucketArray = _a.bucketArray, grid = _a.grid, positions = _a.positions;
+                    var r = ctx.radius, rSq = ctx.radiusSq, _d = ctx.pivot, x = _d[0], y = _d[1], z = _d[2];
+                    var loX = Math.max(0, (x - r - minX) >> 3 /* Exp */);
+                    var loY = Math.max(0, (y - r - minY) >> 3 /* Exp */);
+                    var loZ = Math.max(0, (z - r - minZ) >> 3 /* Exp */);
+                    var hiX = Math.min(sX, (x + r - minX) >> 3 /* Exp */);
+                    var hiY = Math.min(sY, (y + r - minY) >> 3 /* Exp */);
+                    var hiZ = Math.min(sZ, (z + r - minZ) >> 3 /* Exp */);
+                    for (var ix = loX; ix <= hiX; ix++) {
+                        for (var iy = loY; iy <= hiY; iy++) {
+                            for (var iz = loZ; iz <= hiZ; iz++) {
+                                var idx = (((ix * sY) + iy) * sZ) + iz;
+                                var bucketIdx = grid[idx];
+                                if (bucketIdx > 0) {
+                                    var k = bucketIdx - 1;
+                                    var offset = bucketOffset[k];
+                                    var count = bucketCounts[k];
+                                    var end = offset + count;
+                                    for (var i = offset; i < end; i++) {
+                                        var idx_1 = bucketArray[i];
+                                        var dx = positions[3 * idx_1 + 0] - x;
+                                        var dy = positions[3 * idx_1 + 1] - y;
+                                        var dz = positions[3 * idx_1 + 2] - z;
+                                        var distSq = dx * dx + dy * dy + dz * dz;
+                                        if (distSq <= rSq) {
+                                            Query3D.QueryContext.add(ctx, distSq, idx_1);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                function _build(state) {
+                    var bounds = state.bounds, _a = state.size, sX = _a[0], sY = _a[1], sZ = _a[2], positions = state.positions, indices = state.indices;
+                    var n = sX * sY * sZ;
+                    var count = indices.length;
+                    var _b = bounds.min, minX = _b[0], minY = _b[1], minZ = _b[2];
+                    var bucketCount = 0;
+                    var grid = new Uint32Array(n);
+                    var bucketIndex = new Int32Array(count);
+                    for (var i = 0; i < count; i++) {
+                        var x = (positions[3 * i + 0] - minX) >> 3 /* Exp */;
+                        var y = (positions[3 * i + 1] - minY) >> 3 /* Exp */;
+                        var z = (positions[3 * i + 2] - minZ) >> 3 /* Exp */;
+                        var idx = (((x * sY) + y) * sZ) + z;
+                        if ((grid[idx] += 1) === 1) {
+                            bucketCount += 1;
+                        }
+                        bucketIndex[i] = idx;
+                    }
+                    var bucketCounts = new Int32Array(bucketCount);
+                    for (var i = 0, j = 0; i < n; i++) {
+                        var c = grid[i];
+                        if (c > 0) {
+                            grid[i] = j + 1;
+                            bucketCounts[j] = c;
+                            j += 1;
+                        }
+                    }
+                    var bucketOffset = new Uint32Array(count);
+                    for (var i = 1; i < count; ++i) {
+                        bucketOffset[i] += bucketOffset[i - 1] + bucketCounts[i - 1];
+                    }
+                    var bucketFill = new Int32Array(bucketCount);
+                    var bucketArray = new Int32Array(count);
+                    for (var i = 0; i < count; i++) {
+                        var bucketIdx = grid[bucketIndex[i]];
+                        if (bucketIdx > 0) {
+                            var k = bucketIdx - 1;
+                            bucketArray[bucketOffset[k] + bucketFill[k]] = i;
+                            bucketFill[k] += 1;
+                        }
+                    }
+                    return {
+                        size: state.size,
+                        bucketArray: bucketArray,
+                        bucketCounts: bucketCounts,
+                        bucketOffset: bucketOffset,
+                        grid: grid,
+                        min: state.bounds.min,
+                        positions: positions
+                    };
+                }
+                function build(_a) {
+                    var elements = _a.elements, positions = _a.positions, bounds = _a.bounds, indices = _a.indices;
+                    var size = [
+                        ((bounds.max[0] - bounds.min[0]) >> 3 /* Exp */) + 1,
+                        ((bounds.max[1] - bounds.min[1]) >> 3 /* Exp */) + 1,
+                        ((bounds.max[2] - bounds.min[2]) >> 3 /* Exp */) + 1
+                    ];
+                    var state = {
+                        size: size,
+                        positions: positions,
+                        indices: indices,
+                        bounds: bounds
+                    };
+                    return _build(state);
+                }
+                function createSpatialHash(data) {
+                    var tree = build(data);
+                    return function (radiusEstimate, includePriorities) {
+                        var ctx = Query3D.QueryContext.create(tree, data.elements);
+                        return function (x, y, z, radius) {
+                            Query3D.QueryContext.update(ctx, x, y, z, radius);
+                            nearest(ctx);
+                            return ctx.buffer;
+                        };
+                    };
+                }
+                Query3D.createSpatialHash = createSpatialHash;
             })(Query3D = Geometry.Query3D || (Geometry.Query3D = {}));
         })(Geometry = Core.Geometry || (Core.Geometry = {}));
     })(Core = LiteMol.Core || (LiteMol.Core = {}));
@@ -63991,7 +64116,7 @@ var LiteMol;
                                 data[dataCount++] = i;
                         }
                         var inputData = Core.Geometry.Query3D.createInputData(data, function (i, add) { return add(x[i], y[i], z[i]); });
-                        this.lazyTree = Core.Geometry.Query3D.createSubdivisionTree3D(inputData);
+                        this.lazyTree = Core.Geometry.Query3D.createSpatialHash(inputData);
                     };
                     return Context;
                 }());
@@ -68742,7 +68867,7 @@ var LiteMol;
                                 residueCount: residueCount
                             };
                         }
-                        var tree = LiteMol.Core.Geometry.Query3D.createSubdivisionTree3D(LiteMol.Core.Geometry.Query3D.createInputData(indices, function (i, add) { add(cX[i], cY[i], cZ[i]); })), nearest = tree(bondLength + 1, false), pA = new Visualization.THREE.Vector3(), pB = new Visualization.THREE.Vector3(), processed = LiteMol.Core.Utils.FastSet.create();
+                        var tree = LiteMol.Core.Geometry.Query3D.createSpatialHash(LiteMol.Core.Geometry.Query3D.createInputData(indices, function (i, add) { add(cX[i], cY[i], cZ[i]); })), nearest = tree(bondLength + 1, false), pA = new Visualization.THREE.Vector3(), pB = new Visualization.THREE.Vector3(), processed = LiteMol.Core.Utils.FastSet.create();
                         var maxHbondLength = params.customMaxBondLengths && params.customMaxBondLengths.has('H')
                             ? params.customMaxBondLengths.get('H')
                             : 1.15;

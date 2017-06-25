@@ -53,6 +53,7 @@
     "./Core/Geometry/Surface.ts",
     "./Core/Geometry/Query3D/Common.ts",
     "./Core/Geometry/Query3D/SubdivisionTree.ts",
+    "./Core/Geometry/Query3D/SpatialHash.ts",
     "./Core/Geometry/MarchingCubes/MarchingCubes.ts",
     "./Core/Geometry/MarchingCubes/Tables.ts",
     "./Core/Geometry/MolecularSurface/MolecularIsoSurface.ts",
