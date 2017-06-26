@@ -9,6 +9,8 @@ namespace LiteMol.Visualization {
         Orthographic
     }
 
+    import LA = Core.Geometry.LinearAlgebra
+
     export class SlabControls {
 
         private width: number;
@@ -22,6 +24,10 @@ namespace LiteMol.Visualization {
         private _planeDelta = new LiteMol.Core.Rx.Subject<number>();
         private subs: (() => void)[] = [];
 
+        private enableWheel = false;
+        private mouseMoveDelta = 0;
+        private lastMousePosition: LA.Vector3 | undefined = void 0;
+
         readonly planeDelta: LiteMol.Core.Rx.IObservable<number> = this._planeDelta;
 
         updateSize(w: number, h: number) { this.width = w; this.height = h; }
@@ -34,6 +40,8 @@ namespace LiteMol.Visualization {
         }
 
         private handleMouseWheel(event: MouseWheelEvent) {
+            if (!this.enableWheel) return;
+
             //if (!this.options.enableFrontClip) return;
             if (event.stopPropagation) {
                 event.stopPropagation();
@@ -94,22 +102,45 @@ namespace LiteMol.Visualization {
             this._planeDelta.onNext(delta);
         }
 
+        private mousemove(e: MouseEvent) {
+            if (!this.lastMousePosition) {
+                this.lastMousePosition = [e.clientX, e.clientY, 0];
+                return;
+            }
+            const pos = [e.clientX, e.clientY, 0];
+            this.mouseMoveDelta += LA.Vector3.distance(pos, this.lastMousePosition);
+            this.lastMousePosition = pos;
+            if (this.mouseMoveDelta > 30) this.enableWheel = true;
+        }
+
+        private mouseOut() {
+            this.mouseMoveDelta = 0;
+            this.lastMousePosition = void 0;
+            this.enableWheel = false;
+        }
+
         constructor(element: HTMLElement) {
-            let events = {
+            const events = {
                 wheel: (e: MouseWheelEvent) => this.handleMouseWheel(e),
                 touchStart: (e: TouchEvent) => this.touchstart(e),
                 touchEnd: (e: TouchEvent) => this.touchend(e),
                 touchMove: (e: TouchEvent) => this.touchmove(e),
-            }
+                mouseMove: (e: MouseEvent) => this.mousemove(e),
+                mouseOut: () => this.mouseOut()
+            };
 
             element.addEventListener('mousewheel', events.wheel);
             element.addEventListener('DOMMouseScroll', events.wheel); // firefox   
+            element.addEventListener('mousemove', events.mouseMove);
+            element.addEventListener('mouseout', events.mouseOut);
 
             element.addEventListener('touchstart', events.touchStart, false);
             element.addEventListener('touchend', events.touchEnd, false);
             element.addEventListener('touchmove', events.touchMove, false);
 
             this.subs.push(() => element.removeEventListener('mousewheel', events.wheel));
+            this.subs.push(() => element.removeEventListener('mousemove', events.mouseMove));
+            this.subs.push(() => element.removeEventListener('mouseout', events.mouseOut));
             this.subs.push(() => element.removeEventListener('DOMMouseScroll', events.wheel));
             this.subs.push(() => element.removeEventListener('touchstart', events.touchStart, false));
             this.subs.push(() => element.removeEventListener('touchend', events.touchEnd, false));

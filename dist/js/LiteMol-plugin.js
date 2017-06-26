@@ -66297,6 +66297,7 @@ var LiteMol;
             CameraType[CameraType["Perspective"] = 0] = "Perspective";
             CameraType[CameraType["Orthographic"] = 1] = "Orthographic";
         })(CameraType = Visualization.CameraType || (Visualization.CameraType = {}));
+        var LA = LiteMol.Core.Geometry.LinearAlgebra;
         var SlabControls = (function () {
             function SlabControls(element) {
                 var _this = this;
@@ -66307,19 +66308,28 @@ var LiteMol;
                 this.slabWheelRate = 1 / 15;
                 this._planeDelta = new LiteMol.Core.Rx.Subject();
                 this.subs = [];
+                this.enableWheel = false;
+                this.mouseMoveDelta = 0;
+                this.lastMousePosition = void 0;
                 this.planeDelta = this._planeDelta;
                 var events = {
                     wheel: function (e) { return _this.handleMouseWheel(e); },
                     touchStart: function (e) { return _this.touchstart(e); },
                     touchEnd: function (e) { return _this.touchend(e); },
                     touchMove: function (e) { return _this.touchmove(e); },
+                    mouseMove: function (e) { return _this.mousemove(e); },
+                    mouseOut: function () { return _this.mouseOut(); }
                 };
                 element.addEventListener('mousewheel', events.wheel);
                 element.addEventListener('DOMMouseScroll', events.wheel); // firefox   
+                element.addEventListener('mousemove', events.mouseMove);
+                element.addEventListener('mouseout', events.mouseOut);
                 element.addEventListener('touchstart', events.touchStart, false);
                 element.addEventListener('touchend', events.touchEnd, false);
                 element.addEventListener('touchmove', events.touchMove, false);
                 this.subs.push(function () { return element.removeEventListener('mousewheel', events.wheel); });
+                this.subs.push(function () { return element.removeEventListener('mousemove', events.mouseMove); });
+                this.subs.push(function () { return element.removeEventListener('mouseout', events.mouseOut); });
                 this.subs.push(function () { return element.removeEventListener('DOMMouseScroll', events.wheel); });
                 this.subs.push(function () { return element.removeEventListener('touchstart', events.touchStart, false); });
                 this.subs.push(function () { return element.removeEventListener('touchend', events.touchEnd, false); });
@@ -66336,6 +66346,8 @@ var LiteMol;
                 this._planeDelta.onCompleted();
             };
             SlabControls.prototype.handleMouseWheel = function (event) {
+                if (!this.enableWheel)
+                    return;
                 //if (!this.options.enableFrontClip) return;
                 if (event.stopPropagation) {
                     event.stopPropagation();
@@ -66389,6 +66401,22 @@ var LiteMol;
                 this.touchStartPosition.x = this.touchPosition.x;
                 this.touchStartPosition.y = this.touchPosition.y;
                 this._planeDelta.onNext(delta);
+            };
+            SlabControls.prototype.mousemove = function (e) {
+                if (!this.lastMousePosition) {
+                    this.lastMousePosition = [e.clientX, e.clientY, 0];
+                    return;
+                }
+                var pos = [e.clientX, e.clientY, 0];
+                this.mouseMoveDelta += LA.Vector3.distance(pos, this.lastMousePosition);
+                this.lastMousePosition = pos;
+                if (this.mouseMoveDelta > 30)
+                    this.enableWheel = true;
+            };
+            SlabControls.prototype.mouseOut = function () {
+                this.mouseMoveDelta = 0;
+                this.lastMousePosition = void 0;
+                this.enableWheel = false;
             };
             return SlabControls;
         }());

@@ -14480,6 +14480,9 @@ declare namespace LiteMol.Visualization {
         private slabWheelRate;
         private _planeDelta;
         private subs;
+        private enableWheel;
+        private mouseMoveDelta;
+        private lastMousePosition;
         readonly planeDelta: LiteMol.Core.Rx.IObservable<number>;
         updateSize(w: number, h: number): void;
         updateRadius(r: number): void;
@@ -14488,6 +14491,8 @@ declare namespace LiteMol.Visualization {
         private touchstart(event);
         private touchend(event);
         private touchmove(event);
+        private mousemove(e);
+        private mouseOut();
         constructor(element: HTMLElement);
     }
     class Camera {

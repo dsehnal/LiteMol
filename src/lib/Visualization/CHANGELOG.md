@@ -1,4 +1,7 @@
-﻿# 1.7.0
+﻿# 1.7.1
+* MouseWheel event is now triggered only if the user moves the mouse over the area.
+
+# 1.7.0
 * Added support for labels.
 * Added support for additional primitives.
 * Updated Surface primitive transforms.
