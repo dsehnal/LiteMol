@@ -110,7 +110,7 @@ namespace LiteMol.Visualization {
             const pos = [e.clientX, e.clientY, 0];
             this.mouseMoveDelta += LA.Vector3.distance(pos, this.lastMousePosition);
             this.lastMousePosition = pos;
-            if (this.mouseMoveDelta > 30) this.enableWheel = true;
+            if (this.mouseMoveDelta > 15) this.enableWheel = true;
         }
 
         private mouseOut() {

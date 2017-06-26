@@ -1,3 +1,7 @@
+# 1.5.1
+* Support for _struct_conn mmCIF category.
+* Show metallic bonds in balls and sticks models.
+
 # 1.5.0
 * Support for labels.
 * Default theme changed to light.

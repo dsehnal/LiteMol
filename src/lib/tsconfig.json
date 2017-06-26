@@ -75,6 +75,9 @@
 
     "./Visualization/lib/lib.ts",
 
+    "./Visualization/Utils/GeometryBuilder.ts",
+    "./Visualization/Utils/Palette.ts",
+
     "./Visualization/Base/Helpers.ts",
     "./Visualization/Base/Theme.ts",
     "./Visualization/Base/Materials.ts",
@@ -106,9 +109,6 @@
 
     "./Visualization/Primitive/Geometry.ts",
     "./Visualization/Primitive/Builder.ts",
-
-    "./Visualization/Utils/GeometryBuilder.ts",
-    "./Visualization/Utils/Palette.ts",
 
     /*******************************************************************
      * BOOTSTRAP

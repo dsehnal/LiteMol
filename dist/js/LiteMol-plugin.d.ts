@@ -12936,6 +12936,7 @@ declare namespace LiteMol.Core {
         constructor(computation: (ctx: Computation.Context) => Promise<A>);
     }
     module Computation {
+        let PRINT_CONSOLE_ERROR: boolean;
         function resolve<A>(a: A): Computation<A>;
         function reject<A>(reason: any): Computation<A>;
         function createContext(): Computation.Context;
@@ -14290,6 +14291,36 @@ declare namespace LiteMol.Visualization {
 declare namespace LiteMol.Visualization {
     export import THREE = LiteMolTHREE;
 }
+declare namespace LiteMol.Visualization.Utils {
+    interface GeometryBuilder {
+        vertices: Float32Array;
+        normals: Float32Array;
+        indices: Uint32Array;
+        vertexOffset: number;
+        indexOffset: number;
+    }
+    namespace GeometryBuilder {
+        import Geom = Core.Geometry;
+        import Mat4 = Geom.LinearAlgebra.Matrix4;
+        function create(vertexCount: number, triangleCount: number): GeometryBuilder;
+        function add(builder: GeometryBuilder, surface: Geom.Surface, scale: number[] | undefined, translation: number[] | undefined, rotation: Mat4 | undefined): void;
+    }
+}
+declare namespace LiteMol.Visualization.Utils {
+    class Palette {
+        static getRandomColor(amountOfGrey?: number): Visualization.Color;
+        static randomMix(color1: Visualization.Color, color2: Visualization.Color, color3: Visualization.Color, greyControl: number): Visualization.Color;
+        private static previous;
+        /**
+         *
+         * @example
+         *   let min = Palette.getRandomColor(0.3);
+         *   let max = Palette.getRandomColor(0.3);
+         *   let color = Palette.interpolate(0.1, min, 0.6, max, 0.354);
+         */
+        static interpolate(min: number, minColor: Visualization.Color, max: number, maxColor: Visualization.Color, value: number, target?: Visualization.Color): Color;
+    }
+}
 declare namespace LiteMol.Visualization {
     function checkWebGL(): boolean;
     interface IDisposable {
@@ -15290,21 +15321,6 @@ declare namespace LiteMol.Visualization.Primitive {
         add(shape: Shape): this;
         buildSurface(): Core.Computation<Surface>;
         static create(): Builder;
-    }
-}
-declare namespace LiteMol.Visualization.Utils {
-    class Palette {
-        static getRandomColor(amountOfGrey?: number): Visualization.Color;
-        static randomMix(color1: Visualization.Color, color2: Visualization.Color, color3: Visualization.Color, greyControl: number): Visualization.Color;
-        private static previous;
-        /**
-         *
-         * @example
-         *   let min = Palette.getRandomColor(0.3);
-         *   let max = Palette.getRandomColor(0.3);
-         *   let color = Palette.interpolate(0.1, min, 0.6, max, 0.354);
-         */
-        static interpolate(min: number, minColor: Visualization.Color, max: number, maxColor: Visualization.Color, value: number, target?: Visualization.Color): Color;
     }
 }
 declare namespace LiteMol.Bootstrap {

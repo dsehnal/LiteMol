@@ -25,6 +25,7 @@ namespace LiteMol.Core {
                         let result = await this.computation(context);
                         resolve(result);
                     } catch (e) {
+                        if (Computation.PRINT_CONSOLE_ERROR) console.error(e);
                         reject(e);
                     } finally {
                         context.finished();
@@ -38,7 +39,9 @@ namespace LiteMol.Core {
         }
     }
     
-    export module Computation {        
+    export module Computation {          
+        export let PRINT_CONSOLE_ERROR = false;
+
         export function resolve<A>(a: A) {
             return computation<A>(() => Promise.resolve(a));
         }

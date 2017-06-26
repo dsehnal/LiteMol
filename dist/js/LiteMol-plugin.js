@@ -56265,6 +56265,8 @@ var LiteMol;
                                     return [3 /*break*/, 4];
                                 case 2:
                                     e_1 = _a.sent();
+                                    if (Computation.PRINT_CONSOLE_ERROR)
+                                        console.error(e_1);
                                     reject(e_1);
                                     return [3 /*break*/, 4];
                                 case 3:
@@ -56280,6 +56282,7 @@ var LiteMol;
         }());
         Core.Computation = Computation;
         (function (Computation) {
+            Computation.PRINT_CONSOLE_ERROR = false;
             function resolve(a) {
                 return computation(function () { return Core.Promise.resolve(a); });
             }
@@ -61921,9 +61924,8 @@ var LiteMol;
             'use strict';
             // H,D,T are all mapped to H
             var __ElementIndex = { 'H': 0, 'h': 0, 'D': 0, 'd': 0, 'T': 0, 't': 0, 'He': 2, 'HE': 2, 'he': 2, 'Li': 3, 'LI': 3, 'li': 3, 'Be': 4, 'BE': 4, 'be': 4, 'B': 5, 'b': 5, 'C': 6, 'c': 6, 'N': 7, 'n': 7, 'O': 8, 'o': 8, 'F': 9, 'f': 9, 'Ne': 10, 'NE': 10, 'ne': 10, 'Na': 11, 'NA': 11, 'na': 11, 'Mg': 12, 'MG': 12, 'mg': 12, 'Al': 13, 'AL': 13, 'al': 13, 'Si': 14, 'SI': 14, 'si': 14, 'P': 15, 'p': 15, 'S': 16, 's': 16, 'Cl': 17, 'CL': 17, 'cl': 17, 'Ar': 18, 'AR': 18, 'ar': 18, 'K': 19, 'k': 19, 'Ca': 20, 'CA': 20, 'ca': 20, 'Sc': 21, 'SC': 21, 'sc': 21, 'Ti': 22, 'TI': 22, 'ti': 22, 'V': 23, 'v': 23, 'Cr': 24, 'CR': 24, 'cr': 24, 'Mn': 25, 'MN': 25, 'mn': 25, 'Fe': 26, 'FE': 26, 'fe': 26, 'Co': 27, 'CO': 27, 'co': 27, 'Ni': 28, 'NI': 28, 'ni': 28, 'Cu': 29, 'CU': 29, 'cu': 29, 'Zn': 30, 'ZN': 30, 'zn': 30, 'Ga': 31, 'GA': 31, 'ga': 31, 'Ge': 32, 'GE': 32, 'ge': 32, 'As': 33, 'AS': 33, 'as': 33, 'Se': 34, 'SE': 34, 'se': 34, 'Br': 35, 'BR': 35, 'br': 35, 'Kr': 36, 'KR': 36, 'kr': 36, 'Rb': 37, 'RB': 37, 'rb': 37, 'Sr': 38, 'SR': 38, 'sr': 38, 'Y': 39, 'y': 39, 'Zr': 40, 'ZR': 40, 'zr': 40, 'Nb': 41, 'NB': 41, 'nb': 41, 'Mo': 42, 'MO': 42, 'mo': 42, 'Tc': 43, 'TC': 43, 'tc': 43, 'Ru': 44, 'RU': 44, 'ru': 44, 'Rh': 45, 'RH': 45, 'rh': 45, 'Pd': 46, 'PD': 46, 'pd': 46, 'Ag': 47, 'AG': 47, 'ag': 47, 'Cd': 48, 'CD': 48, 'cd': 48, 'In': 49, 'IN': 49, 'in': 49, 'Sn': 50, 'SN': 50, 'sn': 50, 'Sb': 51, 'SB': 51, 'sb': 51, 'Te': 52, 'TE': 52, 'te': 52, 'I': 53, 'i': 53, 'Xe': 54, 'XE': 54, 'xe': 54, 'Cs': 55, 'CS': 55, 'cs': 55, 'Ba': 56, 'BA': 56, 'ba': 56, 'La': 57, 'LA': 57, 'la': 57, 'Ce': 58, 'CE': 58, 'ce': 58, 'Pr': 59, 'PR': 59, 'pr': 59, 'Nd': 60, 'ND': 60, 'nd': 60, 'Pm': 61, 'PM': 61, 'pm': 61, 'Sm': 62, 'SM': 62, 'sm': 62, 'Eu': 63, 'EU': 63, 'eu': 63, 'Gd': 64, 'GD': 64, 'gd': 64, 'Tb': 65, 'TB': 65, 'tb': 65, 'Dy': 66, 'DY': 66, 'dy': 66, 'Ho': 67, 'HO': 67, 'ho': 67, 'Er': 68, 'ER': 68, 'er': 68, 'Tm': 69, 'TM': 69, 'tm': 69, 'Yb': 70, 'YB': 70, 'yb': 70, 'Lu': 71, 'LU': 71, 'lu': 71, 'Hf': 72, 'HF': 72, 'hf': 72, 'Ta': 73, 'TA': 73, 'ta': 73, 'W': 74, 'w': 74, 'Re': 75, 'RE': 75, 're': 75, 'Os': 76, 'OS': 76, 'os': 76, 'Ir': 77, 'IR': 77, 'ir': 77, 'Pt': 78, 'PT': 78, 'pt': 78, 'Au': 79, 'AU': 79, 'au': 79, 'Hg': 80, 'HG': 80, 'hg': 80, 'Tl': 81, 'TL': 81, 'tl': 81, 'Pb': 82, 'PB': 82, 'pb': 82, 'Bi': 83, 'BI': 83, 'bi': 83, 'Po': 84, 'PO': 84, 'po': 84, 'At': 85, 'AT': 85, 'at': 85, 'Rn': 86, 'RN': 86, 'rn': 86, 'Fr': 87, 'FR': 87, 'fr': 87, 'Ra': 88, 'RA': 88, 'ra': 88, 'Ac': 89, 'AC': 89, 'ac': 89, 'Th': 90, 'TH': 90, 'th': 90, 'Pa': 91, 'PA': 91, 'pa': 91, 'U': 92, 'u': 92, 'Np': 93, 'NP': 93, 'np': 93, 'Pu': 94, 'PU': 94, 'pu': 94, 'Am': 95, 'AM': 95, 'am': 95, 'Cm': 96, 'CM': 96, 'cm': 96, 'Bk': 97, 'BK': 97, 'bk': 97, 'Cf': 98, 'CF': 98, 'cf': 98, 'Es': 99, 'ES': 99, 'es': 99, 'Fm': 100, 'FM': 100, 'fm': 100, 'Md': 101, 'MD': 101, 'md': 101, 'No': 102, 'NO': 102, 'no': 102, 'Lr': 103, 'LR': 103, 'lr': 103, 'Rf': 104, 'RF': 104, 'rf': 104, 'Db': 105, 'DB': 105, 'db': 105, 'Sg': 106, 'SG': 106, 'sg': 106, 'Bh': 107, 'BH': 107, 'bh': 107, 'Hs': 108, 'HS': 108, 'hs': 108, 'Mt': 109, 'MT': 109, 'mt': 109 };
-            var __ElementBondingRadii = { 0: 1.42, 1: 1.42, 2: 1.75, 3: 2, 4: 1.76, 5: 2, 6: 1.9, 7: 1.9, 8: 1.9, 9: 1.75, 10: 1.75, 11: 2, 12: 2.4, 13: 2.8, 14: 2.11, 15: 2.3, 16: 2.3, 17: 1.75, 18: 1.75, 19: 1, 20: 2.65, 21: 2.8, 22: 2.8, 23: 2.8, 24: 2.8, 25: 2.81, 26: 2.8, 27: 2.8, 28: 2.8, 29: 2.8, 30: 2.8, 31: 2.8, 32: 1.75, 33: 2.68, 34: 2.34, 35: 2.68, 36: 1.75, 37: 2.8, 38: 2.82, 39: 2.8, 40: 2.8, 41: 2.8, 42: 2.8, 43: 2.8, 44: 2.5, 45: 2.77, 46: 2.8, 47: 2.8, 48: 2.8, 49: 2.8, 50: 2.8, 51: 1.75, 52: 2.2, 53: 2.81, 54: 1.75, 55: 2.8, 56: 2.8, 57: 2.8, 58: 2.8, 59: 2.8, 60: 2.8, 61: 2.8, 62: 2.8, 63: 2.8, 64: 2.8, 65: 2.8, 66: 2.8, 67: 2.8, 68: 2.8, 69: 2.8, 70: 2.8, 71: 2.8, 72: 2.8, 73: 2.8, 74: 2.66, 75: 2.8, 76: 2.8, 77: 2.51, 78: 3.24, 79: 2.8, 80: 3, 81: 2.8, 82: 2.8, 83: 2.8, 84: 1.75, 85: 1.75, 86: 1.75, 87: 2.8, 88: 2.8, 89: 2.8, 90: 2.8, 91: 2.8, 92: 2.8, 93: 2.8, 94: 2.8, 95: 2.8, 96: 2.8, 97: 2.8, 98: 2.8, 99: 2.8, 100: 2.8, 101: 2.8, 102: 2.8, 103: 2.8, 104: 2.8, 105: 2.8, 106: 2.8, 107: 2.8, 108: 2.8, 109: 2.8 };
-            var __ElementBondThresholds = { 0: [[1.42, 1 /* Single */]], 1: [[1.42, 1 /* Single */]], 3: [[2.8, 5 /* Metallic */]], 4: [[2.8, 5 /* Metallic */]], 6: [[1.75, 1 /* Single */]], 7: [[1.6, 1 /* Single */]], 8: [[1.52, 1 /* Single */]], 11: [[2.8, 5 /* Metallic */]], 12: [[2.8, 5 /* Metallic */]], 13: [[2.8, 5 /* Metallic */]], 14: [[1.9, 1 /* Single */]], 15: [[1.9, 1 /* Single */]], 16: [[1.9, 1 /* Single */]], 17: [[1.8, 1 /* Single */]], 19: [[2.8, 5 /* Metallic */]], 20: [[2.8, 5 /* Metallic */]], 21: [[2.8, 5 /* Metallic */]], 22: [[2.8, 5 /* Metallic */]], 23: [[2.8, 5 /* Metallic */]], 24: [[2.8, 5 /* Metallic */]], 25: [[2.8, 5 /* Metallic */]], 26: [[2.8, 5 /* Metallic */]], 27: [[2.8, 5 /* Metallic */]], 28: [[2.8, 5 /* Metallic */]], 29: [[2.8, 5 /* Metallic */]], 30: [[2.8, 5 /* Metallic */]], 31: [[2.8, 5 /* Metallic */]], 33: [[2.68, 1 /* Single */]], 37: [[2.8, 5 /* Metallic */]], 38: [[2.8, 5 /* Metallic */]], 39: [[2.8, 5 /* Metallic */]], 40: [[2.8, 5 /* Metallic */]], 41: [[2.8, 5 /* Metallic */]], 42: [[2.8, 5 /* Metallic */]], 43: [[2.8, 5 /* Metallic */]], 44: [[2.8, 5 /* Metallic */]], 45: [[2.8, 5 /* Metallic */]], 46: [[2.8, 5 /* Metallic */]], 47: [[2.8, 5 /* Metallic */]], 48: [[2.8, 5 /* Metallic */]], 49: [[2.8, 5 /* Metallic */]], 50: [[2.8, 5 /* Metallic */]], 55: [[2.8, 5 /* Metallic */]], 56: [[2.8, 5 /* Metallic */]], 57: [[2.8, 5 /* Metallic */]], 58: [[2.8, 5 /* Metallic */]], 59: [[2.8, 5 /* Metallic */]], 60: [[2.8, 5 /* Metallic */]], 61: [[2.8, 5 /* Metallic */]], 62: [[2.8, 5 /* Metallic */]], 63: [[2.8, 5 /* Metallic */]], 64: [[2.8, 5 /* Metallic */]], 65: [[2.8, 5 /* Metallic */]], 66: [[2.8, 5 /* Metallic */]], 67: [[2.8, 5 /* Metallic */]], 68: [[2.8, 5 /* Metallic */]], 69: [[2.8, 5 /* Metallic */]], 70: [[2.8, 5 /* Metallic */]], 71: [[2.8, 5 /* Metallic */]], 72: [[2.8, 5 /* Metallic */]], 73: [[2.8, 5 /* Metallic */]], 74: [[2.8, 5 /* Metallic */]], 75: [[2.8, 5 /* Metallic */]], 76: [[2.8, 5 /* Metallic */]], 77: [[2.8, 5 /* Metallic */]], 78: [[2.8, 5 /* Metallic */]], 79: [[2.8, 5 /* Metallic */]], 80: [[2.8, 5 /* Metallic */]], 81: [[2.8, 5 /* Metallic */]], 82: [[2.8, 5 /* Metallic */]], 83: [[2.8, 5 /* Metallic */]], 87: [[2.8, 5 /* Metallic */]], 88: [[2.8, 5 /* Metallic */]], 89: [[2.8, 5 /* Metallic */]], 90: [[2.8, 5 /* Metallic */]], 91: [[2.8, 5 /* Metallic */]], 92: [[2.8, 5 /* Metallic */]], 93: [[2.8, 5 /* Metallic */]], 94: [[2.8, 5 /* Metallic */]], 95: [[2.8, 5 /* Metallic */]], 96: [[2.8, 5 /* Metallic */]], 97: [[2.8, 5 /* Metallic */]], 98: [[2.8, 5 /* Metallic */]], 99: [[2.8, 5 /* Metallic */]], 100: [[2.8, 5 /* Metallic */]], 101: [[2.8, 5 /* Metallic */]], 102: [[2.8, 5 /* Metallic */]], 103: [[2.8, 5 /* Metallic */]], 104: [[2.8, 5 /* Metallic */]], 105: [[2.8, 5 /* Metallic */]], 106: [[2.8, 5 /* Metallic */]], 107: [[2.8, 5 /* Metallic */]], 108: [[2.8, 5 /* Metallic */]], 109: [[2.8, 5 /* Metallic */]] };
-            var __ElementPairThresholds = { 0: [[0.8, 1 /* Single */]], 15: [[1.31, 1 /* Single */]], 21: [[1.3, 1 /* Single */]], 28: [[1.3, 1 /* Single */]], 36: [[1.05, 1 /* Single */]], 45: [[1, 1 /* Single */]], 60: [[1.84, 1 /* Single */]], 71: [[1.88, 1 /* Single */]], 82: [[1.76, 1 /* Single */]], 83: [[1.56, 1 /* Single */]], 84: [[1.25, 3 /* Triple */], [1.4, 2 /* Double */], [1.75, 1 /* Single */]], 95: [[1.63, 1 /* Single */]], 96: [[1.68, 1 /* Single */]], 97: [[1.27, 2 /* Double */], [1.6, 1 /* Single */]], 110: [[1.36, 1 /* Single */]], 111: [[1.26, 2 /* Double */], [1.59, 1 /* Single */]], 112: [[1.55, 1 /* Single */]], 126: [[1.45, 1 /* Single */]], 144: [[1.6, 1 /* Single */]], 153: [[1.4, 1 /* Single */]], 180: [[1.55, 1 /* Single */]], 197: [[2.4, 5 /* Metallic */]], 215: [[1.49, 2 /* Double */], [1.98, 1 /* Single */]], 216: [[1.91, 1 /* Single */]], 218: [[2.24, 5 /* Metallic */]], 240: [[2.02, 5 /* Metallic */]], 259: [[2, 1 /* Single */]], 282: [[1.9, 1 /* Single */]], 480: [[2.3, 1 /* Single */]], 511: [[2.3, 1 /* Single */]], 544: [[2.3, 1 /* Single */]], 595: [[1.54, 1 /* Single */]], 612: [[2.1, 1 /* Single */]], 630: [[1, 1 /* Single */]], 786: [[2.6, 1 /* Single */]], 826: [[1.82, 2 /* Double */], [2.27, 1 /* Single */]], 867: [[2.1, 1 /* Single */]], 869: [[1.7, 1 /* Single */], [1.93, 1 /* Single */]], 910: [[2.06, 1 /* Single */]], 911: [[1.8, 2 /* Double */], [2.05, 1 /* Single */]], 954: [[1.53, 2 /* Double */], [1.62, 1 /* Single */]], 1241: [[2.68, 1 /* Single */]], 1291: [[2.33, 1 /* Single */]], 1431: [[1, 1 /* Single */]], 1717: [[2.14, 1 /* Single */]], 1776: [[2.48, 1 /* Single */]], 1838: [[2.1, 1 /* Single */]], 1899: [[1.68, 2 /* Double */], [1.72, 1 /* Single */]], 2380: [[2.34, 1 /* Single */]], 3356: [[2.44, 1 /* Single */]], 3662: [[2.11, 1 /* Single */]], 3747: [[2.36, 1 /* Single */]], 3749: [[2.6, 1 /* Single */]], 4672: [[2.75, 1 /* Single */]], 5724: [[2.73, 1 /* Single */]], 5921: [[2.63, 1 /* Single */]], 6476: [[2.84, 1 /* Single */]], 6705: [[2.87, 1 /* Single */]], 8964: [[2.81, 1 /* Single */]] };
+            var __ElementBondThresholds = { 0: 1.42, 1: 1.42, 3: 2.8, 4: 2.8, 6: 1.75, 7: 1.6, 8: 1.52, 11: 2.8, 12: 2.8, 13: 2.8, 14: 1.9, 15: 1.9, 16: 1.9, 17: 1.8, 19: 2.8, 20: 2.8, 21: 2.8, 22: 2.8, 23: 2.8, 24: 2.8, 25: 2.8, 26: 2.8, 27: 2.8, 28: 2.8, 29: 2.8, 30: 2.8, 31: 2.8, 33: 2.68, 37: 2.8, 38: 2.8, 39: 2.8, 40: 2.8, 41: 2.8, 42: 2.8, 43: 2.8, 44: 2.8, 45: 2.8, 46: 2.8, 47: 2.8, 48: 2.8, 49: 2.8, 50: 2.8, 55: 2.8, 56: 2.8, 57: 2.8, 58: 2.8, 59: 2.8, 60: 2.8, 61: 2.8, 62: 2.8, 63: 2.8, 64: 2.8, 65: 2.8, 66: 2.8, 67: 2.8, 68: 2.8, 69: 2.8, 70: 2.8, 71: 2.8, 72: 2.8, 73: 2.8, 74: 2.8, 75: 2.8, 76: 2.8, 77: 2.8, 78: 2.8, 79: 2.8, 80: 2.8, 81: 2.8, 82: 2.8, 83: 2.8, 87: 2.8, 88: 2.8, 89: 2.8, 90: 2.8, 91: 2.8, 92: 2.8, 93: 2.8, 94: 2.8, 95: 2.8, 96: 2.8, 97: 2.8, 98: 2.8, 99: 2.8, 100: 2.8, 101: 2.8, 102: 2.8, 103: 2.8, 104: 2.8, 105: 2.8, 106: 2.8, 107: 2.8, 108: 2.8, 109: 2.88 };
+            var __ElementPairThresholds = { 0: 0.8, 20: 1.31, 27: 1.3, 35: 1.3, 44: 1.05, 54: 1, 60: 1.84, 72: 1.88, 84: 1.75, 85: 1.56, 86: 1.76, 98: 1.6, 99: 1.68, 100: 1.63, 112: 1.55, 113: 1.59, 114: 1.36, 129: 1.45, 144: 1.6, 170: 1.4, 180: 1.55, 202: 2.4, 222: 2.24, 224: 1.91, 225: 1.98, 243: 2.02, 269: 2, 293: 1.9, 480: 2.3, 512: 2.3, 544: 2.3, 612: 2.1, 629: 1.54, 665: 1, 813: 2.6, 854: 2.27, 894: 1.93, 896: 2.1, 937: 2.05, 938: 2.06, 981: 1.62, 1258: 2.68, 1309: 2.33, 1484: 1, 1763: 2.14, 1823: 2.48, 1882: 2.1, 1944: 1.72, 2380: 2.34, 3367: 2.44, 3733: 2.11, 3819: 2.6, 3821: 2.36, 4736: 2.75, 5724: 2.73, 5959: 2.63, 6519: 2.84, 6750: 2.87, 8991: 2.81 };
             var DefaultBondingRadius = 2.001;
             var MetalsSet = (function () {
                 var metals = ['LI', 'NA', 'K', 'RB', 'CS', 'FR', 'BE', 'MG', 'CA', 'SR', 'BA', 'RA', 'AL', 'GA', 'IN', 'SN', 'TL', 'PB', 'BI', 'SC', 'TI', 'V', 'CR', 'MN', 'FE', 'CO', 'NI', 'CU', 'ZN', 'Y', 'ZR', 'NB', 'MO', 'TC', 'RU', 'RH', 'PD', 'AG', 'CD', 'LA', 'HF', 'TA', 'W', 'RE', 'OS', 'IR', 'PT', 'AU', 'HG', 'AC', 'RF', 'DB', 'SG', 'BH', 'HS', 'MT', 'CE', 'PR', 'ND', 'PM', 'SM', 'EU', 'GD', 'TB', 'DY', 'HO', 'ER', 'TM', 'YB', 'LU', 'TH', 'PA', 'U', 'NP', 'PU', 'AM', 'CM', 'BK', 'CF', 'ES', 'FM', 'MD', 'NO', 'LR'];
@@ -61946,25 +61948,20 @@ var LiteMol;
                     return -1;
                 return i;
             }
-            function bondingRadius(i) {
-                return __ElementBondingRadii[i] || DefaultBondingRadius;
-            }
-            var __empty = [];
-            function pairThresholds(i, j) {
+            function pairThreshold(i, j) {
                 if (i < 0 || j < 0)
-                    return __empty;
+                    return -1;
                 var r = __ElementPairThresholds[pair(i, j)];
                 if (r === void 0)
-                    return __empty;
+                    return -1;
                 return r;
             }
-            var __defaultThresholds = [[DefaultBondingRadius, 1 /* Single */]];
-            function thresholds(i) {
+            function threshold(i) {
                 if (i < 0)
-                    return __defaultThresholds;
+                    return DefaultBondingRadius;
                 var r = __ElementBondThresholds[i];
                 if (r === void 0)
-                    return __defaultThresholds;
+                    return DefaultBondingRadius;
                 return r;
             }
             var H_ID = __ElementIndex['H'];
@@ -62060,12 +62057,12 @@ var LiteMol;
                     }
                     lastResidue = raI;
                     var aeI = idx(elementSymbol[aI]);
-                    var bondingRadiusA = bondingRadius(aeI);
                     var _d = query3d(x[aI], y[aI], z[aI], MAX_RADIUS), elements = _d.elements, count = _d.count, squaredDistances = _d.squaredDistances;
                     var isHa = isHydrogen(aeI);
-                    var thresholdsA = thresholds(aeI);
+                    var thresholdA = threshold(aeI);
                     var altA = altLoc[aI];
-                    var structConnEntries = structConn && structConn.getAtomEntries(aI);
+                    var metalA = MetalsSet.has(aeI);
+                    var structConnEntries = params.forceCompute ? void 0 : structConn && structConn.getAtomEntries(aI);
                     for (var ni = 0; ni < count; ni++) {
                         var bI = elements[ni];
                         if (bI <= aI || !mask.has(bI))
@@ -62111,18 +62108,15 @@ var LiteMol;
                             }
                             continue;
                         }
-                        var pairedThresholds = pairThresholds(aeI, beI);
-                        var elemThresholds = pairedThresholds.length > 0
-                            ? pairedThresholds
-                            : beI < 0 || bondingRadiusA > bondingRadius(beI) ? thresholdsA : thresholds(beI);
-                        for (var _h = 0, elemThresholds_1 = elemThresholds; _h < elemThresholds_1.length; _h++) {
-                            var t = elemThresholds_1[_h];
-                            if (t[0] >= dist) {
-                                ChunkedAdd(atomA, aI);
-                                ChunkedAdd(atomB, bI);
-                                ChunkedAdd(type, t[1]);
-                                break;
-                            }
+                        var thresholdAB = pairThreshold(aeI, beI);
+                        var pairingThreshold = thresholdAB > 0
+                            ? thresholdAB
+                            : beI < 0 ? thresholdA : Math.max(thresholdA, threshold(beI));
+                        var metalB = MetalsSet.has(beI);
+                        if (dist <= pairingThreshold) {
+                            ChunkedAdd(atomA, aI);
+                            ChunkedAdd(atomB, bI);
+                            ChunkedAdd(type, metalA || metalB ? 5 /* Metallic */ : 1 /* Single */);
                         }
                     }
                 }
@@ -65519,6 +65513,139 @@ var LiteMol;
     })(Visualization = LiteMol.Visualization || (LiteMol.Visualization = {}));
 })(LiteMol || (LiteMol = {}));
 /*
+ * Copyright (c) 2017 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ */
+var LiteMol;
+(function (LiteMol) {
+    var Visualization;
+    (function (Visualization) {
+        var Utils;
+        (function (Utils) {
+            "use strict";
+            var GeometryBuilder;
+            (function (GeometryBuilder) {
+                var Geom = LiteMol.Core.Geometry;
+                var Vec3 = Geom.LinearAlgebra.Vector3;
+                var Mat4 = Geom.LinearAlgebra.Matrix4;
+                function create(vertexCount, triangleCount) {
+                    return {
+                        vertices: new Float32Array(vertexCount * 3),
+                        normals: new Float32Array(vertexCount * 3),
+                        indices: new Uint32Array(triangleCount * 3),
+                        vertexOffset: 0,
+                        indexOffset: 0
+                    };
+                }
+                GeometryBuilder.create = create;
+                var tempVector = Vec3.zero();
+                function copyTransformed(builder, surface, vertTransform, normalTransform) {
+                    var vertices = builder.vertices, normals = builder.normals, indices = builder.indices, vertexOffset = builder.vertexOffset, indexOffset = builder.indexOffset;
+                    var vs = surface.vertices, ns = surface.normals, ts = surface.triangleIndices, vertexCount = surface.vertexCount, triangleCount = surface.triangleCount;
+                    var v = tempVector;
+                    var vOffset = 3 * vertexOffset;
+                    var nOffset = 3 * vertexOffset;
+                    var iOffset = 3 * indexOffset;
+                    for (var i = 0, _b = vs.length; i < _b; i += 3) {
+                        v[0] = vs[i], v[1] = vs[i + 1], v[2] = vs[i + 2];
+                        Vec3.transformMat4(v, v, vertTransform);
+                        vertices[vOffset++] = v[0];
+                        vertices[vOffset++] = v[1];
+                        vertices[vOffset++] = v[2];
+                        v[0] = ns[i], v[1] = ns[i + 1], v[2] = ns[i + 2];
+                        Vec3.transformMat4(v, v, normalTransform);
+                        Vec3.normalize(v, v);
+                        normals[nOffset++] = v[0];
+                        normals[nOffset++] = v[1];
+                        normals[nOffset++] = v[2];
+                    }
+                    for (var i = 0, _b = ts.length; i < _b; i++) {
+                        indices[iOffset++] = vertexOffset + ts[i];
+                    }
+                    builder.vertexOffset += vertexCount;
+                    builder.indexOffset += triangleCount;
+                }
+                var scaleTransform = Mat4.zero(), translateTransform = Mat4.zero(), rotateTransform = Mat4.zero(), vTransform = Mat4.zero(), nTransform = Mat4.zero();
+                var defaulScale = [1, 1, 1], defaultTranslation = [0, 0, 0];
+                function add(builder, surface, scale, translation, rotation) {
+                    Mat4.fromScaling(scaleTransform, scale || defaulScale);
+                    Mat4.fromTranslation(translateTransform, translation || defaultTranslation);
+                    if (rotation)
+                        Mat4.copy(rotateTransform, rotation);
+                    else
+                        Mat4.fromIdentity(rotateTransform);
+                    Mat4.mul3(vTransform, translateTransform, rotateTransform, scaleTransform);
+                    Mat4.mul(nTransform, rotateTransform, scaleTransform);
+                    copyTransformed(builder, surface, vTransform, nTransform);
+                }
+                GeometryBuilder.add = add;
+            })(GeometryBuilder = Utils.GeometryBuilder || (Utils.GeometryBuilder = {}));
+        })(Utils = Visualization.Utils || (Visualization.Utils = {}));
+    })(Visualization = LiteMol.Visualization || (LiteMol.Visualization = {}));
+})(LiteMol || (LiteMol = {}));
+/*
+ * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ */
+var LiteMol;
+(function (LiteMol) {
+    var Visualization;
+    (function (Visualization) {
+        var Utils;
+        (function (Utils) {
+            "use strict";
+            var Palette = (function () {
+                function Palette() {
+                }
+                Palette.getRandomColor = function (amountOfGrey) {
+                    if (amountOfGrey === void 0) { amountOfGrey = 0.0; }
+                    var counter = 0;
+                    while (true) {
+                        counter++;
+                        var c = Palette.randomMix({ r: 166 / 255, g: 0, b: 100 / 255 }, { r: 1, g: 1, b: 0 }, { r: 0, g: 100 / 255, b: 1 }, amountOfGrey);
+                        var d = Math.abs(Palette.previous.r - c.r) + Math.abs(Palette.previous.g - c.g) + Math.abs(Palette.previous.b - c.b);
+                        if (d > 100 || counter === 10) {
+                            Palette.previous = c;
+                            return c;
+                        }
+                    }
+                };
+                Palette.randomMix = function (color1, color2, color3, greyControl) {
+                    var randomIndex = Math.floor(Math.random() * 3) | 0;
+                    var mixRatio1 = (randomIndex === 0) ? Math.random() * greyControl : Math.random();
+                    var mixRatio2 = (randomIndex === 1) ? Math.random() * greyControl : Math.random();
+                    var mixRatio3 = (randomIndex === 2) ? Math.random() * greyControl : Math.random();
+                    var sum = mixRatio1 + mixRatio2 + mixRatio3;
+                    mixRatio1 /= sum;
+                    mixRatio2 /= sum;
+                    mixRatio3 /= sum;
+                    return {
+                        r: (mixRatio1 * color1.r + mixRatio2 * color2.r + mixRatio3 * color3.r),
+                        g: (mixRatio1 * color1.g + mixRatio2 * color2.g + mixRatio3 * color3.g),
+                        b: (mixRatio1 * color1.b + mixRatio2 * color2.b + mixRatio3 * color3.b)
+                    };
+                };
+                /**
+                 *
+                 * @example
+                 *   let min = Palette.getRandomColor(0.3);
+                 *   let max = Palette.getRandomColor(0.3);
+                 *   let color = Palette.interpolate(0.1, min, 0.6, max, 0.354);
+                 */
+                Palette.interpolate = function (min, minColor, max, maxColor, value, target) {
+                    var ret = target !== void 0 ? target : { r: 0.1, g: 0.1, b: 0.1 };
+                    var t = (value - min) / (max - min);
+                    ret.r = minColor.r + (maxColor.r - minColor.r) * t;
+                    ret.g = minColor.g + (maxColor.g - minColor.g) * t;
+                    ret.b = minColor.b + (maxColor.b - minColor.b) * t;
+                    return ret;
+                };
+                Palette.previous = Palette.randomMix({ r: 0.75, g: 0, b: 0.25 }, { r: 1, g: 0.5, b: 0 }, { r: 0, g: 0.35, b: 1 }, 0.5);
+                return Palette;
+            }());
+            Utils.Palette = Palette;
+        })(Utils = Visualization.Utils || (Visualization.Utils = {}));
+    })(Visualization = LiteMol.Visualization || (LiteMol.Visualization = {}));
+})(LiteMol || (LiteMol = {}));
+/*
  * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
 var LiteMol;
@@ -66459,7 +66586,7 @@ var LiteMol;
                 var pos = [e.clientX, e.clientY, 0];
                 this.mouseMoveDelta += LA.Vector3.distance(pos, this.lastMousePosition);
                 this.lastMousePosition = pos;
-                if (this.mouseMoveDelta > 30)
+                if (this.mouseMoveDelta > 15)
                     this.enableWheel = true;
             };
             SlabControls.prototype.mouseOut = function () {
@@ -69124,110 +69251,60 @@ var LiteMol;
                                 residueCount++;
                             lastResidue = raI;
                         }
-                        var stickCount = 0;
-                        var type = bonds.type, count = bonds.count;
+                        var metalDashFactor = 1 / (2 * 0.15 /* MetalDashSize */);
+                        var covalentStickCount = 0, metallicStickCount = 0;
+                        var type = bonds.type, count = bonds.count, atomAIndex = bonds.atomAIndex, atomBIndex = bonds.atomBIndex;
+                        var _a = model.positions, x = _a.x, y = _a.y, z = _a.z;
                         for (var i = 0; i < count; i++) {
                             var t = type[i];
-                            if (t === 0 || t === 5)
-                                stickCount += 1;
+                            if (t === 0)
+                                covalentStickCount += 1;
                             else if (t >= 1 && t <= 4)
-                                stickCount += t;
+                                covalentStickCount += t;
+                            else if (t === 5) {
+                                var a = atomAIndex[i], b = atomBIndex[i];
+                                var dx = x[a] - x[b], dy = y[a] - y[b], dz = z[a] - z[b];
+                                var len = Math.sqrt(dx * dx + dy * dy + dz * dz);
+                                metallicStickCount += Math.ceil(metalDashFactor * len);
+                            }
                         }
                         return {
                             bonds: bonds,
-                            stickCount: stickCount
+                            covalentStickCount: covalentStickCount,
+                            metallicStickCount: metallicStickCount
                         };
                     }
                     BallsAndSticksHelper.analyze = analyze;
                 })(BallsAndSticksHelper || (BallsAndSticksHelper = {}));
+                var Geom = LiteMol.Core.Geometry;
+                var Vec3 = Geom.LinearAlgebra.Vector3;
+                var Mat4 = Geom.LinearAlgebra.Matrix4;
+                var GB = Visualization.Utils.GeometryBuilder;
                 var BondModelState = (function () {
-                    function BondModelState(template, templateVB, templateNB, templateIB, templateVertexCount, vertices, normals, indices) {
-                        this.template = template;
-                        this.templateVB = templateVB;
-                        this.templateNB = templateNB;
-                        this.templateIB = templateIB;
-                        this.templateVertexCount = templateVertexCount;
-                        this.vertices = vertices;
-                        this.normals = normals;
-                        this.indices = indices;
-                        this.atomsVector = new Visualization.THREE.Vector3();
-                        this.center = new Visualization.THREE.Vector3();
-                        this.rotationAxis = new Visualization.THREE.Vector3();
-                        this.upVector = new Visualization.THREE.Vector3(0, 1, 0);
-                        this.scaleMatrix = new Visualization.THREE.Matrix4();
-                        this.rotationMatrix = new Visualization.THREE.Matrix4();
-                        this.translationMatrix = new Visualization.THREE.Matrix4();
-                        this.offsetMatrix = new Visualization.THREE.Matrix4();
-                        this.finalMatrix = new Visualization.THREE.Matrix4();
-                        this.sticksDone = 0;
+                    function BondModelState(bondTemplate, cubeTemplate, builder) {
+                        this.bondTemplate = bondTemplate;
+                        this.cubeTemplate = cubeTemplate;
+                        this.builder = builder;
+                        this.rotationAxis = Vec3.zero();
+                        this.bondUpVector = Vec3.fromValues(1, 0, 0);
+                        this.dashUpVector = Vec3.fromValues(1, 0, 0);
+                        this.dir = Vec3.zero();
+                        this.scale = Vec3.zero();
+                        this.translation = Vec3.zero();
+                        this.rotation = Mat4.zero();
                         this.radius = 0.15;
-                        this.offset = new Visualization.THREE.Vector3();
-                        this.a = new Visualization.THREE.Vector3();
-                        this.b = new Visualization.THREE.Vector3();
+                        this.offset = Vec3.zero();
+                        this.a = Vec3.zero();
+                        this.b = Vec3.zero();
                     }
                     return BondModelState;
                 }());
-                var BuildState = (function () {
-                    function BuildState(model, atomIndices, params) {
-                        this.model = model;
-                        this.atomIndices = atomIndices;
-                        this.params = params;
-                        this.tessalation = this.params.tessalation;
-                        this.atomRadius = this.params.atomRadius;
-                        this.bondRadius = this.params.bondRadius;
-                        this.hideBonds = this.params.hideBonds;
-                        this.bondTemplate = BuildState.getBondTemplate(1.0, this.tessalation);
-                        this.atomTemplate = BuildState.getAtomTemplate(1.0, this.tessalation);
-                        this.cubeTemplate = Visualization.GeometryHelper.getIndexedBufferGeometry(new Visualization.THREE.BoxGeometry(1, 1, 1));
-                        this.bondTemplateVertexBuffer = this.bondTemplate.attributes.position.array;
-                        this.bondTemplateVertexBufferLength = this.bondTemplateVertexBuffer.length;
-                        this.bondTemplateVertexCount = (this.bondTemplateVertexBufferLength / 3) | 0;
-                        this.bondTemplateIndexBuffer = this.bondTemplate.attributes.index.array;
-                        this.bondTemplateIndexBufferLength = this.bondTemplateIndexBuffer.length;
-                        this.bondTemplateNormalBuffer = this.bondTemplate.attributes.normal.array;
-                        this.cubeTemplateVertexBuffer = this.cubeTemplate.attributes.position.array;
-                        this.cubeTemplateVertexBufferLength = this.cubeTemplateVertexBuffer.length;
-                        this.cubeTemplateVertexCount = (this.cubeTemplateVertexBufferLength / 3) | 0;
-                        this.cubeTemplateIndexBuffer = this.cubeTemplate.attributes.index.array;
-                        this.cubeTemplateIndexBufferLength = this.cubeTemplateIndexBuffer.length;
-                        this.cubeTemplateNormalBuffer = this.cubeTemplate.attributes.normal.array;
-                        this.atomTemplateVertexBuffer = this.atomTemplate.attributes.position.array;
-                        this.atomTemplateVertexBufferLength = this.atomTemplateVertexBuffer.length;
-                        this.atomTemplateVertexCount = (this.atomTemplateVertexBufferLength / 3) | 0;
-                        this.atomTemplateIndexBuffer = this.atomTemplate.attributes.index.array;
-                        this.atomTemplateIndexBufferLength = this.atomTemplateIndexBuffer.length;
-                        this.atomTemplateNormalBuffer = this.atomTemplate.attributes.normal.array;
-                        this.atomBufferSize = this.atomTemplateVertexBufferLength * this.atomIndices.length;
-                        this.atomVertices = new Float32Array(this.atomBufferSize);
-                        this.atomNormals = new Float32Array(this.atomBufferSize);
-                        this.atomTriangleIndices = new Uint32Array(this.atomTemplateIndexBufferLength * this.atomIndices.length);
-                        this.atomColors = new Float32Array(this.atomBufferSize);
-                        this.atomPickColors = new Float32Array(this.atomTemplateVertexCount * 4 * this.atomIndices.length);
-                        this.atoms = this.model.data.atoms;
-                        this.positions = this.model.positions;
-                        this.cX = this.positions.x;
-                        this.cY = this.positions.y;
-                        this.cZ = this.positions.z;
-                        this.atomSymbols = this.atoms.elementSymbol;
-                        this.residueIndex = this.atoms.residueIndex;
-                        this.atomsDone = 0;
-                        this.offset = 0;
-                        this.bondsDone = 0;
-                        this.atomsVector = new Visualization.THREE.Vector3();
-                        this.center = new Visualization.THREE.Vector3();
-                        this.rotationAxis = new Visualization.THREE.Vector3();
-                        this.up = new Visualization.THREE.Vector3(0, 1, 0);
-                        this.scaleMatrix = new Visualization.THREE.Matrix4();
-                        this.rotationMatrix = new Visualization.THREE.Matrix4();
-                        this.translationMatrix = new Visualization.THREE.Matrix4();
-                        this.atom1Vec = new Visualization.THREE.Vector3();
-                        this.atom2Vec = new Visualization.THREE.Vector3();
-                        this.pickColor = { r: 0.1, g: 0.1, b: 0.1 };
-                        this.atomMapBuilder = new Visualization.Selection.VertexMapBuilder(this.atomIndices.length);
-                        this.tempVector = new Visualization.THREE.Vector3(0, 0, 0);
-                        this.bs = void 0;
-                    }
-                    BuildState.getBondTemplate = function (radius, tessalation) {
+                var Templates;
+                (function (Templates) {
+                    var bondCache = {};
+                    function getBond(tessalation) {
+                        if (bondCache[tessalation])
+                            return bondCache[tessalation];
                         var detail;
                         switch (tessalation) {
                             case 0:
@@ -69252,12 +69329,17 @@ var LiteMol;
                                 detail = 14;
                                 break;
                         }
-                        var template = Visualization.GeometryHelper.getIndexedBufferGeometry(new Visualization.THREE.LatheGeometry([new Visualization.THREE.Vector3(0, radius, -1 / 2), new Visualization.THREE.Vector3(0, radius, 1 / 2)], detail, Math.PI));
-                        template.applyMatrix(new Visualization.THREE.Matrix4().makeRotationAxis(new Visualization.THREE.Vector3(1, 0, 0), -Math.PI / 2));
-                        return template;
-                    };
-                    BuildState.getAtomTemplate = function (radius, tessalation) {
-                        var base;
+                        var geom = new Visualization.THREE.TubeGeometry(new Visualization.THREE.LineCurve3(new Visualization.THREE.Vector3(0, 0, 0), new Visualization.THREE.Vector3(1, 0, 0)), 2, 1.0, detail);
+                        var ret = Visualization.GeometryHelper.toSurface(geom);
+                        bondCache[tessalation] = ret;
+                        return ret;
+                    }
+                    Templates.getBond = getBond;
+                    var atomCache = {};
+                    function getAtom(tessalation) {
+                        if (atomCache[tessalation])
+                            return atomCache[tessalation];
+                        var base, radius = 1;
                         switch (tessalation) {
                             case 0:
                                 base = new Visualization.THREE.OctahedronGeometry(radius, 0);
@@ -69281,8 +69363,54 @@ var LiteMol;
                                 base = new Visualization.THREE.IcosahedronGeometry(radius, 3);
                                 break;
                         }
-                        return Visualization.GeometryHelper.getIndexedBufferGeometry(base);
-                    };
+                        var ret = Visualization.GeometryHelper.toSurface(base);
+                        atomCache[tessalation] = ret;
+                        return ret;
+                    }
+                    Templates.getAtom = getAtom;
+                    var dash = void 0;
+                    function getDash() {
+                        if (dash)
+                            return dash;
+                        dash = Visualization.GeometryHelper.toSurface(new Visualization.THREE.BoxGeometry(1, 1, 1));
+                        for (var i = 0; i < dash.vertices.length; i += 3) {
+                            dash.vertices[i] += 0.5;
+                        }
+                        return dash;
+                    }
+                    Templates.getDash = getDash;
+                })(Templates || (Templates = {}));
+                var BuildState = (function () {
+                    function BuildState(model, atomIndices, params) {
+                        this.model = model;
+                        this.atomIndices = atomIndices;
+                        this.params = params;
+                        this.tessalation = this.params.tessalation;
+                        this.atomRadius = this.params.atomRadius;
+                        this.bondRadius = this.params.bondRadius;
+                        this.hideBonds = this.params.hideBonds;
+                        this.bondTemplate = Templates.getBond(this.tessalation);
+                        this.atomTemplate = Templates.getAtom(this.tessalation);
+                        this.dashTemplate = Templates.getDash();
+                        this.atomVertexCount = this.atomTemplate.vertexCount * this.atomIndices.length;
+                        this.atomTriangleCount = this.atomTemplate.triangleCount * this.atomIndices.length;
+                        this.atomBuilder = Visualization.Utils.GeometryBuilder.create(this.atomVertexCount, this.atomTriangleCount);
+                        this.atomColors = new Float32Array(this.atomVertexCount * 3);
+                        this.atomPickColors = new Float32Array(this.atomVertexCount * 4);
+                        this.atoms = this.model.data.atoms;
+                        this.positions = this.model.positions;
+                        this.cX = this.positions.x;
+                        this.cY = this.positions.y;
+                        this.cZ = this.positions.z;
+                        this.atomSymbols = this.atoms.elementSymbol;
+                        this.residueIndex = this.atoms.residueIndex;
+                        this.scale = Vec3.zero();
+                        this.translation = Vec3.zero();
+                        this.pickColor = { r: 0.1, g: 0.1, b: 0.1 };
+                        this.pickOffset = 0;
+                        this.atomMapBuilder = new Visualization.Selection.VertexMapBuilder(this.atomIndices.length);
+                        this.bs = void 0;
+                    }
                     return BuildState;
                 }());
                 var BondsBuildState = (function () {
@@ -69291,18 +69419,12 @@ var LiteMol;
                         this.model = this.state.model;
                         this.atomIndices = this.state.atomIndices;
                         this.info = BallsAndSticksHelper.analyze(this.state.model, this.state.atomIndices, this.state.params);
-                        //bondMapBuilder = new Selection.VertexMapBuilder(this.info.residueCount);
-                        this.bondBufferSize = this.state.bondTemplateVertexBufferLength * this.info.stickCount;
-                        this.bondVertices = new Float32Array(this.bondBufferSize);
-                        this.bondNormals = new Float32Array(this.bondBufferSize);
-                        this.bondColors = new Float32Array(this.bondBufferSize);
-                        this.bondIndices = new Uint32Array(this.state.bondTemplateIndexBufferLength * this.info.stickCount);
+                        this.bondVertexCount = this.state.bondTemplate.vertexCount * this.info.covalentStickCount + this.state.dashTemplate.vertexCount * this.info.metallicStickCount;
+                        this.bondTriangleCount = this.state.bondTemplate.triangleCount * this.info.covalentStickCount + this.state.dashTemplate.triangleCount * this.info.metallicStickCount;
+                        this.bondBuilder = GB.create(this.bondVertexCount, this.bondTriangleCount);
+                        this.bondColors = new Float32Array(this.bondVertexCount * 3);
                         this.bondRadius = this.state.params.bondRadius;
-                        //residueIndex = this.model.data.atoms.residueIndex;
-                        //currentResidueIndex = this.residueIndex[this.info.bonds.atomAIndex[0]];
-                        //bondMapVertexOffsetStart = 0;
-                        //bondMapVertexOffsetEnd = 0;
-                        this.covalentBondState = new BondModelState(this.state.bondTemplate, this.state.bondTemplateVertexBuffer, this.state.bondTemplateNormalBuffer, this.state.bondTemplateIndexBuffer, this.state.bondTemplateVertexCount, this.bondVertices, this.bondNormals, this.bondIndices);
+                        this.bondState = new BondModelState(this.state.bondTemplate, this.state.dashTemplate, this.bondBuilder);
                         this.bondCount = this.info.bonds.count;
                     }
                     return BondsBuildState;
@@ -69318,182 +69440,134 @@ var LiteMol;
                     BallsAndSticksGeometryBuilder.addAtom = function (a, state) {
                         state.atomMapBuilder.startElement(a);
                         var r = state.atomRadius(a);
-                        state.scaleMatrix.makeScale(r, r, r);
-                        state.tempVector.set(state.cX[a], state.cY[a], state.cZ[a]);
-                        state.translationMatrix.makeTranslation(state.tempVector.x, state.tempVector.y, state.tempVector.z).multiply(state.scaleMatrix);
-                        state.atomTemplate.applyMatrix(state.translationMatrix);
-                        for (var i = 0; i < state.atomTemplateVertexBufferLength; i++) {
-                            state.offset = state.atomsDone * state.atomTemplateVertexBufferLength + i;
-                            state.atomVertices[state.offset] = state.atomTemplateVertexBuffer[i];
-                            state.atomNormals[state.offset] = state.atomTemplateNormalBuffer[i];
-                        }
-                        for (var i = 0; i < state.atomTemplateIndexBufferLength; i++) {
-                            state.offset = state.atomTemplateIndexBufferLength * state.atomsDone + i;
-                            state.atomTriangleIndices[state.offset] = state.atomTemplateIndexBuffer[i] + (state.atomTemplateVertexCount) * state.atomsDone;
-                        }
+                        Vec3.set(state.scale, r, r, r);
+                        Vec3.set(state.translation, state.cX[a], state.cY[a], state.cZ[a]);
+                        var startVertexOffset = state.atomBuilder.vertexOffset;
+                        GB.add(state.atomBuilder, state.atomTemplate, state.scale, state.translation, void 0);
                         Visualization.Selection.Picking.assignPickColor(a, state.pickColor);
-                        for (var i = 0; i < state.atomTemplateVertexCount; i++) {
-                            state.offset = state.atomsDone * state.atomTemplateVertexCount * 4 + 4 * i;
-                            state.atomPickColors[state.offset] = state.pickColor.r;
-                            state.atomPickColors[state.offset + 1] = state.pickColor.g;
-                            state.atomPickColors[state.offset + 2] = state.pickColor.b;
+                        for (var i = 0, _b = state.atomTemplate.vertexCount; i < _b; i++) {
+                            state.atomPickColors[state.pickOffset++] = state.pickColor.r;
+                            state.atomPickColors[state.pickOffset++] = state.pickColor.g;
+                            state.atomPickColors[state.pickOffset++] = state.pickColor.b;
+                            state.pickOffset++; // 4th component
                         }
-                        state.scaleMatrix.getInverse(state.translationMatrix);
-                        state.atomTemplate.applyMatrix(state.scaleMatrix);
-                        state.atomMapBuilder.addVertexRange(state.atomsDone * state.atomTemplateVertexCount, (state.atomsDone + 1) * state.atomTemplateVertexCount);
+                        state.atomMapBuilder.addVertexRange(startVertexOffset, state.atomBuilder.vertexOffset);
                         state.atomMapBuilder.endElement();
-                        state.atomsDone++;
                     };
                     BallsAndSticksGeometryBuilder.addBond = function (b, state, bs) {
                         var aI = bs.info.bonds.atomAIndex[b], bI = bs.info.bonds.atomBIndex[b], type = bs.info.bonds.type[b];
-                        // if (bs.currentResidueIndex !== bs.residueIndex[aI]) {
-                        //     bs.bondMapBuilder.addVertexRange(bs.bondMapVertexOffsetStart, bs.bondMapVertexOffsetEnd);
-                        //     bs.bondMapVertexOffsetStart = bs.bondMapVertexOffsetEnd;
-                        //     bs.bondMapBuilder.endElement();
-                        //     bs.currentResidueIndex = bs.residueIndex[aI];
-                        //     bs.bondMapBuilder.startElement(bs.currentResidueIndex);
-                        // }
-                        state.tempVector.set(state.cX[aI], state.cY[aI], state.cZ[aI]);
-                        bs.covalentBondState.a.set(state.tempVector.x, state.tempVector.y, state.tempVector.z);
-                        state.tempVector.set(state.cX[bI], state.cY[bI], state.cZ[bI]);
-                        bs.covalentBondState.b.set(state.tempVector.x, state.tempVector.y, state.tempVector.z);
+                        Vec3.set(bs.bondState.a, state.cX[aI], state.cY[aI], state.cZ[aI]);
+                        Vec3.set(bs.bondState.b, state.cX[bI], state.cY[bI], state.cZ[bI]);
                         var r = +bs.bondRadius, o = 2 * r / 3, h = r / 2;
-                        var bondState = bs.covalentBondState;
-                        var order = 0;
+                        var bondState = bs.bondState;
                         switch (type) {
                             case 0 /* Unknown */:
                             case 1 /* Single */:
-                                order = 1;
                                 bondState.radius = r;
-                                bondState.offset.x = 0.0;
-                                bondState.offset.y = 0.0;
+                                bondState.offset[1] = 0.0;
+                                bondState.offset[2] = 0.0;
                                 BallsAndSticksGeometryBuilder.addBondPart(bondState);
                                 break;
                             case 2 /* Double */:
-                                order = 2;
                                 bondState.radius = h;
-                                bondState.offset.x = o;
-                                bondState.offset.y = o;
+                                bondState.offset[1] = o;
+                                bondState.offset[2] = o;
                                 BallsAndSticksGeometryBuilder.addBondPart(bondState);
-                                bondState.offset.x = -o;
-                                bondState.offset.y = -o;
+                                bondState.offset[1] = -o;
+                                bondState.offset[2] = -o;
                                 BallsAndSticksGeometryBuilder.addBondPart(bondState);
                                 break;
                             case 3 /* Triple */:
-                                order = 3;
                                 bondState.radius = h;
-                                bondState.offset.x = 0.0;
-                                bondState.offset.y = o;
+                                bondState.offset[1] = 0.0;
+                                bondState.offset[2] = o;
                                 BallsAndSticksGeometryBuilder.addBondPart(bondState);
-                                bondState.offset.x = -Math.cos(Math.PI / 3) * o;
-                                bondState.offset.y = -Math.sin(Math.PI / 3) * o;
+                                bondState.offset[1] = -Math.cos(Math.PI / 3) * o;
+                                bondState.offset[2] = -Math.sin(Math.PI / 3) * o;
                                 BallsAndSticksGeometryBuilder.addBondPart(bondState);
-                                bondState.offset.x = -bondState.offset.x;
-                                //bondState.offset.y = -0.05;
+                                bondState.offset[1] = -bondState.offset[0];
+                                //bondState.offset[1] = -0.05;
                                 BallsAndSticksGeometryBuilder.addBondPart(bondState);
                                 break;
                             case 4 /* Aromatic */:
-                                order = 4;
                                 bondState.radius = h / 2;
-                                bondState.offset.x = o;
-                                bondState.offset.y = o;
+                                bondState.offset[1] = o;
+                                bondState.offset[2] = o;
                                 BallsAndSticksGeometryBuilder.addBondPart(bondState);
-                                bondState.offset.x = -o;
-                                bondState.offset.y = -o;
+                                bondState.offset[1] = -o;
+                                bondState.offset[2] = -o;
                                 BallsAndSticksGeometryBuilder.addBondPart(bondState);
-                                bondState.offset.x = -o;
-                                bondState.offset.y = o;
+                                bondState.offset[1] = -o;
+                                bondState.offset[2] = o;
                                 BallsAndSticksGeometryBuilder.addBondPart(bondState);
-                                bondState.offset.x = o;
-                                bondState.offset.y = -o;
+                                bondState.offset[1] = o;
+                                bondState.offset[2] = -o;
                                 BallsAndSticksGeometryBuilder.addBondPart(bondState);
                                 break;
                             case 5 /* Metallic */:
-                                order = 1;
-                                bondState.radius = r;
-                                bondState.offset.x = 0.0;
-                                bondState.offset.y = 0.0;
-                                BallsAndSticksGeometryBuilder.addBondPart(bondState);
+                                bondState.radius = h;
+                                BallsAndSticksGeometryBuilder.addMetalBond(bondState);
                                 break;
                         }
-                        //bs.bondMapVertexOffsetEnd += order * bs.state.bondTemplateVertexBufferLength;
                     };
                     BallsAndSticksGeometryBuilder.addBondPart = function (state) {
-                        state.atomsVector.subVectors(state.a, state.b);
-                        var length = state.atomsVector.length();
-                        state.center.addVectors(state.a, state.b).divideScalar(2);
-                        state.rotationAxis.crossVectors(state.atomsVector, state.upVector).normalize();
-                        var rotationAngle = state.atomsVector.angleTo(state.upVector);
-                        state.scaleMatrix.makeScale(state.radius, length, state.radius);
-                        state.offsetMatrix.makeTranslation(state.offset.x, state.offset.y, state.offset.z);
-                        state.rotationMatrix.makeRotationAxis(state.rotationAxis, -rotationAngle);
-                        state.translationMatrix.makeTranslation(state.center.x, state.center.y, state.center.z);
-                        state.finalMatrix = state.translationMatrix.multiply(state.rotationMatrix).multiply(state.offsetMatrix).multiply(state.scaleMatrix);
-                        state.template.applyMatrix(state.finalMatrix);
-                        state.vertices.set(state.templateVB, state.templateVB.length * state.sticksDone);
-                        state.normals.set(state.templateNB, state.templateVB.length * state.sticksDone);
-                        var tIB = state.templateIB, ib = state.indices, offsetIB = state.templateIB.length * state.sticksDone, offsetVB = state.templateVertexCount * state.sticksDone;
-                        for (var i = 0; i < tIB.length; i++) {
-                            ib[offsetIB++] = tIB[i] + offsetVB;
-                        }
-                        state.rotationMatrix.getInverse(state.finalMatrix);
-                        state.template.applyMatrix(state.rotationMatrix);
-                        state.sticksDone++;
+                        var dir = Vec3.sub(state.dir, state.b, state.a);
+                        var length = Vec3.length(state.dir);
+                        var axis = Vec3.cross(state.rotationAxis, state.bondUpVector, dir);
+                        var angle = Vec3.angle(state.bondUpVector, state.dir);
+                        Vec3.set(state.scale, length, state.radius, state.radius);
+                        Mat4.fromRotation(state.rotation, angle, axis);
+                        state.offset[0] = 0;
+                        Vec3.transformMat4(state.offset, state.offset, state.rotation);
+                        Vec3.add(state.offset, state.offset, state.a);
+                        GB.add(state.builder, state.bondTemplate, state.scale, state.offset, state.rotation);
                     };
-                    // private static addMetallicBondPart(state: BondModelState) {
-                    //     state.atomsVector.subVectors(state.a, state.b);
-                    //     let length = state.atomsVector.length();
-                    //     state.center.addVectors(state.a, state.b).divideScalar(2);
-                    //     state.rotationAxis.crossVectors(state.atomsVector, state.upVector).normalize();
-                    //     let rotationAngle = state.atomsVector.angleTo(state.upVector);
-                    //     state.scaleMatrix.makeScale(state.radius, length, state.radius);
-                    //     state.offsetMatrix.makeTranslation(state.offset.x, state.offset.y, state.offset.z);
-                    //     state.rotationMatrix.makeRotationAxis(state.rotationAxis, -rotationAngle);
-                    //     state.translationMatrix.makeTranslation(state.center.x, state.center.y, state.center.z);
-                    //     state.finalMatrix = state.translationMatrix.multiply(state.rotationMatrix).multiply(state.offsetMatrix).multiply(state.scaleMatrix);
-                    //     state.template.applyMatrix(state.finalMatrix);
-                    //     state.vertices.set(state.templateVB, state.templateVB.length * state.sticksDone);
-                    //     state.normals.set(state.templateNB, state.templateVB.length * state.sticksDone);
-                    //     let tIB = state.templateIB,
-                    //         ib = state.indices,
-                    //         offsetIB = state.templateIB.length * state.sticksDone,
-                    //         offsetVB = state.templateVertexCount * state.sticksDone;
-                    //     for (let i = 0; i < tIB.length; i++) {
-                    //         ib[offsetIB++] = tIB[i] + offsetVB;
-                    //     }
-                    //     state.rotationMatrix.getInverse(state.finalMatrix);
-                    //     state.template.applyMatrix(state.rotationMatrix);
-                    //     state.sticksDone++;
-                    // }
+                    BallsAndSticksGeometryBuilder.addMetalBond = function (state) {
+                        var dir = Vec3.sub(state.dir, state.b, state.a);
+                        var length = Vec3.length(state.dir);
+                        var axis = Vec3.cross(state.rotationAxis, state.dashUpVector, dir);
+                        var angle = Vec3.angle(state.dashUpVector, state.dir);
+                        var scale = Vec3.set(state.scale, 0.15 /* MetalDashSize */, state.radius, state.radius);
+                        var rotation = Mat4.fromRotation(state.rotation, angle, axis);
+                        var offset = state.offset;
+                        Vec3.copy(offset, state.a);
+                        Vec3.normalize(dir, dir);
+                        Vec3.scale(dir, dir, 2 * 0.15 /* MetalDashSize */);
+                        for (var t = 0; t < length; t += 2 * 0.15 /* MetalDashSize */) {
+                            if (t + 0.15 /* MetalDashSize */ > length)
+                                scale[0] = length - t;
+                            GB.add(state.builder, state.cubeTemplate, scale, offset, rotation);
+                            Vec3.add(offset, offset, dir);
+                        }
+                    };
                     BallsAndSticksGeometryBuilder.getEmptyBondsGeometry = function () {
                         var bondsGeometry = new Visualization.THREE.BufferGeometry();
                         bondsGeometry.addAttribute('position', new Visualization.THREE.BufferAttribute(new Float32Array(0), 3));
                         bondsGeometry.addAttribute('normal', new Visualization.THREE.BufferAttribute(new Float32Array(0), 3));
                         bondsGeometry.addAttribute('index', new Visualization.THREE.BufferAttribute(new Uint32Array(0), 1));
                         bondsGeometry.addAttribute('color', new Visualization.THREE.BufferAttribute(new Float32Array(0), 3));
-                        //let bondMapBuilder = new Selection.VertexMapBuilder(1);
-                        return { bondsGeometry: bondsGeometry /*, bondVertexMap: bondMapBuilder.getMap()*/ };
+                        return { bondsGeometry: bondsGeometry };
                     };
                     BallsAndSticksGeometryBuilder.getBondsGeometry = function (state) {
                         var bondsGeometry = new Visualization.THREE.BufferGeometry();
-                        bondsGeometry.addAttribute('position', new Visualization.THREE.BufferAttribute(state.bondVertices, 3));
-                        bondsGeometry.addAttribute('normal', new Visualization.THREE.BufferAttribute(state.bondNormals, 3));
-                        bondsGeometry.addAttribute('index', new Visualization.THREE.BufferAttribute(state.bondIndices, 1));
+                        bondsGeometry.addAttribute('position', new Visualization.THREE.BufferAttribute(state.bondBuilder.vertices, 3));
+                        bondsGeometry.addAttribute('normal', new Visualization.THREE.BufferAttribute(state.bondBuilder.normals, 3));
+                        bondsGeometry.addAttribute('index', new Visualization.THREE.BufferAttribute(state.bondBuilder.indices, 1));
                         bondsGeometry.addAttribute('color', new Visualization.THREE.BufferAttribute(state.bondColors, 3));
-                        return { bondsGeometry: bondsGeometry /*, bondVertexMap: state.bondMapBuilder.getMap()*/ };
+                        return { bondsGeometry: bondsGeometry };
                     };
                     BallsAndSticksGeometryBuilder.getAtomsGeometry = function (state) {
                         var atomsGeometry = new Visualization.THREE.BufferGeometry();
-                        atomsGeometry.addAttribute('position', new Visualization.THREE.BufferAttribute(state.atomVertices, 3));
-                        atomsGeometry.addAttribute('normal', new Visualization.THREE.BufferAttribute(state.atomNormals, 3));
-                        atomsGeometry.addAttribute('index', new Visualization.THREE.BufferAttribute(state.atomTriangleIndices, 1));
+                        atomsGeometry.addAttribute('position', new Visualization.THREE.BufferAttribute(state.atomBuilder.vertices, 3));
+                        atomsGeometry.addAttribute('normal', new Visualization.THREE.BufferAttribute(state.atomBuilder.normals, 3));
+                        atomsGeometry.addAttribute('index', new Visualization.THREE.BufferAttribute(state.atomBuilder.indices, 1));
                         atomsGeometry.addAttribute('color', new Visualization.THREE.BufferAttribute(state.atomColors, 3));
-                        var stateBuffer = new Float32Array(state.atomVertices.length);
+                        var stateBuffer = new Float32Array(state.atomVertexCount);
                         var vertexStateBuffer = new Visualization.THREE.BufferAttribute(stateBuffer, 1);
                         atomsGeometry.addAttribute('vState', vertexStateBuffer);
                         var atomsPickGeometry = new Visualization.THREE.BufferGeometry();
-                        atomsPickGeometry.addAttribute('position', new Visualization.THREE.BufferAttribute(state.atomVertices, 3));
-                        atomsPickGeometry.addAttribute('index', new Visualization.THREE.BufferAttribute(state.atomTriangleIndices, 1));
+                        atomsPickGeometry.addAttribute('position', new Visualization.THREE.BufferAttribute(state.atomBuilder.vertices, 3));
+                        atomsPickGeometry.addAttribute('index', new Visualization.THREE.BufferAttribute(state.atomBuilder.indices, 1));
                         atomsPickGeometry.addAttribute('pColor', new Visualization.THREE.BufferAttribute(state.atomPickColors, 4));
                         return {
                             vertexStateBuffer: vertexStateBuffer,
@@ -69508,7 +69582,7 @@ var LiteMol;
                             return __generator(this, function (_a) {
                                 switch (_a.label) {
                                     case 0:
-                                        chunkSize = 1250;
+                                        chunkSize = 2500;
                                         started = LiteMol.Core.Utils.PerformanceMonitor.currentTime();
                                         start = 0, _l = state.atomIndices.length;
                                         _a.label = 1;
@@ -69538,7 +69612,7 @@ var LiteMol;
                             return __generator(this, function (_a) {
                                 switch (_a.label) {
                                     case 0:
-                                        chunkSize = 1250;
+                                        chunkSize = 2500;
                                         started = LiteMol.Core.Utils.PerformanceMonitor.currentTime();
                                         start = 0;
                                         _a.label = 1;
@@ -69576,12 +69650,8 @@ var LiteMol;
                                         _a.sent();
                                         bs = new BondsBuildState(state);
                                         state.bs = bs;
-                                        //bs.currentResidueIndex = bs.residueIndex[bs.info.bonds.atomAIndex[0]];
-                                        //bs.bondMapBuilder.startElement(bs.currentResidueIndex);
                                         return [4 /*yield*/, BallsAndSticksGeometryBuilder.addBondsChunks(state, bs, ctx)];
                                     case 2:
-                                        //bs.currentResidueIndex = bs.residueIndex[bs.info.bonds.atomAIndex[0]];
-                                        //bs.bondMapBuilder.startElement(bs.currentResidueIndex);
                                         _a.sent();
                                         return [2 /*return*/];
                                 }
@@ -71283,69 +71353,6 @@ var LiteMol;
             }());
             Primitive.Builder = Builder;
         })(Primitive = Visualization.Primitive || (Visualization.Primitive = {}));
-    })(Visualization = LiteMol.Visualization || (LiteMol.Visualization = {}));
-})(LiteMol || (LiteMol = {}));
-/*
- * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
- */
-var LiteMol;
-(function (LiteMol) {
-    var Visualization;
-    (function (Visualization) {
-        var Utils;
-        (function (Utils) {
-            "use strict";
-            var Palette = (function () {
-                function Palette() {
-                }
-                Palette.getRandomColor = function (amountOfGrey) {
-                    if (amountOfGrey === void 0) { amountOfGrey = 0.0; }
-                    var counter = 0;
-                    while (true) {
-                        counter++;
-                        var c = Palette.randomMix({ r: 166 / 255, g: 0, b: 100 / 255 }, { r: 1, g: 1, b: 0 }, { r: 0, g: 100 / 255, b: 1 }, amountOfGrey);
-                        var d = Math.abs(Palette.previous.r - c.r) + Math.abs(Palette.previous.g - c.g) + Math.abs(Palette.previous.b - c.b);
-                        if (d > 100 || counter === 10) {
-                            Palette.previous = c;
-                            return c;
-                        }
-                    }
-                };
-                Palette.randomMix = function (color1, color2, color3, greyControl) {
-                    var randomIndex = Math.floor(Math.random() * 3) | 0;
-                    var mixRatio1 = (randomIndex === 0) ? Math.random() * greyControl : Math.random();
-                    var mixRatio2 = (randomIndex === 1) ? Math.random() * greyControl : Math.random();
-                    var mixRatio3 = (randomIndex === 2) ? Math.random() * greyControl : Math.random();
-                    var sum = mixRatio1 + mixRatio2 + mixRatio3;
-                    mixRatio1 /= sum;
-                    mixRatio2 /= sum;
-                    mixRatio3 /= sum;
-                    return {
-                        r: (mixRatio1 * color1.r + mixRatio2 * color2.r + mixRatio3 * color3.r),
-                        g: (mixRatio1 * color1.g + mixRatio2 * color2.g + mixRatio3 * color3.g),
-                        b: (mixRatio1 * color1.b + mixRatio2 * color2.b + mixRatio3 * color3.b)
-                    };
-                };
-                /**
-                 *
-                 * @example
-                 *   let min = Palette.getRandomColor(0.3);
-                 *   let max = Palette.getRandomColor(0.3);
-                 *   let color = Palette.interpolate(0.1, min, 0.6, max, 0.354);
-                 */
-                Palette.interpolate = function (min, minColor, max, maxColor, value, target) {
-                    var ret = target !== void 0 ? target : { r: 0.1, g: 0.1, b: 0.1 };
-                    var t = (value - min) / (max - min);
-                    ret.r = minColor.r + (maxColor.r - minColor.r) * t;
-                    ret.g = minColor.g + (maxColor.g - minColor.g) * t;
-                    ret.b = minColor.b + (maxColor.b - minColor.b) * t;
-                    return ret;
-                };
-                Palette.previous = Palette.randomMix({ r: 0.75, g: 0, b: 0.25 }, { r: 1, g: 0.5, b: 0 }, { r: 0, g: 0.35, b: 1 }, 0.5);
-                return Palette;
-            }());
-            Utils.Palette = Palette;
-        })(Utils = Visualization.Utils || (Visualization.Utils = {}));
     })(Visualization = LiteMol.Visualization || (LiteMol.Visualization = {}));
 })(LiteMol || (LiteMol = {}));
 /*

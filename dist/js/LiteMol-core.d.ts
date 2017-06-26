@@ -1536,6 +1536,7 @@ declare namespace LiteMol.Core {
         constructor(computation: (ctx: Computation.Context) => Promise<A>);
     }
     module Computation {
+        let PRINT_CONSOLE_ERROR: boolean;
         function resolve<A>(a: A): Computation<A>;
         function reject<A>(reason: any): Computation<A>;
         function createContext(): Computation.Context;

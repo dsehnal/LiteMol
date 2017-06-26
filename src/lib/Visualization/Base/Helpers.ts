@@ -49,6 +49,7 @@ namespace LiteMol.Visualization {
                 normalBuffer = new Float32Array(bufferSize),
                 indexBuffer = new Uint32Array(source.faces.length * 3),
                 normals = Array(source.vertices.length);
+            
             for (let i = 0; i < source.faces.length; i++) {
                 let f = source.faces[i];
 

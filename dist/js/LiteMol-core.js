@@ -11262,6 +11262,8 @@ var LiteMol;
                                     return [3 /*break*/, 4];
                                 case 2:
                                     e_1 = _a.sent();
+                                    if (Computation.PRINT_CONSOLE_ERROR)
+                                        console.error(e_1);
                                     reject(e_1);
                                     return [3 /*break*/, 4];
                                 case 3:
@@ -11277,6 +11279,7 @@ var LiteMol;
         }());
         Core.Computation = Computation;
         (function (Computation) {
+            Computation.PRINT_CONSOLE_ERROR = false;
             function resolve(a) {
                 return computation(function () { return Core.Promise.resolve(a); });
             }
@@ -16918,9 +16921,8 @@ var LiteMol;
             'use strict';
             // H,D,T are all mapped to H
             var __ElementIndex = { 'H': 0, 'h': 0, 'D': 0, 'd': 0, 'T': 0, 't': 0, 'He': 2, 'HE': 2, 'he': 2, 'Li': 3, 'LI': 3, 'li': 3, 'Be': 4, 'BE': 4, 'be': 4, 'B': 5, 'b': 5, 'C': 6, 'c': 6, 'N': 7, 'n': 7, 'O': 8, 'o': 8, 'F': 9, 'f': 9, 'Ne': 10, 'NE': 10, 'ne': 10, 'Na': 11, 'NA': 11, 'na': 11, 'Mg': 12, 'MG': 12, 'mg': 12, 'Al': 13, 'AL': 13, 'al': 13, 'Si': 14, 'SI': 14, 'si': 14, 'P': 15, 'p': 15, 'S': 16, 's': 16, 'Cl': 17, 'CL': 17, 'cl': 17, 'Ar': 18, 'AR': 18, 'ar': 18, 'K': 19, 'k': 19, 'Ca': 20, 'CA': 20, 'ca': 20, 'Sc': 21, 'SC': 21, 'sc': 21, 'Ti': 22, 'TI': 22, 'ti': 22, 'V': 23, 'v': 23, 'Cr': 24, 'CR': 24, 'cr': 24, 'Mn': 25, 'MN': 25, 'mn': 25, 'Fe': 26, 'FE': 26, 'fe': 26, 'Co': 27, 'CO': 27, 'co': 27, 'Ni': 28, 'NI': 28, 'ni': 28, 'Cu': 29, 'CU': 29, 'cu': 29, 'Zn': 30, 'ZN': 30, 'zn': 30, 'Ga': 31, 'GA': 31, 'ga': 31, 'Ge': 32, 'GE': 32, 'ge': 32, 'As': 33, 'AS': 33, 'as': 33, 'Se': 34, 'SE': 34, 'se': 34, 'Br': 35, 'BR': 35, 'br': 35, 'Kr': 36, 'KR': 36, 'kr': 36, 'Rb': 37, 'RB': 37, 'rb': 37, 'Sr': 38, 'SR': 38, 'sr': 38, 'Y': 39, 'y': 39, 'Zr': 40, 'ZR': 40, 'zr': 40, 'Nb': 41, 'NB': 41, 'nb': 41, 'Mo': 42, 'MO': 42, 'mo': 42, 'Tc': 43, 'TC': 43, 'tc': 43, 'Ru': 44, 'RU': 44, 'ru': 44, 'Rh': 45, 'RH': 45, 'rh': 45, 'Pd': 46, 'PD': 46, 'pd': 46, 'Ag': 47, 'AG': 47, 'ag': 47, 'Cd': 48, 'CD': 48, 'cd': 48, 'In': 49, 'IN': 49, 'in': 49, 'Sn': 50, 'SN': 50, 'sn': 50, 'Sb': 51, 'SB': 51, 'sb': 51, 'Te': 52, 'TE': 52, 'te': 52, 'I': 53, 'i': 53, 'Xe': 54, 'XE': 54, 'xe': 54, 'Cs': 55, 'CS': 55, 'cs': 55, 'Ba': 56, 'BA': 56, 'ba': 56, 'La': 57, 'LA': 57, 'la': 57, 'Ce': 58, 'CE': 58, 'ce': 58, 'Pr': 59, 'PR': 59, 'pr': 59, 'Nd': 60, 'ND': 60, 'nd': 60, 'Pm': 61, 'PM': 61, 'pm': 61, 'Sm': 62, 'SM': 62, 'sm': 62, 'Eu': 63, 'EU': 63, 'eu': 63, 'Gd': 64, 'GD': 64, 'gd': 64, 'Tb': 65, 'TB': 65, 'tb': 65, 'Dy': 66, 'DY': 66, 'dy': 66, 'Ho': 67, 'HO': 67, 'ho': 67, 'Er': 68, 'ER': 68, 'er': 68, 'Tm': 69, 'TM': 69, 'tm': 69, 'Yb': 70, 'YB': 70, 'yb': 70, 'Lu': 71, 'LU': 71, 'lu': 71, 'Hf': 72, 'HF': 72, 'hf': 72, 'Ta': 73, 'TA': 73, 'ta': 73, 'W': 74, 'w': 74, 'Re': 75, 'RE': 75, 're': 75, 'Os': 76, 'OS': 76, 'os': 76, 'Ir': 77, 'IR': 77, 'ir': 77, 'Pt': 78, 'PT': 78, 'pt': 78, 'Au': 79, 'AU': 79, 'au': 79, 'Hg': 80, 'HG': 80, 'hg': 80, 'Tl': 81, 'TL': 81, 'tl': 81, 'Pb': 82, 'PB': 82, 'pb': 82, 'Bi': 83, 'BI': 83, 'bi': 83, 'Po': 84, 'PO': 84, 'po': 84, 'At': 85, 'AT': 85, 'at': 85, 'Rn': 86, 'RN': 86, 'rn': 86, 'Fr': 87, 'FR': 87, 'fr': 87, 'Ra': 88, 'RA': 88, 'ra': 88, 'Ac': 89, 'AC': 89, 'ac': 89, 'Th': 90, 'TH': 90, 'th': 90, 'Pa': 91, 'PA': 91, 'pa': 91, 'U': 92, 'u': 92, 'Np': 93, 'NP': 93, 'np': 93, 'Pu': 94, 'PU': 94, 'pu': 94, 'Am': 95, 'AM': 95, 'am': 95, 'Cm': 96, 'CM': 96, 'cm': 96, 'Bk': 97, 'BK': 97, 'bk': 97, 'Cf': 98, 'CF': 98, 'cf': 98, 'Es': 99, 'ES': 99, 'es': 99, 'Fm': 100, 'FM': 100, 'fm': 100, 'Md': 101, 'MD': 101, 'md': 101, 'No': 102, 'NO': 102, 'no': 102, 'Lr': 103, 'LR': 103, 'lr': 103, 'Rf': 104, 'RF': 104, 'rf': 104, 'Db': 105, 'DB': 105, 'db': 105, 'Sg': 106, 'SG': 106, 'sg': 106, 'Bh': 107, 'BH': 107, 'bh': 107, 'Hs': 108, 'HS': 108, 'hs': 108, 'Mt': 109, 'MT': 109, 'mt': 109 };
-            var __ElementBondingRadii = { 0: 1.42, 1: 1.42, 2: 1.75, 3: 2, 4: 1.76, 5: 2, 6: 1.9, 7: 1.9, 8: 1.9, 9: 1.75, 10: 1.75, 11: 2, 12: 2.4, 13: 2.8, 14: 2.11, 15: 2.3, 16: 2.3, 17: 1.75, 18: 1.75, 19: 1, 20: 2.65, 21: 2.8, 22: 2.8, 23: 2.8, 24: 2.8, 25: 2.81, 26: 2.8, 27: 2.8, 28: 2.8, 29: 2.8, 30: 2.8, 31: 2.8, 32: 1.75, 33: 2.68, 34: 2.34, 35: 2.68, 36: 1.75, 37: 2.8, 38: 2.82, 39: 2.8, 40: 2.8, 41: 2.8, 42: 2.8, 43: 2.8, 44: 2.5, 45: 2.77, 46: 2.8, 47: 2.8, 48: 2.8, 49: 2.8, 50: 2.8, 51: 1.75, 52: 2.2, 53: 2.81, 54: 1.75, 55: 2.8, 56: 2.8, 57: 2.8, 58: 2.8, 59: 2.8, 60: 2.8, 61: 2.8, 62: 2.8, 63: 2.8, 64: 2.8, 65: 2.8, 66: 2.8, 67: 2.8, 68: 2.8, 69: 2.8, 70: 2.8, 71: 2.8, 72: 2.8, 73: 2.8, 74: 2.66, 75: 2.8, 76: 2.8, 77: 2.51, 78: 3.24, 79: 2.8, 80: 3, 81: 2.8, 82: 2.8, 83: 2.8, 84: 1.75, 85: 1.75, 86: 1.75, 87: 2.8, 88: 2.8, 89: 2.8, 90: 2.8, 91: 2.8, 92: 2.8, 93: 2.8, 94: 2.8, 95: 2.8, 96: 2.8, 97: 2.8, 98: 2.8, 99: 2.8, 100: 2.8, 101: 2.8, 102: 2.8, 103: 2.8, 104: 2.8, 105: 2.8, 106: 2.8, 107: 2.8, 108: 2.8, 109: 2.8 };
-            var __ElementBondThresholds = { 0: [[1.42, 1 /* Single */]], 1: [[1.42, 1 /* Single */]], 3: [[2.8, 5 /* Metallic */]], 4: [[2.8, 5 /* Metallic */]], 6: [[1.75, 1 /* Single */]], 7: [[1.6, 1 /* Single */]], 8: [[1.52, 1 /* Single */]], 11: [[2.8, 5 /* Metallic */]], 12: [[2.8, 5 /* Metallic */]], 13: [[2.8, 5 /* Metallic */]], 14: [[1.9, 1 /* Single */]], 15: [[1.9, 1 /* Single */]], 16: [[1.9, 1 /* Single */]], 17: [[1.8, 1 /* Single */]], 19: [[2.8, 5 /* Metallic */]], 20: [[2.8, 5 /* Metallic */]], 21: [[2.8, 5 /* Metallic */]], 22: [[2.8, 5 /* Metallic */]], 23: [[2.8, 5 /* Metallic */]], 24: [[2.8, 5 /* Metallic */]], 25: [[2.8, 5 /* Metallic */]], 26: [[2.8, 5 /* Metallic */]], 27: [[2.8, 5 /* Metallic */]], 28: [[2.8, 5 /* Metallic */]], 29: [[2.8, 5 /* Metallic */]], 30: [[2.8, 5 /* Metallic */]], 31: [[2.8, 5 /* Metallic */]], 33: [[2.68, 1 /* Single */]], 37: [[2.8, 5 /* Metallic */]], 38: [[2.8, 5 /* Metallic */]], 39: [[2.8, 5 /* Metallic */]], 40: [[2.8, 5 /* Metallic */]], 41: [[2.8, 5 /* Metallic */]], 42: [[2.8, 5 /* Metallic */]], 43: [[2.8, 5 /* Metallic */]], 44: [[2.8, 5 /* Metallic */]], 45: [[2.8, 5 /* Metallic */]], 46: [[2.8, 5 /* Metallic */]], 47: [[2.8, 5 /* Metallic */]], 48: [[2.8, 5 /* Metallic */]], 49: [[2.8, 5 /* Metallic */]], 50: [[2.8, 5 /* Metallic */]], 55: [[2.8, 5 /* Metallic */]], 56: [[2.8, 5 /* Metallic */]], 57: [[2.8, 5 /* Metallic */]], 58: [[2.8, 5 /* Metallic */]], 59: [[2.8, 5 /* Metallic */]], 60: [[2.8, 5 /* Metallic */]], 61: [[2.8, 5 /* Metallic */]], 62: [[2.8, 5 /* Metallic */]], 63: [[2.8, 5 /* Metallic */]], 64: [[2.8, 5 /* Metallic */]], 65: [[2.8, 5 /* Metallic */]], 66: [[2.8, 5 /* Metallic */]], 67: [[2.8, 5 /* Metallic */]], 68: [[2.8, 5 /* Metallic */]], 69: [[2.8, 5 /* Metallic */]], 70: [[2.8, 5 /* Metallic */]], 71: [[2.8, 5 /* Metallic */]], 72: [[2.8, 5 /* Metallic */]], 73: [[2.8, 5 /* Metallic */]], 74: [[2.8, 5 /* Metallic */]], 75: [[2.8, 5 /* Metallic */]], 76: [[2.8, 5 /* Metallic */]], 77: [[2.8, 5 /* Metallic */]], 78: [[2.8, 5 /* Metallic */]], 79: [[2.8, 5 /* Metallic */]], 80: [[2.8, 5 /* Metallic */]], 81: [[2.8, 5 /* Metallic */]], 82: [[2.8, 5 /* Metallic */]], 83: [[2.8, 5 /* Metallic */]], 87: [[2.8, 5 /* Metallic */]], 88: [[2.8, 5 /* Metallic */]], 89: [[2.8, 5 /* Metallic */]], 90: [[2.8, 5 /* Metallic */]], 91: [[2.8, 5 /* Metallic */]], 92: [[2.8, 5 /* Metallic */]], 93: [[2.8, 5 /* Metallic */]], 94: [[2.8, 5 /* Metallic */]], 95: [[2.8, 5 /* Metallic */]], 96: [[2.8, 5 /* Metallic */]], 97: [[2.8, 5 /* Metallic */]], 98: [[2.8, 5 /* Metallic */]], 99: [[2.8, 5 /* Metallic */]], 100: [[2.8, 5 /* Metallic */]], 101: [[2.8, 5 /* Metallic */]], 102: [[2.8, 5 /* Metallic */]], 103: [[2.8, 5 /* Metallic */]], 104: [[2.8, 5 /* Metallic */]], 105: [[2.8, 5 /* Metallic */]], 106: [[2.8, 5 /* Metallic */]], 107: [[2.8, 5 /* Metallic */]], 108: [[2.8, 5 /* Metallic */]], 109: [[2.8, 5 /* Metallic */]] };
-            var __ElementPairThresholds = { 0: [[0.8, 1 /* Single */]], 15: [[1.31, 1 /* Single */]], 21: [[1.3, 1 /* Single */]], 28: [[1.3, 1 /* Single */]], 36: [[1.05, 1 /* Single */]], 45: [[1, 1 /* Single */]], 60: [[1.84, 1 /* Single */]], 71: [[1.88, 1 /* Single */]], 82: [[1.76, 1 /* Single */]], 83: [[1.56, 1 /* Single */]], 84: [[1.25, 3 /* Triple */], [1.4, 2 /* Double */], [1.75, 1 /* Single */]], 95: [[1.63, 1 /* Single */]], 96: [[1.68, 1 /* Single */]], 97: [[1.27, 2 /* Double */], [1.6, 1 /* Single */]], 110: [[1.36, 1 /* Single */]], 111: [[1.26, 2 /* Double */], [1.59, 1 /* Single */]], 112: [[1.55, 1 /* Single */]], 126: [[1.45, 1 /* Single */]], 144: [[1.6, 1 /* Single */]], 153: [[1.4, 1 /* Single */]], 180: [[1.55, 1 /* Single */]], 197: [[2.4, 5 /* Metallic */]], 215: [[1.49, 2 /* Double */], [1.98, 1 /* Single */]], 216: [[1.91, 1 /* Single */]], 218: [[2.24, 5 /* Metallic */]], 240: [[2.02, 5 /* Metallic */]], 259: [[2, 1 /* Single */]], 282: [[1.9, 1 /* Single */]], 480: [[2.3, 1 /* Single */]], 511: [[2.3, 1 /* Single */]], 544: [[2.3, 1 /* Single */]], 595: [[1.54, 1 /* Single */]], 612: [[2.1, 1 /* Single */]], 630: [[1, 1 /* Single */]], 786: [[2.6, 1 /* Single */]], 826: [[1.82, 2 /* Double */], [2.27, 1 /* Single */]], 867: [[2.1, 1 /* Single */]], 869: [[1.7, 1 /* Single */], [1.93, 1 /* Single */]], 910: [[2.06, 1 /* Single */]], 911: [[1.8, 2 /* Double */], [2.05, 1 /* Single */]], 954: [[1.53, 2 /* Double */], [1.62, 1 /* Single */]], 1241: [[2.68, 1 /* Single */]], 1291: [[2.33, 1 /* Single */]], 1431: [[1, 1 /* Single */]], 1717: [[2.14, 1 /* Single */]], 1776: [[2.48, 1 /* Single */]], 1838: [[2.1, 1 /* Single */]], 1899: [[1.68, 2 /* Double */], [1.72, 1 /* Single */]], 2380: [[2.34, 1 /* Single */]], 3356: [[2.44, 1 /* Single */]], 3662: [[2.11, 1 /* Single */]], 3747: [[2.36, 1 /* Single */]], 3749: [[2.6, 1 /* Single */]], 4672: [[2.75, 1 /* Single */]], 5724: [[2.73, 1 /* Single */]], 5921: [[2.63, 1 /* Single */]], 6476: [[2.84, 1 /* Single */]], 6705: [[2.87, 1 /* Single */]], 8964: [[2.81, 1 /* Single */]] };
+            var __ElementBondThresholds = { 0: 1.42, 1: 1.42, 3: 2.8, 4: 2.8, 6: 1.75, 7: 1.6, 8: 1.52, 11: 2.8, 12: 2.8, 13: 2.8, 14: 1.9, 15: 1.9, 16: 1.9, 17: 1.8, 19: 2.8, 20: 2.8, 21: 2.8, 22: 2.8, 23: 2.8, 24: 2.8, 25: 2.8, 26: 2.8, 27: 2.8, 28: 2.8, 29: 2.8, 30: 2.8, 31: 2.8, 33: 2.68, 37: 2.8, 38: 2.8, 39: 2.8, 40: 2.8, 41: 2.8, 42: 2.8, 43: 2.8, 44: 2.8, 45: 2.8, 46: 2.8, 47: 2.8, 48: 2.8, 49: 2.8, 50: 2.8, 55: 2.8, 56: 2.8, 57: 2.8, 58: 2.8, 59: 2.8, 60: 2.8, 61: 2.8, 62: 2.8, 63: 2.8, 64: 2.8, 65: 2.8, 66: 2.8, 67: 2.8, 68: 2.8, 69: 2.8, 70: 2.8, 71: 2.8, 72: 2.8, 73: 2.8, 74: 2.8, 75: 2.8, 76: 2.8, 77: 2.8, 78: 2.8, 79: 2.8, 80: 2.8, 81: 2.8, 82: 2.8, 83: 2.8, 87: 2.8, 88: 2.8, 89: 2.8, 90: 2.8, 91: 2.8, 92: 2.8, 93: 2.8, 94: 2.8, 95: 2.8, 96: 2.8, 97: 2.8, 98: 2.8, 99: 2.8, 100: 2.8, 101: 2.8, 102: 2.8, 103: 2.8, 104: 2.8, 105: 2.8, 106: 2.8, 107: 2.8, 108: 2.8, 109: 2.88 };
+            var __ElementPairThresholds = { 0: 0.8, 20: 1.31, 27: 1.3, 35: 1.3, 44: 1.05, 54: 1, 60: 1.84, 72: 1.88, 84: 1.75, 85: 1.56, 86: 1.76, 98: 1.6, 99: 1.68, 100: 1.63, 112: 1.55, 113: 1.59, 114: 1.36, 129: 1.45, 144: 1.6, 170: 1.4, 180: 1.55, 202: 2.4, 222: 2.24, 224: 1.91, 225: 1.98, 243: 2.02, 269: 2, 293: 1.9, 480: 2.3, 512: 2.3, 544: 2.3, 612: 2.1, 629: 1.54, 665: 1, 813: 2.6, 854: 2.27, 894: 1.93, 896: 2.1, 937: 2.05, 938: 2.06, 981: 1.62, 1258: 2.68, 1309: 2.33, 1484: 1, 1763: 2.14, 1823: 2.48, 1882: 2.1, 1944: 1.72, 2380: 2.34, 3367: 2.44, 3733: 2.11, 3819: 2.6, 3821: 2.36, 4736: 2.75, 5724: 2.73, 5959: 2.63, 6519: 2.84, 6750: 2.87, 8991: 2.81 };
             var DefaultBondingRadius = 2.001;
             var MetalsSet = (function () {
                 var metals = ['LI', 'NA', 'K', 'RB', 'CS', 'FR', 'BE', 'MG', 'CA', 'SR', 'BA', 'RA', 'AL', 'GA', 'IN', 'SN', 'TL', 'PB', 'BI', 'SC', 'TI', 'V', 'CR', 'MN', 'FE', 'CO', 'NI', 'CU', 'ZN', 'Y', 'ZR', 'NB', 'MO', 'TC', 'RU', 'RH', 'PD', 'AG', 'CD', 'LA', 'HF', 'TA', 'W', 'RE', 'OS', 'IR', 'PT', 'AU', 'HG', 'AC', 'RF', 'DB', 'SG', 'BH', 'HS', 'MT', 'CE', 'PR', 'ND', 'PM', 'SM', 'EU', 'GD', 'TB', 'DY', 'HO', 'ER', 'TM', 'YB', 'LU', 'TH', 'PA', 'U', 'NP', 'PU', 'AM', 'CM', 'BK', 'CF', 'ES', 'FM', 'MD', 'NO', 'LR'];
@@ -16943,25 +16945,20 @@ var LiteMol;
                     return -1;
                 return i;
             }
-            function bondingRadius(i) {
-                return __ElementBondingRadii[i] || DefaultBondingRadius;
-            }
-            var __empty = [];
-            function pairThresholds(i, j) {
+            function pairThreshold(i, j) {
                 if (i < 0 || j < 0)
-                    return __empty;
+                    return -1;
                 var r = __ElementPairThresholds[pair(i, j)];
                 if (r === void 0)
-                    return __empty;
+                    return -1;
                 return r;
             }
-            var __defaultThresholds = [[DefaultBondingRadius, 1 /* Single */]];
-            function thresholds(i) {
+            function threshold(i) {
                 if (i < 0)
-                    return __defaultThresholds;
+                    return DefaultBondingRadius;
                 var r = __ElementBondThresholds[i];
                 if (r === void 0)
-                    return __defaultThresholds;
+                    return DefaultBondingRadius;
                 return r;
             }
             var H_ID = __ElementIndex['H'];
@@ -17057,12 +17054,12 @@ var LiteMol;
                     }
                     lastResidue = raI;
                     var aeI = idx(elementSymbol[aI]);
-                    var bondingRadiusA = bondingRadius(aeI);
                     var _d = query3d(x[aI], y[aI], z[aI], MAX_RADIUS), elements = _d.elements, count = _d.count, squaredDistances = _d.squaredDistances;
                     var isHa = isHydrogen(aeI);
-                    var thresholdsA = thresholds(aeI);
+                    var thresholdA = threshold(aeI);
                     var altA = altLoc[aI];
-                    var structConnEntries = structConn && structConn.getAtomEntries(aI);
+                    var metalA = MetalsSet.has(aeI);
+                    var structConnEntries = params.forceCompute ? void 0 : structConn && structConn.getAtomEntries(aI);
                     for (var ni = 0; ni < count; ni++) {
                         var bI = elements[ni];
                         if (bI <= aI || !mask.has(bI))
@@ -17108,18 +17105,15 @@ var LiteMol;
                             }
                             continue;
                         }
-                        var pairedThresholds = pairThresholds(aeI, beI);
-                        var elemThresholds = pairedThresholds.length > 0
-                            ? pairedThresholds
-                            : beI < 0 || bondingRadiusA > bondingRadius(beI) ? thresholdsA : thresholds(beI);
-                        for (var _h = 0, elemThresholds_1 = elemThresholds; _h < elemThresholds_1.length; _h++) {
-                            var t = elemThresholds_1[_h];
-                            if (t[0] >= dist) {
-                                ChunkedAdd(atomA, aI);
-                                ChunkedAdd(atomB, bI);
-                                ChunkedAdd(type, t[1]);
-                                break;
-                            }
+                        var thresholdAB = pairThreshold(aeI, beI);
+                        var pairingThreshold = thresholdAB > 0
+                            ? thresholdAB
+                            : beI < 0 ? thresholdA : Math.max(thresholdA, threshold(beI));
+                        var metalB = MetalsSet.has(beI);
+                        if (dist <= pairingThreshold) {
+                            ChunkedAdd(atomA, aI);
+                            ChunkedAdd(atomB, bI);
+                            ChunkedAdd(type, metalA || metalB ? 5 /* Metallic */ : 1 /* Single */);
                         }
                     }
                 }

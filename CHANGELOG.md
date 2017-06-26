@@ -5,6 +5,13 @@ This a global changelog that outlines overal changes in LiteMol.
 Each component also has its separate changelog 
 ([Core](src/lib/Core/CHANGELOG.md), [Visualization](src/lib/Visualization/CHANGELOG.md), [Bootstrap](src/lib/Bootstrap/CHANGELOG.md), [Plugin](src/lib/Plugin/CHANGELOG.md), [Viewer](src/Viewer/CHANGELOG.md)).
 
+2.3.1-preview
+-----------
+
+* Support for _struct_conn mmCIF category.
+* Better bond computation based on distances.
+* Show metallic bond in balls and sticks models.
+
 2.3.0-preview
 -----------
 
