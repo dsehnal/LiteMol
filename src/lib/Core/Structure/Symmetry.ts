@@ -669,9 +669,8 @@ namespace LiteMol.Core.Structure {
                         if (!allMapped) continue;
 
                         ret.push({
+                            bondType: e.bondType,
                             distance: e.distance,
-                            order: e.order,
-                            type: e.type,
                             partners: e.partners.map(p => {
                                 const rI = transformMap.get(p.residueIndex)!.get(opIndex)!;
                                 return {
@@ -699,9 +698,8 @@ namespace LiteMol.Core.Structure {
 
                     if (partners.length === e.partners.length) {
                         ret.push({
+                            bondType: e.bondType,
                             distance: e.distance,
-                            order: e.order,
-                            type: e.type,
                             partners
                         });
                     }

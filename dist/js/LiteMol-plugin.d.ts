@@ -13221,6 +13221,7 @@ declare namespace LiteMol.Core.Formats {
     }
 }
 declare namespace LiteMol.Core.Formats.Molecule.mmCIF {
+    type StructConnType = 'covale' | 'covale_base' | 'covale_phosphate' | 'covale_sugar' | 'disulf' | 'hydrog' | 'metalc' | 'mismat' | 'modres' | 'saltbr';
     function ofDataBlock(data: CIF.DataBlock): Structure.Molecule;
 }
 declare namespace LiteMol.Core.Formats.Molecule.PDB {
@@ -13764,11 +13765,9 @@ declare namespace LiteMol.Core.Structure {
         constructor(entries: StructConn.Entry[]);
     }
     namespace StructConn {
-        type Type = 'covale' | 'covale_base' | 'covale_phosphate' | 'covale_sugar' | 'disulf' | 'hydrog' | 'metalc' | 'mismat' | 'modres' | 'saltbr';
         interface Entry {
-            type: Type;
             distance: number;
-            order: 'sing' | 'doub' | 'trip' | 'quad' | 'unknown';
+            bondType: BondType;
             partners: {
                 residueIndex: number;
                 atomIndex: number;

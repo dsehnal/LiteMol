@@ -57800,10 +57800,41 @@ var LiteMol;
                             var partners = _ps(i);
                             if (partners.length < 2)
                                 continue;
+                            var type = conn_type_id.getString(i);
+                            var orderType = (pdbx_value_order.getString(i) || '').toLowerCase();
+                            var bondType = 0 /* Unknown */;
+                            switch (orderType) {
+                                case 'sing':
+                                    bondType = 1 /* Single */;
+                                    break;
+                                case 'doub':
+                                    bondType = 2 /* Double */;
+                                    break;
+                                case 'trip':
+                                    bondType = 3 /* Triple */;
+                                    break;
+                                case 'quad':
+                                    bondType = 4 /* Aromatic */;
+                                    break;
+                            }
+                            switch (type) {
+                                case 'disulf':
+                                    bondType = 8 /* DisulfideBridge */;
+                                    break;
+                                case 'hydrog':
+                                    bondType = 7 /* Hydrogen */;
+                                    break;
+                                case 'metalc':
+                                    bondType = 5 /* Metallic */;
+                                    break;
+                                //case 'mismat': bondType = Structure.BondType.Single; break; 
+                                case 'saltbr':
+                                    bondType = 6 /* Ion */;
+                                    break;
+                            }
                             entries.push({
-                                type: conn_type_id.getString(i),
+                                bondType: bondType,
                                 distance: pdbx_dist_value.getFloat(i),
-                                order: pdbx_value_order.getString(i) || 'unknown',
                                 partners: partners
                             });
                         }
@@ -61843,7 +61874,6 @@ var LiteMol;
                                 queryContext = Structure.Query.Context.ofStructure(ret);
                                 return queryContext;
                             } });
-                        Structure.computeBonds(ret, ret.data.atoms.indices);
                         return ret;
                     }
                     Model.create = create;
@@ -62007,9 +62037,9 @@ var LiteMol;
             }
             function _computeBonds(model, atomIndices, params) {
                 var MAX_RADIUS = 3;
-                var /*structConn,*/ component = model.data.bonds.component;
-                var _a = model.positions, x = _a.x, y = _a.y, z = _a.z;
-                var _b = model.data.atoms, elementSymbol = _b.elementSymbol, residueIndex = _b.residueIndex, altLoc = _b.altLoc;
+                var _a = model.data.bonds, structConn = _a.structConn, component = _a.component;
+                var _b = model.positions, x = _b.x, y = _b.y, z = _b.z;
+                var _c = model.data.atoms, elementSymbol = _c.elementSymbol, residueIndex = _c.residueIndex, altLoc = _c.altLoc;
                 var residueName = model.data.residues.name;
                 var query3d = model.queryContext.lookup3d(MAX_RADIUS);
                 var atomA = Core.Utils.ChunkedArray.create(function (size) { return new Int32Array(size); }, (atomIndices.length * 1.33) | 0, 1);
@@ -62031,10 +62061,11 @@ var LiteMol;
                     lastResidue = raI;
                     var aeI = idx(elementSymbol[aI]);
                     var bondingRadiusA = bondingRadius(aeI);
-                    var _c = query3d(x[aI], y[aI], z[aI], MAX_RADIUS), elements = _c.elements, count = _c.count, squaredDistances = _c.squaredDistances;
+                    var _d = query3d(x[aI], y[aI], z[aI], MAX_RADIUS), elements = _d.elements, count = _d.count, squaredDistances = _d.squaredDistances;
                     var isHa = isHydrogen(aeI);
                     var thresholdsA = thresholds(aeI);
                     var altA = altLoc[aI];
+                    var structConnEntries = structConn && structConn.getAtomEntries(aI);
                     for (var ni = 0; ni < count; ni++) {
                         var bI = elements[ni];
                         if (bI <= aI || !mask.has(bI))
@@ -62052,6 +62083,26 @@ var LiteMol;
                         var dist = Math.sqrt(squaredDistances[ni]);
                         if (dist === 0)
                             continue;
+                        if (structConnEntries) {
+                            var added = false;
+                            for (var _e = 0, structConnEntries_1 = structConnEntries; _e < structConnEntries_1.length; _e++) {
+                                var se = structConnEntries_1[_e];
+                                for (var _f = 0, _g = se.partners; _f < _g.length; _f++) {
+                                    var p = _g[_f];
+                                    if (p.atomIndex === bI) {
+                                        ChunkedAdd(atomA, aI);
+                                        ChunkedAdd(atomB, bI);
+                                        ChunkedAdd(type, se.bondType);
+                                        added = true;
+                                        break;
+                                    }
+                                }
+                                if (added)
+                                    break;
+                            }
+                            if (added)
+                                continue;
+                        }
                         if (isHa || isHb) {
                             if (dist < params.maxHbondLength) {
                                 ChunkedAdd(atomA, aI);
@@ -62064,8 +62115,8 @@ var LiteMol;
                         var elemThresholds = pairedThresholds.length > 0
                             ? pairedThresholds
                             : beI < 0 || bondingRadiusA > bondingRadius(beI) ? thresholdsA : thresholds(beI);
-                        for (var _d = 0, elemThresholds_1 = elemThresholds; _d < elemThresholds_1.length; _d++) {
-                            var t = elemThresholds_1[_d];
+                        for (var _h = 0, elemThresholds_1 = elemThresholds; _h < elemThresholds_1.length; _h++) {
+                            var t = elemThresholds_1[_h];
                             if (t[0] >= dist) {
                                 ChunkedAdd(atomA, aI);
                                 ChunkedAdd(atomB, bI);
@@ -63948,9 +63999,8 @@ var LiteMol;
                                 if (!allMapped)
                                     return "continue";
                                 ret.push({
+                                    bondType: e.bondType,
                                     distance: e.distance,
-                                    order: e.order,
-                                    type: e.type,
                                     partners: e.partners.map(function (p) {
                                         var rI = transformMap.get(p.residueIndex).get(opIndex);
                                         return {
@@ -63984,9 +64034,8 @@ var LiteMol;
                             }
                             if (partners.length === e.partners.length) {
                                 ret.push({
+                                    bondType: e.bondType,
                                     distance: e.distance,
-                                    order: e.order,
-                                    type: e.type,
                                     partners: partners
                                 });
                             }

@@ -156,7 +156,7 @@ namespace LiteMol.Core.Structure {
     function _computeBonds(model: Molecule.Model, atomIndices: number[], params: BondComputationParameters): BondTable {
         const MAX_RADIUS = 3;
 
-        const { /*structConn,*/ component } = model.data.bonds;
+        const { structConn, component } = model.data.bonds;
         const { x, y, z } = model.positions;
         const { elementSymbol, residueIndex, altLoc } = model.data.atoms;
         const { name: residueName } = model.data.residues;
@@ -189,6 +189,7 @@ namespace LiteMol.Core.Structure {
             const isHa = isHydrogen(aeI);
             const thresholdsA = thresholds(aeI);
             const altA = altLoc[aI];
+            const structConnEntries = structConn && structConn.getAtomEntries(aI);
 
             for (let ni = 0; ni < count; ni++) {
                 const bI = elements[ni];
@@ -206,6 +207,23 @@ namespace LiteMol.Core.Structure {
 
                 const dist = Math.sqrt(squaredDistances[ni]);    
                 if (dist === 0) continue;
+
+                if (structConnEntries) {
+                    let added = false;
+                    for (const se of structConnEntries) {
+                        for (const p of se.partners) {
+                            if (p.atomIndex === bI) {
+                                ChunkedAdd(atomA, aI);
+                                ChunkedAdd(atomB, bI);
+                                ChunkedAdd(type, se.bondType);
+                                added = true;
+                                break;
+                            }
+                        }
+                        if (added) break;
+                    }
+                    if (added) continue;
+                }
 
                 if (isHa || isHb) {
                     if (dist < params.maxHbondLength) {

@@ -713,6 +713,18 @@ namespace LiteMol.Core.Formats.Molecule.mmCIF {
         return -1;
     }
 
+    export type StructConnType = 
+          'covale'
+        | 'covale_base'
+        | 'covale_phosphate'
+        | 'covale_sugar'
+        | 'disulf'
+        | 'hydrog'
+        | 'metalc'
+        | 'mismat'
+        | 'modres'
+        | 'saltbr'
+
     function getStructConn(data: CIF.DataBlock, atoms: Structure.AtomTable, structure: StructureWrapper): Structure.StructConn | undefined {
         const cat = data.getCategory('_struct_conn');
         if (!cat) return void 0;
@@ -757,10 +769,29 @@ namespace LiteMol.Core.Formats.Molecule.mmCIF {
         for (let i = 0; i < cat.rowCount; i++) {
             const partners = _ps(i);
             if (partners.length < 2) continue;
+
+            const type = conn_type_id.getString(i)! as StructConnType;
+            const orderType = (pdbx_value_order.getString(i) || '').toLowerCase();
+            let bondType = Structure.BondType.Unknown;
+
+            switch (orderType) {
+                case 'sing': bondType = Structure.BondType.Single; break; 
+                case 'doub': bondType = Structure.BondType.Double; break;
+                case 'trip': bondType = Structure.BondType.Triple; break;
+                case 'quad': bondType = Structure.BondType.Aromatic; break;
+            }
+
+            switch (type) {
+                case 'disulf': bondType = Structure.BondType.DisulfideBridge; break; 
+                case 'hydrog': bondType = Structure.BondType.Hydrogen; break; 
+                case 'metalc': bondType = Structure.BondType.Metallic; break; 
+                //case 'mismat': bondType = Structure.BondType.Single; break; 
+                case 'saltbr': bondType = Structure.BondType.Ion; break; 
+            }        
+
             entries.push({ 
-                type: conn_type_id.getString(i)! as any, 
+                bondType,
                 distance: pdbx_dist_value.getFloat(i), 
-                order: pdbx_value_order.getString(i) as any || 'unknown',
                 partners
             });
         }

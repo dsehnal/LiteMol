@@ -252,22 +252,9 @@ namespace LiteMol.Core.Structure {
     }
 
     export namespace StructConn {
-        export type Type = 
-              'covale'
-            | 'covale_base'
-            | 'covale_phosphate'
-            | 'covale_sugar'
-            | 'disulf'
-            | 'hydrog'
-            | 'metalc'
-            | 'mismat'
-            | 'modres'
-            | 'saltbr'
-
         export interface Entry {  
-            type: Type,
             distance: number,
-            order: 'sing' | 'doub' | 'trip' | 'quad' | 'unknown',
+            bondType: BondType,
             partners: { residueIndex: number, atomIndex: number, symmetry: string }[]
         }
     }
@@ -439,7 +426,6 @@ namespace LiteMol.Core.Structure {
                     queryContext = Query.Context.ofStructure(ret as Model);
                     return queryContext;
                 }});
-                computeBonds(ret as Model, ret.data.atoms.indices);
                 return ret as Model;
             }
 
