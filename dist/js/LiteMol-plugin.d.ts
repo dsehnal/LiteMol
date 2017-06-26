@@ -15287,6 +15287,7 @@ declare namespace LiteMol.Visualization.Primitive {
             b: LA.Vector3;
             width: number;
             dashSize: number;
+            spaceSize?: number;
             id: number;
         };
         type Arrow = {

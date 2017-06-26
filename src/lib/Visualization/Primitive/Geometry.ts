@@ -59,31 +59,44 @@ namespace LiteMol.Visualization.Primitive {
         ];
     }
 
-    const unitCube = GeometryHelper.toSurface(new THREE.BoxGeometry(1, 1, 1));
-    export function createDashes(line: Shape.DashedLine) {
-        const { id, a, b, width, dashSize } = line;
-        const dist = LA.Vector3.distance(a, b);
+    const dashSurface = (function() {
+        const dash = GeometryHelper.toSurface(new THREE.BoxGeometry(1, 1, 1));
+        for (let i = 0; i < dash.vertices.length; i += 3) {
+            dash.vertices[i + 2] += 0.5;
+        }
+        return dash;
+    })();
+    export function createDashes(line: Shape.DashedLine) {        
+        const { id, a, b, width, dashSize, spaceSize } = line;
+        const length = LA.Vector3.distance(a, b);
+        if (length === 0) return [];
+
+        const delta = dashSize + (spaceSize !== void 0 ? spaceSize : dashSize);
         const dir = LA.Vector3.sub(LA.Vector3.zero(), b, a);
         LA.Vector3.normalize(dir, dir);
-        const numDashes = Math.ceil(dist / dashSize);
-        const delta = dist / (numDashes - 1);
-        const scale = [width, width, delta];
-        const up = [0, 0, 1];
+
+        let scale = LA.Vector3.fromValues(width, width, dashSize);
+        const up = LA.Vector3.fromValues(0, 0, 1);
         const axis = LA.Vector3.cross(LA.Vector3.zero(), up, dir);
         const angle = LA.Vector3.angle(up, dir);
         const rotation = LA.Matrix4.fromRotation(LA.Matrix4.zero(), angle, axis)!;
 
         const surfaces: Visualization.Primitive.Shape.Surface[] = [];
-        for (let i = 0; i < numDashes; i += 2) {
-            const translation = [a[0] + dir[0] * delta * i, a[1] + dir[1] * delta * i, a[2] + dir[2] * delta * i];
+
+        LA.Vector3.scale(dir, dir, delta);
+        LA.Vector3.copy(axis, a);
+
+        for (let t = 0; t < length; t += delta) {
+            if (t + dashSize > length) scale = LA.Vector3.fromValues(width, width, length - t);
             surfaces.push({
                 type: 'Surface',
                 id,
-                surface: unitCube,
+                surface: dashSurface,
                 rotation,
                 scale,
-                translation
+                translation: LA.Vector3.clone(axis)
             });
+            LA.Vector3.add(axis, axis, dir);
         }
         return surfaces;
     }

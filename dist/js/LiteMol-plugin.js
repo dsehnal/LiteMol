@@ -71112,30 +71112,41 @@ var LiteMol;
                 ];
             }
             Primitive.createArrow = createArrow;
-            var unitCube = Visualization.GeometryHelper.toSurface(new Visualization.THREE.BoxGeometry(1, 1, 1));
+            var dashSurface = (function () {
+                var dash = Visualization.GeometryHelper.toSurface(new Visualization.THREE.BoxGeometry(1, 1, 1));
+                for (var i = 0; i < dash.vertices.length; i += 3) {
+                    dash.vertices[i + 2] += 0.5;
+                }
+                return dash;
+            })();
             function createDashes(line) {
-                var id = line.id, a = line.a, b = line.b, width = line.width, dashSize = line.dashSize;
-                var dist = LA.Vector3.distance(a, b);
+                var id = line.id, a = line.a, b = line.b, width = line.width, dashSize = line.dashSize, spaceSize = line.spaceSize;
+                var length = LA.Vector3.distance(a, b);
+                if (length === 0)
+                    return [];
+                var delta = dashSize + (spaceSize !== void 0 ? spaceSize : dashSize);
                 var dir = LA.Vector3.sub(LA.Vector3.zero(), b, a);
                 LA.Vector3.normalize(dir, dir);
-                var numDashes = Math.ceil(dist / dashSize);
-                var delta = dist / (numDashes - 1);
-                var scale = [width, width, delta];
-                var up = [0, 0, 1];
+                var scale = LA.Vector3.fromValues(width, width, dashSize);
+                var up = LA.Vector3.fromValues(0, 0, 1);
                 var axis = LA.Vector3.cross(LA.Vector3.zero(), up, dir);
                 var angle = LA.Vector3.angle(up, dir);
                 var rotation = LA.Matrix4.fromRotation(LA.Matrix4.zero(), angle, axis);
                 var surfaces = [];
-                for (var i = 0; i < numDashes; i += 2) {
-                    var translation = [a[0] + dir[0] * delta * i, a[1] + dir[1] * delta * i, a[2] + dir[2] * delta * i];
+                LA.Vector3.scale(dir, dir, delta);
+                LA.Vector3.copy(axis, a);
+                for (var t = 0; t < length; t += delta) {
+                    if (t + dashSize > length)
+                        scale = LA.Vector3.fromValues(width, width, length - t);
                     surfaces.push({
                         type: 'Surface',
                         id: id,
-                        surface: unitCube,
+                        surface: dashSurface,
                         rotation: rotation,
                         scale: scale,
-                        translation: translation
+                        translation: LA.Vector3.clone(axis)
                     });
+                    LA.Vector3.add(axis, axis, dir);
                 }
                 return surfaces;
             }

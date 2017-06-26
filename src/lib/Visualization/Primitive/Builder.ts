@@ -13,7 +13,7 @@ namespace LiteMol.Visualization.Primitive {
     export namespace Shape {
         export type Sphere = { type: 'Sphere', center: LA.Vector3, radius: number, id: number, tessalation?:number }
         export type Tube = { type: 'Tube', a: LA.Vector3, b: LA.Vector3, radius: number, id: number, slices?:number }
-        export type DashedLine = { type: 'DashedLine', a: LA.Vector3, b: LA.Vector3, width: number, dashSize: number, id: number }
+        export type DashedLine = { type: 'DashedLine', a: LA.Vector3, b: LA.Vector3, width: number, dashSize: number, spaceSize?: number, id: number }
         export type Arrow = { type: 'Arrow', a: LA.Vector3, b: LA.Vector3, radius: number, id: number, coneRadius: number, coneHeight: number, slices?: number }
         export type Cone = { type: 'Cone', a: LA.Vector3, b: LA.Vector3, radius: number, id: number, slices?: number }
         export type Surface = { type: 'Surface', surface: Core.Geometry.Surface, id: number, scale?: number[], translation?: number[], rotation?: LA.Matrix4 }
