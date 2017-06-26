@@ -110,6 +110,7 @@ namespace LiteMol.Visualization.Molecule.BallsAndSticks {
 
         bondTemplate = BuildState.getBondTemplate(1.0, this.tessalation!);
         atomTemplate = BuildState.getAtomTemplate(1.0, this.tessalation!);
+        cubeTemplate = GeometryHelper.getIndexedBufferGeometry(new THREE.BoxGeometry(1, 1, 1));
 
         bondTemplateVertexBuffer = (<any>this.bondTemplate.attributes).position.array;
         bondTemplateVertexBufferLength = this.bondTemplateVertexBuffer.length;
@@ -117,6 +118,13 @@ namespace LiteMol.Visualization.Molecule.BallsAndSticks {
         bondTemplateIndexBuffer = (<any>this.bondTemplate.attributes).index.array;
         bondTemplateIndexBufferLength = this.bondTemplateIndexBuffer.length;
         bondTemplateNormalBuffer = (<any>this.bondTemplate.attributes).normal.array;
+
+        cubeTemplateVertexBuffer = (<any>this.cubeTemplate.attributes).position.array;
+        cubeTemplateVertexBufferLength = this.cubeTemplateVertexBuffer.length;
+        cubeTemplateVertexCount = (this.cubeTemplateVertexBufferLength / 3) | 0;
+        cubeTemplateIndexBuffer = (<any>this.cubeTemplate.attributes).index.array;
+        cubeTemplateIndexBufferLength = this.cubeTemplateIndexBuffer.length;
+        cubeTemplateNormalBuffer = (<any>this.cubeTemplate.attributes).normal.array;
 
         atomTemplateVertexBuffer = (<any>this.atomTemplate.attributes).position.array;
         atomTemplateVertexBufferLength = this.atomTemplateVertexBuffer.length;
@@ -185,9 +193,10 @@ namespace LiteMol.Visualization.Molecule.BallsAndSticks {
         //currentResidueIndex = this.residueIndex[this.info.bonds.atomAIndex[0]];
         //bondMapVertexOffsetStart = 0;
         //bondMapVertexOffsetEnd = 0;
-        bondState = new BondModelState(
+        covalentBondState = new BondModelState(
             this.state.bondTemplate, this.state.bondTemplateVertexBuffer, this.state.bondTemplateNormalBuffer, this.state.bondTemplateIndexBuffer, this.state.bondTemplateVertexCount,
             this.bondVertices, this.bondNormals, this.bondIndices);
+
         bondCount = this.info.bonds.count;
 
         constructor(public state: BuildState) {
@@ -266,21 +275,20 @@ namespace LiteMol.Visualization.Molecule.BallsAndSticks {
             // }
 
             state.tempVector.set(state.cX[aI], state.cY[aI], state.cZ[aI]);
-            bs.bondState.a.set(state.tempVector.x, state.tempVector.y, state.tempVector.z);
+            bs.covalentBondState.a.set(state.tempVector.x, state.tempVector.y, state.tempVector.z);
 
             state.tempVector.set(state.cX[bI], state.cY[bI], state.cZ[bI]);
-            bs.bondState.b.set(state.tempVector.x, state.tempVector.y, state.tempVector.z);
+            bs.covalentBondState.b.set(state.tempVector.x, state.tempVector.y, state.tempVector.z);
 
             let r = +bs.bondRadius!, 
                 o = 2 * r / 3,
                 h = r / 2;
 
-            let bondState = bs.bondState;
+            let bondState = bs.covalentBondState;
             let order = 0;
             switch (type) {
                 case BT.Unknown:
                 case BT.Single:
-                case BT.Metallic:
                     order = 1;
                     bondState.radius = r!;
                     bondState.offset.x = 0.0;
@@ -326,6 +334,13 @@ namespace LiteMol.Visualization.Molecule.BallsAndSticks {
                     bondState.offset.y = -o;
                     BallsAndSticksGeometryBuilder.addBondPart(bondState);
                     break;
+                case BT.Metallic:
+                    order = 1;
+                    bondState.radius = r!;
+                    bondState.offset.x = 0.0;
+                    bondState.offset.y = 0.0;
+                    BallsAndSticksGeometryBuilder.addBondPart(bondState);
+                    break;
             }
 
             //bs.bondMapVertexOffsetEnd += order * bs.state.bondTemplateVertexBufferLength;
@@ -366,6 +381,41 @@ namespace LiteMol.Visualization.Molecule.BallsAndSticks {
 
             state.sticksDone++;
         }
+
+        // private static addMetallicBondPart(state: BondModelState) {
+        //     state.atomsVector.subVectors(state.a, state.b);
+
+        //     let length = state.atomsVector.length();
+
+        //     state.center.addVectors(state.a, state.b).divideScalar(2);
+        //     state.rotationAxis.crossVectors(state.atomsVector, state.upVector).normalize();
+        //     let rotationAngle = state.atomsVector.angleTo(state.upVector);
+
+        //     state.scaleMatrix.makeScale(state.radius, length, state.radius);
+        //     state.offsetMatrix.makeTranslation(state.offset.x, state.offset.y, state.offset.z);
+        //     state.rotationMatrix.makeRotationAxis(state.rotationAxis, -rotationAngle);
+        //     state.translationMatrix.makeTranslation(state.center.x, state.center.y, state.center.z);
+
+        //     state.finalMatrix = state.translationMatrix.multiply(state.rotationMatrix).multiply(state.offsetMatrix).multiply(state.scaleMatrix);
+
+        //     state.template.applyMatrix(state.finalMatrix);
+
+        //     state.vertices.set(state.templateVB, state.templateVB.length * state.sticksDone);
+        //     state.normals.set(state.templateNB, state.templateVB.length * state.sticksDone);
+
+        //     let tIB = state.templateIB,
+        //         ib = state.indices,
+        //         offsetIB = state.templateIB.length * state.sticksDone,
+        //         offsetVB = state.templateVertexCount * state.sticksDone;
+        //     for (let i = 0; i < tIB.length; i++) {
+        //         ib[offsetIB++] = tIB[i] + offsetVB;
+        //     }
+
+        //     state.rotationMatrix.getInverse(state.finalMatrix);
+        //     state.template.applyMatrix(state.rotationMatrix);
+
+        //     state.sticksDone++;
+        // }
 
         private static getEmptyBondsGeometry() {
             let bondsGeometry = new THREE.BufferGeometry();

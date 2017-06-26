@@ -107,6 +107,7 @@
     "./Visualization/Primitive/Geometry.ts",
     "./Visualization/Primitive/Builder.ts",
 
+    "./Visualization/Utils/GeometryBuilder.ts",
     "./Visualization/Utils/Palette.ts",
 
     /*******************************************************************

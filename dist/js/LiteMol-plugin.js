@@ -69178,12 +69178,19 @@ var LiteMol;
                         this.hideBonds = this.params.hideBonds;
                         this.bondTemplate = BuildState.getBondTemplate(1.0, this.tessalation);
                         this.atomTemplate = BuildState.getAtomTemplate(1.0, this.tessalation);
+                        this.cubeTemplate = Visualization.GeometryHelper.getIndexedBufferGeometry(new Visualization.THREE.BoxGeometry(1, 1, 1));
                         this.bondTemplateVertexBuffer = this.bondTemplate.attributes.position.array;
                         this.bondTemplateVertexBufferLength = this.bondTemplateVertexBuffer.length;
                         this.bondTemplateVertexCount = (this.bondTemplateVertexBufferLength / 3) | 0;
                         this.bondTemplateIndexBuffer = this.bondTemplate.attributes.index.array;
                         this.bondTemplateIndexBufferLength = this.bondTemplateIndexBuffer.length;
                         this.bondTemplateNormalBuffer = this.bondTemplate.attributes.normal.array;
+                        this.cubeTemplateVertexBuffer = this.cubeTemplate.attributes.position.array;
+                        this.cubeTemplateVertexBufferLength = this.cubeTemplateVertexBuffer.length;
+                        this.cubeTemplateVertexCount = (this.cubeTemplateVertexBufferLength / 3) | 0;
+                        this.cubeTemplateIndexBuffer = this.cubeTemplate.attributes.index.array;
+                        this.cubeTemplateIndexBufferLength = this.cubeTemplateIndexBuffer.length;
+                        this.cubeTemplateNormalBuffer = this.cubeTemplate.attributes.normal.array;
                         this.atomTemplateVertexBuffer = this.atomTemplate.attributes.position.array;
                         this.atomTemplateVertexBufferLength = this.atomTemplateVertexBuffer.length;
                         this.atomTemplateVertexCount = (this.atomTemplateVertexBufferLength / 3) | 0;
@@ -69295,7 +69302,7 @@ var LiteMol;
                         //currentResidueIndex = this.residueIndex[this.info.bonds.atomAIndex[0]];
                         //bondMapVertexOffsetStart = 0;
                         //bondMapVertexOffsetEnd = 0;
-                        this.bondState = new BondModelState(this.state.bondTemplate, this.state.bondTemplateVertexBuffer, this.state.bondTemplateNormalBuffer, this.state.bondTemplateIndexBuffer, this.state.bondTemplateVertexCount, this.bondVertices, this.bondNormals, this.bondIndices);
+                        this.covalentBondState = new BondModelState(this.state.bondTemplate, this.state.bondTemplateVertexBuffer, this.state.bondTemplateNormalBuffer, this.state.bondTemplateIndexBuffer, this.state.bondTemplateVertexCount, this.bondVertices, this.bondNormals, this.bondIndices);
                         this.bondCount = this.info.bonds.count;
                     }
                     return BondsBuildState;
@@ -69347,16 +69354,15 @@ var LiteMol;
                         //     bs.bondMapBuilder.startElement(bs.currentResidueIndex);
                         // }
                         state.tempVector.set(state.cX[aI], state.cY[aI], state.cZ[aI]);
-                        bs.bondState.a.set(state.tempVector.x, state.tempVector.y, state.tempVector.z);
+                        bs.covalentBondState.a.set(state.tempVector.x, state.tempVector.y, state.tempVector.z);
                         state.tempVector.set(state.cX[bI], state.cY[bI], state.cZ[bI]);
-                        bs.bondState.b.set(state.tempVector.x, state.tempVector.y, state.tempVector.z);
+                        bs.covalentBondState.b.set(state.tempVector.x, state.tempVector.y, state.tempVector.z);
                         var r = +bs.bondRadius, o = 2 * r / 3, h = r / 2;
-                        var bondState = bs.bondState;
+                        var bondState = bs.covalentBondState;
                         var order = 0;
                         switch (type) {
                             case 0 /* Unknown */:
                             case 1 /* Single */:
-                            case 5 /* Metallic */:
                                 order = 1;
                                 bondState.radius = r;
                                 bondState.offset.x = 0.0;
@@ -69402,6 +69408,13 @@ var LiteMol;
                                 bondState.offset.y = -o;
                                 BallsAndSticksGeometryBuilder.addBondPart(bondState);
                                 break;
+                            case 5 /* Metallic */:
+                                order = 1;
+                                bondState.radius = r;
+                                bondState.offset.x = 0.0;
+                                bondState.offset.y = 0.0;
+                                BallsAndSticksGeometryBuilder.addBondPart(bondState);
+                                break;
                         }
                         //bs.bondMapVertexOffsetEnd += order * bs.state.bondTemplateVertexBufferLength;
                     };
@@ -69427,6 +69440,31 @@ var LiteMol;
                         state.template.applyMatrix(state.rotationMatrix);
                         state.sticksDone++;
                     };
+                    // private static addMetallicBondPart(state: BondModelState) {
+                    //     state.atomsVector.subVectors(state.a, state.b);
+                    //     let length = state.atomsVector.length();
+                    //     state.center.addVectors(state.a, state.b).divideScalar(2);
+                    //     state.rotationAxis.crossVectors(state.atomsVector, state.upVector).normalize();
+                    //     let rotationAngle = state.atomsVector.angleTo(state.upVector);
+                    //     state.scaleMatrix.makeScale(state.radius, length, state.radius);
+                    //     state.offsetMatrix.makeTranslation(state.offset.x, state.offset.y, state.offset.z);
+                    //     state.rotationMatrix.makeRotationAxis(state.rotationAxis, -rotationAngle);
+                    //     state.translationMatrix.makeTranslation(state.center.x, state.center.y, state.center.z);
+                    //     state.finalMatrix = state.translationMatrix.multiply(state.rotationMatrix).multiply(state.offsetMatrix).multiply(state.scaleMatrix);
+                    //     state.template.applyMatrix(state.finalMatrix);
+                    //     state.vertices.set(state.templateVB, state.templateVB.length * state.sticksDone);
+                    //     state.normals.set(state.templateNB, state.templateVB.length * state.sticksDone);
+                    //     let tIB = state.templateIB,
+                    //         ib = state.indices,
+                    //         offsetIB = state.templateIB.length * state.sticksDone,
+                    //         offsetVB = state.templateVertexCount * state.sticksDone;
+                    //     for (let i = 0; i < tIB.length; i++) {
+                    //         ib[offsetIB++] = tIB[i] + offsetVB;
+                    //     }
+                    //     state.rotationMatrix.getInverse(state.finalMatrix);
+                    //     state.template.applyMatrix(state.rotationMatrix);
+                    //     state.sticksDone++;
+                    // }
                     BallsAndSticksGeometryBuilder.getEmptyBondsGeometry = function () {
                         var bondsGeometry = new Visualization.THREE.BufferGeometry();
                         bondsGeometry.addAttribute('position', new Visualization.THREE.BufferAttribute(new Float32Array(0), 3));
