@@ -65499,7 +65499,7 @@ var LiteMol;
 (function (LiteMol) {
     var Visualization;
     (function (Visualization) {
-        Visualization.VERSION = { number: "1.7.0", date: "June 18 2017" };
+        Visualization.VERSION = { number: "1.7.1", date: "June 27 2017" };
     })(Visualization = LiteMol.Visualization || (LiteMol.Visualization = {}));
 })(LiteMol || (LiteMol = {}));
 var LiteMol;
@@ -65987,7 +65987,7 @@ var LiteMol;
                 if (object)
                     object.renderOrder = isTransparent ? 1 : 0;
                 var changed = false;
-                if (material instanceof Visualization.THREE.MeshPhongMaterial || material instanceof Visualization.THREE.ShaderMaterial) {
+                if (material instanceof Visualization.THREE.MeshPhongMaterial || material instanceof Visualization.THREE.MeshBasicMaterial || material instanceof Visualization.THREE.ShaderMaterial) {
                     if (material.transparent !== isTransparent) {
                         material.transparent = isTransparent;
                         changed = true;
@@ -67950,6 +67950,39 @@ var LiteMol;
                     add3d(builder.indices, i, j, k);
                 }
                 Builder.addIndex3d = addIndex3d;
+                var dashTemplate = void 0;
+                function getDashTemplate() {
+                    if (dashTemplate)
+                        return dashTemplate;
+                    dashTemplate = Visualization.GeometryHelper.toRawGeometry(new Visualization.THREE.BoxGeometry(1, 1, 1));
+                    for (var i = 0; i < dashTemplate.vertices.length; i += 3) {
+                        dashTemplate.vertices[i] += 0.5;
+                    }
+                    return dashTemplate;
+                }
+                Builder.getDashTemplate = getDashTemplate;
+                var dashScale = Vec3.zero(), dashOffset = Vec3.zero(), dashAxis = Vec3.zero(), dashDir = Vec3.zero(), dashUp = Vec3.fromValues(1, 0, 0), dashRotation = Mat4.zero();
+                function addDashedLine(builder, a, b, size, gap, r) {
+                    var dir = Vec3.sub(dashDir, b, a);
+                    var length = Vec3.length(dir);
+                    var axis = Vec3.cross(dashAxis, dashUp, dir);
+                    var angle = Vec3.angle(dashUp, dir);
+                    var scale = Vec3.set(dashScale, size, r, r);
+                    var rotation = Mat4.fromRotation(dashRotation, angle, axis);
+                    var templ = getDashTemplate();
+                    var offset = dashOffset;
+                    Vec3.copy(offset, a);
+                    Vec3.normalize(dir, dir);
+                    var delta = size + gap;
+                    Vec3.scale(dir, dir, delta);
+                    for (var t = 0; t < length; t += delta) {
+                        if (t + size > length)
+                            scale[0] = length - t;
+                        addRawTransformed(builder, templ, scale, offset, rotation);
+                        Vec3.add(offset, offset, dir);
+                    }
+                }
+                Builder.addDashedLine = addDashedLine;
                 function compactS(tar) {
                     return tar.array;
                 }
@@ -69384,13 +69417,11 @@ var LiteMol;
                 var Mat4 = Geom.LinearAlgebra.Matrix4;
                 var GB = Visualization.Geometry.Builder;
                 var BondModelState = (function () {
-                    function BondModelState(bondTemplate, cubeTemplate, builder) {
+                    function BondModelState(bondTemplate, builder) {
                         this.bondTemplate = bondTemplate;
-                        this.cubeTemplate = cubeTemplate;
                         this.builder = builder;
                         this.rotationAxis = Vec3.zero();
                         this.bondUpVector = Vec3.fromValues(1, 0, 0);
-                        this.dashUpVector = Vec3.fromValues(1, 0, 0);
                         this.dir = Vec3.zero();
                         this.scale = Vec3.zero();
                         this.translation = Vec3.zero();
@@ -69470,17 +69501,6 @@ var LiteMol;
                         return ret;
                     }
                     Templates.getAtom = getAtom;
-                    var dash = void 0;
-                    function getDash() {
-                        if (dash)
-                            return dash;
-                        dash = Visualization.GeometryHelper.toRawGeometry(new Visualization.THREE.BoxGeometry(1, 1, 1));
-                        for (var i = 0; i < dash.vertices.length; i += 3) {
-                            dash.vertices[i] += 0.5;
-                        }
-                        return dash;
-                    }
-                    Templates.getDash = getDash;
                 })(Templates || (Templates = {}));
                 var BuildState = (function () {
                     function BuildState(model, atomIndices, params) {
@@ -69493,7 +69513,7 @@ var LiteMol;
                         this.hideBonds = this.params.hideBonds;
                         this.bondTemplate = Templates.getBond(this.tessalation);
                         this.atomTemplate = Templates.getAtom(this.tessalation);
-                        this.dashTemplate = Templates.getDash();
+                        this.dashTemplate = GB.getDashTemplate();
                         this.atomVertexCount = this.atomTemplate.vertexCount * this.atomIndices.length;
                         this.atomBuilder = GB.createStatic(this.atomVertexCount, this.atomTemplate.indexCount * this.atomIndices.length);
                         this.atomColors = new Float32Array(this.atomVertexCount * 3);
@@ -69524,7 +69544,7 @@ var LiteMol;
                         this.bondBuilder = GB.createStatic(this.bondVertexCount, this.state.bondTemplate.indexCount * this.info.covalentStickCount + this.state.dashTemplate.indexCount * this.info.metallicStickCount);
                         this.bondColors = new Float32Array(this.bondVertexCount * 3);
                         this.bondRadius = this.state.params.bondRadius;
-                        this.bondState = new BondModelState(this.state.bondTemplate, this.state.dashTemplate, this.bondBuilder);
+                        this.bondState = new BondModelState(this.state.bondTemplate, this.bondBuilder);
                         this.bondCount = this.info.bonds.count;
                     }
                     return BondsBuildState;
@@ -69601,22 +69621,7 @@ var LiteMol;
                         GB.addRawTransformed(state.builder, state.bondTemplate, state.scale, state.offset, state.rotation);
                     };
                     BallsAndSticksGeometryBuilder.addMetalBond = function (r, state) {
-                        var dir = Vec3.sub(state.dir, state.b, state.a);
-                        var length = Vec3.length(state.dir);
-                        var axis = Vec3.cross(state.rotationAxis, state.dashUpVector, dir);
-                        var angle = Vec3.angle(state.dashUpVector, state.dir);
-                        var scale = Vec3.set(state.scale, 0.15 /* MetalDashSize */, r, r);
-                        var rotation = Mat4.fromRotation(state.rotation, angle, axis);
-                        var offset = state.offset;
-                        Vec3.copy(offset, state.a);
-                        Vec3.normalize(dir, dir);
-                        Vec3.scale(dir, dir, 2 * 0.15 /* MetalDashSize */);
-                        for (var t = 0; t < length; t += 2 * 0.15 /* MetalDashSize */) {
-                            if (t + 0.15 /* MetalDashSize */ > length)
-                                scale[0] = length - t;
-                            GB.addRawTransformed(state.builder, state.cubeTemplate, scale, offset, rotation);
-                            Vec3.add(offset, offset, dir);
-                        }
+                        GB.addDashedLine(state.builder, state.a, state.b, 0.15 /* MetalDashSize */, 0.15 /* MetalDashSize */, r);
                     };
                     BallsAndSticksGeometryBuilder.getEmptyBondsGeometry = function () {
                         var bondsGeometry = new Visualization.THREE.BufferGeometry();
@@ -69813,6 +69818,7 @@ var LiteMol;
                             var _this = _super !== null && _super.apply(this, arguments) || this;
                             _this.geometry = void 0;
                             _this.pickGeometry = void 0;
+                            _this.gapsGeometry = void 0;
                             _this.vertexMap = void 0;
                             _this.vertexStateBuffer = void 0;
                             return _this;
@@ -69820,6 +69826,9 @@ var LiteMol;
                         Data.prototype.dispose = function () {
                             this.geometry.dispose();
                             this.pickGeometry.dispose();
+                            if (this.gapsGeometry) {
+                                this.gapsGeometry.dispose();
+                            }
                         };
                         return Data;
                     }(Visualization.GeometryBase));
@@ -69892,119 +69901,7 @@ var LiteMol;
             (function (Cartoons) {
                 var Geometry;
                 (function (Geometry) {
-                    var ChunkedArray = LiteMol.Core.Utils.ChunkedArray;
                     var ArrayBuilder = LiteMol.Core.Utils.ArrayBuilder;
-                    var CartoonAsymUnitState = (function () {
-                        function CartoonAsymUnitState(residueCount) {
-                            this.typeBuilder = ArrayBuilder.forArray(10000);
-                            this.residueType = [];
-                            this.uPositions = new Float32Array(0);
-                            this.vPositions = new Float32Array(0);
-                            this.pPositions = new Float32Array(0);
-                            this.dPositions = new Float32Array(0);
-                            this.uvLength = 0;
-                            this.residueCount = 0;
-                            this.typeBuilder = ArrayBuilder.forArray(residueCount + 4);
-                            this.uPositionsBuilder = ArrayBuilder.forVertex3D(residueCount + 4);
-                            this.vPositionsBuilder = ArrayBuilder.forVertex3D(residueCount + 4);
-                            this.pPositionsBuilder = ArrayBuilder.forVertex3D(residueCount + 4);
-                            this.dPositionsBuilder = ArrayBuilder.forVertex3D(residueCount + 4);
-                            ArrayBuilder.add(this.typeBuilder, 0 /* None */);
-                            ArrayBuilder.add(this.typeBuilder, 0 /* None */);
-                            ArrayBuilder.add3(this.uPositionsBuilder, 0, 0, 0);
-                            ArrayBuilder.add3(this.uPositionsBuilder, 0, 0, 0);
-                            ArrayBuilder.add3(this.vPositionsBuilder, 0, 0, 0);
-                            ArrayBuilder.add3(this.vPositionsBuilder, 0, 0, 0);
-                        }
-                        CartoonAsymUnitState.prototype.addResidue = function (rIndex, arrays, sType) {
-                            var start = arrays.atomStartIndex[rIndex], end = arrays.atomEndIndex[rIndex], aU = false, aV = false;
-                            var name = arrays.name;
-                            if (sType !== 5 /* Strand */) {
-                                for (var i = start; i < end; i++) {
-                                    if (!aU && name[i] === "CA") {
-                                        ArrayBuilder.add3(this.uPositionsBuilder, arrays.x[i], arrays.y[i], arrays.z[i]);
-                                        aU = true;
-                                    }
-                                    else if (!aV && name[i] === "O") {
-                                        ArrayBuilder.add3(this.vPositionsBuilder, arrays.x[i], arrays.y[i], arrays.z[i]);
-                                        aV = true;
-                                    }
-                                    if (aU && aV)
-                                        break;
-                                }
-                            }
-                            else {
-                                if (end - start === 1) {
-                                    // has to be P atom
-                                    ArrayBuilder.add3(this.uPositionsBuilder, arrays.x[start], arrays.y[start], arrays.z[start]);
-                                    aU = true;
-                                }
-                                else {
-                                    var pIndex = -1;
-                                    for (var i = start; i < end; i++) {
-                                        if (!aU && name[i] === "O5'") {
-                                            ArrayBuilder.add3(this.uPositionsBuilder, arrays.x[i], arrays.y[i], arrays.z[i]);
-                                            aU = true;
-                                        }
-                                        else if (!aV && name[i] === "C3'") {
-                                            ArrayBuilder.add3(this.vPositionsBuilder, arrays.x[i], arrays.y[i], arrays.z[i]);
-                                            aV = true;
-                                        }
-                                        if (name[i] === "P") {
-                                            pIndex = i;
-                                        }
-                                        if (aU && aV)
-                                            break;
-                                    }
-                                    if (!aU && !aV && pIndex >= 0) {
-                                        ArrayBuilder.add3(this.uPositionsBuilder, arrays.x[pIndex], arrays.y[pIndex], arrays.z[pIndex]);
-                                        aU = true;
-                                    }
-                                }
-                            }
-                            var backboneOnly = false;
-                            if (!aV) {
-                                var arr = this.uPositionsBuilder.array, len = arr.length;
-                                ArrayBuilder.add3(this.vPositionsBuilder, arr[len - 3], arr[len - 2], arr[len - 1]);
-                                backboneOnly = true;
-                            }
-                            else if (!aU) {
-                                var arr = this.vPositionsBuilder.array, len = arr.length;
-                                ArrayBuilder.add3(this.uPositionsBuilder, arr[len - 3], arr[len - 2], arr[len - 1]);
-                                backboneOnly = true;
-                            }
-                            ArrayBuilder.add(this.typeBuilder, sType);
-                            return backboneOnly;
-                        };
-                        CartoonAsymUnitState.prototype.finishResidues = function () {
-                            ArrayBuilder.add(this.typeBuilder, 0 /* None */);
-                            ArrayBuilder.add(this.typeBuilder, 0 /* None */);
-                            ArrayBuilder.add3(this.uPositionsBuilder, 0, 0, 0);
-                            ArrayBuilder.add3(this.uPositionsBuilder, 0, 0, 0);
-                            ArrayBuilder.add3(this.vPositionsBuilder, 0, 0, 0);
-                            ArrayBuilder.add3(this.vPositionsBuilder, 0, 0, 0);
-                            this.residueType = this.typeBuilder.array;
-                            this.uPositions = this.uPositionsBuilder.array;
-                            this.vPositions = this.vPositionsBuilder.array;
-                            this.typeBuilder = null;
-                            this.uPositionsBuilder = null;
-                            this.vPositionsBuilder = null;
-                            this.uvLength = this.residueType.length;
-                            this.residueCount = this.uvLength - 4;
-                        };
-                        CartoonAsymUnitState.prototype.addControlPoint = function (p, d) {
-                            ArrayBuilder.add3(this.pPositionsBuilder, p.x, p.y, p.z);
-                            ArrayBuilder.add3(this.dPositionsBuilder, d.x, d.y, d.z);
-                        };
-                        CartoonAsymUnitState.prototype.finishContols = function () {
-                            this.pPositions = this.pPositionsBuilder.array;
-                            this.dPositions = this.dPositionsBuilder.array;
-                            this.pPositionsBuilder = null;
-                            this.dPositionsBuilder = null;
-                        };
-                        return CartoonAsymUnitState;
-                    }());
-                    Geometry.CartoonAsymUnitState = CartoonAsymUnitState;
                     var CartoonAsymUnit = (function () {
                         function CartoonAsymUnit(model, elements, linearSegmentCount) {
                             this.model = model;
@@ -70022,260 +69919,24 @@ var LiteMol;
                             this.residueType = [];
                             this.residueIndex = new Int32Array(0);
                             this.backboneOnly = false;
+                            this.startResidueIndex = -1;
+                            this.endResidueIndex = -1;
                             for (var _i = 0, _a = this.elements; _i < _a.length; _i++) {
                                 var e = _a[_i];
                                 this.residueCount += e.endResidueIndex - e.startResidueIndex;
                             }
-                            var state = new CartoonAsymUnitState(this.residueCount);
+                            this.startResidueIndex = this.elements[0].startResidueIndex;
+                            this.endResidueIndex = this.elements[this.elements.length - 1].endResidueIndex - 1;
+                            var builder = new ContolPointsBuilder(this.residueCount);
                             this.controlPointsBuilder = ArrayBuilder.forVertex3D(this.residueCount * this.linearSegmentCount + 1);
                             this.torsionVectorsBuilder = ArrayBuilder.forVertex3D(this.residueCount * this.linearSegmentCount + 1);
                             this.normalVectorsBuilder = ArrayBuilder.forVertex3D(this.residueCount * this.linearSegmentCount + 1);
-                            this.createControlPoints(state);
+                            this.createControlPoints(builder);
                         }
-                        CartoonAsymUnit.maskSplit = function (element, mask, target) {
-                            var current = element, start = element.startResidueIndex, end = element.endResidueIndex;
-                            for (var i = start; i < end; i++) {
-                                if (!mask[i])
-                                    continue;
-                                if (current.startResidueIndex !== i) {
-                                    current = new LiteMol.Core.Structure.SecondaryStructureElement(element.type, element.startResidueId, element.endResidueId);
-                                    current.startResidueIndex = i;
-                                }
-                                while (i < end && mask[i]) {
-                                    i++;
-                                }
-                                current.endResidueIndex = i;
-                                target[target.length] = current;
-                            }
-                        };
-                        CartoonAsymUnit.isCartoonLike = function (atomIndices, start, end, name, a, b, isAmk) {
-                            var aU = false, aV = false, hasP = false;
-                            for (var i = start; i < end; i++) {
-                                var n = name[atomIndices[i]];
-                                if (!aU && n === a) {
-                                    aU = true;
-                                }
-                                else if (!aV && n === b) {
-                                    aV = true;
-                                }
-                                if (aU && aV)
-                                    return true;
-                                if (n === 'P') {
-                                    hasP = true;
-                                }
-                            }
-                            if (isAmk)
-                                return aU;
-                            return hasP;
-                        };
-                        CartoonAsymUnit.createMask = function (model, atomIndices) {
-                            var ret = new Uint8Array(model.data.residues.count);
-                            var _a = model.data.atoms, residueIndex = _a.residueIndex, name = _a.name;
-                            var ssIndex = model.data.residues.secondaryStructureIndex;
-                            var ss = model.data.secondaryStructure;
-                            for (var i = 0, _b = atomIndices.length - 1; i < _b; i++) {
-                                var aI = atomIndices[i];
-                                var rStart = i;
-                                var residue = residueIndex[aI];
-                                i++;
-                                while (residue === residueIndex[atomIndices[i]])
-                                    i++;
-                                var s = ss[ssIndex[residue]].type;
-                                if (s === 0 /* None */)
-                                    continue;
-                                if (s === 5 /* Strand */) {
-                                    ret[residue] = +CartoonAsymUnit.isCartoonLike(atomIndices, rStart, i, name, "O5'", "C3'", false);
-                                }
-                                else {
-                                    ret[residue] = +CartoonAsymUnit.isCartoonLike(atomIndices, rStart, i, name, "CA", "O", true);
-                                }
-                                i--;
-                            }
-                            return ret;
-                        };
-                        CartoonAsymUnit.isUnknownSecondaryStructure = function (model) {
-                            var hasSeq = false;
-                            for (var _i = 0, _a = model.data.secondaryStructure; _i < _a.length; _i++) {
-                                var e = _a[_i];
-                                if (e.type === 1 /* Helix */
-                                    || e.type === 3 /* Sheet */
-                                    || e.type === 2 /* Turn */) {
-                                    return false;
-                                }
-                                if (e.type === 4 /* AminoSeq */) {
-                                    hasSeq = true;
-                                }
-                            }
-                            return hasSeq;
-                        };
-                        CartoonAsymUnit.approximateSecondaryStructure = function (model, parent) {
-                            if (parent.type !== 4 /* AminoSeq */)
-                                return [parent];
-                            var elements = [];
-                            var name = model.data.atoms.name;
-                            var _a = model.data.residues, atomStartIndex = _a.atomStartIndex, atomEndIndex = _a.atomEndIndex;
-                            var trace = new Int32Array(parent.endResidueIndex - parent.startResidueIndex), offset = 0;
-                            var isOk = true;
-                            for (var i = parent.startResidueIndex, _b = parent.endResidueIndex; i < _b; i++) {
-                                var foundCA = false, foundO = false;
-                                for (var j = atomStartIndex[i], _c = atomEndIndex[i]; j < _c; j++) {
-                                    if (name[j] === 'CA') {
-                                        if (!foundCA)
-                                            trace[offset++] = j;
-                                        foundCA = true;
-                                    }
-                                    else if (name[j] === 'O') {
-                                        foundO = true;
-                                    }
-                                    if (foundO && foundCA)
-                                        break;
-                                }
-                                if (!foundCA || !foundO) {
-                                    isOk = false;
-                                    break;
-                                }
-                            }
-                            if (!isOk)
-                                return [parent];
-                            CartoonAsymUnit.zhangSkolnickSStrace(model, trace, parent, elements);
-                            return elements;
-                        };
-                        CartoonAsymUnit.zhangSkolnickSStrace = function (model, trace, parent, elements) {
-                            var mask = new Int32Array(trace.length);
-                            var hasSS = false;
-                            var residueIndex = model.data.atoms.residueIndex;
-                            for (var i = 0, _l = trace.length; i < _l; i++) {
-                                if (CartoonAsymUnit.zhangSkolnickSSresidue(model, trace, i, CartoonAsymUnit.ZhangHelixDistance, CartoonAsymUnit.ZhangHelixDelta)) {
-                                    mask[i] = 1 /* Helix */;
-                                    hasSS = true;
-                                }
-                                else if (CartoonAsymUnit.zhangSkolnickSSresidue(model, trace, i, CartoonAsymUnit.ZhangSheetDistance, CartoonAsymUnit.ZhangSheetDelta)) {
-                                    mask[i] = 3 /* Sheet */;
-                                    hasSS = true;
-                                }
-                                else {
-                                    mask[i] = parent.type;
-                                }
-                            }
-                            if (!hasSS) {
-                                elements.push(parent);
-                                return;
-                            }
-                            // filter 1-length elements
-                            for (var i = 0, _l = mask.length; i < _l; i++) {
-                                var m = mask[i];
-                                if (m === parent.type)
-                                    continue;
-                                var j = i + 1;
-                                while (j < _l && m === mask[j]) {
-                                    j++;
-                                }
-                                if (j - i > 1) {
-                                    i = j - 1;
-                                    continue;
-                                }
-                                for (var k = i; k < j; k++)
-                                    mask[k] = parent.type;
-                                i = j - 1;
-                            }
-                            for (var i = 0, _l = mask.length; i < _l; i++) {
-                                var m = mask[i];
-                                var j = i + 1;
-                                while (j < _l && m === mask[j]) {
-                                    j++;
-                                }
-                                var e = new LiteMol.Core.Structure.SecondaryStructureElement(m, new LiteMol.Core.Structure.PolyResidueIdentifier('', i, null), new LiteMol.Core.Structure.PolyResidueIdentifier('', j, null));
-                                e.startResidueIndex = residueIndex[trace[i]];
-                                e.endResidueIndex = residueIndex[trace[j - 1]] + 1;
-                                elements.push(e);
-                                i = j - 1;
-                            }
-                        };
-                        CartoonAsymUnit.zhangSkolnickSSresidue = function (model, trace, i, distances, delta) {
-                            var len = trace.length;
-                            var _a = model.positions, x = _a.x, y = _a.y, z = _a.z;
-                            var u = CartoonAsymUnit.ZhangP1, v = CartoonAsymUnit.ZhangP2;
-                            for (var j = Math.max(0, i - 2); j <= i; j++) {
-                                for (var k = 2; k < 5; k++) {
-                                    if (j + k >= len) {
-                                        continue;
-                                    }
-                                    var a = trace[j], b = trace[j + k];
-                                    u.set(x[a], y[a], z[a]);
-                                    v.set(x[b], y[b], z[b]);
-                                    if (Math.abs(u.distanceTo(v) - distances[k - 2]) > delta) {
-                                        return false;
-                                    }
-                                }
-                            }
-                            return true;
-                        };
-                        CartoonAsymUnit.throwIfEmpty = function (ss) {
-                            if (ss.length === 0) {
-                                throw "Cartoons cannot be constructred from this model/selection.";
-                            }
-                        };
-                        CartoonAsymUnit.buildUnits = function (model, atomIndices, linearSegmentCount) {
-                            var mask = CartoonAsymUnit.createMask(model, atomIndices);
-                            var ss = [];
-                            var isUnknownSS = CartoonAsymUnit.isUnknownSecondaryStructure(model);
-                            for (var _i = 0, _a = model.data.secondaryStructure; _i < _a.length; _i++) {
-                                var e = _a[_i];
-                                if (isUnknownSS) {
-                                    var approx = CartoonAsymUnit.approximateSecondaryStructure(model, e);
-                                    for (var _d = 0, approx_1 = approx; _d < approx_1.length; _d++) {
-                                        var f = approx_1[_d];
-                                        CartoonAsymUnit.maskSplit(f, mask, ss);
-                                    }
-                                }
-                                else {
-                                    CartoonAsymUnit.maskSplit(e, mask, ss);
-                                }
-                            }
-                            CartoonAsymUnit.throwIfEmpty(ss);
-                            var previous = ss[0], asymId = model.data.residues.asymId, authSeqNumber = model.data.residues.authSeqNumber, currentElements = [], units = [], none = 0 /* None */;
-                            if (previous.type === none) {
-                                previous = null;
-                            }
-                            for (var _e = 0, ss_2 = ss; _e < ss_2.length; _e++) {
-                                var e = ss_2[_e];
-                                if (e.type === none) {
-                                    if (currentElements.length > 0) {
-                                        units.push(new CartoonAsymUnit(model, currentElements, linearSegmentCount));
-                                    }
-                                    previous = null;
-                                    currentElements = [];
-                                }
-                                else {
-                                    if (previous === null)
-                                        previous = e;
-                                    if (asymId[previous.endResidueIndex - 1] !== asymId[e.startResidueIndex]
-                                        || (previous !== e && authSeqNumber[e.startResidueIndex] - authSeqNumber[previous.endResidueIndex - 1] > 1)
-                                        || (previous.startResidueIndex !== e.startResidueIndex && (e.startResidueIndex - previous.endResidueIndex > 0))) {
-                                        if (currentElements.length > 0) {
-                                            units.push(new CartoonAsymUnit(model, currentElements, linearSegmentCount));
-                                        }
-                                        else if (previous !== null) {
-                                            units.push(new CartoonAsymUnit(model, [previous], linearSegmentCount));
-                                        }
-                                        previous = null;
-                                        currentElements = [e];
-                                    }
-                                    else {
-                                        currentElements[currentElements.length] = e;
-                                    }
-                                }
-                                previous = e;
-                            }
-                            if (currentElements.length > 0) {
-                                units.push(new CartoonAsymUnit(model, currentElements, linearSegmentCount));
-                            }
-                            return units; // [units[units.length - 1]];
-                        };
-                        CartoonAsymUnit.prototype.createControlPoints = function (state) {
-                            this.initPositions(state);
-                            this.initControlsPoints(state);
-                            this.computeSplines(state);
+                        CartoonAsymUnit.prototype.createControlPoints = function (builder) {
+                            this.initPositions(builder);
+                            this.initControlsPoints(builder);
+                            this.computeSplines(builder);
                             this.controlPoints = this.controlPointsBuilder.array;
                             this.torsionVectors = this.torsionVectorsBuilder.array;
                             this.normalVectors = this.normalVectorsBuilder.array;
@@ -70283,14 +69944,14 @@ var LiteMol;
                             this.torsionVectorsBuilder = null;
                             this.normalVectorsBuilder = null;
                         };
-                        CartoonAsymUnit.prototype.initPositions = function (state) {
+                        CartoonAsymUnit.prototype.initPositions = function (builder) {
                             var residues = this.model.data.residues, atoms = this.model.data.atoms, positions = this.model.positions, arrays = { atomStartIndex: residues.atomStartIndex, atomEndIndex: residues.atomEndIndex, name: atoms.name, x: positions.x, y: positions.y, z: positions.z }, residueType = [], offset = 0, i = 0;
                             for (var _i = 0, _a = this.elements; _i < _a.length; _i++) {
                                 var e = _a[_i];
                                 this.structureStarts.add(e.startResidueIndex);
                                 this.structureEnds.add(e.endResidueIndex - 1);
                                 for (i = e.startResidueIndex; i < e.endResidueIndex; i++) {
-                                    this.backboneOnly = state.addResidue(i, arrays, e.type);
+                                    this.backboneOnly = builder.addResidue(i, arrays, e.type);
                                     residueType[residueType.length] = e.type;
                                 }
                             }
@@ -70302,60 +69963,60 @@ var LiteMol;
                                 }
                             }
                             this.residueType = residueType;
-                            state.finishResidues();
+                            builder.finishResidues();
                             var len = this.residueCount;
-                            state.residueType[0] = state.residueType[2];
-                            state.residueType[1] = state.residueType[3];
-                            state.residueType[state.residueType.length - 2] = state.residueType[state.residueType.length - 4];
-                            state.residueType[state.residueType.length - 1] = state.residueType[state.residueType.length - 3];
+                            builder.residueType[0] = builder.residueType[2];
+                            builder.residueType[1] = builder.residueType[3];
+                            builder.residueType[builder.residueType.length - 2] = builder.residueType[builder.residueType.length - 4];
+                            builder.residueType[builder.residueType.length - 1] = builder.residueType[builder.residueType.length - 3];
                             if (len > 2) {
                                 var a = 2, b = 3, c = 4;
-                                if (state.residueType[0] !== 5 /* Strand */) {
-                                    this.reflectPositions(state.uPositions, 0, 1, a, b, b, c, 0.4, 0.6);
-                                    this.reflectPositions(state.vPositions, 0, 1, a, b, b, c, 0.4, 0.6);
+                                if (builder.residueType[0] !== 5 /* Strand */) {
+                                    this.reflectPositions(builder.uPositions, 0, 1, a, b, b, c, 0.4, 0.6);
+                                    this.reflectPositions(builder.vPositions, 0, 1, a, b, b, c, 0.4, 0.6);
                                 }
                                 else {
-                                    this.reflectPositions(state.uPositions, 1, 0, a, b, b, c, 0.5, 0.5);
-                                    this.reflectPositions(state.vPositions, 1, 0, a, b, b, c, 0.5, 0.5);
+                                    this.reflectPositions(builder.uPositions, 1, 0, a, b, b, c, 0.5, 0.5);
+                                    this.reflectPositions(builder.vPositions, 1, 0, a, b, b, c, 0.5, 0.5);
                                 }
                                 a = len + 1;
                                 b = len;
                                 c = len - 1;
-                                if (state.residueType[len - 1] !== 5 /* Strand */) {
-                                    this.reflectPositions(state.uPositions, len + 2, len + 3, a, b, b, c, 0.4, 0.6);
-                                    this.reflectPositions(state.vPositions, len + 2, len + 3, a, b, b, c, 0.4, 0.6);
+                                if (builder.residueType[len - 1] !== 5 /* Strand */) {
+                                    this.reflectPositions(builder.uPositions, len + 2, len + 3, a, b, b, c, 0.4, 0.6);
+                                    this.reflectPositions(builder.vPositions, len + 2, len + 3, a, b, b, c, 0.4, 0.6);
                                 }
                                 else {
-                                    this.reflectPositions(state.uPositions, len + 2, len + 3, a, b, b, c, 0.5, 0.5);
-                                    this.reflectPositions(state.vPositions, len + 2, len + 3, a, b, b, c, 0.5, 0.5);
+                                    this.reflectPositions(builder.uPositions, len + 2, len + 3, a, b, b, c, 0.5, 0.5);
+                                    this.reflectPositions(builder.vPositions, len + 2, len + 3, a, b, b, c, 0.5, 0.5);
                                 }
                             }
                             else if (len === 2) {
                                 for (i = 0; i < 2; i++) {
-                                    state.uPositions[3 * i] = state.uPositions[6];
-                                    state.uPositions[3 * i + 1] = state.uPositions[7];
-                                    state.uPositions[3 * i + 2] = state.uPositions[8];
-                                    state.vPositions[3 * i] = state.vPositions[6];
-                                    state.vPositions[3 * i + 1] = state.vPositions[7];
-                                    state.vPositions[3 * i + 2] = state.vPositions[8];
-                                    state.uPositions[(len + 2) * 3 + 3 * i] = state.uPositions[(len + 1) * 3];
-                                    state.uPositions[(len + 2) * 3 + 3 * i + 1] = state.uPositions[(len + 1) * 3 + 1];
-                                    state.uPositions[(len + 2) * 3 + 3 * i + 2] = state.uPositions[(len + 1) * 3 + 2];
-                                    state.vPositions[(len + 2) * 3 + 3 * i] = state.vPositions[(len + 1) * 3];
-                                    state.vPositions[(len + 2) * 3 + 3 * i + 1] = state.vPositions[(len + 1) * 3 + 1];
-                                    state.vPositions[(len + 2) * 3 + 3 * i + 2] = state.vPositions[(len + 1) * 3 + 2];
+                                    builder.uPositions[3 * i] = builder.uPositions[6];
+                                    builder.uPositions[3 * i + 1] = builder.uPositions[7];
+                                    builder.uPositions[3 * i + 2] = builder.uPositions[8];
+                                    builder.vPositions[3 * i] = builder.vPositions[6];
+                                    builder.vPositions[3 * i + 1] = builder.vPositions[7];
+                                    builder.vPositions[3 * i + 2] = builder.vPositions[8];
+                                    builder.uPositions[(len + 2) * 3 + 3 * i] = builder.uPositions[(len + 1) * 3];
+                                    builder.uPositions[(len + 2) * 3 + 3 * i + 1] = builder.uPositions[(len + 1) * 3 + 1];
+                                    builder.uPositions[(len + 2) * 3 + 3 * i + 2] = builder.uPositions[(len + 1) * 3 + 2];
+                                    builder.vPositions[(len + 2) * 3 + 3 * i] = builder.vPositions[(len + 1) * 3];
+                                    builder.vPositions[(len + 2) * 3 + 3 * i + 1] = builder.vPositions[(len + 1) * 3 + 1];
+                                    builder.vPositions[(len + 2) * 3 + 3 * i + 2] = builder.vPositions[(len + 1) * 3 + 2];
                                 }
                             }
                             else {
-                                var d = [state.uPositions[6] - state.vPositions[6],
-                                    state.uPositions[7] - state.vPositions[7],
-                                    state.uPositions[8] - state.vPositions[8]];
+                                var d = [builder.uPositions[6] - builder.vPositions[6],
+                                    builder.uPositions[7] - builder.vPositions[7],
+                                    builder.uPositions[8] - builder.vPositions[8]];
                                 for (var i_3 = 0; i_3 < 2; i_3++) {
                                     for (var j = 0; j < 3; j++) {
-                                        state.uPositions[3 * i_3 + j] = state.uPositions[6 + j] - 0.5 * (i_3 + 1) * d[j];
-                                        state.uPositions[9 + 3 * i_3 + j] = state.uPositions[6 + j] + 0.5 * (i_3 + 1) * d[j];
-                                        state.vPositions[3 * i_3 + j] = state.vPositions[6 + j] + 0.5 * (i_3 + 1) * d[j];
-                                        state.vPositions[9 + 3 * i_3 + j] = state.vPositions[6 + j] - 0.5 * (i_3 + 1) * d[j];
+                                        builder.uPositions[3 * i_3 + j] = builder.uPositions[6 + j] - 0.5 * (i_3 + 1) * d[j];
+                                        builder.uPositions[9 + 3 * i_3 + j] = builder.uPositions[6 + j] + 0.5 * (i_3 + 1) * d[j];
+                                        builder.vPositions[3 * i_3 + j] = builder.vPositions[6 + j] + 0.5 * (i_3 + 1) * d[j];
+                                        builder.vPositions[9 + 3 * i_3 + j] = builder.vPositions[6 + j] - 0.5 * (i_3 + 1) * d[j];
                                     }
                                 }
                                 //state.uPositions[0] = state.uPositions[6] - dx;
@@ -70363,13 +70024,13 @@ var LiteMol;
                                 //console.log(state.uPositions, state.vPositions);
                             }
                         };
-                        CartoonAsymUnit.prototype.initControlsPoints = function (state) {
-                            var previousD = new Visualization.THREE.Vector3(), len = state.uvLength - 1, a = new Visualization.THREE.Vector3(), b = new Visualization.THREE.Vector3(), c = new Visualization.THREE.Vector3(), d = new Visualization.THREE.Vector3(), ca1 = new Visualization.THREE.Vector3(), o1 = new Visualization.THREE.Vector3(), ca2 = new Visualization.THREE.Vector3(), p = new Visualization.THREE.Vector3(), helixType = 1 /* Helix */;
+                        CartoonAsymUnit.prototype.initControlsPoints = function (builder) {
+                            var previousD = new Visualization.THREE.Vector3(), len = builder.uvLength - 1, a = new Visualization.THREE.Vector3(), b = new Visualization.THREE.Vector3(), c = new Visualization.THREE.Vector3(), d = new Visualization.THREE.Vector3(), ca1 = new Visualization.THREE.Vector3(), o1 = new Visualization.THREE.Vector3(), ca2 = new Visualization.THREE.Vector3(), p = new Visualization.THREE.Vector3(), helixType = 1 /* Helix */;
                             for (var i = 0; i < len; i++) {
-                                ca1.set(state.uPositions[3 * i], state.uPositions[3 * i + 1], state.uPositions[3 * i + 2]);
-                                o1.set(state.vPositions[3 * i], state.vPositions[3 * i + 1], state.vPositions[3 * i + 2]);
+                                ca1.set(builder.uPositions[3 * i], builder.uPositions[3 * i + 1], builder.uPositions[3 * i + 2]);
+                                o1.set(builder.vPositions[3 * i], builder.vPositions[3 * i + 1], builder.vPositions[3 * i + 2]);
                                 i++;
-                                ca2.set(state.uPositions[3 * i], state.uPositions[3 * i + 1], state.uPositions[3 * i + 2]);
+                                ca2.set(builder.uPositions[3 * i], builder.uPositions[3 * i + 1], builder.uPositions[3 * i + 2]);
                                 i--;
                                 p.set((ca1.x + ca2.x) / 2, (ca1.y + ca2.y) / 2, (ca1.z + ca2.z) / 2);
                                 a.subVectors(ca2, ca1);
@@ -70378,7 +70039,7 @@ var LiteMol;
                                 d.crossVectors(c, a);
                                 c.normalize();
                                 d.normalize();
-                                if (state.residueType[i] === helixType && state.residueType[i + 1] === helixType) {
+                                if (builder.residueType[i] === helixType && builder.residueType[i + 1] === helixType) {
                                     p.set(p.x + 1.5 * c.x, p.y + 1.5 * c.y, p.z + 1.5 * c.z);
                                 }
                                 if (i > 0 && d.angleTo(previousD) > Math.PI / 2) {
@@ -70386,12 +70047,12 @@ var LiteMol;
                                 }
                                 previousD.copy(d);
                                 a.addVectors(p, d);
-                                state.addControlPoint(p, a);
+                                builder.addControlPoint(p, a);
                             }
-                            state.finishContols();
+                            builder.finishContols();
                         };
-                        CartoonAsymUnit.prototype.computeSplines = function (state) {
-                            var previousControlPoint = new Visualization.THREE.Vector3(), controlPoint = new Visualization.THREE.Vector3(), torsionPoint = new Visualization.THREE.Vector3(), len = state.residueCount, pPositions = state.pPositions, dPositions = state.dPositions, p1 = new Visualization.THREE.Vector3(), p2 = new Visualization.THREE.Vector3(), p3 = new Visualization.THREE.Vector3(), p4 = new Visualization.THREE.Vector3(), d1 = new Visualization.THREE.Vector3(), d2 = new Visualization.THREE.Vector3(), d3 = new Visualization.THREE.Vector3(), d4 = new Visualization.THREE.Vector3(), previousTorsionPoint = new Visualization.THREE.Vector3(), extrapolatedControlPoint = new Visualization.THREE.Vector3();
+                        CartoonAsymUnit.prototype.computeSplines = function (builder) {
+                            var previousControlPoint = new Visualization.THREE.Vector3(), controlPoint = new Visualization.THREE.Vector3(), torsionPoint = new Visualization.THREE.Vector3(), len = builder.residueCount, pPositions = builder.pPositions, dPositions = builder.dPositions, p1 = new Visualization.THREE.Vector3(), p2 = new Visualization.THREE.Vector3(), p3 = new Visualization.THREE.Vector3(), p4 = new Visualization.THREE.Vector3(), d1 = new Visualization.THREE.Vector3(), d2 = new Visualization.THREE.Vector3(), d3 = new Visualization.THREE.Vector3(), d4 = new Visualization.THREE.Vector3(), previousTorsionPoint = new Visualization.THREE.Vector3(), extrapolatedControlPoint = new Visualization.THREE.Vector3();
                             for (var i = 0; i < len; i++) {
                                 p1.set(pPositions[3 * i], pPositions[3 * i + 1], pPositions[3 * i + 2]);
                                 i++;
@@ -70454,10 +70115,15 @@ var LiteMol;
                             xs[3 * v + 1] = this.tempC.y;
                             xs[3 * v + 2] = this.tempC.z;
                         };
-                        CartoonAsymUnit.reflect = function (target, p1, p2, amount) {
+                        return CartoonAsymUnit;
+                    }());
+                    Geometry.CartoonAsymUnit = CartoonAsymUnit;
+                    (function (CartoonAsymUnit) {
+                        function reflect(target, p1, p2, amount) {
                             target.set(p1.x - amount * (p2.x - p1.x), p1.y - amount * (p2.y - p1.y), p1.z - amount * (p2.z - p1.z));
-                        };
-                        CartoonAsymUnit.spline = function (target, p1, p2, p3, t) {
+                        }
+                        CartoonAsymUnit.reflect = reflect;
+                        function spline(target, p1, p2, p3, t) {
                             var a = Math.pow(1 - t, 2) / 2;
                             var c = Math.pow(t, 2) / 2;
                             var b = 1 - a - c;
@@ -70465,16 +70131,387 @@ var LiteMol;
                             var y = a * p1.y + b * p2.y + c * p3.y;
                             var z = a * p1.z + b * p2.z + c * p3.z;
                             target.set(x, y, z);
+                        }
+                        CartoonAsymUnit.spline = spline;
+                        function maskSplit(element, mask, target) {
+                            var current = element, start = element.startResidueIndex, end = element.endResidueIndex;
+                            for (var i = start; i < end; i++) {
+                                if (!mask[i])
+                                    continue;
+                                if (current.startResidueIndex !== i) {
+                                    current = new LiteMol.Core.Structure.SecondaryStructureElement(element.type, element.startResidueId, element.endResidueId);
+                                    current.startResidueIndex = i;
+                                }
+                                while (i < end && mask[i]) {
+                                    i++;
+                                }
+                                current.endResidueIndex = i;
+                                target[target.length] = current;
+                            }
+                        }
+                        CartoonAsymUnit.maskSplit = maskSplit;
+                        function isCartoonLike(atomIndices, start, end, name, a, b, isAmk) {
+                            var aU = false, aV = false, hasP = false;
+                            for (var i = start; i < end; i++) {
+                                var n = name[atomIndices[i]];
+                                if (!aU && n === a) {
+                                    aU = true;
+                                }
+                                else if (!aV && n === b) {
+                                    aV = true;
+                                }
+                                if (aU && aV)
+                                    return true;
+                                if (n === 'P') {
+                                    hasP = true;
+                                }
+                            }
+                            if (isAmk)
+                                return aU;
+                            return hasP;
+                        }
+                        CartoonAsymUnit.isCartoonLike = isCartoonLike;
+                        function createMask(model, atomIndices) {
+                            var ret = new Uint8Array(model.data.residues.count);
+                            var _a = model.data.atoms, residueIndex = _a.residueIndex, name = _a.name;
+                            var ssIndex = model.data.residues.secondaryStructureIndex;
+                            var ss = model.data.secondaryStructure;
+                            for (var i = 0, _b = atomIndices.length - 1; i < _b; i++) {
+                                var aI = atomIndices[i];
+                                var rStart = i;
+                                var residue = residueIndex[aI];
+                                i++;
+                                while (residue === residueIndex[atomIndices[i]])
+                                    i++;
+                                var s = ss[ssIndex[residue]].type;
+                                if (s === 0 /* None */)
+                                    continue;
+                                if (s === 5 /* Strand */) {
+                                    ret[residue] = +CartoonAsymUnit.isCartoonLike(atomIndices, rStart, i, name, "O5'", "C3'", false);
+                                }
+                                else {
+                                    ret[residue] = +CartoonAsymUnit.isCartoonLike(atomIndices, rStart, i, name, "CA", "O", true);
+                                }
+                                i--;
+                            }
+                            return ret;
+                        }
+                        CartoonAsymUnit.createMask = createMask;
+                        function isUnknownSecondaryStructure(model) {
+                            var hasSeq = false;
+                            for (var _i = 0, _a = model.data.secondaryStructure; _i < _a.length; _i++) {
+                                var e = _a[_i];
+                                if (e.type === 1 /* Helix */
+                                    || e.type === 3 /* Sheet */
+                                    || e.type === 2 /* Turn */) {
+                                    return false;
+                                }
+                                if (e.type === 4 /* AminoSeq */) {
+                                    hasSeq = true;
+                                }
+                            }
+                            return hasSeq;
+                        }
+                        function approximateSecondaryStructure(model, parent) {
+                            if (parent.type !== 4 /* AminoSeq */)
+                                return [parent];
+                            var elements = [];
+                            var name = model.data.atoms.name;
+                            var _a = model.data.residues, atomStartIndex = _a.atomStartIndex, atomEndIndex = _a.atomEndIndex;
+                            var trace = new Int32Array(parent.endResidueIndex - parent.startResidueIndex), offset = 0;
+                            var isOk = true;
+                            for (var i = parent.startResidueIndex, _b = parent.endResidueIndex; i < _b; i++) {
+                                var foundCA = false, foundO = false;
+                                for (var j = atomStartIndex[i], _c = atomEndIndex[i]; j < _c; j++) {
+                                    if (name[j] === 'CA') {
+                                        if (!foundCA)
+                                            trace[offset++] = j;
+                                        foundCA = true;
+                                    }
+                                    else if (name[j] === 'O') {
+                                        foundO = true;
+                                    }
+                                    if (foundO && foundCA)
+                                        break;
+                                }
+                                if (!foundCA || !foundO) {
+                                    isOk = false;
+                                    break;
+                                }
+                            }
+                            if (!isOk)
+                                return [parent];
+                            zhangSkolnickSStrace(model, trace, parent, elements);
+                            return elements;
+                        }
+                        var ZhangHelixDistance = [5.45, 5.18, 6.37];
+                        var ZhangHelixDelta = 2.1;
+                        var ZhangSheetDistance = [6.1, 10.4, 13.0];
+                        var ZhangSheetDelta = 1.42;
+                        var ZhangP1 = new Visualization.THREE.Vector3(0, 0, 0);
+                        var ZhangP2 = new Visualization.THREE.Vector3(0, 0, 0);
+                        function zhangSkolnickSStrace(model, trace, parent, elements) {
+                            var mask = new Int32Array(trace.length);
+                            var hasSS = false;
+                            var residueIndex = model.data.atoms.residueIndex;
+                            for (var i = 0, _l = trace.length; i < _l; i++) {
+                                if (zhangSkolnickSSresidue(model, trace, i, ZhangHelixDistance, ZhangHelixDelta)) {
+                                    mask[i] = 1 /* Helix */;
+                                    hasSS = true;
+                                }
+                                else if (zhangSkolnickSSresidue(model, trace, i, ZhangSheetDistance, ZhangSheetDelta)) {
+                                    mask[i] = 3 /* Sheet */;
+                                    hasSS = true;
+                                }
+                                else {
+                                    mask[i] = parent.type;
+                                }
+                            }
+                            if (!hasSS) {
+                                elements.push(parent);
+                                return;
+                            }
+                            // filter 1-length elements
+                            for (var i = 0, _l = mask.length; i < _l; i++) {
+                                var m = mask[i];
+                                if (m === parent.type)
+                                    continue;
+                                var j = i + 1;
+                                while (j < _l && m === mask[j]) {
+                                    j++;
+                                }
+                                if (j - i > 1) {
+                                    i = j - 1;
+                                    continue;
+                                }
+                                for (var k = i; k < j; k++)
+                                    mask[k] = parent.type;
+                                i = j - 1;
+                            }
+                            for (var i = 0, _l = mask.length; i < _l; i++) {
+                                var m = mask[i];
+                                var j = i + 1;
+                                while (j < _l && m === mask[j]) {
+                                    j++;
+                                }
+                                var e = new LiteMol.Core.Structure.SecondaryStructureElement(m, new LiteMol.Core.Structure.PolyResidueIdentifier('', i, null), new LiteMol.Core.Structure.PolyResidueIdentifier('', j, null));
+                                e.startResidueIndex = residueIndex[trace[i]];
+                                e.endResidueIndex = residueIndex[trace[j - 1]] + 1;
+                                elements.push(e);
+                                i = j - 1;
+                            }
+                        }
+                        function zhangSkolnickSSresidue(model, trace, i, distances, delta) {
+                            var len = trace.length;
+                            var _a = model.positions, x = _a.x, y = _a.y, z = _a.z;
+                            var u = ZhangP1, v = ZhangP2;
+                            for (var j = Math.max(0, i - 2); j <= i; j++) {
+                                for (var k = 2; k < 5; k++) {
+                                    if (j + k >= len) {
+                                        continue;
+                                    }
+                                    var a = trace[j], b = trace[j + k];
+                                    u.set(x[a], y[a], z[a]);
+                                    v.set(x[b], y[b], z[b]);
+                                    if (Math.abs(u.distanceTo(v) - distances[k - 2]) > delta) {
+                                        return false;
+                                    }
+                                }
+                            }
+                            return true;
+                        }
+                        function throwIfEmpty(ss) {
+                            if (ss.length === 0) {
+                                throw "Cartoons cannot be constructred from this model/selection.";
+                            }
+                        }
+                        function buildUnits(model, atomIndices, linearSegmentCount) {
+                            var mask = createMask(model, atomIndices);
+                            var ss = [];
+                            var isUnknownSS = isUnknownSecondaryStructure(model);
+                            for (var _i = 0, _a = model.data.secondaryStructure; _i < _a.length; _i++) {
+                                var e = _a[_i];
+                                if (isUnknownSS) {
+                                    var approx = approximateSecondaryStructure(model, e);
+                                    for (var _d = 0, approx_1 = approx; _d < approx_1.length; _d++) {
+                                        var f = approx_1[_d];
+                                        CartoonAsymUnit.maskSplit(f, mask, ss);
+                                    }
+                                }
+                                else {
+                                    CartoonAsymUnit.maskSplit(e, mask, ss);
+                                }
+                            }
+                            throwIfEmpty(ss);
+                            var previous = ss[0], asymId = model.data.residues.asymId, authSeqNumber = model.data.residues.authSeqNumber, currentElements = [], units = [], none = 0 /* None */;
+                            if (previous.type === none) {
+                                previous = null;
+                            }
+                            for (var _e = 0, ss_2 = ss; _e < ss_2.length; _e++) {
+                                var e = ss_2[_e];
+                                if (e.type === none) {
+                                    if (currentElements.length > 0) {
+                                        units.push(new CartoonAsymUnit(model, currentElements, linearSegmentCount));
+                                    }
+                                    previous = null;
+                                    currentElements = [];
+                                }
+                                else {
+                                    if (previous === null)
+                                        previous = e;
+                                    if (asymId[previous.endResidueIndex - 1] !== asymId[e.startResidueIndex]
+                                        || (previous !== e && authSeqNumber[e.startResidueIndex] - authSeqNumber[previous.endResidueIndex - 1] > 1)
+                                        || (previous.startResidueIndex !== e.startResidueIndex && (e.startResidueIndex - previous.endResidueIndex > 0))) {
+                                        if (currentElements.length > 0) {
+                                            units.push(new CartoonAsymUnit(model, currentElements, linearSegmentCount));
+                                        }
+                                        else if (previous !== null) {
+                                            units.push(new CartoonAsymUnit(model, [previous], linearSegmentCount));
+                                        }
+                                        previous = null;
+                                        currentElements = [e];
+                                    }
+                                    else {
+                                        currentElements[currentElements.length] = e;
+                                    }
+                                }
+                                previous = e;
+                            }
+                            if (currentElements.length > 0) {
+                                units.push(new CartoonAsymUnit(model, currentElements, linearSegmentCount));
+                            }
+                            return units; // [units[units.length - 1]];
+                        }
+                        CartoonAsymUnit.buildUnits = buildUnits;
+                    })(CartoonAsymUnit = Geometry.CartoonAsymUnit || (Geometry.CartoonAsymUnit = {}));
+                    var ContolPointsBuilder = (function () {
+                        function ContolPointsBuilder(residueCount) {
+                            this.typeBuilder = ArrayBuilder.forArray(10000);
+                            this.residueType = [];
+                            this.uPositions = new Float32Array(0);
+                            this.vPositions = new Float32Array(0);
+                            this.pPositions = new Float32Array(0);
+                            this.dPositions = new Float32Array(0);
+                            this.uvLength = 0;
+                            this.residueCount = 0;
+                            this.typeBuilder = ArrayBuilder.forArray(residueCount + 4);
+                            this.uPositionsBuilder = ArrayBuilder.forVertex3D(residueCount + 4);
+                            this.vPositionsBuilder = ArrayBuilder.forVertex3D(residueCount + 4);
+                            this.pPositionsBuilder = ArrayBuilder.forVertex3D(residueCount + 4);
+                            this.dPositionsBuilder = ArrayBuilder.forVertex3D(residueCount + 4);
+                            ArrayBuilder.add(this.typeBuilder, 0 /* None */);
+                            ArrayBuilder.add(this.typeBuilder, 0 /* None */);
+                            ArrayBuilder.add3(this.uPositionsBuilder, 0, 0, 0);
+                            ArrayBuilder.add3(this.uPositionsBuilder, 0, 0, 0);
+                            ArrayBuilder.add3(this.vPositionsBuilder, 0, 0, 0);
+                            ArrayBuilder.add3(this.vPositionsBuilder, 0, 0, 0);
+                        }
+                        ContolPointsBuilder.prototype.addResidue = function (rIndex, arrays, sType) {
+                            var start = arrays.atomStartIndex[rIndex], end = arrays.atomEndIndex[rIndex], aU = false, aV = false;
+                            var name = arrays.name;
+                            if (sType !== 5 /* Strand */) {
+                                for (var i = start; i < end; i++) {
+                                    if (!aU && name[i] === "CA") {
+                                        ArrayBuilder.add3(this.uPositionsBuilder, arrays.x[i], arrays.y[i], arrays.z[i]);
+                                        aU = true;
+                                    }
+                                    else if (!aV && name[i] === "O") {
+                                        ArrayBuilder.add3(this.vPositionsBuilder, arrays.x[i], arrays.y[i], arrays.z[i]);
+                                        aV = true;
+                                    }
+                                    if (aU && aV)
+                                        break;
+                                }
+                            }
+                            else {
+                                if (end - start === 1) {
+                                    // has to be P atom
+                                    ArrayBuilder.add3(this.uPositionsBuilder, arrays.x[start], arrays.y[start], arrays.z[start]);
+                                    aU = true;
+                                }
+                                else {
+                                    var pIndex = -1;
+                                    for (var i = start; i < end; i++) {
+                                        if (!aU && name[i] === "O5'") {
+                                            ArrayBuilder.add3(this.uPositionsBuilder, arrays.x[i], arrays.y[i], arrays.z[i]);
+                                            aU = true;
+                                        }
+                                        else if (!aV && name[i] === "C3'") {
+                                            ArrayBuilder.add3(this.vPositionsBuilder, arrays.x[i], arrays.y[i], arrays.z[i]);
+                                            aV = true;
+                                        }
+                                        if (name[i] === "P") {
+                                            pIndex = i;
+                                        }
+                                        if (aU && aV)
+                                            break;
+                                    }
+                                    if (!aU && !aV && pIndex >= 0) {
+                                        ArrayBuilder.add3(this.uPositionsBuilder, arrays.x[pIndex], arrays.y[pIndex], arrays.z[pIndex]);
+                                        aU = true;
+                                    }
+                                }
+                            }
+                            var backboneOnly = false;
+                            if (!aV) {
+                                var arr = this.uPositionsBuilder.array, len = arr.length;
+                                ArrayBuilder.add3(this.vPositionsBuilder, arr[len - 3], arr[len - 2], arr[len - 1]);
+                                backboneOnly = true;
+                            }
+                            else if (!aU) {
+                                var arr = this.vPositionsBuilder.array, len = arr.length;
+                                ArrayBuilder.add3(this.uPositionsBuilder, arr[len - 3], arr[len - 2], arr[len - 1]);
+                                backboneOnly = true;
+                            }
+                            ArrayBuilder.add(this.typeBuilder, sType);
+                            return backboneOnly;
                         };
-                        CartoonAsymUnit.ZhangHelixDistance = [5.45, 5.18, 6.37];
-                        CartoonAsymUnit.ZhangHelixDelta = 2.1;
-                        CartoonAsymUnit.ZhangSheetDistance = [6.1, 10.4, 13.0];
-                        CartoonAsymUnit.ZhangSheetDelta = 1.42;
-                        CartoonAsymUnit.ZhangP1 = new Visualization.THREE.Vector3(0, 0, 0);
-                        CartoonAsymUnit.ZhangP2 = new Visualization.THREE.Vector3(0, 0, 0);
-                        return CartoonAsymUnit;
+                        ContolPointsBuilder.prototype.finishResidues = function () {
+                            ArrayBuilder.add(this.typeBuilder, 0 /* None */);
+                            ArrayBuilder.add(this.typeBuilder, 0 /* None */);
+                            ArrayBuilder.add3(this.uPositionsBuilder, 0, 0, 0);
+                            ArrayBuilder.add3(this.uPositionsBuilder, 0, 0, 0);
+                            ArrayBuilder.add3(this.vPositionsBuilder, 0, 0, 0);
+                            ArrayBuilder.add3(this.vPositionsBuilder, 0, 0, 0);
+                            this.residueType = this.typeBuilder.array;
+                            this.uPositions = this.uPositionsBuilder.array;
+                            this.vPositions = this.vPositionsBuilder.array;
+                            this.typeBuilder = null;
+                            this.uPositionsBuilder = null;
+                            this.vPositionsBuilder = null;
+                            this.uvLength = this.residueType.length;
+                            this.residueCount = this.uvLength - 4;
+                        };
+                        ContolPointsBuilder.prototype.addControlPoint = function (p, d) {
+                            ArrayBuilder.add3(this.pPositionsBuilder, p.x, p.y, p.z);
+                            ArrayBuilder.add3(this.dPositionsBuilder, d.x, d.y, d.z);
+                        };
+                        ContolPointsBuilder.prototype.finishContols = function () {
+                            this.pPositions = this.pPositionsBuilder.array;
+                            this.dPositions = this.dPositionsBuilder.array;
+                            this.pPositionsBuilder = null;
+                            this.dPositionsBuilder = null;
+                        };
+                        return ContolPointsBuilder;
                     }());
-                    Geometry.CartoonAsymUnit = CartoonAsymUnit;
+                })(Geometry = Cartoons.Geometry || (Cartoons.Geometry = {}));
+            })(Cartoons = Molecule.Cartoons || (Molecule.Cartoons = {}));
+        })(Molecule = Visualization.Molecule || (Visualization.Molecule = {}));
+    })(Visualization = LiteMol.Visualization || (LiteMol.Visualization = {}));
+})(LiteMol || (LiteMol = {}));
+/*
+ * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ */
+var LiteMol;
+(function (LiteMol) {
+    var Visualization;
+    (function (Visualization) {
+        var Molecule;
+        (function (Molecule) {
+            var Cartoons;
+            (function (Cartoons) {
+                var Geometry;
+                (function (Geometry) {
                     var CartoonsGeometryParams = (function () {
                         function CartoonsGeometryParams() {
                             this.radialSegmentCount = 10;
@@ -70492,34 +70529,46 @@ var LiteMol;
                         return CartoonsGeometryParams;
                     }());
                     Geometry.CartoonsGeometryParams = CartoonsGeometryParams;
+                    var GB = Visualization.Geometry.Builder;
                     var CartoonsGeometryState = (function () {
                         function CartoonsGeometryState(params, residueCount) {
                             this.params = params;
+                            this.residueCount = residueCount;
                             this.residueIndex = 0;
-                            this.verticesDone = 0;
-                            this.trianglesDone = 0;
-                            this.vertexBuffer = ChunkedArray.forVertex3D();
-                            this.normalBuffer = ChunkedArray.forVertex3D();
-                            this.indexBuffer = ChunkedArray.forIndexBuffer();
+                            this.builder = GB.createDynamic(this.residueCount * 8, this.residueCount * 16);
+                            this.vs = this.builder.vertices;
+                            this.is = this.builder.indices;
+                            this.gapsBuilder = GB.createDynamic(256, 512);
                             this.translationMatrix = new Visualization.THREE.Matrix4();
                             this.scaleMatrix = new Visualization.THREE.Matrix4();
                             this.rotationMatrix = new Visualization.THREE.Matrix4();
                             this.invMatrix = new Visualization.THREE.Matrix4();
                             this.vertexMap = new Visualization.Selection.VertexMapBuilder(residueCount);
                         }
+                        Object.defineProperty(CartoonsGeometryState.prototype, "verticesDone", {
+                            get: function () {
+                                return this.vs.elementCount;
+                            },
+                            enumerable: true,
+                            configurable: true
+                        });
+                        Object.defineProperty(CartoonsGeometryState.prototype, "trianglesDone", {
+                            get: function () {
+                                return this.is.elementCount;
+                            },
+                            enumerable: true,
+                            configurable: true
+                        });
                         CartoonsGeometryState.prototype.addVertex = function (v, n) {
-                            ChunkedArray.add3(this.vertexBuffer, v.x, v.y, v.z);
-                            ChunkedArray.add3(this.normalBuffer, n.x, n.y, n.z);
-                            this.verticesDone++;
+                            GB.addVertex3d(this.builder, v.x, v.y, v.z);
+                            GB.addNormal3d(this.builder, n.x, n.y, n.z);
                         };
                         CartoonsGeometryState.prototype.addTriangle = function (i, j, k) {
-                            ChunkedArray.add3(this.indexBuffer, i, j, k);
-                            this.trianglesDone++;
+                            GB.addIndex3d(this.builder, i, j, k);
                         };
                         CartoonsGeometryState.prototype.addTriangles = function (i, j, k, u, v, w) {
-                            ChunkedArray.add3(this.indexBuffer, i, j, k);
-                            ChunkedArray.add3(this.indexBuffer, u, v, w);
-                            this.trianglesDone += 2;
+                            GB.addIndex3d(this.builder, i, j, k);
+                            GB.addIndex3d(this.builder, u, v, w);
                         };
                         return CartoonsGeometryState;
                     }());
@@ -70648,9 +70697,21 @@ var LiteMol;
                         }
                     }
                     Geometry.buildUnit = buildUnit;
+                    function isGap(ctx, a, b) {
+                        var chainIndex = ctx.model.data.residues.chainIndex;
+                        return chainIndex[a.endResidueIndex] === chainIndex[b.endResidueIndex];
+                    }
+                    var Vec3 = LiteMol.Core.Geometry.LinearAlgebra.Vector3;
+                    function renderGap(ctx, unitA, unitB) {
+                        var aL = unitA.controlPoints.length;
+                        var cpA = unitA.controlPoints, cpB = unitB.controlPoints;
+                        var a = Vec3.fromValues(cpA[aL - 3], cpA[aL - 2], cpA[aL - 1]), b = Vec3.fromValues(cpB[0], cpB[1], cpB[2]);
+                        var r = ctx.state.params.turnWidth / 2;
+                        GB.addDashedLine(ctx.state.gapsBuilder, a, b, 0.5, 0.5, r);
+                    }
                     function buildUnitsAsync(ctx) {
                         return __awaiter(this, void 0, LiteMol.Promise, function () {
-                            var chunkSize, started, unitIndex, residuesDone, t;
+                            var chunkSize, started, unitIndex, residuesDone, t, i;
                             return __generator(this, function (_a) {
                                 switch (_a.label) {
                                     case 0:
@@ -70674,7 +70735,13 @@ var LiteMol;
                                         _a.sent();
                                         _a.label = 3;
                                     case 3: return [3 /*break*/, 1];
-                                    case 4: return [2 /*return*/];
+                                    case 4:
+                                        for (i = 0; i < ctx.units.length - 1; i++) {
+                                            if (isGap(ctx, ctx.units[i], ctx.units[i + 1])) {
+                                                renderGap(ctx, ctx.units[i], ctx.units[i + 1]);
+                                            }
+                                        }
+                                        return [2 /*return*/];
                                 }
                             });
                         });
@@ -70682,15 +70749,15 @@ var LiteMol;
                     Geometry.buildUnitsAsync = buildUnitsAsync;
                     function createGeometry(ctx) {
                         var state = ctx.state;
-                        var vertexBuffer = new Float32Array(ChunkedArray.compact(state.vertexBuffer)), normalBuffer = new Float32Array(ChunkedArray.compact(state.normalBuffer)), colorBuffer = new Float32Array(state.verticesDone * 3), pickColorBuffer = new Float32Array(state.verticesDone * 4), indexBuffer = new Uint32Array(ChunkedArray.compact(state.indexBuffer)), stateBuffer = new Float32Array(state.verticesDone);
-                        var geometry = new Visualization.THREE.BufferGeometry();
-                        geometry.addAttribute('position', new Visualization.THREE.BufferAttribute(vertexBuffer, 3));
-                        geometry.addAttribute('normal', new Visualization.THREE.BufferAttribute(normalBuffer, 3));
-                        geometry.addAttribute('index', new Visualization.THREE.BufferAttribute(indexBuffer, 1));
+                        var colorBuffer = new Float32Array(state.verticesDone * 3), pickColorBuffer = new Float32Array(state.verticesDone * 4), stateBuffer = new Float32Array(state.verticesDone);
+                        var geometry = GB.toBufferGeometry(state.builder);
                         geometry.addAttribute('color', new Visualization.THREE.BufferAttribute(colorBuffer, 3));
                         ctx.geom.vertexStateBuffer = new Visualization.THREE.BufferAttribute(stateBuffer, 1);
                         geometry.addAttribute('vState', ctx.geom.vertexStateBuffer);
                         ctx.geom.geometry = geometry;
+                        if (state.gapsBuilder.vertices.elementCount) {
+                            ctx.geom.gapsGeometry = GB.toBufferGeometry(state.gapsBuilder);
+                        }
                         var map = ctx.geom.vertexMap, color = { r: 0.45, g: 0.45, b: 0.45 }, vertexRanges = map.vertexRanges;
                         for (var _i = 0, _a = map.elementIndices; _i < _a.length; _i++) {
                             var elementIndex = _a[_i];
@@ -71001,14 +71068,30 @@ var LiteMol;
                             }
                         }
                         bufferAttribute.needsUpdate = true;
+                        // const gapColor = Theme.getColor(theme, 'Gap', Colors.DefaultBondColor);
+                        // const gc = this.gapMaterial.color;
+                        // if (gapColor.r !== gc.r || gapColor.g !== gc.g || gapColor.b !== gc.b) {
+                        //     this.gapMaterial.color = new THREE.Color(gapColor.r, gapColor.g, gapColor.b);
+                        //     this.gapMaterial.needsUpdate = true;
+                        // }
                     };
                     Model.prototype.applyThemeInternal = function (theme) {
                         this.applyColoring(theme);
                         Visualization.MaterialsHelper.updateMaterial(this.material, theme, this.object);
+                        Visualization.MaterialsHelper.updateMaterial(this.gapMaterial, theme, this.object);
                     };
                     Model.prototype.createObjects = function () {
+                        var main;
+                        if (this.cartoons.gapsGeometry) {
+                            main = new Visualization.THREE.Object3D();
+                            main.add(new Visualization.THREE.Mesh(this.cartoons.geometry, this.material));
+                            main.add(new Visualization.THREE.Mesh(this.cartoons.gapsGeometry, this.gapMaterial));
+                        }
+                        else {
+                            main = new Visualization.THREE.Mesh(this.cartoons.geometry, this.material);
+                        }
                         return {
-                            main: new Visualization.THREE.Mesh(this.cartoons.geometry, this.material),
+                            main: main,
                             pick: new Visualization.THREE.Mesh(this.cartoons.pickGeometry, this.pickMaterial)
                         };
                     };
@@ -71065,6 +71148,7 @@ var LiteMol;
                                         ret.cartoons = cartoons;
                                         ret.queryContext = queryContext;
                                         ret.material = Visualization.MaterialsHelper.getMeshMaterial();
+                                        ret.gapMaterial = new Visualization.THREE.MeshPhongMaterial({ color: 0x777777, shading: Visualization.THREE.FlatShading });
                                         ret.pickMaterial = Visualization.MaterialsHelper.getPickMaterial();
                                         if (props)
                                             ret.props = props;
@@ -71078,7 +71162,7 @@ var LiteMol;
                                         ret.pickBufferAttributes = [ret.cartoons.pickGeometry.attributes.pColor];
                                         ret.model = model;
                                         ret.applyTheme(theme);
-                                        ret.disposeList.push(ret.cartoons, ret.material, ret.pickMaterial);
+                                        ret.disposeList.push(ret.cartoons, ret.material, ret.pickMaterial, ret.gapMaterial);
                                         return [2 /*return*/, ret];
                                 }
                             });

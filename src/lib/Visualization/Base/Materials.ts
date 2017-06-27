@@ -232,7 +232,7 @@ namespace LiteMol.Visualization {
             if (object) object.renderOrder = isTransparent ? 1 : 0;
             
             let changed = false;        
-            if (material instanceof THREE.MeshPhongMaterial || material instanceof THREE.ShaderMaterial) {     
+            if (material instanceof THREE.MeshPhongMaterial || material instanceof THREE.MeshBasicMaterial || material instanceof THREE.ShaderMaterial) {     
                 
                 if (material.transparent !== isTransparent) {
                     material.transparent = isTransparent;

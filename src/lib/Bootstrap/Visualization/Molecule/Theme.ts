@@ -16,7 +16,7 @@ namespace LiteMol.Bootstrap.Visualization.Molecule {
         'Bond': Vis.Molecule.Colors.DefaultBondColor,
         'Highlight': Vis.Theme.Default.HighlightColor,
         'Selection': Vis.Theme.Default.SelectionColor,
-    });        
+    });     
     
     function mappingClosure(index: number[], property: any[]) {
         return function(i: number) { return property[index[i]] };   

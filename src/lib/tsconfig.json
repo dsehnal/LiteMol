@@ -103,6 +103,7 @@
     "./Visualization/Molecule/BallsAndSticks/Model.ts",
     "./Visualization/Molecule/BallsAndSticks/Geometry.ts",
     "./Visualization/Molecule/Cartoons/Geometry.ts",
+    "./Visualization/Molecule/Cartoons/Unit.ts",
     "./Visualization/Molecule/Cartoons/GeometryElements.ts",
     "./Visualization/Molecule/Cartoons/Model.ts",
     "./Visualization/Molecule/Colors.ts",

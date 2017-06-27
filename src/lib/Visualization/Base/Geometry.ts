@@ -51,7 +51,7 @@ namespace LiteMol.Visualization.Geometry {
             elementSize: 2 | 3
         }
 
-        export function createStatic(vertexCount: number, indexCount: number, elementSize: 2 | 3 = 3): Builder {
+        export function createStatic(vertexCount: number, indexCount: number, elementSize: 2 | 3 = 3): Static {
             return {
                 type: 'Static',
                 vertices: ArrayBuilder.create(s => new Float32Array(s), vertexCount, 3),
@@ -61,7 +61,7 @@ namespace LiteMol.Visualization.Geometry {
             };
         }
 
-        export function createDynamic(vertexChunkSize: number, indexChunkSize: number, elementSize: 2 | 3 = 3): Builder {
+        export function createDynamic(vertexChunkSize: number, indexChunkSize: number, elementSize: 2 | 3 = 3): Dynamic {
             return {
                 type: 'Dynamic',
                 vertices: ChunkedArray.create(s => new Float32Array(s), vertexChunkSize, 3),
@@ -165,6 +165,39 @@ namespace LiteMol.Visualization.Geometry {
 
         export function addIndex3d(builder: Dynamic, i: number, j: number, k: number) {
             add3d(builder.indices, i, j, k);
+        }
+
+        let dashTemplate: Geometry.RawGeometry | undefined = void 0;
+        export function getDashTemplate() {
+            if (dashTemplate) return dashTemplate;
+            dashTemplate = GeometryHelper.toRawGeometry(new THREE.BoxGeometry(1, 1, 1));
+            for (let i = 0; i < dashTemplate.vertices.length; i += 3) {
+                dashTemplate.vertices[i] += 0.5;
+            }
+            return dashTemplate;
+        }
+
+        const dashScale = Vec3.zero(), dashOffset = Vec3.zero(), dashAxis = Vec3.zero(), dashDir = Vec3.zero(), dashUp = Vec3.fromValues(1, 0, 0), dashRotation = Mat4.zero();
+        export function addDashedLine(builder: Builder, a: Vec3, b: Vec3, size: number, gap: number, r: number) {
+            const dir = Vec3.sub(dashDir, b, a);
+            const length = Vec3.length(dir);
+            const axis = Vec3.cross(dashAxis, dashUp, dir);
+            const angle = Vec3.angle(dashUp, dir);
+
+            const scale = Vec3.set(dashScale, size, r, r);
+            const rotation = Mat4.fromRotation(dashRotation, angle, axis)!;
+            const templ = getDashTemplate();
+            
+            const offset = dashOffset;
+            Vec3.copy(offset, a);
+            Vec3.normalize(dir, dir);
+            const delta = size + gap;
+            Vec3.scale(dir, dir, delta);
+            for (let t = 0; t < length; t += delta) {
+                if (t + size > length) scale[0] = length - t;
+                addRawTransformed(builder, templ, scale, offset, rotation);
+                Vec3.add(offset, offset, dir);
+            }      
         }
 
         function compactS<T>(tar: ChunkedArray<number> | ArrayBuilder<number>) {

@@ -23,6 +23,7 @@ namespace LiteMol.Visualization.Molecule.Cartoons {
         
         private model: Core.Structure.Molecule.Model;
         private material: THREE.ShaderMaterial;
+        private gapMaterial: THREE.MeshPhongMaterial;
         private pickMaterial: THREE.Material;
         private queryContext: Core.Structure.Query.Context;
 
@@ -129,17 +130,32 @@ namespace LiteMol.Visualization.Molecule.Cartoons {
                 }
             }
             bufferAttribute.needsUpdate = true;
-                                                
+
+            // const gapColor = Theme.getColor(theme, 'Gap', Colors.DefaultBondColor);
+            // const gc = this.gapMaterial.color;
+            // if (gapColor.r !== gc.r || gapColor.g !== gc.g || gapColor.b !== gc.b) {
+            //     this.gapMaterial.color = new THREE.Color(gapColor.r, gapColor.g, gapColor.b);
+            //     this.gapMaterial.needsUpdate = true;
+            // }
         }
         
         protected applyThemeInternal(theme: Theme) {
             this.applyColoring(theme);
             MaterialsHelper.updateMaterial(this.material, theme, this.object);
+            MaterialsHelper.updateMaterial(this.gapMaterial, theme, this.object);            
         }
 
         private createObjects(): { main: THREE.Object3D; pick: THREE.Object3D } {
+            let main;
+            if (this.cartoons.gapsGeometry) {
+                main = new THREE.Object3D();
+                main.add(new THREE.Mesh(this.cartoons.geometry, this.material));
+                main.add(new THREE.Mesh(this.cartoons.gapsGeometry, this.gapMaterial));
+            } else {
+                main = new THREE.Mesh(this.cartoons.geometry, this.material)
+            }
             return {
-                main: new THREE.Mesh(this.cartoons.geometry, this.material),
+                main,
                 pick: new THREE.Mesh(this.cartoons.pickGeometry, this.pickMaterial)
             };
         }
@@ -186,6 +202,7 @@ namespace LiteMol.Visualization.Molecule.Cartoons {
                 ret.cartoons = cartoons;
                 ret.queryContext = queryContext;   
                 ret.material = MaterialsHelper.getMeshMaterial();
+                ret.gapMaterial = new THREE.MeshPhongMaterial({ color: 0x777777, shading: THREE.FlatShading });
                 ret.pickMaterial = MaterialsHelper.getPickMaterial();     
                 if (props) ret.props = props;
         
@@ -202,7 +219,7 @@ namespace LiteMol.Visualization.Molecule.Cartoons {
                 ret.model = model;
                 ret.applyTheme(theme);
 
-                ret.disposeList.push(ret.cartoons, ret.material, ret.pickMaterial);
+                ret.disposeList.push(ret.cartoons, ret.material, ret.pickMaterial, ret.gapMaterial);
                 
                 return ret;
             });

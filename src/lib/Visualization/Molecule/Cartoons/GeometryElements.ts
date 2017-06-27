@@ -3,721 +3,6 @@
  */
 
 namespace LiteMol.Visualization.Molecule.Cartoons.Geometry {
-
-    import SSTypes = Core.Structure.SecondaryStructureType;
-
-    import ChunkedArray = Core.Utils.ChunkedArray;
-    import ArrayBuilder = Core.Utils.ArrayBuilder;
-
-    export class CartoonAsymUnitState {
-
-        private typeBuilder = ArrayBuilder.forArray<Core.Structure.SecondaryStructureType>(10000);
-        private uPositionsBuilder: ArrayBuilder<number>;
-        private vPositionsBuilder: ArrayBuilder<number>;
-        private pPositionsBuilder: ArrayBuilder<number>;
-        private dPositionsBuilder: ArrayBuilder<number>;
-
-        residueType: Core.Structure.SecondaryStructureType[] = [];
-        uPositions: number[] = <any>new Float32Array(0);
-        vPositions: number[] = <any>new Float32Array(0);
-        pPositions: number[] = <any>new Float32Array(0);
-        dPositions: number[] = <any>new Float32Array(0);
-        uvLength = 0;
-        residueCount = 0;
-
-        constructor(residueCount: number) {
-
-            this.typeBuilder = ArrayBuilder.forArray<Core.Structure.SecondaryStructureType>(residueCount + 4);
-            this.uPositionsBuilder = ArrayBuilder.forVertex3D(residueCount + 4);
-            this.vPositionsBuilder = ArrayBuilder.forVertex3D(residueCount + 4);
-            this.pPositionsBuilder = ArrayBuilder.forVertex3D(residueCount + 4);
-            this.dPositionsBuilder = ArrayBuilder.forVertex3D(residueCount + 4);
-
-
-            ArrayBuilder.add(this.typeBuilder, Core.Structure.SecondaryStructureType.None); ArrayBuilder.add(this.typeBuilder, Core.Structure.SecondaryStructureType.None);
-            ArrayBuilder.add3(this.uPositionsBuilder, 0, 0, 0); ArrayBuilder.add3(this.uPositionsBuilder, 0, 0, 0);
-            ArrayBuilder.add3(this.vPositionsBuilder, 0, 0, 0); ArrayBuilder.add3(this.vPositionsBuilder, 0, 0, 0);
-        }
-
-        addResidue(rIndex: number, arrays: { atomStartIndex: number[]; atomEndIndex: number[]; name: string[]; x: number[]; y: number[]; z: number[] }, sType: Core.Structure.SecondaryStructureType) {
-            let start = arrays.atomStartIndex[rIndex], end = arrays.atomEndIndex[rIndex],
-                aU = false, aV = false;
-
-            let name = arrays.name;
-
-            if (sType !== Core.Structure.SecondaryStructureType.Strand) {
-                for (let i = start; i < end; i++) {
-                    if (!aU && name[i] === "CA") {
-                        ArrayBuilder.add3(this.uPositionsBuilder, arrays.x[i], arrays.y[i], arrays.z[i]);
-                        aU = true;
-                    } else if (!aV && name[i] === "O") {
-                        ArrayBuilder.add3(this.vPositionsBuilder, arrays.x[i], arrays.y[i], arrays.z[i]);
-                        aV = true;
-                    }
-
-                    if (aU && aV) break;
-                }
-            } else {
-                if (end - start === 1) {
-                    // has to be P atom
-                    ArrayBuilder.add3(this.uPositionsBuilder, arrays.x[start], arrays.y[start], arrays.z[start]);
-                    aU = true;
-                } else {
-                    let pIndex = -1;
-                    for (let i = start; i < end; i++) {
-                        if (!aU && name[i] === "O5'") {
-                            ArrayBuilder.add3(this.uPositionsBuilder, arrays.x[i], arrays.y[i], arrays.z[i]);
-                            aU = true;
-                        } else if (!aV && name[i] === "C3'") {
-                            ArrayBuilder.add3(this.vPositionsBuilder, arrays.x[i], arrays.y[i], arrays.z[i]);
-                            aV = true;
-                        }
-
-                        if (name[i] === "P") {
-                            pIndex = i;
-                        }
-
-                        if (aU && aV) break;
-                    }
-
-                    if (!aU && !aV && pIndex >= 0) {
-                        ArrayBuilder.add3(this.uPositionsBuilder, arrays.x[pIndex], arrays.y[pIndex], arrays.z[pIndex]);
-                        aU = true;
-                    }
-                }
-            }
-
-            let backboneOnly = false;
-            if (!aV) {
-                let arr = this.uPositionsBuilder.array, len = arr.length;
-                ArrayBuilder.add3(this.vPositionsBuilder, arr[len - 3], arr[len - 2], arr[len - 1]);
-                backboneOnly = true;
-            } else if (!aU) {
-                let arr = this.vPositionsBuilder.array, len = arr.length;
-                ArrayBuilder.add3(this.uPositionsBuilder, arr[len - 3], arr[len - 2], arr[len - 1]);
-                backboneOnly = true;
-            }
-
-            ArrayBuilder.add(this.typeBuilder, sType);
-            return backboneOnly;
-        }
-
-        finishResidues() {
-            ArrayBuilder.add(this.typeBuilder, Core.Structure.SecondaryStructureType.None); ArrayBuilder.add(this.typeBuilder, Core.Structure.SecondaryStructureType.None);
-            ArrayBuilder.add3(this.uPositionsBuilder, 0, 0, 0); ArrayBuilder.add3(this.uPositionsBuilder, 0, 0, 0);
-            ArrayBuilder.add3(this.vPositionsBuilder, 0, 0, 0); ArrayBuilder.add3(this.vPositionsBuilder, 0, 0, 0);
-
-            this.residueType = this.typeBuilder.array;
-            this.uPositions = this.uPositionsBuilder.array;
-            this.vPositions = this.vPositionsBuilder.array;
-
-            this.typeBuilder = <any>null;
-            this.uPositionsBuilder = <any>null;
-            this.vPositionsBuilder = <any>null;
-
-            this.uvLength = this.residueType.length;
-            this.residueCount = this.uvLength - 4;
-        }
-
-        addControlPoint(p: THREE.Vector3, d: THREE.Vector3) {
-            ArrayBuilder.add3(this.pPositionsBuilder, p.x, p.y, p.z);
-            ArrayBuilder.add3(this.dPositionsBuilder, d.x, d.y, d.z);
-        }
-
-        finishContols() {
-
-            this.pPositions = this.pPositionsBuilder.array;
-            this.dPositions = this.dPositionsBuilder.array;
-
-            this.pPositionsBuilder = <any>null;
-            this.dPositionsBuilder = <any>null;
-
-        }
-    }
-
-    export class CartoonAsymUnit {
-
-
-        private static maskSplit(
-            element: Core.Structure.SecondaryStructureElement,
-            mask: boolean[],
-            target: Core.Structure.SecondaryStructureElement[]) {
-            let current = element,
-                start = element.startResidueIndex,
-                end = element.endResidueIndex;
-
-            for (let i = start; i < end; i++) {
-
-                if (!mask[i]) continue;
-
-                if (current.startResidueIndex !== i) {
-                    current = new Core.Structure.SecondaryStructureElement(element.type, element.startResidueId, element.endResidueId);
-                    current.startResidueIndex = i;
-                }
-
-                while (i < end && mask[i]) { i++; }
-
-                current.endResidueIndex = i;
-                target[target.length] = current;
-            }
-        }
-
-        static isCartoonLike(atomIndices: number[], start: number, end: number, name: string[], a: string, b: string, isAmk: boolean) {
-            let aU = false, aV = false, hasP = false;
-            for (let i = start; i < end; i++) {
-                let n = name[atomIndices[i]];
-                if (!aU && n === a) {
-                    aU = true;
-                } else if (!aV && n === b) { 
-                    aV = true; 
-                }                
-                if (aU && aV) return true;
-                if (n === 'P') {
-                    hasP = true;
-                }
-            }
-            if (isAmk) return aU;
-            return hasP;
-        }
-
-        static createMask(
-            model: Core.Structure.Molecule.Model,
-            atomIndices: number[]): boolean[] {
-
-            let ret = new Uint8Array(model.data.residues.count);
-            let { residueIndex, name } = model.data.atoms;
-            let ssIndex = model.data.residues.secondaryStructureIndex;
-            let ss = model.data.secondaryStructure;
-
-            for (let i = 0, _b = atomIndices.length - 1; i < _b; i++) {
-                let aI = atomIndices[i];
-                let rStart = i;
-                let residue = residueIndex[aI];
-                i++;
-                while (residue === residueIndex[atomIndices[i]]) i++;
-                let s = ss[ssIndex[residue]].type;
-                if (s === SSTypes.None) continue;
-                if (s === SSTypes.Strand) {
-                    ret[residue] = +CartoonAsymUnit.isCartoonLike(atomIndices, rStart, i, name, "O5'", "C3'", false);
-                } else {
-                    ret[residue] = +CartoonAsymUnit.isCartoonLike(atomIndices, rStart, i, name, "CA", "O", true);
-                }
-                i--;
-            }
-
-
-            return <any>ret;
-        }
-
-        private static isUnknownSecondaryStructure(model: Core.Structure.Molecule.Model) {
-            let hasSeq = false;
-            for (let e of model.data.secondaryStructure) {
-                if (e.type === Core.Structure.SecondaryStructureType.Helix
-                    || e.type === Core.Structure.SecondaryStructureType.Sheet
-                    || e.type === Core.Structure.SecondaryStructureType.Turn) {
-                    return false;
-                }
-                if (e.type === Core.Structure.SecondaryStructureType.AminoSeq) {
-                    hasSeq = true;
-                }
-            }
-            return hasSeq;
-        }
-
-        private static approximateSecondaryStructure(model: Core.Structure.Molecule.Model, parent: Core.Structure.SecondaryStructureElement) {
-            if (parent.type !== Core.Structure.SecondaryStructureType.AminoSeq) return [parent];
-
-            let elements: Core.Structure.SecondaryStructureElement[] = [];
-
-            let { name } = model.data.atoms;
-            let { atomStartIndex, atomEndIndex } = model.data.residues;
-
-            let trace = new Int32Array(parent.endResidueIndex - parent.startResidueIndex), offset = 0;
-            let isOk = true;
-            for (let i = parent.startResidueIndex, _b = parent.endResidueIndex; i < _b; i++) {
-                let foundCA = false, foundO = false;
-                for (let j = atomStartIndex[i], _c = atomEndIndex[i]; j < _c; j++) {
-                    if (name[j] === 'CA') {
-                        if (!foundCA) trace[offset++] = j;
-                        foundCA = true;
-                    } else if (name[j] === 'O') {
-                        foundO = true;
-                    }
-                    
-                    if (foundO && foundCA) break;
-                }
-                if (!foundCA || !foundO) {
-                    isOk = false;
-                    break;
-                }
-            }
-            if (!isOk) return [parent];
-
-            CartoonAsymUnit.zhangSkolnickSStrace(model, trace, parent, elements);
-            return elements;
-        }
-
-        private static ZhangHelixDistance = [5.45, 5.18, 6.37];
-        private static ZhangHelixDelta = 2.1;
-        private static ZhangSheetDistance = [6.1, 10.4, 13.0];
-        private static ZhangSheetDelta = 1.42;
-        private static ZhangP1 = new THREE.Vector3(0, 0, 0);
-        private static ZhangP2 = new THREE.Vector3(0, 0, 0);
-
-        private static zhangSkolnickSStrace(
-            model: Core.Structure.Molecule.Model, 
-            trace: Int32Array, 
-            parent: Core.Structure.SecondaryStructureElement,
-            elements: Core.Structure.SecondaryStructureElement[]) {
-
-            let mask = new Int32Array(trace.length);
-            let hasSS = false;
-            let { residueIndex } = model.data.atoms;
-
-            for (let i = 0, _l = trace.length; i < _l; i++) {
-                if (CartoonAsymUnit.zhangSkolnickSSresidue(model, trace, i, CartoonAsymUnit.ZhangHelixDistance, CartoonAsymUnit.ZhangHelixDelta)) {
-                    mask[i] = Core.Structure.SecondaryStructureType.Helix;
-                    hasSS = true;
-                } else if (CartoonAsymUnit.zhangSkolnickSSresidue(model, trace, i, CartoonAsymUnit.ZhangSheetDistance, CartoonAsymUnit.ZhangSheetDelta)) {
-                    mask[i] = Core.Structure.SecondaryStructureType.Sheet;
-                    hasSS = true;
-                } else {
-                    mask[i] = parent.type;
-                }
-            }
-
-            if (!hasSS) {
-                elements.push(parent);
-                return;
-            }
-
-            // filter 1-length elements
-            for (let i = 0, _l = mask.length; i < _l; i++) { 
-                let m = mask[i];
-                if (m === parent.type) continue; 
-
-                let j = i + 1;
-                while (j < _l && m === mask[j]) {
-                    j++;
-                }
-
-                if (j - i > 1) {
-                    i = j - 1;
-                    continue;
-                }
-                for (let k = i; k < j; k++) mask[k] = parent.type;
-                i = j - 1; 
-            }
-
-            for (let i = 0, _l = mask.length; i < _l; i++) {
-                let m = mask[i];
-
-                let j = i + 1;
-                while (j < _l && m === mask[j]) {
-                    j++;
-                }
-
-                let e = new Core.Structure.SecondaryStructureElement(
-                    <Core.Structure.SecondaryStructureType>m, 
-                    new Core.Structure.PolyResidueIdentifier('', i, null),
-                    new Core.Structure.PolyResidueIdentifier('', j, null));                    
-                e.startResidueIndex = residueIndex[trace[i]];
-                e.endResidueIndex = residueIndex[trace[j - 1]] + 1;
-                elements.push(e);
-
-                i = j - 1;
-            }
-        }
-
-        private static zhangSkolnickSSresidue(model: Core.Structure.Molecule.Model, trace: Int32Array, i: number, distances: number[], delta: number) {
-            let len = trace.length;
-            let { x, y, z } = model.positions;
-            let u = CartoonAsymUnit.ZhangP1, v = CartoonAsymUnit.ZhangP2;
-            for (let j = Math.max(0, i - 2); j <= i; j++) {
-                for (let k = 2; k < 5; k++) {
-                    if (j + k >= len) {
-                        continue;
-                    }
-                    let a = trace[j], b = trace[j + k];
-                    u.set(x[a], y[a], z[a]);
-                    v.set(x[b], y[b], z[b]);
-                    if (Math.abs(u.distanceTo(v) - distances[k - 2]) > delta) {
-                        return false;
-                    }
-                }
-            }
-            return true;
-        }
-
-        private static throwIfEmpty(ss: any[]) {
-            if (ss.length === 0) {
-                throw `Cartoons cannot be constructred from this model/selection.`;
-            }
-        }
-
-        static buildUnits(
-            model: Core.Structure.Molecule.Model,
-            atomIndices: number[],
-            linearSegmentCount: number): CartoonAsymUnit[] {
-
-            let mask = CartoonAsymUnit.createMask(model, atomIndices);
-            let ss: Core.Structure.SecondaryStructureElement[] = [];
-
-            let isUnknownSS = CartoonAsymUnit.isUnknownSecondaryStructure(model);
-
-            for (let e of model.data.secondaryStructure) {
-                if (isUnknownSS) {
-                    let approx = CartoonAsymUnit.approximateSecondaryStructure(model, e);
-                    for (let f of approx) {
-                        CartoonAsymUnit.maskSplit(f, mask, ss);    
-                    }
-                } else {
-                    CartoonAsymUnit.maskSplit(e, mask, ss);
-                }
-            }
-
-            CartoonAsymUnit.throwIfEmpty(ss);
-
-            let previous: Core.Structure.SecondaryStructureElement | null = ss[0],
-                asymId = model.data.residues.asymId,
-                authSeqNumber = model.data.residues.authSeqNumber,
-                currentElements: Core.Structure.SecondaryStructureElement[] = [],
-                units: CartoonAsymUnit[] = [],
-                none = Core.Structure.SecondaryStructureType.None;
-
-            if (previous.type === none) {
-                previous = null;
-            }
-
-            for (let e of ss) {
-
-                if (e.type === none) {
-                    if (currentElements.length > 0) {
-                        units.push(new CartoonAsymUnit(model, currentElements, linearSegmentCount));
-                    }
-
-                    previous = null;
-                    currentElements = [];
-                } else {
-                    if (previous === null) previous = e;
-
-                    if (asymId[previous.endResidueIndex - 1] !== asymId[e.startResidueIndex]
-                        || (previous !== e && authSeqNumber[e.startResidueIndex] - authSeqNumber[previous.endResidueIndex - 1] > 1)
-                        || (previous.startResidueIndex !== e.startResidueIndex && (e.startResidueIndex - previous.endResidueIndex > 0))) {
-
-                        if (currentElements.length > 0) {
-                            units.push(new CartoonAsymUnit(model, currentElements, linearSegmentCount));
-                        } else if (previous !== null) {
-                            units.push(new CartoonAsymUnit(model, [previous], linearSegmentCount));
-                        }
-
-                        previous = null;
-                        currentElements = [e];
-                    } else {
-                        currentElements[currentElements.length] = e;
-                    }
-                }
-                previous = e;
-
-            }
-
-            if (currentElements.length > 0) {
-                units.push(new CartoonAsymUnit(model, currentElements, linearSegmentCount));
-            }
-
-            return units; // [units[units.length - 1]];
-        }
-
-        private controlPointsBuilder: ArrayBuilder<number>;
-        private torsionVectorsBuilder: ArrayBuilder<number>;
-        private normalVectorsBuilder: ArrayBuilder<number>;
-
-        private tempA = new THREE.Vector3();
-        private tempB = new THREE.Vector3();
-        private tempC = new THREE.Vector3();
-
-        controlPoints: number[] = <any>new Float32Array(0);
-        torsionVectors: number[] = <any>new Float32Array(0);
-        normalVectors: number[] = <any>new Float32Array(0);
-
-        residueCount = 0;
-        structureStarts = Core.Utils.FastSet.create();
-        structureEnds = Core.Utils.FastSet.create();
-
-        residueType: Core.Structure.SecondaryStructureType[] = [];
-        residueIndex: Int32Array = new Int32Array(0);
-
-        backboneOnly = false;
-
-        constructor(
-            private model: Core.Structure.Molecule.Model,
-            private elements: Core.Structure.SecondaryStructureElement[],
-            public linearSegmentCount: number) {
-
-
-            for (let e of this.elements) {
-                this.residueCount += e.endResidueIndex - e.startResidueIndex;
-            }
-
-
-            let state = new CartoonAsymUnitState(this.residueCount);
-
-            this.controlPointsBuilder = ArrayBuilder.forVertex3D(this.residueCount * this.linearSegmentCount + 1);
-            this.torsionVectorsBuilder = ArrayBuilder.forVertex3D(this.residueCount * this.linearSegmentCount + 1);
-            this.normalVectorsBuilder = ArrayBuilder.forVertex3D(this.residueCount * this.linearSegmentCount + 1);
-
-            this.createControlPoints(state);
-        }
-
-        private createControlPoints(state: CartoonAsymUnitState) {
-
-            this.initPositions(state);
-            this.initControlsPoints(state);
-            this.computeSplines(state);
-
-            this.controlPoints = this.controlPointsBuilder.array;
-            this.torsionVectors = this.torsionVectorsBuilder.array;
-            this.normalVectors = this.normalVectorsBuilder.array;
-
-            this.controlPointsBuilder = <any>null;
-            this.torsionVectorsBuilder = <any>null;
-            this.normalVectorsBuilder = <any>null;
-        }
-
-        private initPositions(state: CartoonAsymUnitState) {
-            let residues = this.model.data.residues,
-                atoms = this.model.data.atoms,
-                positions = this.model.positions,
-                arrays = { atomStartIndex: residues.atomStartIndex, atomEndIndex: residues.atomEndIndex, name: atoms.name, x: positions.x, y: positions.y, z: positions.z },
-                residueType: Core.Structure.SecondaryStructureType[] = [],
-                offset = 0,
-                i = 0;
-
-            for (let e of this.elements) {
-                this.structureStarts.add(e.startResidueIndex);
-                this.structureEnds.add(e.endResidueIndex - 1);
-                for (i = e.startResidueIndex; i < e.endResidueIndex; i++) {
-                    this.backboneOnly = state.addResidue(i, arrays, e.type);
-                    residueType[residueType.length] = e.type;
-                }
-            }
-
-            this.residueIndex = new Int32Array(this.residueCount);
-
-            for (let e of this.elements) {
-                for (i = e.startResidueIndex; i < e.endResidueIndex; i++) {
-                    this.residueIndex[offset++] = i;
-                }
-            }
-
-            this.residueType = residueType;
-
-            state.finishResidues();
-
-
-            let len = this.residueCount;
-
-            state.residueType[0] = state.residueType[2];
-            state.residueType[1] = state.residueType[3];
-            state.residueType[state.residueType.length - 2] = state.residueType[state.residueType.length - 4];
-            state.residueType[state.residueType.length - 1] = state.residueType[state.residueType.length - 3];
-
-            if (len > 2) {
-
-                let a = 2, b = 3, c = 4;
-
-                if (state.residueType[0] !== Core.Structure.SecondaryStructureType.Strand) {
-                    this.reflectPositions(state.uPositions, 0, 1, a, b, b, c, 0.4, 0.6);
-                    this.reflectPositions(state.vPositions, 0, 1, a, b, b, c, 0.4, 0.6);
-                } else {
-                    this.reflectPositions(state.uPositions, 1, 0, a, b, b, c, 0.5, 0.5);
-                    this.reflectPositions(state.vPositions, 1, 0, a, b, b, c, 0.5, 0.5);
-                }
-
-                a = len + 1; b = len; c = len - 1;
-                if (state.residueType[len - 1] !== Core.Structure.SecondaryStructureType.Strand) {
-                    this.reflectPositions(state.uPositions, len + 2, len + 3, a, b, b, c, 0.4, 0.6);
-                    this.reflectPositions(state.vPositions, len + 2, len + 3, a, b, b, c, 0.4, 0.6);
-                } else {
-                    this.reflectPositions(state.uPositions, len + 2, len + 3, a, b, b, c, 0.5, 0.5);
-                    this.reflectPositions(state.vPositions, len + 2, len + 3, a, b, b, c, 0.5, 0.5);
-                }
-            } else if (len === 2) {
-                for (i = 0; i < 2; i++) {
-                    state.uPositions[3 * i] = state.uPositions[6];
-                    state.uPositions[3 * i + 1] = state.uPositions[7];
-                    state.uPositions[3 * i + 2] = state.uPositions[8];
-
-                    state.vPositions[3 * i] = state.vPositions[6];
-                    state.vPositions[3 * i + 1] = state.vPositions[7];
-                    state.vPositions[3 * i + 2] = state.vPositions[8];
-
-                    state.uPositions[(len + 2) * 3 + 3 * i] = state.uPositions[(len + 1) * 3];
-                    state.uPositions[(len + 2) * 3 + 3 * i + 1] = state.uPositions[(len + 1) * 3 + 1];
-                    state.uPositions[(len + 2) * 3 + 3 * i + 2] = state.uPositions[(len + 1) * 3 + 2];
-
-                    state.vPositions[(len + 2) * 3 + 3 * i] = state.vPositions[(len + 1) * 3];
-                    state.vPositions[(len + 2) * 3 + 3 * i + 1] = state.vPositions[(len + 1) * 3 + 1];
-                    state.vPositions[(len + 2) * 3 + 3 * i + 2] = state.vPositions[(len + 1) * 3 + 2];
-                }
-            } else {
-                let d = [state.uPositions[6] - state.vPositions[6],
-                state.uPositions[7] - state.vPositions[7],
-                state.uPositions[8] - state.vPositions[8]];
-
-                for (let i = 0; i < 2; i++) {
-                    for (let j = 0; j < 3; j++) {
-                        state.uPositions[3 * i + j] = state.uPositions[6 + j] - 0.5 * (i + 1) * d[j];
-                        state.uPositions[9 + 3 * i + j] = state.uPositions[6 + j] + 0.5 * (i + 1) * d[j];
-
-                        state.vPositions[3 * i + j] = state.vPositions[6 + j] + 0.5 * (i + 1) * d[j];
-                        state.vPositions[9 + 3 * i + j] = state.vPositions[6 + j] - 0.5 * (i + 1) * d[j];
-                    }
-                }
-
-                //state.uPositions[0] = state.uPositions[6] - dx;
-                //state.uPositions[9] = state.uPositions[6] - dx;                
-                //console.log(state.uPositions, state.vPositions);
-            }
-        }
-
-        private initControlsPoints(state: CartoonAsymUnitState) {
-            let previousD = new THREE.Vector3(),
-                len = state.uvLength - 1,
-                a = new THREE.Vector3(), b = new THREE.Vector3(), c = new THREE.Vector3(), d = new THREE.Vector3(),
-                ca1 = new THREE.Vector3(), o1 = new THREE.Vector3(), ca2 = new THREE.Vector3(), p = new THREE.Vector3(),
-                helixType = Core.Structure.SecondaryStructureType.Helix;
-
-            for (let i = 0; i < len; i++) {
-
-                ca1.set(state.uPositions[3 * i], state.uPositions[3 * i + 1], state.uPositions[3 * i + 2]);
-                o1.set(state.vPositions[3 * i], state.vPositions[3 * i + 1], state.vPositions[3 * i + 2]);
-                i++;
-                ca2.set(state.uPositions[3 * i], state.uPositions[3 * i + 1], state.uPositions[3 * i + 2]);
-                i--;
-
-                p.set((ca1.x + ca2.x) / 2, (ca1.y + ca2.y) / 2, (ca1.z + ca2.z) / 2);
-
-                a.subVectors(ca2, ca1);
-                b.subVectors(o1, ca1);
-
-                c.crossVectors(a, b);
-                d.crossVectors(c, a);
-                c.normalize();
-                d.normalize();
-
-                if (state.residueType[i] === helixType && state.residueType[i + 1] === helixType) {
-                    p.set(p.x + 1.5 * c.x, p.y + 1.5 * c.y, p.z + 1.5 * c.z);
-                }
-
-                if (i > 0 && d.angleTo(previousD) > Math.PI / 2) {
-                    d.negate();
-                }
-
-                previousD.copy(d);
-
-                a.addVectors(p, d);
-                state.addControlPoint(p, a);
-            }
-
-            state.finishContols();
-        }
-
-        private computeSplines(state: CartoonAsymUnitState) {
-            let previousControlPoint = new THREE.Vector3(),
-                controlPoint = new THREE.Vector3(),
-                torsionPoint = new THREE.Vector3(),
-                len = state.residueCount,
-                pPositions = state.pPositions,
-                dPositions = state.dPositions,
-                p1 = new THREE.Vector3(), p2 = new THREE.Vector3(), p3 = new THREE.Vector3(), p4 = new THREE.Vector3(),
-                d1 = new THREE.Vector3(), d2 = new THREE.Vector3(), d3 = new THREE.Vector3(), d4 = new THREE.Vector3(),
-                previousTorsionPoint = new THREE.Vector3(), extrapolatedControlPoint = new THREE.Vector3();
-
-            for (let i = 0; i < len; i++) {
-
-                p1.set(pPositions[3 * i], pPositions[3 * i + 1], pPositions[3 * i + 2]);
-                i++; p2.set(pPositions[3 * i], pPositions[3 * i + 1], pPositions[3 * i + 2]);
-                i++; p3.set(pPositions[3 * i], pPositions[3 * i + 1], pPositions[3 * i + 2]);
-                i++; p4.set(pPositions[3 * i], pPositions[3 * i + 1], pPositions[3 * i + 2]);
-                i = i - 3;
-
-
-                d1.set(dPositions[3 * i], dPositions[3 * i + 1], dPositions[3 * i + 2]);
-                i++; d2.set(dPositions[3 * i], dPositions[3 * i + 1], dPositions[3 * i + 2]);
-                i++; d3.set(dPositions[3 * i], dPositions[3 * i + 1], dPositions[3 * i + 2]);
-                i++; d4.set(dPositions[3 * i], dPositions[3 * i + 1], dPositions[3 * i + 2]);
-                i = i - 3;
-
-                for (let j = 1; j <= this.linearSegmentCount; j++) {
-
-                    let t = j * 1.0 / this.linearSegmentCount;
-
-                    if (t < 0.5) {
-                        CartoonAsymUnit.spline(controlPoint, p1, p2, p3, t + 0.5);
-                        CartoonAsymUnit.spline(torsionPoint, d1, d2, d3, t + 0.5);
-                    } else {
-                        CartoonAsymUnit.spline(controlPoint, p2, p3, p4, t - 0.5);
-                        CartoonAsymUnit.spline(torsionPoint, d2, d3, d4, t - 0.5);
-                    }
-
-                    if (i === 0 && j === 1) {
-                        CartoonAsymUnit.spline(previousControlPoint, p1, p2, p3, 0.5);
-                        CartoonAsymUnit.spline(previousTorsionPoint, d1, d2, d3, 0.5);
-                        CartoonAsymUnit.reflect(extrapolatedControlPoint, previousControlPoint, controlPoint, 1);
-                        this.addSplineNode(extrapolatedControlPoint, previousControlPoint, previousTorsionPoint);
-                    }
-
-                    this.addSplineNode(previousControlPoint, controlPoint, torsionPoint);
-                    previousControlPoint.copy(controlPoint);
-                }
-            }
-        }
-
-        private addSplineNode(previousControlPoint: THREE.Vector3, controlPoint: THREE.Vector3, torsionPoint: THREE.Vector3): void {
-
-            ArrayBuilder.add3(this.controlPointsBuilder, controlPoint.x, controlPoint.y, controlPoint.z);
-
-            let torsionVector = this.tempA.subVectors(torsionPoint, controlPoint);
-            torsionVector.normalize();
-            ArrayBuilder.add3(this.torsionVectorsBuilder, torsionVector.x, torsionVector.y, torsionVector.z);
-
-            let controlVector = this.tempB.subVectors(controlPoint, previousControlPoint);
-            let normalVector = this.tempC.crossVectors(torsionVector, controlVector);
-            normalVector.normalize();
-            ArrayBuilder.add3(this.normalVectorsBuilder, normalVector.x, normalVector.y, normalVector.z);
-        }
-
-        private reflectPositions(xs: number[], u: number, v: number, a: number, b: number, c: number, d: number, r1: number, r2: number) {
-
-            this.tempA.set(xs[3 * a], xs[3 * a + 1], xs[3 * a + 2]);
-            this.tempB.set(xs[3 * b], xs[3 * b + 1], xs[3 * b + 2]);
-            CartoonAsymUnit.reflect(this.tempC, this.tempA, this.tempB, r1);
-            xs[3 * u] = this.tempC.x; xs[3 * u + 1] = this.tempC.y; xs[3 * u + 2] = this.tempC.z;
-
-            this.tempA.set(xs[3 * c], xs[3 * c + 1], xs[3 * c + 2]);
-            this.tempB.set(xs[3 * d], xs[3 * d + 1], xs[3 * d + 2]);
-            CartoonAsymUnit.reflect(this.tempC, this.tempA, this.tempB, r2);
-            xs[3 * v] = this.tempC.x; xs[3 * v + 1] = this.tempC.y; xs[3 * v + 2] = this.tempC.z;
-        }
-
-        private static reflect(target: THREE.Vector3, p1: THREE.Vector3, p2: THREE.Vector3, amount: number) {
-            target.set(p1.x - amount * (p2.x - p1.x), p1.y - amount * (p2.y - p1.y), p1.z - amount * (p2.z - p1.z));
-        }
-
-        private static spline(target: THREE.Vector3, p1: THREE.Vector3, p2: THREE.Vector3, p3: THREE.Vector3, t: number) {
-            let a = Math.pow(1 - t, 2) / 2;
-            let c = Math.pow(t, 2) / 2;
-            let b = 1 - a - c;
-
-            let x = a * p1.x + b * p2.x + c * p3.x;
-            let y = a * p1.y + b * p2.y + c * p3.y;
-            let z = a * p1.z + b * p2.z + c * p3.z;
-
-            target.set(x, y, z);
-        }
-    }
-
     export class CartoonsGeometryParams {
         radialSegmentCount = 10;
 
@@ -738,15 +23,24 @@ namespace LiteMol.Visualization.Molecule.Cartoons.Geometry {
         static Default = new CartoonsGeometryParams();
     }
 
+    import GB = Visualization.Geometry.Builder
+
     export class CartoonsGeometryState {
         residueIndex = 0;
 
-        verticesDone = 0;
-        trianglesDone = 0;
+        get verticesDone() {
+            return this.vs.elementCount;
+        }
 
-        vertexBuffer = ChunkedArray.forVertex3D();
-        normalBuffer = ChunkedArray.forVertex3D();
-        indexBuffer = ChunkedArray.forIndexBuffer();
+        get trianglesDone() {
+            return this.is.elementCount;
+        }
+
+        builder = GB.createDynamic(this.residueCount * 8, this.residueCount * 16);
+        private vs = this.builder.vertices;
+        private is = this.builder.indices;
+
+        gapsBuilder = GB.createDynamic(256, 512);
 
         translationMatrix: THREE.Matrix4 = new THREE.Matrix4();
         scaleMatrix: THREE.Matrix4 = new THREE.Matrix4();
@@ -756,23 +50,20 @@ namespace LiteMol.Visualization.Molecule.Cartoons.Geometry {
         vertexMap: Selection.VertexMapBuilder;
 
         addVertex(v: THREE.Vector3, n: THREE.Vector3) {
-            ChunkedArray.add3(this.vertexBuffer, v.x, v.y, v.z);
-            ChunkedArray.add3(this.normalBuffer, n.x, n.y, n.z);
-            this.verticesDone++;
+            GB.addVertex3d(this.builder, v.x, v.y, v.z);
+            GB.addNormal3d(this.builder, n.x, n.y, n.z);
         }
 
         addTriangle(i: number, j: number, k: number) {
-            ChunkedArray.add3(this.indexBuffer, i, j, k);
-            this.trianglesDone++;
+            GB.addIndex3d(this.builder, i, j, k);
         }
 
         addTriangles(i: number, j: number, k: number, u: number, v: number, w: number) {
-            ChunkedArray.add3(this.indexBuffer, i, j, k);
-            ChunkedArray.add3(this.indexBuffer, u, v, w);
-            this.trianglesDone += 2;
+            GB.addIndex3d(this.builder, i, j, k);
+            GB.addIndex3d(this.builder, u, v, w);
         }
 
-        constructor(public params: CartoonsGeometryParams, residueCount: number) {
+        constructor(public params: CartoonsGeometryParams, private residueCount: number) {
             this.vertexMap = new Selection.VertexMapBuilder(residueCount);
         }
     }
@@ -817,7 +108,6 @@ namespace LiteMol.Visualization.Molecule.Cartoons.Geometry {
     }
 
     export function buildUnit(unit: CartoonAsymUnit, ctx: Context) {
-
         let state = ctx.state, params = ctx.params;
         let builder = ctx.builder;
         for (let index = 0, _max = unit.residueCount; index < _max; index++) {
@@ -888,6 +178,20 @@ namespace LiteMol.Visualization.Molecule.Cartoons.Geometry {
         }
     }
 
+    function isGap(ctx: Context, a: CartoonAsymUnit, b: CartoonAsymUnit) {        
+        const { chainIndex } = ctx.model.data.residues;
+        return chainIndex[a.endResidueIndex] === chainIndex[b.endResidueIndex];
+    }
+
+    import Vec3 = Core.Geometry.LinearAlgebra.Vector3
+    function renderGap(ctx: Context, unitA: CartoonAsymUnit, unitB: CartoonAsymUnit) {
+        const aL = unitA.controlPoints.length;
+        const cpA = unitA.controlPoints, cpB = unitB.controlPoints;
+        const a = Vec3.fromValues(cpA[aL - 3], cpA[aL - 2], cpA[aL - 1]), b = Vec3.fromValues(cpB[0], cpB[1], cpB[2]);
+        const r = ctx.state.params.turnWidth / 2;
+        GB.addDashedLine(ctx.state.gapsBuilder, a, b, 0.5, 0.5, r);
+    }
+
     export async function buildUnitsAsync(ctx: Context): LiteMol.Promise<void> {
         const chunkSize = 10000; // residues
         let started = Core.Utils.PerformanceMonitor.currentTime();
@@ -907,27 +211,31 @@ namespace LiteMol.Visualization.Molecule.Cartoons.Geometry {
                 await ctx.computation.updateProgress('Building units...', true, unitIndex, ctx.units.length);
             }
         }
+
+        for (let i = 0; i < ctx.units.length - 1; i++) {
+            if (isGap(ctx, ctx.units[i], ctx.units[i + 1])) {
+                renderGap(ctx, ctx.units[i], ctx.units[i + 1]);
+            }
+        }
     }
 
     export function createGeometry(ctx: Context) {
         let state = ctx.state;
 
-        let vertexBuffer = new Float32Array(ChunkedArray.compact(state.vertexBuffer)),
-            normalBuffer = new Float32Array(ChunkedArray.compact(state.normalBuffer)),
-            colorBuffer = new Float32Array(state.verticesDone * 3),
+        let colorBuffer = new Float32Array(state.verticesDone * 3),
             pickColorBuffer = new Float32Array(state.verticesDone * 4),
-            indexBuffer = new Uint32Array(ChunkedArray.compact(state.indexBuffer)),
             stateBuffer = new Float32Array(state.verticesDone);
 
-        let geometry = new THREE.BufferGeometry();
-        geometry.addAttribute('position', new THREE.BufferAttribute(vertexBuffer, 3));
-        geometry.addAttribute('normal', new THREE.BufferAttribute(normalBuffer, 3));
-        geometry.addAttribute('index', new THREE.BufferAttribute(indexBuffer, 1));
+        let geometry = GB.toBufferGeometry(state.builder);        
         geometry.addAttribute('color', new THREE.BufferAttribute(colorBuffer, 3));
 
         ctx.geom.vertexStateBuffer = new THREE.BufferAttribute(stateBuffer, 1);
         geometry.addAttribute('vState', ctx.geom.vertexStateBuffer);
         ctx.geom.geometry = geometry;
+
+        if (state.gapsBuilder.vertices.elementCount) {
+            ctx.geom.gapsGeometry = GB.toBufferGeometry(state.gapsBuilder);
+        }
 
         let map = ctx.geom.vertexMap,
             color = { r: 0.45, g: 0.45, b: 0.45 },
@@ -968,7 +276,6 @@ namespace LiteMol.Visualization.Molecule.Cartoons.Geometry {
         constructor() {
         }
 
-
         private tempVectors = [
             new THREE.Vector3(), new THREE.Vector3(), new THREE.Vector3(), new THREE.Vector3(), new THREE.Vector3(), new THREE.Vector3(),
             new THREE.Vector3(), new THREE.Vector3(), new THREE.Vector3(), new THREE.Vector3(), new THREE.Vector3(), new THREE.Vector3(),
@@ -980,7 +287,6 @@ namespace LiteMol.Visualization.Molecule.Cartoons.Geometry {
         }
 
         addTube(element: CartoonAsymUnit, state: CartoonsGeometryState, width: number, height: number) {
-
             let verticesDone = state.verticesDone,
                 i = 0, j = 0,
                 radialVector = this.tempVectors[0], normalVector = this.tempVectors[1],

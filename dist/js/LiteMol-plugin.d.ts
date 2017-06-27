@@ -14850,9 +14850,10 @@ declare namespace LiteMol.Visualization.Geometry {
             normals?: ChunkedArray<number>;
             elementSize: 2 | 3;
         }
-        function createStatic(vertexCount: number, indexCount: number, elementSize?: 2 | 3): Builder;
-        function createDynamic(vertexChunkSize: number, indexChunkSize: number, elementSize?: 2 | 3): Builder;
+        function createStatic(vertexCount: number, indexCount: number, elementSize?: 2 | 3): Static;
+        function createDynamic(vertexChunkSize: number, indexChunkSize: number, elementSize?: 2 | 3): Dynamic;
         import Geom = Core.Geometry;
+        import Vec3 = Geom.LinearAlgebra.Vector3;
         import Mat4 = Geom.LinearAlgebra.Matrix4;
         function addRawTransformed(builder: Builder, geom: RawGeometry, scale: number[] | undefined, translation: number[] | undefined, rotation: Mat4 | undefined): void;
         function addVertex3s(builder: Static, x: number, y: number, z: number): void;
@@ -14861,6 +14862,8 @@ declare namespace LiteMol.Visualization.Geometry {
         function addVertex3d(builder: Dynamic, x: number, y: number, z: number): void;
         function addNormal3d(builder: Dynamic, x: number, y: number, z: number): void;
         function addIndex3d(builder: Dynamic, i: number, j: number, k: number): void;
+        function getDashTemplate(): RawGeometry;
+        function addDashedLine(builder: Builder, a: Vec3, b: Vec3, size: number, gap: number, r: number): void;
         function toBufferGeometry(builder: Builder): THREE.BufferGeometry;
     }
 }
@@ -15077,6 +15080,7 @@ declare namespace LiteMol.Visualization.Molecule.Cartoons.Geometry {
     class Data extends GeometryBase {
         geometry: THREE.BufferGeometry;
         pickGeometry: THREE.BufferGeometry;
+        gapsGeometry: THREE.BufferGeometry | undefined;
         vertexMap: Selection.VertexMap;
         vertexStateBuffer: THREE.BufferAttribute;
         dispose(): void;
@@ -15111,52 +15115,10 @@ declare namespace LiteMol.Visualization.Molecule.Cartoons.Geometry {
     function create(model: Core.Structure.Molecule.Model, atomIndices: number[], linearSegments: number, parameters: any, isTrace: boolean, computation: Core.Computation.Context): LiteMol.Promise<Data>;
 }
 declare namespace LiteMol.Visualization.Molecule.Cartoons.Geometry {
-    import ChunkedArray = Core.Utils.ChunkedArray;
-    class CartoonAsymUnitState {
-        private typeBuilder;
-        private uPositionsBuilder;
-        private vPositionsBuilder;
-        private pPositionsBuilder;
-        private dPositionsBuilder;
-        residueType: Core.Structure.SecondaryStructureType[];
-        uPositions: number[];
-        vPositions: number[];
-        pPositions: number[];
-        dPositions: number[];
-        uvLength: number;
-        residueCount: number;
-        constructor(residueCount: number);
-        addResidue(rIndex: number, arrays: {
-            atomStartIndex: number[];
-            atomEndIndex: number[];
-            name: string[];
-            x: number[];
-            y: number[];
-            z: number[];
-        }, sType: Core.Structure.SecondaryStructureType): boolean;
-        finishResidues(): void;
-        addControlPoint(p: THREE.Vector3, d: THREE.Vector3): void;
-        finishContols(): void;
-    }
     class CartoonAsymUnit {
         private model;
         private elements;
         linearSegmentCount: number;
-        private static maskSplit(element, mask, target);
-        static isCartoonLike(atomIndices: number[], start: number, end: number, name: string[], a: string, b: string, isAmk: boolean): boolean;
-        static createMask(model: Core.Structure.Molecule.Model, atomIndices: number[]): boolean[];
-        private static isUnknownSecondaryStructure(model);
-        private static approximateSecondaryStructure(model, parent);
-        private static ZhangHelixDistance;
-        private static ZhangHelixDelta;
-        private static ZhangSheetDistance;
-        private static ZhangSheetDelta;
-        private static ZhangP1;
-        private static ZhangP2;
-        private static zhangSkolnickSStrace(model, trace, parent, elements);
-        private static zhangSkolnickSSresidue(model, trace, i, distances, delta);
-        private static throwIfEmpty(ss);
-        static buildUnits(model: Core.Structure.Molecule.Model, atomIndices: number[], linearSegmentCount: number): CartoonAsymUnit[];
         private controlPointsBuilder;
         private torsionVectorsBuilder;
         private normalVectorsBuilder;
@@ -15172,16 +15134,26 @@ declare namespace LiteMol.Visualization.Molecule.Cartoons.Geometry {
         residueType: Core.Structure.SecondaryStructureType[];
         residueIndex: Int32Array;
         backboneOnly: boolean;
+        startResidueIndex: number;
+        endResidueIndex: number;
         constructor(model: Core.Structure.Molecule.Model, elements: Core.Structure.SecondaryStructureElement[], linearSegmentCount: number);
-        private createControlPoints(state);
-        private initPositions(state);
-        private initControlsPoints(state);
-        private computeSplines(state);
+        private createControlPoints(builder);
+        private initPositions(builder);
+        private initControlsPoints(builder);
+        private computeSplines(builder);
         private addSplineNode(previousControlPoint, controlPoint, torsionPoint);
         private reflectPositions(xs, u, v, a, b, c, d, r1, r2);
-        private static reflect(target, p1, p2, amount);
-        private static spline(target, p1, p2, p3, t);
     }
+    namespace CartoonAsymUnit {
+        function reflect(target: THREE.Vector3, p1: THREE.Vector3, p2: THREE.Vector3, amount: number): void;
+        function spline(target: THREE.Vector3, p1: THREE.Vector3, p2: THREE.Vector3, p3: THREE.Vector3, t: number): void;
+        function maskSplit(element: Core.Structure.SecondaryStructureElement, mask: boolean[], target: Core.Structure.SecondaryStructureElement[]): void;
+        function isCartoonLike(atomIndices: number[], start: number, end: number, name: string[], a: string, b: string, isAmk: boolean): boolean;
+        function createMask(model: Core.Structure.Molecule.Model, atomIndices: number[]): boolean[];
+        function buildUnits(model: Core.Structure.Molecule.Model, atomIndices: number[], linearSegmentCount: number): CartoonAsymUnit[];
+    }
+}
+declare namespace LiteMol.Visualization.Molecule.Cartoons.Geometry {
     class CartoonsGeometryParams {
         radialSegmentCount: number;
         turnWidth: number;
@@ -15195,14 +15167,17 @@ declare namespace LiteMol.Visualization.Molecule.Cartoons.Geometry {
         tessalation: number;
         static Default: CartoonsGeometryParams;
     }
+    import GB = Visualization.Geometry.Builder;
     class CartoonsGeometryState {
         params: CartoonsGeometryParams;
+        private residueCount;
         residueIndex: number;
-        verticesDone: number;
-        trianglesDone: number;
-        vertexBuffer: ChunkedArray<number>;
-        normalBuffer: ChunkedArray<number>;
-        indexBuffer: ChunkedArray<number>;
+        readonly verticesDone: number;
+        readonly trianglesDone: number;
+        builder: GB.Dynamic;
+        private vs;
+        private is;
+        gapsBuilder: GB.Dynamic;
         translationMatrix: THREE.Matrix4;
         scaleMatrix: THREE.Matrix4;
         rotationMatrix: THREE.Matrix4;
@@ -15254,6 +15229,7 @@ declare namespace LiteMol.Visualization.Molecule.Cartoons {
     class Model extends Visualization.Model {
         private model;
         private material;
+        private gapMaterial;
         private pickMaterial;
         private queryContext;
         private cartoons;

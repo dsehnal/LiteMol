@@ -1,6 +1,8 @@
 ﻿# 1.7.1
 * MouseWheel event is now triggered only if the user moves the mouse over the area.
 * Refactored balls and sticks model to include metallic bonds.
+* Added geometry builder.
+* Added dashed lines indicating gaps in cartoon models.
 
 # 1.7.0
 * Added support for labels.

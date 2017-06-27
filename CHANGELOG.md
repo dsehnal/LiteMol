@@ -11,6 +11,7 @@ Each component also has its separate changelog
 * Support for _struct_conn mmCIF category.
 * Better bond computation based on distances.
 * Show metallic bond in balls and sticks models.
+* Added dashed lines to cartoon models to indicated gaps in sequence.
 
 2.3.0-preview
 -----------

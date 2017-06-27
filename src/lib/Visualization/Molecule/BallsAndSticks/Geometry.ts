@@ -58,7 +58,6 @@ namespace LiteMol.Visualization.Molecule.BallsAndSticks {
     class BondModelState {
         rotationAxis = Vec3.zero();
         bondUpVector = Vec3.fromValues(1, 0, 0);
-        dashUpVector = Vec3.fromValues(1, 0, 0);
         dir = Vec3.zero();
 
         scale = Vec3.zero();
@@ -71,7 +70,6 @@ namespace LiteMol.Visualization.Molecule.BallsAndSticks {
 
         constructor(
             public bondTemplate: Geometry.RawGeometry,
-            public cubeTemplate: Geometry.RawGeometry,
             public builder: GB) {
         }
 
@@ -116,16 +114,6 @@ namespace LiteMol.Visualization.Molecule.BallsAndSticks {
             atomCache[tessalation] = ret;
             return ret;
         }
-
-        let dash: Geometry.RawGeometry | undefined = void 0;
-        export function getDash() {
-            if (dash) return dash;
-            dash = GeometryHelper.toRawGeometry(new THREE.BoxGeometry(1, 1, 1));
-            for (let i = 0; i < dash.vertices.length; i += 3) {
-                dash.vertices[i] += 0.5;
-            }
-            return dash;
-        }
     }
 
     class BuildState {
@@ -136,7 +124,7 @@ namespace LiteMol.Visualization.Molecule.BallsAndSticks {
 
         bondTemplate = Templates.getBond(this.tessalation!);
         atomTemplate = Templates.getAtom(this.tessalation!);
-        dashTemplate = Templates.getDash();
+        dashTemplate = GB.getDashTemplate();
 
         atomVertexCount = this.atomTemplate.vertexCount * this.atomIndices.length;
         atomBuilder = GB.createStatic(this.atomVertexCount, this.atomTemplate.indexCount * this.atomIndices.length);
@@ -174,11 +162,10 @@ namespace LiteMol.Visualization.Molecule.BallsAndSticks {
         bondColors = new Float32Array(this.bondVertexCount * 3);
         
         bondRadius = this.state.params.bondRadius;
-        bondState = new BondModelState(this.state.bondTemplate, this.state.dashTemplate, this.bondBuilder);
+        bondState = new BondModelState(this.state.bondTemplate, this.bondBuilder);
         bondCount = this.info.bonds.count;
 
         constructor(public state: BuildState) {
-
         }
     }
 
@@ -279,23 +266,7 @@ namespace LiteMol.Visualization.Molecule.BallsAndSticks {
         }
 
         private static addMetalBond(r: number, state: BondModelState) {
-            const dir = Vec3.sub(state.dir, state.b, state.a);
-            const length = Vec3.length(state.dir);
-            const axis = Vec3.cross(state.rotationAxis, state.dashUpVector, dir);
-            const angle = Vec3.angle(state.dashUpVector, state.dir);
-
-            const scale = Vec3.set(state.scale, Constants.MetalDashSize, r, r);
-            const rotation = Mat4.fromRotation(state.rotation, angle, axis)!;
-            
-            const offset = state.offset;
-            Vec3.copy(offset, state.a);
-            Vec3.normalize(dir, dir);
-            Vec3.scale(dir, dir, 2 * Constants.MetalDashSize);
-            for (let t = 0; t < length; t += 2 * Constants.MetalDashSize) {
-                if (t + Constants.MetalDashSize > length) scale[0] = length - t;
-                GB.addRawTransformed(state.builder, state.cubeTemplate, scale, offset, rotation);
-                Vec3.add(offset, offset, dir);
-            }         
+            GB.addDashedLine(state.builder, state.a, state.b, Constants.MetalDashSize, Constants.MetalDashSize, r);    
         }
 
         private static getEmptyBondsGeometry() {
