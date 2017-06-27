@@ -69388,26 +69388,26 @@ var LiteMol;
                             lastResidue = raI;
                         }
                         var metalDashFactor = 1 / (2 * 0.15 /* MetalDashSize */);
-                        var covalentStickCount = 0, metallicStickCount = 0;
+                        var covalentStickCount = 0, dashPartCount = 0;
                         var type = bonds.type, count = bonds.count, atomAIndex = bonds.atomAIndex, atomBIndex = bonds.atomBIndex;
                         var _a = model.positions, x = _a.x, y = _a.y, z = _a.z;
                         for (var i = 0; i < count; i++) {
                             var t = type[i];
-                            if (t === 0)
+                            if (t === 0 /* Unknown */ || t === 8 /* DisulfideBridge */)
                                 covalentStickCount += 1;
-                            else if (t >= 1 && t <= 4)
+                            else if (t >= 1 /* Single */ && t <= 4 /* Aromatic */)
                                 covalentStickCount += t;
-                            else if (t === 5) {
+                            else if (t === 5 /* Metallic */ || t === 6 /* Ion */ || t === 7 /* Hydrogen */) {
                                 var a = atomAIndex[i], b = atomBIndex[i];
                                 var dx = x[a] - x[b], dy = y[a] - y[b], dz = z[a] - z[b];
                                 var len = Math.sqrt(dx * dx + dy * dy + dz * dz);
-                                metallicStickCount += Math.ceil(metalDashFactor * len);
+                                dashPartCount += Math.ceil(metalDashFactor * len);
                             }
                         }
                         return {
                             bonds: bonds,
                             covalentStickCount: covalentStickCount,
-                            metallicStickCount: metallicStickCount
+                            dashPartCount: dashPartCount
                         };
                     }
                     BallsAndSticksHelper.analyze = analyze;
@@ -69540,8 +69540,8 @@ var LiteMol;
                         this.model = this.state.model;
                         this.atomIndices = this.state.atomIndices;
                         this.info = BallsAndSticksHelper.analyze(this.state.model, this.state.atomIndices, this.state.params);
-                        this.bondVertexCount = this.state.bondTemplate.vertexCount * this.info.covalentStickCount + this.state.dashTemplate.vertexCount * this.info.metallicStickCount;
-                        this.bondBuilder = GB.createStatic(this.bondVertexCount, this.state.bondTemplate.indexCount * this.info.covalentStickCount + this.state.dashTemplate.indexCount * this.info.metallicStickCount);
+                        this.bondVertexCount = this.state.bondTemplate.vertexCount * this.info.covalentStickCount + this.state.dashTemplate.vertexCount * this.info.dashPartCount;
+                        this.bondBuilder = GB.createStatic(this.bondVertexCount, this.state.bondTemplate.indexCount * this.info.covalentStickCount + this.state.dashTemplate.indexCount * this.info.dashPartCount);
                         this.bondColors = new Float32Array(this.bondVertexCount * 3);
                         this.bondRadius = this.state.params.bondRadius;
                         this.bondState = new BondModelState(this.state.bondTemplate, this.bondBuilder);
@@ -69583,6 +69583,7 @@ var LiteMol;
                         switch (type) {
                             case 0 /* Unknown */:
                             case 1 /* Single */:
+                            case 8 /* DisulfideBridge */:
                                 BallsAndSticksGeometryBuilder.addBondPart(r, 0, 0, bondState);
                                 break;
                             case 2 /* Double */:
@@ -69602,7 +69603,9 @@ var LiteMol;
                                 BallsAndSticksGeometryBuilder.addBondPart(h / 2, o, -o, bondState);
                                 break;
                             case 5 /* Metallic */:
-                                BallsAndSticksGeometryBuilder.addMetalBond(h, bondState);
+                            case 6 /* Ion */:
+                            case 7 /* Hydrogen */:
+                                BallsAndSticksGeometryBuilder.addDashedBond(h, bondState);
                                 break;
                         }
                     };
@@ -69620,7 +69623,7 @@ var LiteMol;
                         Vec3.add(state.offset, state.offset, state.a);
                         GB.addRawTransformed(state.builder, state.bondTemplate, state.scale, state.offset, state.rotation);
                     };
-                    BallsAndSticksGeometryBuilder.addMetalBond = function (r, state) {
+                    BallsAndSticksGeometryBuilder.addDashedBond = function (r, state) {
                         GB.addDashedLine(state.builder, state.a, state.b, 0.15 /* MetalDashSize */, 0.15 /* MetalDashSize */, r);
                     };
                     BallsAndSticksGeometryBuilder.getEmptyBondsGeometry = function () {

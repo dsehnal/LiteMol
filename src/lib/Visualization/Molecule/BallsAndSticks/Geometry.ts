@@ -26,25 +26,25 @@ namespace LiteMol.Visualization.Molecule.BallsAndSticks {
 
             const metalDashFactor = 1 / (2 * Constants.MetalDashSize);
 
-            let covalentStickCount = 0, metallicStickCount = 0;
+            let covalentStickCount = 0, dashPartCount = 0;
             let { type, count, atomAIndex, atomBIndex } = bonds;
             let { x, y, z } = model.positions;
             for (let i = 0; i < count; i++) {
                 const t = type[i];
-                if (t === 0) covalentStickCount += 1;
-                else if (t >= 1 && t <= 4) covalentStickCount += t;
-                else if (t === 5) {
+                if (t === BT.Unknown || t === BT.DisulfideBridge) covalentStickCount += 1;
+                else if (t >= BT.Single && t <= BT.Aromatic) covalentStickCount += t;
+                else if (t === BT.Metallic || t === BT.Ion || t === BT.Hydrogen) {
                     const a = atomAIndex[i], b = atomBIndex[i];
                     const dx = x[a] - x[b], dy = y[a] - y[b], dz = z[a] - z[b];
                     const len = Math.sqrt(dx*dx + dy*dy + dz*dz);
-                    metallicStickCount += Math.ceil(metalDashFactor * len);
+                    dashPartCount += Math.ceil(metalDashFactor * len);
                 }
             }
 
             return {
                 bonds,
                 covalentStickCount,
-                metallicStickCount
+                dashPartCount
             }
         }
     }
@@ -157,8 +157,8 @@ namespace LiteMol.Visualization.Molecule.BallsAndSticks {
         atomIndices = this.state.atomIndices;
         info = BallsAndSticksHelper.analyze(this.state.model, this.state.atomIndices, this.state.params);
 
-        bondVertexCount = this.state.bondTemplate.vertexCount * this.info.covalentStickCount + this.state.dashTemplate.vertexCount * this.info.metallicStickCount;
-        bondBuilder = GB.createStatic(this.bondVertexCount, this.state.bondTemplate.indexCount * this.info.covalentStickCount + this.state.dashTemplate.indexCount * this.info.metallicStickCount);
+        bondVertexCount = this.state.bondTemplate.vertexCount * this.info.covalentStickCount + this.state.dashTemplate.vertexCount * this.info.dashPartCount;
+        bondBuilder = GB.createStatic(this.bondVertexCount, this.state.bondTemplate.indexCount * this.info.covalentStickCount + this.state.dashTemplate.indexCount * this.info.dashPartCount);
         bondColors = new Float32Array(this.bondVertexCount * 3);
         
         bondRadius = this.state.params.bondRadius;
@@ -223,6 +223,7 @@ namespace LiteMol.Visualization.Molecule.BallsAndSticks {
             switch (type) {
                 case BT.Unknown:
                 case BT.Single:
+                case BT.DisulfideBridge:
                     BallsAndSticksGeometryBuilder.addBondPart(r, 0, 0, bondState);
                     break;
                 case BT.Double:
@@ -242,7 +243,9 @@ namespace LiteMol.Visualization.Molecule.BallsAndSticks {
                     BallsAndSticksGeometryBuilder.addBondPart(h / 2, o, -o, bondState);
                     break;
                 case BT.Metallic:
-                    BallsAndSticksGeometryBuilder.addMetalBond(h, bondState);
+                case BT.Ion:
+                case BT.Hydrogen:
+                    BallsAndSticksGeometryBuilder.addDashedBond(h, bondState);
                     break;
             }
         }
@@ -265,7 +268,7 @@ namespace LiteMol.Visualization.Molecule.BallsAndSticks {
             GB.addRawTransformed(state.builder, state.bondTemplate, state.scale, state.offset, state.rotation);
         }
 
-        private static addMetalBond(r: number, state: BondModelState) {
+        private static addDashedBond(r: number, state: BondModelState) {
             GB.addDashedLine(state.builder, state.a, state.b, Constants.MetalDashSize, Constants.MetalDashSize, r);    
         }
 
