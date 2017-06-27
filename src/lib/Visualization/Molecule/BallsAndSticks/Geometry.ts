@@ -53,7 +53,7 @@ namespace LiteMol.Visualization.Molecule.BallsAndSticks {
     import Geom = Core.Geometry
     import Vec3 = Geom.LinearAlgebra.Vector3
     import Mat4 = Geom.LinearAlgebra.Matrix4
-    import GB = Utils.GeometryBuilder
+    import GB = Geometry.Builder
 
     class BondModelState {
         rotationAxis = Vec3.zero();
@@ -65,21 +65,20 @@ namespace LiteMol.Visualization.Molecule.BallsAndSticks {
         translation = Vec3.zero();
         rotation = Mat4.zero();
         
-        radius = 0.15;
         offset =  Vec3.zero();
         a = Vec3.zero();
         b = Vec3.zero();
 
         constructor(
-            public bondTemplate: Geom.Surface,
-            public cubeTemplate: Geom.Surface,
+            public bondTemplate: Geometry.RawGeometry,
+            public cubeTemplate: Geometry.RawGeometry,
             public builder: GB) {
         }
 
     }
 
     namespace Templates {
-        const bondCache: {[t: number]: Core.Geometry.Surface} = {};
+        const bondCache: {[t: number]: Geometry.RawGeometry} = {};
         export function getBond(tessalation: number) {
             if (bondCache[tessalation]) return bondCache[tessalation];
             let detail: number;
@@ -95,12 +94,12 @@ namespace LiteMol.Visualization.Molecule.BallsAndSticks {
             }
 
             const geom = new THREE.TubeGeometry(new THREE.LineCurve3(new THREE.Vector3(0, 0, 0), new THREE.Vector3(1, 0, 0)) as any, 2, 1.0, detail);
-            const ret = GeometryHelper.toSurface(geom);
+            const ret = GeometryHelper.toRawGeometry(geom);
             bondCache[tessalation] = ret;
             return ret;
         }
 
-        const atomCache: {[t: number]: Core.Geometry.Surface} = {};
+        const atomCache: {[t: number]:  Geometry.RawGeometry} = {};
         export function getAtom(tessalation: number) {
             if (atomCache[tessalation]) return atomCache[tessalation];
             let base: any, radius = 1;
@@ -113,15 +112,15 @@ namespace LiteMol.Visualization.Molecule.BallsAndSticks {
                 case 5: base = new THREE.OctahedronGeometry(radius, 3); break;
                 default: base = new THREE.IcosahedronGeometry(radius, 3); break;
             }
-            const ret = GeometryHelper.toSurface(base);
+            const ret = GeometryHelper.toRawGeometry(base);
             atomCache[tessalation] = ret;
             return ret;
         }
 
-        let dash: Core.Geometry.Surface | undefined = void 0;
+        let dash: Geometry.RawGeometry | undefined = void 0;
         export function getDash() {
             if (dash) return dash;
-            dash = GeometryHelper.toSurface(new THREE.BoxGeometry(1, 1, 1));
+            dash = GeometryHelper.toRawGeometry(new THREE.BoxGeometry(1, 1, 1));
             for (let i = 0; i < dash.vertices.length; i += 3) {
                 dash.vertices[i] += 0.5;
             }
@@ -140,8 +139,7 @@ namespace LiteMol.Visualization.Molecule.BallsAndSticks {
         dashTemplate = Templates.getDash();
 
         atomVertexCount = this.atomTemplate.vertexCount * this.atomIndices.length;
-        atomTriangleCount = this.atomTemplate.triangleCount * this.atomIndices.length;
-        atomBuilder = Utils.GeometryBuilder.create(this.atomVertexCount, this.atomTriangleCount);
+        atomBuilder = GB.createStatic(this.atomVertexCount, this.atomTemplate.indexCount * this.atomIndices.length);
         atomColors = new Float32Array(this.atomVertexCount * 3);
         atomPickColors = new Float32Array(this.atomVertexCount * 4);
 
@@ -172,8 +170,7 @@ namespace LiteMol.Visualization.Molecule.BallsAndSticks {
         info = BallsAndSticksHelper.analyze(this.state.model, this.state.atomIndices, this.state.params);
 
         bondVertexCount = this.state.bondTemplate.vertexCount * this.info.covalentStickCount + this.state.dashTemplate.vertexCount * this.info.metallicStickCount;
-        bondTriangleCount = this.state.bondTemplate.triangleCount * this.info.covalentStickCount + this.state.dashTemplate.triangleCount * this.info.metallicStickCount;
-        bondBuilder = GB.create(this.bondVertexCount, this.bondTriangleCount);
+        bondBuilder = GB.createStatic(this.bondVertexCount, this.state.bondTemplate.indexCount * this.info.covalentStickCount + this.state.dashTemplate.indexCount * this.info.metallicStickCount);
         bondColors = new Float32Array(this.bondVertexCount * 3);
         
         bondRadius = this.state.params.bondRadius;
@@ -210,8 +207,8 @@ namespace LiteMol.Visualization.Molecule.BallsAndSticks {
             Vec3.set(state.scale, r, r, r);
             Vec3.set(state.translation, state.cX[a], state.cY[a], state.cZ[a]);
 
-            const startVertexOffset = state.atomBuilder.vertexOffset;
-            GB.add(state.atomBuilder, state.atomTemplate, state.scale, state.translation, void 0);
+            const startVertexOffset = state.atomBuilder.vertices.elementCount; //!!!.vertexOffset;
+            GB.addRawTransformed(state.atomBuilder, state.atomTemplate, state.scale, state.translation, void 0);
 
             Selection.Picking.assignPickColor(a, state.pickColor);
 
@@ -222,7 +219,7 @@ namespace LiteMol.Visualization.Molecule.BallsAndSticks {
                 state.pickOffset++; // 4th component
             }
 
-            state.atomMapBuilder.addVertexRange(startVertexOffset, state.atomBuilder.vertexOffset);
+            state.atomMapBuilder.addVertexRange(startVertexOffset, state.atomBuilder.vertices.elementCount /*!!!.vertexOffset*/);
             state.atomMapBuilder.endElement();
         }
         
@@ -239,79 +236,55 @@ namespace LiteMol.Visualization.Molecule.BallsAndSticks {
             switch (type) {
                 case BT.Unknown:
                 case BT.Single:
-                    bondState.radius = r!;
-                    bondState.offset[1] = 0.0;
-                    bondState.offset[2] = 0.0;
-                    BallsAndSticksGeometryBuilder.addBondPart(bondState);
+                    BallsAndSticksGeometryBuilder.addBondPart(r, 0, 0, bondState);
                     break;
                 case BT.Double:
-                    bondState.radius = h;
-                    bondState.offset[1] = o;
-                    bondState.offset[2] = o;
-                    BallsAndSticksGeometryBuilder.addBondPart(bondState);
-                    bondState.offset[1] = -o;
-                    bondState.offset[2] = -o;
-                    BallsAndSticksGeometryBuilder.addBondPart(bondState);
+                    BallsAndSticksGeometryBuilder.addBondPart(h, o, o, bondState);
+                    BallsAndSticksGeometryBuilder.addBondPart(h, -o, -o, bondState);
                     break;
                 case BT.Triple:
-                    bondState.radius = h;
-                    bondState.offset[1] = 0.0;
-                    bondState.offset[2] = o;
-                    BallsAndSticksGeometryBuilder.addBondPart(bondState);
-                    bondState.offset[1] = -Math.cos(Math.PI / 3) * o;
-                    bondState.offset[2] = -Math.sin(Math.PI / 3) * o;
-                    BallsAndSticksGeometryBuilder.addBondPart(bondState);
-                    bondState.offset[1] = -bondState.offset[0];
-                    //bondState.offset[1] = -0.05;
-                    BallsAndSticksGeometryBuilder.addBondPart(bondState);
+                    BallsAndSticksGeometryBuilder.addBondPart(h, 0, o, bondState);
+                    const c = Math.cos(Math.PI / 3) * o, s = Math.sin(Math.PI / 3) * o
+                    BallsAndSticksGeometryBuilder.addBondPart(h, -c,  -s,  bondState);
+                    BallsAndSticksGeometryBuilder.addBondPart(h, -c, s, bondState);
                     break;
                 case BT.Aromatic:
-                    bondState.radius = h / 2;
-                    bondState.offset[1] = o;
-                    bondState.offset[2] = o;
-                    BallsAndSticksGeometryBuilder.addBondPart(bondState);
-                    bondState.offset[1] = -o;
-                    bondState.offset[2] = -o;
-                    BallsAndSticksGeometryBuilder.addBondPart(bondState);
-                    bondState.offset[1] = -o;
-                    bondState.offset[2] = o;
-                    BallsAndSticksGeometryBuilder.addBondPart(bondState);
-                    bondState.offset[1] = o;
-                    bondState.offset[2] = -o;
-                    BallsAndSticksGeometryBuilder.addBondPart(bondState);
+                    BallsAndSticksGeometryBuilder.addBondPart(h / 2, o, o, bondState);
+                    BallsAndSticksGeometryBuilder.addBondPart(h / 2, -o, -o, bondState);
+                    BallsAndSticksGeometryBuilder.addBondPart(h / 2, -o, o, bondState);
+                    BallsAndSticksGeometryBuilder.addBondPart(h / 2, o, -o, bondState);
                     break;
                 case BT.Metallic:
-                    bondState.radius = h;
-                    BallsAndSticksGeometryBuilder.addMetalBond(bondState);
+                    BallsAndSticksGeometryBuilder.addMetalBond(h, bondState);
                     break;
             }
         }
 
-
-        private static addBondPart(state: BondModelState) {
+        private static addBondPart(r: number, oX: number, oY: number, state: BondModelState) {
             const dir = Vec3.sub(state.dir, state.b, state.a);
             const length = Vec3.length(state.dir);
             const axis = Vec3.cross(state.rotationAxis, state.bondUpVector, dir);
             const angle = Vec3.angle(state.bondUpVector, state.dir);
             
-
-            Vec3.set(state.scale, length, state.radius, state.radius);
+            Vec3.set(state.scale, length, r, r);
             Mat4.fromRotation(state.rotation, angle, axis);
             
             state.offset[0] = 0;
+            state.offset[1] = oX;
+            state.offset[2] = oY;
             Vec3.transformMat4(state.offset, state.offset, state.rotation);
             Vec3.add(state.offset, state.offset, state.a);
 
-            GB.add(state.builder, state.bondTemplate, state.scale, state.offset, state.rotation);
+            GB.addRawTransformed(state.builder, state.bondTemplate, state.scale, state.offset, state.rotation);
         }
 
-        private static addMetalBond(state: BondModelState) {
+        private static addMetalBond(r: number, state: BondModelState) {
             const dir = Vec3.sub(state.dir, state.b, state.a);
             const length = Vec3.length(state.dir);
             const axis = Vec3.cross(state.rotationAxis, state.dashUpVector, dir);
             const angle = Vec3.angle(state.dashUpVector, state.dir);
 
-            const scale = Vec3.set(state.scale, Constants.MetalDashSize, state.radius, state.radius);
+            const scale = Vec3.set(state.scale, Constants.MetalDashSize, r, r);
             const rotation = Mat4.fromRotation(state.rotation, angle, axis)!;
             
             const offset = state.offset;
@@ -320,7 +293,7 @@ namespace LiteMol.Visualization.Molecule.BallsAndSticks {
             Vec3.scale(dir, dir, 2 * Constants.MetalDashSize);
             for (let t = 0; t < length; t += 2 * Constants.MetalDashSize) {
                 if (t + Constants.MetalDashSize > length) scale[0] = length - t;
-                GB.add(state.builder, state.cubeTemplate, scale, offset, rotation);
+                GB.addRawTransformed(state.builder, state.cubeTemplate, scale, offset, rotation);
                 Vec3.add(offset, offset, dir);
             }         
         }
@@ -331,34 +304,28 @@ namespace LiteMol.Visualization.Molecule.BallsAndSticks {
             bondsGeometry.addAttribute('normal', new THREE.BufferAttribute(new Float32Array(0), 3));
             bondsGeometry.addAttribute('index', new THREE.BufferAttribute(new Uint32Array(0), 1));
             bondsGeometry.addAttribute('color', new THREE.BufferAttribute(new Float32Array(0), 3));
-            return { bondsGeometry };
+            return bondsGeometry;
         }
 
         private static getBondsGeometry(state: BondsBuildState) {
-            let bondsGeometry = new THREE.BufferGeometry();
-            bondsGeometry.addAttribute('position', new THREE.BufferAttribute(state.bondBuilder.vertices, 3));
-            bondsGeometry.addAttribute('normal', new THREE.BufferAttribute(state.bondBuilder.normals, 3));
-            bondsGeometry.addAttribute('index', new THREE.BufferAttribute(state.bondBuilder.indices, 1));
-            bondsGeometry.addAttribute('color', new THREE.BufferAttribute(state.bondColors, 3));
-            return { bondsGeometry };
+            const geom = GB.toBufferGeometry(state.bondBuilder);
+            Geometry.addAttribute(geom, 'color', state.bondColors, 3);
+            return geom;
         }
 
         private static getAtomsGeometry(state: BuildState) {
-            let atomsGeometry = new THREE.BufferGeometry();
-            atomsGeometry.addAttribute('position', new THREE.BufferAttribute(state.atomBuilder.vertices, 3));
-            atomsGeometry.addAttribute('normal', new THREE.BufferAttribute(state.atomBuilder.normals, 3));
-            atomsGeometry.addAttribute('index', new THREE.BufferAttribute(state.atomBuilder.indices, 1));
-            atomsGeometry.addAttribute('color', new THREE.BufferAttribute(state.atomColors, 3));
+            const atomsGeometry = GB.toBufferGeometry(state.atomBuilder);
+            Geometry.addAttribute(atomsGeometry, 'color', state.atomColors, 3);
 
-            let stateBuffer = new Float32Array(state.atomVertexCount);
-            let vertexStateBuffer = new THREE.BufferAttribute(stateBuffer, 1);
+            const stateBuffer = new Float32Array(state.atomVertexCount);
+            const vertexStateBuffer = new THREE.BufferAttribute(stateBuffer, 1);
             atomsGeometry.addAttribute('vState', vertexStateBuffer);
 
-            let atomsPickGeometry = new THREE.BufferGeometry();
-            atomsPickGeometry.addAttribute('position', new THREE.BufferAttribute(state.atomBuilder.vertices, 3));
-            atomsPickGeometry.addAttribute('index', new THREE.BufferAttribute(state.atomBuilder.indices, 1));
+            const atomsPickGeometry = new THREE.BufferGeometry();
+            atomsPickGeometry.addAttribute('position', atomsGeometry.getAttribute('position'));
+            atomsPickGeometry.addAttribute('index', atomsGeometry.getAttribute('index'));
             atomsPickGeometry.addAttribute('pColor', new THREE.BufferAttribute(state.atomPickColors, 4));
-
+            
             return {
                 vertexStateBuffer,
                 atomsGeometry,
@@ -425,13 +392,9 @@ namespace LiteMol.Visualization.Molecule.BallsAndSticks {
 
             let ret = new BallsAndSticksGeometry();
             if (state.bs) {
-                let geometry = BallsAndSticksGeometryBuilder.getBondsGeometry(state.bs);
-                ret.bondsGeometry = geometry.bondsGeometry;
-                //ret.bondVertexMap = geometry.bondVertexMap;
+                ret.bondsGeometry = BallsAndSticksGeometryBuilder.getBondsGeometry(state.bs);
             } else {
-                let geometry = BallsAndSticksGeometryBuilder.getEmptyBondsGeometry();
-                ret.bondsGeometry = geometry.bondsGeometry;
-                //ret.bondVertexMap = geometry.bondVertexMap;
+                ret.bondsGeometry = BallsAndSticksGeometryBuilder.getEmptyBondsGeometry();
             }
 
             let atomGeometry = BallsAndSticksGeometryBuilder.getAtomsGeometry(state);
@@ -451,12 +414,10 @@ namespace LiteMol.Visualization.Molecule.BallsAndSticks {
     }
 
     export class BallsAndSticksGeometry extends GeometryBase {
-
         atomsGeometry: THREE.BufferGeometry = <any>void 0;
         bondsGeometry: THREE.BufferGeometry = <any>void 0;
         pickGeometry: THREE.BufferGeometry = <any>void 0;
         atomVertexMap: Selection.VertexMap = <any>void 0;
-        //bondVertexMap: Selection.VertexMap = <any>void 0;
         vertexStateBuffer: THREE.BufferAttribute = <any>void 0;
 
         dispose() {

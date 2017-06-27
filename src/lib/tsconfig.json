@@ -75,7 +75,6 @@
 
     "./Visualization/lib/lib.ts",
 
-    "./Visualization/Utils/GeometryBuilder.ts",
     "./Visualization/Utils/Palette.ts",
 
     "./Visualization/Base/Helpers.ts",
@@ -87,6 +86,7 @@
     "./Visualization/Base/Scene.ts",
     "./Visualization/Base/CameraControls.ts",
     "./Visualization/Base/Selection.ts",
+    "./Visualization/Base/Geometry.ts",
 
     "./Visualization/Surface/Geometry.ts",
     "./Visualization/Surface/Model.ts",

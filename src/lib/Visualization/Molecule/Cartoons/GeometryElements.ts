@@ -957,8 +957,8 @@ namespace LiteMol.Visualization.Molecule.Cartoons.Geometry {
         }
 
         let pickGeometry = new THREE.BufferGeometry();
-        pickGeometry.addAttribute('position', new THREE.BufferAttribute(vertexBuffer, 3));
-        pickGeometry.addAttribute('index', new THREE.BufferAttribute(indexBuffer, 1));
+        pickGeometry.addAttribute('position', geometry.getAttribute('position'));
+        pickGeometry.addAttribute('index', geometry.getAttribute('index'));
         pickGeometry.addAttribute('pColor', new THREE.BufferAttribute(pickColorBuffer, 4));
         ctx.geom.pickGeometry = pickGeometry;
     }

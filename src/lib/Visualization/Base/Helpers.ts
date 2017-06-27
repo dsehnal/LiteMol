@@ -83,6 +83,18 @@ namespace LiteMol.Visualization {
                 normals: normalBuffer 
             };
         }
+
+        static toRawGeometry(source: THREE.Geometry): Geometry.RawGeometry {
+            const { vertices, vertexCount, triangleIndices: indices, triangleCount: indexCount, normals } = GeometryHelper.toSurface(source);
+            return {
+                vertices,
+                vertexCount,
+                indices,
+                indexCount,
+                normals,
+                elementSize: 3
+            };
+        }
         
         static getIndexedBufferGeometry(source: THREE.Geometry) {
             let bufferSize = source.vertices.length * 3,

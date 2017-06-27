@@ -14292,21 +14292,6 @@ declare namespace LiteMol.Visualization {
     export import THREE = LiteMolTHREE;
 }
 declare namespace LiteMol.Visualization.Utils {
-    interface GeometryBuilder {
-        vertices: Float32Array;
-        normals: Float32Array;
-        indices: Uint32Array;
-        vertexOffset: number;
-        indexOffset: number;
-    }
-    namespace GeometryBuilder {
-        import Geom = Core.Geometry;
-        import Mat4 = Geom.LinearAlgebra.Matrix4;
-        function create(vertexCount: number, triangleCount: number): GeometryBuilder;
-        function add(builder: GeometryBuilder, surface: Geom.Surface, scale: number[] | undefined, translation: number[] | undefined, rotation: Mat4 | undefined): void;
-    }
-}
-declare namespace LiteMol.Visualization.Utils {
     class Palette {
         static getRandomColor(amountOfGrey?: number): Visualization.Color;
         static randomMix(color1: Visualization.Color, color2: Visualization.Color, color3: Visualization.Color, greyControl: number): Visualization.Color;
@@ -14334,6 +14319,7 @@ declare namespace LiteMol.Visualization {
         }): void;
         static setPickColor(objectId: number, objectIdWidth: number, elementId: number, buffer: Float32Array, offset: number): void;
         static toSurface(source: THREE.Geometry): Core.Geometry.Surface;
+        static toRawGeometry(source: THREE.Geometry): Geometry.RawGeometry;
         static getIndexedBufferGeometry(source: THREE.Geometry): THREE.BufferGeometry;
     }
 }
@@ -14833,6 +14819,36 @@ declare namespace LiteMol.Visualization.Selection {
     }
     function applyActionToRange(array: Float32Array, start: number, end: number, action: Action): boolean;
     function applyActionToBuffer(buffer: THREE.BufferAttribute, action: Action): boolean;
+}
+declare namespace LiteMol.Visualization.Geometry {
+    interface RawGeometry {
+        vertices: Float32Array;
+        vertexCount: number;
+        indices: Uint32Array;
+        indexCount: number;
+        normals?: Float32Array;
+        elementSize: 2 | 3;
+    }
+    function toBufferGeometry(raw: RawGeometry): THREE.BufferGeometry;
+    function addAttribute(geom: THREE.BufferGeometry, name: string, a: ArrayLike<number>, elementSize: number): void;
+    import CoreUtils = Core.Utils;
+    import ChunkedArray = CoreUtils.ChunkedArray;
+    import ArrayBuilder = CoreUtils.ArrayBuilder;
+    interface Builder {
+        type: 'Dynamic' | 'Static';
+        vertices: ChunkedArray<number> | ArrayBuilder<number>;
+        indices: ChunkedArray<number> | ArrayBuilder<number>;
+        normals?: ChunkedArray<number> | ArrayBuilder<number>;
+        elementSize: 2 | 3;
+    }
+    namespace Builder {
+        function createStatic(vertexCount: number, indexCount: number, elementSize?: 2 | 3): Builder;
+        function createDynamic(vertexChunkSize: number, indexChunkSize: number, elementSize?: 2 | 3): Builder;
+        import Geom = Core.Geometry;
+        import Mat4 = Geom.LinearAlgebra.Matrix4;
+        function addRawTransformed(builder: Builder, geom: RawGeometry, scale: number[] | undefined, translation: number[] | undefined, rotation: Mat4 | undefined): void;
+        function toBufferGeometry(builder: Builder): THREE.BufferGeometry;
+    }
 }
 declare namespace LiteMol.Visualization.Surface {
     import Data = Core.Geometry.Surface;
