@@ -146,7 +146,7 @@ namespace LiteMol.Core.Geometry.Query3D {
 
     export function createSpatialHash<T>(data: InputData<T>): LookupStructure<T> {
         const tree = build(data);
-        return function (radiusEstimate) {
+        return function () {
             const ctx = QueryContext.create(tree, data.elements);
             return function (x: number, y: number, z: number, radius: number) {
                 QueryContext.update(ctx, x, y, z, radius);

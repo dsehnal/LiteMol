@@ -15430,7 +15430,7 @@ var LiteMol;
                 function createSubdivisionTree(data, leafSize) {
                     if (leafSize === void 0) { leafSize = 32; }
                     var tree = SubdivisionTree3DBuilder.build(data, leafSize);
-                    return function (radiusEstimate) {
+                    return function () {
                         var ctx = Query3D.QueryContext.create(tree, data.elements);
                         return function (x, y, z, radius) {
                             Query3D.QueryContext.update(ctx, x, y, z, radius);
@@ -15561,7 +15561,7 @@ var LiteMol;
                 }
                 function createSpatialHash(data) {
                     var tree = build(data);
-                    return function (radiusEstimate) {
+                    return function () {
                         var ctx = Query3D.QueryContext.create(tree, data.elements);
                         return function (x, y, z, radius) {
                             Query3D.QueryContext.update(ctx, x, y, z, radius);
@@ -17035,7 +17035,7 @@ var LiteMol;
                 var _b = model.positions, x = _b.x, y = _b.y, z = _b.z;
                 var _c = model.data.atoms, elementSymbol = _c.elementSymbol, residueIndex = _c.residueIndex, altLoc = _c.altLoc;
                 var residueName = model.data.residues.name;
-                var query3d = model.queryContext.lookup3d(MAX_RADIUS);
+                var query3d = model.queryContext.lookup3d();
                 var atomA = Core.Utils.ChunkedArray.create(function (size) { return new Int32Array(size); }, (atomIndices.length * 1.33) | 0, 1);
                 var atomB = Core.Utils.ChunkedArray.create(function (size) { return new Int32Array(size); }, (atomIndices.length * 1.33) | 0, 1);
                 var type = Core.Utils.ChunkedArray.create(function (size) { return new Uint8Array(size); }, (atomIndices.length * 1.33) | 0, 1);
@@ -20349,7 +20349,7 @@ var LiteMol;
                     function compileAmbientResidues(where, radius) {
                         var _where = Builder.toQuery(where);
                         return function (ctx) {
-                            var src = _where(ctx), nearest = ctx.lookup3d(radius), ret = new Query.HashFragmentSeqBuilder(ctx), _a = ctx.structure.positions, x = _a.x, y = _a.y, z = _a.z, residueIndex = ctx.structure.data.atoms.residueIndex, atomStart = ctx.structure.data.residues.atomStartIndex, atomEnd = ctx.structure.data.residues.atomEndIndex;
+                            var src = _where(ctx), nearest = ctx.lookup3d(), ret = new Query.HashFragmentSeqBuilder(ctx), _a = ctx.structure.positions, x = _a.x, y = _a.y, z = _a.z, residueIndex = ctx.structure.data.atoms.residueIndex, atomStart = ctx.structure.data.residues.atomStartIndex, atomEnd = ctx.structure.data.residues.atomEndIndex;
                             for (var _i = 0, _c = src.fragments; _i < _c.length; _i++) {
                                 var f = _c[_i];
                                 var residues_1 = Core.Utils.FastSet.create();

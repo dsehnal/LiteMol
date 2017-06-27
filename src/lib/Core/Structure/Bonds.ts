@@ -152,7 +152,7 @@ namespace LiteMol.Core.Structure {
         const { x, y, z } = model.positions;
         const { elementSymbol, residueIndex, altLoc } = model.data.atoms;
         const { name: residueName } = model.data.residues;
-        const query3d = model.queryContext.lookup3d(MAX_RADIUS);
+        const query3d = model.queryContext.lookup3d();
 
         const atomA = Utils.ChunkedArray.create<number>(size => new Int32Array(size), (atomIndices.length * 1.33) | 0, 1);
         const atomB = Utils.ChunkedArray.create<number>(size => new Int32Array(size), (atomIndices.length * 1.33) | 0, 1);

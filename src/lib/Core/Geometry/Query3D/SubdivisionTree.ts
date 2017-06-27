@@ -123,7 +123,7 @@ namespace LiteMol.Core.Geometry.Query3D {
 
     export function createSubdivisionTree<T>(data: InputData<T>, leafSize = 32): LookupStructure<T> {
         const tree = SubdivisionTree3DBuilder.build(data, leafSize);
-        return function (radiusEstimate) {
+        return function () {
             const ctx = QueryContext.create(tree, data.elements);
             return function(x: number, y: number, z: number, radius: number) { 
                 QueryContext.update(ctx, x, y, z, radius);

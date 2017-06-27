@@ -13520,7 +13520,7 @@ declare namespace LiteMol.Core.Geometry.Query3D {
         bounds: Box3D;
         positions: number[];
     }
-    type LookupStructure<T> = (radiusEstimate: number) => QueryFunc<T>;
+    type LookupStructure<T> = () => QueryFunc<T>;
     /**
      * A helper to store boundary box.
      */

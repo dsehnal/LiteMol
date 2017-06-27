@@ -548,7 +548,7 @@ namespace LiteMol.Core.Structure.Query {
             return (ctx: Context) => {
 
                 let src = _where(ctx),
-                    nearest = ctx.lookup3d(radius),
+                    nearest = ctx.lookup3d(),
                     ret = new HashFragmentSeqBuilder(ctx),
                     { x, y, z } = ctx.structure.positions,
                     residueIndex = ctx.structure.data.atoms.residueIndex,

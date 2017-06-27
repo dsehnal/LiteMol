@@ -22,7 +22,7 @@ namespace LiteMol.Core.Geometry.Query3D {
         positions: number[]
     }
 
-    export type LookupStructure<T> = (radiusEstimate: number) => QueryFunc<T>
+    export type LookupStructure<T> = () => QueryFunc<T>
 
     /**
      * A helper to store boundary box.
