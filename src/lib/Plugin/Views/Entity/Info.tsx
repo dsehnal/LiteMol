@@ -9,41 +9,29 @@ namespace LiteMol.Plugin.Views.Entity {
             onClick={() => { Bootstrap.Command.Tree.RemoveNode.dispatch(props.entity.tree!.context, props.entity); props.onRemove.call(null) } } 
             style='link' icon='remove' customClass='lm-remove-entity lm-btn-icon' />
     
-    export class Badge extends React.Component<{ type: Bootstrap.Entity.TypeInfo }, {}> { 
-        
+    export class Badge extends React.Component<{ type: Bootstrap.Entity.TypeInfo }, {}> {         
         shouldComponentUpdate(nextProps: { type: Bootstrap.Entity.TypeInfo }, nextState: {}, nextContext: any) {
             return this.props.type !== nextProps.type;
         }
         
-        private part(name: string, i: number, t:number, ret: any[]) {
-            switch (t) {
-                case 0: ret.push(<span>{name.substr(0, i)}</span>); return ret;
-                case 1: ret.push(<sub>{name.substr(0, i)}</sub>); return ret;
-                default: ret.push(<sup>{name.substr(0, i)}</sup>); return ret;
-            }
-        }
-        
-        private split(name: string, type: number, ret: any[]) {
-            
+        private createBadge(name: string): any {            
             if (!name.length) return;            
             for (let i = 0; i < name.length; i++) {
                 if (name[i] === '_') {
-                    this.split(name.substr(i + 1), 1, this.part(name, i, type, ret));
-                    return;
+                    return <span>
+                        {name.substr(0, i)}
+                        <sub>{this.createBadge(name.substr(i + 1))}</sub>
+                    </span>;
                 } else if (name[i] === '^') {
-                    this.split(name.substr(i + 1), 2, this.part(name, i, type, ret));
-                    return;
+                    return <span>
+                        {name.substr(0, i)}
+                        <sup>{this.createBadge(name.substr(i + 1))}</sup>
+                    </span>;
                 }
             }
-            this.part(name, name.length, type, ret);
+            return name;
         }
-        
-        private createBadge(name: string): any {
-            let b:any[] = [];
-            this.split(name, 0, b);
-            return b;
-        } 
-                 
+                         
         render() {
             
             let type = this.props.type;            

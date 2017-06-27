@@ -10,17 +10,17 @@ namespace LiteMol.Plugin.Views {
 
     export class Layout extends View<Bootstrap.Components.Layout, { }, { }> {
         
-        private renderTarget(target: LayoutTarget) {
+        private renderTarget(name: string, target: LayoutTarget) {
             
             let statics: any[] = [];
             let scrollable: any[] = [];
             
             for (let c of target.components) {
-                if (c.isStatic) statics.push(<c.view controller={c.controller} />);
-                else scrollable.push(<c.view controller={c.controller} />);
+                if (c.isStatic) statics.push(<c.view key={c.key} controller={c.controller} />);
+                else scrollable.push(<c.view key={c.key} controller={c.controller} />);
             }
             
-            return <div className={'lm-layout-region lm-layout-' + target.cssClass}>
+            return <div key={`layout-target-${name}`} className={'lm-layout-region lm-layout-' + target.cssClass}>
                 { statics.length ? <div className='lm-layout-static'>{statics}</div> : void 0 }
                 { scrollable.length ? <div className='lm-layout-scrollable'>{scrollable}</div> : void 0 }
             </div>;
@@ -41,7 +41,7 @@ namespace LiteMol.Plugin.Views {
             }
 
             if (show) {
-                layout.regions.push(this.renderTarget(region));            
+                layout.regions.push(this.renderTarget(name, region));            
             } else {
                 layout.layoutClass += ' lm-layout-hide-' + name;
             }
@@ -66,7 +66,7 @@ namespace LiteMol.Plugin.Views {
             }
             
             let targets = this.controller.targets;
-            let regions = [this.renderTarget(targets[LayoutRegion.Main])];
+            let regions = [this.renderTarget('main', targets[LayoutRegion.Main])];
 
             let layout = { regions, layoutClass };
             this.updateTarget('top', LayoutRegion.Top, layout);
@@ -75,7 +75,7 @@ namespace LiteMol.Plugin.Views {
             this.updateTarget('left', LayoutRegion.Left, layout);
             layoutClass = layout.layoutClass;
             
-            let root = targets[LayoutRegion.Root].components.map(c => <c.view controller={c.controller} />);
+            let root = targets[LayoutRegion.Root].components.map(c => <c.view key={c.key} controller={c.controller} />);
       
             return <div className='lm-plugin'>
                 <div className={'lm-plugin-content ' + layoutType}>

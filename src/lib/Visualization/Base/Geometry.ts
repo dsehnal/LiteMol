@@ -32,15 +32,25 @@ namespace LiteMol.Visualization.Geometry {
     import ChunkedArray = CoreUtils.ChunkedArray
     import ArrayBuilder = CoreUtils.ArrayBuilder
 
-    export interface Builder {
-        type: 'Dynamic' | 'Static',
-        vertices: ChunkedArray<number> | ArrayBuilder<number>,
-        indices: ChunkedArray<number> | ArrayBuilder<number>,
-        normals?: ChunkedArray<number> | ArrayBuilder<number>,
-        elementSize: 2 | 3
-    }
+    export type Builder = Builder.Static | Builder.Dynamic
 
     export namespace Builder {
+        export interface Static {
+            type: 'Static',
+            vertices: ArrayBuilder<number>,
+            indices: ArrayBuilder<number>,
+            normals?: ArrayBuilder<number>,
+            elementSize: 2 | 3
+        } 
+
+         export interface Dynamic {
+            type: 'Dynamic',
+            vertices: ChunkedArray<number>,
+            indices: ChunkedArray<number>,
+            normals?: ChunkedArray<number>,
+            elementSize: 2 | 3
+        }
+
         export function createStatic(vertexCount: number, indexCount: number, elementSize: 2 | 3 = 3): Builder {
             return {
                 type: 'Static',
@@ -131,6 +141,30 @@ namespace LiteMol.Visualization.Geometry {
             } else {
                 copy3o(offset, geom.indices, builder.indices, builder.type === 'Static' ? add3s : add3d);
             }
+        }
+
+        export function addVertex3s(builder: Static, x: number, y: number, z: number) {
+            add3s(builder.vertices, x, y, z);
+        }
+
+        export function addNormal3s(builder: Static, x: number, y: number, z: number) {
+            add3s(builder.normals!, x, y, z);
+        }
+
+        export function addIndex3s(builder: Static, i: number, j: number, k: number) {
+            add3s(builder.indices, i, j, k);
+        }
+
+        export function addVertex3d(builder: Dynamic, x: number, y: number, z: number) {
+            add3d(builder.vertices, x, y, z);
+        }
+
+        export function addNormal3d(builder: Dynamic, x: number, y: number, z: number) {
+            add3d(builder.normals!, x, y, z);
+        }
+
+        export function addIndex3d(builder: Dynamic, i: number, j: number, k: number) {
+            add3d(builder.indices, i, j, k);
         }
 
         function compactS<T>(tar: ChunkedArray<number> | ArrayBuilder<number>) {

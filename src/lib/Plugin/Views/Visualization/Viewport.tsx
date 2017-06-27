@@ -73,8 +73,7 @@ namespace LiteMol.Plugin.Views.Visualization {
         }
     } 
         
-    export class HighlightInfo extends View<Bootstrap.Components.Visualization.HighlightInfo, {}, {}> {
-                
+    export class HighlightInfo extends View<Bootstrap.Components.Visualization.HighlightInfo, {}, {}> {                
         render() {
             let state = this.controller.latestState;
             let info = state.info!;

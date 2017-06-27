@@ -14834,19 +14834,33 @@ declare namespace LiteMol.Visualization.Geometry {
     import CoreUtils = Core.Utils;
     import ChunkedArray = CoreUtils.ChunkedArray;
     import ArrayBuilder = CoreUtils.ArrayBuilder;
-    interface Builder {
-        type: 'Dynamic' | 'Static';
-        vertices: ChunkedArray<number> | ArrayBuilder<number>;
-        indices: ChunkedArray<number> | ArrayBuilder<number>;
-        normals?: ChunkedArray<number> | ArrayBuilder<number>;
-        elementSize: 2 | 3;
-    }
+    type Builder = Builder.Static | Builder.Dynamic;
     namespace Builder {
+        interface Static {
+            type: 'Static';
+            vertices: ArrayBuilder<number>;
+            indices: ArrayBuilder<number>;
+            normals?: ArrayBuilder<number>;
+            elementSize: 2 | 3;
+        }
+        interface Dynamic {
+            type: 'Dynamic';
+            vertices: ChunkedArray<number>;
+            indices: ChunkedArray<number>;
+            normals?: ChunkedArray<number>;
+            elementSize: 2 | 3;
+        }
         function createStatic(vertexCount: number, indexCount: number, elementSize?: 2 | 3): Builder;
         function createDynamic(vertexChunkSize: number, indexChunkSize: number, elementSize?: 2 | 3): Builder;
         import Geom = Core.Geometry;
         import Mat4 = Geom.LinearAlgebra.Matrix4;
         function addRawTransformed(builder: Builder, geom: RawGeometry, scale: number[] | undefined, translation: number[] | undefined, rotation: Mat4 | undefined): void;
+        function addVertex3s(builder: Static, x: number, y: number, z: number): void;
+        function addNormal3s(builder: Static, x: number, y: number, z: number): void;
+        function addIndex3s(builder: Static, i: number, j: number, k: number): void;
+        function addVertex3d(builder: Dynamic, x: number, y: number, z: number): void;
+        function addNormal3d(builder: Dynamic, x: number, y: number, z: number): void;
+        function addIndex3d(builder: Dynamic, i: number, j: number, k: number): void;
         function toBufferGeometry(builder: Builder): THREE.BufferGeometry;
     }
 }
@@ -17223,7 +17237,7 @@ declare namespace LiteMol.Plugin.Views {
 }
 declare namespace LiteMol.Plugin.Views {
     class Layout extends View<Bootstrap.Components.Layout, {}, {}> {
-        private renderTarget(target);
+        private renderTarget(name, target);
         private updateTarget(name, regionType, layout);
         render(): JSX.Element;
     }
@@ -17394,8 +17408,6 @@ declare namespace LiteMol.Plugin.Views.Entity {
         shouldComponentUpdate(nextProps: {
             type: Bootstrap.Entity.TypeInfo;
         }, nextState: {}, nextContext: any): boolean;
-        private part(name, i, t, ret);
-        private split(name, type, ret);
         private createBadge(name);
         render(): JSX.Element;
     }
