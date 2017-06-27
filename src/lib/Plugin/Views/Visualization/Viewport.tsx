@@ -5,9 +5,7 @@
 namespace LiteMol.Plugin.Views.Visualization {
     "use strict";
 
-    export class ViewportControls extends View<Bootstrap.Components.Visualization.Viewport, 
-        { showSceneOptions?: boolean, showHelp?: boolean }, {}> {
-        
+    export class ViewportControls extends View<Bootstrap.Components.Visualization.Viewport, { showSceneOptions?: boolean, showHelp?: boolean }, {}> {        
         state = { showSceneOptions: false, showHelp: false };
 
         private help() {
@@ -102,8 +100,8 @@ namespace LiteMol.Plugin.Views.Visualization {
     
 
     export class Viewport extends View<Bootstrap.Components.Visualization.Viewport, {}, { noWebGl?: boolean, showLogo?: boolean }> {
-
         private host3d: HTMLDivElement | undefined = void 0;
+        private defaultBg = { r: 0, g: 0, b: 0 }
         state =  { noWebGl: false, showLogo: true };
         
         componentDidMount() {
@@ -153,7 +151,8 @@ namespace LiteMol.Plugin.Views.Visualization {
         render() {            
             if (this.state.noWebGl) return this.renderMissing();
             
-            return <div className='lm-viewport'>
+            const color = this.controller.latestState.clearColor! || this.defaultBg;
+            return <div className='lm-viewport' style={{ backgroundColor: `rgb(${255 * color.r}, ${255 * color.g}, ${255 * color.b})` }}>
                 <div ref={host => this.host3d = host} className='lm-viewport-host3d' />
                 {this.state.showLogo ? <Logo /> : void 0}
                 <ViewportControls controller={this.controller} />

@@ -17418,6 +17418,7 @@ declare namespace LiteMol.Plugin.Views.Visualization {
         showLogo?: boolean;
     }> {
         private host3d;
+        private defaultBg;
         state: {
             noWebGl: boolean;
             showLogo: boolean;

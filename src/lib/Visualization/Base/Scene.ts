@@ -195,7 +195,7 @@ namespace LiteMol.Visualization {
 
             this.parentElement.appendChild(this.renderer.domElement);
 
-            let delayedResizeHandler = Core.Utils.debounce(() => this.handleResize(), 100),
+            let delayedResizeHandler = Core.Utils.debounce(() => this.handleResize(), 150),
                 resizeHandler = () => {
                     this.renderState.resizing = true;
                     delayedResizeHandler();

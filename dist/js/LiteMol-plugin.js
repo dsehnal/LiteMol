@@ -66961,7 +66961,7 @@ var LiteMol;
                 this.lighting = new DefaultLighting();
                 this.lighting.setup(this.scene);
                 this.parentElement.appendChild(this.renderer.domElement);
-                var delayedResizeHandler = LiteMol.Core.Utils.debounce(function () { return _this.handleResize(); }, 100), resizeHandler = function () {
+                var delayedResizeHandler = LiteMol.Core.Utils.debounce(function () { return _this.handleResize(); }, 150), resizeHandler = function () {
                     _this.renderState.resizing = true;
                     delayedResizeHandler();
                 };
@@ -80570,6 +80570,7 @@ var LiteMol;
                     function Viewport() {
                         var _this = _super !== null && _super.apply(this, arguments) || this;
                         _this.host3d = void 0;
+                        _this.defaultBg = { r: 0, g: 0, b: 0 };
                         _this.state = { noWebGl: false, showLogo: true };
                         return _this;
                     }
@@ -80619,7 +80620,8 @@ var LiteMol;
                         var _this = this;
                         if (this.state.noWebGl)
                             return this.renderMissing();
-                        return Plugin.React.createElement("div", { className: 'lm-viewport' },
+                        var color = this.controller.latestState.clearColor || this.defaultBg;
+                        return Plugin.React.createElement("div", { className: 'lm-viewport', style: { backgroundColor: "rgb(" + 255 * color.r + ", " + 255 * color.g + ", " + 255 * color.b + ")" } },
                             Plugin.React.createElement("div", { ref: function (host) { return _this.host3d = host; }, className: 'lm-viewport-host3d' }),
                             this.state.showLogo ? Plugin.React.createElement(Visualization.Logo, null) : void 0,
                             Plugin.React.createElement(ViewportControls, { controller: this.controller }));
