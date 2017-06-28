@@ -18,7 +18,7 @@ namespace LiteMol.Viewer {
 
     let theme = getParam('theme', '[a-z]+').toLowerCase() || 'light'; 
     if (theme === 'light') {
-        plugin.setViewportBackground('#fff');
+        plugin.setViewportBackground('#F9F7F2');
     }
 
     (function () {

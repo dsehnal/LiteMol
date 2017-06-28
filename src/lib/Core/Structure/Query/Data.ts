@@ -26,7 +26,6 @@ namespace LiteMol.Core.Structure {
          * 
          */
         export class Context {
-            private mask: Context.Mask;
             private lazyLoopup3d: Geometry.Query3D.LookupStructure<number>;
 
             /**
@@ -91,12 +90,11 @@ namespace LiteMol.Core.Structure {
              * Create a new context from a sequence of fragments.
              */
             static ofAtomIndices(structure: Molecule.Model, atomIndices: number[]) {                
-                return new Context(structure, Context.Mask.ofIndices(structure, atomIndices));
+                return new Context(structure, Context.Mask.ofIndices(structure.data.atoms.count, atomIndices));
             }
 
-            constructor(structure: Molecule.Model, mask: Context.Mask) {
+            constructor(structure: Molecule.Model, public readonly mask: Context.Mask) {
                 this.structure = structure;
-                this.mask = mask;
             }
 
             private makeLookup3d() {
@@ -138,19 +136,19 @@ namespace LiteMol.Core.Structure {
                     return new AllMask(structure.data.atoms.count);
                 }
                         
-                export function ofIndices(structure: Molecule.Model, atomIndices: number[]): Mask {
-                    let f = atomIndices.length / structure.data.atoms.count;
+                export function ofIndices(totalCount: number, indices: number[]): Mask {
+                    let f = indices.length / totalCount;
                     if (f < 0.25) {
                         let set = Utils.FastSet.create();
-                        for (let i of atomIndices) set.add(i);
+                        for (let i of indices) set.add(i);
                         return set;
                     }
                     
-                    let mask = new Int8Array(structure.data.atoms.count);                
-                    for (let i of atomIndices) {
+                    let mask = new Int8Array(totalCount);                
+                    for (let i of indices) {
                         mask[i] = 1;
                     }
-                    return new BitMask(mask, atomIndices.length);
+                    return new BitMask(mask, indices.length);
                 }
                 
                 export function ofFragments(seq: FragmentSeq): Mask {

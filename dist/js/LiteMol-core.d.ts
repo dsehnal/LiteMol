@@ -2492,11 +2492,12 @@ declare namespace LiteMol.Core.Structure {
         Double = 2,
         Triple = 3,
         Aromatic = 4,
-        Metallic = 5,
-        Ion = 6,
-        Hydrogen = 7,
-        DisulfideBridge = 8,
+        DisulfideBridge = 5,
+        Metallic = 6,
+        Ion = 7,
+        Hydrogen = 8,
     }
+    function isBondTypeCovalent(t: BondType): boolean;
     interface BondComputationParameters {
         maxHbondLength: number;
         forceCompute: boolean;
@@ -2549,7 +2550,7 @@ declare namespace LiteMol.Core.Structure {
          *
          */
         class Context {
-            private mask;
+            readonly mask: Context.Mask;
             private lazyLoopup3d;
             /**
              * Number of atoms in the current context.
@@ -2600,7 +2601,7 @@ declare namespace LiteMol.Core.Structure {
             }
             module Mask {
                 function ofStructure(structure: Molecule.Model): Mask;
-                function ofIndices(structure: Molecule.Model, atomIndices: number[]): Mask;
+                function ofIndices(totalCount: number, indices: number[]): Mask;
                 function ofFragments(seq: FragmentSeq): Mask;
             }
         }

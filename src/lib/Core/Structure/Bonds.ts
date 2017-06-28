@@ -13,10 +13,15 @@ namespace LiteMol.Core.Structure {
         Triple = 3,
         Aromatic = 4,
 
-        Metallic = 5,
-        Ion = 6,
-        Hydrogen = 7,
-        DisulfideBridge = 8
+        DisulfideBridge = 5,
+
+        Metallic = 6,
+        Ion = 7,
+        Hydrogen = 8
+    }
+    
+    export function isBondTypeCovalent(t: BondType) {
+        return t >= BondType.Unknown && t <= BondType.DisulfideBridge;
     }
 
     export interface BondComputationParameters {
@@ -80,7 +85,7 @@ namespace LiteMol.Core.Structure {
         const bonds = model.data.bonds.input!;
         if (atomIndices.length === model.data.atoms.count) return bonds;
 
-        const mask = Query.Context.Mask.ofIndices(model, atomIndices);
+        const mask = Query.Context.Mask.ofIndices(model.data.atoms.count, atomIndices);
         const { atomAIndex: a, atomBIndex: b, type: t } = bonds;
         let count = 0;
         for (let i = 0, __i = bonds.count; i < __i; i++) {
@@ -158,7 +163,7 @@ namespace LiteMol.Core.Structure {
         const atomB = Utils.ChunkedArray.create<number>(size => new Int32Array(size), (atomIndices.length * 1.33) | 0, 1);
         const type = Utils.ChunkedArray.create<BondType>(size => new Uint8Array(size), (atomIndices.length * 1.33) | 0, 1);
 
-        const mask = Query.Context.Mask.ofIndices(model, atomIndices);
+        const mask = Query.Context.Mask.ofIndices(model.data.atoms.count, atomIndices);
         const state: ComputeState = { model, mask, atomA, atomB, type };
 
         let lastResidue = -1;

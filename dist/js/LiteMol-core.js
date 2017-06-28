@@ -12819,17 +12819,17 @@ var LiteMol;
                             }
                             switch (type) {
                                 case 'disulf':
-                                    bondType = 8 /* DisulfideBridge */;
+                                    bondType = 5 /* DisulfideBridge */;
                                     break;
                                 case 'hydrog':
-                                    bondType = 7 /* Hydrogen */;
+                                    bondType = 8 /* Hydrogen */;
                                     break;
                                 case 'metalc':
-                                    bondType = 5 /* Metallic */;
+                                    bondType = 6 /* Metallic */;
                                     break;
                                 //case 'mismat': bondType = Structure.BondType.Single; break; 
                                 case 'saltbr':
-                                    bondType = 6 /* Ion */;
+                                    bondType = 7 /* Ion */;
                                     break;
                             }
                             entries.push({
@@ -16919,6 +16919,10 @@ var LiteMol;
         var Structure;
         (function (Structure) {
             'use strict';
+            function isBondTypeCovalent(t) {
+                return t >= 0 /* Unknown */ && t <= 5 /* DisulfideBridge */;
+            }
+            Structure.isBondTypeCovalent = isBondTypeCovalent;
             // H,D,T are all mapped to H
             var __ElementIndex = { 'H': 0, 'h': 0, 'D': 0, 'd': 0, 'T': 0, 't': 0, 'He': 2, 'HE': 2, 'he': 2, 'Li': 3, 'LI': 3, 'li': 3, 'Be': 4, 'BE': 4, 'be': 4, 'B': 5, 'b': 5, 'C': 6, 'c': 6, 'N': 7, 'n': 7, 'O': 8, 'o': 8, 'F': 9, 'f': 9, 'Ne': 10, 'NE': 10, 'ne': 10, 'Na': 11, 'NA': 11, 'na': 11, 'Mg': 12, 'MG': 12, 'mg': 12, 'Al': 13, 'AL': 13, 'al': 13, 'Si': 14, 'SI': 14, 'si': 14, 'P': 15, 'p': 15, 'S': 16, 's': 16, 'Cl': 17, 'CL': 17, 'cl': 17, 'Ar': 18, 'AR': 18, 'ar': 18, 'K': 19, 'k': 19, 'Ca': 20, 'CA': 20, 'ca': 20, 'Sc': 21, 'SC': 21, 'sc': 21, 'Ti': 22, 'TI': 22, 'ti': 22, 'V': 23, 'v': 23, 'Cr': 24, 'CR': 24, 'cr': 24, 'Mn': 25, 'MN': 25, 'mn': 25, 'Fe': 26, 'FE': 26, 'fe': 26, 'Co': 27, 'CO': 27, 'co': 27, 'Ni': 28, 'NI': 28, 'ni': 28, 'Cu': 29, 'CU': 29, 'cu': 29, 'Zn': 30, 'ZN': 30, 'zn': 30, 'Ga': 31, 'GA': 31, 'ga': 31, 'Ge': 32, 'GE': 32, 'ge': 32, 'As': 33, 'AS': 33, 'as': 33, 'Se': 34, 'SE': 34, 'se': 34, 'Br': 35, 'BR': 35, 'br': 35, 'Kr': 36, 'KR': 36, 'kr': 36, 'Rb': 37, 'RB': 37, 'rb': 37, 'Sr': 38, 'SR': 38, 'sr': 38, 'Y': 39, 'y': 39, 'Zr': 40, 'ZR': 40, 'zr': 40, 'Nb': 41, 'NB': 41, 'nb': 41, 'Mo': 42, 'MO': 42, 'mo': 42, 'Tc': 43, 'TC': 43, 'tc': 43, 'Ru': 44, 'RU': 44, 'ru': 44, 'Rh': 45, 'RH': 45, 'rh': 45, 'Pd': 46, 'PD': 46, 'pd': 46, 'Ag': 47, 'AG': 47, 'ag': 47, 'Cd': 48, 'CD': 48, 'cd': 48, 'In': 49, 'IN': 49, 'in': 49, 'Sn': 50, 'SN': 50, 'sn': 50, 'Sb': 51, 'SB': 51, 'sb': 51, 'Te': 52, 'TE': 52, 'te': 52, 'I': 53, 'i': 53, 'Xe': 54, 'XE': 54, 'xe': 54, 'Cs': 55, 'CS': 55, 'cs': 55, 'Ba': 56, 'BA': 56, 'ba': 56, 'La': 57, 'LA': 57, 'la': 57, 'Ce': 58, 'CE': 58, 'ce': 58, 'Pr': 59, 'PR': 59, 'pr': 59, 'Nd': 60, 'ND': 60, 'nd': 60, 'Pm': 61, 'PM': 61, 'pm': 61, 'Sm': 62, 'SM': 62, 'sm': 62, 'Eu': 63, 'EU': 63, 'eu': 63, 'Gd': 64, 'GD': 64, 'gd': 64, 'Tb': 65, 'TB': 65, 'tb': 65, 'Dy': 66, 'DY': 66, 'dy': 66, 'Ho': 67, 'HO': 67, 'ho': 67, 'Er': 68, 'ER': 68, 'er': 68, 'Tm': 69, 'TM': 69, 'tm': 69, 'Yb': 70, 'YB': 70, 'yb': 70, 'Lu': 71, 'LU': 71, 'lu': 71, 'Hf': 72, 'HF': 72, 'hf': 72, 'Ta': 73, 'TA': 73, 'ta': 73, 'W': 74, 'w': 74, 'Re': 75, 'RE': 75, 're': 75, 'Os': 76, 'OS': 76, 'os': 76, 'Ir': 77, 'IR': 77, 'ir': 77, 'Pt': 78, 'PT': 78, 'pt': 78, 'Au': 79, 'AU': 79, 'au': 79, 'Hg': 80, 'HG': 80, 'hg': 80, 'Tl': 81, 'TL': 81, 'tl': 81, 'Pb': 82, 'PB': 82, 'pb': 82, 'Bi': 83, 'BI': 83, 'bi': 83, 'Po': 84, 'PO': 84, 'po': 84, 'At': 85, 'AT': 85, 'at': 85, 'Rn': 86, 'RN': 86, 'rn': 86, 'Fr': 87, 'FR': 87, 'fr': 87, 'Ra': 88, 'RA': 88, 'ra': 88, 'Ac': 89, 'AC': 89, 'ac': 89, 'Th': 90, 'TH': 90, 'th': 90, 'Pa': 91, 'PA': 91, 'pa': 91, 'U': 92, 'u': 92, 'Np': 93, 'NP': 93, 'np': 93, 'Pu': 94, 'PU': 94, 'pu': 94, 'Am': 95, 'AM': 95, 'am': 95, 'Cm': 96, 'CM': 96, 'cm': 96, 'Bk': 97, 'BK': 97, 'bk': 97, 'Cf': 98, 'CF': 98, 'cf': 98, 'Es': 99, 'ES': 99, 'es': 99, 'Fm': 100, 'FM': 100, 'fm': 100, 'Md': 101, 'MD': 101, 'md': 101, 'No': 102, 'NO': 102, 'no': 102, 'Lr': 103, 'LR': 103, 'lr': 103, 'Rf': 104, 'RF': 104, 'rf': 104, 'Db': 105, 'DB': 105, 'db': 105, 'Sg': 106, 'SG': 106, 'sg': 106, 'Bh': 107, 'BH': 107, 'bh': 107, 'Hs': 108, 'HS': 108, 'hs': 108, 'Mt': 109, 'MT': 109, 'mt': 109 };
             var __ElementBondThresholds = { 0: 1.42, 1: 1.42, 3: 2.8, 4: 2.8, 6: 1.75, 7: 1.6, 8: 1.52, 11: 2.8, 12: 2.8, 13: 2.8, 14: 1.9, 15: 1.9, 16: 1.9, 17: 1.8, 19: 2.8, 20: 2.8, 21: 2.8, 22: 2.8, 23: 2.8, 24: 2.8, 25: 2.8, 26: 2.8, 27: 2.8, 28: 2.8, 29: 2.8, 30: 2.8, 31: 2.8, 33: 2.68, 37: 2.8, 38: 2.8, 39: 2.8, 40: 2.8, 41: 2.8, 42: 2.8, 43: 2.8, 44: 2.8, 45: 2.8, 46: 2.8, 47: 2.8, 48: 2.8, 49: 2.8, 50: 2.8, 55: 2.8, 56: 2.8, 57: 2.8, 58: 2.8, 59: 2.8, 60: 2.8, 61: 2.8, 62: 2.8, 63: 2.8, 64: 2.8, 65: 2.8, 66: 2.8, 67: 2.8, 68: 2.8, 69: 2.8, 70: 2.8, 71: 2.8, 72: 2.8, 73: 2.8, 74: 2.8, 75: 2.8, 76: 2.8, 77: 2.8, 78: 2.8, 79: 2.8, 80: 2.8, 81: 2.8, 82: 2.8, 83: 2.8, 87: 2.8, 88: 2.8, 89: 2.8, 90: 2.8, 91: 2.8, 92: 2.8, 93: 2.8, 94: 2.8, 95: 2.8, 96: 2.8, 97: 2.8, 98: 2.8, 99: 2.8, 100: 2.8, 101: 2.8, 102: 2.8, 103: 2.8, 104: 2.8, 105: 2.8, 106: 2.8, 107: 2.8, 108: 2.8, 109: 2.88 };
@@ -16975,7 +16979,7 @@ var LiteMol;
                 var bonds = model.data.bonds.input;
                 if (atomIndices.length === model.data.atoms.count)
                     return bonds;
-                var mask = Structure.Query.Context.Mask.ofIndices(model, atomIndices);
+                var mask = Structure.Query.Context.Mask.ofIndices(model.data.atoms.count, atomIndices);
                 var a = bonds.atomAIndex, b = bonds.atomBIndex, t = bonds.type;
                 var count = 0;
                 for (var i = 0, __i = bonds.count; i < __i; i++) {
@@ -16994,7 +16998,7 @@ var LiteMol;
                     atomAIndex[offset] = u;
                     atomBIndex[offset] = v;
                     var metal = isMetal(elementSymbol[u]) || isMetal(elementSymbol[v]);
-                    type[offset] = metal ? 5 /* Metallic */ : t[i];
+                    type[offset] = metal ? 6 /* Metallic */ : t[i];
                     offset++;
                 }
                 return ret;
@@ -17025,7 +17029,7 @@ var LiteMol;
                         var metal = isMetal(elementSymbol[i]) || isMetal(elementSymbol[j]);
                         ChunkedAdd(atomA, i);
                         ChunkedAdd(atomB, j);
-                        ChunkedAdd(type, metal ? 5 /* Metallic */ : order);
+                        ChunkedAdd(type, metal ? 6 /* Metallic */ : order);
                     }
                 }
             }
@@ -17039,7 +17043,7 @@ var LiteMol;
                 var atomA = Core.Utils.ChunkedArray.create(function (size) { return new Int32Array(size); }, (atomIndices.length * 1.33) | 0, 1);
                 var atomB = Core.Utils.ChunkedArray.create(function (size) { return new Int32Array(size); }, (atomIndices.length * 1.33) | 0, 1);
                 var type = Core.Utils.ChunkedArray.create(function (size) { return new Uint8Array(size); }, (atomIndices.length * 1.33) | 0, 1);
-                var mask = Structure.Query.Context.Mask.ofIndices(model, atomIndices);
+                var mask = Structure.Query.Context.Mask.ofIndices(model.data.atoms.count, atomIndices);
                 var state = { model: model, mask: mask, atomA: atomA, atomB: atomB, type: type };
                 var lastResidue = -1;
                 var hasComponent = false;
@@ -17113,7 +17117,7 @@ var LiteMol;
                         if (dist <= pairingThreshold) {
                             ChunkedAdd(atomA, aI);
                             ChunkedAdd(atomB, bI);
-                            ChunkedAdd(type, metalA || metalB ? 5 /* Metallic */ : 1 /* Single */);
+                            ChunkedAdd(type, metalA || metalB ? 6 /* Metallic */ : 1 /* Single */);
                         }
                     }
                 }
@@ -19278,8 +19282,8 @@ var LiteMol;
                  */
                 var Context = (function () {
                     function Context(structure, mask) {
-                        this.structure = structure;
                         this.mask = mask;
+                        this.structure = structure;
                     }
                     Object.defineProperty(Context.prototype, "atomCount", {
                         /**
@@ -19345,7 +19349,7 @@ var LiteMol;
                      * Create a new context from a sequence of fragments.
                      */
                     Context.ofAtomIndices = function (structure, atomIndices) {
-                        return new Context(structure, Context.Mask.ofIndices(structure, atomIndices));
+                        return new Context(structure, Context.Mask.ofIndices(structure.data.atoms.count, atomIndices));
                     };
                     Context.prototype.makeLookup3d = function () {
                         var data = new Int32Array(this.mask.size), dataCount = 0, _a = this.structure.positions, x = _a.x, y = _a.y, z = _a.z;
@@ -19381,22 +19385,22 @@ var LiteMol;
                             return new AllMask(structure.data.atoms.count);
                         }
                         Mask.ofStructure = ofStructure;
-                        function ofIndices(structure, atomIndices) {
-                            var f = atomIndices.length / structure.data.atoms.count;
+                        function ofIndices(totalCount, indices) {
+                            var f = indices.length / totalCount;
                             if (f < 0.25) {
                                 var set = Core.Utils.FastSet.create();
-                                for (var _i = 0, atomIndices_2 = atomIndices; _i < atomIndices_2.length; _i++) {
-                                    var i = atomIndices_2[_i];
+                                for (var _i = 0, indices_3 = indices; _i < indices_3.length; _i++) {
+                                    var i = indices_3[_i];
                                     set.add(i);
                                 }
                                 return set;
                             }
-                            var mask = new Int8Array(structure.data.atoms.count);
-                            for (var _a = 0, atomIndices_3 = atomIndices; _a < atomIndices_3.length; _a++) {
-                                var i = atomIndices_3[_a];
+                            var mask = new Int8Array(totalCount);
+                            for (var _a = 0, indices_4 = indices; _a < indices_4.length; _a++) {
+                                var i = indices_4[_a];
                                 mask[i] = 1;
                             }
-                            return new BitMask(mask, atomIndices.length);
+                            return new BitMask(mask, indices.length);
                         }
                         Mask.ofIndices = ofIndices;
                         function ofFragments(seq) {
@@ -20038,8 +20042,8 @@ var LiteMol;
                     function compileAtomIndices(indices) {
                         return function (ctx) {
                             var count = 0;
-                            for (var _i = 0, indices_3 = indices; _i < indices_3.length; _i++) {
-                                var aI = indices_3[_i];
+                            for (var _i = 0, indices_5 = indices; _i < indices_5.length; _i++) {
+                                var aI = indices_5[_i];
                                 if (ctx.hasAtom(aI))
                                     count++;
                             }
@@ -20047,8 +20051,8 @@ var LiteMol;
                                 return Query.FragmentSeq.empty(ctx);
                             var offset = 0;
                             var f = new Int32Array(count);
-                            for (var _a = 0, indices_4 = indices; _a < indices_4.length; _a++) {
-                                var aI = indices_4[_a];
+                            for (var _a = 0, indices_6 = indices; _a < indices_6.length; _a++) {
+                                var aI = indices_6[_a];
                                 if (ctx.hasAtom(aI))
                                     f[offset++] = aI;
                             }
@@ -20071,8 +20075,8 @@ var LiteMol;
                                 }
                             }
                             else {
-                                for (var _i = 0, indices_5 = indices; _i < indices_5.length; _i++) {
-                                    var i = indices_5[_i];
+                                for (var _i = 0, indices_7 = indices; _i < indices_7.length; _i++) {
+                                    var i = indices_7[_i];
                                     if (!ctx.hasRange(atomStartIndex[i], atomEndIndex[i]))
                                         continue;
                                     fragments.add(Query.Fragment.ofIndexRange(ctx, atomStartIndex[i], atomEndIndex[i]));
