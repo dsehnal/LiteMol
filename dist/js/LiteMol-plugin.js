@@ -56539,6 +56539,103 @@ var LiteMol;
                 }
                 FastSet.ofArray = ofArray;
             })(FastSet = Utils.FastSet || (Utils.FastSet = {}));
+            var Mask;
+            (function (Mask) {
+                var EmptyMask = (function () {
+                    function EmptyMask(size) {
+                        this.size = size;
+                    }
+                    EmptyMask.prototype.has = function (i) { return false; };
+                    return EmptyMask;
+                }());
+                var SingletonMask = (function () {
+                    function SingletonMask(idx, size) {
+                        this.idx = idx;
+                        this.size = size;
+                    }
+                    SingletonMask.prototype.has = function (i) { return i === this.idx; };
+                    return SingletonMask;
+                }());
+                var BitMask = (function () {
+                    function BitMask(mask, size) {
+                        this.mask = mask;
+                        this.size = size;
+                    }
+                    BitMask.prototype.has = function (i) { return this.mask[i]; };
+                    return BitMask;
+                }());
+                var AllMask = (function () {
+                    function AllMask(size) {
+                        this.size = size;
+                    }
+                    AllMask.prototype.has = function (i) { return true; };
+                    return AllMask;
+                }());
+                function ofStructure(structure) {
+                    return new AllMask(structure.data.atoms.count);
+                }
+                Mask.ofStructure = ofStructure;
+                function ofIndices(totalCount, indices) {
+                    var len = indices.length;
+                    if (len === 0)
+                        return new EmptyMask(totalCount);
+                    if (len === 1)
+                        return new SingletonMask(indices[0], totalCount);
+                    var f = len / totalCount;
+                    if (f < 1 / 12) {
+                        var set = Utils.FastSet.create();
+                        for (var _i = 0, indices_1 = indices; _i < indices_1.length; _i++) {
+                            var i = indices_1[_i];
+                            set.add(i);
+                        }
+                        return set;
+                    }
+                    var mask = new Int8Array(totalCount);
+                    for (var _a = 0, indices_2 = indices; _a < indices_2.length; _a++) {
+                        var i = indices_2[_a];
+                        mask[i] = 1;
+                    }
+                    return new BitMask(mask, len);
+                }
+                Mask.ofIndices = ofIndices;
+                function ofFragments(seq) {
+                    var sizeEstimate = 0;
+                    for (var _i = 0, _a = seq.fragments; _i < _a.length; _i++) {
+                        var f = _a[_i];
+                        sizeEstimate += f.atomCount;
+                    }
+                    var count = seq.context.structure.data.atoms.count;
+                    if (sizeEstimate / count < 1 / 12) {
+                        // create set;
+                        var mask = Utils.FastSet.create();
+                        for (var _b = 0, _c = seq.fragments; _b < _c.length; _b++) {
+                            var f = _c[_b];
+                            for (var _d = 0, _e = f.atomIndices; _d < _e.length; _d++) {
+                                var i = _e[_d];
+                                mask.add(i);
+                            }
+                        }
+                        return mask;
+                    }
+                    else {
+                        var mask = new Int8Array(count);
+                        for (var _f = 0, _g = seq.fragments; _f < _g.length; _f++) {
+                            var f = _g[_f];
+                            for (var _h = 0, _j = f.atomIndices; _h < _j.length; _h++) {
+                                var i = _j[_h];
+                                mask[i] = 1;
+                            }
+                        }
+                        var size = 0;
+                        for (var i = 0; i < count; i++) {
+                            if (mask[i] !== 0)
+                                size++;
+                        }
+                        return new BitMask(mask, size);
+                    }
+                }
+                Mask.ofFragments = ofFragments;
+            })(Mask = Utils.Mask || (Utils.Mask = {}));
         })(Utils = Core.Utils || (Core.Utils = {}));
     })(Core = LiteMol.Core || (LiteMol.Core = {}));
 })(LiteMol || (LiteMol = {}));
@@ -61979,7 +62076,7 @@ var LiteMol;
                 var bonds = model.data.bonds.input;
                 if (atomIndices.length === model.data.atoms.count)
                     return bonds;
-                var mask = Structure.Query.Context.Mask.ofIndices(model.data.atoms.count, atomIndices);
+                var mask = Core.Utils.Mask.ofIndices(model.data.atoms.count, atomIndices);
                 var a = bonds.atomAIndex, b = bonds.atomBIndex, t = bonds.type;
                 var count = 0;
                 for (var i = 0, __i = bonds.count; i < __i; i++) {
@@ -62043,7 +62140,7 @@ var LiteMol;
                 var atomA = Core.Utils.ChunkedArray.create(function (size) { return new Int32Array(size); }, (atomIndices.length * 1.33) | 0, 1);
                 var atomB = Core.Utils.ChunkedArray.create(function (size) { return new Int32Array(size); }, (atomIndices.length * 1.33) | 0, 1);
                 var type = Core.Utils.ChunkedArray.create(function (size) { return new Uint8Array(size); }, (atomIndices.length * 1.33) | 0, 1);
-                var mask = Structure.Query.Context.Mask.ofIndices(model.data.atoms.count, atomIndices);
+                var mask = Core.Utils.Mask.ofIndices(model.data.atoms.count, atomIndices);
                 var state = { model: model, mask: mask, atomA: atomA, atomB: atomB, type: type };
                 var lastResidue = -1;
                 var hasComponent = false;
@@ -63549,8 +63646,8 @@ var LiteMol;
                 function getBoudingSphere(arrays, indices) {
                     var x = arrays.x, y = arrays.y, z = arrays.z;
                     var center = Vec3.zero();
-                    for (var _i = 0, indices_1 = indices; _i < indices_1.length; _i++) {
-                        var aI = indices_1[_i];
+                    for (var _i = 0, indices_3 = indices; _i < indices_3.length; _i++) {
+                        var aI = indices_3[_i];
                         center[0] += x[aI];
                         center[1] += y[aI];
                         center[2] += z[aI];
@@ -63560,8 +63657,8 @@ var LiteMol;
                     center[1] /= count;
                     center[2] /= count;
                     var r = 0;
-                    for (var _a = 0, indices_2 = indices; _a < indices_2.length; _a++) {
-                        var aI = indices_2[_a];
+                    for (var _a = 0, indices_4 = indices; _a < indices_4.length; _a++) {
+                        var aI = indices_4[_a];
                         r = Math.max(indexedVectorDistSq(aI, center, arrays), r);
                     }
                     return { center: center, radius: Math.sqrt(r) };
@@ -64337,19 +64434,19 @@ var LiteMol;
                      * Create a new context based on the provide structure.
                      */
                     Context.ofStructure = function (structure) {
-                        return new Context(structure, Context.Mask.ofStructure(structure));
+                        return new Context(structure, Core.Utils.Mask.ofStructure(structure));
                     };
                     /**
                      * Create a new context from a sequence of fragments.
                      */
                     Context.ofFragments = function (seq) {
-                        return new Context(seq.context.structure, Context.Mask.ofFragments(seq));
+                        return new Context(seq.context.structure, Core.Utils.Mask.ofFragments(seq));
                     };
                     /**
                      * Create a new context from a sequence of fragments.
                      */
                     Context.ofAtomIndices = function (structure, atomIndices) {
-                        return new Context(structure, Context.Mask.ofIndices(structure.data.atoms.count, atomIndices));
+                        return new Context(structure, Core.Utils.Mask.ofIndices(structure.data.atoms.count, atomIndices));
                     };
                     Context.prototype.makeLookup3d = function () {
                         var data = new Int32Array(this.mask.size), dataCount = 0, _a = this.structure.positions, x = _a.x, y = _a.y, z = _a.z;
@@ -64363,85 +64460,6 @@ var LiteMol;
                     return Context;
                 }());
                 Query.Context = Context;
-                (function (Context) {
-                    var Mask;
-                    (function (Mask) {
-                        var BitMask = (function () {
-                            function BitMask(mask, size) {
-                                this.mask = mask;
-                                this.size = size;
-                            }
-                            BitMask.prototype.has = function (i) { return this.mask[i]; };
-                            return BitMask;
-                        }());
-                        var AllMask = (function () {
-                            function AllMask(size) {
-                                this.size = size;
-                            }
-                            AllMask.prototype.has = function (i) { return true; };
-                            return AllMask;
-                        }());
-                        function ofStructure(structure) {
-                            return new AllMask(structure.data.atoms.count);
-                        }
-                        Mask.ofStructure = ofStructure;
-                        function ofIndices(totalCount, indices) {
-                            var f = indices.length / totalCount;
-                            if (f < 0.25) {
-                                var set = Core.Utils.FastSet.create();
-                                for (var _i = 0, indices_3 = indices; _i < indices_3.length; _i++) {
-                                    var i = indices_3[_i];
-                                    set.add(i);
-                                }
-                                return set;
-                            }
-                            var mask = new Int8Array(totalCount);
-                            for (var _a = 0, indices_4 = indices; _a < indices_4.length; _a++) {
-                                var i = indices_4[_a];
-                                mask[i] = 1;
-                            }
-                            return new BitMask(mask, indices.length);
-                        }
-                        Mask.ofIndices = ofIndices;
-                        function ofFragments(seq) {
-                            var sizeEstimate = 0;
-                            for (var _i = 0, _a = seq.fragments; _i < _a.length; _i++) {
-                                var f = _a[_i];
-                                sizeEstimate += f.atomCount;
-                            }
-                            var count = seq.context.structure.data.atoms.count;
-                            if (sizeEstimate / count < 0.25) {
-                                // create set;
-                                var mask = Core.Utils.FastSet.create();
-                                for (var _c = 0, _d = seq.fragments; _c < _d.length; _c++) {
-                                    var f = _d[_c];
-                                    for (var _e = 0, _f = f.atomIndices; _e < _f.length; _e++) {
-                                        var i = _f[_e];
-                                        mask.add(i);
-                                    }
-                                }
-                                return mask;
-                            }
-                            else {
-                                var mask = new Int8Array(count);
-                                for (var _g = 0, _h = seq.fragments; _g < _h.length; _g++) {
-                                    var f = _h[_g];
-                                    for (var _j = 0, _k = f.atomIndices; _j < _k.length; _j++) {
-                                        var i = _k[_j];
-                                        mask[i] = 1;
-                                    }
-                                }
-                                var size = 0;
-                                for (var i = 0; i < count; i++) {
-                                    if (mask[i] !== 0)
-                                        size++;
-                                }
-                                return new BitMask(mask, size);
-                            }
-                        }
-                        Mask.ofFragments = ofFragments;
-                    })(Mask = Context.Mask || (Context.Mask = {}));
-                })(Context = Query.Context || (Query.Context = {}));
                 /**
                  * The basic element of the query language.
                  * Everything is represented as a fragment.
@@ -64948,6 +64966,9 @@ var LiteMol;
                 Builder.registerModifier('flatten', flatten);
                 function flatten(what, selector) { return Builder.build(function () { return Compiler.compileFlatten(what, selector); }); }
                 Query.flatten = flatten;
+                Builder.registerModifier('except', except);
+                function except(what, toRemove) { return Builder.build(function () { return Compiler.compileExcept(what, toRemove); }); }
+                Query.except = except;
                 /**
                  * Shortcuts
                  */
@@ -65243,7 +65264,7 @@ var LiteMol;
                         var _where = Builder.toQuery(where);
                         return function (ctx) {
                             var fs = _what(ctx);
-                            var map = Query.Context.Mask.ofFragments(_where(ctx));
+                            var map = Core.Utils.Mask.ofFragments(_where(ctx));
                             var ret = new Query.FragmentSeqBuilder(ctx);
                             for (var _i = 0, _a = fs.fragments; _i < _a.length; _i++) {
                                 var f = _a[_i];
@@ -65271,7 +65292,7 @@ var LiteMol;
                     function compileComplement(what) {
                         var _what = Builder.toQuery(what);
                         return function (ctx) {
-                            var mask = Query.Context.Mask.ofFragments(_what(ctx)), count = 0, offset = 0;
+                            var mask = Core.Utils.Mask.ofFragments(_what(ctx)), count = 0, offset = 0;
                             for (var i = 0, _b = ctx.structure.data.atoms.count; i < _b; i++) {
                                 if (ctx.hasAtom(i) && !mask.has(i))
                                     count++;
@@ -65423,6 +65444,36 @@ var LiteMol;
                         };
                     }
                     Compiler.compileFlatten = compileFlatten;
+                    function compileExcept(what, toRemove) {
+                        var _what = Builder.toQuery(what);
+                        var _toRemove = Builder.toQuery(toRemove);
+                        return function (ctx) {
+                            var fs = _what(ctx);
+                            var mask = Core.Utils.Mask.ofFragments(_toRemove(ctx));
+                            var ret = new Query.HashFragmentSeqBuilder(ctx);
+                            for (var _i = 0, _a = fs.fragments; _i < _a.length; _i++) {
+                                var f = _a[_i];
+                                var size = 0;
+                                for (var _c = 0, _d = f.atomIndices; _c < _d.length; _c++) {
+                                    var i = _d[_c];
+                                    if (!mask.has(i))
+                                        size++;
+                                }
+                                if (!size)
+                                    continue;
+                                var indices = new Int32Array(size);
+                                var offset = 0;
+                                for (var _e = 0, _f = f.atomIndices; _e < _f.length; _e++) {
+                                    var i = _f[_e];
+                                    if (!mask.has(i))
+                                        indices[offset++] = i;
+                                }
+                                ret.add(Query.Fragment.ofArray(ctx, indices[0], indices));
+                            }
+                            return ret.getSeq();
+                        };
+                    }
+                    Compiler.compileExcept = compileExcept;
                 })(Compiler = Query.Compiler || (Query.Compiler = {}));
             })(Query = Structure.Query || (Structure.Query = {}));
         })(Structure = Core.Structure || (Core.Structure = {}));

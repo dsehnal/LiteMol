@@ -85,7 +85,7 @@ namespace LiteMol.Core.Structure {
         const bonds = model.data.bonds.input!;
         if (atomIndices.length === model.data.atoms.count) return bonds;
 
-        const mask = Query.Context.Mask.ofIndices(model.data.atoms.count, atomIndices);
+        const mask = Utils.Mask.ofIndices(model.data.atoms.count, atomIndices);
         const { atomAIndex: a, atomBIndex: b, type: t } = bonds;
         let count = 0;
         for (let i = 0, __i = bonds.count; i < __i; i++) {
@@ -111,7 +111,7 @@ namespace LiteMol.Core.Structure {
 
     type ComputeState = {
         model: Molecule.Model,
-        mask: Query.Context.Mask,
+        mask: Utils.Mask,
         atomA: Utils.ChunkedArray<number>,
         atomB: Utils.ChunkedArray<number>,
         type: Utils.ChunkedArray<BondType>,
@@ -163,7 +163,7 @@ namespace LiteMol.Core.Structure {
         const atomB = Utils.ChunkedArray.create<number>(size => new Int32Array(size), (atomIndices.length * 1.33) | 0, 1);
         const type = Utils.ChunkedArray.create<BondType>(size => new Uint8Array(size), (atomIndices.length * 1.33) | 0, 1);
 
-        const mask = Query.Context.Mask.ofIndices(model.data.atoms.count, atomIndices);
+        const mask = Utils.Mask.ofIndices(model.data.atoms.count, atomIndices);
         const state: ComputeState = { model, mask, atomA, atomB, type };
 
         let lastResidue = -1;

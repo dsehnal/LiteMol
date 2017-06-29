@@ -192,4 +192,91 @@ namespace LiteMol.Core.Utils {
             return ret;
         }
     }
+
+    /**
+     * An optimized set-like structure.
+     */
+    export interface Mask {
+        size: number;
+        has(i: number): boolean;
+    }
+
+    export namespace Mask {
+        class EmptyMask implements Mask {
+            has(i: number) { return false; }
+            constructor(public size: number) { }
+        }
+
+        class SingletonMask implements Mask {
+            has(i: number) { return i === this.idx; }
+            constructor(private idx: number, public size: number) { }
+        }
+
+        class BitMask implements Mask {
+            has(i: number) { return <any>this.mask[i]; }
+            constructor(private mask: Int8Array, public size: number) { }
+        }
+
+        class AllMask implements Mask {
+            has(i: number) { return true; }
+            constructor(public size: number) { }
+        }
+
+        export function ofStructure(structure: Structure.Molecule.Model): Mask {
+            return new AllMask(structure.data.atoms.count);
+        }
+
+        export function ofIndices(totalCount: number, indices: number[]): Mask {
+            const len = indices.length;
+            if (len === 0) return new EmptyMask(totalCount);
+            if (len === 1) return new SingletonMask(indices[0], totalCount);
+            let f = len / totalCount;
+            if (f < 1 / 12) {
+                let set = Utils.FastSet.create();
+                for (let i of indices) set.add(i);
+                return set;
+            }
+
+            let mask = new Int8Array(totalCount);
+            for (let i of indices) {
+                mask[i] = 1;
+            }
+            return new BitMask(mask, len);
+        }
+
+        export function ofFragments(seq: Structure.Query.FragmentSeq): Mask {
+            let sizeEstimate = 0;
+
+            for (let f of seq.fragments) {
+                sizeEstimate += f.atomCount;
+            }
+
+            let count = seq.context.structure.data.atoms.count;
+
+            if (sizeEstimate / count < 1 / 12) {
+                // create set;
+                let mask = Utils.FastSet.create();
+                for (let f of seq.fragments) {
+                    for (let i of f.atomIndices) {
+                        mask.add(i);
+                    }
+                }
+                return mask;
+            } else {
+                let mask = new Int8Array(count);
+
+                for (let f of seq.fragments) {
+                    for (let i of f.atomIndices) {
+                        mask[i] = 1;
+                    }
+                }
+
+                let size = 0;
+                for (let i = 0; i < count; i++) {
+                    if (mask[i] !== 0) size++;
+                }
+                return new BitMask(mask, size);
+            }
+        }
+    }
 }

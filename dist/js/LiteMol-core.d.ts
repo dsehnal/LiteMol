@@ -1632,6 +1632,18 @@ declare namespace LiteMol.Core.Utils {
          */
         function ofArray<T extends string | number>(xs: ArrayLike<T>): FastSet<T>;
     }
+    /**
+     * An optimized set-like structure.
+     */
+    interface Mask {
+        size: number;
+        has(i: number): boolean;
+    }
+    namespace Mask {
+        function ofStructure(structure: Structure.Molecule.Model): Mask;
+        function ofIndices(totalCount: number, indices: number[]): Mask;
+        function ofFragments(seq: Structure.Query.FragmentSeq): Mask;
+    }
 }
 declare namespace LiteMol.Core.Utils {
     export import FastNumberParsers = Core.Formats.CIF.Utils.FastNumberParsers;
@@ -2550,7 +2562,7 @@ declare namespace LiteMol.Core.Structure {
          *
          */
         class Context {
-            readonly mask: Context.Mask;
+            readonly mask: Utils.Mask;
             private lazyLoopup3d;
             /**
              * Number of atoms in the current context.
@@ -2588,22 +2600,8 @@ declare namespace LiteMol.Core.Structure {
              * Create a new context from a sequence of fragments.
              */
             static ofAtomIndices(structure: Molecule.Model, atomIndices: number[]): Context;
-            constructor(structure: Molecule.Model, mask: Context.Mask);
+            constructor(structure: Molecule.Model, mask: Utils.Mask);
             private makeLookup3d();
-        }
-        namespace Context {
-            /**
-             * Represents the atoms in the context.
-             */
-            interface Mask {
-                size: number;
-                has(i: number): boolean;
-            }
-            module Mask {
-                function ofStructure(structure: Molecule.Model): Mask;
-                function ofIndices(totalCount: number, indices: number[]): Mask;
-                function ofFragments(seq: FragmentSeq): Mask;
-            }
         }
         /**
          * The basic element of the query language.
@@ -2748,6 +2746,7 @@ declare namespace LiteMol.Core.Structure.Query {
         inside(where: Source): Builder;
         intersectWith(where: Source): Builder;
         flatten(selector: (f: Fragment) => FragmentSeq): Builder;
+        except(toRemove: Source): Builder;
     }
     namespace Builder {
         const BuilderPrototype: any;
@@ -2808,6 +2807,7 @@ declare namespace LiteMol.Core.Structure.Query {
     function inside(q: Source, where: Source): Builder;
     function intersectWith(what: Source, where: Source): Builder;
     function flatten(what: Source, selector: (f: Fragment) => FragmentSeq): Builder;
+    function except(what: Source, toRemove: Source): Builder;
     /**
      * Shortcuts
      */
@@ -2852,6 +2852,7 @@ declare namespace LiteMol.Core.Structure.Query {
         function compileAmbientResidues(where: Source, radius: number): (ctx: Context) => FragmentSeq;
         function compileWholeResidues(where: Source): (ctx: Context) => FragmentSeq;
         function compileFlatten(what: Source, selector: (f: Fragment) => FragmentSeq): (ctx: Context) => FragmentSeq;
+        function compileExcept(what: Source, toRemove: Source): (ctx: Context) => FragmentSeq;
     }
 }
 declare namespace LiteMol.Core.Structure.Query.Algebraic {
