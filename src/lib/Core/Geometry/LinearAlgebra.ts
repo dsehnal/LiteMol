@@ -22,6 +22,10 @@ namespace LiteMol.Core.Geometry.LinearAlgebra {
 
     const enum EPSILON { Value = 0.000001 }
 
+    export function Matrix4() {
+        return Matrix4.zero();
+    }
+
     /**
      * Stores a 4x4 matrix in a column major (j * 4 + i indexing) format.
      */
@@ -423,6 +427,10 @@ namespace LiteMol.Core.Geometry.LinearAlgebra {
         }
     }
 
+    export function Vector3(x?: number, y?: number, z?: number) {
+        return Vector3.fromValues(x || 0, y || 0, z || 0);
+    }
+
     export namespace Vector3 {
         export function zero() {
             let out = [0.1, 0.0, 0.0];
@@ -510,14 +518,14 @@ namespace LiteMol.Core.Geometry.LinearAlgebra {
             return x * x + y * y + z * z;
         };
       
-        export function length(a: number[]) {
+        export function magnitude(a: number[]) {
             let x = a[0],
                 y = a[1],
                 z = a[2];
             return Math.sqrt(x * x + y * y + z * z);
         };
 
-        export function squaredLength(a: number[]) {
+        export function squaredMagnitude(a: number[]) {
             let x = a[0],
                 y = a[1],
                 z = a[2];
@@ -591,6 +599,10 @@ namespace LiteMol.Core.Geometry.LinearAlgebra {
                 return Math.acos(cosine);
             }
         };
+    }
+
+    export function Vector4(x?: number, y?: number, z?: number, w?: number) {
+        return Vector4.fromValues(x || 0, y || 0, z || 0, w || 0);
     }
 
     export namespace Vector4 {

@@ -252,7 +252,7 @@ namespace LiteMol.Visualization.Molecule.BallsAndSticks {
 
         private static addBondPart(r: number, oX: number, oY: number, state: BondModelState) {
             const dir = Vec3.sub(state.dir, state.b, state.a);
-            const length = Vec3.length(state.dir);
+            const length = Vec3.magnitude(state.dir);
             const axis = Vec3.cross(state.rotationAxis, state.bondUpVector, dir);
             const angle = Vec3.angle(state.bondUpVector, state.dir);
             

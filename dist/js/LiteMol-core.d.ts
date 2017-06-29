@@ -2004,6 +2004,7 @@ declare namespace LiteMol.Core.Geometry.LinearAlgebra {
     type Matrix4 = number[];
     type Vector3 = number[];
     type Vector4 = number[];
+    function Matrix4(): number[];
     /**
      * Stores a 4x4 matrix in a column major (j * 4 + i indexing) format.
      */
@@ -2028,6 +2029,7 @@ declare namespace LiteMol.Core.Geometry.LinearAlgebra {
         function makeTable(m: number[]): string;
         function determinant(a: number[]): number;
     }
+    function Vector3(x?: number, y?: number, z?: number): number[];
     namespace Vector3 {
         function zero(): number[];
         function clone(a: number[]): number[];
@@ -2050,8 +2052,8 @@ declare namespace LiteMol.Core.Geometry.LinearAlgebra {
         function scaleAndAdd(out: number[], a: number[], b: number[], scale: number): number[];
         function distance(a: number[], b: number[]): number;
         function squaredDistance(a: number[], b: number[]): number;
-        function length(a: number[]): number;
-        function squaredLength(a: number[]): number;
+        function magnitude(a: number[]): number;
+        function squaredMagnitude(a: number[]): number;
         function normalize(out: number[], a: number[]): number[];
         function dot(a: number[], b: number[]): number;
         function cross(out: number[], a: number[], b: number[]): number[];
@@ -2059,6 +2061,7 @@ declare namespace LiteMol.Core.Geometry.LinearAlgebra {
         function transformMat4(out: number[], a: number[], m: number[]): number[];
         function angle(a: number[], b: number[]): number;
     }
+    function Vector4(x?: number, y?: number, z?: number, w?: number): number[];
     namespace Vector4 {
         function zero(): number[];
         function clone(a: number[]): number[];

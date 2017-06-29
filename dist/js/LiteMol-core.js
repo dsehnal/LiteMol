@@ -14472,10 +14472,13 @@ var LiteMol;
                  * copies of the Software, and to permit persons to whom the Software is
                  * furnished to do so, subject to the following conditions:
                  */
+                function Matrix4() {
+                    return Matrix4.zero();
+                }
+                LinearAlgebra.Matrix4 = Matrix4;
                 /**
                  * Stores a 4x4 matrix in a column major (j * 4 + i indexing) format.
                  */
-                var Matrix4;
                 (function (Matrix4) {
                     function zero() {
                         // force double backing array by 0.1.
@@ -14850,7 +14853,10 @@ var LiteMol;
                     }
                     Matrix4.determinant = determinant;
                 })(Matrix4 = LinearAlgebra.Matrix4 || (LinearAlgebra.Matrix4 = {}));
-                var Vector3;
+                function Vector3(x, y, z) {
+                    return Vector3.fromValues(x || 0, y || 0, z || 0);
+                }
+                LinearAlgebra.Vector3 = Vector3;
                 (function (Vector3) {
                     function zero() {
                         var out = [0.1, 0.0, 0.0];
@@ -14945,17 +14951,17 @@ var LiteMol;
                     }
                     Vector3.squaredDistance = squaredDistance;
                     ;
-                    function length(a) {
+                    function magnitude(a) {
                         var x = a[0], y = a[1], z = a[2];
                         return Math.sqrt(x * x + y * y + z * z);
                     }
-                    Vector3.length = length;
+                    Vector3.magnitude = magnitude;
                     ;
-                    function squaredLength(a) {
+                    function squaredMagnitude(a) {
                         var x = a[0], y = a[1], z = a[2];
                         return x * x + y * y + z * z;
                     }
-                    Vector3.squaredLength = squaredLength;
+                    Vector3.squaredMagnitude = squaredMagnitude;
                     ;
                     function normalize(out, a) {
                         var x = a[0], y = a[1], z = a[2];
@@ -15023,7 +15029,10 @@ var LiteMol;
                     Vector3.angle = angle;
                     ;
                 })(Vector3 = LinearAlgebra.Vector3 || (LinearAlgebra.Vector3 = {}));
-                var Vector4;
+                function Vector4(x, y, z, w) {
+                    return Vector4.fromValues(x || 0, y || 0, z || 0, w || 0);
+                }
+                LinearAlgebra.Vector4 = Vector4;
                 (function (Vector4) {
                     function zero() {
                         // force double backing array by 0.1.

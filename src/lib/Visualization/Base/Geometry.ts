@@ -180,7 +180,7 @@ namespace LiteMol.Visualization.Geometry {
         const dashScale = Vec3.zero(), dashOffset = Vec3.zero(), dashAxis = Vec3.zero(), dashDir = Vec3.zero(), dashUp = Vec3.fromValues(1, 0, 0), dashRotation = Mat4.zero();
         export function addDashedLine(builder: Builder, a: Vec3, b: Vec3, size: number, gap: number, r: number) {
             const dir = Vec3.sub(dashDir, b, a);
-            const length = Vec3.length(dir);
+            const length = Vec3.magnitude(dir);
             const axis = Vec3.cross(dashAxis, dashUp, dir);
             const angle = Vec3.angle(dashUp, dir);
 
