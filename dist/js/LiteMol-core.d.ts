@@ -1759,6 +1759,14 @@ declare namespace LiteMol.Core.Utils {
         function forArray<T>(count: number): ArrayBuilder<T>;
         function create<T>(creator: (size: number) => any, chunkElementCount: number, elementSize: number): ArrayBuilder<T>;
     }
+    interface UniqueArray<T extends number | string> {
+        _set: FastSet<T>;
+        array: T[];
+    }
+    function UniqueArray<T extends number | string>(): UniqueArray<T>;
+    namespace UniqueArray {
+        function add<T extends number | string>({_set, array}: UniqueArray<T>, e: T): void;
+    }
 }
 declare namespace LiteMol.Core.Utils {
     class PerformanceMonitor {

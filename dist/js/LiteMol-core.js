@@ -12113,6 +12113,20 @@ var LiteMol;
                 }
                 ArrayBuilder.create = create;
             })(ArrayBuilder = Utils.ArrayBuilder || (Utils.ArrayBuilder = {}));
+            function UniqueArray() {
+                return { _set: Utils.FastSet.create(), array: [] };
+            }
+            Utils.UniqueArray = UniqueArray;
+            (function (UniqueArray) {
+                function add(_a, e) {
+                    var _set = _a._set, array = _a.array;
+                    if (!_set.has(e)) {
+                        _set.add(e);
+                        array[array.length] = e;
+                    }
+                }
+                UniqueArray.add = add;
+            })(UniqueArray = Utils.UniqueArray || (Utils.UniqueArray = {}));
         })(Utils = Core.Utils || (Core.Utils = {}));
     })(Core = LiteMol.Core || (LiteMol.Core = {}));
 })(LiteMol || (LiteMol = {}));

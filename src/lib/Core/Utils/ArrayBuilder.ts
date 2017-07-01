@@ -252,4 +252,22 @@ namespace LiteMol.Core.Utils {
             }
         }
     }
+
+    export interface UniqueArray<T extends number | string> {
+        _set: FastSet<T>,
+        array: T[]
+    }
+
+    export function UniqueArray<T extends number | string>(): UniqueArray<T> {
+        return { _set: FastSet.create<T>(), array: [] };
+    }
+
+    export namespace UniqueArray {
+        export function add<T extends number | string>({ _set, array }: UniqueArray<T>, e: T) {
+            if (!_set.has(e)) {
+                _set.add(e);
+                array[array.length] = e;
+            }
+        }
+    }
 } 
