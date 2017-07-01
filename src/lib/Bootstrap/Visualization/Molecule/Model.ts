@@ -72,6 +72,7 @@ namespace LiteMol.Bootstrap.Visualization.Molecule {
             tessalation,
             bondRadius: parameters.bondRadius,
             hideBonds: false,
+            hideHydrogens: !!parameters.hideHydrogens,
             atomRadius: makeRadiusFunc(model, parameters),
             customMaxBondLengths
         };

@@ -133,28 +133,30 @@ namespace LiteMol.Plugin.Views.Transform.Molecule {
         private ballsAndSticks() {
             let p = this.params.style!.params as Bootstrap.Visualization.Molecule.BallsAndSticksParams;
             let controls: any[] = [];
-            
+            let key = 0;
                     
             controls.push(<Controls.Toggle 
                     title='Scale atoms using their VDW radius.' 
                     onChange={v => this.controller.updateStyleParams({ useVDW: v }) } value={p.useVDW!} label='VDW' />);
                     
             if (p.useVDW) {
-                controls.push(<Controls.Slider label='Scale' onChange={v => this.controller.updateStyleParams({ vdwScaling: v }) }  
+                controls.push(<Controls.Slider key={key++} label='Scale' onChange={v => this.controller.updateStyleParams({ vdwScaling: v }) }  
                         min={0.1} max={1} step={0.01} value={p.vdwScaling!} title='VDW scale factor.' />);
             } else {
-                controls.push(<Controls.Slider label='Atom Rds' onChange={v => this.controller.updateStyleParams({ atomRadius: v }) }  
+                controls.push(<Controls.Slider key={key++} label='Atom Rds' onChange={v => this.controller.updateStyleParams({ atomRadius: v }) }  
                         min={0.05} max={2} step={0.01} value={p.atomRadius!} title='Atom Radius' />);
             }
             
-            controls.push(<Controls.Slider label='Bond Rds' onChange={v => this.controller.updateStyleParams({ bondRadius: v }) }  
+            controls.push(<Controls.Slider key={key++} label='Bond Rds' onChange={v => this.controller.updateStyleParams({ bondRadius: v }) }  
                     min={0.05} max={1} step={0.01} value={p.bondRadius!} title='Bond Radius'  />);
 
             const maxHbondLength = p.customMaxBondLengths && p.customMaxBondLengths['H'] ? p.customMaxBondLengths['H'] : 1.15;
-            controls.push(<Controls.Slider label='H Bond Len' onChange={v => this.controller.updateStyleParams({ customMaxBondLengths: { ...p.customMaxBondLengths, 'H': v } }) }  
+            controls.push(<Controls.Slider key={key++} label='H Bond Len' onChange={v => this.controller.updateStyleParams({ customMaxBondLengths: { ...p.customMaxBondLengths, 'H': v } }) }  
                     min={0.9} max={1.5} step={0.01} value={maxHbondLength} title='Maximum H bond length'  />);
             
-            controls.push(<Controls.OptionsGroup options={Bootstrap.Visualization.Molecule.DetailTypes} caption={s => s} current={p.detail}
+            controls.push(<Controls.Toggle key={key++} onChange={v => this.controller.updateStyleParams({ hideHydrogens: v }) } value={p.hideHydrogens!} label='Hide H' />);
+
+            controls.push(<Controls.OptionsGroup key={key++} options={Bootstrap.Visualization.Molecule.DetailTypes} caption={s => s} current={p.detail}
                     onChange={(o) => this.controller.updateStyleParams({ detail: o }) } label='Detail' />);
             
             return controls;
@@ -162,17 +164,18 @@ namespace LiteMol.Plugin.Views.Transform.Molecule {
         
         private surface() {                       
             let params = this.params.style!.params as Bootstrap.Visualization.Molecule.SurfaceParams;
+            let key = 0;
             return [
-                <Controls.Slider label='Probe Radius' onChange={v => this.controller.updateStyleParams({ probeRadius: v  })} 
+                <Controls.Slider key={key++} label='Probe Radius' onChange={v => this.controller.updateStyleParams({ probeRadius: v  })} 
                     min={0} max={6} step={0.1} value={params.probeRadius!} />,
-                <Controls.Slider label='Smoothing' onChange={v => this.controller.updateStyleParams({ smoothing: v  })} 
+                <Controls.Slider key={key++} label='Smoothing' onChange={v => this.controller.updateStyleParams({ smoothing: v  })} 
                     min={0} max={20} step={1} value={params.smoothing!} title='Number of laplacian smoothing itrations.' />,   
-                <Controls.Toggle onChange={v => this.controller.updateStyleParams({ automaticDensity: v }) } value={params.automaticDensity!} label='Auto Detail' />,
+                <Controls.Toggle key={key++} onChange={v => this.controller.updateStyleParams({ automaticDensity: v }) } value={params.automaticDensity!} label='Auto Detail' />,
                 (params.automaticDensity 
                     ? void 0 
-                    : <Controls.Slider label='Detail' onChange={v => this.controller.updateStyleParams({ density: v  })} 
+                    : <Controls.Slider key={key++} label='Detail' onChange={v => this.controller.updateStyleParams({ density: v  })} 
                             min={0.1} max={3} step={0.1} value={params.density!} title='Determines the size of a grid cell (size = 1/detail).' />),
-                <Controls.Toggle onChange={v => this.controller.updateStyleParams({ isWireframe: v }) } value={params.isWireframe!} label='Wireframe' />                
+                <Controls.Toggle key={key++} onChange={v => this.controller.updateStyleParams({ isWireframe: v }) } value={params.isWireframe!} label='Wireframe' />                
             ];
         }
         

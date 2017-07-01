@@ -9,6 +9,7 @@ namespace LiteMol.Visualization.Molecule.BallsAndSticks {
         tessalation?: number;
         atomRadius?: (i: number) => number;
         hideBonds?: boolean;
+        hideHydrogens?: boolean;
         bondRadius?: number;
         customMaxBondLengths?: { get(e: string): number | undefined, has(e: string): boolean };
     }
@@ -17,6 +18,7 @@ namespace LiteMol.Visualization.Molecule.BallsAndSticks {
         tessalation: 3,
         atomRadius: () => 0.4,
         hideBonds: false,
+        hideHydrogens: false,
         bondRadius: 0.15,
         customMaxBondLengths: void 0
     }

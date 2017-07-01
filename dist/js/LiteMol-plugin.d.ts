@@ -15050,6 +15050,7 @@ declare namespace LiteMol.Visualization.Molecule.BallsAndSticks {
         tessalation?: number;
         atomRadius?: (i: number) => number;
         hideBonds?: boolean;
+        hideHydrogens?: boolean;
         bondRadius?: number;
         customMaxBondLengths?: {
             get(e: string): number | undefined;
@@ -16047,6 +16048,7 @@ declare namespace LiteMol.Bootstrap.Visualization.Molecule {
         vdwScaling?: number;
         atomRadius?: number;
         bondRadius: number;
+        hideHydrogens?: boolean;
         customMaxBondLengths?: {
             [e: string]: number;
         };

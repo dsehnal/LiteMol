@@ -8,52 +8,71 @@ namespace LiteMol.Visualization.Molecule.BallsAndSticks {
     const enum Constants {
         MetalDashSize = 0.15
     }
-
-    namespace BallsAndSticksHelper {
-        export function analyze(model: Core.Structure.Molecule.Model, atomIndices: number[], params: Parameters) {            
-            const bonds = Core.Structure.computeBonds(model, atomIndices, {
-                maxHbondLength:params.customMaxBondLengths && params.customMaxBondLengths.has('H') ? params.customMaxBondLengths.get('H')! : 1.15
-            });
-
-            const { residueIndex } = model.data.atoms;
-            let lastResidue = -1;
-            let residueCount = 0;
-            for (const aI of atomIndices) {
-                const raI = residueIndex[aI];
-                if (raI !== lastResidue) residueCount++;                
-                lastResidue = raI;
-            }
-
-            const metalDashFactor = 1 / (2 * Constants.MetalDashSize);
-
-            let covalentStickCount = 0, dashPartCount = 0;
-            let { type, count, atomAIndex, atomBIndex } = bonds;
-            let { x, y, z } = model.positions;
-            for (let i = 0; i < count; i++) {
-                const t = type[i];
-                if (t === BT.Unknown || t === BT.DisulfideBridge) covalentStickCount += 1;
-                else if (t >= BT.Single && t <= BT.Aromatic) covalentStickCount += t;
-                else if (t === BT.Metallic || t === BT.Ion || t === BT.Hydrogen) {
-                    const a = atomAIndex[i], b = atomBIndex[i];
-                    const dx = x[a] - x[b], dy = y[a] - y[b], dz = z[a] - z[b];
-                    const len = Math.sqrt(dx*dx + dy*dy + dz*dz);
-                    dashPartCount += Math.ceil(metalDashFactor * len);
-                }
-            }
-
-            return {
-                bonds,
-                covalentStickCount,
-                dashPartCount
-            }
-        }
-    }
-
+    
     import BT = Core.Structure.BondType
     import Geom = Core.Geometry
     import Vec3 = Geom.LinearAlgebra.Vector3
     import Mat4 = Geom.LinearAlgebra.Matrix4
     import GB = Geometry.Builder
+
+    function isHydrogen(n: string) {
+        return n === 'H' || n === 'D' || n === 'T';
+    }
+
+    function getAtomCount(model: Core.Structure.Molecule.Model, atomIndices: number[], params: Parameters) {
+        const { elementSymbol:es } = model.data.atoms;
+        const { hideHydrogens } = params;
+        
+        let atomCount = 0;
+
+        if (hideHydrogens) {
+            for (const aI of atomIndices) {
+                if (!isHydrogen(es[aI])) {
+                    atomCount++;
+                }
+            }
+        } else {
+            atomCount = atomIndices.length;
+        }
+
+        return atomCount;
+    }
+
+    function getBondsInfo(model: Core.Structure.Molecule.Model, atomIndices: number[], params: Parameters) {            
+        const bonds = Core.Structure.computeBonds(model, atomIndices, {
+            maxHbondLength:params.customMaxBondLengths && params.customMaxBondLengths.has('H') ? params.customMaxBondLengths.get('H')! : 1.15
+        });
+
+        const metalDashFactor = 1 / (2 * Constants.MetalDashSize);
+        const { elementSymbol:es } = model.data.atoms;
+        const { hideHydrogens } = params;
+
+        let covalentStickCount = 0, dashPartCount = 0;
+        let { type, count, atomAIndex, atomBIndex } = bonds;
+        let { x, y, z } = model.positions;
+        for (let i = 0; i < count; i++) {
+            const t = type[i];
+            const a = atomAIndex[i], b = atomBIndex[i];
+
+            if (hideHydrogens && (isHydrogen(es[a]) || isHydrogen(es[b]))) {
+                continue;
+            }
+
+            if (t === BT.Unknown || t === BT.DisulfideBridge) covalentStickCount += 1;
+            else if (t >= BT.Single && t <= BT.Aromatic) covalentStickCount += t;
+            else if (t === BT.Metallic || t === BT.Ion || t === BT.Hydrogen) {
+                const dx = x[a] - x[b], dy = y[a] - y[b], dz = z[a] - z[b];
+                const len = Math.sqrt(dx*dx + dy*dy + dz*dz);
+                dashPartCount += Math.ceil(metalDashFactor * len);
+            }
+        }
+
+        return {
+            bonds,
+            covalentStickCount,
+            dashPartCount
+        }
+    }
 
     class BondModelState {
         rotationAxis = Vec3.zero();
@@ -126,8 +145,9 @@ namespace LiteMol.Visualization.Molecule.BallsAndSticks {
         atomTemplate = Templates.getAtom(this.tessalation!);
         dashTemplate = GB.getDashTemplate();
 
-        atomVertexCount = this.atomTemplate.vertexCount * this.atomIndices.length;
-        atomBuilder = GB.createStatic(this.atomVertexCount, this.atomTemplate.indexCount * this.atomIndices.length);
+        atomCount = getAtomCount(this.model, this.atomIndices, this.params);
+        atomVertexCount = this.atomTemplate.vertexCount * this.atomCount;
+        atomBuilder = GB.createStatic(this.atomVertexCount, this.atomTemplate.indexCount * this.atomCount);
         atomColors = new Float32Array(this.atomVertexCount * 3);
         atomPickColors = new Float32Array(this.atomVertexCount * 4);
 
@@ -153,9 +173,7 @@ namespace LiteMol.Visualization.Molecule.BallsAndSticks {
     }
 
     class BondsBuildState {
-        model = this.state.model;
-        atomIndices = this.state.atomIndices;
-        info = BallsAndSticksHelper.analyze(this.state.model, this.state.atomIndices, this.state.params);
+        info = getBondsInfo(this.state.model, this.state.atomIndices, this.state.params);
 
         bondVertexCount = this.state.bondTemplate.vertexCount * this.info.covalentStickCount + this.state.dashTemplate.vertexCount * this.info.dashPartCount;
         bondBuilder = GB.createStatic(this.bondVertexCount, this.state.bondTemplate.indexCount * this.info.covalentStickCount + this.state.dashTemplate.indexCount * this.info.dashPartCount);
@@ -212,6 +230,14 @@ namespace LiteMol.Visualization.Molecule.BallsAndSticks {
         
         private static addBond(b: number, state: BuildState, bs: BondsBuildState) {
             let aI = bs.info.bonds.atomAIndex[b], bI = bs.info.bonds.atomBIndex[b], type = bs.info.bonds.type[b];
+
+            if (state.params.hideHydrogens) {
+                const { elementSymbol: es } = state.model.data.atoms;
+                if (isHydrogen(es[aI]) || isHydrogen(es[bI])) {
+                    return;
+                }
+            }
+
             Vec3.set(bs.bondState.a, state.cX[aI], state.cY[aI], state.cZ[aI]);
             Vec3.set(bs.bondState.b, state.cX[bI], state.cY[bI], state.cZ[bI]);
 
@@ -312,9 +338,16 @@ namespace LiteMol.Visualization.Molecule.BallsAndSticks {
             const chunkSize = 2500;
             let started = Core.Utils.PerformanceMonitor.currentTime();
 
+            const { elementSymbol } = state.model.data.atoms;
+            const { hideHydrogens } = state.params;
+
             for (let start = 0, _l = state.atomIndices.length; start < _l; start += chunkSize) {
                 for (let i = start, _b = Math.min(start + chunkSize, state.atomIndices.length); i < _b; i++) {
-                    BallsAndSticksGeometryBuilder.addAtom(state.atomIndices[i], state);
+                    const aI = state.atomIndices[i];
+                    if (hideHydrogens && isHydrogen(elementSymbol[aI])) {
+                        continue;
+                    }
+                    BallsAndSticksGeometryBuilder.addAtom(aI, state);
                 }
                 let t = Core.Utils.PerformanceMonitor.currentTime();
                 if (t - started > Core.Computation.UpdateProgressDelta) {
@@ -327,7 +360,8 @@ namespace LiteMol.Visualization.Molecule.BallsAndSticks {
         private static async addBondsChunks(state: BuildState, bs: BondsBuildState, ctx: Core.Computation.Context) {
             const chunkSize = 2500;
             let started = Core.Utils.PerformanceMonitor.currentTime();
-            for (let start = 0; start < bs.bondCount; start += chunkSize) {
+
+            for (let start = 0; start < bs.bondCount; start += chunkSize) {                
                 for (let i = start, _b = Math.min(start + chunkSize, bs.bondCount); i < _b; i++) {
                     BallsAndSticksGeometryBuilder.addBond(i, state, bs);
                 }

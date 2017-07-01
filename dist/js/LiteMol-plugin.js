@@ -65577,7 +65577,7 @@ var LiteMol;
 (function (LiteMol) {
     var Visualization;
     (function (Visualization) {
-        Visualization.VERSION = { number: "1.7.1", date: "June 27 2017" };
+        Visualization.VERSION = { number: "1.7.2", date: "July 1 2017" };
     })(Visualization = LiteMol.Visualization || (LiteMol.Visualization = {}));
 })(LiteMol || (LiteMol = {}));
 var LiteMol;
@@ -69341,6 +69341,7 @@ var LiteMol;
                     tessalation: 3,
                     atomRadius: function () { return 0.4; },
                     hideBonds: false,
+                    hideHydrogens: false,
                     bondRadius: 0.15,
                     customMaxBondLengths: void 0
                 };
@@ -69449,51 +69450,62 @@ var LiteMol;
             var BallsAndSticks;
             (function (BallsAndSticks) {
                 "use strict";
-                var BallsAndSticksHelper;
-                (function (BallsAndSticksHelper) {
-                    function analyze(model, atomIndices, params) {
-                        var bonds = LiteMol.Core.Structure.computeBonds(model, atomIndices, {
-                            maxHbondLength: params.customMaxBondLengths && params.customMaxBondLengths.has('H') ? params.customMaxBondLengths.get('H') : 1.15
-                        });
-                        var residueIndex = model.data.atoms.residueIndex;
-                        var lastResidue = -1;
-                        var residueCount = 0;
-                        for (var _i = 0, atomIndices_2 = atomIndices; _i < atomIndices_2.length; _i++) {
-                            var aI = atomIndices_2[_i];
-                            var raI = residueIndex[aI];
-                            if (raI !== lastResidue)
-                                residueCount++;
-                            lastResidue = raI;
-                        }
-                        var metalDashFactor = 1 / (2 * 0.15 /* MetalDashSize */);
-                        var covalentStickCount = 0, dashPartCount = 0;
-                        var type = bonds.type, count = bonds.count, atomAIndex = bonds.atomAIndex, atomBIndex = bonds.atomBIndex;
-                        var _a = model.positions, x = _a.x, y = _a.y, z = _a.z;
-                        for (var i = 0; i < count; i++) {
-                            var t = type[i];
-                            if (t === 0 /* Unknown */ || t === 5 /* DisulfideBridge */)
-                                covalentStickCount += 1;
-                            else if (t >= 1 /* Single */ && t <= 4 /* Aromatic */)
-                                covalentStickCount += t;
-                            else if (t === 6 /* Metallic */ || t === 7 /* Ion */ || t === 8 /* Hydrogen */) {
-                                var a = atomAIndex[i], b = atomBIndex[i];
-                                var dx = x[a] - x[b], dy = y[a] - y[b], dz = z[a] - z[b];
-                                var len = Math.sqrt(dx * dx + dy * dy + dz * dz);
-                                dashPartCount += Math.ceil(metalDashFactor * len);
-                            }
-                        }
-                        return {
-                            bonds: bonds,
-                            covalentStickCount: covalentStickCount,
-                            dashPartCount: dashPartCount
-                        };
-                    }
-                    BallsAndSticksHelper.analyze = analyze;
-                })(BallsAndSticksHelper || (BallsAndSticksHelper = {}));
                 var Geom = LiteMol.Core.Geometry;
                 var Vec3 = Geom.LinearAlgebra.Vector3;
                 var Mat4 = Geom.LinearAlgebra.Matrix4;
                 var GB = Visualization.Geometry.Builder;
+                function isHydrogen(n) {
+                    return n === 'H' || n === 'D' || n === 'T';
+                }
+                function getAtomCount(model, atomIndices, params) {
+                    var es = model.data.atoms.elementSymbol;
+                    var hideHydrogens = params.hideHydrogens;
+                    var atomCount = 0;
+                    if (hideHydrogens) {
+                        for (var _i = 0, atomIndices_2 = atomIndices; _i < atomIndices_2.length; _i++) {
+                            var aI = atomIndices_2[_i];
+                            if (!isHydrogen(es[aI])) {
+                                atomCount++;
+                            }
+                        }
+                    }
+                    else {
+                        atomCount = atomIndices.length;
+                    }
+                    return atomCount;
+                }
+                function getBondsInfo(model, atomIndices, params) {
+                    var bonds = LiteMol.Core.Structure.computeBonds(model, atomIndices, {
+                        maxHbondLength: params.customMaxBondLengths && params.customMaxBondLengths.has('H') ? params.customMaxBondLengths.get('H') : 1.15
+                    });
+                    var metalDashFactor = 1 / (2 * 0.15 /* MetalDashSize */);
+                    var es = model.data.atoms.elementSymbol;
+                    var hideHydrogens = params.hideHydrogens;
+                    var covalentStickCount = 0, dashPartCount = 0;
+                    var type = bonds.type, count = bonds.count, atomAIndex = bonds.atomAIndex, atomBIndex = bonds.atomBIndex;
+                    var _a = model.positions, x = _a.x, y = _a.y, z = _a.z;
+                    for (var i = 0; i < count; i++) {
+                        var t = type[i];
+                        var a = atomAIndex[i], b = atomBIndex[i];
+                        if (hideHydrogens && (isHydrogen(es[a]) || isHydrogen(es[b]))) {
+                            continue;
+                        }
+                        if (t === 0 /* Unknown */ || t === 5 /* DisulfideBridge */)
+                            covalentStickCount += 1;
+                        else if (t >= 1 /* Single */ && t <= 4 /* Aromatic */)
+                            covalentStickCount += t;
+                        else if (t === 6 /* Metallic */ || t === 7 /* Ion */ || t === 8 /* Hydrogen */) {
+                            var dx = x[a] - x[b], dy = y[a] - y[b], dz = z[a] - z[b];
+                            var len = Math.sqrt(dx * dx + dy * dy + dz * dz);
+                            dashPartCount += Math.ceil(metalDashFactor * len);
+                        }
+                    }
+                    return {
+                        bonds: bonds,
+                        covalentStickCount: covalentStickCount,
+                        dashPartCount: dashPartCount
+                    };
+                }
                 var BondModelState = (function () {
                     function BondModelState(bondTemplate, builder) {
                         this.bondTemplate = bondTemplate;
@@ -69592,8 +69604,9 @@ var LiteMol;
                         this.bondTemplate = Templates.getBond(this.tessalation);
                         this.atomTemplate = Templates.getAtom(this.tessalation);
                         this.dashTemplate = GB.getDashTemplate();
-                        this.atomVertexCount = this.atomTemplate.vertexCount * this.atomIndices.length;
-                        this.atomBuilder = GB.createStatic(this.atomVertexCount, this.atomTemplate.indexCount * this.atomIndices.length);
+                        this.atomCount = getAtomCount(this.model, this.atomIndices, this.params);
+                        this.atomVertexCount = this.atomTemplate.vertexCount * this.atomCount;
+                        this.atomBuilder = GB.createStatic(this.atomVertexCount, this.atomTemplate.indexCount * this.atomCount);
                         this.atomColors = new Float32Array(this.atomVertexCount * 3);
                         this.atomPickColors = new Float32Array(this.atomVertexCount * 4);
                         this.atoms = this.model.data.atoms;
@@ -69615,9 +69628,7 @@ var LiteMol;
                 var BondsBuildState = (function () {
                     function BondsBuildState(state) {
                         this.state = state;
-                        this.model = this.state.model;
-                        this.atomIndices = this.state.atomIndices;
-                        this.info = BallsAndSticksHelper.analyze(this.state.model, this.state.atomIndices, this.state.params);
+                        this.info = getBondsInfo(this.state.model, this.state.atomIndices, this.state.params);
                         this.bondVertexCount = this.state.bondTemplate.vertexCount * this.info.covalentStickCount + this.state.dashTemplate.vertexCount * this.info.dashPartCount;
                         this.bondBuilder = GB.createStatic(this.bondVertexCount, this.state.bondTemplate.indexCount * this.info.covalentStickCount + this.state.dashTemplate.indexCount * this.info.dashPartCount);
                         this.bondColors = new Float32Array(this.bondVertexCount * 3);
@@ -69654,6 +69665,12 @@ var LiteMol;
                     };
                     BallsAndSticksGeometryBuilder.addBond = function (b, state, bs) {
                         var aI = bs.info.bonds.atomAIndex[b], bI = bs.info.bonds.atomBIndex[b], type = bs.info.bonds.type[b];
+                        if (state.params.hideHydrogens) {
+                            var es = state.model.data.atoms.elementSymbol;
+                            if (isHydrogen(es[aI]) || isHydrogen(es[bI])) {
+                                return;
+                            }
+                        }
                         Vec3.set(bs.bondState.a, state.cX[aI], state.cY[aI], state.cZ[aI]);
                         Vec3.set(bs.bondState.b, state.cX[bI], state.cY[bI], state.cZ[bI]);
                         var r = +bs.bondRadius, o = 2 * r / 3, h = r / 2;
@@ -69736,18 +69753,24 @@ var LiteMol;
                     };
                     BallsAndSticksGeometryBuilder.addAtoms = function (state, ctx) {
                         return __awaiter(this, void 0, void 0, function () {
-                            var chunkSize, started, start, _l, i, _b, t;
+                            var chunkSize, started, elementSymbol, hideHydrogens, start, _l, i, _b, aI, t;
                             return __generator(this, function (_a) {
                                 switch (_a.label) {
                                     case 0:
                                         chunkSize = 2500;
                                         started = LiteMol.Core.Utils.PerformanceMonitor.currentTime();
+                                        elementSymbol = state.model.data.atoms.elementSymbol;
+                                        hideHydrogens = state.params.hideHydrogens;
                                         start = 0, _l = state.atomIndices.length;
                                         _a.label = 1;
                                     case 1:
                                         if (!(start < _l)) return [3 /*break*/, 4];
                                         for (i = start, _b = Math.min(start + chunkSize, state.atomIndices.length); i < _b; i++) {
-                                            BallsAndSticksGeometryBuilder.addAtom(state.atomIndices[i], state);
+                                            aI = state.atomIndices[i];
+                                            if (hideHydrogens && isHydrogen(elementSymbol[aI])) {
+                                                continue;
+                                            }
+                                            BallsAndSticksGeometryBuilder.addAtom(aI, state);
                                         }
                                         t = LiteMol.Core.Utils.PerformanceMonitor.currentTime();
                                         if (!(t - started > LiteMol.Core.Computation.UpdateProgressDelta)) return [3 /*break*/, 3];
@@ -74332,6 +74355,7 @@ var LiteMol;
                         vdwScaling: 0.22,
                         atomRadius: 0.35,
                         bondRadius: 0.09,
+                        hideHydrogens: false,
                         customMaxBondLengths: void 0,
                         detail: 'Automatic'
                     };
@@ -74445,6 +74469,7 @@ var LiteMol;
                         tessalation: tessalation,
                         bondRadius: parameters.bondRadius,
                         hideBonds: false,
+                        hideHydrogens: !!parameters.hideHydrogens,
                         atomRadius: makeRadiusFunc(model, parameters),
                         customMaxBondLengths: customMaxBondLengths
                     };
@@ -79826,30 +79851,33 @@ var LiteMol;
                             var _this = this;
                             var p = this.params.style.params;
                             var controls = [];
+                            var key = 0;
                             controls.push(Plugin.React.createElement(Plugin.Controls.Toggle, { title: 'Scale atoms using their VDW radius.', onChange: function (v) { return _this.controller.updateStyleParams({ useVDW: v }); }, value: p.useVDW, label: 'VDW' }));
                             if (p.useVDW) {
-                                controls.push(Plugin.React.createElement(Plugin.Controls.Slider, { label: 'Scale', onChange: function (v) { return _this.controller.updateStyleParams({ vdwScaling: v }); }, min: 0.1, max: 1, step: 0.01, value: p.vdwScaling, title: 'VDW scale factor.' }));
+                                controls.push(Plugin.React.createElement(Plugin.Controls.Slider, { key: key++, label: 'Scale', onChange: function (v) { return _this.controller.updateStyleParams({ vdwScaling: v }); }, min: 0.1, max: 1, step: 0.01, value: p.vdwScaling, title: 'VDW scale factor.' }));
                             }
                             else {
-                                controls.push(Plugin.React.createElement(Plugin.Controls.Slider, { label: 'Atom Rds', onChange: function (v) { return _this.controller.updateStyleParams({ atomRadius: v }); }, min: 0.05, max: 2, step: 0.01, value: p.atomRadius, title: 'Atom Radius' }));
+                                controls.push(Plugin.React.createElement(Plugin.Controls.Slider, { key: key++, label: 'Atom Rds', onChange: function (v) { return _this.controller.updateStyleParams({ atomRadius: v }); }, min: 0.05, max: 2, step: 0.01, value: p.atomRadius, title: 'Atom Radius' }));
                             }
-                            controls.push(Plugin.React.createElement(Plugin.Controls.Slider, { label: 'Bond Rds', onChange: function (v) { return _this.controller.updateStyleParams({ bondRadius: v }); }, min: 0.05, max: 1, step: 0.01, value: p.bondRadius, title: 'Bond Radius' }));
+                            controls.push(Plugin.React.createElement(Plugin.Controls.Slider, { key: key++, label: 'Bond Rds', onChange: function (v) { return _this.controller.updateStyleParams({ bondRadius: v }); }, min: 0.05, max: 1, step: 0.01, value: p.bondRadius, title: 'Bond Radius' }));
                             var maxHbondLength = p.customMaxBondLengths && p.customMaxBondLengths['H'] ? p.customMaxBondLengths['H'] : 1.15;
-                            controls.push(Plugin.React.createElement(Plugin.Controls.Slider, { label: 'H Bond Len', onChange: function (v) { return _this.controller.updateStyleParams({ customMaxBondLengths: __assign({}, p.customMaxBondLengths, { 'H': v }) }); }, min: 0.9, max: 1.5, step: 0.01, value: maxHbondLength, title: 'Maximum H bond length' }));
-                            controls.push(Plugin.React.createElement(Plugin.Controls.OptionsGroup, { options: LiteMol.Bootstrap.Visualization.Molecule.DetailTypes, caption: function (s) { return s; }, current: p.detail, onChange: function (o) { return _this.controller.updateStyleParams({ detail: o }); }, label: 'Detail' }));
+                            controls.push(Plugin.React.createElement(Plugin.Controls.Slider, { key: key++, label: 'H Bond Len', onChange: function (v) { return _this.controller.updateStyleParams({ customMaxBondLengths: __assign({}, p.customMaxBondLengths, { 'H': v }) }); }, min: 0.9, max: 1.5, step: 0.01, value: maxHbondLength, title: 'Maximum H bond length' }));
+                            controls.push(Plugin.React.createElement(Plugin.Controls.Toggle, { key: key++, onChange: function (v) { return _this.controller.updateStyleParams({ hideHydrogens: v }); }, value: p.hideHydrogens, label: 'Hide H' }));
+                            controls.push(Plugin.React.createElement(Plugin.Controls.OptionsGroup, { key: key++, options: LiteMol.Bootstrap.Visualization.Molecule.DetailTypes, caption: function (s) { return s; }, current: p.detail, onChange: function (o) { return _this.controller.updateStyleParams({ detail: o }); }, label: 'Detail' }));
                             return controls;
                         };
                         CreateVisual.prototype.surface = function () {
                             var _this = this;
                             var params = this.params.style.params;
+                            var key = 0;
                             return [
-                                Plugin.React.createElement(Plugin.Controls.Slider, { label: 'Probe Radius', onChange: function (v) { return _this.controller.updateStyleParams({ probeRadius: v }); }, min: 0, max: 6, step: 0.1, value: params.probeRadius }),
-                                Plugin.React.createElement(Plugin.Controls.Slider, { label: 'Smoothing', onChange: function (v) { return _this.controller.updateStyleParams({ smoothing: v }); }, min: 0, max: 20, step: 1, value: params.smoothing, title: 'Number of laplacian smoothing itrations.' }),
-                                Plugin.React.createElement(Plugin.Controls.Toggle, { onChange: function (v) { return _this.controller.updateStyleParams({ automaticDensity: v }); }, value: params.automaticDensity, label: 'Auto Detail' }),
+                                Plugin.React.createElement(Plugin.Controls.Slider, { key: key++, label: 'Probe Radius', onChange: function (v) { return _this.controller.updateStyleParams({ probeRadius: v }); }, min: 0, max: 6, step: 0.1, value: params.probeRadius }),
+                                Plugin.React.createElement(Plugin.Controls.Slider, { key: key++, label: 'Smoothing', onChange: function (v) { return _this.controller.updateStyleParams({ smoothing: v }); }, min: 0, max: 20, step: 1, value: params.smoothing, title: 'Number of laplacian smoothing itrations.' }),
+                                Plugin.React.createElement(Plugin.Controls.Toggle, { key: key++, onChange: function (v) { return _this.controller.updateStyleParams({ automaticDensity: v }); }, value: params.automaticDensity, label: 'Auto Detail' }),
                                 (params.automaticDensity
                                     ? void 0
-                                    : Plugin.React.createElement(Plugin.Controls.Slider, { label: 'Detail', onChange: function (v) { return _this.controller.updateStyleParams({ density: v }); }, min: 0.1, max: 3, step: 0.1, value: params.density, title: 'Determines the size of a grid cell (size = 1/detail).' })),
-                                Plugin.React.createElement(Plugin.Controls.Toggle, { onChange: function (v) { return _this.controller.updateStyleParams({ isWireframe: v }); }, value: params.isWireframe, label: 'Wireframe' })
+                                    : Plugin.React.createElement(Plugin.Controls.Slider, { key: key++, label: 'Detail', onChange: function (v) { return _this.controller.updateStyleParams({ density: v }); }, min: 0.1, max: 3, step: 0.1, value: params.density, title: 'Determines the size of a grid cell (size = 1/detail).' })),
+                                Plugin.React.createElement(Plugin.Controls.Toggle, { key: key++, onChange: function (v) { return _this.controller.updateStyleParams({ isWireframe: v }); }, value: params.isWireframe, label: 'Wireframe' })
                             ];
                         };
                         CreateVisual.prototype.createColors = function () {
