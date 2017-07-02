@@ -30,6 +30,14 @@
     "./Extensions/DensityStreaming/Behaviour.ts",
     "./Extensions/DensityStreaming/View.tsx",
 
+    "./Extensions/ComplexRepresentation/Carbohydrates/Shapes.ts",
+    "./Extensions/ComplexRepresentation/Carbohydrates/Mapping.ts",
+    "./Extensions/ComplexRepresentation/Carbohydrates/Representation.ts",
+    "./Extensions/ComplexRepresentation/Carbohydrates/HighlightInfo.ts",
+    "./Extensions/ComplexRepresentation/Representation.ts",
+    "./Extensions/ComplexRepresentation/Entity.ts",
+    "./Extensions/ComplexRepresentation/UI.tsx",
+
     "./PDBe/Data.ts",
     "./PDBe/Density.ts",
     "./PDBe/Validation.ts",

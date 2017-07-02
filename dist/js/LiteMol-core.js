@@ -20093,6 +20093,8 @@ var LiteMol;
                             }
                             if (!count)
                                 return Query.FragmentSeq.empty(ctx);
+                            if (count === indices.length)
+                                return new Query.FragmentSeq(ctx, [Query.Fragment.ofArray(ctx, indices[0], indices)]);
                             var offset = 0;
                             var f = new Int32Array(count);
                             for (var _a = 0, indices_6 = indices; _a < indices_6.length; _a++) {

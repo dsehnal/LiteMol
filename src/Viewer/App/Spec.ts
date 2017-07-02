@@ -52,6 +52,11 @@ namespace LiteMol.Viewer {
             { transformer: Transformer.Molecule.CreateVisual, view: Views.Transform.Molecule.CreateVisual },
 
             { transformer: Transformer.Molecule.CreateLabels, view: Views.Transform.Molecule.CreateLabels },
+
+            // complex representation
+            { transformer: Extensions.ComplexReprensetation.Carbohydrates.Transforms.CreateVisual, view: Extensions.ComplexReprensetation.Carbohydrates.UI.CreateVisual },
+            { transformer: Extensions.ComplexReprensetation.Transforms.CreateComplexInfo, view: Views.Transform.Empty },
+            { transformer: Extensions.ComplexReprensetation.Transforms.CreateVisual, view: Views.Transform.Empty },
             
             // density transforms
             { transformer: Transformer.Density.CreateFromCif, view: Views.Transform.Molecule.CreateFromMmCif },
@@ -85,7 +90,8 @@ namespace LiteMol.Viewer {
             Bootstrap.Behaviour.ApplySelectionToVisual,
             
             // creates a visual when model is added.
-            Bootstrap.Behaviour.CreateVisualWhenModelIsAdded,
+            Extensions.ComplexReprensetation.Transforms.CreateRepresentationWhenModelIsAddedBehaviour,
+            //Bootstrap.Behaviour.CreateVisualWhenModelIsAdded,
             
             // this colors the visual when it's selected by mouse or touch
             Bootstrap.Behaviour.ApplyInteractivitySelection,
@@ -101,7 +107,10 @@ namespace LiteMol.Viewer {
             Bootstrap.Behaviour.Molecule.ShowInteractionOnSelect(5),                
             
             // this tracks what is downloaded and some basic actions. Does not send any private data etc. Source in Bootstrap/Behaviour/Analytics 
-            Bootstrap.Behaviour.GoogleAnalytics('UA-77062725-1')
+            Bootstrap.Behaviour.GoogleAnalytics('UA-77062725-1'),
+
+            // extensions
+            Extensions.ComplexReprensetation.Carbohydrates.HighlightCustomElementsBehaviour
         ],            
         components: [
             Plugin.Components.Visualization.HighlightInfo(LayoutRegion.Main, true),               

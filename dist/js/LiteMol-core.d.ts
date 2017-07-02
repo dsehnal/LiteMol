@@ -2690,7 +2690,7 @@ declare namespace LiteMol.Core.Structure {
              * Assumes the set is in the given context's mask.
              * Assumes the array is sorted.
              */
-            static ofArray(context: Context, tag: number, atomIndices: Int32Array): Fragment;
+            static ofArray(context: Context, tag: number, atomIndices: Int32Array | number[]): Fragment;
             /**
              * Create a fragment from a single index.
              * Assumes the index is in the given context's mask.

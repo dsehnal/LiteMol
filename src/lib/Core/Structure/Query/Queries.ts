@@ -197,6 +197,7 @@ namespace LiteMol.Core.Structure.Query {
                 }
                 
                 if (!count) return FragmentSeq.empty(ctx);
+                if (count === indices.length) return new FragmentSeq(ctx, [Fragment.ofArray(ctx, indices[0], indices)]);
                 
                 let offset = 0;
                 let f = new Int32Array(count);

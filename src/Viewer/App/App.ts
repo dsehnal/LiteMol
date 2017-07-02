@@ -41,6 +41,17 @@ namespace LiteMol.Viewer {
             plugin.applyTransform(t);
         }
 
+        let downloadCS = getParam('loadFromCS', '[^&]+').trim();
+        if (downloadCS && downloadCS.length >= 4 && downloadCS.length <= 10) {
+            let t = plugin.createTransform().add(plugin.context.tree.root, PDBe.Data.DownloadBinaryCIFFromCoordinateServer, { 
+                id: downloadCS,
+                type: 'Full' as 'Full',
+                lowPrecisionCoords: true,
+                serverUrl: 'https://webchem.ncbr.muni.cz/CoordinateServer'
+            });
+            plugin.applyTransform(t);
+        }
+
         let example = Examples.ExampleMap[getParam('example', '[a-z0-9\-]+').toLowerCase().trim()];
         if (example) example.provider(plugin);
     })();

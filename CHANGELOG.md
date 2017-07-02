@@ -5,6 +5,13 @@ This a global changelog that outlines overal changes in LiteMol.
 Each component also has its separate changelog 
 ([Core](src/lib/Core/CHANGELOG.md), [Visualization](src/lib/Visualization/CHANGELOG.md), [Bootstrap](src/lib/Bootstrap/CHANGELOG.md), [Plugin](src/lib/Plugin/CHANGELOG.md), [Viewer](src/Viewer/CHANGELOG.md)).
 
+2.4.0-preview
+-----------
+
+* Better show interactions between different components of a molecule.
+* Better default representation of molecules.
+* Added 3D SNFG carbohydrate representation.
+
 2.3.1-preview
 -----------
 
