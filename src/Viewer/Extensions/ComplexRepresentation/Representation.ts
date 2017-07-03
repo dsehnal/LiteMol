@@ -17,7 +17,8 @@ namespace LiteMol.Extensions.ComplexReprensetation {
         freeWaterAtoms: number[]
     }
 
-    const MAX_LIGAND_SEQ_LENGTH = 10;
+    const MAX_AMINO_SEQ_LIGAND_LENGTH = 10;
+    const MAX_NUCLEOTIDE_SEQ_LIGAND_LENGTH = 2;
 
     export async function createComplexRepresentation(computation: Core.Computation.Context, model: Model, queryCtx: Q.Context): LiteMol.Promise<Info> {        
         await computation.updateProgress('Determing main sequence atoms...');
@@ -127,19 +128,29 @@ namespace LiteMol.Extensions.ComplexReprensetation {
         return maxLength + 0.1;
     }
 
-    function chainLength(model: Model, cI: number, mask: CU.Mask) {
+    function chainLengthAndType(model: Model, cI: number, mask: CU.Mask) {
+        const { secondaryStructure } = model.data;
         const { residueStartIndex, residueEndIndex } = model.data.chains;
-        const { atomStartIndex, atomEndIndex } = model.data.residues; 
-        let len = 0;
+        const { atomStartIndex, atomEndIndex, secondaryStructureIndex: ssi } = model.data.residues; 
+        let length = 0;
+        let isAmk = false, isNucleotide = false;
         for (let rI = residueStartIndex[cI], __b = residueEndIndex[cI]; rI < __b; rI++) {
+
+            const ss = secondaryStructure[ssi[rI]].type;
+            if (ss === S.SecondaryStructureType.Strand) {
+                isNucleotide = true;
+            } else if (ss !== S.SecondaryStructureType.None) {
+                isAmk = true;
+            }
+
             for (let aI = atomStartIndex[rI], __i = atomEndIndex[rI]; aI < __i; aI++) {
                 if (mask.has(aI)) {
-                    len++;
+                    length++;
                     break;
                 }
             }
         }
-        return len;
+        return { length, isAmk, isNucleotide };
     }
 
     function findMainSequence(model: Model, queryCtx: Q.Context) {
@@ -150,8 +161,8 @@ namespace LiteMol.Extensions.ComplexReprensetation {
         const atoms = CU.ChunkedArray.forInt32(queryCtx.atomCount);
         
         for (const cI of model.data.chains.indices) {
-            const len = chainLength(model, cI, mask);
-            if (len <= MAX_LIGAND_SEQ_LENGTH) continue;
+            const { length, isAmk, isNucleotide } = chainLengthAndType(model, cI, mask);
+            if ((isAmk && length <= MAX_AMINO_SEQ_LIGAND_LENGTH) || (isNucleotide && length <= MAX_NUCLEOTIDE_SEQ_LIGAND_LENGTH)) continue;
 
             for (let rI = residueStartIndex[cI], __b = residueEndIndex[cI]; rI < __b; rI++) {
                 if (!isCartoonLike(model, mask, rI)) continue;
