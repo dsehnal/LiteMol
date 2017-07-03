@@ -40,7 +40,7 @@ namespace LiteMol.Extensions.ComplexReprensetation.Transforms {
         const info = a.props.info;
 
         if (info.mainSequenceAtoms.length) {
-            g.add(a as any, Transformer.Molecule.CreateSelectionFromQuery, { query: Q.atomsFromIndices(info.mainSequenceAtoms), name: 'Main Sequence', silent: true }, { isBinding: true })
+            g.add(a as any, Transformer.Molecule.CreateSelectionFromQuery, { query: Q.atomsFromIndices(info.mainSequenceAtoms), name: 'Sequence', silent: true }, { isBinding: true })
               .then(Transformer.Molecule.CreateVisual, { style: Bootstrap.Visualization.Molecule.Default.ForType.get('Cartoons') });
         }
 
@@ -83,9 +83,10 @@ namespace LiteMol.Extensions.ComplexReprensetation.Transforms {
         return g;
     });
 
+    export let SuppressCreateVisualWhenModelIsAdded = false;
     export function CreateRepresentationWhenModelIsAddedBehaviour(context: Bootstrap.Context) {
         Bootstrap.Event.Tree.NodeAdded.getStream(context).subscribe(e => {
-            if (!Bootstrap.Tree.Node.is(e.data, Bootstrap.Entity.Molecule.Model) || (e.data as Bootstrap.Entity.Any).isHidden) {
+            if (SuppressCreateVisualWhenModelIsAdded || !Bootstrap.Tree.Node.is(e.data, Bootstrap.Entity.Molecule.Model) || (e.data as Bootstrap.Entity.Any).isHidden) {
                 return;
             }
             const action = Bootstrap.Tree.Transform.build()
