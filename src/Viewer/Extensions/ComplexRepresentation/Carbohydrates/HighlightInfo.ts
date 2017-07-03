@@ -6,6 +6,11 @@ namespace LiteMol.Extensions.ComplexReprensetation.Carbohydrates {
 
     import Interactivity = Bootstrap.Interactivity;
 
+    export function formatResidueName(model: Core.Structure.Molecule.Model, r: number) {
+        const { authName, authAsymId, authSeqNumber, insCode } = model.data.residues;
+        return `${authName[r]} ${authAsymId[r]} ${authSeqNumber[r]}${insCode[r] !== null ? ' i: ' + insCode[r] : ''}`;
+    }
+
     export function HighlightCustomElementsBehaviour(context: Bootstrap.Context) {        
         context.highlight.addProvider(info => {
             if  (Interactivity.isEmpty(info) || info.source.type !== Bootstrap.Entity.Visual.Surface) {
@@ -21,14 +26,12 @@ namespace LiteMol.Extensions.ComplexReprensetation.Carbohydrates {
             switch (t.type) {
                 //case 'Link': return `Link: <b>${t.link.type}</b> (${Math.round(100 * t.link.distance) / 100} Å)`;
                 case 'Residue': {
-                    const { authName, authAsymId, authSeqNumber, insCode } = t.model.data.residues;
                     const r = t.residueIndex;
-                    return `<b>${t.instanceName}</b> (<span>${authName[r]} ${authAsymId[r]} ${authSeqNumber[r]}${insCode[r] !== null ? ' i: ' + insCode[r] : ''}</span>)`;
+                    return `<b>${t.instanceName}</b> (<span>${formatResidueName(t.model, r)}</span>)`;
                 }
                 case 'Terminal': {
-                    const { authName, authAsymId, authSeqNumber, insCode } = t.model.data.residues;
                     const r = t.residueIndex;
-                    return `<span>${authName[r]} ${authAsymId[r]} ${authSeqNumber[r]}${insCode[r] !== null ? ' i: ' + insCode[r] : ''}</span>`;
+                    return `<span>${formatResidueName(t.model, r)}</span>`;
                 }
                 default: return void 0;
             }

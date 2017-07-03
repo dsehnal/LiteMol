@@ -36,7 +36,8 @@ namespace LiteMol.Extensions.ComplexReprensetation.Carbohydrates {
         map: Core.Utils.FastMap<number, number>,
         entries: Entry[],
         carbohydrateIndices: number[],
-        terminalIndices: number[]
+        terminalIndices: number[],
+        warnings: string[]
     }
 
     export type FullParams = { type: 'Full', fullSize: 'Small' | 'Medium' | 'Large', showTerminalLinks: boolean, showTerminalAtoms: boolean, linkColor: Visualization.Color }
@@ -111,7 +112,7 @@ namespace LiteMol.Extensions.ComplexReprensetation.Carbohydrates {
         });
     }
 
-    export const EmptyInto: Info = { links: [], map: Core.Utils.FastMap.create(), entries: [], carbohydrateIndices: [], terminalIndices: [] };
+    export const EmptyInto: Info = { links: [], map: Core.Utils.FastMap.create(), entries: [], carbohydrateIndices: [], terminalIndices: [], warnings: [] };
 
     export function getInfo(params: {
         model: Model, 
@@ -120,7 +121,7 @@ namespace LiteMol.Extensions.ComplexReprensetation.Carbohydrates {
         bonds: Struct.BondTable
     }): Info {
         const { model, fragment, atomMask, bonds } = params;
-        const { residueIndices: carbohydrateIndices, entries } = getRepresentableResidues(model, fragment.residueIndices);
+        const { residueIndices: carbohydrateIndices, entries, warnings } = getRepresentableResidues(model, fragment.residueIndices);
         if (!carbohydrateIndices.length) {
             return EmptyInto;
         };
@@ -131,7 +132,7 @@ namespace LiteMol.Extensions.ComplexReprensetation.Carbohydrates {
         }
 
         const { links, terminalIndices } = findLinks({ model, atomMask, bonds, carbohydrateMap: map, entries });
-        return { links, map, entries, carbohydrateIndices, terminalIndices };        
+        return { links, map, entries, carbohydrateIndices, terminalIndices, warnings };        
     }
 
     export function getRepresentation(model: Model, info: Info, params: Params) {
@@ -267,38 +268,57 @@ namespace LiteMol.Extensions.ComplexReprensetation.Carbohydrates {
         return { links, terminalIndices: terminalIndices.array };
     }
 
+    function warn(model: Model, rI: number) {
+        return `Residue '${formatResidueName(model, rI)}' has a recognized carbohydrate name, but missing/incorrectly named ring atoms.`;
+    }
+
     function getRepresentableResidues(model: Model, sourceResidueIndices: number[]) {
         const { name } = model.data.residues;
-        const residueIndices = [], entries: Entry[] = [];
+        const residueIndices = [], entries: Entry[] = [], warnings: string[] = [];
         for (const rI of sourceResidueIndices) {            
             if (!Mapping.isResidueRepresentable(name[rI])) continue;
-            const ringAtoms = getRingAtoms(model, rI);
-            if (!ringAtoms.length) continue;
-            residueIndices.push(rI);
-            const ringCenter = LA.Vector3.zero();
-            const ringRadius = Bootstrap.Utils.Molecule.getCentroidAndRadius(model, ringAtoms, ringCenter);
-            entries.push({ representation: Mapping.getResidueRepresentation(name[rI])!, ringAtoms, ringCenter, ringRadius, links: [], terminalLinks: [] });
+            const possibleRingAtoms = getRingAtoms(model, rI);
+            if (!possibleRingAtoms.length) {
+                warnings.push(warn(model, rI));
+                continue;
+            }
+
+            let added = false;
+            for (const ringAtoms of possibleRingAtoms) {
+                const ringCenter = LA.Vector3.zero();
+                const ringRadius = Bootstrap.Utils.Molecule.getCentroidAndRadius(model, ringAtoms, ringCenter);
+                if (ringRadius > 1.95) {
+                    continue;
+                }
+                residueIndices.push(rI);
+                entries.push({ representation: Mapping.getResidueRepresentation(name[rI])!, ringAtoms, ringCenter, ringRadius, links: [], terminalLinks: [] });
+                added = true;
+                break;
+            }
+            if (!added) {
+                warnings.push(warn(model, rI));
+            }
         }
-        return { residueIndices, entries };
+        return { residueIndices, entries, warnings };
     }
 
     function getRingAtoms(model: Model, rI: number) {
         const { atomStartIndex, atomEndIndex } = model.data.residues;
         const { name } = model.data.atoms;
-
+        const ret = [];
         for (const names of Mapping.RingNames) {
-            const ret = [];
+            const atoms = [];
             let found = 0;
-            for (let i = 0; i < names.__len; i++) ret.push(0);
+            for (let i = 0; i < names.__len; i++) atoms.push(0);
             for (let aI = atomStartIndex[rI], _b = atomEndIndex[rI]; aI < _b; aI++) {
                 const idx = names[name[aI]];
                 if (idx === void 0) continue;
-                ret[idx] = aI;
+                atoms[idx] = aI;
                 found++;
-                if (found === ret.length) return ret;
+                if (found === atoms.length) ret.push(atoms);
             }
         }
 
-        return [];
+        return ret;
     }
 }

@@ -14,6 +14,7 @@ namespace LiteMol.Extensions.ComplexReprensetation.Carbohydrates.Mapping {
 
     export const RingNames: { __len: number, [n: string]: number }[] = [
         { __len: 6, 'C1': 0, 'C2': 1, 'C3': 2, 'C4': 3, 'C5': 4, 'O5': 5 },
+        { __len: 6, 'C1': 0, 'C2': 1, 'C3': 2, 'C4': 3, 'C5': 4, 'O': 5 },
         { __len: 6, 'C2': 0, 'C3': 1, 'C4': 2, 'C5': 3, 'C6': 4, 'O6': 5 }
     ];
 

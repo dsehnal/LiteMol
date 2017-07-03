@@ -9,10 +9,13 @@ namespace LiteMol.Extensions.ComplexReprensetation {
     import Q = S.Query
 
     export interface Info {
-        mainSequenceAtoms: number[],
+        sequence: {
+            all: number[],
+            interacting: number[]
+        },
         het: {
-            commonAtoms: number[],
-            carbohydrates: Carbohydrates.Info
+            carbohydrates: Carbohydrates.Info,
+            other: number[]
         },
         freeWaterAtoms: number[]
     }
@@ -22,26 +25,26 @@ namespace LiteMol.Extensions.ComplexReprensetation {
 
     export async function createComplexRepresentation(computation: Core.Computation.Context, model: Model, queryCtx: Q.Context): LiteMol.Promise<Info> {        
         await computation.updateProgress('Determing main sequence atoms...');
-        const cartoonAtoms = findMainSequence(model, queryCtx);
+        const sequenceAtoms = findMainSequence(model, queryCtx);
 
         // is everything cartoon?
-        if (cartoonAtoms.length === queryCtx.atomCount) {
-            const ret: Info = { mainSequenceAtoms: cartoonAtoms, het: { commonAtoms: [], carbohydrates: Carbohydrates.EmptyInto }, freeWaterAtoms: [] };
+        if (sequenceAtoms.length === queryCtx.atomCount) {
+            const ret: Info = { sequence: { all: sequenceAtoms, interacting: [] }, het: { other: [], carbohydrates: Carbohydrates.EmptyInto }, freeWaterAtoms: [] };
             return ret;
         }
 
         const waterAtoms = Q.entities({ type: 'water' }).union().compile()(queryCtx).unionAtomIndices();
-        const possibleHetGroupsQ = Q.or(Q.atomsFromIndices(waterAtoms), Q.atomsFromIndices(cartoonAtoms)).complement().ambientResidues(getMaxInteractionRadius(model)).union().compile();        
-        const possibleHetGroups = possibleHetGroupsQ(queryCtx).fragments[0];
+        const possibleHetGroupsAndInteractingSequenceQ = Q.or(Q.atomsFromIndices(waterAtoms), Q.atomsFromIndices(sequenceAtoms)).complement().ambientResidues(getMaxInteractionRadius(model)).union().compile();        
+        const possibleHetGroupsAndInteractingSequence = possibleHetGroupsAndInteractingSequenceQ(queryCtx).fragments[0];
 
         // is everything cartoon?
-        if (!possibleHetGroups) {
-            const ret: Info = { mainSequenceAtoms: cartoonAtoms, het: { commonAtoms: [], carbohydrates: Carbohydrates.EmptyInto }, freeWaterAtoms: waterAtoms };
+        if (!possibleHetGroupsAndInteractingSequence) {
+            const ret: Info = { sequence: { all: sequenceAtoms, interacting: [] }, het: { other: [], carbohydrates: Carbohydrates.EmptyInto }, freeWaterAtoms: waterAtoms };
             return ret;
         }
 
         await computation.updateProgress('Computing bonds...');
-        const bonds = S.computeBonds(model, possibleHetGroups.atomIndices);
+        const bonds = S.computeBonds(model, possibleHetGroupsAndInteractingSequence.atomIndices);
 
         const { entityIndex, residueIndex, count: atomCount } = model.data.atoms;
         const { type: entType } = model.data.entities;
@@ -72,49 +75,67 @@ namespace LiteMol.Extensions.ComplexReprensetation {
         }
 
         /////////////////////////////////////////////////////
-        // All HET GROUPS
+        // HET GROUPS with SEQUENCE RESIDUES
         
         await computation.updateProgress('Identifying HET groups...');
-        const cartoonsMask = CU.Mask.ofIndices(atomCount, cartoonAtoms);
-        const _hetGroups = CU.ChunkedArray.forInt32(possibleHetGroups.atomCount / 2);
-        const boundCartoons = CU.FastSet.create<number>();
+        const sequenceMask = CU.Mask.ofIndices(atomCount, sequenceAtoms);
+        const _hetGroupsWithSequence = CU.ChunkedArray.forInt32(possibleHetGroupsAndInteractingSequence.atomCount / 2);
+        const boundSequence = CU.FastSet.create<number>(), boundHetAtoms = CU.FastSet.create<number>();
 
         for (let i = 0, __i = bonds.count; i < __i; i++) {
             const a = atomAIndex[i], b = atomBIndex[i];            
-            const hasA = cartoonsMask.has(a), hasB = cartoonsMask.has(b);
+            const hasA = sequenceMask.has(a), hasB = sequenceMask.has(b);
             
             if (hasA) {
-                if (!hasB) boundCartoons.add(residueIndex[a]);
+                if (!hasB) { 
+                    boundSequence.add(residueIndex[a]);
+                    boundHetAtoms.add(b);
+                }
             } else if (hasB) {
-                boundCartoons.add(residueIndex[b]);
+                boundSequence.add(residueIndex[b]);
+                boundHetAtoms.add(a);
             }
         }
 
-        for (const aI of possibleHetGroups.atomIndices) {
+        for (const aI of possibleHetGroupsAndInteractingSequence.atomIndices) {
             const rI = residueIndex[aI];
-            if (cartoonsMask.has(aI) && !boundCartoons.has(rI)) continue;
+            if (sequenceMask.has(aI) && !boundSequence.has(rI)) continue;
             if (entType[entityIndex[aI]] === 'water' && !boundWaters.has(rI)) continue;
-            CU.ChunkedArray.add(_hetGroups, aI);
+            CU.ChunkedArray.add(_hetGroupsWithSequence, aI);
         }
 
-        const hetGroups = CU.ChunkedArray.compact(_hetGroups);
+        const hetGroupsWithSequence = CU.ChunkedArray.compact(_hetGroupsWithSequence);
 
         /////////////////////////////////////////////////////
         // CARBS
         await computation.updateProgress('Identifying carbohydrates...');
-        const carbohydrates = Carbohydrates.getInfo({ model, fragment: Q.Fragment.ofArray(queryCtx, hetGroups[0], hetGroups), atomMask: queryCtx.mask, bonds });
+        const carbohydrates = Carbohydrates.getInfo({ model, fragment: Q.Fragment.ofArray(queryCtx, hetGroupsWithSequence[0], hetGroupsWithSequence), atomMask: queryCtx.mask, bonds });
 
         /////////////////////////////////////////////////////
-        // COMMON HET GROUPS
+        // OTHER HET GROUPS
         await computation.updateProgress('Identifying non-carbohydrate HET groups...');
-        const commonAtoms = CU.ChunkedArray.forInt32(hetGroups.length);
+        const commonAtoms = CU.ChunkedArray.forInt32(hetGroupsWithSequence.length);
         const { map: carbMap } = carbohydrates;
-        for (const aI of hetGroups) {
+        for (const aI of hetGroupsWithSequence) {
             const rI = residueIndex[aI];
-            if (!carbMap.has(rI)) CU.ChunkedArray.add(commonAtoms, aI);
+            if (!carbMap.has(rI) && !sequenceMask.has(aI)) CU.ChunkedArray.add(commonAtoms, aI);
         }
 
-        const ret: Info = { mainSequenceAtoms: cartoonAtoms, het: { commonAtoms: CU.ChunkedArray.compact(commonAtoms), carbohydrates }, freeWaterAtoms };
+        /////////////////////////////////////////////////////
+        // INTERACTING SEQUENCE
+
+        await computation.updateProgress('Identifying interacting sequence residues...');
+        const interactingSequenceAtoms = CU.ChunkedArray.forInt32(hetGroupsWithSequence.length);
+        for (const aI of hetGroupsWithSequence) {
+            const rI = residueIndex[aI];
+            if (boundSequence.has(rI) || (boundHetAtoms.has(aI) && !carbMap.has(rI))) CU.ChunkedArray.add(interactingSequenceAtoms, aI);
+        }
+
+        const ret: Info = { 
+            sequence: { all: sequenceAtoms, interacting: CU.ChunkedArray.compact(interactingSequenceAtoms) }, 
+            het: { other: CU.ChunkedArray.compact(commonAtoms), carbohydrates }, 
+            freeWaterAtoms 
+        };
         return ret;
     }
 

@@ -30,6 +30,26 @@ namespace LiteMol.Bootstrap.Visualization.Molecule {
             return Vis.Theme.createMapping(mapping, props);   
         }
     }
+
+    export function createCachedPaletteThemeProvider(name: string, provider: (m: Core.Structure.Molecule.Model) => { index: number[], property: any[] }, pallete: LiteMol.Visualization.Color[]) {
+        return function (e: Entity.Any, props?: LiteMol.Visualization.Theme.Props) {
+            const modelE = Utils.Molecule.findModel(e)!;
+
+            const ctx = modelE.tree && modelE.tree.context;
+            if (ctx) {
+                const mapping = ctx.entityCache.get<Vis.Theme.ElementMapping>(modelE, 'theme-mapping-' + name);
+                if (mapping) {
+                    return Vis.Theme.createMapping(mapping, props);
+                }
+            }
+
+            const model = modelE.props.model;
+            const map = provider(model);
+            const mapping = Vis.Theme.createPalleteMapping(mappingClosure(map.index, map.property), pallete);
+            if (ctx) ctx.entityCache.set(e, 'theme-mapping-' + name, mapping);
+            return Vis.Theme.createMapping(mapping, props);   
+        }
+    }
     
     export function uniformThemeProvider(e: Entity.Any, props?: LiteMol.Visualization.Theme.Props) {
         if (props && props.colors) {
@@ -48,9 +68,32 @@ namespace LiteMol.Bootstrap.Visualization.Molecule {
     export function createColorMapThemeProvider(
         provider: (m: Core.Structure.Molecule.Model) => { index: number[], property: any[] }, colorMap: LiteMol.Visualization.Theme.ColorMap, fallbackColor: LiteMol.Visualization.Color) {
         return function (e: Entity.Any, props?: LiteMol.Visualization.Theme.Props) {            
-            const model = Utils.Molecule.findModel(e)!.props.model;
+            const modelE = Utils.Molecule.findModel(e)!;
+            const model = modelE.props.model;
             const map = provider(model);
             const mapping = Vis.Theme.createColorMapMapping(mappingClosure(map.index, map.property), colorMap, fallbackColor);
+            return Vis.Theme.createMapping(mapping, props);   
+        }
+    }
+
+    export function createCachedColorMapThemeProvider(
+        name: string,
+        provider: (m: Core.Structure.Molecule.Model) => { index: number[], property: any[] }, colorMap: LiteMol.Visualization.Theme.ColorMap, fallbackColor: LiteMol.Visualization.Color) {
+        return function (e: Entity.Any, props?: LiteMol.Visualization.Theme.Props) {            
+            const modelE = Utils.Molecule.findModel(e)!;
+
+            const ctx = modelE.tree && modelE.tree.context;
+            if (ctx) {
+                const mapping = ctx.entityCache.get<Vis.Theme.ElementMapping>(modelE, 'theme-mapping-map-' + name);
+                if (mapping) {
+                    return Vis.Theme.createMapping(mapping, props);
+                }
+            }
+
+            const model = modelE.props.model;
+            const map = provider(model);
+            const mapping = Vis.Theme.createColorMapMapping(mappingClosure(map.index, map.property), colorMap, fallbackColor);
+            if (ctx) ctx.entityCache.set(e, 'theme-mapping-map-' + name, mapping);
             return Vis.Theme.createMapping(mapping, props);   
         }
     }
@@ -154,7 +197,7 @@ namespace LiteMol.Bootstrap.Visualization.Molecule {
                 name: 'Chain ID',
                 description: 'Color the surface by Chain ID.',
                 colors: ModelVisualBaseColors,
-                provider: createPaletteThemeProvider(m => ({ index: m.data.atoms.residueIndex, property: m.data.residues.asymId }), Vis.Molecule.Colors.DefaultPallete)
+                provider: createCachedPaletteThemeProvider('chain-id', m => ({ index: m.data.atoms.residueIndex, property: m.data.residues.asymId }), Vis.Molecule.Colors.DefaultPallete)
             }, {
                 name: 'Entity ID',
                 description: 'Color the surface by Entity ID.',

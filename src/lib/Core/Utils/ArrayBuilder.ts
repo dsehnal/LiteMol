@@ -110,6 +110,10 @@ namespace LiteMol.Core.Utils {
             let ret = <any>array.creator(array.elementSize * array.elementCount),
                 offset = (array.parts.length - 1) * array.chunkSize, offsetInner = 0, part: any;
 
+            if (array.parts.length === 1 && array.chunkSize === array.elementCount) {
+                return array.parts[0];
+            }
+
             if (array.parts.length > 1) {
                 if (array.parts[0].buffer) {
                     for (let i = 0; i < array.parts.length - 1; i++) {

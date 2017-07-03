@@ -16013,8 +16013,16 @@ declare namespace LiteMol.Bootstrap.Visualization.Molecule {
         index: number[];
         property: any[];
     }, pallete: LiteMol.Visualization.Color[]): (e: Entity.Any, props?: Vis.Theme.Props | undefined) => Vis.Theme;
+    function createCachedPaletteThemeProvider(name: string, provider: (m: Core.Structure.Molecule.Model) => {
+        index: number[];
+        property: any[];
+    }, pallete: LiteMol.Visualization.Color[]): (e: Entity.Any, props?: Vis.Theme.Props | undefined) => Vis.Theme;
     function uniformThemeProvider(e: Entity.Any, props?: LiteMol.Visualization.Theme.Props): Vis.Theme;
     function createColorMapThemeProvider(provider: (m: Core.Structure.Molecule.Model) => {
+        index: number[];
+        property: any[];
+    }, colorMap: LiteMol.Visualization.Theme.ColorMap, fallbackColor: LiteMol.Visualization.Color): (e: Entity.Any, props?: Vis.Theme.Props | undefined) => Vis.Theme;
+    function createCachedColorMapThemeProvider(name: string, provider: (m: Core.Structure.Molecule.Model) => {
         index: number[];
         property: any[];
     }, colorMap: LiteMol.Visualization.Theme.ColorMap, fallbackColor: LiteMol.Visualization.Color): (e: Entity.Any, props?: Vis.Theme.Props | undefined) => Vis.Theme;

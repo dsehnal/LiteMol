@@ -28,7 +28,7 @@ namespace LiteMol.Extensions.ComplexReprensetation.Transforms {
         }).setReportTime(true);
     });
 
-    export const CreateVisual = Tree.Transformer.action<ComplexInfo, Entity.Action, {}>({
+    export const CreateVisual = Tree.Transformer.actionWithContext<ComplexInfo, Entity.Action, {}, { warnings: string[] }>({
         id: 'complex-representation-create-visual',
         name: 'Complex Visual',
         description: 'Create a visual of a macromolecular complex.',
@@ -36,19 +36,32 @@ namespace LiteMol.Extensions.ComplexReprensetation.Transforms {
         to: [Entity.Action],
         defaultParams: ctx => ({}),
     }, (context, a, t) => {
-        const g = Tree.Transform.build();
+        const action = Tree.Transform.build();
         const info = a.props.info;
 
-        if (info.mainSequenceAtoms.length) {
-            g.add(a as any, Transformer.Molecule.CreateSelectionFromQuery, { query: Q.atomsFromIndices(info.mainSequenceAtoms), name: 'Sequence', silent: true }, { isBinding: true })
+        if (info.sequence.all.length) {
+            action.add(a as any, Transformer.Molecule.CreateSelectionFromQuery, { query: Q.atomsFromIndices(info.sequence.all), name: 'Sequence', silent: true }, { isBinding: true })
               .then(Transformer.Molecule.CreateVisual, { style: Bootstrap.Visualization.Molecule.Default.ForType.get('Cartoons') });
+
+            if (info.sequence.interacting.length) {
+                const interactingSequenceStyle: Bootstrap.Visualization.Molecule.Style<Bootstrap.Visualization.Molecule.BallsAndSticksParams> = {
+                    type: 'BallsAndSticks',
+                    taskType: 'Silent',
+                    params: { useVDW: true, vdwScaling: 0.21, bondRadius: 0.085, detail: 'Automatic' },
+                    theme: { template: Bootstrap.Visualization.Molecule.Default.CartoonThemeTemplate, colors: Bootstrap.Visualization.Molecule.Default.CartoonThemeTemplate.colors!, transparency: { alpha: 1.0 } },
+                    isNotSelectable: true
+                }
+
+                action.add(a as any, Transformer.Molecule.CreateSelectionFromQuery, { query: Q.atomsFromIndices(info.sequence.interacting), name: 'Interacting Sequence', silent: true }, { isBinding: true })
+                    .then(Transformer.Molecule.CreateVisual, { style: interactingSequenceStyle });
+            }
         }
 
-        if (info.het.commonAtoms.length || info.het.carbohydrates.entries.length) {
-            const hetGroups = g.add(a, Transformer.Basic.CreateGroup, { label: 'Ligands', description: '+ Interactions' }, { isBinding: true });
+        if (info.het.other.length || info.het.carbohydrates.entries.length) {
+            const hetGroups = action.add(a, Transformer.Basic.CreateGroup, { label: 'HET', description: '' }, { isBinding: true });
             
-            if (info.het.commonAtoms.length) {
-                hetGroups.then(Transformer.Molecule.CreateSelectionFromQuery, { query: Q.atomsFromIndices(info.het.commonAtoms), name: 'Ligands', silent: true })
+            if (info.het.other.length) {
+                hetGroups.then(Transformer.Molecule.CreateSelectionFromQuery, { query: Q.atomsFromIndices(info.het.other), name: 'Ligands', silent: true })
                     .then(Transformer.Molecule.CreateVisual, { style: Bootstrap.Visualization.Molecule.Default.ForType.get('BallsAndSticks') }, { isBinding: true });
             }
 
@@ -62,7 +75,7 @@ namespace LiteMol.Extensions.ComplexReprensetation.Transforms {
                 }
 
                 const carbsQ = Q.or(Q.residuesFromIndices(info.het.carbohydrates.carbohydrateIndices), Q.residuesFromIndices(info.het.carbohydrates.terminalIndices)).union();
-                const carbs = hetGroups.then(Bootstrap.Entity.Transformer.Molecule.CreateSelectionFromQuery, { query: carbsQ, name: 'Carbohydrates', silent: true }, {});
+                const carbs = hetGroups.then(Bootstrap.Entity.Transformer.Molecule.CreateSelectionFromQuery, { query: carbsQ, name: 'Std. Carbohydrates', silent: true }, {});
                     
                 carbs.then(Bootstrap.Entity.Transformer.Molecule.CreateVisual, { style: shadeStyle });
                 carbs.then(Carbohydrates.Transforms.CreateInfo, { info: info.het.carbohydrates })
@@ -77,10 +90,15 @@ namespace LiteMol.Extensions.ComplexReprensetation.Transforms {
                 theme: { template: Bootstrap.Visualization.Molecule.Default.ElementSymbolThemeTemplate, colors: Bootstrap.Visualization.Molecule.Default.ElementSymbolThemeTemplate.colors, transparency: { alpha: 0.2 } }
             }
 
-            g.add(a as any, Transformer.Molecule.CreateSelectionFromQuery, { query: Q.atomsFromIndices(info.freeWaterAtoms), name: 'Free Water', silent: true }, { isBinding: true })
+            action.add(a as any, Transformer.Molecule.CreateSelectionFromQuery, { query: Q.atomsFromIndices(info.freeWaterAtoms), name: 'Free Water', silent: true }, { isBinding: true })
                 .then(Transformer.Molecule.CreateVisual, { style }, { });
         }
-        return g;
+        return { action, context: { warnings: info.het.carbohydrates.warnings } };
+    }, (context, ws) => {
+        if (!ws) return;
+        for (const w of ws.warnings) {
+            context.logger.warning(`Carbohydrates: ${w}`);
+        }
     });
 
     export let SuppressCreateVisualWhenModelIsAdded = false;
