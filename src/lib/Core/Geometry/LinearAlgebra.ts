@@ -318,7 +318,7 @@ namespace LiteMol.Core.Geometry.LinearAlgebra {
                 len = Math.sqrt(x * x + y * y + z * z),
                 s, c, t;
 
-            if (Math.abs(len) < EPSILON.Value) { return null; }
+            if (Math.abs(len) < EPSILON.Value) { return fromIdentity(out); }
 
             len = 1 / len;
             x *= len;
@@ -436,7 +436,7 @@ namespace LiteMol.Core.Geometry.LinearAlgebra {
             let out = [0.1, 0.0, 0.0];
             out[0] = 0;
             return out;
-        };
+        }
 
         export function clone(a: number[]) {
             let out = zero();
@@ -444,7 +444,7 @@ namespace LiteMol.Core.Geometry.LinearAlgebra {
             out[1] = a[1];
             out[2] = a[2];
             return out;
-        };
+        }
 
         export function fromObj(v: { x: number, y: number, z: number }) {
             return fromValues(v.x, v.y, v.z);
@@ -460,77 +460,77 @@ namespace LiteMol.Core.Geometry.LinearAlgebra {
             out[1] = y;
             out[2] = z;
             return out;
-        };
+        }
 
         export function set(out: number[], x: number, y: number, z: number) {
             out[0] = x;
             out[1] = y;
             out[2] = z;
             return out;
-        };
+        }
 
         export function copy(out: number[], a: number[]) {
             out[0] = a[0];
             out[1] = a[1];
             out[2] = a[2];
             return out;
-        };
+        }
 
         export function add(out: number[], a: number[], b: number[]) {
             out[0] = a[0] + b[0];
             out[1] = a[1] + b[1];
             out[2] = a[2] + b[2];
             return out;
-        };
+        }
 
         export function sub(out: number[], a: number[], b: number[]) {
             out[0] = a[0] - b[0];
             out[1] = a[1] - b[1];
             out[2] = a[2] - b[2];
             return out;
-        };
+        }
 
         export function scale(out: number[], a: number[], b: number) {
             out[0] = a[0] * b;
             out[1] = a[1] * b;
             out[2] = a[2] * b;
             return out;
-        };
+        }
 
         export function scaleAndAdd(out: number[], a: number[], b: number[], scale: number) {
             out[0] = a[0] + (b[0] * scale);
             out[1] = a[1] + (b[1] * scale);
             out[2] = a[2] + (b[2] * scale);
             return out;
-        };
+        }
 
         export function distance(a: number[], b: number[]) {
             let x = b[0] - a[0],
                 y = b[1] - a[1],
                 z = b[2] - a[2];
             return Math.sqrt(x * x + y * y + z * z);
-        };
+        }
 
         export function squaredDistance(a: number[], b: number[]) {
             let x = b[0] - a[0],
                 y = b[1] - a[1],
                 z = b[2] - a[2];
             return x * x + y * y + z * z;
-        };
+        }
       
         export function magnitude(a: number[]) {
             let x = a[0],
                 y = a[1],
                 z = a[2];
             return Math.sqrt(x * x + y * y + z * z);
-        };
+        }
 
         export function squaredMagnitude(a: number[]) {
             let x = a[0],
                 y = a[1],
                 z = a[2];
             return x * x + y * y + z * z;
-        };
+        }
 
         export function normalize(out: number[], a: number[]) {
             let x = a[0],
@@ -544,11 +544,11 @@ namespace LiteMol.Core.Geometry.LinearAlgebra {
                 out[2] = a[2] * len;
             }
             return out;
-        };
+        }
 
         export function dot(a: number[], b: number[]) {
             return a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
-        };
+        }
 
         export function cross(out: number[], a: number[], b: number[]) {
             let ax = a[0], ay = a[1], az = a[2],
@@ -558,8 +558,8 @@ namespace LiteMol.Core.Geometry.LinearAlgebra {
             out[1] = az * bx - ax * bz;
             out[2] = ax * by - ay * bx;
             return out;
-        };
-        
+        }
+    
         export function lerp(out: number[], a: number[], b: number[], t: number) {
             let ax = a[0],
                 ay = a[1],
@@ -568,7 +568,7 @@ namespace LiteMol.Core.Geometry.LinearAlgebra {
             out[1] = ay + t * (b[1] - ay);
             out[2] = az + t * (b[2] - az);
             return out;
-        };
+        }
 
         export function transformMat4(out: number[], a: number[], m: number[]) {
             let x = a[0], y = a[1], z = a[2],
@@ -578,7 +578,7 @@ namespace LiteMol.Core.Geometry.LinearAlgebra {
             out[1] = (m[1] * x + m[5] * y + m[9] * z + m[13]) / w;
             out[2] = (m[2] * x + m[6] * y + m[10] * z + m[14]) / w;
             return out;
-        };
+        }
        
         const angleTempA = zero(), angleTempB = zero();
         export function angle(a: number[], b: number[]) {
@@ -598,7 +598,15 @@ namespace LiteMol.Core.Geometry.LinearAlgebra {
             } else {
                 return Math.acos(cosine);
             }
-        };
+        }
+
+        const rotTemp = zero();
+        export function makeRotation(mat: Matrix4, a: Vector3, b: Vector3): Matrix4 {
+            const by = angle(a, b);
+            if (Math.abs(by) < 0.0001) return Matrix4.fromIdentity(mat);
+            const axis = cross(rotTemp, a, b);
+            return Matrix4.fromRotation(mat, by, axis);
+        }
     }
 
     export function Vector4(x?: number, y?: number, z?: number, w?: number) {

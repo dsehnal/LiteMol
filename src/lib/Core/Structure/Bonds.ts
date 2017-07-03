@@ -132,6 +132,7 @@ namespace LiteMol.Core.Structure {
             if (!pairs) continue;
 
             const altA = altLoc[i];
+            const isMetalA = isMetal(elementSymbol[i]);
 
             for (let j = i + 1; j < end; j++) {
                 if (!mask.has(j)) continue;
@@ -142,7 +143,7 @@ namespace LiteMol.Core.Structure {
                 const order = pairs.get(atomName[j]);
                 if (order === void 0) continue;
 
-                const metal = isMetal(elementSymbol[i]) || isMetal(elementSymbol[j]);
+                const metal = isMetalA || isMetal(elementSymbol[j]);
                 ChunkedAdd(atomA, i);
                 ChunkedAdd(atomB, j);
                 ChunkedAdd(type, metal ? BondType.Metallic : order);
@@ -195,9 +196,9 @@ namespace LiteMol.Core.Structure {
                 const altB = altLoc[bI];
                 if (altA && altB && altA !== altB) continue;
 
-                const beI = idx(elementSymbol[bI]);
                 const rbI = residueIndex[bI];
                 if (raI === rbI && hasComponent) continue;
+                const beI = idx(elementSymbol[bI]);
 
                 const isHb = isHydrogen(beI);
                 if (isHa && isHb) continue;

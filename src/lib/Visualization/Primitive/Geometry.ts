@@ -34,9 +34,8 @@ namespace LiteMol.Visualization.Primitive {
         geom.dispose();
 
         const dir = LA.Vector3.sub(b, b, a);
-        const axis = LA.Vector3.cross(LA.Vector3.zero(), coneAxis, dir);
-        const angle = LA.Vector3.angle(coneAxis, dir);
-        LA.Matrix4.fromRotation(coneTransformRotation, angle, axis);
+
+        LA.Vector3.makeRotation(coneTransformRotation, coneAxis, dir);
         LA.Matrix4.fromTranslation(coneTransformTranslation1, [0, height / 2, 0]);
         LA.Matrix4.fromTranslation(coneTransformTranslation, a);
 
@@ -72,19 +71,17 @@ namespace LiteMol.Visualization.Primitive {
         if (length === 0) return [];
 
         const delta = dashSize + (spaceSize !== void 0 ? spaceSize : dashSize);
-        const dir = LA.Vector3.sub(LA.Vector3.zero(), b, a);
+        const dir = LA.Vector3.sub(LA.Vector3(), b, a);
         LA.Vector3.normalize(dir, dir);
 
         let scale = LA.Vector3.fromValues(width, width, dashSize);
         const up = LA.Vector3.fromValues(0, 0, 1);
-        const axis = LA.Vector3.cross(LA.Vector3.zero(), up, dir);
-        const angle = LA.Vector3.angle(up, dir);
-        const rotation = LA.Matrix4.fromRotation(LA.Matrix4.zero(), angle, axis)!;
+        const rotation = LA.Vector3.makeRotation(LA.Matrix4(), up, dir);
 
         const surfaces: Visualization.Primitive.Shape.Surface[] = [];
 
         LA.Vector3.scale(dir, dir, delta);
-        LA.Vector3.copy(axis, a);
+        const axis = LA.Vector3.copy(LA.Vector3(), a);
 
         for (let t = 0; t < length; t += delta) {
             if (t + dashSize > length) scale = LA.Vector3.fromValues(width, width, length - t);

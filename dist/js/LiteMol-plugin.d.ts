@@ -13431,7 +13431,7 @@ declare namespace LiteMol.Core.Geometry.LinearAlgebra {
         function translate(out: number[], a: number[], v: number[]): number[];
         function fromTranslation(out: number[], v: number[]): number[];
         function rotate(out: number[], a: number[], rad: number, axis: number[]): number[] | null;
-        function fromRotation(out: number[], rad: number, axis: number[]): number[] | null;
+        function fromRotation(out: number[], rad: number, axis: number[]): number[];
         function scale(out: number[], a: number[], v: number[]): number[];
         function fromScaling(out: number[], v: number[]): number[];
         function makeTable(m: number[]): string;
@@ -13468,6 +13468,7 @@ declare namespace LiteMol.Core.Geometry.LinearAlgebra {
         function lerp(out: number[], a: number[], b: number[], t: number): number[];
         function transformMat4(out: number[], a: number[], m: number[]): number[];
         function angle(a: number[], b: number[]): number;
+        function makeRotation(mat: Matrix4, a: Vector3, b: Vector3): Matrix4;
     }
     function Vector4(x?: number, y?: number, z?: number, w?: number): number[];
     namespace Vector4 {

@@ -59776,7 +59776,7 @@ var LiteMol;
                     function fromRotation(out, rad, axis) {
                         var x = axis[0], y = axis[1], z = axis[2], len = Math.sqrt(x * x + y * y + z * z), s, c, t;
                         if (Math.abs(len) < 0.000001 /* Value */) {
-                            return null;
+                            return fromIdentity(out);
                         }
                         len = 1 / len;
                         x *= len;
@@ -59878,7 +59878,6 @@ var LiteMol;
                         return out;
                     }
                     Vector3.zero = zero;
-                    ;
                     function clone(a) {
                         var out = zero();
                         out[0] = a[0];
@@ -59887,7 +59886,6 @@ var LiteMol;
                         return out;
                     }
                     Vector3.clone = clone;
-                    ;
                     function fromObj(v) {
                         return fromValues(v.x, v.y, v.z);
                     }
@@ -59904,7 +59902,6 @@ var LiteMol;
                         return out;
                     }
                     Vector3.fromValues = fromValues;
-                    ;
                     function set(out, x, y, z) {
                         out[0] = x;
                         out[1] = y;
@@ -59912,7 +59909,6 @@ var LiteMol;
                         return out;
                     }
                     Vector3.set = set;
-                    ;
                     function copy(out, a) {
                         out[0] = a[0];
                         out[1] = a[1];
@@ -59920,7 +59916,6 @@ var LiteMol;
                         return out;
                     }
                     Vector3.copy = copy;
-                    ;
                     function add(out, a, b) {
                         out[0] = a[0] + b[0];
                         out[1] = a[1] + b[1];
@@ -59928,7 +59923,6 @@ var LiteMol;
                         return out;
                     }
                     Vector3.add = add;
-                    ;
                     function sub(out, a, b) {
                         out[0] = a[0] - b[0];
                         out[1] = a[1] - b[1];
@@ -59936,7 +59930,6 @@ var LiteMol;
                         return out;
                     }
                     Vector3.sub = sub;
-                    ;
                     function scale(out, a, b) {
                         out[0] = a[0] * b;
                         out[1] = a[1] * b;
@@ -59944,7 +59937,6 @@ var LiteMol;
                         return out;
                     }
                     Vector3.scale = scale;
-                    ;
                     function scaleAndAdd(out, a, b, scale) {
                         out[0] = a[0] + (b[0] * scale);
                         out[1] = a[1] + (b[1] * scale);
@@ -59952,31 +59944,26 @@ var LiteMol;
                         return out;
                     }
                     Vector3.scaleAndAdd = scaleAndAdd;
-                    ;
                     function distance(a, b) {
                         var x = b[0] - a[0], y = b[1] - a[1], z = b[2] - a[2];
                         return Math.sqrt(x * x + y * y + z * z);
                     }
                     Vector3.distance = distance;
-                    ;
                     function squaredDistance(a, b) {
                         var x = b[0] - a[0], y = b[1] - a[1], z = b[2] - a[2];
                         return x * x + y * y + z * z;
                     }
                     Vector3.squaredDistance = squaredDistance;
-                    ;
                     function magnitude(a) {
                         var x = a[0], y = a[1], z = a[2];
                         return Math.sqrt(x * x + y * y + z * z);
                     }
                     Vector3.magnitude = magnitude;
-                    ;
                     function squaredMagnitude(a) {
                         var x = a[0], y = a[1], z = a[2];
                         return x * x + y * y + z * z;
                     }
                     Vector3.squaredMagnitude = squaredMagnitude;
-                    ;
                     function normalize(out, a) {
                         var x = a[0], y = a[1], z = a[2];
                         var len = x * x + y * y + z * z;
@@ -59989,12 +59976,10 @@ var LiteMol;
                         return out;
                     }
                     Vector3.normalize = normalize;
-                    ;
                     function dot(a, b) {
                         return a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
                     }
                     Vector3.dot = dot;
-                    ;
                     function cross(out, a, b) {
                         var ax = a[0], ay = a[1], az = a[2], bx = b[0], by = b[1], bz = b[2];
                         out[0] = ay * bz - az * by;
@@ -60003,7 +59988,6 @@ var LiteMol;
                         return out;
                     }
                     Vector3.cross = cross;
-                    ;
                     function lerp(out, a, b, t) {
                         var ax = a[0], ay = a[1], az = a[2];
                         out[0] = ax + t * (b[0] - ax);
@@ -60012,7 +59996,6 @@ var LiteMol;
                         return out;
                     }
                     Vector3.lerp = lerp;
-                    ;
                     function transformMat4(out, a, m) {
                         var x = a[0], y = a[1], z = a[2], w = m[3] * x + m[7] * y + m[11] * z + m[15];
                         w = w || 1.0;
@@ -60022,7 +60005,6 @@ var LiteMol;
                         return out;
                     }
                     Vector3.transformMat4 = transformMat4;
-                    ;
                     var angleTempA = zero(), angleTempB = zero();
                     function angle(a, b) {
                         copy(angleTempA, a);
@@ -60041,7 +60023,15 @@ var LiteMol;
                         }
                     }
                     Vector3.angle = angle;
-                    ;
+                    var rotTemp = zero();
+                    function makeRotation(mat, a, b) {
+                        var by = angle(a, b);
+                        if (Math.abs(by) < 0.0001)
+                            return Matrix4.fromIdentity(mat);
+                        var axis = cross(rotTemp, a, b);
+                        return Matrix4.fromRotation(mat, by, axis);
+                    }
+                    Vector3.makeRotation = makeRotation;
                 })(Vector3 = LinearAlgebra.Vector3 || (LinearAlgebra.Vector3 = {}));
                 function Vector4(x, y, z, w) {
                     return Vector4.fromValues(x || 0, y || 0, z || 0, w || 0);
@@ -62137,6 +62127,7 @@ var LiteMol;
                     if (!pairs)
                         continue;
                     var altA = altLoc[i];
+                    var isMetalA = isMetal(elementSymbol[i]);
                     for (var j = i + 1; j < end; j++) {
                         if (!mask.has(j))
                             continue;
@@ -62146,7 +62137,7 @@ var LiteMol;
                         var order = pairs.get(atomName[j]);
                         if (order === void 0)
                             continue;
-                        var metal = isMetal(elementSymbol[i]) || isMetal(elementSymbol[j]);
+                        var metal = isMetalA || isMetal(elementSymbol[j]);
                         ChunkedAdd(atomA, i);
                         ChunkedAdd(atomB, j);
                         ChunkedAdd(type, metal ? 6 /* Metallic */ : order);
@@ -62191,10 +62182,10 @@ var LiteMol;
                         var altB = altLoc[bI];
                         if (altA && altB && altA !== altB)
                             continue;
-                        var beI = idx(elementSymbol[bI]);
                         var rbI = residueIndex[bI];
                         if (raI === rbI && hasComponent)
                             continue;
+                        var beI = idx(elementSymbol[bI]);
                         var isHb = isHydrogen(beI);
                         if (isHa && isHb)
                             continue;
@@ -68041,14 +68032,12 @@ var LiteMol;
                     return dashTemplate;
                 }
                 Builder.getDashTemplate = getDashTemplate;
-                var dashScale = Vec3.zero(), dashOffset = Vec3.zero(), dashAxis = Vec3.zero(), dashDir = Vec3.zero(), dashUp = Vec3.fromValues(1, 0, 0), dashRotation = Mat4.zero();
+                var dashScale = Vec3.zero(), dashOffset = Vec3.zero(), dashDir = Vec3.zero(), dashUp = Vec3.fromValues(1, 0, 0), dashRotation = Mat4.zero();
                 function addDashedLine(builder, a, b, size, gap, r) {
                     var dir = Vec3.sub(dashDir, b, a);
                     var length = Vec3.magnitude(dir);
-                    var axis = Vec3.cross(dashAxis, dashUp, dir);
-                    var angle = Vec3.angle(dashUp, dir);
                     var scale = Vec3.set(dashScale, size, r, r);
-                    var rotation = Mat4.fromRotation(dashRotation, angle, axis);
+                    var rotation = Vec3.makeRotation(dashRotation, dashUp, dir);
                     var templ = getDashTemplate();
                     var offset = dashOffset;
                     Vec3.copy(offset, a);
@@ -69709,10 +69698,8 @@ var LiteMol;
                     BallsAndSticksGeometryBuilder.addBondPart = function (r, oX, oY, state) {
                         var dir = Vec3.sub(state.dir, state.b, state.a);
                         var length = Vec3.magnitude(state.dir);
-                        var axis = Vec3.cross(state.rotationAxis, state.bondUpVector, dir);
-                        var angle = Vec3.angle(state.bondUpVector, state.dir);
                         Vec3.set(state.scale, length, r, r);
-                        Mat4.fromRotation(state.rotation, angle, axis);
+                        Vec3.makeRotation(state.rotation, state.bondUpVector, dir);
                         state.offset[0] = 0;
                         state.offset[1] = oX;
                         state.offset[2] = oY;
@@ -71347,9 +71334,7 @@ var LiteMol;
                 var surf = Visualization.GeometryHelper.toSurface(geom);
                 geom.dispose();
                 var dir = LA.Vector3.sub(b, b, a);
-                var axis = LA.Vector3.cross(LA.Vector3.zero(), coneAxis, dir);
-                var angle = LA.Vector3.angle(coneAxis, dir);
-                LA.Matrix4.fromRotation(coneTransformRotation, angle, axis);
+                LA.Vector3.makeRotation(coneTransformRotation, coneAxis, dir);
                 LA.Matrix4.fromTranslation(coneTransformTranslation1, [0, height / 2, 0]);
                 LA.Matrix4.fromTranslation(coneTransformTranslation, a);
                 LiteMol.Core.Geometry.Surface.transformImmediate(surf, LA.Matrix4.mul3(coneTransformTranslation, coneTransformTranslation, coneTransformRotation, coneTransformTranslation1));
@@ -71382,16 +71367,14 @@ var LiteMol;
                 if (length === 0)
                     return [];
                 var delta = dashSize + (spaceSize !== void 0 ? spaceSize : dashSize);
-                var dir = LA.Vector3.sub(LA.Vector3.zero(), b, a);
+                var dir = LA.Vector3.sub(LA.Vector3(), b, a);
                 LA.Vector3.normalize(dir, dir);
                 var scale = LA.Vector3.fromValues(width, width, dashSize);
                 var up = LA.Vector3.fromValues(0, 0, 1);
-                var axis = LA.Vector3.cross(LA.Vector3.zero(), up, dir);
-                var angle = LA.Vector3.angle(up, dir);
-                var rotation = LA.Matrix4.fromRotation(LA.Matrix4.zero(), angle, axis);
+                var rotation = LA.Vector3.makeRotation(LA.Matrix4(), up, dir);
                 var surfaces = [];
                 LA.Vector3.scale(dir, dir, delta);
-                LA.Vector3.copy(axis, a);
+                var axis = LA.Vector3.copy(LA.Vector3(), a);
                 for (var t = 0; t < length; t += delta) {
                     if (t + dashSize > length)
                         scale = LA.Vector3.fromValues(width, width, length - t);

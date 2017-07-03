@@ -105,12 +105,6 @@ namespace LiteMol.Extensions.ComplexReprensetation.Carbohydrates.Shapes {
         ];
     }
 
-    function makeRotation(a: Vec3, b: Vec3) {
-        const axis = Vec3.cross(Vec3(), a, b);
-        const angle = Vec3.angle(a, b);
-        return Mat4.fromRotation(Mat4(), angle, axis)!;
-    }
-
     const signMatrix = Mat4();
     Mat4.setValue(signMatrix, 3, 3, 1);
     function sign(a: Vec3, b: Vec3, c: Vec3) {
@@ -134,11 +128,15 @@ namespace LiteMol.Extensions.ComplexReprensetation.Carbohydrates.Shapes {
         return { ringNormal, towardsC1 };
     }
 
+    const majorRotationTemp = Mat4();
     function getRotation(majorAxis: Vec3, minorAxis: Vec3, entry: Entry) {
         const { representation: { axisUp: upVector, axisSide: sideVector } } = entry;
-        const majorRotation = makeRotation(upVector, majorAxis);
+        const majorRotation = Vec3.makeRotation(majorRotationTemp, upVector, majorAxis);
         const side = Vec3.transformMat4(Vec3(), sideVector, majorRotation);
-        const minorRotation = Mat4.fromRotation(Mat4(), sign(side, minorAxis, majorAxis) * Vec3.angle(side, minorAxis), majorAxis)!;
+        const angle = sign(side, minorAxis, majorAxis) * Vec3.angle(side, minorAxis);
+        const minorRotation = Math.abs(angle) > 0.001
+            ? Mat4.fromRotation(Mat4(), angle, majorAxis)
+            : Mat4.fromIdentity(Mat4());
         return Mat4.mul(minorRotation, minorRotation, majorRotation)!;
     }
 
