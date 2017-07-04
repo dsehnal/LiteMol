@@ -55,9 +55,13 @@ function Uglify() {
     var viewer = gulp.src(['./build/Viewer/LiteMol-viewer.js'])
         .pipe(plugins.uglify()({compress: false, preserveComments: 'license' }))
         .pipe(plugins.rename()('LiteMol-viewer.min.js'))
-        .pipe(gulp.dest('./build/web/Viewer'));
+        .pipe(gulp.dest('./build/web/Viewer'))
+        .pipe(gulp.dest('./dist/js'));
 
-    return plugins.merge()(BuildCSS(true).concat([plugin, core]));
+    var viewerCopy = gulp.src(['./build/Viewer/LiteMol-viewer.js', './build/Viewer/LiteMol-viewer.d.ts'])
+        .pipe(gulp.dest('./dist/js'));
+
+    return plugins.merge()(BuildCSS(true).concat([plugin, core, viewer, viewerCopy]));
 }
 
 function MinAssets() {
@@ -173,7 +177,7 @@ gulp.task('PackageVersion', [], PackageVersion);
 gulp.task('Clean', [], function () {
     return gulp
         .src([
-            './dist/js/*.min.js', './dist/css/*.min.css',
+            './dist/js/*.js', './dist/js/*.d.ts', './dist/css/*.css',
             './build'
         ], { read: false })
         .pipe(plugins.clean()());
