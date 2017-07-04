@@ -120,7 +120,7 @@ namespace LiteMol.Bootstrap.Visualization.Molecule {
         }
     }
 
-    const rainbowPalette = [
+    export const RainbowPalette = [
         Vis.Color.fromHex(0xCC2200),
         Vis.Color.fromHex(0xCC7700),
         Vis.Color.fromHex(0xCCAA00),
@@ -146,7 +146,7 @@ namespace LiteMol.Bootstrap.Visualization.Molecule {
         const { r, g, b } = { r: new Float32Array(rC), g: new Float32Array(rC), b: new Float32Array(rC) };
         const groups = groupsSource(model);
         const { count, residueStartIndex, residueEndIndex } = groups;
-        const cC = rainbowPalette.length - 1;
+        const cC = RainbowPalette.length - 1;
         const color = Vis.Color.fromHex(0);
         const strips = Core.Utils.FastMap.create<string, { count: number, index: number }>();
 
@@ -170,7 +170,7 @@ namespace LiteMol.Bootstrap.Visualization.Molecule {
             for (let i = 0; i < l; i++) {                
                 const t = cC * strip.index / max;
                 const low = Math.floor(t), high = Math.ceil(t);
-                Vis.Color.interpolate(rainbowPalette[low], rainbowPalette[high], t - low, color);
+                Vis.Color.interpolate(RainbowPalette[low], RainbowPalette[high], t - low, color);
                 r[s + i] = color.r;
                 g[s + i] = color.g;
                 b[s + i] = color.b;

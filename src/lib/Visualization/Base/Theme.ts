@@ -224,14 +224,33 @@ namespace LiteMol.Visualization {
         }
                 
         export function createPalleteMapping(getProperty: (index: number) => any, pallete: Color[]): ElementMapping {        
-            let mapper = new PaletterMapper(pallete);
+            let mapper = new PaletteMapper(pallete);
             return {
                 getProperty,
                 setColor: (i, c) => mapper.setColor(i, c)
             };
         }
+
+        export function createPalleteIndexMapping(getProperty: (index: number) => number, pallete: Color[]): ElementMapping {        
+            let mapper = new PaletteIndexMapper(pallete);
+            return {
+                getProperty,
+                setColor: (i, c) => mapper.setColor(i, c)
+            };
+        }
+
+        class PaletteIndexMapper {            
+            setColor(i: number, target: Color) {
+                const color = this.pallete[i];
+                Color.copy(color, target);
+            }
+            
+            constructor(private pallete: Color[]) {                
+            }
+            
+        }
         
-        class PaletterMapper {
+        class PaletteMapper {
             
             private colorIndex = 0;
             private colorMap = Core.Utils.FastMap.create<any, Color>();   

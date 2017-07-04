@@ -65955,20 +65955,38 @@ var LiteMol;
             }
             Theme.createColorMapMapping = createColorMapMapping;
             function createPalleteMapping(getProperty, pallete) {
-                var mapper = new PaletterMapper(pallete);
+                var mapper = new PaletteMapper(pallete);
                 return {
                     getProperty: getProperty,
                     setColor: function (i, c) { return mapper.setColor(i, c); }
                 };
             }
             Theme.createPalleteMapping = createPalleteMapping;
-            var PaletterMapper = (function () {
-                function PaletterMapper(pallete) {
+            function createPalleteIndexMapping(getProperty, pallete) {
+                var mapper = new PaletteIndexMapper(pallete);
+                return {
+                    getProperty: getProperty,
+                    setColor: function (i, c) { return mapper.setColor(i, c); }
+                };
+            }
+            Theme.createPalleteIndexMapping = createPalleteIndexMapping;
+            var PaletteIndexMapper = (function () {
+                function PaletteIndexMapper(pallete) {
+                    this.pallete = pallete;
+                }
+                PaletteIndexMapper.prototype.setColor = function (i, target) {
+                    var color = this.pallete[i];
+                    Color.copy(color, target);
+                };
+                return PaletteIndexMapper;
+            }());
+            var PaletteMapper = (function () {
+                function PaletteMapper(pallete) {
                     this.pallete = pallete;
                     this.colorIndex = 0;
                     this.colorMap = LiteMol.Core.Utils.FastMap.create();
                 }
-                PaletterMapper.prototype.setColor = function (p, target) {
+                PaletteMapper.prototype.setColor = function (p, target) {
                     var color = this.colorMap.get(p);
                     if (!color) {
                         this.colorIndex = ((this.colorIndex + 1) % this.pallete.length) | 0;
@@ -65977,7 +65995,7 @@ var LiteMol;
                     }
                     Color.copy(color, target);
                 };
-                return PaletterMapper;
+                return PaletteMapper;
             }());
             var ColorMapMapper = (function () {
                 function ColorMapMapper(map, fallbackColor) {
@@ -74240,7 +74258,7 @@ var LiteMol;
                     };
                     return RainbowMapping;
                 }());
-                var rainbowPalette = [
+                Molecule.RainbowPalette = [
                     Vis.Color.fromHex(0xCC2200),
                     Vis.Color.fromHex(0xCC7700),
                     Vis.Color.fromHex(0xCCAA00),
@@ -74260,7 +74278,7 @@ var LiteMol;
                     var _a = { r: new Float32Array(rC), g: new Float32Array(rC), b: new Float32Array(rC) }, r = _a.r, g = _a.g, b = _a.b;
                     var groups = groupsSource(model);
                     var count = groups.count, residueStartIndex = groups.residueStartIndex, residueEndIndex = groups.residueEndIndex;
-                    var cC = rainbowPalette.length - 1;
+                    var cC = Molecule.RainbowPalette.length - 1;
                     var color = Vis.Color.fromHex(0);
                     var strips = LiteMol.Core.Utils.FastMap.create();
                     for (var cI = 0; cI < count; cI++) {
@@ -74281,7 +74299,7 @@ var LiteMol;
                         for (var i = 0; i < l; i++) {
                             var t = cC * strip.index / max;
                             var low = Math.floor(t), high = Math.ceil(t);
-                            Vis.Color.interpolate(rainbowPalette[low], rainbowPalette[high], t - low, color);
+                            Vis.Color.interpolate(Molecule.RainbowPalette[low], Molecule.RainbowPalette[high], t - low, color);
                             r[s + i] = color.r;
                             g[s + i] = color.g;
                             b[s + i] = color.b;
@@ -81264,10 +81282,12 @@ var LiteMol;
                 var data = source.data
                     ? action.add(this.root, Entity.Transformer.Data.FromData, { data: source.data, id: source.id })
                     : action.add(this.root, Transformer.Data.Download, { url: source.url, type: format.isBinary ? 'Binary' : 'String', id: source.id, title: 'Molecule' });
-                data
+                var model = data
                     .then(Transformer.Molecule.CreateFromData, { format: format, customId: source.id }, { isBinding: true, ref: source.moleculeRef })
-                    .then(Transformer.Molecule.CreateModel, { modelIndex: 0 }, { isBinding: false, ref: source.modelRef })
-                    .then(Transformer.Molecule.CreateMacromoleculeVisual, { polymer: true, het: true, water: true });
+                    .then(Transformer.Molecule.CreateModel, { modelIndex: 0 }, { isBinding: false, ref: source.modelRef });
+                if (!source.doNotCreateVisual) {
+                    model.then(Transformer.Molecule.CreateMacromoleculeVisual, { polymer: true, het: true, water: true });
+                }
                 return this.applyTransform(data);
             };
             /**

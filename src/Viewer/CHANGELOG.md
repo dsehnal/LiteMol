@@ -1,3 +1,6 @@
+# 1.6.1
+* Added "particle coloring" extension.
+
 # 1.6.0
 * Better show interactions between different components of a molecule.
 * Better default representation of molecules.

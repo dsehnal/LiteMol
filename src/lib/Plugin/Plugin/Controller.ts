@@ -51,7 +51,8 @@ namespace LiteMol.Plugin {
         data?: string | ArrayBuffer,
         format?: string | Core.Formats.FormatInfo,
         onLoad?: () => void,
-        onError?: (e: any) => void
+        onError?: (e: any) => void,
+        doNotCreateVisual?: boolean
     }
 
     import Entity = Bootstrap.Entity;
@@ -172,10 +173,13 @@ namespace LiteMol.Plugin {
                 ? action.add(this.root, Entity.Transformer.Data.FromData, { data: source.data, id: source.id })
                 : action.add(this.root, Transformer.Data.Download, { url: source.url!, type: format.isBinary ? 'Binary' : 'String', id: source.id, title: 'Molecule' });
             
-            data
+            let model = data
                 .then(Transformer.Molecule.CreateFromData, { format, customId: source.id }, { isBinding: true, ref: source.moleculeRef })
-                .then(Transformer.Molecule.CreateModel, { modelIndex: 0 }, { isBinding: false, ref: source.modelRef })
-                .then(Transformer.Molecule.CreateMacromoleculeVisual, { polymer: true, het: true, water: true });
+                .then(Transformer.Molecule.CreateModel, { modelIndex: 0 }, { isBinding: false, ref: source.modelRef });
+
+            if (!source.doNotCreateVisual) {
+                model.then(Transformer.Molecule.CreateMacromoleculeVisual, { polymer: true, het: true, water: true });
+            }
 
             return this.applyTransform(data);
         }

@@ -14410,6 +14410,7 @@ declare namespace LiteMol.Visualization {
         function createMapping(mapping: ElementMapping, props?: Props): Theme;
         function createColorMapMapping(getProperty: (index: number) => any, map: ColorMap, fallbackColor: Color): ElementMapping;
         function createPalleteMapping(getProperty: (index: number) => any, pallete: Color[]): ElementMapping;
+        function createPalleteIndexMapping(getProperty: (index: number) => number, pallete: Color[]): ElementMapping;
     }
 }
 declare namespace LiteMol.Visualization {
@@ -16026,6 +16027,7 @@ declare namespace LiteMol.Bootstrap.Visualization.Molecule {
         index: number[];
         property: any[];
     }, colorMap: LiteMol.Visualization.Theme.ColorMap, fallbackColor: LiteMol.Visualization.Color): (e: Entity.Any, props?: Vis.Theme.Props | undefined) => Vis.Theme;
+    const RainbowPalette: Vis.Color[];
     namespace Default {
         const Themes: Theme.Template[];
         const CartoonThemeTemplate: Theme.Template;
@@ -17629,6 +17631,7 @@ declare namespace LiteMol.Plugin {
         format?: string | Core.Formats.FormatInfo;
         onLoad?: () => void;
         onError?: (e: any) => void;
+        doNotCreateVisual?: boolean;
     }
     import Entity = Bootstrap.Entity;
     class Controller {

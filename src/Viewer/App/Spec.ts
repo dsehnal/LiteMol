@@ -53,6 +53,8 @@ namespace LiteMol.Viewer {
 
             { transformer: Transformer.Molecule.CreateLabels, view: Views.Transform.Molecule.CreateLabels },
 
+            { transformer: Extensions.ParticleColoring.Apply, view: Extensions.ParticleColoring.UI.Apply, initiallyCollapsed: true },
+
             // complex representation
             { transformer: Extensions.ComplexReprensetation.Carbohydrates.Transforms.CreateVisual, view: Extensions.ComplexReprensetation.Carbohydrates.UI.CreateVisual },
             { transformer: Extensions.ComplexReprensetation.Transforms.CreateComplexInfo, view: Views.Transform.Empty },

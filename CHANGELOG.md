@@ -11,6 +11,7 @@ Each component also has its separate changelog
 * Better show interactions between different components of a molecule.
 * Better default representation of molecules.
 * Added 3D SNFG carbohydrate representation.
+* Added "particle coloring" that colors atoms based on the distance to the centroid of the molecule.
 
 2.3.1-preview
 -----------

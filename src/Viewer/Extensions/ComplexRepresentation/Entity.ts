@@ -90,7 +90,7 @@ namespace LiteMol.Extensions.ComplexReprensetation.Transforms {
                 theme: { template: Bootstrap.Visualization.Molecule.Default.ElementSymbolThemeTemplate, colors: Bootstrap.Visualization.Molecule.Default.ElementSymbolThemeTemplate.colors, transparency: { alpha: 0.2 } }
             }
 
-            action.add(a as any, Transformer.Molecule.CreateSelectionFromQuery, { query: Q.atomsFromIndices(info.freeWaterAtoms), name: 'Free Water', silent: true }, { isBinding: true })
+            action.add(a as any, Transformer.Molecule.CreateSelectionFromQuery, { query: Q.atomsFromIndices(info.freeWaterAtoms), name: 'Unbound Water', silent: true }, { isBinding: true })
                 .then(Transformer.Molecule.CreateVisual, { style }, { });
         }
         return { action, context: { warnings: info.het.carbohydrates.warnings } };

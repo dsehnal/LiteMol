@@ -37,6 +37,8 @@
     "./Extensions/ComplexRepresentation/Representation.ts",
     "./Extensions/ComplexRepresentation/Entity.ts",
     "./Extensions/ComplexRepresentation/UI.tsx",
+    "./Extensions/ParticleColoring/Coloring.ts",
+    "./Extensions/ParticleColoring/UI.tsx",
 
     "./PDBe/Data.ts",
     "./PDBe/Density.ts",

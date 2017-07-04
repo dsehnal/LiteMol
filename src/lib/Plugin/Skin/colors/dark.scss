@@ -13,6 +13,8 @@ $log-info:             #5E3673;
 $log-warning:          #FCC937;
 $log-error:            #FD354B;
 
+$logo-background: rgba(0,0,0,0.75);
+
 @function color-lower-contrast($color, $amount) {
     @return darken($color, $amount);
 }
