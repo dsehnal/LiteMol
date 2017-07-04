@@ -9,19 +9,21 @@ namespace LiteMol.Viewer {
         return decodeURIComponent(((window.location.search || '').match(r) || [])[1] || ''); 
     }
 
-    let plugin = Plugin.create({ 
-        customSpecification: PluginSpec, 
-        target: document.getElementById('app')!, 
-        layoutState: { isExpanded: true } 
-    });
-    plugin.context.logger.message(`LiteMol Viewer ${VERSION.number}`);  
+    export function createInstance(target: HTMLElement, layoutState: Bootstrap.Components.LayoutState, ignoreUrlParams = false) {
+        const plugin = Plugin.create({ 
+            customSpecification: PluginSpec, 
+            target, 
+            layoutState
+        });
+        plugin.context.logger.message(`LiteMol Viewer ${VERSION.number}`);  
 
-    let theme = getParam('theme', '[a-z]+').toLowerCase() || 'light'; 
-    if (theme === 'light') {
-        plugin.setViewportBackground('#FCFBF9');
-    }
+        if (ignoreUrlParams) return plugin;
 
-    (function () {
+        let theme = getParam('theme', '[a-z]+').toLowerCase() || 'light'; 
+        if (theme === 'light') {
+            plugin.setViewportBackground('#FCFBF9');
+        }
+
         let pdbId = getParam('loadFromPDB', '[a-z0-9]+').toLowerCase().trim();
         if (pdbId.length === 4) {
             let t = plugin.createTransform().add(plugin.root, PDBe.Data.DownloadMolecule, { id: pdbId });
@@ -54,5 +56,7 @@ namespace LiteMol.Viewer {
 
         let example = Examples.ExampleMap[getParam('example', '[a-z0-9\-]+').toLowerCase().trim()];
         if (example) example.provider(plugin);
-    })();
+
+        return plugin;
+    }
 }
