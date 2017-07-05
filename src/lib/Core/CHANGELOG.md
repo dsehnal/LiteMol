@@ -1,4 +1,7 @@
-﻿# 3.2.0
+﻿# 3.2.1
+* Parse _pdbx_struct_mod_residue from mmCIF.
+
+# 3.2.0
 * Fixed bug in CIFTools.
 * Add more robust bond computation.
 

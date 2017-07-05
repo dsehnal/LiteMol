@@ -87,6 +87,15 @@ namespace LiteMol.Core.Structure {
         type: BondType
     }
 
+    
+    export interface ModifiedResidue {
+        asymId: string,
+        seqNumber: number,
+        insCode: string | null,
+        parent: string,
+        details: string | null
+    }
+
     export class ComponentBondInfoEntry {
         map: Utils.FastMap<string, Utils.FastMap<string, BondType>> = Utils.FastMap.create<string, Utils.FastMap<string, BondType>>();
 
@@ -293,6 +302,7 @@ namespace LiteMol.Core.Structure {
     export type ChainTable = DataTable<Chain>
     export type EntityTable = DataTable<Entity>
     export type BondTable = DataTable<Bond>
+    export type ModifiedResidueTable = DataTable<ModifiedResidue>
 
     /**
      * Default Builders
@@ -369,6 +379,14 @@ namespace LiteMol.Core.Structure {
             atomAIndex: int32,
             atomBIndex: int32,
             type: DataTable.typedColumn(Int8Array)
+        };
+
+        export const ModifiedResidues: DataTable.Definition<ModifiedResidue> = { 
+            asymId: str,
+            seqNumber: int32,
+            insCode: nullStr,
+            parent: str,
+            details: nullStr
         };
     }
 
@@ -453,6 +471,7 @@ namespace LiteMol.Core.Structure {
                 readonly entities: EntityTable,
                 readonly bonds: Bonds,
                 readonly secondaryStructure: SecondaryStructureElement[],
+                readonly modifiedResidues?: ModifiedResidueTable,
                 readonly symmetryInfo?: SymmetryInfo,
                 readonly assemblyInfo?: AssemblyInfo
             }

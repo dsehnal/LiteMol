@@ -40,20 +40,28 @@ namespace LiteMol.Extensions.ComplexReprensetation.Transforms {
         const info = a.props.info;
 
         if (info.sequence.all.length) {
-            action.add(a as any, Transformer.Molecule.CreateSelectionFromQuery, { query: Q.atomsFromIndices(info.sequence.all), name: 'Sequence', silent: true }, { isBinding: true })
-              .then(Transformer.Molecule.CreateVisual, { style: Bootstrap.Visualization.Molecule.Default.ForType.get('Cartoons') });
+
+            const sequence = action.add(a, Transformer.Basic.CreateGroup, { label: 'Sequence', description: '' }, { isBinding: true });
+
+            sequence.then(Transformer.Molecule.CreateSelectionFromQuery, { query: Q.atomsFromIndices(info.sequence.all), name: 'All Residues', silent: true }, { isBinding: true })
+              .then(Transformer.Molecule.CreateVisual, { style: Bootstrap.Visualization.Molecule.Default.ForType.get('Cartoons') }, { });
+
+            const sequenceBSStyle: Bootstrap.Visualization.Molecule.Style<Bootstrap.Visualization.Molecule.BallsAndSticksParams> = {
+                type: 'BallsAndSticks',
+                taskType: 'Silent',
+                params: { useVDW: true, vdwScaling: 0.21, bondRadius: 0.085, detail: 'Automatic' },
+                theme: { template: Bootstrap.Visualization.Molecule.Default.CartoonThemeTemplate, colors: Bootstrap.Visualization.Molecule.Default.CartoonThemeTemplate.colors!, transparency: { alpha: 1.0 } },
+                isNotSelectable: true
+            }
 
             if (info.sequence.interacting.length) {
-                const interactingSequenceStyle: Bootstrap.Visualization.Molecule.Style<Bootstrap.Visualization.Molecule.BallsAndSticksParams> = {
-                    type: 'BallsAndSticks',
-                    taskType: 'Silent',
-                    params: { useVDW: true, vdwScaling: 0.21, bondRadius: 0.085, detail: 'Automatic' },
-                    theme: { template: Bootstrap.Visualization.Molecule.Default.CartoonThemeTemplate, colors: Bootstrap.Visualization.Molecule.Default.CartoonThemeTemplate.colors!, transparency: { alpha: 1.0 } },
-                    isNotSelectable: true
-                }
+                sequence.then(Transformer.Molecule.CreateSelectionFromQuery, { query: Q.atomsFromIndices(info.sequence.interacting), name: 'Interacting Residues', silent: true }, { isBinding: true })
+                    .then(Transformer.Molecule.CreateVisual, { style: sequenceBSStyle });
+            }
 
-                action.add(a as any, Transformer.Molecule.CreateSelectionFromQuery, { query: Q.atomsFromIndices(info.sequence.interacting), name: 'Interacting Sequence', silent: true }, { isBinding: true })
-                    .then(Transformer.Molecule.CreateVisual, { style: interactingSequenceStyle });
+            if (info.sequence.modified.length) {
+                sequence.then(Transformer.Molecule.CreateSelectionFromQuery, { query: Q.atomsFromIndices(info.sequence.modified), name: 'Modified Residues', silent: true }, { isBinding: true })
+                    .then(Transformer.Molecule.CreateVisual, { style: sequenceBSStyle });
             }
         }
 

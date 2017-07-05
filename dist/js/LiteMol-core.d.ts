@@ -2326,6 +2326,13 @@ declare namespace LiteMol.Core.Structure {
         atomBIndex: number;
         type: BondType;
     }
+    interface ModifiedResidue {
+        asymId: string;
+        seqNumber: number;
+        insCode: string | null;
+        parent: string;
+        details: string | null;
+    }
     class ComponentBondInfoEntry {
         id: string;
         map: Utils.FastMap<string, Utils.FastMap<string, BondType>>;
@@ -2443,6 +2450,7 @@ declare namespace LiteMol.Core.Structure {
     type ChainTable = DataTable<Chain>;
     type EntityTable = DataTable<Entity>;
     type BondTable = DataTable<Bond>;
+    type ModifiedResidueTable = DataTable<ModifiedResidue>;
     /**
      * Default Builders
      */
@@ -2453,6 +2461,7 @@ declare namespace LiteMol.Core.Structure {
         const Chains: DataTable.Definition<Chain>;
         const Entities: DataTable.Definition<Entity>;
         const Bonds: DataTable.Definition<Bond>;
+        const ModifiedResidues: DataTable.Definition<ModifiedResidue>;
     }
     class Operator {
         matrix: number[];
@@ -2502,6 +2511,7 @@ declare namespace LiteMol.Core.Structure {
                 readonly entities: EntityTable;
                 readonly bonds: Bonds;
                 readonly secondaryStructure: SecondaryStructureElement[];
+                readonly modifiedResidues?: ModifiedResidueTable;
                 readonly symmetryInfo?: SymmetryInfo;
                 readonly assemblyInfo?: AssemblyInfo;
             }

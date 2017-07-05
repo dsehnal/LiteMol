@@ -11,7 +11,8 @@ namespace LiteMol.Extensions.ComplexReprensetation {
     export interface Info {
         sequence: {
             all: number[],
-            interacting: number[]
+            interacting: number[],
+            modified: number[]
         },
         het: {
             carbohydrates: Carbohydrates.Info,
@@ -27,9 +28,20 @@ namespace LiteMol.Extensions.ComplexReprensetation {
         await computation.updateProgress('Determing main sequence atoms...');
         const sequenceAtoms = findMainSequence(model, queryCtx);
 
+        const modRes = model.data.modifiedResidues;
+        const hasModRes = modRes && modRes.count > 0;
+
         // is everything cartoon?
+        if (sequenceAtoms.length === queryCtx.atomCount && !hasModRes) {
+            const ret: Info = { sequence: { all: sequenceAtoms, interacting: [], modified: [] }, het: { other: [], carbohydrates: Carbohydrates.EmptyInto }, freeWaterAtoms: [] };
+            return ret;
+        }
+
+        const sequenceCtx = Q.Context.ofAtomIndices(model, sequenceAtoms);
+        const modifiedSequence = getModRes(model, sequenceCtx);
+
         if (sequenceAtoms.length === queryCtx.atomCount) {
-            const ret: Info = { sequence: { all: sequenceAtoms, interacting: [] }, het: { other: [], carbohydrates: Carbohydrates.EmptyInto }, freeWaterAtoms: [] };
+            const ret: Info = { sequence: { all: sequenceAtoms, interacting: [], modified: modifiedSequence }, het: { other: [], carbohydrates: Carbohydrates.EmptyInto }, freeWaterAtoms: [] };
             return ret;
         }
 
@@ -39,14 +51,14 @@ namespace LiteMol.Extensions.ComplexReprensetation {
 
         // is everything cartoon?
         if (!possibleHetGroupsAndInteractingSequence) {
-            const ret: Info = { sequence: { all: sequenceAtoms, interacting: [] }, het: { other: [], carbohydrates: Carbohydrates.EmptyInto }, freeWaterAtoms: waterAtoms };
+            const ret: Info = { sequence: { all: sequenceAtoms, interacting: [], modified: modifiedSequence }, het: { other: [], carbohydrates: Carbohydrates.EmptyInto }, freeWaterAtoms: waterAtoms };
             return ret;
         }
 
         await computation.updateProgress('Computing bonds...');
         const bonds = S.computeBonds(model, possibleHetGroupsAndInteractingSequence.atomIndices);
 
-        const { entityIndex, residueIndex, count: atomCount } = model.data.atoms;
+        const { entityIndex, residueIndex } = model.data.atoms;
         const { type: entType } = model.data.entities;
 
         const { atomAIndex, atomBIndex } = bonds;
@@ -78,7 +90,7 @@ namespace LiteMol.Extensions.ComplexReprensetation {
         // HET GROUPS with SEQUENCE RESIDUES
         
         await computation.updateProgress('Identifying HET groups...');
-        const sequenceMask = CU.Mask.ofIndices(atomCount, sequenceAtoms);
+        const sequenceMask = sequenceCtx.mask;
         const _hetGroupsWithSequence = CU.ChunkedArray.forInt32(possibleHetGroupsAndInteractingSequence.atomCount / 2);
         const boundSequence = CU.FastSet.create<number>(), boundHetAtoms = CU.FastSet.create<number>();
 
@@ -132,11 +144,26 @@ namespace LiteMol.Extensions.ComplexReprensetation {
         }
 
         const ret: Info = { 
-            sequence: { all: sequenceAtoms, interacting: CU.ChunkedArray.compact(interactingSequenceAtoms) }, 
+            sequence: { all: sequenceAtoms, interacting: CU.ChunkedArray.compact(interactingSequenceAtoms), modified: modifiedSequence }, 
             het: { other: CU.ChunkedArray.compact(commonAtoms), carbohydrates }, 
             freeWaterAtoms 
         };
         return ret;
+    }
+
+    function getModRes(model: Model, ctx: Q.Context): number[] {
+        const modRes = model.data.modifiedResidues;
+        const hasModRes = modRes && modRes.count > 0;
+
+        if (!modRes || !hasModRes) return [];
+
+        const { asymId, seqNumber, insCode } = modRes;
+        const residues: Q.ResidueIdSchema[] = [];
+        for (let i = 0, __i = modRes.count; i < __i; i++) {
+            residues.push({ asymId: asymId[i], seqNumber: seqNumber[i], insCode: insCode[i] });
+        }
+        const q = Q.residues.apply(null, residues).compile() as Q;
+        return q(ctx).unionAtomIndices();
     }
 
     function getMaxInteractionRadius(model: Model) {

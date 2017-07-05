@@ -713,6 +713,30 @@ namespace LiteMol.Core.Formats.Molecule.mmCIF {
         return -1;
     }
 
+    function getModRes(data: CIF.DataBlock): Structure.ModifiedResidueTable | undefined {
+        const cat = data.getCategory('_pdbx_struct_mod_residue');
+        if (!cat) return void 0;
+
+        const table = Utils.DataTable.ofDefinition(Structure.Tables.ModifiedResidues, cat.rowCount);
+        const label_asym_id = cat.getColumn('label_asym_id');
+        const label_seq_id = cat.getColumn('label_seq_id');
+        const PDB_ins_code = cat.getColumn('PDB_ins_code');
+        const parent_comp_id = cat.getColumn('parent_comp_id');
+        const _details = cat.getColumn('details');
+
+        const { asymId, seqNumber, insCode, parent, details } = table;
+
+        for (let i = 0, __i = cat.rowCount; i < __i; i++) {
+            asymId[i] = label_asym_id.getString(i)!;
+            seqNumber[i] = label_seq_id.getInteger(i)!;
+            insCode[i] = PDB_ins_code.getString(i);
+            parent[i] = parent_comp_id.getString(i)!;
+            details[i] = _details.getString(i);
+        }
+
+        return table;
+    }
+
     export type StructConnType = 
           'covale'
         | 'covale_base'
@@ -1000,6 +1024,7 @@ namespace LiteMol.Core.Formats.Molecule.mmCIF {
                         structConn: getStructConn(data, atoms, structure),
                         component: getComponentBonds(data.getCategory('_chem_comp_bond'))
                     },
+                    modifiedResidues: getModRes(data),
                     secondaryStructure: ss,
                     symmetryInfo: getSymmetryInfo(data),
                     assemblyInfo: getAssemblyInfo(data),

@@ -2342,31 +2342,39 @@ var LiteMol;
             var MAX_NUCLEOTIDE_SEQ_LIGAND_LENGTH = 2;
             function createComplexRepresentation(computation, model, queryCtx) {
                 return __awaiter(this, void 0, LiteMol.Promise, function () {
-                    var sequenceAtoms, ret_1, waterAtoms, possibleHetGroupsAndInteractingSequenceQ, possibleHetGroupsAndInteractingSequence, ret_2, bonds, _a, entityIndex, residueIndex, atomCount, entType, atomAIndex, atomBIndex, boundWaters, i, __i, a, b, tA, tB, freeWaterAtoms, waterAtomsOffset, _i, waterAtoms_1, aI, sequenceMask, _hetGroupsWithSequence, boundSequence, boundHetAtoms, i, __i, a, b, hasA, hasB, _b, _c, aI, rI, hetGroupsWithSequence, carbohydrates, commonAtoms, carbMap, _d, hetGroupsWithSequence_1, aI, rI, interactingSequenceAtoms, _e, hetGroupsWithSequence_2, aI, rI, ret;
+                    var sequenceAtoms, modRes, hasModRes, ret_1, sequenceCtx, modifiedSequence, ret_2, waterAtoms, possibleHetGroupsAndInteractingSequenceQ, possibleHetGroupsAndInteractingSequence, ret_3, bonds, _a, entityIndex, residueIndex, entType, atomAIndex, atomBIndex, boundWaters, i, __i, a, b, tA, tB, freeWaterAtoms, waterAtomsOffset, _i, waterAtoms_1, aI, sequenceMask, _hetGroupsWithSequence, boundSequence, boundHetAtoms, i, __i, a, b, hasA, hasB, _b, _c, aI, rI, hetGroupsWithSequence, carbohydrates, commonAtoms, carbMap, _d, hetGroupsWithSequence_1, aI, rI, interactingSequenceAtoms, _e, hetGroupsWithSequence_2, aI, rI, ret;
                     return __generator(this, function (_f) {
                         switch (_f.label) {
                             case 0: return [4 /*yield*/, computation.updateProgress('Determing main sequence atoms...')];
                             case 1:
                                 _f.sent();
                                 sequenceAtoms = findMainSequence(model, queryCtx);
+                                modRes = model.data.modifiedResidues;
+                                hasModRes = modRes && modRes.count > 0;
                                 // is everything cartoon?
-                                if (sequenceAtoms.length === queryCtx.atomCount) {
-                                    ret_1 = { sequence: { all: sequenceAtoms, interacting: [] }, het: { other: [], carbohydrates: ComplexReprensetation.Carbohydrates.EmptyInto }, freeWaterAtoms: [] };
+                                if (sequenceAtoms.length === queryCtx.atomCount && !hasModRes) {
+                                    ret_1 = { sequence: { all: sequenceAtoms, interacting: [], modified: [] }, het: { other: [], carbohydrates: ComplexReprensetation.Carbohydrates.EmptyInto }, freeWaterAtoms: [] };
                                     return [2 /*return*/, ret_1];
+                                }
+                                sequenceCtx = Q.Context.ofAtomIndices(model, sequenceAtoms);
+                                modifiedSequence = getModRes(model, sequenceCtx);
+                                if (sequenceAtoms.length === queryCtx.atomCount) {
+                                    ret_2 = { sequence: { all: sequenceAtoms, interacting: [], modified: modifiedSequence }, het: { other: [], carbohydrates: ComplexReprensetation.Carbohydrates.EmptyInto }, freeWaterAtoms: [] };
+                                    return [2 /*return*/, ret_2];
                                 }
                                 waterAtoms = Q.entities({ type: 'water' }).union().compile()(queryCtx).unionAtomIndices();
                                 possibleHetGroupsAndInteractingSequenceQ = Q.or(Q.atomsFromIndices(waterAtoms), Q.atomsFromIndices(sequenceAtoms)).complement().ambientResidues(getMaxInteractionRadius(model)).union().compile();
                                 possibleHetGroupsAndInteractingSequence = possibleHetGroupsAndInteractingSequenceQ(queryCtx).fragments[0];
                                 // is everything cartoon?
                                 if (!possibleHetGroupsAndInteractingSequence) {
-                                    ret_2 = { sequence: { all: sequenceAtoms, interacting: [] }, het: { other: [], carbohydrates: ComplexReprensetation.Carbohydrates.EmptyInto }, freeWaterAtoms: waterAtoms };
-                                    return [2 /*return*/, ret_2];
+                                    ret_3 = { sequence: { all: sequenceAtoms, interacting: [], modified: modifiedSequence }, het: { other: [], carbohydrates: ComplexReprensetation.Carbohydrates.EmptyInto }, freeWaterAtoms: waterAtoms };
+                                    return [2 /*return*/, ret_3];
                                 }
                                 return [4 /*yield*/, computation.updateProgress('Computing bonds...')];
                             case 2:
                                 _f.sent();
                                 bonds = S.computeBonds(model, possibleHetGroupsAndInteractingSequence.atomIndices);
-                                _a = model.data.atoms, entityIndex = _a.entityIndex, residueIndex = _a.residueIndex, atomCount = _a.count;
+                                _a = model.data.atoms, entityIndex = _a.entityIndex, residueIndex = _a.residueIndex;
                                 entType = model.data.entities.type;
                                 atomAIndex = bonds.atomAIndex, atomBIndex = bonds.atomBIndex;
                                 /////////////////////////////////////////////////////
@@ -2402,7 +2410,7 @@ var LiteMol;
                                 /////////////////////////////////////////////////////
                                 // HET GROUPS with SEQUENCE RESIDUES
                                 _f.sent();
-                                sequenceMask = CU.Mask.ofIndices(atomCount, sequenceAtoms);
+                                sequenceMask = sequenceCtx.mask;
                                 _hetGroupsWithSequence = CU.ChunkedArray.forInt32(possibleHetGroupsAndInteractingSequence.atomCount / 2);
                                 boundSequence = CU.FastSet.create(), boundHetAtoms = CU.FastSet.create();
                                 for (i = 0, __i = bonds.count; i < __i; i++) {
@@ -2467,7 +2475,7 @@ var LiteMol;
                                         CU.ChunkedArray.add(interactingSequenceAtoms, aI);
                                 }
                                 ret = {
-                                    sequence: { all: sequenceAtoms, interacting: CU.ChunkedArray.compact(interactingSequenceAtoms) },
+                                    sequence: { all: sequenceAtoms, interacting: CU.ChunkedArray.compact(interactingSequenceAtoms), modified: modifiedSequence },
                                     het: { other: CU.ChunkedArray.compact(commonAtoms), carbohydrates: carbohydrates },
                                     freeWaterAtoms: freeWaterAtoms
                                 };
@@ -2477,6 +2485,19 @@ var LiteMol;
                 });
             }
             ComplexReprensetation.createComplexRepresentation = createComplexRepresentation;
+            function getModRes(model, ctx) {
+                var modRes = model.data.modifiedResidues;
+                var hasModRes = modRes && modRes.count > 0;
+                if (!modRes || !hasModRes)
+                    return [];
+                var asymId = modRes.asymId, seqNumber = modRes.seqNumber, insCode = modRes.insCode;
+                var residues = [];
+                for (var i = 0, __i = modRes.count; i < __i; i++) {
+                    residues.push({ asymId: asymId[i], seqNumber: seqNumber[i], insCode: insCode[i] });
+                }
+                var q = Q.residues.apply(null, residues).compile();
+                return q(ctx).unionAtomIndices();
+            }
             function getMaxInteractionRadius(model) {
                 var maxLength = 3;
                 if (model.data.bonds.structConn) {
@@ -2624,18 +2645,23 @@ var LiteMol;
                     var action = Tree.Transform.build();
                     var info = a.props.info;
                     if (info.sequence.all.length) {
-                        action.add(a, Transformer.Molecule.CreateSelectionFromQuery, { query: Q.atomsFromIndices(info.sequence.all), name: 'Sequence', silent: true }, { isBinding: true })
-                            .then(Transformer.Molecule.CreateVisual, { style: LiteMol.Bootstrap.Visualization.Molecule.Default.ForType.get('Cartoons') });
+                        var sequence = action.add(a, Transformer.Basic.CreateGroup, { label: 'Sequence', description: '' }, { isBinding: true });
+                        sequence.then(Transformer.Molecule.CreateSelectionFromQuery, { query: Q.atomsFromIndices(info.sequence.all), name: 'All Residues', silent: true }, { isBinding: true })
+                            .then(Transformer.Molecule.CreateVisual, { style: LiteMol.Bootstrap.Visualization.Molecule.Default.ForType.get('Cartoons') }, {});
+                        var sequenceBSStyle = {
+                            type: 'BallsAndSticks',
+                            taskType: 'Silent',
+                            params: { useVDW: true, vdwScaling: 0.21, bondRadius: 0.085, detail: 'Automatic' },
+                            theme: { template: LiteMol.Bootstrap.Visualization.Molecule.Default.CartoonThemeTemplate, colors: LiteMol.Bootstrap.Visualization.Molecule.Default.CartoonThemeTemplate.colors, transparency: { alpha: 1.0 } },
+                            isNotSelectable: true
+                        };
                         if (info.sequence.interacting.length) {
-                            var interactingSequenceStyle = {
-                                type: 'BallsAndSticks',
-                                taskType: 'Silent',
-                                params: { useVDW: true, vdwScaling: 0.21, bondRadius: 0.085, detail: 'Automatic' },
-                                theme: { template: LiteMol.Bootstrap.Visualization.Molecule.Default.CartoonThemeTemplate, colors: LiteMol.Bootstrap.Visualization.Molecule.Default.CartoonThemeTemplate.colors, transparency: { alpha: 1.0 } },
-                                isNotSelectable: true
-                            };
-                            action.add(a, Transformer.Molecule.CreateSelectionFromQuery, { query: Q.atomsFromIndices(info.sequence.interacting), name: 'Interacting Sequence', silent: true }, { isBinding: true })
-                                .then(Transformer.Molecule.CreateVisual, { style: interactingSequenceStyle });
+                            sequence.then(Transformer.Molecule.CreateSelectionFromQuery, { query: Q.atomsFromIndices(info.sequence.interacting), name: 'Interacting Residues', silent: true }, { isBinding: true })
+                                .then(Transformer.Molecule.CreateVisual, { style: sequenceBSStyle });
+                        }
+                        if (info.sequence.modified.length) {
+                            sequence.then(Transformer.Molecule.CreateSelectionFromQuery, { query: Q.atomsFromIndices(info.sequence.modified), name: 'Modified Residues', silent: true }, { isBinding: true })
+                                .then(Transformer.Molecule.CreateVisual, { style: sequenceBSStyle });
                         }
                     }
                     if (info.het.other.length || info.het.carbohydrates.entries.length) {

@@ -377,6 +377,7 @@ declare namespace LiteMol.Extensions.ComplexReprensetation {
         sequence: {
             all: number[];
             interacting: number[];
+            modified: number[];
         };
         het: {
             carbohydrates: Carbohydrates.Info;

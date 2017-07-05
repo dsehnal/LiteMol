@@ -11186,7 +11186,7 @@ var LiteMol;
 (function (LiteMol) {
     var Core;
     (function (Core) {
-        Core.VERSION = { number: "3.2.0", date: "June 26 2017" };
+        Core.VERSION = { number: "3.2.1", date: "July 5 2017" };
     })(Core = LiteMol.Core || (LiteMol.Core = {}));
 })(LiteMol || (LiteMol = {}));
 /*
@@ -12867,6 +12867,26 @@ var LiteMol;
                         }
                         return -1;
                     }
+                    function getModRes(data) {
+                        var cat = data.getCategory('_pdbx_struct_mod_residue');
+                        if (!cat)
+                            return void 0;
+                        var table = Core.Utils.DataTable.ofDefinition(Core.Structure.Tables.ModifiedResidues, cat.rowCount);
+                        var label_asym_id = cat.getColumn('label_asym_id');
+                        var label_seq_id = cat.getColumn('label_seq_id');
+                        var PDB_ins_code = cat.getColumn('PDB_ins_code');
+                        var parent_comp_id = cat.getColumn('parent_comp_id');
+                        var _details = cat.getColumn('details');
+                        var asymId = table.asymId, seqNumber = table.seqNumber, insCode = table.insCode, parent = table.parent, details = table.details;
+                        for (var i = 0, __i = cat.rowCount; i < __i; i++) {
+                            asymId[i] = label_asym_id.getString(i);
+                            seqNumber[i] = label_seq_id.getInteger(i);
+                            insCode[i] = PDB_ins_code.getString(i);
+                            parent[i] = parent_comp_id.getString(i);
+                            details[i] = _details.getString(i);
+                        }
+                        return table;
+                    }
                     function getStructConn(data, atoms, structure) {
                         var cat = data.getCategory('_struct_conn');
                         if (!cat)
@@ -13104,6 +13124,7 @@ var LiteMol;
                                         structConn: getStructConn(data, atoms, structure),
                                         component: getComponentBonds(data.getCategory('_chem_comp_bond'))
                                     },
+                                    modifiedResidues: getModRes(data),
                                     secondaryStructure: ss,
                                     symmetryInfo: getSymmetryInfo(data),
                                     assemblyInfo: getAssemblyInfo(data),
@@ -16942,6 +16963,13 @@ var LiteMol;
                     atomAIndex: int32,
                     atomBIndex: int32,
                     type: DataTable.typedColumn(Int8Array)
+                };
+                Tables.ModifiedResidues = {
+                    asymId: str,
+                    seqNumber: int32,
+                    insCode: nullStr,
+                    parent: str,
+                    details: nullStr
                 };
             })(Tables = Structure.Tables || (Structure.Tables = {}));
             var Operator = (function () {
