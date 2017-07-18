@@ -1,74 +1,4 @@
 
-
-
-// Project: https://github.com/jakearchibald/ES6-Promise
-// Definitions by: François de Campredon <https://github.com/fdecampredon/>, vvakame <https://github.com/vvakame>
-// Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
-
-declare namespace __Promise {
-    interface Thenable<T> {
-        then<U>(onFulfilled?: (value: T) => U | Thenable<U>, onRejected?: (error: any) => U | Thenable<U>): Thenable<U>;
-        then<U>(onFulfilled?: (value: T) => U | Thenable<U>, onRejected?: (error: any) => void): Thenable<U>;
-        catch<U>(onRejected?: (error: any) => U | Thenable<U>): Thenable<U>;
-    }
-
-    class Promise<T> implements Thenable<T> {
-        /**
-         * If you call resolve in the body of the callback passed to the constructor,
-         * your promise is fulfilled with result object passed to resolve.
-         * If you call reject your promise is rejected with the object passed to reject.
-         * For consistency and debugging (eg stack traces), obj should be an instanceof Error.
-         * Any errors thrown in the constructor callback will be implicitly passed to reject().
-         */
-        constructor(callback: (resolve: (value?: T | Thenable<T>) => void, reject: (error?: any) => void) => void);
-
-        /**
-         * onFulfilled is called when/if "promise" resolves. onRejected is called when/if "promise" rejects.
-         * Both are optional, if either/both are omitted the next onFulfilled/onRejected in the chain is called.
-         * Both callbacks have a single parameter , the fulfillment value or rejection reason.
-         * "then" returns a new promise equivalent to the value you return from onFulfilled/onRejected after being passed through Promise.resolve.
-         * If an error is thrown in the callback, the returned promise rejects with that error.
-         *
-         * @param onFulfilled called when/if "promise" resolves
-         * @param onRejected called when/if "promise" rejects
-         */
-        then<U>(onFulfilled?: (value: T) => U | Thenable<U>, onRejected?: (error: any) => U | Thenable<U>): Promise<U>;
-        then<U>(onFulfilled?: (value: T) => U | Thenable<U>, onRejected?: (error: any) => void): Promise<U>;
-
-        /**
-         * Sugar for promise.then(undefined, onRejected)
-         *
-         * @param onRejected called when/if "promise" rejects
-         */
-        catch<U>(onRejected?: (error: any) => U | Thenable<U>): Promise<U>;
-    }
-
-    namespace Promise {
-        /**
-         * Make a new promise from the thenable.
-         * A thenable is promise-like in as far as it has a "then" method.
-         */
-        function resolve<T>(value?: T | Thenable<T>): Promise<T>;
-
-        /**
-         * Make a promise that rejects to obj. For consistency and debugging (eg stack traces), obj should be an instanceof Error
-         */
-        function reject(error: any): Promise<any>;
-        function reject<T>(error: T): Promise<T>;
-
-        /**
-         * Make a promise that fulfills when every item in the array fulfills, and rejects if (and when) any item rejects.
-         * the array passed to all can be a mixture of promise-like objects and other objects.
-         * The fulfillment value is an array (in order) of fulfillment values. The rejection value is the first rejection value.
-         */
-        function all<T>(promises: (T | Thenable<T>)[]): Promise<T[]>;
-
-        /**
-         * Make a Promise that fulfills when any item fulfills, and rejects if any item rejects.
-         */
-        function race<T>(promises: (T | Thenable<T>)[]): Promise<T>;
-    }
-}
 // DefinitelyTyped: partial
 
 // This file contains common part of defintions for rx.d.ts and rx.lite.d.ts
@@ -12911,8 +12841,7 @@ declare namespace __LiteMolColorPicker {
     // }
 }
 declare namespace LiteMol {
-    type Promise<T> = __Promise.Promise<T>;
-    const Promise: typeof __Promise.Promise;
+    const Promise: PromiseConstructor;
 }
 declare namespace LiteMol.Core {
     export import Rx = __LiteMolRx;
@@ -12931,7 +12860,7 @@ declare namespace LiteMol.Core {
     function computation<A>(c: (ctx: Computation.Context) => Promise<A>): Computation<A>;
     class Computation<A> {
         private computation;
-        run(ctx?: Computation.Context): __Promise.Promise<A>;
+        run(ctx?: Computation.Context): Promise<A>;
         runWithContext(ctx?: Computation.Context): Computation.Running<A>;
         constructor(computation: (ctx: Computation.Context) => Promise<A>);
     }
@@ -13014,7 +12943,7 @@ declare namespace LiteMol.Core.Utils {
         /**
          * Create a map from an array of the form [[key, value], ...]
          */
-        function ofArray<K extends string | number, V>(data: (K | V)[][]): FastMap<K, V>;
+        function ofArray<K extends string | number, V>(data: [K, V][]): FastMap<K, V>;
         /**
          * Create a map from an object of the form { key: value, ... }
          */
@@ -14894,7 +14823,7 @@ declare namespace LiteMol.Visualization.Geometry {
 }
 declare namespace LiteMol.Visualization.Surface {
     import Data = Core.Geometry.Surface;
-    function buildGeometry(data: Data, computation: Core.Computation.Context, isWireframe: boolean): LiteMol.Promise<Geometry>;
+    function buildGeometry(data: Data, computation: Core.Computation.Context, isWireframe: boolean): Promise<Geometry>;
     class Geometry extends GeometryBase {
         geometry: THREE.BufferGeometry;
         vertexToElementMap: number[];
@@ -15092,7 +15021,7 @@ declare namespace LiteMol.Visualization.Molecule.BallsAndSticks {
     }
 }
 declare namespace LiteMol.Visualization.Molecule.BallsAndSticks {
-    function buildGeometry(model: Core.Structure.Molecule.Model, parameters: Parameters, atomIndices: number[], ctx: Core.Computation.Context): LiteMol.Promise<BallsAndSticksGeometry>;
+    function buildGeometry(model: Core.Structure.Molecule.Model, parameters: Parameters, atomIndices: number[], ctx: Core.Computation.Context): Promise<BallsAndSticksGeometry>;
     class BallsAndSticksGeometry extends GeometryBase {
         atomsGeometry: THREE.BufferGeometry;
         bondsGeometry: THREE.BufferGeometry;
@@ -15138,7 +15067,7 @@ declare namespace LiteMol.Visualization.Molecule.Cartoons.Geometry {
         builder: Builder;
         geom: Data;
     }
-    function create(model: Core.Structure.Molecule.Model, atomIndices: number[], linearSegments: number, parameters: any, isTrace: boolean, computation: Core.Computation.Context): LiteMol.Promise<Data>;
+    function create(model: Core.Structure.Molecule.Model, atomIndices: number[], linearSegments: number, parameters: any, isTrace: boolean, computation: Core.Computation.Context): Promise<Data>;
 }
 declare namespace LiteMol.Visualization.Molecule.Cartoons.Geometry {
     class CartoonAsymUnit {
@@ -15215,7 +15144,7 @@ declare namespace LiteMol.Visualization.Molecule.Cartoons.Geometry {
         constructor(params: CartoonsGeometryParams, residueCount: number);
     }
     function buildUnit(unit: CartoonAsymUnit, ctx: Context): void;
-    function buildUnitsAsync(ctx: Context): LiteMol.Promise<void>;
+    function buildUnitsAsync(ctx: Context): Promise<void>;
     function createGeometry(ctx: Context): void;
     class Builder {
         constructor();
@@ -15408,10 +15337,10 @@ declare namespace LiteMol.Bootstrap.Utils.Query {
 declare namespace LiteMol.Bootstrap.Utils.Query {
     class ValueOrError<A> {
         isError: boolean;
-        value: A;
+        value: A | undefined;
         error: any;
         bind<B>(f: (v: A) => ValueOrError<B>): ValueOrError<B>;
-        constructor(isError: boolean, value?: A, error?: any);
+        constructor(isError: boolean, value?: A | undefined, error?: any);
     }
     module ValueOrError {
         function error(err: any): ValueOrError<undefined>;
@@ -15518,7 +15447,7 @@ declare namespace LiteMol.Bootstrap {
         private info;
         readonly id: number;
         readonly reportTime: boolean;
-        run(context: Context): __Promise.Promise<A>;
+        run(context: Context): Promise<A>;
         runWithContext(context: Context): Task.Running<A>;
         setReportTime(report: boolean): this;
         constructor(name: string, type: Task.Type, computation: Computation<A>);
@@ -16759,7 +16688,7 @@ declare namespace LiteMol.Bootstrap.Components.Transform {
         updateParams(params: Partial<P>): void;
         autoUpdateParams(params: Partial<P>): void;
         readonly isUpdate: boolean;
-        apply(): Core.Computation<{}> | __Promise.Promise<Tree.Node.Any> | undefined;
+        apply(): Promise<Tree.Node.Any> | Core.Computation<{}> | undefined;
         setParams(params: P): void;
         constructor(context: Context, transformer: Tree.Transformer.Any, entity: Entity.Any);
     }
@@ -16904,7 +16833,7 @@ declare namespace LiteMol.Bootstrap {
         get(key: string): any;
     }
     class Context {
-        plugin: Plugin.Instance;
+        plugin: Plugin.Instance | undefined;
         id: string;
         dispatcher: Service.Dispatcher;
         logger: Service.Logger;
@@ -16921,7 +16850,7 @@ declare namespace LiteMol.Bootstrap {
         settings: Settings;
         createLayout(targets: Components.LayoutTarget[], target: HTMLElement): void;
         select(selector: Tree.Selector<Entity.Any>): Entity.Any[];
-        constructor(plugin?: Plugin.Instance);
+        constructor(plugin?: Plugin.Instance | undefined);
     }
 }
 declare namespace LiteMol.Bootstrap.Plugin {
@@ -17681,7 +17610,7 @@ declare namespace LiteMol.Plugin {
         /**
          * Applies a state trasnform.
          */
-        applyTransform(transform: Bootstrap.Tree.Transform.Source): __Promise.Promise<void>;
+        applyTransform(transform: Bootstrap.Tree.Transform.Source): Promise<void>;
         /**
          * Remove all entities.
          */
@@ -17704,7 +17633,7 @@ declare namespace LiteMol.Plugin {
          *
          * Default format is mmCIF.
          */
-        loadMolecule(source: ControllerLoadMoleculeInfo): __Promise.Promise<void>;
+        loadMolecule(source: ControllerLoadMoleculeInfo): Promise<void>;
         /**
          * Destroys the the plugin instance.
          * The controller becomes unusable as a result.

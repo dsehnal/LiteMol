@@ -63,7 +63,7 @@ namespace LiteMol.Bootstrap.Tree {
             }
                         
             apply(context: Context, a: A): Core.Computation<B> {
-                return Core.computation<B>(async ctx => new Promise(async (res, rej) => {
+                return Core.computation<B>(ctx => new Promise<B>(async (res, rej) => {
                     Event.Tree.TransformStarted.dispatch(context, this);
                     this.transformer.apply(context, a, this).run(context).then(b => {
                         res(this.resolveAdd(a, b));

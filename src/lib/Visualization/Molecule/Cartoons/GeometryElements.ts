@@ -192,7 +192,7 @@ namespace LiteMol.Visualization.Molecule.Cartoons.Geometry {
         GB.addDashedLine(ctx.state.gapsBuilder, a, b, 0.5, 0.5, r);
     }
 
-    export async function buildUnitsAsync(ctx: Context): LiteMol.Promise<void> {
+    export async function buildUnitsAsync(ctx: Context): Promise<void> {
         const chunkSize = 10000; // residues
         let started = Core.Utils.PerformanceMonitor.currentTime();
         let unitIndex = 0;

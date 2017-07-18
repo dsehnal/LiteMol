@@ -272,7 +272,7 @@ namespace LiteMol.Visualization.Surface {
         }
     }
 
-    export async function buildGeometry(data: Data, computation: Core.Computation.Context, isWireframe: boolean): LiteMol.Promise<Geometry> {
+    export async function buildGeometry(data: Data, computation: Core.Computation.Context, isWireframe: boolean): Promise<Geometry> {
         let ctx: Context = {
             data,
             computation,

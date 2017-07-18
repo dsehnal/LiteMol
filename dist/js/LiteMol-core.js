@@ -11165,6 +11165,7 @@ var CIFTools;
  */
 var LiteMol;
 (function (LiteMol) {
+    //export type Promise<T> = GlobalPromise<T>;// __Promise.Promise<T>;
     LiteMol.Promise = __LiteMolPromise;
 })(LiteMol || (LiteMol = {}));
 (function (LiteMol) {
@@ -11399,11 +11400,8 @@ var LiteMol;
             var FastMap;
             (function (FastMap) {
                 function forEach(data, f, ctx) {
-                    var hasOwn = Object.prototype.hasOwnProperty;
                     for (var _i = 0, _a = Object.keys(data); _i < _a.length; _i++) {
                         var key = _a[_i];
-                        if (!hasOwn.call(data, key))
-                            continue;
                         var v = data[key];
                         if (v === void 0)
                             continue;
@@ -11465,11 +11463,8 @@ var LiteMol;
                  */
                 function ofObject(data) {
                     var ret = create();
-                    var hasOwn = Object.prototype.hasOwnProperty;
                     for (var _i = 0, _a = Object.keys(data); _i < _a.length; _i++) {
                         var key = _a[_i];
-                        if (!hasOwn.call(data, key))
-                            continue;
                         var v = data[key];
                         ret.set(key, v);
                     }
@@ -11480,10 +11475,9 @@ var LiteMol;
             var FastSet;
             (function (FastSet) {
                 function forEach(data, f, ctx) {
-                    var hasOwn = Object.prototype.hasOwnProperty;
                     for (var _i = 0, _a = Object.keys(data); _i < _a.length; _i++) {
                         var p = _a[_i];
-                        if (!hasOwn.call(data, p) || data[p] !== null)
+                        if (data[p] !== null)
                             continue;
                         f(p, ctx);
                     }

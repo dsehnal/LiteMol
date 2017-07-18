@@ -1,74 +1,4 @@
 
-
-
-// Project: https://github.com/jakearchibald/ES6-Promise
-// Definitions by: François de Campredon <https://github.com/fdecampredon/>, vvakame <https://github.com/vvakame>
-// Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
-
-declare namespace __Promise {
-    interface Thenable<T> {
-        then<U>(onFulfilled?: (value: T) => U | Thenable<U>, onRejected?: (error: any) => U | Thenable<U>): Thenable<U>;
-        then<U>(onFulfilled?: (value: T) => U | Thenable<U>, onRejected?: (error: any) => void): Thenable<U>;
-        catch<U>(onRejected?: (error: any) => U | Thenable<U>): Thenable<U>;
-    }
-
-    class Promise<T> implements Thenable<T> {
-        /**
-         * If you call resolve in the body of the callback passed to the constructor,
-         * your promise is fulfilled with result object passed to resolve.
-         * If you call reject your promise is rejected with the object passed to reject.
-         * For consistency and debugging (eg stack traces), obj should be an instanceof Error.
-         * Any errors thrown in the constructor callback will be implicitly passed to reject().
-         */
-        constructor(callback: (resolve: (value?: T | Thenable<T>) => void, reject: (error?: any) => void) => void);
-
-        /**
-         * onFulfilled is called when/if "promise" resolves. onRejected is called when/if "promise" rejects.
-         * Both are optional, if either/both are omitted the next onFulfilled/onRejected in the chain is called.
-         * Both callbacks have a single parameter , the fulfillment value or rejection reason.
-         * "then" returns a new promise equivalent to the value you return from onFulfilled/onRejected after being passed through Promise.resolve.
-         * If an error is thrown in the callback, the returned promise rejects with that error.
-         *
-         * @param onFulfilled called when/if "promise" resolves
-         * @param onRejected called when/if "promise" rejects
-         */
-        then<U>(onFulfilled?: (value: T) => U | Thenable<U>, onRejected?: (error: any) => U | Thenable<U>): Promise<U>;
-        then<U>(onFulfilled?: (value: T) => U | Thenable<U>, onRejected?: (error: any) => void): Promise<U>;
-
-        /**
-         * Sugar for promise.then(undefined, onRejected)
-         *
-         * @param onRejected called when/if "promise" rejects
-         */
-        catch<U>(onRejected?: (error: any) => U | Thenable<U>): Promise<U>;
-    }
-
-    namespace Promise {
-        /**
-         * Make a new promise from the thenable.
-         * A thenable is promise-like in as far as it has a "then" method.
-         */
-        function resolve<T>(value?: T | Thenable<T>): Promise<T>;
-
-        /**
-         * Make a promise that rejects to obj. For consistency and debugging (eg stack traces), obj should be an instanceof Error
-         */
-        function reject(error: any): Promise<any>;
-        function reject<T>(error: T): Promise<T>;
-
-        /**
-         * Make a promise that fulfills when every item in the array fulfills, and rejects if (and when) any item rejects.
-         * the array passed to all can be a mixture of promise-like objects and other objects.
-         * The fulfillment value is an array (in order) of fulfillment values. The rejection value is the first rejection value.
-         */
-        function all<T>(promises: (T | Thenable<T>)[]): Promise<T[]>;
-
-        /**
-         * Make a Promise that fulfills when any item fulfills, and rejects if any item rejects.
-         */
-        function race<T>(promises: (T | Thenable<T>)[]): Promise<T>;
-    }
-}
 // DefinitelyTyped: partial
 
 // This file contains common part of defintions for rx.d.ts and rx.lite.d.ts
@@ -1511,8 +1441,7 @@ declare module 'CIFTools' {
 }
 
 declare namespace LiteMol {
-    type Promise<T> = __Promise.Promise<T>;
-    const Promise: typeof __Promise.Promise;
+    const Promise: PromiseConstructor;
 }
 declare namespace LiteMol.Core {
     export import Rx = __LiteMolRx;
@@ -1531,7 +1460,7 @@ declare namespace LiteMol.Core {
     function computation<A>(c: (ctx: Computation.Context) => Promise<A>): Computation<A>;
     class Computation<A> {
         private computation;
-        run(ctx?: Computation.Context): __Promise.Promise<A>;
+        run(ctx?: Computation.Context): Promise<A>;
         runWithContext(ctx?: Computation.Context): Computation.Running<A>;
         constructor(computation: (ctx: Computation.Context) => Promise<A>);
     }
@@ -1614,7 +1543,7 @@ declare namespace LiteMol.Core.Utils {
         /**
          * Create a map from an array of the form [[key, value], ...]
          */
-        function ofArray<K extends string | number, V>(data: (K | V)[][]): FastMap<K, V>;
+        function ofArray<K extends string | number, V>(data: [K, V][]): FastMap<K, V>;
         /**
          * Create a map from an object of the form { key: value, ... }
          */

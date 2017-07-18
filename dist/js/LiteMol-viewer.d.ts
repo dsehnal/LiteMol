@@ -385,7 +385,7 @@ declare namespace LiteMol.Extensions.ComplexReprensetation {
         };
         freeWaterAtoms: number[];
     }
-    function createComplexRepresentation(computation: Core.Computation.Context, model: Model, queryCtx: Q.Context): LiteMol.Promise<Info>;
+    function createComplexRepresentation(computation: Core.Computation.Context, model: Model, queryCtx: Q.Context): Promise<Info>;
 }
 declare namespace LiteMol.Extensions.ComplexReprensetation.Transforms {
     import Entity = Bootstrap.Entity;

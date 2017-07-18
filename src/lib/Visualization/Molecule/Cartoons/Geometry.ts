@@ -49,7 +49,7 @@ namespace LiteMol.Visualization.Molecule.Cartoons.Geometry {
         linearSegments: number,
         parameters: any,
         isTrace: boolean,
-        computation: Core.Computation.Context): LiteMol.Promise<Data> {
+        computation: Core.Computation.Context): Promise<Data> {
         
         let params = <CartoonsGeometryParams>Core.Utils.extend({}, parameters, CartoonsGeometryParams.Default);
         let ctx: Context = {

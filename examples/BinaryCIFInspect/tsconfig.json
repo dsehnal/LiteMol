@@ -8,7 +8,7 @@
     "declaration": false,
     "strictNullChecks": true,
     "noImplicitThis": true,
-    "lib": [ "es5", "es2015.collection", "dom" ],
+    "lib": [ "es5", "es2015.collection", "dom", "es2015.promise" ],
     "target": "es5",
     "jsx": "react",
     "module": "none",

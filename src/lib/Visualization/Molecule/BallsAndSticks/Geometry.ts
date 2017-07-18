@@ -415,7 +415,7 @@ namespace LiteMol.Visualization.Molecule.BallsAndSticks {
     }
 
     export function buildGeometry(model: Core.Structure.Molecule.Model, parameters: Parameters,
-        atomIndices: number[], ctx: Core.Computation.Context): LiteMol.Promise<BallsAndSticksGeometry> {
+        atomIndices: number[], ctx: Core.Computation.Context): Promise<BallsAndSticksGeometry> {
         return BallsAndSticksGeometryBuilder.build(model, parameters, atomIndices, ctx);
     }
 

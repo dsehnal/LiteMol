@@ -5,6 +5,12 @@
 namespace LiteMol.Core.Structure {
     'use strict';
 
+    // TODO
+    // - make "index" of bonds.
+    //   ~ BondTable is monotonous in the atomAIndex argument => make mapping atomIndex => (startBondIndex, endBondIndex)
+    //   ~ atomBIndex is always greater than atomAIndex
+    // - add a function that "restricts" a bond table a smaller set of indices
+
     export const enum BondType {
         Unknown = 0,
 

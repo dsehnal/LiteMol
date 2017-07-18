@@ -16,8 +16,8 @@
     "jsx": "react",
     "module": "none",
     "types": [],
-    "skipDefaultLibCheck": true,
-    "skipLibCheck": true,
+    //"skipDefaultLibCheck": true,
+    //"skipLibCheck": true,
     "out": "LiteMol-core-temp.js"
   },
   "files": [

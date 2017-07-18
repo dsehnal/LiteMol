@@ -56165,6 +56165,7 @@ SOFTWARE.
  */
 var LiteMol;
 (function (LiteMol) {
+    //export type Promise<T> = GlobalPromise<T>;// __Promise.Promise<T>;
     LiteMol.Promise = __LiteMolPromise;
 })(LiteMol || (LiteMol = {}));
 (function (LiteMol) {
@@ -56399,11 +56400,8 @@ var LiteMol;
             var FastMap;
             (function (FastMap) {
                 function forEach(data, f, ctx) {
-                    var hasOwn = Object.prototype.hasOwnProperty;
                     for (var _i = 0, _a = Object.keys(data); _i < _a.length; _i++) {
                         var key = _a[_i];
-                        if (!hasOwn.call(data, key))
-                            continue;
                         var v = data[key];
                         if (v === void 0)
                             continue;
@@ -56465,11 +56463,8 @@ var LiteMol;
                  */
                 function ofObject(data) {
                     var ret = create();
-                    var hasOwn = Object.prototype.hasOwnProperty;
                     for (var _i = 0, _a = Object.keys(data); _i < _a.length; _i++) {
                         var key = _a[_i];
-                        if (!hasOwn.call(data, key))
-                            continue;
                         var v = data[key];
                         ret.set(key, v);
                     }
@@ -56480,10 +56475,9 @@ var LiteMol;
             var FastSet;
             (function (FastSet) {
                 function forEach(data, f, ctx) {
-                    var hasOwn = Object.prototype.hasOwnProperty;
                     for (var _i = 0, _a = Object.keys(data); _i < _a.length; _i++) {
                         var p = _a[_i];
-                        if (!hasOwn.call(data, p) || data[p] !== null)
+                        if (data[p] !== null)
                             continue;
                         f(p, ctx);
                     }
@@ -68412,7 +68406,7 @@ var LiteMol;
                 });
             }
             function buildGeometry(data, computation, isWireframe) {
-                return __awaiter(this, void 0, LiteMol.Promise, function () {
+                return __awaiter(this, void 0, void 0, function () {
                     var ctx, attr;
                     return __generator(this, function (_a) {
                         switch (_a.label) {
@@ -69976,7 +69970,7 @@ var LiteMol;
                     }(Visualization.GeometryBase));
                     Geometry.Data = Data;
                     function create(model, atomIndices, linearSegments, parameters, isTrace, computation) {
-                        return __awaiter(this, void 0, LiteMol.Promise, function () {
+                        return __awaiter(this, void 0, void 0, function () {
                             var params, ctx, ret, _i, _a, k;
                             return __generator(this, function (_b) {
                                 switch (_b.label) {
@@ -70852,7 +70846,7 @@ var LiteMol;
                         GB.addDashedLine(ctx.state.gapsBuilder, a, b, 0.5, 0.5, r);
                     }
                     function buildUnitsAsync(ctx) {
-                        return __awaiter(this, void 0, LiteMol.Promise, function () {
+                        return __awaiter(this, void 0, void 0, function () {
                             var chunkSize, started, unitIndex, residuesDone, t, i;
                             return __generator(this, function (_a) {
                                 switch (_a.label) {
@@ -73474,25 +73468,20 @@ var LiteMol;
                     };
                     TransformImpl.prototype.apply = function (context, a) {
                         var _this = this;
-                        return LiteMol.Core.computation(function (ctx) { return __awaiter(_this, void 0, void 0, function () {
+                        return LiteMol.Core.computation(function (ctx) { return new LiteMol.Promise(function (res, rej) { return __awaiter(_this, void 0, void 0, function () {
                             var _this = this;
                             return __generator(this, function (_a) {
-                                return [2 /*return*/, new LiteMol.Promise(function (res, rej) { return __awaiter(_this, void 0, void 0, function () {
-                                        var _this = this;
-                                        return __generator(this, function (_a) {
-                                            Bootstrap.Event.Tree.TransformStarted.dispatch(context, this);
-                                            this.transformer.apply(context, a, this).run(context).then(function (b) {
-                                                res(_this.resolveAdd(a, b));
-                                                Bootstrap.Event.Tree.TransformFinished.dispatch(context, { transform: _this });
-                                            }).catch(function (e) {
-                                                rej(e);
-                                                Bootstrap.Event.Tree.TransformFinished.dispatch(context, { transform: _this, error: e });
-                                            });
-                                            return [2 /*return*/];
-                                        });
-                                    }); })];
+                                Bootstrap.Event.Tree.TransformStarted.dispatch(context, this);
+                                this.transformer.apply(context, a, this).run(context).then(function (b) {
+                                    res(_this.resolveAdd(a, b));
+                                    Bootstrap.Event.Tree.TransformFinished.dispatch(context, { transform: _this });
+                                }).catch(function (e) {
+                                    rej(e);
+                                    Bootstrap.Event.Tree.TransformFinished.dispatch(context, { transform: _this, error: e });
+                                });
+                                return [2 /*return*/];
                             });
-                        }); });
+                        }); }); });
                     };
                     TransformImpl.prototype.update = function (context, b) {
                         var _this = this;
@@ -76181,7 +76170,7 @@ var LiteMol;
                                 return __generator(this, function (_a) {
                                     cif = LiteMol.Core.Formats.CIF.Binary.parse(t.params.data);
                                     if (cif.isError)
-                                        return [2 /*return*/];
+                                        throw new Error('Invalid CIF.');
                                     model = LiteMol.Core.Formats.Molecule.mmCIF.ofDataBlock(cif.result.dataBlocks[0]).models[0];
                                     if (t.params.transform)
                                         LiteMol.Core.Structure.Operator.applyToModelUnsafe(t.params.transform, model);

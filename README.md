@@ -1,5 +1,5 @@
 
-[![Version](https://img.shields.io/badge/Version-2.4.0_preview-blue.svg?style=flat)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/Version-2.4.0_rc-blue.svg?style=flat)](CHANGELOG.md)
 [![Latest Release](https://img.shields.io/badge/Latest%20Release-1.0-blue.svg?style=flat)](https://github.com/dsehnal/LiteMol/releases/tag/v1.0)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg?style=flat)](https://github.com/dsehnal/LiteMol/blob/master/LICENSE)
 
@@ -129,7 +129,7 @@ Releases
 
 The latest stable release of LiteMol is the [version 1.0](https://github.com/dsehnal/LiteMol/releases/tag/v1.0).
 
-Currently, the version 2.0 is being developed and is in a "preview" phase, meaning that a number of breaking changes will be introduced.
+Currently, the version 2.0 is being developed and is in a "release candidate" phase and should be released soon.
 Migration summary can be found [here](docs/migrating/1-to-2.md).
 
 Short term goals 

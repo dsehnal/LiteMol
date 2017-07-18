@@ -24,7 +24,7 @@ namespace LiteMol.Extensions.ComplexReprensetation {
     const MAX_AMINO_SEQ_LIGAND_LENGTH = 10;
     const MAX_NUCLEOTIDE_SEQ_LIGAND_LENGTH = 2;
 
-    export async function createComplexRepresentation(computation: Core.Computation.Context, model: Model, queryCtx: Q.Context): LiteMol.Promise<Info> {        
+    export async function createComplexRepresentation(computation: Core.Computation.Context, model: Model, queryCtx: Q.Context): Promise<Info> {        
         await computation.updateProgress('Determing main sequence atoms...');
         const sequenceAtoms = findMainSequence(model, queryCtx);
 

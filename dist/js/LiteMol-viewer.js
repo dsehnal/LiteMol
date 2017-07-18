@@ -1070,7 +1070,7 @@ var LiteMol;
                     });
                 };
                 Behaviour.prototype.invalidateParams = function (newParams) {
-                    return __awaiter(this, void 0, LiteMol.Promise, function () {
+                    return __awaiter(this, void 0, void 0, function () {
                         var oldParams;
                         return __generator(this, function (_a) {
                             switch (_a.label) {
@@ -2341,7 +2341,7 @@ var LiteMol;
             var MAX_AMINO_SEQ_LIGAND_LENGTH = 10;
             var MAX_NUCLEOTIDE_SEQ_LIGAND_LENGTH = 2;
             function createComplexRepresentation(computation, model, queryCtx) {
-                return __awaiter(this, void 0, LiteMol.Promise, function () {
+                return __awaiter(this, void 0, void 0, function () {
                     var sequenceAtoms, modRes, hasModRes, ret_1, sequenceCtx, modifiedSequence, ret_2, waterAtoms, possibleHetGroupsAndInteractingSequenceQ, possibleHetGroupsAndInteractingSequence, ret_3, bonds, _a, entityIndex, residueIndex, entType, atomAIndex, atomBIndex, boundWaters, i, __i, a, b, tA, tB, freeWaterAtoms, waterAtomsOffset, _i, waterAtoms_1, aI, sequenceMask, _hetGroupsWithSequence, boundSequence, boundHetAtoms, i, __i, a, b, hasA, hasB, _b, _c, aI, rI, hetGroupsWithSequence, carbohydrates, commonAtoms, carbMap, _d, hetGroupsWithSequence_1, aI, rI, interactingSequenceAtoms, _e, hetGroupsWithSequence_2, aI, rI, ret;
                     return __generator(this, function (_f) {
                         switch (_f.label) {
