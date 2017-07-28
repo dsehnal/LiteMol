@@ -1,3 +1,6 @@
+# 1.6.2
+* Increased camera rotation speed.
+
 # 1.6.1
 * Added "particle coloring" extension.
 

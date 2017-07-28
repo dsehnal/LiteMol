@@ -2,7 +2,7 @@ var LiteMol;
 (function (LiteMol) {
     var Viewer;
     (function (Viewer) {
-        Viewer.VERSION = { number: "1.6.1", date: "July 4 2017" };
+        Viewer.VERSION = { number: "1.6.2", date: "July 28 2017" };
     })(Viewer = LiteMol.Viewer || (LiteMol.Viewer = {}));
 })(LiteMol || (LiteMol = {}));
 /*
@@ -2645,8 +2645,8 @@ var LiteMol;
                     var action = Tree.Transform.build();
                     var info = a.props.info;
                     if (info.sequence.all.length) {
-                        var sequence = action.add(a, Transformer.Basic.CreateGroup, { label: 'Sequence', description: '' }, { isBinding: true });
-                        sequence.then(Transformer.Molecule.CreateSelectionFromQuery, { query: Q.atomsFromIndices(info.sequence.all), name: 'All Residues', silent: true }, { isBinding: true })
+                        var sequence = action.add(a, Transformer.Basic.CreateGroup, { label: 'Sequence', description: '' }, { isBinding: false });
+                        sequence.then(Transformer.Molecule.CreateSelectionFromQuery, { query: Q.atomsFromIndices(info.sequence.all), name: 'All Residues', silent: true }, { isBinding: false })
                             .then(Transformer.Molecule.CreateVisual, { style: LiteMol.Bootstrap.Visualization.Molecule.Default.ForType.get('Cartoons') }, {});
                         var sequenceBSStyle = {
                             type: 'BallsAndSticks',
@@ -2656,19 +2656,19 @@ var LiteMol;
                             isNotSelectable: true
                         };
                         if (info.sequence.interacting.length) {
-                            sequence.then(Transformer.Molecule.CreateSelectionFromQuery, { query: Q.atomsFromIndices(info.sequence.interacting), name: 'Interacting Residues', silent: true }, { isBinding: true })
+                            sequence.then(Transformer.Molecule.CreateSelectionFromQuery, { query: Q.atomsFromIndices(info.sequence.interacting), name: 'Interacting Residues', silent: true }, { isBinding: false })
                                 .then(Transformer.Molecule.CreateVisual, { style: sequenceBSStyle });
                         }
                         if (info.sequence.modified.length) {
-                            sequence.then(Transformer.Molecule.CreateSelectionFromQuery, { query: Q.atomsFromIndices(info.sequence.modified), name: 'Modified Residues', silent: true }, { isBinding: true })
+                            sequence.then(Transformer.Molecule.CreateSelectionFromQuery, { query: Q.atomsFromIndices(info.sequence.modified), name: 'Modified Residues', silent: true }, { isBinding: false })
                                 .then(Transformer.Molecule.CreateVisual, { style: sequenceBSStyle });
                         }
                     }
                     if (info.het.other.length || info.het.carbohydrates.entries.length) {
-                        var hetGroups = action.add(a, Transformer.Basic.CreateGroup, { label: 'HET', description: '' }, { isBinding: true });
+                        var hetGroups = action.add(a, Transformer.Basic.CreateGroup, { label: 'HET', description: '' }, { isBinding: false });
                         if (info.het.other.length) {
                             hetGroups.then(Transformer.Molecule.CreateSelectionFromQuery, { query: Q.atomsFromIndices(info.het.other), name: 'Ligands', silent: true })
-                                .then(Transformer.Molecule.CreateVisual, { style: LiteMol.Bootstrap.Visualization.Molecule.Default.ForType.get('BallsAndSticks') }, { isBinding: true });
+                                .then(Transformer.Molecule.CreateVisual, { style: LiteMol.Bootstrap.Visualization.Molecule.Default.ForType.get('BallsAndSticks') }, { isBinding: false });
                         }
                         if (info.het.carbohydrates.entries.length) {
                             var shadeStyle = {
