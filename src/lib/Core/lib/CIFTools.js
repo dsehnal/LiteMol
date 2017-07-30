@@ -3093,3 +3093,4 @@ var CIFTools;
         Binary.Writer = Writer;
     })(Binary = CIFTools.Binary || (CIFTools.Binary = {}));
 })(CIFTools || (CIFTools = {}));
+var LiteMolCIFTools = CIFTools;

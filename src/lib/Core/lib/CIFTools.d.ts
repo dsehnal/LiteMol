@@ -1,10 +1,10 @@
-declare namespace CIFTools {
+declare namespace LiteMolCIFTools {
     var VERSION: {
         number: string;
         date: string;
     };
 }
-declare namespace CIFTools.Utils {
+declare namespace LiteMolCIFTools.Utils {
     /**
      * A generic chunked array builder.
      *
@@ -44,13 +44,13 @@ declare namespace CIFTools.Utils {
  * For the purposes of parsing numbers from the mmCIF data representations,
  * up to 4 times faster than JS parseInt/parseFloat.
  */
-declare namespace CIFTools.Utils.FastNumberParsers {
+declare namespace LiteMolCIFTools.Utils.FastNumberParsers {
     function parseIntSkipTrailingWhitespace(str: string, start: number, end: number): number;
     function parseInt(str: string, start: number, end: number): number;
     function parseFloatSkipTrailingWhitespace(str: string, start: number, end: number): number;
     function parseFloat(str: string, start: number, end: number): number;
 }
-declare namespace CIFTools.Utils {
+declare namespace LiteMolCIFTools.Utils {
     interface StringWriter {
         chunkData: string[];
         chunkOffset: number;
@@ -78,7 +78,7 @@ declare namespace CIFTools.Utils {
         function writeFloatPadRight(writer: StringWriter, val: number, precisionMultiplier: number, totalWidth: number): void;
     }
 }
-declare namespace CIFTools {
+declare namespace LiteMolCIFTools {
     /**
      * Represents a "CIF FILE" with one or more data blocks.
      */
@@ -175,7 +175,7 @@ declare namespace CIFTools {
         function getVector(category: Category, field: string, rows: number, cols: number, rowIndex: number): number[];
     }
 }
-declare namespace CIFTools {
+declare namespace LiteMolCIFTools {
     type ParserResult<T> = ParserSuccess<T> | ParserError;
     namespace ParserResult {
         function error<T>(message: string, line?: number): ParserResult<T>;
@@ -195,7 +195,7 @@ declare namespace CIFTools {
         constructor(result: T, warnings: string[]);
     }
 }
-declare namespace CIFTools {
+declare namespace LiteMolCIFTools {
     interface FieldDesc<Data> {
         name: string;
         string?: (data: Data, i: number) => string | null;
@@ -225,11 +225,11 @@ declare namespace CIFTools {
         flush(stream: OutputStream): void;
     }
 }
-declare namespace CIFTools.Text {
+declare namespace LiteMolCIFTools.Text {
     /**
      * Represents the input file.
      */
-    class File implements CIFTools.File {
+    class File implements LiteMolCIFTools.File {
         /**
          * The input string.
          *
@@ -262,7 +262,7 @@ declare namespace CIFTools.Text {
     /**
      * Represents a single data block.
      */
-    class DataBlock implements CIFTools.DataBlock {
+    class DataBlock implements LiteMolCIFTools.DataBlock {
         private categoryMap;
         private categoryList;
         /**
@@ -308,7 +308,7 @@ declare namespace CIFTools.Text {
     /**
      * Represents a single CIF category.
      */
-    class Category implements CIFTools.Category {
+    class Category implements LiteMolCIFTools.Category {
         private data;
         private columnIndices;
         private columnNameList;
@@ -345,7 +345,7 @@ declare namespace CIFTools.Text {
          * Get a column object that makes accessing data easier.
          * @returns undefined if the column isn't present, the Column object otherwise.
          */
-        getColumn(name: string): CIFTools.Column;
+        getColumn(name: string): LiteMolCIFTools.Column;
         constructor(data: string, name: string, startIndex: number, endIndex: number, columns: string[], tokens: number[], tokenCount: number);
         toJSON(): {
             name: string;
@@ -356,7 +356,7 @@ declare namespace CIFTools.Text {
     /**
      * Represents a single column of a CIF category.
      */
-    class Column implements CIFTools.Column {
+    class Column implements LiteMolCIFTools.Column {
         private data;
         name: string;
         index: number;
@@ -392,11 +392,11 @@ declare namespace CIFTools.Text {
         constructor(category: Category, data: string, name: string, index: number);
     }
 }
-declare namespace CIFTools.Text {
-    function parse(data: string): ParserResult<CIFTools.File>;
+declare namespace LiteMolCIFTools.Text {
+    function parse(data: string): ParserResult<LiteMolCIFTools.File>;
 }
-declare namespace CIFTools.Text {
-    class Writer<Context> implements CIFTools.Writer<Context> {
+declare namespace LiteMolCIFTools.Text {
+    class Writer<Context> implements LiteMolCIFTools.Writer<Context> {
         private writer;
         private encoded;
         private dataBlockCreated;
@@ -407,26 +407,26 @@ declare namespace CIFTools.Text {
         constructor();
     }
 }
-declare namespace CIFTools.Binary.MessagePack {
+declare namespace LiteMolCIFTools.Binary.MessagePack {
     function decode(buffer: Uint8Array): any;
 }
-declare namespace CIFTools.Binary.MessagePack {
+declare namespace LiteMolCIFTools.Binary.MessagePack {
     function encode(value: any): Uint8Array;
 }
-declare namespace CIFTools.Binary.MessagePack {
+declare namespace LiteMolCIFTools.Binary.MessagePack {
     function utf8Write(data: Uint8Array, offset: number, str: string): void;
     function utf8Read(data: Uint8Array, offset: number, length: number): string;
     function utf8ByteCount(str: string): number;
 }
-declare namespace CIFTools.Binary {
+declare namespace LiteMolCIFTools.Binary {
     /**
      * Fixed point, delta, RLE, integer packing adopted from https://github.com/rcsb/mmtf-javascript/
      * by Alexander Rose <alexander.rose@weirdbyte.de>, MIT License, Copyright (c) 2016
      */
     function decode(data: EncodedData): any;
 }
-declare namespace CIFTools.Binary {
-    class File implements CIFTools.File {
+declare namespace LiteMolCIFTools.Binary {
+    class File implements LiteMolCIFTools.File {
         dataBlocks: DataBlock[];
         toJSON(): {
             id: string;
@@ -441,7 +441,7 @@ declare namespace CIFTools.Binary {
         }[];
         constructor(data: EncodedFile);
     }
-    class DataBlock implements CIFTools.DataBlock {
+    class DataBlock implements LiteMolCIFTools.DataBlock {
         private categoryMap;
         private categoryList;
         header: string;
@@ -463,14 +463,14 @@ declare namespace CIFTools.Binary {
         };
         constructor(data: EncodedDataBlock);
     }
-    class Category implements CIFTools.Category {
+    class Category implements LiteMolCIFTools.Category {
         private encodedColumns;
         private columnNameList;
         name: string;
         columnCount: number;
         rowCount: number;
         readonly columnNames: string[];
-        getColumn(name: string): CIFTools.Column;
+        getColumn(name: string): LiteMolCIFTools.Column;
         toJSON(): {
             name: string;
             columns: string[];
@@ -479,7 +479,7 @@ declare namespace CIFTools.Binary {
         constructor(data: EncodedCategory);
     }
 }
-declare namespace CIFTools.Binary {
+declare namespace LiteMolCIFTools.Binary {
     /**
      * Fixed point, delta, RLE, integer packing adopted from https://github.com/rcsb/mmtf-javascript/
      * by Alexander Rose <alexander.rose@weirdbyte.de>, MIT License, Copyright (c) 2016
@@ -509,7 +509,7 @@ declare namespace CIFTools.Binary {
         function stringArray(data: string[]): Result;
     }
 }
-declare namespace CIFTools.Binary {
+declare namespace LiteMolCIFTools.Binary {
     const VERSION = "0.3.0";
     type Encoding = Encoding.ByteArray | Encoding.FixedPoint | Encoding.RunLength | Encoding.Delta | Encoding.IntervalQuantization | Encoding.IntegerPacking | Encoding.StringArray;
     interface EncodedFile {
@@ -602,11 +602,11 @@ declare namespace CIFTools.Binary {
         }
     }
 }
-declare namespace CIFTools.Binary {
-    function parse(data: ArrayBuffer): ParserResult<CIFTools.File>;
+declare namespace LiteMolCIFTools.Binary {
+    function parse(data: ArrayBuffer): ParserResult<LiteMolCIFTools.File>;
 }
-declare namespace CIFTools.Binary {
-    class Writer<Context> implements CIFTools.Writer<Context> {
+declare namespace LiteMolCIFTools.Binary {
+    class Writer<Context> implements LiteMolCIFTools.Writer<Context> {
         private data;
         private dataBlocks;
         private encodedData;
@@ -616,8 +616,4 @@ declare namespace CIFTools.Binary {
         flush(stream: OutputStream): void;
         constructor(encoder: string);
     }
-}
-declare module 'CIFTools' {
-    import __Tools = CIFTools;
-    export = __Tools;
 }

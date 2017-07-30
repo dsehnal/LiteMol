@@ -16,6 +16,6 @@ namespace LiteMol.Core {
     export import Promise = LiteMol.Promise;
 
     export namespace Formats {
-        export import CIF = CIFTools;
+        export import CIF = LiteMolCIFTools;
     }
 }

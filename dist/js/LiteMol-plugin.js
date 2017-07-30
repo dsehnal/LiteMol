@@ -11159,6 +11159,7 @@ var CIFTools;
         Binary.Writer = Writer;
     })(Binary = CIFTools.Binary || (CIFTools.Binary = {}));
 })(CIFTools || (CIFTools = {}));
+var LiteMolCIFTools = CIFTools;
 // File:src/Three.js
 
 var LiteMolTHREE = (function () {
@@ -56176,7 +56177,7 @@ var LiteMol;
         Core.Promise = LiteMol.Promise;
         var Formats;
         (function (Formats) {
-            Formats.CIF = CIFTools;
+            Formats.CIF = LiteMolCIFTools;
         })(Formats = Core.Formats || (Core.Formats = {}));
     })(Core = LiteMol.Core || (LiteMol.Core = {}));
 })(LiteMol || (LiteMol = {}));
