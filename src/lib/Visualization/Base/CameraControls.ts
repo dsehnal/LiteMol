@@ -15,8 +15,8 @@ namespace LiteMol.Visualization {
         
         enabled = true;
         //private screen = { left: 0, top: 0, width: 0, height: 0 };
-        rotateSpeed = 5.33;
-        zoomSpeed = 4.33;
+        rotateSpeed = 6;
+        zoomSpeed = 6;
         panSpeed = 1.0;
         noRotate = false;
         noZoom = false;

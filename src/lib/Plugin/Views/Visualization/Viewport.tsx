@@ -28,6 +28,7 @@ namespace LiteMol.Plugin.Views.Visualization {
                 options = <div className='lm-viewport-controls-scene-options lm-control'>                    
                     <Controls.Toggle onChange={v => this.controller.setState({ enableFog: v })} value={state.enableFog!} label='Fog' />
                     <Controls.Slider label='FOV' min={30} max={90} onChange={v => this.controller.setState({ cameraFOV: v }) } value={state.cameraFOV!} />
+                    <Controls.Slider label='Camera Speed' min={1} max={10} step={0.01} onChange={v => this.controller.setState({ cameraSpeed: v }) } value={state.cameraSpeed!} />
                     <Controls.ToggleColorPicker color={state.clearColor!} label='Background' position='below' onChange={c => this.controller.setState({ clearColor: c }) } />
                 </div>;
             } else if (this.state.showHelp) {

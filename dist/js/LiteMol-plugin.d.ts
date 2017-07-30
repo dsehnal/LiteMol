@@ -14469,7 +14469,7 @@ declare namespace LiteMol.Visualization {
         private scene;
         private domElement;
         private camera;
-        private controls;
+        controls: CameraControls;
         private slabControls;
         fog: THREE.Fog;
         focusPoint: THREE.Vector3;
@@ -14529,6 +14529,7 @@ declare namespace LiteMol.Visualization {
             b: number;
         };
         cameraFOV?: number;
+        cameraSpeed?: number;
         cameraType?: CameraType;
         enableFog?: boolean;
         enableFrontClip?: boolean;

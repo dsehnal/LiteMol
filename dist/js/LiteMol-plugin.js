@@ -66895,6 +66895,7 @@ var LiteMol;
         Visualization.DefaultSceneOptions = {
             alpha: false,
             clearColor: { r: 0, g: 0, b: 0 },
+            cameraSpeed: 6,
             cameraFOV: 30,
             cameraType: Visualization.CameraType.Perspective,
             enableFog: true
@@ -67043,6 +67044,10 @@ var LiteMol;
                 this.renderer.setClearColor(new Visualization.THREE.Color(cc.r, cc.g, cc.b));
                 this.renderer.setClearAlpha(options.alpha ? 0.0 : 1.0);
                 this.camera.fog.color.setRGB(cc.r, cc.g, cc.b);
+                if (this.camera.controls) {
+                    this.camera.controls.rotateSpeed = options.cameraSpeed;
+                    this.camera.controls.zoomSpeed = options.cameraSpeed;
+                }
                 this.options = options;
                 if (updateCamera)
                     this.camera.createCamera();
@@ -67317,8 +67322,8 @@ var LiteMol;
                 this.scene = scene;
                 this.enabled = true;
                 //private screen = { left: 0, top: 0, width: 0, height: 0 };
-                this.rotateSpeed = 5.33;
-                this.zoomSpeed = 4.33;
+                this.rotateSpeed = 6;
+                this.zoomSpeed = 6;
                 this.panSpeed = 1.0;
                 this.noRotate = false;
                 this.noZoom = false;
@@ -80827,6 +80832,7 @@ var LiteMol;
                             options = Plugin.React.createElement("div", { className: 'lm-viewport-controls-scene-options lm-control' },
                                 Plugin.React.createElement(Plugin.Controls.Toggle, { onChange: function (v) { return _this.controller.setState({ enableFog: v }); }, value: state.enableFog, label: 'Fog' }),
                                 Plugin.React.createElement(Plugin.Controls.Slider, { label: 'FOV', min: 30, max: 90, onChange: function (v) { return _this.controller.setState({ cameraFOV: v }); }, value: state.cameraFOV }),
+                                Plugin.React.createElement(Plugin.Controls.Slider, { label: 'Camera Speed', min: 1, max: 10, step: 0.01, onChange: function (v) { return _this.controller.setState({ cameraSpeed: v }); }, value: state.cameraSpeed }),
                                 Plugin.React.createElement(Plugin.Controls.ToggleColorPicker, { color: state.clearColor, label: 'Background', position: 'below', onChange: function (c) { return _this.controller.setState({ clearColor: c }); } }));
                         }
                         else if (this.state.showHelp) {

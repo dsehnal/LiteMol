@@ -5,9 +5,10 @@
 namespace LiteMol.Visualization {    
     
     export interface SceneOptions {
-        alpha?: boolean;
-        clearColor?: { r: number; g: number; b: number };
-        cameraFOV?: number;
+        alpha?: boolean,
+        clearColor?: { r: number; g: number; b: number },
+        cameraFOV?: number,
+        cameraSpeed?: number,
         cameraType?: CameraType,
         enableFog?: boolean,
         enableFrontClip?: boolean
@@ -16,6 +17,7 @@ namespace LiteMol.Visualization {
     export const DefaultSceneOptions:SceneOptions = {
         alpha: false,
         clearColor: { r: 0, g: 0, b: 0 },
+        cameraSpeed: 6,
         cameraFOV: 30,
         cameraType: CameraType.Perspective,
         enableFog: true
@@ -159,6 +161,10 @@ namespace LiteMol.Visualization {
             this.renderer.setClearColor(new THREE.Color(cc!.r, cc!.g, cc!.b));
             this.renderer.setClearAlpha(options.alpha ? 0.0 : 1.0);            
             this.camera.fog.color.setRGB(cc!.r, cc!.g, cc!.b);
+            if (this.camera.controls) {
+                this.camera.controls.rotateSpeed = options.cameraSpeed!;
+                this.camera.controls.zoomSpeed = options.cameraSpeed!;
+            }
             
             this.options = options;
             if (updateCamera) this.camera.createCamera();

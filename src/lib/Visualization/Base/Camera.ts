@@ -151,7 +151,7 @@ namespace LiteMol.Visualization {
     export class Camera {
 
         private camera: THREE.PerspectiveCamera | THREE.OrthographicCamera;
-        private controls: CameraControls;
+        controls: CameraControls;
         private slabControls: SlabControls;
 
         
