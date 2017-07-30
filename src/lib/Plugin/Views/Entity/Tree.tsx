@@ -80,7 +80,7 @@ namespace LiteMol.Plugin.Views.Entity {
             if (props.description) title += ' (' + props.description + ')';
 
             return <div className={'lm-entity-tree-entry-body' + (this.ctx.currentEntity === entity ? ' lm-entity-tree-entry-current' : '') + (this.isOnCurrentPath() ? ' lm-entity-tree-entry-current-path' : '')} 
-                        ref={root => this.root = root}>
+                        ref={root => this.root = root!}>
                 <Badge type={entity.type.info} />
                 <div className='lm-entity-tree-entry-label-wrap'>
                     <Controls.Button  onClick={() => Bootstrap.Command.Entity.SetCurrent.dispatch(this.ctx, entity) }
@@ -237,7 +237,7 @@ namespace LiteMol.Plugin.Views.Entity {
                 children.push(<Entity key={c.id} node={c} tree={this} />);
             }
             
-            return <div className='lm-entity-tree' ref={root => this.root = root}>
+            return <div className='lm-entity-tree' ref={root => this.root = root!}>
                 <Entity key={root.id} node={root} tree={this} />
                 <div className='lm-entity-tree-children'>
                     {children.length ? children : this.splash }

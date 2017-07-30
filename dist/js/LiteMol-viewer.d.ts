@@ -1,3 +1,4 @@
+/// <reference types="react" />
 declare namespace LiteMol.Viewer {
     var VERSION: {
         number: string;

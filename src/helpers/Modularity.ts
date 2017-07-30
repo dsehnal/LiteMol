@@ -96,8 +96,13 @@ function assemble(spec: ModuleSpec, gulp: any, plugins: Plugins) {
             
         let dts = gulp
             .src((spec.libs || []).map(l => path.join(spec.root, l + '.d.ts')).concat([`./build/LiteMol-${spec.name.toLowerCase()}-temp.d.ts`]))
-            .pipe(plugins.concat()(`LiteMol-${spec.name.toLowerCase()}.d.ts`))
-            .pipe(plugins.insert().prepend(info.ts));
+            .pipe(plugins.concat()(`LiteMol-${spec.name.toLowerCase()}.d.ts`));
+        
+        if (spec.isPlugin) {
+            dts.pipe(plugins.insert().prepend(`/// <reference types='react' />\n/// <reference types='react-dom' />\n${info.ts}`));
+        } else {
+            dts.pipe(plugins.insert().prepend(info.ts));
+        }
         
         if (spec.createDist) {
             return plugins.merge()([

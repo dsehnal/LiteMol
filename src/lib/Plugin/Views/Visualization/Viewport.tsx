@@ -153,7 +153,7 @@ namespace LiteMol.Plugin.Views.Visualization {
             
             const color = this.controller.latestState.clearColor! || this.defaultBg;
             return <div className='lm-viewport' style={{ backgroundColor: `rgb(${255 * color.r}, ${255 * color.g}, ${255 * color.b})` }}>
-                <div ref={host => this.host3d = host} className='lm-viewport-host3d' />
+                <div ref={host => this.host3d = host!} className='lm-viewport-host3d' />
                 {this.state.showLogo ? <Logo /> : void 0}
                 <ViewportControls controller={this.controller} />
             </div>;

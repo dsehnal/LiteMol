@@ -29,6 +29,8 @@
   "license": "Apache-2.0",
   "devDependencies": {
     "@types/gulp": "^3.8.33",
+    "@types/react": "~15.6.0",
+    "@types/react-dom": "~15.5.1",
     "byline": "^5.0.0",
     "gulp": "^3.9.1",
     "gulp-clean": "^0.3.2",

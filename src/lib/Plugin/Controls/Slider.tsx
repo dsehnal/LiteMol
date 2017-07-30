@@ -698,7 +698,7 @@ namespace LiteMol.Plugin.Controls {
             });
 
             return (
-                <div ref={e => this.sliderElement = e} className={sliderClassName}
+                <div ref={e => this.sliderElement = e!} className={sliderClassName}
                     onTouchStart={disabled ? noop : this.onTouchStart.bind(this)}
                     onMouseDown={disabled ? noop : this.onMouseDown.bind(this)}
                     >

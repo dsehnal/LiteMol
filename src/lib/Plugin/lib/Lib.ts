@@ -2,12 +2,21 @@
  * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
  */
 
+/// <reference types='react' />
+/// <reference types='react-dom' />
+
+type RD = typeof ReactDOM
+type R = typeof React
+declare var __LiteMolReact: R
+declare var __LiteMolReactDOM: RD
 namespace LiteMol.Plugin {
     "use strict";
     
-    export import React = __LiteMolReact;
+    export type React = R
+    export const React: R = __LiteMolReact as any;
     //declare var __LiteMolReactDOM: typeof __LiteMolReact.__DOM;
-    export const ReactDOM = __LiteMolReactDOM;
+    export type ReactDOM = RD
+    export const ReactDOM: RD = __LiteMolReactDOM as any;
     
     export namespace Controls {
         //export const ColorPickerHelper: __LiteMolColorPicker.ColorPicker = <any>__LiteMolColorPicker.ColorPicker;

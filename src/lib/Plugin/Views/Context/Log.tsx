@@ -29,7 +29,7 @@ namespace LiteMol.Plugin.Views.Context {
             const entries = this.controller.latestState.entries;
             
             return <div className='lm-log-wrap'>
-                <div className='lm-log' ref={log => this.wrapper = log}>
+                <div className='lm-log' ref={log => this.wrapper = log!}>
                     <ul className='lm-list-unstyled'>
                         {entries.map((entry, i, arr) => {
 

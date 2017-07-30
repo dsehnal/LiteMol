@@ -78268,7 +78268,6 @@ var LiteMol;
     (function (Plugin) {
         "use strict";
         Plugin.React = __LiteMolReact;
-        //declare var __LiteMolReactDOM: typeof __LiteMolReact.__DOM;
         Plugin.ReactDOM = __LiteMolReactDOM;
         var Controls;
         (function (Controls) {
