@@ -67272,13 +67272,18 @@ var LiteMol;
             Scene.prototype.downloadScreenshot = function () {
                 var uri = this.renderer.domElement.toDataURL('image/png');
                 var a = document.createElement('a');
-                a.style.visibility = 'hidden';
-                a.href = uri;
-                a.target = '_blank';
-                a.download = 'litemol_screenshot.png';
-                document.body.appendChild(a);
-                a.click();
-                setTimeout(function () { return a.remove(); }, 20000);
+                if ('download' in a) {
+                    a.style.visibility = 'hidden';
+                    a.href = uri;
+                    a.target = '_blank';
+                    a.download = 'litemol_screenshot.png';
+                    document.body.appendChild(a);
+                    a.click();
+                    a.remove();
+                }
+                else {
+                    window.open(uri, '_blank');
+                }
             };
             Scene.prototype.destroy = function () {
                 //clearInterval(this.updateSizeInterval);
