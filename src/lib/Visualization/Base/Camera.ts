@@ -254,12 +254,12 @@ namespace LiteMol.Visualization {
             this.focusPoint.x = center.x;
             this.focusPoint.y = center.y;
             this.focusPoint.z = center.z;
-            this.focusRadius = radius;
+            this.focusRadius = Math.max(radius, 1);
             this.slabControls.updateRadius(this.focusRadius);
             
             this.nearPlaneDelta = 0;
             this.fogDelta = 0;
-            this.controls.panAndMoveToDistance(this.focusPoint, radius * 4);            
+            this.controls.panAndMoveToDistance(this.focusPoint, this.focusRadius * 4);            
         }
 
         move(target: { x: number; y: number; z: number }) {

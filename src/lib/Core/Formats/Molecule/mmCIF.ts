@@ -633,6 +633,7 @@ namespace LiteMol.Core.Formats.Molecule.mmCIF {
 
             let symmetry = _struct_sheet_range.getColumn('symmetry');
             let sheet_id = _struct_sheet_range.getColumn('sheet_id');
+            let id = _struct_sheet_range.getColumn('id');
             
             for (i = 0; i < _struct_sheet_range.rowCount; i++) {
                 input[input.length] = new Structure.SecondaryStructureElement(
@@ -642,7 +643,7 @@ namespace LiteMol.Core.Formats.Molecule.mmCIF {
                     {
                         symmetry: symmetry.getString(i),
                         sheetId: sheet_id.getString(i),
-                        id: sheet_id.getString(i)
+                        id: id.getString(i)
                     });
             }
         }

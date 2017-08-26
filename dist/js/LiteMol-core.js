@@ -12798,11 +12798,12 @@ var LiteMol;
                             var pdbx_end_PDB_ins_code = _struct_sheet_range.getColumn('pdbx_end_PDB_ins_code');
                             var symmetry = _struct_sheet_range.getColumn('symmetry');
                             var sheet_id = _struct_sheet_range.getColumn('sheet_id');
+                            var id = _struct_sheet_range.getColumn('id');
                             for (i = 0; i < _struct_sheet_range.rowCount; i++) {
                                 input[input.length] = new Core.Structure.SecondaryStructureElement(3 /* Sheet */, residueIdfromColumns(i, beg_label_asym_id, beg_label_seq_id, pdbx_beg_PDB_ins_code), residueIdfromColumns(i, end_label_asym_id, end_label_seq_id, pdbx_end_PDB_ins_code), {
                                     symmetry: symmetry.getString(i),
                                     sheetId: sheet_id.getString(i),
-                                    id: sheet_id.getString(i)
+                                    id: id.getString(i)
                                 });
                             }
                         }
