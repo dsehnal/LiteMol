@@ -483,8 +483,16 @@ namespace LiteMol.Visualization {
             this.models.clear();
         }
 
-        screenshotAsDataURL() {
-            return this.renderer.domElement.toDataURL('image/png');
+        downloadScreenshot() {
+            const uri = this.renderer.domElement.toDataURL('image/png');
+            const a = document.createElement('a');
+            a.style.visibility = 'hidden';
+            a.href = uri;
+            a.target = '_blank';
+            a.download = 'litemol_screenshot.png';
+            document.body.appendChild(a);
+            a.click();
+            setTimeout(() => a.remove(), 20000);
         }
 
         destroy() {

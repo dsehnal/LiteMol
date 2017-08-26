@@ -1,4 +1,7 @@
-﻿# 1.7.2
+﻿# 1.7.3
+* Fixed screenshot support.
+
+# 1.7.2
 * Ability to hide hydrogens in Balls and Sticks models.
 
 # 1.7.1

@@ -1,3 +1,6 @@
+# 1.6.3
+* Fixed screenshot support.
+
 # 1.6.2
 * Increased camera rotation speed.
 

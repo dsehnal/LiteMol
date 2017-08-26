@@ -53,7 +53,7 @@ namespace LiteMol.Plugin.Views.Visualization {
                     <Controls.Button 
                         style='link' 
                         icon='screenshot' 
-                        onClick={(e) => { window.open(this.controller.scene.scene.screenshotAsDataURL(), '_blank'); } } 
+                        onClick={(e) => this.controller.scene.scene.downloadScreenshot()}
                         title='Screenshot' />                
                     <Controls.Button   onClick={() => { layoutController.update({ hideControls: controlsShown }); this.forceUpdate(); } }
                         icon='tools' title={controlsShown ? 'Hide Controls' : 'Show Controls'} active={controlsShown } 

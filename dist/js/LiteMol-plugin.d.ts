@@ -11638,7 +11638,7 @@ declare namespace LiteMol.Visualization {
         resized(): void;
         forceRender(): void;
         clear(): void;
-        screenshotAsDataURL(): string;
+        downloadScreenshot(): void;
         destroy(): void;
     }
 }

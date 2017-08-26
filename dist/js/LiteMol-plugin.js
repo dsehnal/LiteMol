@@ -65597,7 +65597,7 @@ var LiteMol;
 (function (LiteMol) {
     var Visualization;
     (function (Visualization) {
-        Visualization.VERSION = { number: "1.7.2", date: "July 1 2017" };
+        Visualization.VERSION = { number: "1.7.3", date: "Aug 26 2017" };
     })(Visualization = LiteMol.Visualization || (LiteMol.Visualization = {}));
 })(LiteMol || (LiteMol = {}));
 var LiteMol;
@@ -67269,8 +67269,16 @@ var LiteMol;
             Scene.prototype.clear = function () {
                 this.models.clear();
             };
-            Scene.prototype.screenshotAsDataURL = function () {
-                return this.renderer.domElement.toDataURL('image/png');
+            Scene.prototype.downloadScreenshot = function () {
+                var uri = this.renderer.domElement.toDataURL('image/png');
+                var a = document.createElement('a');
+                a.style.visibility = 'hidden';
+                a.href = uri;
+                a.target = '_blank';
+                a.download = 'litemol_screenshot.png';
+                document.body.appendChild(a);
+                a.click();
+                setTimeout(function () { return a.remove(); }, 20000);
             };
             Scene.prototype.destroy = function () {
                 //clearInterval(this.updateSizeInterval);
@@ -80844,7 +80852,7 @@ var LiteMol;
                             Plugin.React.createElement("div", { className: 'lm-viewport-controls-buttons' },
                                 Plugin.React.createElement(Plugin.Controls.Button, { style: 'link', active: this.state.showHelp, customClass: 'lm-btn-link-toggle-' + (this.state.showHelp ? 'on' : 'off'), icon: 'help-circle', onClick: function (e) { return _this.setState({ showHelp: !_this.state.showHelp, showSceneOptions: false }); }, title: 'Controls Help' }),
                                 Plugin.React.createElement(Plugin.Controls.Button, { style: 'link', active: this.state.showSceneOptions, customClass: 'lm-btn-link-toggle-' + (this.state.showSceneOptions ? 'on' : 'off'), icon: 'settings', onClick: function (e) { return _this.setState({ showSceneOptions: !_this.state.showSceneOptions, showHelp: false }); }, title: 'Scene Options' }),
-                                Plugin.React.createElement(Plugin.Controls.Button, { style: 'link', icon: 'screenshot', onClick: function (e) { window.open(_this.controller.scene.scene.screenshotAsDataURL(), '_blank'); }, title: 'Screenshot' }),
+                                Plugin.React.createElement(Plugin.Controls.Button, { style: 'link', icon: 'screenshot', onClick: function (e) { return _this.controller.scene.scene.downloadScreenshot(); }, title: 'Screenshot' }),
                                 Plugin.React.createElement(Plugin.Controls.Button, { onClick: function () { layoutController.update({ hideControls: controlsShown }); _this.forceUpdate(); }, icon: 'tools', title: controlsShown ? 'Hide Controls' : 'Show Controls', active: controlsShown, customClass: 'lm-btn-link-toggle-' + (controlsShown ? 'on' : 'off'), style: 'link' }),
                                 Plugin.React.createElement(Plugin.Controls.Button, { onClick: function () { return layoutController.update({ isExpanded: !layoutState.isExpanded }); }, icon: 'expand-layout', title: layoutState.isExpanded ? 'Collapse' : 'Expand', active: layoutState.isExpanded, customClass: 'lm-btn-link-toggle-' + (layoutState.isExpanded ? 'on' : 'off'), style: 'link' }),
                                 Plugin.React.createElement(Plugin.Controls.Button, { style: 'link', icon: 'reset-scene', onClick: function (e) { return LiteMol.Bootstrap.Command.Visual.ResetScene.dispatch(_this.controller.context, void 0); }, title: 'Reset scene' })),

@@ -2,7 +2,7 @@ var LiteMol;
 (function (LiteMol) {
     var Viewer;
     (function (Viewer) {
-        Viewer.VERSION = { number: "1.6.2", date: "July 28 2017" };
+        Viewer.VERSION = { number: "1.6.3", date: "Aug 26 2017" };
     })(Viewer = LiteMol.Viewer || (LiteMol.Viewer = {}));
 })(LiteMol || (LiteMol = {}));
 /*
