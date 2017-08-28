@@ -26,7 +26,7 @@ namespace LiteMol.Visualization {
         dynamicDampingFactor = 0.2;
         minDistance = 1.5;
         maxDistance = 100000;
-        keys = [65 /*A*/, 83 /*S*/, 68 /*D*/];
+        keys = [65 /*A*/, 16 /*S*/, 17 /*D*/];
         
         target = new THREE.Vector3();
         // internals

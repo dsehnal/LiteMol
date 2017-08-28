@@ -67348,7 +67348,7 @@ var LiteMol;
                 this.dynamicDampingFactor = 0.2;
                 this.minDistance = 1.5;
                 this.maxDistance = 100000;
-                this.keys = [65 /*A*/, 83 /*S*/, 68 /*D*/];
+                this.keys = [65 /*A*/, 16 /*S*/, 17 /*D*/];
                 this.target = new Visualization.THREE.Vector3();
                 // internals
                 this.EPS = 0.000001;
