@@ -47,7 +47,7 @@ namespace LiteMol.Extensions.ComplexReprensetation.Carbohydrates {
     export const Types: Params['type'][] = ['Icons', 'Full']
     export const FullSizes: FullParams['fullSize'][] = ['Small', 'Medium', 'Large']
     export const DefaultIconsParams: Params = { type: 'Icons', iconScale: 0.55 }
-    export const DefaultFullParams: Params = { type: 'Full', fullSize: 'Medium', linkColor: Visualization.Color.fromRgb(255*0.6, 255*0.6, 255*0.6), showTerminalLinks: true, showTerminalAtoms: false }
+    export const DefaultFullParams: Params = { type: 'Full', fullSize: 'Large', linkColor: Visualization.Color.fromRgb(255*0.6, 255*0.6, 255*0.6), showTerminalLinks: true, showTerminalAtoms: false }
 
     export type Tags = { type: 'CarbohydrateRepresentation', tags: Core.Utils.FastMap<number, Tag>, colors: Core.Utils.FastMap<number, Visualization.Color> }
     export type Tag = { type: 'Link', link: Link } | { type: 'Residue', instanceName: string, residueIndex: number, model: Model } | { type: 'Terminal', residueIndex: number, model: Model }

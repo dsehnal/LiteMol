@@ -2011,7 +2011,7 @@ var LiteMol;
                 Carbohydrates.Types = ['Icons', 'Full'];
                 Carbohydrates.FullSizes = ['Small', 'Medium', 'Large'];
                 Carbohydrates.DefaultIconsParams = { type: 'Icons', iconScale: 0.55 };
-                Carbohydrates.DefaultFullParams = { type: 'Full', fullSize: 'Medium', linkColor: LiteMol.Visualization.Color.fromRgb(255 * 0.6, 255 * 0.6, 255 * 0.6), showTerminalLinks: true, showTerminalAtoms: false };
+                Carbohydrates.DefaultFullParams = { type: 'Full', fullSize: 'Large', linkColor: LiteMol.Visualization.Color.fromRgb(255 * 0.6, 255 * 0.6, 255 * 0.6), showTerminalLinks: true, showTerminalAtoms: false };
                 function isRepresentable(model, residueIndices) {
                     var name = model.data.residues.name;
                     for (var _i = 0, residueIndices_1 = residueIndices; _i < residueIndices_1.length; _i++) {
