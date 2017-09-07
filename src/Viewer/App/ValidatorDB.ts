@@ -107,8 +107,7 @@ namespace LiteMol.Viewer.ValidatorDB {
 
             private processInfo(info: Bootstrap.Interactivity.Info): string | undefined {
                 let i = Bootstrap.Interactivity.Molecule.transformInteraction(info);
-                
-                if (!i || i.residues.length > 1) return void 0;                    
+                if (!i || i.residues.length !== 1) return void 0;
                 
                 let r = this.report;
                 if (i.atoms.length === 1) {

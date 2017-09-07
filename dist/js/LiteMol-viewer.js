@@ -226,7 +226,7 @@ var LiteMol;
                     };
                     Behaviour.prototype.processInfo = function (info) {
                         var i = LiteMol.Bootstrap.Interactivity.Molecule.transformInteraction(info);
-                        if (!i || i.residues.length > 1)
+                        if (!i || i.residues.length !== 1)
                             return void 0;
                         var r = this.report;
                         if (i.atoms.length === 1) {
@@ -3301,7 +3301,7 @@ var LiteMol;
                         };
                         Behaviour.prototype.processInfo = function (info) {
                             var i = LiteMol.Bootstrap.Interactivity.Molecule.transformInteraction(info);
-                            if (!i || i.residues.length > 1)
+                            if (!i || i.residues.length !== 1)
                                 return void 0;
                             var r = i.residues[0];
                             var e = Api.getEntry(this.report, i.modelId, r.chain.entity.entityId, r.chain.asymId, Api.getResidueId(r.seqNumber, r.insCode));

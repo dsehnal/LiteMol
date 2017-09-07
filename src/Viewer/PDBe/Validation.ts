@@ -73,9 +73,9 @@ namespace LiteMol.Viewer.PDBe.Validation {
             }
             
             private processInfo(info: Bootstrap.Interactivity.Info): string | undefined {
-                const i = Bootstrap.Interactivity.Molecule.transformInteraction(info);
-                
-                if (!i || i.residues.length > 1) return void 0;                    
+                const i = Bootstrap.Interactivity.Molecule.transformInteraction(info);                
+                if (!i || i.residues.length !== 1) return void 0;
+
                 const r = i.residues[0];
                 const e = Api.getEntry(this.report, i.modelId, r.chain.entity.entityId, r.chain.asymId, Api.getResidueId(r.seqNumber, r.insCode));             
                 if (!e) return void 0;
