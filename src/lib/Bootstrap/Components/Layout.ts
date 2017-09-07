@@ -191,6 +191,11 @@ namespace LiteMol.Bootstrap.Components {
             }
         }
 
+        updateTargets(targets: LayoutTarget[]) {
+            this.targets = targets;
+            this.dispatcher.schedule(() => Bootstrap.Event.Common.ComponentsChanged.dispatch(this.context, {}));
+        }
+
         constructor(context: Context, public targets: LayoutTarget[], private root: HTMLElement) {
             super(context, {
                 isExpanded: false,

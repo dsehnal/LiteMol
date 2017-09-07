@@ -72688,6 +72688,7 @@ var LiteMol;
             var Common;
             (function (Common) {
                 Common.LayoutChanged = Event.create('bs.Common.LayoutChanged', Lane.Slow);
+                Common.ComponentsChanged = Event.create('bs.Common.ComponentsChanged', Lane.Slow);
             })(Common = Event.Common || (Event.Common = {}));
             var Task;
             (function (Task) {
@@ -77317,6 +77318,11 @@ var LiteMol;
                         console.log('Layout change error, you might have to reload the page.', e);
                     }
                 };
+                Layout.prototype.updateTargets = function (targets) {
+                    var _this = this;
+                    this.targets = targets;
+                    this.dispatcher.schedule(function () { return Bootstrap.Event.Common.ComponentsChanged.dispatch(_this.context, {}); });
+                };
                 return Layout;
             }(Components.Component));
             Components.Layout = Layout;
@@ -79394,6 +79400,10 @@ var LiteMol;
                 function Layout() {
                     return _super !== null && _super.apply(this, arguments) || this;
                 }
+                Layout.prototype.componentDidMount = function () {
+                    var _this = this;
+                    this.subscribe(LiteMol.Bootstrap.Event.Common.ComponentsChanged.getStream(this.controller.context), function () { return _this.forceUpdate(); });
+                };
                 Layout.prototype.renderTarget = function (name, target) {
                     var statics = [];
                     var scrollable = [];
@@ -81027,7 +81037,6 @@ var LiteMol;
             function Instance(spec, target) {
                 this.spec = spec;
                 this.target = target;
-                this.componentMap = LiteMol.Core.Utils.FastMap.create();
                 this.transformersInfo = LiteMol.Core.Utils.FastMap.create();
                 this.context = new LiteMol.Bootstrap.Context(this);
                 this.init();
@@ -81041,7 +81050,6 @@ var LiteMol;
                         continue;
                     this.context.settings.set(s, this.spec.settings[s]);
                 }
-                var targets = LiteMol.Bootstrap.Components.makeEmptyTargets();
                 for (var _b = 0, _c = (this.spec.behaviours || []); _b < _c.length; _b++) {
                     var b = _c[_b];
                     b(this.context);
@@ -81051,30 +81059,19 @@ var LiteMol;
                     this.context.transforms.add(t.transformer);
                     this.transformersInfo.set(t.transformer.info.id, t);
                 }
-                for (var _f = 0, _g = this.spec.components; _f < _g.length; _f++) {
-                    var cs = _g[_f];
+            };
+            Instance.prototype.prepareTargets = function () {
+                var targets = LiteMol.Bootstrap.Components.makeEmptyTargets();
+                var componentMap = LiteMol.Core.Utils.FastMap.create();
+                for (var _i = 0, _a = this.spec.components; _i < _a.length; _i++) {
+                    var cs = _a[_i];
                     var info = cs(this.context);
-                    if (this.componentMap.has(info.key)) {
+                    if (componentMap.has(info.key)) {
                         throw "Component with key '" + info.key + "' was already added. Fix your spec.";
                     }
                     targets[info.region].components.push(info);
-                    this.componentMap.set(info.key, info);
+                    componentMap.set(info.key, info);
                 }
-                return targets;
-            };
-            Instance.prototype.getTransformerInfo = function (transformer) {
-                return this.transformersInfo.get(transformer.info.id);
-            };
-            Instance.prototype.destroy = function () {
-                this.context.dispatcher.finished();
-                Plugin.ReactDOM.unmountComponentAtNode(this.target);
-                this.context = void 0;
-                this.componentMap = void 0;
-                this.spec = void 0;
-                this.target = void 0;
-            };
-            Instance.prototype.init = function () {
-                var targets = this.compose();
                 if (this.spec.tree) {
                     targets[this.spec.tree.region].components.push({
                         key: 'lm-internal-tree',
@@ -81091,6 +81088,26 @@ var LiteMol;
                     view: this.spec.viewport.view,
                     isStatic: true
                 });
+                return targets;
+            };
+            Instance.prototype.getTransformerInfo = function (transformer) {
+                return this.transformersInfo.get(transformer.info.id);
+            };
+            Instance.prototype.destroy = function () {
+                this.context.dispatcher.finished();
+                Plugin.ReactDOM.unmountComponentAtNode(this.target);
+                this.context = void 0;
+                this.spec = void 0;
+                this.target = void 0;
+            };
+            Instance.prototype.setComponents = function (components) {
+                this.spec.components = components;
+                var targets = this.prepareTargets();
+                this.context.layout.updateTargets(targets);
+            };
+            Instance.prototype.init = function () {
+                this.compose();
+                var targets = this.prepareTargets();
                 this.context.createLayout(targets, this.target);
             };
             return Instance;

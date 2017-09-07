@@ -12,8 +12,12 @@ namespace LiteMol.Bootstrap.Plugin {
         initiallyCollapsed?: boolean
     }
 
+    export type BehaviourProvider = (stack: Context) => void;
+    export type ComponentProvider = (context: Context) => Bootstrap.Components.ComponentInfo;
+
     export interface Instance {
         getTransformerInfo(transformer: Bootstrap.Tree.Transformer.Any): TransformerInfo,
+        setComponents(components: ComponentProvider[]): void,
         readonly context: Context,
         destroy(): void
     }

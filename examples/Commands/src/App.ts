@@ -162,6 +162,13 @@ namespace LiteMolPluginInstance {
     addButton('Control Regions: Show All', () => {
         plugin.command(Command.Layout.SetState, { regionStates: { }, hideControls: false });
     });
+    addSeparator();
+    addButton('Components: Default', () => {
+        plugin.instance.setComponents(DefaultComponents);
+    });
+    addButton('Components: Without Log', () => {
+        plugin.instance.setComponents(NoLogComponents);
+    });
     
     addSeparator();
     addHeader('Basics');
@@ -431,6 +438,25 @@ namespace LiteMolPluginInstance {
     }, () => {
         Bootstrap.Command.Entity.Highlight.dispatch(plugin.context, { entities: plugin.context.select('model-visual-0' /* indexed from 0 */), isOn: false });
     });
+
+    const DefaultComponents = [
+        Plugin.Components.Visualization.HighlightInfo(LayoutRegion.Main, true),               
+        Plugin.Components.Entity.Current('LiteMol', Plugin.VERSION.number)(LayoutRegion.Right, true),
+        Plugin.Components.Transform.View(LayoutRegion.Right),
+        Plugin.Components.Context.Log(LayoutRegion.Bottom, true),
+        Plugin.Components.Context.Overlay(LayoutRegion.Root),
+        Plugin.Components.Context.Toast(LayoutRegion.Main, true),
+        Plugin.Components.Context.BackgroundTasks(LayoutRegion.Main, true)
+    ];
+
+    const NoLogComponents = [
+        Plugin.Components.Visualization.HighlightInfo(LayoutRegion.Main, true),               
+        Plugin.Components.Entity.Current('LiteMol', Plugin.VERSION.number)(LayoutRegion.Right, true),
+        Plugin.Components.Transform.View(LayoutRegion.Right),
+        Plugin.Components.Context.Overlay(LayoutRegion.Root),
+        Plugin.Components.Context.Toast(LayoutRegion.Main, true),
+        Plugin.Components.Context.BackgroundTasks(LayoutRegion.Main, true)
+    ];
              
     export function create(target: HTMLElement) {        
         let customSpecification: Plugin.Specification = {
@@ -516,16 +542,7 @@ namespace LiteMolPluginInstance {
                 // usage statistics of the application and would appriciate if this behaviour is used.
                 Bootstrap.Behaviour.GoogleAnalytics('UA-77062725-1')
             ],            
-            components: [
-                // Pretty much dont touch this :)
-                Plugin.Components.Visualization.HighlightInfo(LayoutRegion.Main, true),               
-                Plugin.Components.Entity.Current('LiteMol', Plugin.VERSION.number)(LayoutRegion.Right, true),
-                Plugin.Components.Transform.View(LayoutRegion.Right),
-                Plugin.Components.Context.Log(LayoutRegion.Bottom, true),
-                Plugin.Components.Context.Overlay(LayoutRegion.Root),
-                Plugin.Components.Context.Toast(LayoutRegion.Main, true),
-                Plugin.Components.Context.BackgroundTasks(LayoutRegion.Main, true)
-            ],
+            components: DefaultComponents,
             viewport: {
                 // dont touch this either 
                 view: Views.Visualization.Viewport,

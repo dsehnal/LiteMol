@@ -12,6 +12,7 @@ namespace LiteMol.Bootstrap.Event {
         
     export namespace Common {         
         export const LayoutChanged = create('bs.Common.LayoutChanged', Lane.Slow);
+        export const ComponentsChanged = create('bs.Common.ComponentsChanged', Lane.Slow);
     }
     
     export namespace Task {

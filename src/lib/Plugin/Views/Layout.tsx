@@ -9,6 +9,9 @@ namespace LiteMol.Plugin.Views {
     import LayoutTarget = Bootstrap.Components.LayoutTarget;
 
     export class Layout extends View<Bootstrap.Components.Layout, { }, { }> {
+        componentDidMount() {
+            this.subscribe(Bootstrap.Event.Common.ComponentsChanged.getStream(this.controller.context), () => this.forceUpdate());
+        }
         
         private renderTarget(name: string, target: LayoutTarget) {
             

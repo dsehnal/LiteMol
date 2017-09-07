@@ -102,7 +102,7 @@ namespace LiteMol.Custom {
                 Plugin.Components.create('PolymerControls', ctx => new Bootstrap.Components.Transform.Updater(ctx, 'polymer-visual', 'Polymer Visual'), Plugin.Views.Transform.Updater)(LayoutRegion.Right),
                 Plugin.Components.create('HetControls', ctx => new Bootstrap.Components.Transform.Updater(ctx, 'het-visual', 'HET Groups Visual'), Plugin.Views.Transform.Updater)(LayoutRegion.Right),
                 Plugin.Components.create('WaterControls', ctx => new Bootstrap.Components.Transform.Updater(ctx, 'water-visual', 'Water Visual'), Plugin.Views.Transform.Updater)(LayoutRegion.Right),
-
+                
                 Plugin.Components.Context.Log(LayoutRegion.Bottom, true),
                 Plugin.Components.Context.Overlay(LayoutRegion.Root),
                 Plugin.Components.Context.Toast(LayoutRegion.Main, true),

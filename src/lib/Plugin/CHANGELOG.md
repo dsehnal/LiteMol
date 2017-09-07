@@ -1,4 +1,7 @@
-﻿# 1.3.3
+﻿# 1.3.4
+* Added the ability to dynamically change components.
+
+# 1.3.3
 * Added UI elements for labels.
 
 # 1.3.2

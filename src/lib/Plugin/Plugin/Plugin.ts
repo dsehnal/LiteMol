@@ -15,13 +15,11 @@ namespace LiteMol.Plugin {
         view: ViewDefinition,
         initiallyCollapsed?: boolean
     } 
-
-    export type BehaviourProvider = (stack: Context) => void;
-    export type ComponentProvider = (context: Context) => Bootstrap.Components.ComponentInfo;
+   
 
     export interface Specification {
         settings: { [key: string]: any }, 
-        behaviours: BehaviourProvider[],
+        behaviours: Bootstrap.Plugin.BehaviourProvider[],
         transforms: TransformerInfo[],
         layoutView: ViewDefinition,
         tree: {
@@ -32,11 +30,10 @@ namespace LiteMol.Plugin {
             view: ViewDefinition,            
             controlsView: ViewDefinition
         },
-        components: ComponentProvider[]
+        components: Bootstrap.Plugin.ComponentProvider[]
     }
            
     export class Instance implements Bootstrap.Plugin.Instance {
-        private componentMap = Core.Utils.FastMap.create<string, Bootstrap.Components.ComponentInfo>();  
         private transformersInfo = Core.Utils.FastMap.create<string, TransformerInfo>(); 
                   
         context: Bootstrap.Context = new Bootstrap.Context(this);
@@ -47,8 +44,7 @@ namespace LiteMol.Plugin {
                 this.context.settings.set(s, this.spec.settings[s]);
             }
             
-            let targets = Bootstrap.Components.makeEmptyTargets();
-
+            
             for (let b of (this.spec.behaviours || []))  {
                 b(this.context);
             }
@@ -57,36 +53,20 @@ namespace LiteMol.Plugin {
                 this.context.transforms.add(t.transformer);
                 this.transformersInfo.set(t.transformer.info.id, t);
             }
-                        
+        }
+
+        private prepareTargets() {
+            const targets = Bootstrap.Components.makeEmptyTargets();
+            const componentMap = Core.Utils.FastMap.create<string, Bootstrap.Components.ComponentInfo>();
             for (let cs of this.spec.components) {
                 let info = cs(this.context);
-                if (this.componentMap.has(info.key)) {
+                if (componentMap.has(info.key)) {
                     throw `Component with key '${info.key}' was already added. Fix your spec.`;
                 }
                                 
                 targets[info.region].components.push(info);
-                this.componentMap.set(info.key, info);
+                componentMap.set(info.key, info);
             }
-            
-            
-            return targets;
-        }
-        
-        getTransformerInfo(transformer: Bootstrap.Tree.Transformer.Any) {
-            return this.transformersInfo.get(transformer.info.id)!;
-        }
-        
-        destroy() {
-            this.context.dispatcher.finished();
-            ReactDOM.unmountComponentAtNode(this.target);
-            this.context = <any>void 0;
-            this.componentMap = <any>void 0;
-            this.spec = <any>void 0;
-            this.target = <any>void 0;
-        }
-        
-        private init() {
-            let targets = this.compose();
             
             if (this.spec.tree) {
                 targets[this.spec.tree.region].components.push({
@@ -104,8 +84,32 @@ namespace LiteMol.Plugin {
                 region: LayoutRegion.Main,
                 view: this.spec.viewport.view,
                 isStatic: true
-            });    
+            });
             
+            return targets;
+        }
+        
+        getTransformerInfo(transformer: Bootstrap.Tree.Transformer.Any) {
+            return this.transformersInfo.get(transformer.info.id)!;
+        }
+        
+        destroy() {
+            this.context.dispatcher.finished();
+            ReactDOM.unmountComponentAtNode(this.target);
+            this.context = <any>void 0;
+            this.spec = <any>void 0;
+            this.target = <any>void 0;
+        }
+
+        setComponents(components: Bootstrap.Plugin.ComponentProvider[]) {
+            this.spec.components = components;
+            const targets = this.prepareTargets();                        
+            this.context.layout.updateTargets(targets);   
+        }
+        
+        private init() {
+            this.compose();
+            const targets = this.prepareTargets();                        
             this.context.createLayout(targets, this.target);        
         }
 
