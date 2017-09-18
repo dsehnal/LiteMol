@@ -51,7 +51,6 @@ namespace LiteMol.Extensions.ComplexReprensetation.Transforms {
                 taskType: 'Silent',
                 params: { useVDW: true, vdwScaling: 0.21, bondRadius: 0.085, detail: 'Automatic' },
                 theme: { template: Bootstrap.Visualization.Molecule.Default.CartoonThemeTemplate, colors: Bootstrap.Visualization.Molecule.Default.CartoonThemeTemplate.colors!, transparency: { alpha: 1.0 } },
-                isNotSelectable: true
             }
 
             if (info.sequence.interacting.length) {
@@ -78,8 +77,7 @@ namespace LiteMol.Extensions.ComplexReprensetation.Transforms {
                     type: 'BallsAndSticks',
                     taskType: 'Silent',
                     params: { useVDW: false, atomRadius: 0.15, bondRadius: 0.07, detail: 'Automatic' },
-                    theme: { template: Bootstrap.Visualization.Molecule.Default.ElementSymbolThemeTemplate, colors: Bootstrap.Visualization.Molecule.Default.ElementSymbolThemeTemplate.colors!, transparency: { alpha: 0.15 } },
-                    isNotSelectable: true
+                    theme: { template: Bootstrap.Visualization.Molecule.Default.ElementSymbolThemeTemplate, colors: Bootstrap.Visualization.Molecule.Default.ElementSymbolThemeTemplate.colors!, transparency: { alpha: 0.15 } }
                 }
 
                 const carbsQ = Q.or(Q.residuesFromIndices(info.het.carbohydrates.carbohydrateIndices), Q.residuesFromIndices(info.het.carbohydrates.terminalIndices)).union();

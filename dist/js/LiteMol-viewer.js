@@ -2664,7 +2664,6 @@ var LiteMol;
                             taskType: 'Silent',
                             params: { useVDW: true, vdwScaling: 0.21, bondRadius: 0.085, detail: 'Automatic' },
                             theme: { template: LiteMol.Bootstrap.Visualization.Molecule.Default.CartoonThemeTemplate, colors: LiteMol.Bootstrap.Visualization.Molecule.Default.CartoonThemeTemplate.colors, transparency: { alpha: 1.0 } },
-                            isNotSelectable: true
                         };
                         if (info.sequence.interacting.length) {
                             sequence.then(Transformer.Molecule.CreateSelectionFromQuery, { query: Q.atomsFromIndices(info.sequence.interacting), name: 'Interacting Residues', silent: true }, { isBinding: false })
@@ -2686,8 +2685,7 @@ var LiteMol;
                                 type: 'BallsAndSticks',
                                 taskType: 'Silent',
                                 params: { useVDW: false, atomRadius: 0.15, bondRadius: 0.07, detail: 'Automatic' },
-                                theme: { template: LiteMol.Bootstrap.Visualization.Molecule.Default.ElementSymbolThemeTemplate, colors: LiteMol.Bootstrap.Visualization.Molecule.Default.ElementSymbolThemeTemplate.colors, transparency: { alpha: 0.15 } },
-                                isNotSelectable: true
+                                theme: { template: LiteMol.Bootstrap.Visualization.Molecule.Default.ElementSymbolThemeTemplate, colors: LiteMol.Bootstrap.Visualization.Molecule.Default.ElementSymbolThemeTemplate.colors, transparency: { alpha: 0.15 } }
                             };
                             var carbsQ = Q.or(Q.residuesFromIndices(info.het.carbohydrates.carbohydrateIndices), Q.residuesFromIndices(info.het.carbohydrates.terminalIndices)).union();
                             var carbs = hetGroups.then(LiteMol.Bootstrap.Entity.Transformer.Molecule.CreateSelectionFromQuery, { query: carbsQ, name: 'Std. Carbohydrates', silent: true }, {});
