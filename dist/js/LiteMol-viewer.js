@@ -2,7 +2,7 @@ var LiteMol;
 (function (LiteMol) {
     var Viewer;
     (function (Viewer) {
-        Viewer.VERSION = { number: "1.6.3", date: "Aug 26 2017" };
+        Viewer.VERSION = { number: "1.6.4", date: "Sep 18 2017" };
     })(Viewer = LiteMol.Viewer || (LiteMol.Viewer = {}));
 })(LiteMol || (LiteMol = {}));
 /*
@@ -2014,8 +2014,8 @@ var LiteMol;
                 Carbohydrates.DefaultFullParams = { type: 'Full', fullSize: 'Large', linkColor: LiteMol.Visualization.Color.fromRgb(255 * 0.6, 255 * 0.6, 255 * 0.6), showTerminalLinks: true, showTerminalAtoms: false };
                 function isRepresentable(model, residueIndices) {
                     var name = model.data.residues.name;
-                    for (var _i = 0, residueIndices_1 = residueIndices; _i < residueIndices_1.length; _i++) {
-                        var rI = residueIndices_1[_i];
+                    for (var _c = 0, residueIndices_1 = residueIndices; _c < residueIndices_1.length; _c++) {
+                        var rI = residueIndices_1[_c];
                         if (!Carbohydrates.Mapping.isResidueRepresentable(name[rI]))
                             return true;
                     }
@@ -2043,28 +2043,28 @@ var LiteMol;
                         name: '3D-SNFG',
                         description: 'Create carbohydrate representation using 3D-SNFG shapes.',
                         from: [Transforms.CarbohydratesInfo],
-                        to: [Entity.Visual.Surface],
+                        to: [Entity.Molecule.Visual],
                         isUpdatable: true,
                         defaultParams: function () { return Carbohydrates.DefaultFullParams; }
                     }, function (ctx, a, t) {
                         return LiteMol.Bootstrap.Task.create('Carbohydrate Representation', 'Background', function (ctx) { return __awaiter(_this, void 0, void 0, function () {
-                            var model, _c, surface, theme, tag, visual, _d, _e, _f, _g, style;
+                            var model, _c, surface, theme, tag, mapper, visual, _d, _e, _f, _g, style;
                             return __generator(this, function (_h) {
                                 switch (_h.label) {
                                     case 0:
                                         model = LiteMol.Bootstrap.Utils.Molecule.findModel(a);
                                         if (!model)
                                             throw Error('Carbohydrate representation requires a Molecule.Model entity ancestor.');
-                                        _c = getRepresentation(model.props.model, a.props.info, t.params), surface = _c.surface, theme = _c.theme, tag = _c.tags;
+                                        _c = getRepresentation(model.props.model, a.props.info, t.params), surface = _c.surface, theme = _c.theme, tag = _c.tags, mapper = _c.mapper;
                                         _e = (_d = LiteMol.Visualization.Surface.Model).create;
                                         _f = [a];
                                         _g = {};
                                         return [4 /*yield*/, surface.run(ctx)];
-                                    case 1: return [4 /*yield*/, _e.apply(_d, _f.concat([(_g.surface = _h.sent(), _g.theme = theme, _g)])).run(ctx)];
+                                    case 1: return [4 /*yield*/, _e.apply(_d, _f.concat([(_g.surface = _h.sent(), _g.theme = theme, _g.parameters = { mapPickElements: mapper }, _g)])).run(ctx)];
                                     case 2:
                                         visual = _h.sent();
                                         style = { type: 'Surface', taskType: 'Background', params: {}, theme: void 0 };
-                                        return [2 /*return*/, LiteMol.Bootstrap.Entity.Visual.Surface.create(t, { label: '3D-SNFG', model: visual, style: style, isSelectable: true, tag: tag })];
+                                        return [2 /*return*/, LiteMol.Bootstrap.Entity.Molecule.Visual.create(t, { label: '3D-SNFG', model: visual, style: style, isSelectable: true, tag: tag })];
                                 }
                             });
                         }); }).setReportTime(true);
@@ -2113,8 +2113,8 @@ var LiteMol;
                         var representation = entries[i].representation;
                         var ts = Carbohydrates.Shapes.makeTransform(model, entries[i], scale, params.type);
                         var colorIndex = 0;
-                        for (var _i = 0, _c = representation.shape; _i < _c.length; _i++) {
-                            var surface = _c[_i];
+                        for (var _c = 0, _d = representation.shape; _c < _d.length; _c++) {
+                            var surface = _d[_c];
                             colors.set(id, representation.color[colorIndex++]);
                             tags.set(id, { type: 'Residue', instanceName: representation.instanceName, residueIndex: carbohydrateIndices[i], model: model });
                             shapes.add(__assign({ type: 'Surface', surface: surface, id: id++ }, ts));
@@ -2123,8 +2123,8 @@ var LiteMol;
                     if (params.type === 'Full') {
                         var showTerminalLinks = params.showTerminalLinks, showTerminalAtoms = params.showTerminalAtoms;
                         var linkRadius = params.fullSize === 'Small' ? 0.12 : params.fullSize === 'Medium' ? 0.2 : 0.28;
-                        for (var _d = 0, links_1 = links; _d < links_1.length; _d++) {
-                            var link = links_1[_d];
+                        for (var _e = 0, links_1 = links; _e < links_1.length; _e++) {
+                            var link = links_1[_e];
                             switch (link.type) {
                                 case 'Carbohydrate': {
                                     var a = link.centerA, b = link.centerB;
@@ -2153,14 +2153,37 @@ var LiteMol;
                     }
                     var colorMapping = LiteMol.Visualization.Theme.createColorMapMapping(function (i) { return i; }, colors, params.type === 'Full' ? params.linkColor : LiteMol.Visualization.Color.fromHexString('#666666'));
                     var theme = LiteMol.Visualization.Theme.createMapping(colorMapping);
-                    var surfTags = { type: 'CarbohydrateRepresentation', tags: tags, colors: colors };
+                    var surfTags = { type: 'CarbohydrateRepresentation', colors: colors };
                     return {
                         surface: shapes.buildSurface(),
+                        mapper: createElementMapper(model, tags),
                         tags: surfTags,
                         theme: theme
                     };
                 }
                 Carbohydrates.getRepresentation = getRepresentation;
+                function createElementMapper(model, tags) {
+                    var _c = model.data.residues, atomStartIndex = _c.atomStartIndex, atomEndIndex = _c.atomEndIndex;
+                    return function (pickId) {
+                        var tag = tags.get(pickId);
+                        if (!tag)
+                            return void 0;
+                        var ret = [];
+                        if (tag.type !== 'Link') {
+                            for (var i = atomStartIndex[tag.residueIndex], _i = atomEndIndex[tag.residueIndex]; i < _i; i++)
+                                ret.push(i);
+                        }
+                        else {
+                            var rI = tag.link.rA;
+                            for (var i = atomStartIndex[rI], _i = atomEndIndex[rI]; i < _i; i++)
+                                ret.push(i);
+                            rI = tag.link.rB;
+                            for (var i = atomStartIndex[rI], _i = atomEndIndex[rI]; i < _i; i++)
+                                ret.push(i);
+                        }
+                        return ret;
+                    };
+                }
                 function swapLink(link) {
                     return {
                         type: link.type,
@@ -2225,8 +2248,8 @@ var LiteMol;
                 function getRepresentableResidues(model, sourceResidueIndices) {
                     var name = model.data.residues.name;
                     var residueIndices = [], entries = [], warnings = [];
-                    for (var _i = 0, sourceResidueIndices_1 = sourceResidueIndices; _i < sourceResidueIndices_1.length; _i++) {
-                        var rI = sourceResidueIndices_1[_i];
+                    for (var _c = 0, sourceResidueIndices_1 = sourceResidueIndices; _c < sourceResidueIndices_1.length; _c++) {
+                        var rI = sourceResidueIndices_1[_c];
                         if (!Carbohydrates.Mapping.isResidueRepresentable(name[rI]))
                             continue;
                         var possibleRingAtoms = getRingAtoms(model, rI);
@@ -2235,8 +2258,8 @@ var LiteMol;
                             continue;
                         }
                         var added = false;
-                        for (var _c = 0, possibleRingAtoms_1 = possibleRingAtoms; _c < possibleRingAtoms_1.length; _c++) {
-                            var ringAtoms = possibleRingAtoms_1[_c];
+                        for (var _d = 0, possibleRingAtoms_1 = possibleRingAtoms; _d < possibleRingAtoms_1.length; _d++) {
+                            var ringAtoms = possibleRingAtoms_1[_d];
                             var ringCenter = LA.Vector3.zero();
                             var ringRadius = LiteMol.Bootstrap.Utils.Molecule.getCentroidAndRadius(model, ringAtoms, ringCenter);
                             if (ringRadius > 1.95) {
@@ -2257,8 +2280,8 @@ var LiteMol;
                     var _c = model.data.residues, atomStartIndex = _c.atomStartIndex, atomEndIndex = _c.atomEndIndex;
                     var name = model.data.atoms.name;
                     var ret = [];
-                    for (var _i = 0, _d = Carbohydrates.Mapping.RingNames; _i < _d.length; _i++) {
-                        var names = _d[_i];
+                    for (var _d = 0, _e = Carbohydrates.Mapping.RingNames; _d < _e.length; _d++) {
+                        var names = _e[_d];
                         var atoms = [];
                         var found = 0;
                         for (var i = 0; i < names.__len; i++)
@@ -2298,27 +2321,15 @@ var LiteMol;
                 Carbohydrates.formatResidueName = formatResidueName;
                 function HighlightCustomElementsBehaviour(context) {
                     context.highlight.addProvider(function (info) {
-                        if (Interactivity.isEmpty(info) || info.source.type !== LiteMol.Bootstrap.Entity.Visual.Surface) {
+                        if (!Interactivity.Molecule.isMoleculeModelInteractivity(info))
                             return void 0;
-                        }
-                        var tag = info.source.props.tag;
-                        if (!tag || tag.type !== 'CarbohydrateRepresentation')
+                        var data = Interactivity.Molecule.transformInteraction(info);
+                        if (!data || data.residues.length !== 1)
                             return void 0;
-                        var t = tag.tags.get(info.elements[0]);
-                        if (!t)
+                        var repr = Carbohydrates.Mapping.getResidueRepresentation(data.residues[0].name);
+                        if (!repr)
                             return void 0;
-                        switch (t.type) {
-                            //case 'Link': return `Link: <b>${t.link.type}</b> (${Math.round(100 * t.link.distance) / 100} Å)`;
-                            case 'Residue': {
-                                var r = t.residueIndex;
-                                return "<b>" + t.instanceName + "</b> (<span>" + formatResidueName(t.model, r) + "</span>)";
-                            }
-                            case 'Terminal': {
-                                var r = t.residueIndex;
-                                return "<span>" + formatResidueName(t.model, r) + "</span>";
-                            }
-                            default: return void 0;
-                        }
+                        return "Carb: <b>" + repr.instanceName + "</b>";
                     });
                 }
                 Carbohydrates.HighlightCustomElementsBehaviour = HighlightCustomElementsBehaviour;

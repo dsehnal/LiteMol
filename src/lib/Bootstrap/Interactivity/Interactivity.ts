@@ -20,7 +20,16 @@ namespace LiteMol.Bootstrap.Interactivity {
     }
     
     export function isEmpty(info: Info): info is Info.Empty {
-        return info.kind === Info.__Kind.Empty || !info.source.tree;
+        if (info.kind === Info.__Kind.Empty || !info.source.tree) return true;
+        if (info.source.type.info.typeClass === Entity.VisualClass && info.source.type === Entity.Molecule.Visual) {
+            let modelOrSelection = Utils.Molecule.findModelOrSelection(info.source);
+            if (modelOrSelection) {
+                if (!info.elements || !info.elements.length) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     export function isSelection(info: Info): info is Info.Selection {

@@ -49,7 +49,7 @@ namespace LiteMol.Extensions.ComplexReprensetation.Carbohydrates {
     export const DefaultIconsParams: Params = { type: 'Icons', iconScale: 0.55 }
     export const DefaultFullParams: Params = { type: 'Full', fullSize: 'Large', linkColor: Visualization.Color.fromRgb(255*0.6, 255*0.6, 255*0.6), showTerminalLinks: true, showTerminalAtoms: false }
 
-    export type Tags = { type: 'CarbohydrateRepresentation', tags: Core.Utils.FastMap<number, Tag>, colors: Core.Utils.FastMap<number, Visualization.Color> }
+    export type Tags = { type: 'CarbohydrateRepresentation', colors: Core.Utils.FastMap<number, Visualization.Color> }
     export type Tag = { type: 'Link', link: Link } | { type: 'Residue', instanceName: string, residueIndex: number, model: Model } | { type: 'Terminal', residueIndex: number, model: Model }
 
     export function isRepresentable(model: Model, residueIndices: number[]) {
@@ -77,24 +77,24 @@ namespace LiteMol.Extensions.ComplexReprensetation.Carbohydrates {
             return Bootstrap.Task.resolve('Carbohydrates', 'Silent', CarbohydratesInfo.create(t, { label: 'Carbohydrates',  info: t.params.info }));
         });
 
-        export const CreateVisual = Tree.Transformer.create<CarbohydratesInfo, Entity.Visual.Surface, Params>({
+        export const CreateVisual = Tree.Transformer.create<CarbohydratesInfo, Entity.Molecule.Visual, Params>({
             id: 'carbohydrate-representation-create-visual',
             name: '3D-SNFG',
             description: 'Create carbohydrate representation using 3D-SNFG shapes.',
             from: [CarbohydratesInfo],
-            to: [Entity.Visual.Surface],
+            to: [Entity.Molecule.Visual],
             isUpdatable: true,
             defaultParams: () => DefaultFullParams
         }, (ctx, a, t) => {
-            return Bootstrap.Task.create<Entity.Visual.Surface>('Carbohydrate Representation', 'Background', async ctx => {
+            return Bootstrap.Task.create<Entity.Molecule.Visual>('Carbohydrate Representation', 'Background', async ctx => {
                 const model = Bootstrap.Utils.Molecule.findModel(a);
                 if (!model) throw Error('Carbohydrate representation requires a Molecule.Model entity ancestor.');
-                const { surface, theme, tags: tag } = getRepresentation(model.props.model, a.props.info, t.params);            
-                const visual = await LiteMol.Visualization.Surface.Model.create(a, { surface: await surface.run(ctx), theme }).run(ctx);
+                const { surface, theme, tags: tag, mapper } = getRepresentation(model.props.model, a.props.info, t.params);            
+                const visual = await LiteMol.Visualization.Surface.Model.create(a, { surface: await surface.run(ctx), theme, parameters: { mapPickElements: mapper } }).run(ctx);
                 const style: Bootstrap.Visualization.Style<'Surface', {}> = { type: 'Surface', taskType: 'Background', params: {}, theme: <any>void 0 };            
-                return Bootstrap.Entity.Visual.Surface.create(t, {  label: '3D-SNFG',  model: visual,  style,  isSelectable: true, tag });
+                return Bootstrap.Entity.Molecule.Visual.create(t, {  label: '3D-SNFG',  model: visual, style, isSelectable: true, tag });
             }).setReportTime(true);
-        },(ctx, b, t) => {
+        }, (ctx, b, t) => {
             const oldParams = { ...b.transform.params } as Params;
             const newParams = { ...t.params } as Params;
 
@@ -192,13 +192,32 @@ namespace LiteMol.Extensions.ComplexReprensetation.Carbohydrates {
 
         const colorMapping = Visualization.Theme.createColorMapMapping(i => i, colors, params.type === 'Full' ? params.linkColor : Visualization.Color.fromHexString('#666666'));
         const theme = Visualization.Theme.createMapping(colorMapping);
-        const surfTags: Tags =  { type: 'CarbohydrateRepresentation', tags, colors };
+        const surfTags: Tags =  { type: 'CarbohydrateRepresentation', colors };
 
         return {
             surface: shapes.buildSurface(),
+            mapper: createElementMapper(model, tags),
             tags: surfTags,
             theme
         }
+    }
+
+    function createElementMapper(model: Model, tags: Core.Utils.FastMap<number, Tag>) {
+        const { atomStartIndex, atomEndIndex } = model.data.residues;
+        return function (pickId: number) {
+            const tag = tags.get(pickId);
+            if (!tag) return void 0;
+            const ret: number[] = [];
+            if (tag.type !== 'Link') {
+                for (let i = atomStartIndex[tag.residueIndex], _i = atomEndIndex[tag.residueIndex]; i < _i; i++) ret.push(i);
+            } else {
+                let rI = tag.link.rA;
+                for (let i = atomStartIndex[rI], _i = atomEndIndex[rI]; i < _i; i++) ret.push(i);
+                rI = tag.link.rB;
+                for (let i = atomStartIndex[rI], _i = atomEndIndex[rI]; i < _i; i++) ret.push(i);
+            }
+            return ret;
+        };
     }
 
     function swapLink(link: Link): Link {

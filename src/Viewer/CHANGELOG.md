@@ -1,3 +1,6 @@
+# 1.6.4
+* Updated/fixed carbohydrate selection behaviour.
+
 # 1.6.3
 * Fixed screenshot support.
 

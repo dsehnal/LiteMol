@@ -11866,6 +11866,7 @@ declare namespace LiteMol.Visualization.Surface {
 declare namespace LiteMol.Visualization.Surface {
     interface Parameters {
         isWireframe?: boolean;
+        mapPickElements?: (pickId: number) => (number[] | undefined);
     }
     const DefaultSurfaceModelParameters: Parameters;
     class Model extends Visualization.Model {
@@ -11873,6 +11874,7 @@ declare namespace LiteMol.Visualization.Surface {
         private geometry;
         private material;
         private pickMaterial;
+        private _mapPickElements;
         protected applySelectionInternal(indices: number[], action: Selection.Action): boolean;
         highlightElement(pickId: number, highlight: boolean): boolean;
         protected highlightInternal(isOn: boolean): boolean;
@@ -13263,9 +13265,13 @@ declare namespace LiteMol.Bootstrap.Entity {
         const Selection: Type<{
             indices: number[];
         }>;
-        interface Visual extends Entity<Visual.Props<Bootstrap.Visualization.Molecule.Type>> {
+        interface Visual extends Entity<Visual.Props<Bootstrap.Visualization.Molecule.Type> & {
+            tag?: any;
+        }> {
         }
-        const Visual: Type<Visual.Props<"Surface" | "Cartoons" | "Calpha" | "BallsAndSticks" | "VDWBalls">>;
+        const Visual: Type<Visual.Props<"Surface" | "Cartoons" | "Calpha" | "BallsAndSticks" | "VDWBalls"> & {
+            tag?: any;
+        }>;
         namespace CoordinateStreaming {
             interface Behaviour extends Entity<Behaviour.Props<Bootstrap.Behaviour.Molecule.CoordinateStreaming>> {
             }

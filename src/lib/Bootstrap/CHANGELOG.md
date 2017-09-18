@@ -1,4 +1,7 @@
-﻿# 1.4.1
+﻿# 1.4.2
+* Updated selection behaviour.
+
+# 1.4.1
 * Fixed a bug in creating nested selections.
 * Autoamtic mol. surface density is now based on volume rather than count.
 

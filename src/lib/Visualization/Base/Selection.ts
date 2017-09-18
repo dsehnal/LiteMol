@@ -16,6 +16,7 @@ namespace LiteMol.Visualization.Selection {
 
         getPickInfo(): Info | null {
             if (!this.current) return this.current;
+            if (this.current.elements && !this.current.elements.length) return null;
             return {
                 model: this.current.model,
                 elements: this.current.elements,

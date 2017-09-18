@@ -13,28 +13,13 @@ namespace LiteMol.Extensions.ComplexReprensetation.Carbohydrates {
 
     export function HighlightCustomElementsBehaviour(context: Bootstrap.Context) {        
         context.highlight.addProvider(info => {
-            if  (Interactivity.isEmpty(info) || info.source.type !== Bootstrap.Entity.Visual.Surface) {
-                return void 0;
-            }
-            
-            const tag = (info.source as Bootstrap.Entity.Visual.Surface).props.tag as Tags;
-            if (!tag || tag.type !== 'CarbohydrateRepresentation') return void 0;
-            
-            const t = tag.tags.get(info.elements[0]);
-            if (!t) return void 0;
-            
-            switch (t.type) {
-                //case 'Link': return `Link: <b>${t.link.type}</b> (${Math.round(100 * t.link.distance) / 100} Å)`;
-                case 'Residue': {
-                    const r = t.residueIndex;
-                    return `<b>${t.instanceName}</b> (<span>${formatResidueName(t.model, r)}</span>)`;
-                }
-                case 'Terminal': {
-                    const r = t.residueIndex;
-                    return `<span>${formatResidueName(t.model, r)}</span>`;
-                }
-                default: return void 0;
-            }
+            if (!Interactivity.Molecule.isMoleculeModelInteractivity(info)) return void 0;       
+            const data = Interactivity.Molecule.transformInteraction(info);
+            if (!data || data.residues.length !== 1) return void 0;
+
+            const repr = Mapping.getResidueRepresentation(data.residues[0].name);
+            if (!repr) return void 0;
+            return `Carb: <b>${repr.instanceName}</b>`;
         });        
     }
 }

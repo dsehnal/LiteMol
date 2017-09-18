@@ -1,4 +1,7 @@
-﻿# 1.7.3
+﻿# 1.7.4
+* Updated selection behaviour.
+
+# 1.7.3
 * Fixed screenshot support.
 
 # 1.7.2

@@ -323,7 +323,6 @@ declare namespace LiteMol.Extensions.ComplexReprensetation.Carbohydrates {
     const DefaultFullParams: Params;
     type Tags = {
         type: 'CarbohydrateRepresentation';
-        tags: Core.Utils.FastMap<number, Tag>;
         colors: Core.Utils.FastMap<number, Visualization.Color>;
     };
     type Tag = {
@@ -351,7 +350,7 @@ declare namespace LiteMol.Extensions.ComplexReprensetation.Carbohydrates {
         const CreateInfo: Tree.Transformer<Entity.Molecule.Model, CarbohydratesInfo, {
             info: Info;
         }>;
-        const CreateVisual: Tree.Transformer<CarbohydratesInfo, Entity.Visual.Surface, Params>;
+        const CreateVisual: Tree.Transformer<CarbohydratesInfo, Entity.Molecule.Visual, Params>;
     }
     const EmptyInto: Info;
     function getInfo(params: {
@@ -362,6 +361,7 @@ declare namespace LiteMol.Extensions.ComplexReprensetation.Carbohydrates {
     }): Info;
     function getRepresentation(model: Model, info: Info, params: Params): {
         surface: Core.Computation<Core.Geometry.Surface>;
+        mapper: (pickId: number) => number[] | undefined;
         tags: Tags;
         theme: Visualization.Theme;
     };

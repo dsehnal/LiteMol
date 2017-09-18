@@ -93,8 +93,8 @@ namespace LiteMol.Bootstrap.Entity {
         export interface Selection extends Entity<{ indices: number[] }> { }
         export const Selection = create<{ indices: number[] }>( { name: 'Molecule Model Selection', typeClass: 'Selection', shortName: 'S_M', description: 'A selection of atoms.' }, { isFocusable: true });
         
-        export interface Visual extends Entity<Visual.Props<Bootstrap.Visualization.Molecule.Type>> { }
-        export const Visual = create<Visual.Props<Bootstrap.Visualization.Molecule.Type>>({ name: 'Molecule Visual', typeClass: 'Visual', shortName: 'V_M', description: 'A visual of a molecule.' }, { isFocusable: true });
+        export interface Visual extends Entity<Visual.Props<Bootstrap.Visualization.Molecule.Type> & { tag?: any }> { }
+        export const Visual = create<Visual.Props<Bootstrap.Visualization.Molecule.Type> & { tag?: any }>({ name: 'Molecule Visual', typeClass: 'Visual', shortName: 'V_M', description: 'A visual of a molecule.' }, { isFocusable: true });
         
         export namespace CoordinateStreaming {
             export interface Behaviour extends Entity<Behaviour.Props<Bootstrap.Behaviour.Molecule.CoordinateStreaming>> {}

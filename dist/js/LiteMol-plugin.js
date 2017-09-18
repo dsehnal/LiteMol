@@ -65597,7 +65597,7 @@ var LiteMol;
 (function (LiteMol) {
     var Visualization;
     (function (Visualization) {
-        Visualization.VERSION = { number: "1.7.3", date: "Aug 26 2017" };
+        Visualization.VERSION = { number: "1.7.3", date: "Sep 18 2017" };
     })(Visualization = LiteMol.Visualization || (LiteMol.Visualization = {}));
 })(LiteMol || (LiteMol = {}));
 var LiteMol;
@@ -67786,6 +67786,8 @@ var LiteMol;
                 Pick.prototype.getPickInfo = function () {
                     if (!this.current)
                         return this.current;
+                    if (this.current.elements && !this.current.elements.length)
+                        return null;
                     return {
                         model: this.current.model,
                         elements: this.current.elements,
@@ -68498,12 +68500,15 @@ var LiteMol;
         (function (Surface) {
             "use strict";
             Surface.DefaultSurfaceModelParameters = {
-                isWireframe: false
+                isWireframe: false,
+                mapPickElements: void 0
             };
             var Model = (function (_super) {
                 __extends(Model, _super);
                 function Model() {
-                    return _super !== null && _super.apply(this, arguments) || this;
+                    var _this = _super !== null && _super.apply(this, arguments) || this;
+                    _this._mapPickElements = void 0;
+                    return _this;
                 }
                 Model.prototype.applySelectionInternal = function (indices, action) {
                     var buffer = this.geometry.vertexStateBuffer, array = buffer.array, map = this.geometry.elementToVertexMap, vertexRanges = map.vertexRanges, changed = false;
@@ -68526,7 +68531,7 @@ var LiteMol;
                 };
                 Model.prototype.highlightElement = function (pickId, highlight) {
                     if (this.surface.annotation) {
-                        return this.applySelection(this.getPickElements(pickId), highlight ? 3 /* Highlight */ : 4 /* RemoveHighlight */);
+                        return this.applySelection([pickId - 1], highlight ? 3 /* Highlight */ : 4 /* RemoveHighlight */);
                     }
                     else {
                         return this.highlightInternal(highlight);
@@ -68538,6 +68543,9 @@ var LiteMol;
                 Model.prototype.getPickElements = function (pickId) {
                     if (!pickId)
                         return [];
+                    if (this._mapPickElements) {
+                        return this._mapPickElements(pickId - 1) || [];
+                    }
                     return [pickId - 1];
                 };
                 Model.prototype.getBoundingSphereOfSelection = function (indices) {
@@ -68659,6 +68667,7 @@ var LiteMol;
                                 case 1:
                                     geometry = _a.sent();
                                     ret = new Model();
+                                    ret._mapPickElements = parameters.mapPickElements;
                                     ret.surface = surface;
                                     ret.material = Visualization.MaterialsHelper.getMeshMaterial(Visualization.THREE.FlatShading, !!parameters.isWireframe); //new THREE.MeshPhongMaterial({ specular: 0xAAAAAA, /*ambient: 0xffffff, */shininess: 1, shading: THREE.FlatShading, side: THREE.DoubleSide, vertexColors: THREE.VertexColors });
                                     ret.geometry = geometry;
@@ -71676,7 +71685,7 @@ var LiteMol;
 (function (LiteMol) {
     var Bootstrap;
     (function (Bootstrap) {
-        Bootstrap.VERSION = { number: "1.4.1", date: "June 22 2017" };
+        Bootstrap.VERSION = { number: "1.4.2", date: "Sep 18 2017" };
     })(Bootstrap = LiteMol.Bootstrap || (LiteMol.Bootstrap = {}));
 })(LiteMol || (LiteMol = {}));
 /*
@@ -73668,7 +73677,17 @@ var LiteMol;
                 Info.selection = selection;
             })(Info = Interactivity.Info || (Interactivity.Info = {}));
             function isEmpty(info) {
-                return info.kind === 0 /* Empty */ || !info.source.tree;
+                if (info.kind === 0 /* Empty */ || !info.source.tree)
+                    return true;
+                if (info.source.type.info.typeClass === Bootstrap.Entity.VisualClass && info.source.type === Bootstrap.Entity.Molecule.Visual) {
+                    var modelOrSelection = Bootstrap.Utils.Molecule.findModelOrSelection(info.source);
+                    if (modelOrSelection) {
+                        if (!info.elements || !info.elements.length) {
+                            return true;
+                        }
+                    }
+                }
+                return false;
             }
             Interactivity.isEmpty = isEmpty;
             function isSelection(info) {
@@ -78276,7 +78295,7 @@ var LiteMol;
 (function (LiteMol) {
     var Plugin;
     (function (Plugin) {
-        Plugin.VERSION = { number: "1.3.3", date: "June 18 2017" };
+        Plugin.VERSION = { number: "1.3.4", date: "September 7 2017" };
     })(Plugin = LiteMol.Plugin || (LiteMol.Plugin = {}));
 })(LiteMol || (LiteMol = {}));
 /*

@@ -6,11 +6,13 @@ namespace LiteMol.Visualization.Surface {
     "use strict";
 
     export interface Parameters {        
-        isWireframe?: boolean;
+        isWireframe?: boolean,
+        mapPickElements?: (pickId: number) => (number[] | undefined),
     }
     
     export const DefaultSurfaceModelParameters: Parameters = {
-        isWireframe: false
+        isWireframe: false,
+        mapPickElements: void 0
     };
 
     export class Model extends Visualization.Model {
@@ -19,6 +21,7 @@ namespace LiteMol.Visualization.Surface {
         private geometry: Geometry;
         private material: THREE.ShaderMaterial;
         private pickMaterial: THREE.Material;
+        private _mapPickElements: ((pickId: number) => number[] | undefined) | undefined = void 0;
                                 
         protected applySelectionInternal(indices: number[], action: Selection.Action): boolean {           
             let buffer = this.geometry.vertexStateBuffer,
@@ -47,7 +50,7 @@ namespace LiteMol.Visualization.Surface {
 
         highlightElement(pickId: number, highlight: boolean): boolean {
             if (this.surface.annotation) {
-                return this.applySelection(this.getPickElements(pickId), highlight ? Selection.Action.Highlight : Selection.Action.RemoveHighlight);
+                return this.applySelection([pickId - 1], highlight ? Selection.Action.Highlight : Selection.Action.RemoveHighlight);
             } else {
                 return this.highlightInternal(highlight);
             }
@@ -59,6 +62,9 @@ namespace LiteMol.Visualization.Surface {
 
         getPickElements(pickId: number): number[] {
             if (!pickId) return [];
+            if (this._mapPickElements) {
+                return this._mapPickElements(pickId - 1) || [];
+            }
             return [pickId - 1];
         }
 
@@ -202,6 +208,7 @@ namespace LiteMol.Visualization.Surface {
                 let geometry = await buildGeometry(surface, ctx, !!parameters.isWireframe);
                 let ret = new Model();
 
+                ret._mapPickElements = parameters.mapPickElements;
                 ret.surface = surface;
                 ret.material =  MaterialsHelper.getMeshMaterial(THREE.FlatShading, !!parameters.isWireframe);//new THREE.MeshPhongMaterial({ specular: 0xAAAAAA, /*ambient: 0xffffff, */shininess: 1, shading: THREE.FlatShading, side: THREE.DoubleSide, vertexColors: THREE.VertexColors });
                 ret.geometry = geometry;
