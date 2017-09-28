@@ -196,7 +196,7 @@ var LiteMol;
             })(Api = ValidatorDB.Api || (ValidatorDB.Api = {}));
             var Interactivity;
             (function (Interactivity) {
-                var Behaviour = (function () {
+                var Behaviour = /** @class */ (function () {
                     function Behaviour(context, report) {
                         var _this = this;
                         this.context = context;
@@ -675,7 +675,7 @@ var LiteMol;
             var Utils = LiteMol.Bootstrap.Utils;
             var Interactivity = LiteMol.Bootstrap.Interactivity;
             var ToastKey = '__ShowDynamicDensity-toast';
-            var Behaviour = (function () {
+            var Behaviour = /** @class */ (function () {
                 function Behaviour(context, params) {
                     this.context = context;
                     this.params = params;
@@ -1146,7 +1146,7 @@ var LiteMol;
             'use strict';
             var React = LiteMol.Plugin.React; // this is to enable the HTML-like syntax
             var Controls = LiteMol.Plugin.Controls;
-            var CreateView = (function (_super) {
+            var CreateView = /** @class */ (function (_super) {
                 __extends(CreateView, _super);
                 function CreateView() {
                     return _super !== null && _super.apply(this, arguments) || this;
@@ -1168,7 +1168,7 @@ var LiteMol;
                 'Fo-Fc(+ve)': { min: 0, max: 5, dataKey: 'FO-FC' },
                 'Fo-Fc(-ve)': { min: -5, max: 0, dataKey: 'FO-FC' },
             };
-            var StreamingView = (function (_super) {
+            var StreamingView = /** @class */ (function (_super) {
                 __extends(StreamingView, _super);
                 function StreamingView() {
                     return _super !== null && _super.apply(this, arguments) || this;
@@ -2747,7 +2747,7 @@ var LiteMol;
                     'use strict';
                     var React = LiteMol.Plugin.React; // this is to enable the HTML-like syntax
                     var Controls = LiteMol.Plugin.Controls;
-                    var CreateVisual = (function (_super) {
+                    var CreateVisual = /** @class */ (function (_super) {
                         __extends(CreateVisual, _super);
                         function CreateVisual() {
                             return _super !== null && _super.apply(this, arguments) || this;
@@ -2886,7 +2886,7 @@ var LiteMol;
                 'use strict';
                 var React = LiteMol.Plugin.React; // this is to enable the HTML-like syntax
                 var Controls = LiteMol.Plugin.Controls;
-                var Apply = (function (_super) {
+                var Apply = /** @class */ (function (_super) {
                     __extends(Apply, _super);
                     function Apply() {
                         return _super !== null && _super.apply(this, arguments) || this;
@@ -3287,7 +3287,7 @@ var LiteMol;
                 })(Api = Validation.Api || (Validation.Api = {}));
                 var Interactivity;
                 (function (Interactivity) {
-                    var Behaviour = (function () {
+                    var Behaviour = /** @class */ (function () {
                         function Behaviour(context, report) {
                             var _this = this;
                             this.context = context;
@@ -3501,7 +3501,7 @@ var LiteMol;
                 SequenceAnnotation.Behaviour = Entity.create({ name: 'PDBe Sequence Annotation Behaviour', typeClass: 'Behaviour', shortName: 'SA', description: 'Represents PDBe sequence annoation behaviour.' });
                 var Interactivity;
                 (function (Interactivity) {
-                    var Behaviour = (function () {
+                    var Behaviour = /** @class */ (function () {
                         function Behaviour(context) {
                             var _this = this;
                             this.context = context;
@@ -3784,7 +3784,7 @@ var LiteMol;
             (function (Views) {
                 var React = LiteMol.Plugin.React; // this is to enable the HTML-like syntax
                 var Controls = LiteMol.Plugin.Controls;
-                var CreateSequenceAnnotationView = (function (_super) {
+                var CreateSequenceAnnotationView = /** @class */ (function (_super) {
                     __extends(CreateSequenceAnnotationView, _super);
                     function CreateSequenceAnnotationView() {
                         return _super !== null && _super.apply(this, arguments) || this;
@@ -3798,7 +3798,7 @@ var LiteMol;
                     return CreateSequenceAnnotationView;
                 }(LiteMol.Plugin.Views.Transform.ControllerBase));
                 Views.CreateSequenceAnnotationView = CreateSequenceAnnotationView;
-                var DownloadBinaryCIFFromCoordinateServerView = (function (_super) {
+                var DownloadBinaryCIFFromCoordinateServerView = /** @class */ (function (_super) {
                     __extends(DownloadBinaryCIFFromCoordinateServerView, _super);
                     function DownloadBinaryCIFFromCoordinateServerView() {
                         return _super !== null && _super.apply(this, arguments) || this;
@@ -3818,7 +3818,7 @@ var LiteMol;
                     return DownloadBinaryCIFFromCoordinateServerView;
                 }(LiteMol.Plugin.Views.Transform.ControllerBase));
                 Views.DownloadBinaryCIFFromCoordinateServerView = DownloadBinaryCIFFromCoordinateServerView;
-                var DownloadDensityView = (function (_super) {
+                var DownloadDensityView = /** @class */ (function (_super) {
                     __extends(DownloadDensityView, _super);
                     function DownloadDensityView() {
                         return _super !== null && _super.apply(this, arguments) || this;
@@ -3868,7 +3868,7 @@ var LiteMol;
             'use strict';
             var React = LiteMol.Plugin.React; // this is to enable the HTML-like syntax
             var Controls = LiteMol.Plugin.Controls;
-            var LoadExample = (function (_super) {
+            var LoadExample = /** @class */ (function (_super) {
                 __extends(LoadExample, _super);
                 function LoadExample() {
                     return _super !== null && _super.apply(this, arguments) || this;
@@ -3881,7 +3881,7 @@ var LiteMol;
                 return LoadExample;
             }(LiteMol.Plugin.Views.Transform.ControllerBase));
             Views.LoadExample = LoadExample;
-            var ObtainDownload = (function (_super) {
+            var ObtainDownload = /** @class */ (function (_super) {
                 __extends(ObtainDownload, _super);
                 function ObtainDownload() {
                     return _super !== null && _super.apply(this, arguments) || this;

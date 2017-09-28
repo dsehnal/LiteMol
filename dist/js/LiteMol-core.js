@@ -11238,7 +11238,7 @@ var LiteMol;
             return new Computation(c);
         }
         Core.computation = computation;
-        var Computation = (function () {
+        var Computation = /** @class */ (function () {
             function Computation(computation) {
                 this.computation = computation;
             }
@@ -11297,7 +11297,7 @@ var LiteMol;
             Computation.Aborted = 'Aborted';
             Computation.UpdateProgressDelta = 100;
         })(Computation = Core.Computation || (Core.Computation = {}));
-        var ContextImpl = (function () {
+        var ContextImpl = /** @class */ (function () {
             function ContextImpl() {
                 var _this = this;
                 this._abortRequested = false;
@@ -11536,14 +11536,14 @@ var LiteMol;
             })(FastSet = Utils.FastSet || (Utils.FastSet = {}));
             var Mask;
             (function (Mask) {
-                var EmptyMask = (function () {
+                var EmptyMask = /** @class */ (function () {
                     function EmptyMask(size) {
                         this.size = size;
                     }
                     EmptyMask.prototype.has = function (i) { return false; };
                     return EmptyMask;
                 }());
-                var SingletonMask = (function () {
+                var SingletonMask = /** @class */ (function () {
                     function SingletonMask(idx, size) {
                         this.idx = idx;
                         this.size = size;
@@ -11551,7 +11551,7 @@ var LiteMol;
                     SingletonMask.prototype.has = function (i) { return i === this.idx; };
                     return SingletonMask;
                 }());
-                var BitMask = (function () {
+                var BitMask = /** @class */ (function () {
                     function BitMask(mask, size) {
                         this.mask = mask;
                         this.size = size;
@@ -11559,7 +11559,7 @@ var LiteMol;
                     BitMask.prototype.has = function (i) { return this.mask[i]; };
                     return BitMask;
                 }());
-                var AllMask = (function () {
+                var AllMask = /** @class */ (function () {
                     function AllMask(size) {
                         this.size = size;
                     }
@@ -11802,7 +11802,7 @@ var LiteMol;
                     }
                     return row;
                 }
-                var TableImpl = (function () {
+                var TableImpl = /** @class */ (function () {
                     function TableImpl(count, srcColumns, srcData) {
                         this.__rowIndexer = { index: 0 };
                         this.count = count;
@@ -11840,7 +11840,7 @@ var LiteMol;
                     };
                     return TableImpl;
                 }());
-                var BuilderImpl = (function () {
+                var BuilderImpl = /** @class */ (function () {
                     function BuilderImpl(count) {
                         this.columns = [];
                         this.count = count;
@@ -12155,7 +12155,7 @@ var LiteMol;
                     }
                 })();
             })(PerformanceHelper || (PerformanceHelper = {}));
-            var PerformanceMonitor = (function () {
+            var PerformanceMonitor = /** @class */ (function () {
                 function PerformanceMonitor() {
                     this.starts = Utils.FastMap.create();
                     this.ends = Utils.FastMap.create();
@@ -12279,7 +12279,7 @@ var LiteMol;
                 }
                 ParserResult.success = success;
             })(ParserResult = Formats.ParserResult || (Formats.ParserResult = {}));
-            var ParserError = (function () {
+            var ParserError = /** @class */ (function () {
                 function ParserError(message, line) {
                     this.message = message;
                     this.line = line;
@@ -12294,7 +12294,7 @@ var LiteMol;
                 return ParserError;
             }());
             Formats.ParserError = ParserError;
-            var ParserSuccess = (function () {
+            var ParserSuccess = /** @class */ (function () {
                 function ParserSuccess(result, warnings) {
                     this.result = result;
                     this.warnings = warnings;
@@ -13173,7 +13173,7 @@ var LiteMol;
                 var PDB;
                 (function (PDB) {
                     "use strict";
-                    var MoleculeData = (function () {
+                    var MoleculeData = /** @class */ (function () {
                         function MoleculeData(header, crystInfo, models, data) {
                             this.header = header;
                             this.crystInfo = crystInfo;
@@ -13226,14 +13226,14 @@ var LiteMol;
                         return MoleculeData;
                     }());
                     PDB.MoleculeData = MoleculeData;
-                    var Header = (function () {
+                    var Header = /** @class */ (function () {
                         function Header(id) {
                             this.id = id;
                         }
                         return Header;
                     }());
                     PDB.Header = Header;
-                    var CrystStructureInfo = (function () {
+                    var CrystStructureInfo = /** @class */ (function () {
                         function CrystStructureInfo(record) {
                             this.record = record;
                         }
@@ -13284,7 +13284,7 @@ var LiteMol;
                         return CrystStructureInfo;
                     }());
                     PDB.CrystStructureInfo = CrystStructureInfo;
-                    var SecondaryStructure = (function () {
+                    var SecondaryStructure = /** @class */ (function () {
                         function SecondaryStructure(helixTokens, sheetTokens) {
                             this.helixTokens = helixTokens;
                             this.sheetTokens = sheetTokens;
@@ -13295,7 +13295,7 @@ var LiteMol;
                         return SecondaryStructure;
                     }());
                     PDB.SecondaryStructure = SecondaryStructure;
-                    var ModelData = (function () {
+                    var ModelData = /** @class */ (function () {
                         function ModelData(idToken, atomTokens, atomCount) {
                             this.idToken = idToken;
                             this.atomTokens = atomTokens;
@@ -13464,7 +13464,7 @@ var LiteMol;
                         return ModelData;
                     }());
                     PDB.ModelData = ModelData;
-                    var ModelsData = (function () {
+                    var ModelsData = /** @class */ (function () {
                         function ModelsData(models) {
                             this.models = models;
                         }
@@ -13504,7 +13504,7 @@ var LiteMol;
                 var PDB;
                 (function (PDB) {
                     "use strict";
-                    var Tokenizer = (function () {
+                    var Tokenizer = /** @class */ (function () {
                         function Tokenizer(data) {
                             this.data = data;
                             this.trimmedToken = { start: 0, end: 0 };
@@ -13638,7 +13638,7 @@ var LiteMol;
                         };
                         return Tokenizer;
                     }());
-                    var Parser = (function () {
+                    var Parser = /** @class */ (function () {
                         function Parser() {
                         }
                         Parser.tokenizeAtom = function (tokens, tokenizer) {
@@ -14039,7 +14039,7 @@ var LiteMol;
                 /**
                  * A field with the Z axis being the slowest and the X being the fastest.
                  */
-                var Field3DZYX = (function () {
+                var Field3DZYX = /** @class */ (function () {
                     function Field3DZYX(data, dimensions) {
                         this.data = data;
                         this.dimensions = dimensions;
@@ -15732,7 +15732,7 @@ var LiteMol;
                     }); });
                 }
                 MarchingCubes.compute = compute;
-                var MarchingCubesComputation = (function () {
+                var MarchingCubesComputation = /** @class */ (function () {
                     function MarchingCubesComputation(parameters, ctx) {
                         this.ctx = ctx;
                         this.minX = 0;
@@ -15827,7 +15827,7 @@ var LiteMol;
                     };
                     return MarchingCubesComputation;
                 }());
-                var MarchingCubesState = (function () {
+                var MarchingCubesState = /** @class */ (function () {
                     function MarchingCubesState(params) {
                         this.vertList = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
                         this.i = 0;
@@ -15952,7 +15952,7 @@ var LiteMol;
         (function (Geometry) {
             var MarchingCubes;
             (function (MarchingCubes) {
-                var Index = (function () {
+                var Index = /** @class */ (function () {
                     function Index(i, j, k) {
                         this.i = i | 0;
                         this.j = j | 0;
@@ -15961,7 +15961,7 @@ var LiteMol;
                     return Index;
                 }());
                 MarchingCubes.Index = Index;
-                var IndexPair = (function () {
+                var IndexPair = /** @class */ (function () {
                     function IndexPair(a, b) {
                         this.a = a;
                         this.b = b;
@@ -16384,7 +16384,7 @@ var LiteMol;
             var MolecularSurface;
             (function (MolecularSurface) {
                 "use strict";
-                var MolecularIsoSurfaceParametersWrapper = (function () {
+                var MolecularIsoSurfaceParametersWrapper = /** @class */ (function () {
                     function MolecularIsoSurfaceParametersWrapper(params) {
                         Core.Utils.extend(this, params, {
                             exactBoundary: false,
@@ -16402,7 +16402,7 @@ var LiteMol;
                     }
                     return MolecularIsoSurfaceParametersWrapper;
                 }());
-                var MolecularIsoFieldComputation = (function () {
+                var MolecularIsoFieldComputation = /** @class */ (function () {
                     function MolecularIsoFieldComputation(inputParameters, ctx) {
                         this.inputParameters = inputParameters;
                         this.ctx = ctx;
@@ -16665,7 +16665,7 @@ var LiteMol;
         (function (Structure) {
             "use strict";
             var DataTable = Core.Utils.DataTable;
-            var ComponentBondInfoEntry = (function () {
+            var ComponentBondInfoEntry = /** @class */ (function () {
                 function ComponentBondInfoEntry(id) {
                     this.id = id;
                     this.map = Core.Utils.FastMap.create();
@@ -16690,7 +16690,7 @@ var LiteMol;
                 return ComponentBondInfoEntry;
             }());
             Structure.ComponentBondInfoEntry = ComponentBondInfoEntry;
-            var ComponentBondInfo = (function () {
+            var ComponentBondInfo = /** @class */ (function () {
                 function ComponentBondInfo() {
                     this.entries = Core.Utils.FastMap.create();
                 }
@@ -16705,7 +16705,7 @@ var LiteMol;
             /**
              * Identifier for a reside that is a part of the polymer.
              */
-            var PolyResidueIdentifier = (function () {
+            var PolyResidueIdentifier = /** @class */ (function () {
                 function PolyResidueIdentifier(asymId, seqNumber, insCode) {
                     this.asymId = asymId;
                     this.seqNumber = seqNumber;
@@ -16749,7 +16749,7 @@ var LiteMol;
                 return PolyResidueIdentifier;
             }());
             Structure.PolyResidueIdentifier = PolyResidueIdentifier;
-            var SecondaryStructureElement = (function () {
+            var SecondaryStructureElement = /** @class */ (function () {
                 function SecondaryStructureElement(type, startResidueId, endResidueId, info) {
                     if (info === void 0) { info = {}; }
                     this.type = type;
@@ -16769,7 +16769,7 @@ var LiteMol;
                 return SecondaryStructureElement;
             }());
             Structure.SecondaryStructureElement = SecondaryStructureElement;
-            var SymmetryInfo = (function () {
+            var SymmetryInfo = /** @class */ (function () {
                 function SymmetryInfo(spacegroupName, cellSize, cellAngles, toFracTransform, isNonStandardCrytalFrame) {
                     this.spacegroupName = spacegroupName;
                     this.cellSize = cellSize;
@@ -16783,7 +16783,7 @@ var LiteMol;
             /**
              * Wraps _struct_conn mmCIF category.
              */
-            var StructConn = (function () {
+            var StructConn = /** @class */ (function () {
                 function StructConn(entries) {
                     this.entries = entries;
                     this._residuePairIndex = void 0;
@@ -16848,7 +16848,7 @@ var LiteMol;
             /**
              * Wraps an assembly operator.
              */
-            var AssemblyOperator = (function () {
+            var AssemblyOperator = /** @class */ (function () {
                 function AssemblyOperator(id, name, operator) {
                     this.id = id;
                     this.name = name;
@@ -16860,7 +16860,7 @@ var LiteMol;
             /**
              * Wraps a single assembly gen entry.
              */
-            var AssemblyGenEntry = (function () {
+            var AssemblyGenEntry = /** @class */ (function () {
                 function AssemblyGenEntry(operators, asymIds) {
                     this.operators = operators;
                     this.asymIds = asymIds;
@@ -16871,7 +16871,7 @@ var LiteMol;
             /**
              * Wraps an assembly generation template.
              */
-            var AssemblyGen = (function () {
+            var AssemblyGen = /** @class */ (function () {
                 function AssemblyGen(name) {
                     this.name = name;
                     this.gens = [];
@@ -16882,7 +16882,7 @@ var LiteMol;
             /**
              * Information about the assemblies.
              */
-            var AssemblyInfo = (function () {
+            var AssemblyInfo = /** @class */ (function () {
                 function AssemblyInfo(operators, assemblies) {
                     this.operators = operators;
                     this.assemblies = assemblies;
@@ -16968,7 +16968,7 @@ var LiteMol;
                     details: nullStr
                 };
             })(Tables = Structure.Tables || (Structure.Tables = {}));
-            var Operator = (function () {
+            var Operator = /** @class */ (function () {
                 function Operator(matrix, id, isIdentity) {
                     this.matrix = matrix;
                     this.id = id;
@@ -17290,7 +17290,7 @@ var LiteMol;
             "use strict";
             var Mat4 = Core.Geometry.LinearAlgebra.Matrix4;
             var Vec4 = Core.Geometry.LinearAlgebra.Vector4;
-            var Spacegroup = (function () {
+            var Spacegroup = /** @class */ (function () {
                 function Spacegroup(info) {
                     this.info = info;
                     this.temp = Mat4.zero();
@@ -19418,7 +19418,7 @@ var LiteMol;
                  * - the molecule itself.
                  *
                  */
-                var Context = (function () {
+                var Context = /** @class */ (function () {
                     function Context(structure, mask) {
                         this.mask = mask;
                         this.structure = structure;
@@ -19505,7 +19505,7 @@ var LiteMol;
                  * The basic element of the query language.
                  * Everything is represented as a fragment.
                  */
-                var Fragment = (function () {
+                var Fragment = /** @class */ (function () {
                     /**
                      * Create a fragment from an integer set.
                      */
@@ -19726,7 +19726,7 @@ var LiteMol;
                 /**
                  * A sequence of fragments the queries operate on.
                  */
-                var FragmentSeq = (function () {
+                var FragmentSeq = /** @class */ (function () {
                     function FragmentSeq(context, fragments) {
                         this.context = context;
                         this.fragments = fragments;
@@ -19785,7 +19785,7 @@ var LiteMol;
                 /**
                  * A builder that includes all fragments.
                  */
-                var FragmentSeqBuilder = (function () {
+                var FragmentSeqBuilder = /** @class */ (function () {
                     function FragmentSeqBuilder(ctx) {
                         this.ctx = ctx;
                         this.fragments = [];
@@ -19802,7 +19802,7 @@ var LiteMol;
                 /**
                  * A builder that includes only unique fragments.
                  */
-                var HashFragmentSeqBuilder = (function () {
+                var HashFragmentSeqBuilder = /** @class */ (function () {
                     function HashFragmentSeqBuilder(ctx) {
                         this.ctx = ctx;
                         this.fragments = [];
@@ -20042,7 +20042,7 @@ var LiteMol;
                  */
                 var Compiler;
                 (function (Compiler) {
-                    var OptimizedId = (function () {
+                    var OptimizedId = /** @class */ (function () {
                         function OptimizedId(id, arrays) {
                             this.columns = [];
                             for (var _i = 0, _a = Object.keys(id); _i < _a.length; _i++) {
