@@ -178,7 +178,7 @@ namespace LiteMol.Example.Channels.UI {
             let c = this.props.channel;
             let len = c.Profile[c.Profile.length - 1].Distance;
             let bneck = c.Profile.reduce((b: number, n: any) => Math.min(b, n.Radius), Number.POSITIVE_INFINITY);
-            return <Renderable label={<span><b>{c.Id + 1}</b>, {`Length: ${len} Å, Bottleneck: ${bneck} Å`}</span>} element={c} toggle={State.showChannelVisuals} {...this.props as any} />
+            return <Renderable label={<span><b>{c.Id}</b>, {`Length: ${len} Å, Bottleneck: ${bneck} Å`}</span>} element={c} toggle={State.showChannelVisuals} {...this.props as any} />
         }
     }
 
