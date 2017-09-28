@@ -5,12 +5,24 @@
 namespace LiteMol.Example.Channels.UI {
     import React = LiteMol.Plugin.React
 
-    export function render(plugin: Plugin.Controller, target: Element) {
-        LiteMol.Plugin.ReactDOM.render(<App plugin={plugin} />, target);
+    export interface UIState {
+        app: State.AppState,
+
+        /**
+         * This represents the JSON data returned by MOLE.
+         * 
+         * In a production environment (when using TypeScript),
+         * it would be a good idea to write type interfaces for the
+         * data to avoid bugs.
+         */
+        data: any
     }
 
-    export class App extends React.Component<{ plugin: Plugin.Controller }, { isLoading?: boolean, error?: string, data?: any }> {
+    export function render(app: State.AppState, target: Element) {
+        LiteMol.Plugin.ReactDOM.render(<App {...app} />, target);
+    }
 
+    export class App extends React.Component<State.AppState, { isLoading?: boolean, error?: string, data?: any }> {
         state = { isLoading: false, data: void 0, error: void 0 };
 
         componentDidMount() {
@@ -26,7 +38,7 @@ namespace LiteMol.Example.Channels.UI {
 
         render() {
             if (this.state.data) {
-                return <Data data={this.state.data} plugin={this.props.plugin} />
+                return <Data data={this.state.data} app={this.props} />
             } else {
                 let controls: any[] = [];
 
@@ -44,20 +56,7 @@ namespace LiteMol.Example.Channels.UI {
         }
     }
     
-    export interface State {
-        plugin: Plugin.Controller,
-
-        /**
-         * This represents the JSON data returned by MOLE.
-         * 
-         * In a production environment (when using TypeScript),
-         * it would be a good idea to write type interfaces for the
-         * data to avoid bugs.
-         */
-        data: any
-    }
-
-    export class Data extends React.Component<State, {}> {
+    export class Data extends React.Component<UIState, {}> {
         render() {
             return <div>
                 <Selection {...this.props} />
@@ -82,17 +81,19 @@ namespace LiteMol.Example.Channels.UI {
         }
     }
 
-    export class Selection extends React.Component<State, { label?: string }> {
+    export class Selection extends React.Component<UIState, { label?: string }> {
         state = { label: void 0 }
 
         private observer: Bootstrap.Rx.IDisposable | undefined = void 0;
         componentWillMount() {
-            this.observer = this.props.plugin.subscribe(Bootstrap.Event.Molecule.ModelSelect, e => {
-                if (!e.data) {
+            this.observer = this.props.app.events.select.subscribe(e => {
+                if (e.kind === 'nothing') {
                     this.setState({ label: void 0})
-                } else {
+                } else if (e.kind === 'molecule') {
                     let r = e.data.residues[0];
                     this.setState({ label: `${r.name} ${r.authSeqNumber} ${r.chain.authAsymId}` });
+                } else if (e.kind === 'point') {
+                    this.setState({ label: Behaviour.vec3str(e.data) });
                 }
             });
         }
@@ -106,9 +107,9 @@ namespace LiteMol.Example.Channels.UI {
 
         render() {
             return <div>
-                <h3>Selection</h3>  
+                <h3>Last Selection</h3>  
                 { !this.state.label 
-                    ? <div><i>Click on atom or residue</i></div>
+                    ? <div><i>Click on atom or residue, or Ctrl+click on cavity boundary</i></div>
                     : <div>{this.state.label}</div> }
             </div>
         }
@@ -130,16 +131,16 @@ namespace LiteMol.Example.Channels.UI {
         }
     }
 
-    export class Renderable extends React.Component<{ label: string | JSX.Element, element: any, toggle: (plugin: Plugin.Controller, elements: any[], visible: boolean) => Promise<any> } & State, { }> {
+    export class Renderable extends React.Component<{ label: string | JSX.Element, element: any, toggle: (plugin: Plugin.Controller, elements: any[], visible: boolean) => Promise<any> } & UIState, { }> {
         private toggle() {
             this.props.element.__isBusy = true;
             this.forceUpdate(() =>
-                this.props.toggle(this.props.plugin, [this.props.element], !this.props.element.__isVisible)
+                this.props.toggle(this.props.app.plugin, [this.props.element], !this.props.element.__isVisible)
                     .then(() => this.forceUpdate()).catch(() => this.forceUpdate()));
         }
 
         private highlight(isOn: boolean) {
-            this.props.plugin.command(Bootstrap.Command.Entity.Highlight, { entities: this.props.plugin.context.select(this.props.element.__id), isOn });
+            this.props.app.plugin.command(Bootstrap.Command.Entity.Highlight, { entities: this.props.app.plugin.context.select(this.props.element.__id), isOn });
         }
 
         render() {
@@ -151,12 +152,12 @@ namespace LiteMol.Example.Channels.UI {
         }
     }
 
-    export class Channels extends React.Component<State & { channels: any[], header: string }, { isBusy: boolean }> {
+    export class Channels extends React.Component<UIState & { channels: any[], header: string }, { isBusy: boolean }> {
         state = { isBusy: false }
         private show(visible: boolean) {
             for (let element of this.props.channels) { element.__isBusy = true; }
             this.setState({ isBusy: true }, () => 
-                State.showChannelVisuals(this.props.plugin, this.props.channels, visible)
+                State.showChannelVisuals(this.props.app.plugin, this.props.channels, visible)
                     .then(() => this.setState({ isBusy: false })).catch(() => this.setState({ isBusy: false })));
         }
 
@@ -170,7 +171,7 @@ namespace LiteMol.Example.Channels.UI {
         }
     }
 
-    export class Channel extends React.Component<State & { channel: any }, { isVisible: boolean }> {
+    export class Channel extends React.Component<UIState & { channel: any }, { isVisible: boolean }> {
         state = { isVisible: false };
 
         render() {
@@ -181,12 +182,12 @@ namespace LiteMol.Example.Channels.UI {
         }
     }
 
-    export class Cavities extends React.Component<State & { cavities: any[], header: string }, { isBusy: boolean }> {
+    export class Cavities extends React.Component<UIState & { cavities: any[], header: string }, { isBusy: boolean }> {
         state = { isBusy: false }
         private show(visible: boolean) {
             for (let element of this.props.cavities) { element.__isBusy = true; }
             this.setState({ isBusy: true }, () => 
-                State.showCavityVisuals(this.props.plugin, this.props.cavities, visible)
+                State.showCavityVisuals(this.props.app.plugin, this.props.cavities, visible)
                     .then(() => this.setState({ isBusy: false })).catch(() => this.setState({ isBusy: false })));
         }
 
@@ -200,7 +201,7 @@ namespace LiteMol.Example.Channels.UI {
         }
     }
 
-    export class Cavity extends React.Component<State & { cavity: any }, { isVisible: boolean }> {
+    export class Cavity extends React.Component<UIState & { cavity: any }, { isVisible: boolean }> {
         state = { isVisible: false };
 
         render() {
@@ -211,16 +212,16 @@ namespace LiteMol.Example.Channels.UI {
         }
     }
 
-     export class Origins extends React.Component<{ label: string | JSX.Element, origins: any } & State, { }> {
+     export class Origins extends React.Component<{ label: string | JSX.Element, origins: any } & UIState, { }> {
         private toggle() {
             this.props.origins.__isBusy = true;
             this.forceUpdate(() =>
-                State.showOriginsSurface(this.props.plugin, this.props.origins, !this.props.origins.__isVisible)
+                State.showOriginsSurface(this.props.app.plugin, this.props.origins, !this.props.origins.__isVisible)
                     .then(() => this.forceUpdate()).catch(() => this.forceUpdate()));
         }
 
         private highlight(isOn: boolean) {
-            this.props.plugin.command(Bootstrap.Command.Entity.Highlight, { entities: this.props.plugin.context.select(this.props.origins.__id), isOn });
+            this.props.app.plugin.command(Bootstrap.Command.Entity.Highlight, { entities: this.props.app.plugin.context.select(this.props.origins.__id), isOn });
         }
 
         render() {

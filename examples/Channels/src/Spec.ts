@@ -19,13 +19,14 @@ namespace LiteMol.Example.Channels {
      */
     export function HighlightCustomElements(context: Bootstrap.Context) {        
         context.highlight.addProvider(info => {
-            if  (Interactivity.isEmpty(info) || info.source.type !== Bootstrap.Entity.Visual.Surface) return void 0;
+            if (Interactivity.isEmpty(info) || info.source.type !== Bootstrap.Entity.Visual.Surface) return void 0;
             
-            let tag = (info.source as Bootstrap.Entity.Visual.Surface).props.tag as State.SurfaceTag;
-            let e = tag.element;
+            const tag = (info.source as Bootstrap.Entity.Visual.Surface).props.tag as State.SurfaceTag;
+            const e = tag.element;
 
-            switch (tag.type) {
-                case 'Cavity': return `<b>${e.Type} ${e.Id}</b>, Volume: ${e.Volume | 0} Å`;
+            switch (tag.kind) {
+                case 'Cavity-inner': return `<b>${e.Type} ${e.Id}</b>, Volume: ${e.Volume | 0} Å`;
+                case 'Cavity-boundary': return `<b>${e.Type} ${e.Id}</b>, Volume: ${e.Volume | 0} Å, Center: ${Behaviour.vec3str(Behaviour.getTriangleCenter(tag.surface, info.elements[0]))}`;
                 case 'Channel': {
                     let len = e.Profile[e.Profile.length - 1].Distance;
                     let bneck = e.Profile.reduce((b: number, n: any) => Math.min(b, n.Radius), Number.POSITIVE_INFINITY);
@@ -38,6 +39,12 @@ namespace LiteMol.Example.Channels {
                 default: return void 0;
             }
         });        
+    }
+
+    function isSelectableVisual(info: Bootstrap.Interactivity.Info, ctx: Bootstrap.Context) {
+        if (Interactivity.isEmpty(info) || info.source.type !== Bootstrap.Entity.Visual.Surface) return true;
+        const tag = (info.source as Bootstrap.Entity.Visual.Surface).props.tag as State.SurfaceTag;
+        return tag.kind === 'Channel';
     }
     
     export const PluginSpec: Plugin.Specification = {
@@ -60,13 +67,13 @@ namespace LiteMol.Example.Channels {
             // you will find the source of all behaviours in the Bootstrap/Behaviour directory
             
             Bootstrap.Behaviour.SetEntityToCurrentWhenAdded,
-            Bootstrap.Behaviour.FocusCameraOnSelect,
+            Bootstrap.Behaviour.FilteredFocusCameraOnSelect(isSelectableVisual),
             
             // this colors the visual when a selection is created on it.
             Bootstrap.Behaviour.ApplySelectionToVisual,
             
             // this colors the visual when it's selected by mouse or touch
-            Bootstrap.Behaviour.ApplyInteractivitySelection,
+            Bootstrap.Behaviour.FilteredApplyInteractivitySelection(isSelectableVisual),
             
             // this shows what atom/residue is the pointer currently over
             Bootstrap.Behaviour.Molecule.HighlightElementInfo,

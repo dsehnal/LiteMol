@@ -52,11 +52,11 @@ namespace LiteMol.Bootstrap.Behaviour {
             } 
         });        
     }
-    
-    export function ApplyInteractivitySelection(context: Context) {        
+
+    function _applyInteractivitySelection(stream: Rx.Observable<Interactivity.Info>, context: Context) {        
         let latestIndices: number[] | undefined = void 0;
         let latestModel: LiteMol.Visualization.Model | undefined = void 0;
-        context.behaviours.click.subscribe(info => {             
+        stream.subscribe(info => {             
              if (latestModel) {
                  latestModel.applySelection(latestIndices!,  LiteMol.Visualization.Selection.Action.RemoveSelect);
                  latestModel = void 0;
@@ -68,6 +68,16 @@ namespace LiteMol.Bootstrap.Behaviour {
              latestIndices = info.elements;
              latestModel!.applySelection(latestIndices!,  LiteMol.Visualization.Selection.Action.Select);                          
         });           
+    }
+    
+    export function ApplyInteractivitySelection(context: Context) {
+        _applyInteractivitySelection(context.behaviours.click, context);
+    }
+
+    export function FilteredApplyInteractivitySelection(filter: (e: Interactivity.Info, ctx: Context) => boolean) {
+        return function(context: Context) {
+            _applyInteractivitySelection(context.behaviours.click.filter(e => filter(e, context)), context);
+        }
     }
 
     export function UnselectElementOnRepeatedClick(context: Context) {
@@ -119,10 +129,20 @@ namespace LiteMol.Bootstrap.Behaviour {
         }
     }
 
-    export function FocusCameraOnSelect(context: Context) {
-        context.behaviours.click.subscribe(e => {
+    function focusCamera(stream: Rx.Observable<Interactivity.Info>, context: Context) {
+        stream.subscribe(e => {
             if (Interactivity.Molecule.isMoleculeModelInteractivity(e)) updateCameraModel(context, e);
             else updateCameraVisual(context, e);
         });
+    }
+
+    export function FocusCameraOnSelect(context: Context) {
+        focusCamera(context.behaviours.click, context);
+    }
+
+    export function FilteredFocusCameraOnSelect(filter: (e: Interactivity.Info, ctx: Context) => boolean) {
+        return function (context: Context) {
+            focusCamera(context.behaviours.click.filter(e => filter(e, context)), context);
+        }
     }
 }

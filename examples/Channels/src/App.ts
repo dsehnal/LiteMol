@@ -14,6 +14,6 @@ namespace LiteMol.Example.Channels {
             },
             customSpecification: PluginSpec
         });
-        UI.render(plugin, document.getElementById('ui') !);
+        UI.render(State.AppState(plugin), document.getElementById('ui') !);
     })();
 }

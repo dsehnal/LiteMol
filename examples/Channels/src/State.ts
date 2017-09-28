@@ -3,17 +3,40 @@
  */
 
 namespace LiteMol.Example.Channels.State {
-
     import Transformer = Bootstrap.Entity.Transformer;
 
-    export interface SurfaceTag { type: string, element?: any }
+    export type SelectableElement = 
+        | { kind: 'nothing' }
+        | { kind: 'molecule', data: Bootstrap.Interactivity.Molecule.SelectionInfo }
+        | { kind: 'point', data: number[] }
+
+    export interface AppState {
+        plugin: Plugin.Controller,
+        events: {
+            select: Bootstrap.Rx.Observable<SelectableElement>
+        }
+    }
+
+    export function AppState(plugin: Plugin.Controller): AppState {
+        Behaviour.initCavityBoundaryToggle(plugin);
+        return {
+            plugin,
+            events: {
+                select: Behaviour.createSelectEvent(plugin)
+            }
+        };
+    }
+
+    export type SurfaceTag =
+        | { kind: 'Channel' | 'Cavity-inner' | 'Origins', element: any }
+        | { kind: 'Cavity-boundary', element: any, surface: Core.Geometry.Surface }
 
     function showDefaultVisuals(plugin: Plugin.Controller, data: any, channelCount: number) {
         return new Promise(res =>
             showChannelVisuals(plugin, data.Channels.Tunnels.slice(0, channelCount), true).then(() => {
                 let cavity = data.Cavities.Cavities[0];
                 if (cavity) {
-                    showCavityVisuals(plugin, [/* cavity */], true).then(() => res());
+                    showCavityVisuals(plugin, [cavity], true).then(() => res());
                 }
             }));
     }
@@ -67,6 +90,44 @@ namespace LiteMol.Example.Channels.State {
         return surface;
     }
 
+    function createTriangleSurface(mesh: any) {
+        const triangleCount = (mesh.Triangles.length / 3) | 0;
+        const vertexCount = triangleCount * 3;
+
+        const srcV = mesh.Vertices;
+        const srcT = mesh.Triangles;
+
+        const vertices = new Float32Array(vertexCount * 3);
+        const triangleIndices = new Uint32Array(triangleCount * 3);
+        const annotation = new Int32Array(vertexCount) as any as number[];
+
+        const tri = [0,0,0];
+        for (let i = 0, _i = mesh.Triangles.length; i < _i; i += 3) {
+            tri[0] = srcT[i]; tri[1] = srcT[i + 1]; tri[2] = srcT[i + 2];
+
+            for (let j = 0; j < 3; j++) {
+                const v = i + j;
+                vertices[3 * v] =  srcV[3 * tri[j]];
+                vertices[3 * v + 1] =  srcV[3 * tri[j] + 1];
+                vertices[3 * v + 2] =  srcV[3 * tri[j] + 2];
+                triangleIndices[i + j] = i + j;
+            }
+        }
+        for (let i = 0; i < triangleCount; i++) {
+            for (let j = 0; j < 3; j++) annotation[3 * i + j] = i;
+        }
+
+        const surface = <Core.Geometry.Surface>{
+            vertices,
+            vertexCount,
+            triangleIndices,
+            triangleCount,
+            annotation
+        };
+
+        return surface;
+    }
+
     let colorIndex = Visualization.Molecule.Colors.DefaultPallete.length - 1;
     function nextColor() {
         return Visualization.Color.random();
@@ -78,7 +139,7 @@ namespace LiteMol.Example.Channels.State {
         // return color;
     }
 
-    function showSurfaceVisuals(plugin: Plugin.Controller, elements: any[], visible: boolean, type: string, label: (e: any) => string, alpha: number): Promise<any> {
+    function showSurfaceVisuals(plugin: Plugin.Controller, elements: any[], visible: boolean, type: 'Cavity' | 'Channel', label: (e: any) => string): Promise<any> {
         // I am modifying the original JSON response. In general this is not a very good
         // idea and should be avoided in "real" apps.
 
@@ -98,15 +159,32 @@ namespace LiteMol.Example.Channels.State {
 
             if (!visible) {
                 plugin.command(Bootstrap.Command.Tree.RemoveNode, element.__id);
-            } else {
+            } else if (type === 'Cavity') {
+                const boundarySurface = createTriangleSurface(element.Mesh.Boundary);
+
+                const group = t.add('mole-data', Transformer.Basic.CreateGroup, { }, { ref: element.__id, isHidden: true });
+                group.then(Transformer.Basic.CreateSurfaceVisual, {
+                    label: label(element),
+                    tag: <SurfaceTag>{ kind: 'Cavity-boundary', element, surface: boundarySurface },
+                    surface: boundarySurface,
+                    theme: Behaviour.CavityTheme.boundary
+                });
+                group.then(Transformer.Basic.CreateSurfaceVisual, {
+                    label: label(element),
+                    tag: <SurfaceTag>{ kind: 'Cavity-inner', element },
+                    surface: createSurface(element.Mesh.Inner),
+                    theme: Behaviour.CavityTheme.inner
+                });
+                needsApply = true;
+            } else if (type === 'Channel') {
                 let surface = createSurface(element.Mesh);
                 t.add('mole-data', Transformer.Basic.CreateSurfaceVisual, {
                     label: label(element),
-                    tag: { type, element },
+                    tag: <SurfaceTag>{ kind: 'Channel', element },
                     surface,
                     theme: Visualization.Theme.createUniform({ 
                         colors: LiteMol.Core.Utils.FastMap.ofArray<string, LiteMol.Visualization.Color>([['Uniform', element.__color as Visualization.Color]]),
-                        transparency: { alpha }
+                        transparency: { alpha: 1.0 }
                     })
                 }, { ref: element.__id, isHidden: true });
                 needsApply = true;
@@ -134,11 +212,11 @@ namespace LiteMol.Example.Channels.State {
     }
 
     export function showCavityVisuals(plugin: Plugin.Controller, cavities: any[], visible: boolean): Promise<any> {
-        return showSurfaceVisuals(plugin, cavities, visible, 'Cavity', (cavity: any) => `${cavity.Type} ${cavity.Id}`, 0.33);
+        return showSurfaceVisuals(plugin, cavities, visible, 'Cavity', (cavity: any) => `${cavity.Type} ${cavity.Id}`);
     }
 
     export function showChannelVisuals(plugin: Plugin.Controller, channels: any[], visible: boolean): Promise<any> {
-        return showSurfaceVisuals(plugin, channels, visible, 'Channel', (channel: any) => `${channel.Type} ${channel.Id + 1}`, 1.0);
+        return showSurfaceVisuals(plugin, channels, visible, 'Channel', (channel: any) => `${channel.Type} ${channel.Id}`);
     }
 
     function createOriginsSurface(origins: any): Promise<Core.Geometry.Surface> {
@@ -174,7 +252,7 @@ namespace LiteMol.Example.Channels.State {
                 let t = plugin.createTransform()
                     .add('mole-data', Transformer.Basic.CreateSurfaceVisual, {
                         label: 'Origins ' + origins.Type,
-                        tag: { type: 'Origins', element: origins },
+                        tag: <SurfaceTag>{ kind: 'Origins', element: origins },
                         surface,
                         theme: Visualization.Theme.createUniform({ 
                             colors: LiteMol.Core.Utils.FastMap.ofArray<string, LiteMol.Visualization.Color>([['Uniform', origins.__color as Visualization.Color]])

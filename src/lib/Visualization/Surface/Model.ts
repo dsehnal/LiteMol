@@ -61,7 +61,7 @@ namespace LiteMol.Visualization.Surface {
         }
 
         getPickElements(pickId: number): number[] {
-            if (!pickId) return [];
+            if (!pickId) return [0];
             if (this._mapPickElements) {
                 return this._mapPickElements(pickId - 1) || [];
             }

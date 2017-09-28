@@ -68542,7 +68542,7 @@ var LiteMol;
                 };
                 Model.prototype.getPickElements = function (pickId) {
                     if (!pickId)
-                        return [];
+                        return [0];
                     if (this._mapPickElements) {
                         return this._mapPickElements(pickId - 1) || [];
                     }
@@ -76571,10 +76571,10 @@ var LiteMol;
                 });
             }
             Behaviour.ApplySelectionToVisual = ApplySelectionToVisual;
-            function ApplyInteractivitySelection(context) {
+            function _applyInteractivitySelection(stream, context) {
                 var latestIndices = void 0;
                 var latestModel = void 0;
-                context.behaviours.click.subscribe(function (info) {
+                stream.subscribe(function (info) {
                     if (latestModel) {
                         latestModel.applySelection(latestIndices, 2 /* RemoveSelect */);
                         latestModel = void 0;
@@ -76587,7 +76587,16 @@ var LiteMol;
                     latestModel.applySelection(latestIndices, 1 /* Select */);
                 });
             }
+            function ApplyInteractivitySelection(context) {
+                _applyInteractivitySelection(context.behaviours.click, context);
+            }
             Behaviour.ApplyInteractivitySelection = ApplyInteractivitySelection;
+            function FilteredApplyInteractivitySelection(filter) {
+                return function (context) {
+                    _applyInteractivitySelection(context.behaviours.click.filter(function (e) { return filter(e, context); }), context);
+                };
+            }
+            Behaviour.FilteredApplyInteractivitySelection = FilteredApplyInteractivitySelection;
             function UnselectElementOnRepeatedClick(context) {
                 var latest = Bootstrap.Interactivity.Info.empty;
                 Bootstrap.Event.Visual.VisualSelectElement.getStream(context).subscribe(function (e) {
@@ -76638,15 +76647,24 @@ var LiteMol;
                     context.scene.camera.focusOnModel(m);
                 }
             }
-            function FocusCameraOnSelect(context) {
-                context.behaviours.click.subscribe(function (e) {
+            function focusCamera(stream, context) {
+                stream.subscribe(function (e) {
                     if (Bootstrap.Interactivity.Molecule.isMoleculeModelInteractivity(e))
                         updateCameraModel(context, e);
                     else
                         updateCameraVisual(context, e);
                 });
             }
+            function FocusCameraOnSelect(context) {
+                focusCamera(context.behaviours.click, context);
+            }
             Behaviour.FocusCameraOnSelect = FocusCameraOnSelect;
+            function FilteredFocusCameraOnSelect(filter) {
+                return function (context) {
+                    focusCamera(context.behaviours.click.filter(function (e) { return filter(e, context); }), context);
+                };
+            }
+            Behaviour.FilteredFocusCameraOnSelect = FilteredFocusCameraOnSelect;
         })(Behaviour = Bootstrap.Behaviour || (Bootstrap.Behaviour = {}));
     })(Bootstrap = LiteMol.Bootstrap || (LiteMol.Bootstrap = {}));
 })(LiteMol || (LiteMol = {}));

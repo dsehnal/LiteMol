@@ -20,6 +20,7 @@
     "../../dist/js/LiteMol-plugin.d.ts",
 
     "src/State.ts",
+    "src/Behaviour.ts",
     "src/UI.tsx",
     "src/Spec.ts",           
     "src/App.ts"

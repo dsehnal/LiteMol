@@ -13583,8 +13583,10 @@ declare namespace LiteMol.Bootstrap.Behaviour {
     function CreateVisualWhenModelIsAdded(context: Context): void;
     function ApplySelectionToVisual(context: Context): void;
     function ApplyInteractivitySelection(context: Context): void;
+    function FilteredApplyInteractivitySelection(filter: (e: Interactivity.Info, ctx: Context) => boolean): (context: Context) => void;
     function UnselectElementOnRepeatedClick(context: Context): void;
     function FocusCameraOnSelect(context: Context): void;
+    function FilteredFocusCameraOnSelect(filter: (e: Interactivity.Info, ctx: Context) => boolean): (context: Context) => void;
 }
 declare namespace LiteMol.Bootstrap.Behaviour.Molecule {
     /** An ugly hack that will be removed when the time comes */
