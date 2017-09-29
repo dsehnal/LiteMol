@@ -42,6 +42,13 @@ namespace LiteMol.Example.Channels {
     }
 
     function isSelectableVisual(info: Bootstrap.Interactivity.Info, ctx: Bootstrap.Context) {
+        // if (Interactivity.isEmpty(info) || info.source.type !== Bootstrap.Entity.Visual.Surface) return true;
+        // const tag = (info.source as Bootstrap.Entity.Visual.Surface).props.tag as State.SurfaceTag;
+        // return tag.kind === 'Channel';
+        return true;
+    }
+
+    function isFocusableVisual(info: Bootstrap.Interactivity.Info, ctx: Bootstrap.Context) {
         if (Interactivity.isEmpty(info) || info.source.type !== Bootstrap.Entity.Visual.Surface) return true;
         const tag = (info.source as Bootstrap.Entity.Visual.Surface).props.tag as State.SurfaceTag;
         return tag.kind === 'Channel';
@@ -67,7 +74,7 @@ namespace LiteMol.Example.Channels {
             // you will find the source of all behaviours in the Bootstrap/Behaviour directory
             
             Bootstrap.Behaviour.SetEntityToCurrentWhenAdded,
-            Bootstrap.Behaviour.FilteredFocusCameraOnSelect(isSelectableVisual),
+            Bootstrap.Behaviour.FilteredFocusCameraOnSelect(isFocusableVisual),
             
             // this colors the visual when a selection is created on it.
             Bootstrap.Behaviour.ApplySelectionToVisual,
