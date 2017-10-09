@@ -25,7 +25,7 @@ namespace LiteMol.Extensions.ComplexReprensetation.Carbohydrates.Mapping {
             axisUp: [0, 0, 1],
             instances: [{
                 name: 'Glc',
-                common: { colorA: '#0090bc', names: ['GLC', 'MAL', 'BGC'] },
+                common: { colorA: '#0090bc', names: ['GLC', /*'MAL',*/ 'BGC'] },
                 charmm: { colorA: '#0090bc', names: ['AGLC', 'BGLC'] },
                 glycam: { colorA: '#0090bc', names: ['0GA', '0GB', '1GA', '1GB', '2GA', '2GB', '3GA', '3GB', '4GA', '4GB', '6GA', '6GB', 'ZGA', 'ZGB', 'YGA', 'YGB', 'XGA', 'XGB', 'WGA', 'WGB', 'VGA', 'VGB', 'UGA', 'UGB', 'TGA', 'TGB', 'SGA', 'SGB', 'RGA', 'RGB', 'QGA', 'QGB', 'PGA', 'PGB', '0gA', '0gB', '1gA', '1gB', '2gA', '2gB', '3gA', '3gB', '4gA', '4gB', '6gA', '6gB', 'ZgA', 'ZgB', 'YgA', 'YgB', 'XgA', 'XgB', 'WgA', 'WgB', 'VgA', 'VgB', 'UgA', 'UgB', 'TgA', 'TgB', 'SgA', 'SgB', 'RgA', 'RgB', 'QgA', 'QgB', 'PgA', 'PgB'] },
             }, {
