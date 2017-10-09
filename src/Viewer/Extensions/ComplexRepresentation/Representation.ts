@@ -33,7 +33,7 @@ namespace LiteMol.Extensions.ComplexReprensetation {
 
         // is everything cartoon?
         if (sequenceAtoms.length === queryCtx.atomCount && !hasModRes) {
-            const ret: Info = { sequence: { all: sequenceAtoms, interacting: [], modified: [] }, het: { other: [], carbohydrates: Carbohydrates.EmptyInto }, freeWaterAtoms: [] };
+            const ret: Info = { sequence: { all: sequenceAtoms, interacting: [], modified: [] }, het: { other: [], carbohydrates: Carbohydrates.EmptyInfo([]) }, freeWaterAtoms: [] };
             return ret;
         }
 
@@ -41,7 +41,7 @@ namespace LiteMol.Extensions.ComplexReprensetation {
         const modifiedSequence = getModRes(model, sequenceCtx);
 
         if (sequenceAtoms.length === queryCtx.atomCount) {
-            const ret: Info = { sequence: { all: sequenceAtoms, interacting: [], modified: modifiedSequence }, het: { other: [], carbohydrates: Carbohydrates.EmptyInto }, freeWaterAtoms: [] };
+            const ret: Info = { sequence: { all: sequenceAtoms, interacting: [], modified: modifiedSequence }, het: { other: [], carbohydrates: Carbohydrates.EmptyInfo([]) }, freeWaterAtoms: [] };
             return ret;
         }
 
@@ -51,7 +51,7 @@ namespace LiteMol.Extensions.ComplexReprensetation {
 
         // is everything cartoon?
         if (!possibleHetGroupsAndInteractingSequence) {
-            const ret: Info = { sequence: { all: sequenceAtoms, interacting: [], modified: modifiedSequence }, het: { other: [], carbohydrates: Carbohydrates.EmptyInto }, freeWaterAtoms: waterAtoms };
+            const ret: Info = { sequence: { all: sequenceAtoms, interacting: [], modified: modifiedSequence }, het: { other: [], carbohydrates: Carbohydrates.EmptyInfo([]) }, freeWaterAtoms: waterAtoms };
             return ret;
         }
 

@@ -352,7 +352,7 @@ declare namespace LiteMol.Extensions.ComplexReprensetation.Carbohydrates {
         }>;
         const CreateVisual: Tree.Transformer<CarbohydratesInfo, Entity.Molecule.Visual, Params>;
     }
-    const EmptyInto: Info;
+    function EmptyInfo(warnings: string[]): Info;
     function getInfo(params: {
         model: Model;
         fragment: Struct.Query.Fragment;

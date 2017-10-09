@@ -15,7 +15,9 @@ namespace LiteMol.Extensions.ComplexReprensetation.Carbohydrates.Mapping {
     export const RingNames: { __len: number, [n: string]: number }[] = [
         { __len: 6, 'C1': 0, 'C2': 1, 'C3': 2, 'C4': 3, 'C5': 4, 'O5': 5 },
         { __len: 6, 'C1': 0, 'C2': 1, 'C3': 2, 'C4': 3, 'C5': 4, 'O': 5 },
-        { __len: 6, 'C2': 0, 'C3': 1, 'C4': 2, 'C5': 3, 'C6': 4, 'O6': 5 }
+        { __len: 6, 'C2': 0, 'C3': 1, 'C4': 2, 'C5': 3, 'C6': 4, 'O6': 5 },
+        { __len: 5, 'C1': 0, 'C2': 1, 'C3': 2, 'C4': 3, 'O4': 4 },
+        { __len: 5, 'C1\'': 0, 'C2\'': 1, 'C3\'': 2, 'C4\'': 3, 'O4\'': 4 },
     ];
 
     const data = [  
@@ -460,8 +462,8 @@ namespace LiteMol.Extensions.ComplexReprensetation.Carbohydrates.Mapping {
                     axisSide: [1, 0, 0]
                 })
                 for (const name of instance.common.names) entry(name, instance.common);
-                for (const name of instance.charmm.names) entry(name, instance.charmm);
-                for (const name of instance.glycam.names) entry(name, instance.glycam);
+                //for (const name of instance.charmm.names) entry(name, instance.charmm);
+                //for (const name of instance.glycam.names) entry(name, instance.glycam);
             }
         }
         return map;

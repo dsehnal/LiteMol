@@ -1513,7 +1513,9 @@ var LiteMol;
                     Mapping.RingNames = [
                         { __len: 6, 'C1': 0, 'C2': 1, 'C3': 2, 'C4': 3, 'C5': 4, 'O5': 5 },
                         { __len: 6, 'C1': 0, 'C2': 1, 'C3': 2, 'C4': 3, 'C5': 4, 'O': 5 },
-                        { __len: 6, 'C2': 0, 'C3': 1, 'C4': 2, 'C5': 3, 'C6': 4, 'O6': 5 }
+                        { __len: 6, 'C2': 0, 'C3': 1, 'C4': 2, 'C5': 3, 'C6': 4, 'O6': 5 },
+                        { __len: 5, 'C1': 0, 'C2': 1, 'C3': 2, 'C4': 3, 'O4': 4 },
+                        { __len: 5, 'C1\'': 0, 'C2\'': 1, 'C3\'': 2, 'C4\'': 3, 'O4\'': 4 },
                     ];
                     var data = [
                         /* === Filled sphere  === */
@@ -1960,14 +1962,8 @@ var LiteMol;
                                     var name_1 = _a[_i];
                                     entry(name_1, instance.common);
                                 }
-                                for (var _b = 0, _c = instance.charmm.names; _b < _c.length; _b++) {
-                                    var name_2 = _c[_b];
-                                    entry(name_2, instance.charmm);
-                                }
-                                for (var _d = 0, _e = instance.glycam.names; _d < _e.length; _d++) {
-                                    var name_3 = _e[_d];
-                                    entry(name_3, instance.glycam);
-                                }
+                                //for (const name of instance.charmm.names) entry(name, instance.charmm);
+                                //for (const name of instance.glycam.names) entry(name, instance.glycam);
                             };
                             for (var _i = 0, _a = shape.instances; _i < _a.length; _i++) {
                                 var instance = _a[_i];
@@ -2084,12 +2080,13 @@ var LiteMol;
                         return LiteMol.Bootstrap.Task.resolve(t.transformer.info.name, 'Background', Tree.Node.Null);
                     });
                 })(Transforms = Carbohydrates.Transforms || (Carbohydrates.Transforms = {}));
-                Carbohydrates.EmptyInto = { links: [], map: LiteMol.Core.Utils.FastMap.create(), entries: [], carbohydrateIndices: [], terminalIndices: [], warnings: [] };
+                function EmptyInfo(warnings) { return { links: [], map: LiteMol.Core.Utils.FastMap.create(), entries: [], carbohydrateIndices: [], terminalIndices: [], warnings: warnings }; }
+                Carbohydrates.EmptyInfo = EmptyInfo;
                 function getInfo(params) {
                     var model = params.model, fragment = params.fragment, atomMask = params.atomMask, bonds = params.bonds;
                     var _c = getRepresentableResidues(model, fragment.residueIndices), carbohydrateIndices = _c.residueIndices, entries = _c.entries, warnings = _c.warnings;
                     if (!carbohydrateIndices.length) {
-                        return Carbohydrates.EmptyInto;
+                        return EmptyInfo(warnings);
                     }
                     ;
                     var map = LiteMol.Core.Utils.FastMap.create();
@@ -2243,7 +2240,26 @@ var LiteMol;
                     return { links: links, terminalIndices: terminalIndices.array };
                 }
                 function warn(model, rI) {
-                    return "Residue '" + Carbohydrates.formatResidueName(model, rI) + "' has a recognized carbohydrate name, but missing/incorrectly named ring atoms.";
+                    return "Residue '" + Carbohydrates.formatResidueName(model, rI) + "' has a recognized carbohydrate name, but is missing ring atoms with standard names.";
+                }
+                function isRing(model, atoms, ringCenter) {
+                    var ringRadius = LiteMol.Bootstrap.Utils.Molecule.getCentroidAndRadius(model, atoms, ringCenter);
+                    if (ringRadius > 1.95)
+                        return 0;
+                    var u = LA.Vector3.zero(), v = LA.Vector3.zero();
+                    var _c = model.positions, x = _c.x, y = _c.y, z = _c.z;
+                    var len = atoms.length;
+                    for (var i = 0; i < len - 1; i++) {
+                        var a = atoms[i];
+                        LA.Vector3.set(u, x[a], y[a], z[a]);
+                        for (var j = i + 1; j < len; j++) {
+                            var b = atoms[j];
+                            LA.Vector3.set(v, x[b], y[b], z[b]);
+                            if (LA.Vector3.squaredDistance(u, v) > 16)
+                                return 0.0;
+                        }
+                    }
+                    return ringRadius;
                 }
                 function getRepresentableResidues(model, sourceResidueIndices) {
                     var name = model.data.residues.name;
@@ -2261,10 +2277,9 @@ var LiteMol;
                         for (var _d = 0, possibleRingAtoms_1 = possibleRingAtoms; _d < possibleRingAtoms_1.length; _d++) {
                             var ringAtoms = possibleRingAtoms_1[_d];
                             var ringCenter = LA.Vector3.zero();
-                            var ringRadius = LiteMol.Bootstrap.Utils.Molecule.getCentroidAndRadius(model, ringAtoms, ringCenter);
-                            if (ringRadius > 1.95) {
+                            var ringRadius = isRing(model, ringAtoms, ringCenter);
+                            if (ringRadius === 0.0)
                                 continue;
-                            }
                             residueIndices.push(rI);
                             entries.push({ representation: Carbohydrates.Mapping.getResidueRepresentation(name[rI]), ringAtoms: ringAtoms, ringCenter: ringCenter, ringRadius: ringRadius, links: [], terminalLinks: [] });
                             added = true;
@@ -2364,13 +2379,13 @@ var LiteMol;
                                 hasModRes = modRes && modRes.count > 0;
                                 // is everything cartoon?
                                 if (sequenceAtoms.length === queryCtx.atomCount && !hasModRes) {
-                                    ret_1 = { sequence: { all: sequenceAtoms, interacting: [], modified: [] }, het: { other: [], carbohydrates: ComplexReprensetation.Carbohydrates.EmptyInto }, freeWaterAtoms: [] };
+                                    ret_1 = { sequence: { all: sequenceAtoms, interacting: [], modified: [] }, het: { other: [], carbohydrates: ComplexReprensetation.Carbohydrates.EmptyInfo([]) }, freeWaterAtoms: [] };
                                     return [2 /*return*/, ret_1];
                                 }
                                 sequenceCtx = Q.Context.ofAtomIndices(model, sequenceAtoms);
                                 modifiedSequence = getModRes(model, sequenceCtx);
                                 if (sequenceAtoms.length === queryCtx.atomCount) {
-                                    ret_2 = { sequence: { all: sequenceAtoms, interacting: [], modified: modifiedSequence }, het: { other: [], carbohydrates: ComplexReprensetation.Carbohydrates.EmptyInto }, freeWaterAtoms: [] };
+                                    ret_2 = { sequence: { all: sequenceAtoms, interacting: [], modified: modifiedSequence }, het: { other: [], carbohydrates: ComplexReprensetation.Carbohydrates.EmptyInfo([]) }, freeWaterAtoms: [] };
                                     return [2 /*return*/, ret_2];
                                 }
                                 waterAtoms = Q.entities({ type: 'water' }).union().compile()(queryCtx).unionAtomIndices();
@@ -2378,7 +2393,7 @@ var LiteMol;
                                 possibleHetGroupsAndInteractingSequence = possibleHetGroupsAndInteractingSequenceQ(queryCtx).fragments[0];
                                 // is everything cartoon?
                                 if (!possibleHetGroupsAndInteractingSequence) {
-                                    ret_3 = { sequence: { all: sequenceAtoms, interacting: [], modified: modifiedSequence }, het: { other: [], carbohydrates: ComplexReprensetation.Carbohydrates.EmptyInto }, freeWaterAtoms: waterAtoms };
+                                    ret_3 = { sequence: { all: sequenceAtoms, interacting: [], modified: modifiedSequence }, het: { other: [], carbohydrates: ComplexReprensetation.Carbohydrates.EmptyInfo([]) }, freeWaterAtoms: waterAtoms };
                                     return [2 /*return*/, ret_3];
                                 }
                                 return [4 /*yield*/, computation.updateProgress('Computing bonds...')];

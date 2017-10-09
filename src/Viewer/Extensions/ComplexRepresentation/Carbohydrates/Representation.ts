@@ -112,7 +112,7 @@ namespace LiteMol.Extensions.ComplexReprensetation.Carbohydrates {
         });
     }
 
-    export const EmptyInto: Info = { links: [], map: Core.Utils.FastMap.create(), entries: [], carbohydrateIndices: [], terminalIndices: [], warnings: [] };
+    export function EmptyInfo(warnings: string[]): Info { return { links: [], map: Core.Utils.FastMap.create(), entries: [], carbohydrateIndices: [], terminalIndices: [], warnings }; }
 
     export function getInfo(params: {
         model: Model, 
@@ -123,7 +123,7 @@ namespace LiteMol.Extensions.ComplexReprensetation.Carbohydrates {
         const { model, fragment, atomMask, bonds } = params;
         const { residueIndices: carbohydrateIndices, entries, warnings } = getRepresentableResidues(model, fragment.residueIndices);
         if (!carbohydrateIndices.length) {
-            return EmptyInto;
+            return EmptyInfo(warnings);
         };
 
         const map = Core.Utils.FastMap.create<number, number>();
@@ -288,7 +288,25 @@ namespace LiteMol.Extensions.ComplexReprensetation.Carbohydrates {
     }
 
     function warn(model: Model, rI: number) {
-        return `Residue '${formatResidueName(model, rI)}' has a recognized carbohydrate name, but missing/incorrectly named ring atoms.`;
+        return `Residue '${formatResidueName(model, rI)}' has a recognized carbohydrate name, but is missing ring atoms with standard names.`;
+    }
+
+    function isRing(model: Model, atoms: number[], ringCenter: LA.Vector3) {
+        const ringRadius = Bootstrap.Utils.Molecule.getCentroidAndRadius(model, atoms, ringCenter);
+        if (ringRadius > 1.95) return 0;
+        const u = LA.Vector3.zero(), v = LA.Vector3.zero();
+        const { x, y, z } = model.positions;
+        const len = atoms.length;
+        for (let i = 0; i < len - 1; i++) {
+            const a = atoms[i];
+            LA.Vector3.set(u, x[a], y[a], z[a]);
+            for (let j = i + 1; j < len; j++) {
+                const b = atoms[j];
+                LA.Vector3.set(v, x[b], y[b], z[b]);
+                if (LA.Vector3.squaredDistance(u, v) > 16) return 0.0;
+            }
+        }
+        return ringRadius;
     }
 
     function getRepresentableResidues(model: Model, sourceResidueIndices: number[]) {
@@ -305,16 +323,14 @@ namespace LiteMol.Extensions.ComplexReprensetation.Carbohydrates {
             let added = false;
             for (const ringAtoms of possibleRingAtoms) {
                 const ringCenter = LA.Vector3.zero();
-                const ringRadius = Bootstrap.Utils.Molecule.getCentroidAndRadius(model, ringAtoms, ringCenter);
-                if (ringRadius > 1.95) {
-                    continue;
-                }
+                const ringRadius = isRing(model, ringAtoms, ringCenter);
+                if (ringRadius === 0.0) continue;
                 residueIndices.push(rI);
                 entries.push({ representation: Mapping.getResidueRepresentation(name[rI])!, ringAtoms, ringCenter, ringRadius, links: [], terminalLinks: [] });
                 added = true;
                 break;
             }
-            if (!added) {
+            if (!added) { 
                 warnings.push(warn(model, rI));
             }
         }
