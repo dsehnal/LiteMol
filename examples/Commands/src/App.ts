@@ -171,6 +171,14 @@ namespace LiteMolPluginInstance {
     });
     
     addSeparator();
+
+    addButton('Toggle "Model" sub-tree', () => {
+        const e = plugin.selectEntities('model')[0];
+        if (!e) return;
+        plugin.command(Bootstrap.Command.Entity.ToggleExpanded, e);
+    });
+
+    addSeparator()
     addHeader('Basics');
 
     addButton('Load Molecule', () => {
