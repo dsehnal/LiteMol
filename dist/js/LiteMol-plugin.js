@@ -65597,7 +65597,7 @@ var LiteMol;
 (function (LiteMol) {
     var Visualization;
     (function (Visualization) {
-        Visualization.VERSION = { number: "1.7.3", date: "Sep 18 2017" };
+        Visualization.VERSION = { number: "1.7.5", date: "Oct 26 2017" };
     })(Visualization = LiteMol.Visualization || (LiteMol.Visualization = {}));
 })(LiteMol || (LiteMol = {}));
 var LiteMol;
@@ -70299,7 +70299,7 @@ var LiteMol;
                         }
                         CartoonAsymUnit.spline = spline;
                         function maskSplit(element, mask, target) {
-                            var current = element, start = element.startResidueIndex, end = element.endResidueIndex;
+                            var current = new LiteMol.Core.Structure.SecondaryStructureElement(element.type, element.startResidueId, element.endResidueId), start = element.startResidueIndex, end = element.endResidueIndex;
                             for (var i = start; i < end; i++) {
                                 if (!mask[i])
                                     continue;

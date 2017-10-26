@@ -305,7 +305,7 @@ namespace LiteMol.Visualization.Molecule.Cartoons.Geometry {
             element: Core.Structure.SecondaryStructureElement,
             mask: boolean[],
             target: Core.Structure.SecondaryStructureElement[]) {
-            let current = element,
+            let current = new Core.Structure.SecondaryStructureElement(element.type, element.startResidueId, element.endResidueId),
                 start = element.startResidueIndex,
                 end = element.endResidueIndex;
 
@@ -522,8 +522,9 @@ namespace LiteMol.Visualization.Molecule.Cartoons.Geometry {
             let mask = createMask(model, atomIndices);
             let ss: Core.Structure.SecondaryStructureElement[] = [];
 
+            
             let isUnknownSS = isUnknownSecondaryStructure(model);
-
+            
             for (let e of model.data.secondaryStructure) {
                 if (isUnknownSS) {
                     let approx = approximateSecondaryStructure(model, e);
@@ -534,7 +535,7 @@ namespace LiteMol.Visualization.Molecule.Cartoons.Geometry {
                     CartoonAsymUnit.maskSplit(e, mask, ss);
                 }
             }
-
+            
             throwIfEmpty(ss);
 
             let previous: Core.Structure.SecondaryStructureElement | null = ss[0],
