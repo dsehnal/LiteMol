@@ -33,23 +33,23 @@ namespace LiteMol.Plugin.Views.Context {
                     <ul className='lm-list-unstyled'>
                         {entries.map((entry, i, arr) => {
 
-                            let msg: any;
-                            let e = entry!;
-                            switch (e.type) {
-                                case EntryType.Message:
-                                    msg = <div className='lm-log-entry'>{e.message}</div>;
-                                    break;
-                                case EntryType.Error:
-                                    msg = <div className='lm-log-entry'><span className='label label-danger'>Error</span> {e.message}</div>;
-                                    break;
-                                case EntryType.Warning:
-                                    msg = <div className='lm-log-entry'><span className='label label-warning'>Warning</span> {e.message}</div>;
-                                    break;
-                                case EntryType.Info:
-                                    msg = <div className='lm-log-entry'><span className='label label-info'>Info</span> {e.message}</div>;
-                                    break;
-                            }
+                            // let msg: any;
+                            // switch (e.type) {
+                            //     case EntryType.Message:
+                            //     msg = <div className='lm-log-entry'>{e.message}</div>;
+                            //     break;
+                            //     case EntryType.Error:
+                            //     msg = <div className='lm-log-entry'><span className='label label-danger'>Error</span> {e.message}</div>;
+                            //     break;
+                            //     case EntryType.Warning:
+                            //     msg = <div className='lm-log-entry'><span className='label label-warning'>Warning</span> {e.message}</div>;
+                            //     break;
+                            //     case EntryType.Info:
+                            //     msg = <div className='lm-log-entry'><span className='label label-info'>Info</span> {e.message}</div>;
+                            //     break;
+                            // }
                             
+                            let e = entry!;
                             let t = Bootstrap.Utils.formatTime(e.timestamp);
                             return <li key={i}>
                                     <div className={'lm-log-entry-badge lm-log-entry-' + EntryType[e.type].toLowerCase()} />

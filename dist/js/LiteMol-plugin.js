@@ -57370,10 +57370,9 @@ var LiteMol;
                         Defaults.ModelId = '1';
                     })(Defaults || (Defaults = {}));
                     function getTransform(category, matrixField, translationField, row) {
-                        var ret = Core.Geometry.LinearAlgebra.Matrix4.identity(), i, j, c;
+                        var ret = Core.Geometry.LinearAlgebra.Matrix4.identity(), i, j;
                         for (i = 1; i <= 3; i++) {
                             for (j = 1; j <= 3; j++) {
-                                c = matrixField + "[" + i + "][" + j + "]";
                                 Core.Geometry.LinearAlgebra.Matrix4.setValue(ret, i - 1, j - 1, category.getColumn(matrixField + "[" + i + "][" + j + "]").getFloat(row));
                             }
                             Core.Geometry.LinearAlgebra.Matrix4.setValue(ret, i - 1, 3, category.getColumn(translationField + "[" + i + "]").getFloat(row));
@@ -66565,7 +66564,7 @@ var LiteMol;
                 this.subs.push(function () { return element.removeEventListener('touchend', events.touchEnd, false); });
                 this.subs.push(function () { return element.removeEventListener('touchmove', events.touchMove, false); });
             }
-            SlabControls.prototype.updateSize = function (w, h) { this.width = w; this.height = h; };
+            SlabControls.prototype.updateSize = function (w, h) { /* this.width = w;*/ this.height = h; };
             SlabControls.prototype.updateRadius = function (r) { this.radius = r; };
             SlabControls.prototype.destroy = function () {
                 for (var _i = 0, _a = this.subs; _i < _a.length; _i++) {
@@ -66990,7 +66989,7 @@ var LiteMol;
                 var _this = this;
                 this.renderState = new RenderState();
                 this.pickInfo = new Visualization.Selection.Pick();
-                this.selectInfo = null;
+                //private selectInfo: Selection.Info | null = null;
                 this.unbindEvents = [];
                 this.models = new Visualization.ModelStore(this);
                 this.events = new Visualization.THREE.EventDispatcher();
@@ -67080,7 +67079,7 @@ var LiteMol;
                         _this.handleSelectStart(e.clientX, e.clientY);
                     }
                     else {
-                        _this.selectInfo = null;
+                        //this.selectInfo = null;
                     }
                     _this.mouseInfo.isButtonDown = true;
                     _this.clearHighlights();
@@ -67130,14 +67129,14 @@ var LiteMol;
             };
             Scene.prototype.handleSelectStart = function (x, y) {
                 this.pickInfo.selectStart(x, y);
-                this.selectInfo = this.pickInfo.getPickInfo();
+                //this.selectInfo = this.pickInfo.getPickInfo();
             };
             Scene.prototype.handleSelectEnd = function (x, y) {
                 if (this.pickInfo.selectEnd(x, y)) {
                     var info = this.handlePick(true);
                     this.dispatchSelectEvent(info);
                 }
-                this.selectInfo = null;
+                // this.selectInfo = null;
             };
             Scene.prototype.handleResize = function () {
                 var w = this.parentElement.clientWidth, h = this.parentElement.clientHeight;
@@ -69309,6 +69308,7 @@ var LiteMol;
                 function Model() {
                     return _super !== null && _super.apply(this, arguments) || this;
                 }
+                //private options: LabelsOptions;
                 Model.prototype.applySelectionInternal = function (indices, action) { return false; };
                 Model.prototype.getPickElements = function (pickId) { return []; };
                 ;
@@ -69354,18 +69354,18 @@ var LiteMol;
                 Model.create = function (entity, params) {
                     var _this = this;
                     return LiteMol.Core.computation(function (ctx) { return __awaiter(_this, void 0, void 0, function () {
-                        var _a, geometry, texture, options, model;
+                        var _a, geometry, texture /*, options*/, model;
                         return __generator(this, function (_b) {
                             switch (_b.label) {
                                 case 0: return [4 /*yield*/, ctx.updateProgress('Creating labels geometry...')];
                                 case 1:
                                     _b.sent();
-                                    _a = Labels.Geometry.create(params), geometry = _a.geometry, texture = _a.texture, options = _a.options;
+                                    _a = Labels.Geometry.create(params), geometry = _a.geometry, texture = _a.texture;
                                     return [4 /*yield*/, ctx.updateProgress('Creating labels model...')];
                                 case 2:
                                     _b.sent();
                                     model = new Model();
-                                    model.options = options;
+                                    //model.options = options;
                                     model.labels = params.labels;
                                     model.geometry = geometry;
                                     model.material = Labels.Material.create(texture);
@@ -69472,7 +69472,7 @@ var LiteMol;
                                     case 1:
                                         geom = _a.sent();
                                         ret = new Model();
-                                        ret.molecule = model;
+                                        //ret.molecule = model;
                                         ret.ballsAndSticks = geom;
                                         ret.material = Visualization.MaterialsHelper.getMeshMaterial();
                                         ret.bondsMaterial = new Visualization.THREE.MeshPhongMaterial({ specular: 0xAAAAAA, shininess: 1, shading: Visualization.THREE.SmoothShading, side: Visualization.THREE.FrontSide, vertexColors: Visualization.THREE.VertexColors });
@@ -80308,31 +80308,22 @@ var LiteMol;
                         return Plugin.React.createElement("div", { className: 'lm-log-wrap' },
                             Plugin.React.createElement("div", { className: 'lm-log', ref: function (log) { return _this.wrapper = log; } },
                                 Plugin.React.createElement("ul", { className: 'lm-list-unstyled' }, entries.map(function (entry, i, arr) {
-                                    var msg;
+                                    // let msg: any;
+                                    // switch (e.type) {
+                                    //     case EntryType.Message:
+                                    //     msg = <div className='lm-log-entry'>{e.message}</div>;
+                                    //     break;
+                                    //     case EntryType.Error:
+                                    //     msg = <div className='lm-log-entry'><span className='label label-danger'>Error</span> {e.message}</div>;
+                                    //     break;
+                                    //     case EntryType.Warning:
+                                    //     msg = <div className='lm-log-entry'><span className='label label-warning'>Warning</span> {e.message}</div>;
+                                    //     break;
+                                    //     case EntryType.Info:
+                                    //     msg = <div className='lm-log-entry'><span className='label label-info'>Info</span> {e.message}</div>;
+                                    //     break;
+                                    // }
                                     var e = entry;
-                                    switch (e.type) {
-                                        case EntryType.Message:
-                                            msg = Plugin.React.createElement("div", { className: 'lm-log-entry' }, e.message);
-                                            break;
-                                        case EntryType.Error:
-                                            msg = Plugin.React.createElement("div", { className: 'lm-log-entry' },
-                                                Plugin.React.createElement("span", { className: 'label label-danger' }, "Error"),
-                                                " ",
-                                                e.message);
-                                            break;
-                                        case EntryType.Warning:
-                                            msg = Plugin.React.createElement("div", { className: 'lm-log-entry' },
-                                                Plugin.React.createElement("span", { className: 'label label-warning' }, "Warning"),
-                                                " ",
-                                                e.message);
-                                            break;
-                                        case EntryType.Info:
-                                            msg = Plugin.React.createElement("div", { className: 'lm-log-entry' },
-                                                Plugin.React.createElement("span", { className: 'label label-info' }, "Info"),
-                                                " ",
-                                                e.message);
-                                            break;
-                                    }
                                     var t = LiteMol.Bootstrap.Utils.formatTime(e.timestamp);
                                     return Plugin.React.createElement("li", { key: i },
                                         Plugin.React.createElement("div", { className: 'lm-log-entry-badge lm-log-entry-' + EntryType[e.type].toLowerCase() }),

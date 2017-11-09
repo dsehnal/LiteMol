@@ -135,7 +135,7 @@ namespace LiteMol.Visualization {
 
         mouseInfo: MouseInfo;
         private pickInfo: Selection.Pick = new Selection.Pick();
-        private selectInfo: Selection.Info | null = null;
+        //private selectInfo: Selection.Info | null = null;
         
         private unbindEvents: Array<() => void> = [];
 
@@ -257,7 +257,7 @@ namespace LiteMol.Visualization {
                     this.mouseInfo.updateRect();
                     this.handleSelectStart(e.clientX, e.clientY);
                 } else {
-                    this.selectInfo = null;
+                    //this.selectInfo = null;
                 }
                 this.mouseInfo.isButtonDown = true;
                 this.clearHighlights();
@@ -317,7 +317,7 @@ namespace LiteMol.Visualization {
 
         private handleSelectStart(x: number, y: number) {
             this.pickInfo.selectStart(x, y);
-            this.selectInfo = this.pickInfo.getPickInfo();
+            //this.selectInfo = this.pickInfo.getPickInfo();
         }
 
         private handleSelectEnd(x: number, y: number) {
@@ -325,7 +325,7 @@ namespace LiteMol.Visualization {
                 let info = this.handlePick(true);
                 this.dispatchSelectEvent(info);
             }
-            this.selectInfo = null;
+           // this.selectInfo = null;
         }
 
         private handleResize() {

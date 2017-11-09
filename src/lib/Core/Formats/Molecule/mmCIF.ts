@@ -16,10 +16,9 @@ namespace LiteMol.Core.Formats.Molecule.mmCIF {
     }
 
     function getTransform(category: CIF.Category, matrixField: string, translationField: string, row: number): number[] {
-        let ret = Geometry.LinearAlgebra.Matrix4.identity(), i: number, j: number, c: string;
+        let ret = Geometry.LinearAlgebra.Matrix4.identity(), i: number, j: number;
         for (i = 1; i <= 3; i++) {
             for (j = 1; j <= 3; j++) {
-                c = matrixField + "[" + i + "][" + j + "]";
                 Geometry.LinearAlgebra.Matrix4.setValue(ret, i - 1, j - 1, category.getColumn(matrixField + "[" + i + "][" + j + "]").getFloat(row))
             }
             Geometry.LinearAlgebra.Matrix4.setValue(ret, i - 1, 3, category.getColumn(translationField + "[" + i + "]").getFloat(row))

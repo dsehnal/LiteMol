@@ -25,7 +25,7 @@ namespace LiteMol.Visualization.Molecule.BallsAndSticks {
 
     export class Model extends Visualization.Model {
 
-        private molecule: Core.Structure.Molecule.Model;
+        //private molecule: Core.Structure.Molecule.Model;
         private material: THREE.ShaderMaterial;
         private bondsMaterial: THREE.MeshPhongMaterial;
         private pickMaterial: THREE.Material;
@@ -110,7 +110,7 @@ namespace LiteMol.Visualization.Molecule.BallsAndSticks {
                 let geom = await buildGeometry(model, params, atomIndices, ctx);
                 let ret = new Model();
                 
-                ret.molecule = model;
+                //ret.molecule = model;
                 ret.ballsAndSticks = geom;
                 ret.material = MaterialsHelper.getMeshMaterial();
                 ret.bondsMaterial = new THREE.MeshPhongMaterial({ specular: 0xAAAAAA, shininess: 1, shading: THREE.SmoothShading, side: THREE.FrontSide, vertexColors: THREE.VertexColors });

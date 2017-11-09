@@ -13,7 +13,7 @@ namespace LiteMol.Visualization {
 
     export class SlabControls {
 
-        private width: number;
+        //private width: number;
         private height: number;
 
         private touchSlabOn = false;
@@ -30,7 +30,7 @@ namespace LiteMol.Visualization {
 
         readonly planeDelta: LiteMol.Core.Rx.IObservable<number> = this._planeDelta;
 
-        updateSize(w: number, h: number) { this.width = w; this.height = h; }
+        updateSize(w: number, h: number) {/* this.width = w;*/ this.height = h; }
         updateRadius(r: number) { this.radius = r; }
 
         destroy() {

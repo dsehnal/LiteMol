@@ -11468,7 +11468,6 @@ declare namespace LiteMol.Visualization {
         Orthographic = 1,
     }
     class SlabControls {
-        private width;
         private height;
         private touchSlabOn;
         private touchStartPosition;
@@ -11610,7 +11609,6 @@ declare namespace LiteMol.Visualization {
         private pickTarget;
         mouseInfo: MouseInfo;
         private pickInfo;
-        private selectInfo;
         private unbindEvents;
         private lighting;
         parentElement: HTMLElement;
@@ -12006,7 +12004,6 @@ declare namespace LiteMol.Visualization.Labels {
         private geometry;
         private material;
         private labels;
-        private options;
         protected applySelectionInternal(indices: number[], action: Selection.Action): boolean;
         getPickElements(pickId: number): number[];
         highlightElement(pickId: number, highlight: boolean): boolean;
@@ -12030,7 +12027,6 @@ declare namespace LiteMol.Visualization.Molecule.BallsAndSticks {
     }
     const DefaultBallsAndSticksModelParameters: Parameters;
     class Model extends Visualization.Model {
-        private molecule;
         private material;
         private bondsMaterial;
         private pickMaterial;

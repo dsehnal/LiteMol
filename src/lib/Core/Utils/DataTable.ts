@@ -62,7 +62,7 @@ namespace LiteMol.Core.Utils {
         }
 
         export function builder<Schema>(count: number): Builder<Schema> {
-            return new BuilderImpl(count);
+            return new BuilderImpl(count) as Builder<Schema>;
         }
 
         export function ofDefinition<Schema>(definition: Definition<Schema>, count: number) {

@@ -12370,10 +12370,9 @@ var LiteMol;
                         Defaults.ModelId = '1';
                     })(Defaults || (Defaults = {}));
                     function getTransform(category, matrixField, translationField, row) {
-                        var ret = Core.Geometry.LinearAlgebra.Matrix4.identity(), i, j, c;
+                        var ret = Core.Geometry.LinearAlgebra.Matrix4.identity(), i, j;
                         for (i = 1; i <= 3; i++) {
                             for (j = 1; j <= 3; j++) {
-                                c = matrixField + "[" + i + "][" + j + "]";
                                 Core.Geometry.LinearAlgebra.Matrix4.setValue(ret, i - 1, j - 1, category.getColumn(matrixField + "[" + i + "][" + j + "]").getFloat(row));
                             }
                             Core.Geometry.LinearAlgebra.Matrix4.setValue(ret, i - 1, 3, category.getColumn(translationField + "[" + i + "]").getFloat(row));

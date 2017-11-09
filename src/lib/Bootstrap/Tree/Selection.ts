@@ -125,7 +125,7 @@ namespace LiteMol.Bootstrap.Tree {
         export function filter<T extends Node.Any>(b: Selector<T>, p: (n: Node.Any) => boolean) { return flatMap<T>(b, n => p(n) ? [n] : []); }
 
         Helpers.registerModifier('subtree', subtree);
-        export function subtree<T extends Node.Any>(b: Selector<T>) { return flatMap<T>(b, n => Tree.Node.collect(n)); }
+        export function subtree<T extends Node.Any>(b: Selector<T>) { return flatMap<T>(b, n => Tree.Node.collect(n) as any); }
 
         Helpers.registerModifier('children', children);
         export function children<T extends Node.Any>(b: Selector<T>) { return flatMap<T>(b, n => <T[]>n.children); }

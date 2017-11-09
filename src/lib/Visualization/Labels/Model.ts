@@ -40,7 +40,7 @@ namespace LiteMol.Visualization.Labels {
         private geometry: THREE.BufferGeometry;
         private material: THREE.ShaderMaterial;
         private labels: string[];
-        private options: LabelsOptions;
+        //private options: LabelsOptions;
 
         protected applySelectionInternal(indices: number[], action: Selection.Action): boolean { return false; }
         getPickElements(pickId: number): number[] { return [] };
@@ -93,12 +93,12 @@ namespace LiteMol.Visualization.Labels {
         static create(entity: any, params: LabelsParams): Core.Computation<Model> {
             return Core.computation<Model>(async ctx => {  
                 await ctx.updateProgress('Creating labels geometry...');
-                const { geometry, texture, options } = Geometry.create(params);
+                const { geometry, texture/*, options*/ } = Geometry.create(params);
 
                 await ctx.updateProgress('Creating labels model...');
                 const model = new Model();
                 
-                model.options = options;
+                //model.options = options;
                 model.labels = params.labels;
                 model.geometry = geometry;
                 model.material = Material.create(texture);

@@ -30,8 +30,15 @@ namespace LiteMol.SimpleControllerExample {
         // using plugin.context.select(modelRef/moleculeRef)[0],
         // for example plugin.context.select('1tqn-molecule')[0]
         moleculeRef: id + '-molecule',
-        modelRef: id + '-model'
+        modelRef: id + '-model',
+        // Use this if you want to create your own visual.
+        // doNotCreateVisual: true
     }).then(() => {
+        // Use this (or a modification of this) for custom visualization:
+        // const style = LiteMol.Bootstrap.Visualization.Molecule.Default.ForType.get('BallsAndSticks');  
+        // const t = plugin.createTransform();
+        // t.add(id + '-model', LiteMol.Bootstrap.Entity.Transformer.Molecule.CreateVisual, { style: style })
+        // plugin.applyTransform(t);
         console.log('Molecule loaded');
     }).catch(e => {
         console.error(e);
