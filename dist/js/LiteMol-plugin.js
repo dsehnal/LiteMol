@@ -56188,7 +56188,206 @@ var LiteMol;
 (function (LiteMol) {
     var Core;
     (function (Core) {
-        Core.VERSION = { number: "3.2.1", date: "July 5 2017" };
+        Core.VERSION = { number: "3.2.2", date: "Nov 14 2017" };
+    })(Core = LiteMol.Core || (LiteMol.Core = {}));
+})(LiteMol || (LiteMol = {}));
+/*
+ * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ */
+var LiteMol;
+(function (LiteMol) {
+    var Core;
+    (function (Core) {
+        var Scheduler;
+        (function (Scheduler) {
+            "use strict";
+            function createImmediateActions() {
+                var tasksByHandle = {};
+                var doc = typeof document !== 'undefined' ? document : void 0;
+                var currentlyRunningATask = false;
+                var nextHandle = 1; // Spec says greater than zero
+                var registerImmediate;
+                function setImmediate(callback) {
+                    var args = [];
+                    for (var _i = 1; _i < arguments.length; _i++) {
+                        args[_i - 1] = arguments[_i];
+                    }
+                    // Callback can either be a function or a string
+                    if (typeof callback !== 'function') {
+                        callback = new Function('' + callback);
+                    }
+                    // Store and register the task
+                    var task = { callback: callback, args: args };
+                    tasksByHandle[nextHandle] = task;
+                    registerImmediate(nextHandle);
+                    return nextHandle++;
+                }
+                function clearImmediate(handle) {
+                    delete tasksByHandle[handle];
+                }
+                function run(task) {
+                    var callback = task.callback;
+                    var args = task.args;
+                    switch (args.length) {
+                        case 0:
+                            callback();
+                            break;
+                        case 1:
+                            callback(args[0]);
+                            break;
+                        case 2:
+                            callback(args[0], args[1]);
+                            break;
+                        case 3:
+                            callback(args[0], args[1], args[2]);
+                            break;
+                        default:
+                            callback.apply(undefined, args);
+                            break;
+                    }
+                }
+                function runIfPresent(handle) {
+                    // From the spec: 'Wait until any invocations of this algorithm started before this one have completed.'
+                    // So if we're currently running a task, we'll need to delay this invocation.
+                    if (currentlyRunningATask) {
+                        // Delay by doing a setTimeout. setImmediate was tried instead, but in Firefox 7 it generated a
+                        // 'too much recursion' error.
+                        setTimeout(runIfPresent, 0, handle);
+                    }
+                    else {
+                        var task = tasksByHandle[handle];
+                        if (task) {
+                            currentlyRunningATask = true;
+                            try {
+                                run(task);
+                            }
+                            finally {
+                                clearImmediate(handle);
+                                currentlyRunningATask = false;
+                            }
+                        }
+                    }
+                }
+                function installNextTickImplementation() {
+                    registerImmediate = function (handle) {
+                        process.nextTick(function () { runIfPresent(handle); });
+                    };
+                }
+                function canUsePostMessage() {
+                    // The test against `importScripts` prevents this implementation from being installed inside a web worker,
+                    // where `global.postMessage` means something completely different and can't be used for this purpose.
+                    var global = window;
+                    if (global && global.postMessage && !global.importScripts) {
+                        var postMessageIsAsynchronous_1 = true;
+                        var oldOnMessage = global.onmessage;
+                        global.onmessage = function () {
+                            postMessageIsAsynchronous_1 = false;
+                        };
+                        global.postMessage('', '*');
+                        global.onmessage = oldOnMessage;
+                        return postMessageIsAsynchronous_1;
+                    }
+                    return void 0;
+                }
+                function installPostMessageImplementation() {
+                    // Installs an event handler on `global` for the `message` event: see
+                    // * https://developer.mozilla.org/en/DOM/window.postMessage
+                    // * http://www.whatwg.org/specs/web-apps/current-work/multipage/comms.html#crossDocumentMessages
+                    var global = window;
+                    var messagePrefix = 'setImmediate$' + Math.random() + '$';
+                    var onGlobalMessage = function (event) {
+                        if (event.source === global &&
+                            typeof event.data === 'string' &&
+                            event.data.indexOf(messagePrefix) === 0) {
+                            runIfPresent(+event.data.slice(messagePrefix.length));
+                        }
+                    };
+                    if (window.addEventListener) {
+                        window.addEventListener('message', onGlobalMessage, false);
+                    }
+                    else {
+                        window.attachEvent('onmessage', onGlobalMessage);
+                    }
+                    registerImmediate = function (handle) {
+                        window.postMessage(messagePrefix + handle, '*');
+                    };
+                }
+                function installMessageChannelImplementation() {
+                    var channel = new MessageChannel();
+                    channel.port1.onmessage = function (event) {
+                        var handle = event.data;
+                        runIfPresent(handle);
+                    };
+                    registerImmediate = function (handle) {
+                        channel.port2.postMessage(handle);
+                    };
+                }
+                function installReadyStateChangeImplementation() {
+                    var html = doc.documentElement;
+                    registerImmediate = function (handle) {
+                        // Create a <script> element; its readystatechange event will be fired asynchronously once it is inserted
+                        // into the document. Do so, thus queuing up the task. Remember to clean up once it's been called.
+                        var script = doc.createElement('script');
+                        script.onreadystatechange = function () {
+                            runIfPresent(handle);
+                            script.onreadystatechange = null;
+                            html.removeChild(script);
+                            script = null;
+                        };
+                        html.appendChild(script);
+                    };
+                }
+                function installSetTimeoutImplementation() {
+                    registerImmediate = function (handle) {
+                        setTimeout(runIfPresent, 0, handle);
+                    };
+                }
+                // Don't get fooled by e.g. browserify environments.
+                if (typeof process !== 'undefined' && {}.toString.call(process) === '[object process]') {
+                    // For Node.js before 0.9
+                    installNextTickImplementation();
+                }
+                else if (canUsePostMessage()) {
+                    // For non-IE10 modern browsers
+                    installPostMessageImplementation();
+                }
+                else if (typeof MessageChannel !== 'undefined') {
+                    // For web workers, where supported
+                    installMessageChannelImplementation();
+                }
+                else if (doc && 'onreadystatechange' in doc.createElement('script')) {
+                    // For IE 6–8
+                    installReadyStateChangeImplementation();
+                }
+                else {
+                    // For older browsers
+                    installSetTimeoutImplementation();
+                }
+                return {
+                    setImmediate: setImmediate,
+                    clearImmediate: clearImmediate
+                };
+            }
+            var immediateActions = (function () {
+                if (typeof window.setImmediate !== 'undefined') {
+                    return { setImmediate: function (handler) {
+                            var args = [];
+                            for (var _i = 1; _i < arguments.length; _i++) {
+                                args[_i - 1] = arguments[_i];
+                            }
+                            return window.setImmediate.apply(window, [handler].concat(args));
+                        }, clearImmediate: function (handle) { return window.clearImmediate(handle); } };
+                }
+                return createImmediateActions();
+            }());
+            function resolveImmediate(res) {
+                immediateActions.setImmediate(res);
+            }
+            Scheduler.immediate = immediateActions.setImmediate;
+            Scheduler.clearImmediate = immediateActions.clearImmediate;
+            function immediatePromise() { return new Core.Promise(resolveImmediate); }
+            Scheduler.immediatePromise = immediatePromise;
+        })(Scheduler = Core.Scheduler || (Core.Scheduler = {}));
     })(Core = LiteMol.Core || (LiteMol.Core = {}));
 })(LiteMol || (LiteMol = {}));
 /*
@@ -56362,7 +56561,8 @@ var LiteMol;
                     this._progress.max = max;
                 }
                 this.progressTick.onNext(this._progress);
-                return new Core.Promise(function (res) { return setTimeout(res, 0); });
+                return Core.Scheduler.immediatePromise();
+                //return new Promise<void>(res => setTimeout(res, 0));
             };
             ContextImpl.prototype.started = function () {
                 this.startEndCounter++;

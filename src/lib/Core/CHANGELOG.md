@@ -1,4 +1,7 @@
-﻿# 3.2.1
+﻿# 3.2.2
+* Better Computation scheduling (using setImmediate alternatives instead of setTimeout).
+
+# 3.2.1
 * Parse _pdbx_struct_mod_residue from mmCIF.
 
 # 3.2.0

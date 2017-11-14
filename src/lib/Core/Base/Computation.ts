@@ -129,7 +129,8 @@ namespace LiteMol.Core {
             
             this.progressTick.onNext(this._progress);
 
-            return new Promise<void>(res => setTimeout(res, 0));
+            return Scheduler.immediatePromise();
+            //return new Promise<void>(res => setTimeout(res, 0));
         }
 
         private startEndCounter = 0;

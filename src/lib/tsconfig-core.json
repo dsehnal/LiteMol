@@ -30,6 +30,7 @@
     "./Core/lib/CIFTools.d.ts",
     "./Core/lib/Lib.ts",
     "./Core/Version.ts",
+    "./Core/Base/Scheduler.ts",
     "./Core/Base/Computation.ts",
     // UTILS
     "./Core/Utils/Collections.ts",

@@ -1451,6 +1451,11 @@ declare namespace LiteMol.Core {
         date: string;
     };
 }
+declare namespace LiteMol.Core.Scheduler {
+    const immediate: any;
+    const clearImmediate: any;
+    function immediatePromise(): Promise<void>;
+}
 declare namespace LiteMol.Core {
     function computation<A>(c: (ctx: Computation.Context) => Promise<A>): Computation<A>;
     class Computation<A> {
