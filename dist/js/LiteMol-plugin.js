@@ -56369,14 +56369,19 @@ var LiteMol;
                 };
             }
             var immediateActions = (function () {
-                if (typeof window.setImmediate !== 'undefined') {
-                    return { setImmediate: function (handler) {
-                            var args = [];
-                            for (var _i = 1; _i < arguments.length; _i++) {
-                                args[_i - 1] = arguments[_i];
-                            }
-                            return window.setImmediate.apply(window, [handler].concat(args));
-                        }, clearImmediate: function (handle) { return window.clearImmediate(handle); } };
+                if (typeof setImmediate !== 'undefined') {
+                    if (typeof window !== 'undefined') {
+                        // this is because of IE
+                        return { setImmediate: function (handler) {
+                                var args = [];
+                                for (var _i = 1; _i < arguments.length; _i++) {
+                                    args[_i - 1] = arguments[_i];
+                                }
+                                return window.setImmediate.apply(window, [handler].concat(args));
+                            }, clearImmediate: function (handle) { return window.clearImmediate(handle); } };
+                    }
+                    else
+                        return { setImmediate: setImmediate, clearImmediate: Scheduler.clearImmediate };
                 }
                 return createImmediateActions();
             }());
