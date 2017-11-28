@@ -8,8 +8,9 @@ namespace LiteMol.Bootstrap.Visualization {
     import Visual = Entity.Visual.Any;
         
     export class DisplayList {
-        private entries = new Map<number, Visual>(); 
+        private entries = new Map<number, { parentId: number, visual: Visual }>(); 
         private originalThemes = new Map<number, LiteMol.Visualization.Theme>();        
+        private lastParent: number = NaN;
 
         isEmpty() {
             return !this.entries.size;
@@ -18,8 +19,10 @@ namespace LiteMol.Bootstrap.Visualization {
         add(v: Visual): boolean {
             if (this.entries.has(v.id) || !v.props.model) return false;
 
-            this.entries.set(v.id, v);
-            this.scene.scene.models.add(v.props.model, this.entries.size === 1);
+            const parentId = v.parent.id;
+
+            this.entries.set(v.id, { visual: v, parentId });
+            this.scene.scene.models.add(v.props.model, this.entries.size === 1 && this.lastParent !== parentId);
                         
             let vis = v.state.visibility !== Entity.Visibility.None;
             if (v.props.model.getVisibility() !== vis) {
@@ -33,6 +36,7 @@ namespace LiteMol.Bootstrap.Visualization {
         remove(v: Visual) {
             if (!this.entries.has(v.id)) return false;
             
+            this.lastParent = this.entries.get(v.id)!.parentId;
             this.entries.delete(v.id);
             this.originalThemes.delete(v.id); 
             this.scene.scene.models.removeAndDispose(v.props.model);
@@ -48,7 +52,7 @@ namespace LiteMol.Bootstrap.Visualization {
         resetThemesAndHighlight(sel?: Bootstrap.Tree.Selector<Bootstrap.Entity.Any>) {            
             if (!sel) {            
                 this.originalThemes.forEach((t, id) => {
-                    const model = this.entries.get(id)!.props.model;
+                    const model = this.entries.get(id)!.visual.props.model;
                     if (!model.theme.isSticky) {
                         model.applyTheme(t);
                         this.originalThemes.delete(id);
@@ -56,7 +60,7 @@ namespace LiteMol.Bootstrap.Visualization {
                         this.originalThemes.set(id, model.theme);
                     }
                 });
-                this.entries.forEach(v => v.props.model.highlight(false));
+                this.entries.forEach(v => v.visual.props.model.highlight(false));
                 this.scene.scene.forceRender();
                 return;
             }          
@@ -116,9 +120,9 @@ namespace LiteMol.Bootstrap.Visualization {
                 if (!Entity.isVisual(e.data)) return;                
                 let m = this.entries.get(e.data.id);      
                 if (!m) return;    
-                let vis = m.state.visibility !== Entity.Visibility.None;
-                if (m.props.model.getVisibility() !== vis) {
-                    m.props.model.updateVisibility(vis);
+                let vis = m.visual.state.visibility !== Entity.Visibility.None;
+                if (m.visual.props.model.getVisibility() !== vis) {
+                    m.visual.props.model.updateVisibility(vis);
                 }
             }); 
             

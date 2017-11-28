@@ -12910,10 +12910,14 @@ declare namespace LiteMol.Bootstrap.Visualization {
         private scene;
         private entries;
         private originalThemes;
+        private lastParent;
         isEmpty(): boolean;
         add(v: Visual): boolean;
         remove(v: Visual): boolean;
-        get(id: number): Visual | undefined;
+        get(id: number): {
+            parentId: number;
+            visual: Visual;
+        } | undefined;
         resetThemesAndHighlight(sel?: Bootstrap.Tree.Selector<Bootstrap.Entity.Any>): void;
         private highlightMoleculeModel(what);
         constructor(context: Context, scene: SceneWrapper);

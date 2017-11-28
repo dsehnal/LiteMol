@@ -1,4 +1,7 @@
-﻿# 1.4.2
+﻿# 1.4.3
+* Remember the camera position when updating visuals with the same parent.
+
+# 1.4.2
 * Updated selection behaviour.
 
 # 1.4.1

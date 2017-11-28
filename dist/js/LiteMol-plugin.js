@@ -71890,7 +71890,7 @@ var LiteMol;
 (function (LiteMol) {
     var Bootstrap;
     (function (Bootstrap) {
-        Bootstrap.VERSION = { number: "1.4.2", date: "Sep 18 2017" };
+        Bootstrap.VERSION = { number: "1.4.3", date: "Nov 28 2017" };
     })(Bootstrap = LiteMol.Bootstrap || (LiteMol.Bootstrap = {}));
 })(LiteMol || (LiteMol = {}));
 /*
@@ -74135,6 +74135,7 @@ var LiteMol;
                     this.scene = scene;
                     this.entries = new Map();
                     this.originalThemes = new Map();
+                    this.lastParent = NaN;
                     Bootstrap.Event.Tree.NodeAdded.getStream(context).subscribe(function (e) {
                         if (!Bootstrap.Entity.isClass(e.data, Bootstrap.Entity.VisualClass))
                             return;
@@ -74151,9 +74152,9 @@ var LiteMol;
                         var m = _this.entries.get(e.data.id);
                         if (!m)
                             return;
-                        var vis = m.state.visibility !== 2 /* None */;
-                        if (m.props.model.getVisibility() !== vis) {
-                            m.props.model.updateVisibility(vis);
+                        var vis = m.visual.state.visibility !== 2 /* None */;
+                        if (m.visual.props.model.getVisibility() !== vis) {
+                            m.visual.props.model.updateVisibility(vis);
                         }
                     });
                     Bootstrap.Command.Visual.UpdateBasicTheme.getStream(context).subscribe(function (e) {
@@ -74177,8 +74178,9 @@ var LiteMol;
                 DisplayList.prototype.add = function (v) {
                     if (this.entries.has(v.id) || !v.props.model)
                         return false;
-                    this.entries.set(v.id, v);
-                    this.scene.scene.models.add(v.props.model, this.entries.size === 1);
+                    var parentId = v.parent.id;
+                    this.entries.set(v.id, { visual: v, parentId: parentId });
+                    this.scene.scene.models.add(v.props.model, this.entries.size === 1 && this.lastParent !== parentId);
                     var vis = v.state.visibility !== 2 /* None */;
                     if (v.props.model.getVisibility() !== vis) {
                         v.props.model.updateVisibility(vis);
@@ -74189,6 +74191,7 @@ var LiteMol;
                 DisplayList.prototype.remove = function (v) {
                     if (!this.entries.has(v.id))
                         return false;
+                    this.lastParent = this.entries.get(v.id).parentId;
                     this.entries.delete(v.id);
                     this.originalThemes.delete(v.id);
                     this.scene.scene.models.removeAndDispose(v.props.model);
@@ -74203,7 +74206,7 @@ var LiteMol;
                     var _this = this;
                     if (!sel) {
                         this.originalThemes.forEach(function (t, id) {
-                            var model = _this.entries.get(id).props.model;
+                            var model = _this.entries.get(id).visual.props.model;
                             if (!model.theme.isSticky) {
                                 model.applyTheme(t);
                                 _this.originalThemes.delete(id);
@@ -74212,7 +74215,7 @@ var LiteMol;
                                 _this.originalThemes.set(id, model.theme);
                             }
                         });
-                        this.entries.forEach(function (v) { return v.props.model.highlight(false); });
+                        this.entries.forEach(function (v) { return v.visual.props.model.highlight(false); });
                         this.scene.scene.forceRender();
                         return;
                     }
