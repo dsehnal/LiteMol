@@ -17,6 +17,8 @@ You can see LiteMol in action [here](https://webchemdev.ncbr.muni.cz/LiteMol/).
 The program is being developed by David Sehnal from the CEITEC/Masaryk University in Brno, Czech Republic
 in collaboration (especially with Mandar Deshpande) with PDBe in Hinxton, Cambridge, UK.
 
+Read more about LiteMol in [Nature Methods](https://rdcu.be/z0Hf).
+
 Table of Contents
 =================
 
@@ -27,6 +29,7 @@ Table of Contents
 * [Support](#support)
 * [Contributing](#contributing)
 * [Releases and Roadmap](#releases-and-roadmap)
+* [Citing](#citing)
 * [FAQ](#faq)
 
 Getting Started
@@ -165,6 +168,13 @@ These features are on our TODO list. Feature requests from users are always welc
 * Collaborative features:
     * Annotation.
     * Sharing of a single app session between multiple users.  
+
+Citing
+======
+
+Sehnal,D., Deshpande,M., Vařeková,R.S., Mir,S., Berka,K., Midlik,A., Pravda,L., Velankar,S. and Koča,J. (2017) LiteMol suite: interactive web-based visualization of large-scale macromolecular structure data. Nat. Methods, 14, 1121–1122, doi:10.1038/nmeth.4499.
+
+[Full-text](https://rdcu.be/z0Hf)
 
 FAQ
 =======
