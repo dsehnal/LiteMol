@@ -1524,7 +1524,7 @@ var LiteMol;
                             axisUp: [0, 0, 1],
                             instances: [{
                                     name: 'Glc',
-                                    common: { colorA: '#0090bc', names: ['GLC', /*'MAL',*/ 'BGC'] },
+                                    common: { colorA: '#0090bc', names: ['GLC', 'BGC'] },
                                     charmm: { colorA: '#0090bc', names: ['AGLC', 'BGLC'] },
                                     glycam: { colorA: '#0090bc', names: ['0GA', '0GB', '1GA', '1GB', '2GA', '2GB', '3GA', '3GB', '4GA', '4GB', '6GA', '6GB', 'ZGA', 'ZGB', 'YGA', 'YGB', 'XGA', 'XGB', 'WGA', 'WGB', 'VGA', 'VGB', 'UGA', 'UGB', 'TGA', 'TGB', 'SGA', 'SGB', 'RGA', 'RGB', 'QGA', 'QGB', 'PGA', 'PGB', '0gA', '0gB', '1gA', '1gB', '2gA', '2gB', '3gA', '3gB', '4gA', '4gB', '6gA', '6gB', 'ZgA', 'ZgB', 'YgA', 'YgB', 'XgA', 'XgB', 'WgA', 'WgB', 'VgA', 'VgB', 'UgA', 'UgB', 'TgA', 'TgB', 'SgA', 'SgB', 'RgA', 'RgB', 'QgA', 'QgB', 'PgA', 'PgB'] },
                                 }, {
@@ -1539,7 +1539,7 @@ var LiteMol;
                                     glycam: { colorA: '#ffd400', names: ['0LA', '0LB', '1LA', '1LB', '2LA', '2LB', '3LA', '3LB', '4LA', '4LB', '6LA', '6LB', 'ZLA', 'ZLB', 'YLA', 'YLB', 'XLA', 'XLB', 'WLA', 'WLB', 'VLA', 'VLB', 'ULA', 'ULB', 'TLA', 'TLB', 'SLA', 'SLB', 'RLA', 'RLB', 'QLA', 'QLB', 'PLA', 'PLB', '0lA', '0lB', '1lA', '1lB', '2lA', '2lB', '3lA', '3lB', '4lA', '4lB', '6lA', '6lB', 'ZlA', 'ZlB', 'YlA', 'YlB', 'XlA', 'XlB', 'WlA', 'WlB', 'VlA', 'VlB', 'UlA', 'UlB', 'TlA', 'TlB', 'SlA', 'SlB', 'RlA', 'RlB', 'QlA', 'QlB', 'PlA', 'PlB'] },
                                 }, {
                                     name: 'Gul',
-                                    common: { colorA: '#f47920', names: ['GUL', 'GUP', 'GL0'] },
+                                    common: { colorA: '#f47920', names: ['GUP', 'GL0'] },
                                     charmm: { colorA: '#f47920', names: ['AGUL', 'BGUL'] },
                                     glycam: { colorA: '#f47920', names: ['0KA', '0KB', '1KA', '1KB', '2KA', '2KB', '3KA', '3KB', '4KA', '4KB', '6KA', '6KB', 'ZKA', 'ZKB', 'YKA', 'YKB', 'XKA', 'XKB', 'WKA', 'WKB', 'VKA', 'VKB', 'UKA', 'UKB', 'TKA', 'TKB', 'SKA', 'SKB', 'RKA', 'RKB', 'QKA', 'QKB', 'PKA', 'PKB', '0kA', '0kB', '1kA', '1kB', '2kA', '2kB', '3kA', '3kB', '4kA', '4kB', '6kA', '6kB', 'ZkA', 'ZkB', 'YkA', 'YkB', 'XkA', 'XkB', 'WkA', 'WkB', 'VkA', 'VkB', 'UkA', 'UkB', 'TkA', 'TkB', 'SkA', 'SkB', 'RkA', 'RkB', 'QkA', 'QkB', 'PkA', 'PkB'] },
                                 }, {
@@ -1549,7 +1549,7 @@ var LiteMol;
                                     glycam: { colorA: '#f69ea1', names: ['0EA', '0EB', '1EA', '1EB', '2EA', '2EB', '3EA', '3EB', '4EA', '4EB', '6EA', '6EB', 'ZEA', 'ZEB', 'YEA', 'YEB', 'XEA', 'XEB', 'WEA', 'WEB', 'VEA', 'VEB', 'UEA', 'UEB', 'TEA', 'TEB', 'SEA', 'SEB', 'REA', 'REB', 'QEA', 'QEB', 'PEA', 'PEB', '0eA', '0eB', '1eA', '1eB', '2eA', '2eB', '3eA', '3eB', '4eA', '4eB', '6eA', '6eB', 'ZeA', 'ZeB', 'YeA', 'YeB', 'XeA', 'XeB', 'WeA', 'WeB', 'VeA', 'VeB', 'UeA', 'UeB', 'TeA', 'TeB', 'SeA', 'SeB', 'ReA', 'ReB', 'QeA', 'QeB', 'PeA', 'PeB'] },
                                 }, {
                                     name: 'All',
-                                    common: { colorA: '#a54399', names: ['ALL', 'WOO'] },
+                                    common: { colorA: '#a54399', names: ['ALL', 'AFD'] },
                                     charmm: { colorA: '#a54399', names: ['AALL', 'BALL'] },
                                     glycam: { colorA: '#a54399', names: ['0NA', '0NB', '1NA', '1NB', '2NA', '2NB', '3NA', '3NB', '4NA', '4NB', '6NA', '6NB', 'ZNA', 'ZNB', 'YNA', 'YNB', 'XNA', 'XNB', 'WNA', 'WNB', 'VNA', 'VNB', 'UNA', 'UNB', 'TNA', 'TNB', 'SNA', 'SNB', 'RNA', 'RNB', 'QNA', 'QNB', 'PNA', 'PNB', '0nA', '0nB', '1nA', '1nB', '2nA', '2nB', '3nA', '3nB', '4nA', '4nB', '6nA', '6nB', 'ZnA', 'ZnB', 'YnA', 'YnB', 'XnA', 'XnB', 'WnA', 'WnB', 'VnA', 'VnB', 'UnA', 'UnB', 'TnA', 'TnB', 'SnA', 'SnB', 'RnA', 'RnB', 'QnA', 'QnB', 'PnA', 'PnB'] },
                                 }, {
@@ -1559,7 +1559,7 @@ var LiteMol;
                                     glycam: { colorA: '#8fcce9', names: ['0TA', '0TB', '1TA', '1TB', '2TA', '2TB', '3TA', '3TB', '4TA', '4TB', '6TA', '6TB', 'ZTA', 'ZTB', 'YTA', 'YTB', 'XTA', 'XTB', 'WTA', 'WTB', 'VTA', 'VTB', 'UTA', 'UTB', 'TTA', 'TTB', 'STA', 'STB', 'RTA', 'RTB', 'QTA', 'QTB', 'PTA', 'PTB', '0tA', '0tB', '1tA', '1tB', '2tA', '2tB', '3tA', '3tB', '4tA', '4tB', '6tA', '6tB', 'ZtA', 'ZtB', 'YtA', 'YtB', 'XtA', 'XtB', 'WtA', 'WtB', 'VtA', 'VtB', 'UtA', 'UtB', 'TtA', 'TtB', 'StA', 'StB', 'RtA', 'RtB', 'QtA', 'QtB', 'PtA', 'PtB'] },
                                 }, {
                                     name: 'Ido',
-                                    common: { colorA: '#a17a4d', names: ['IDO'] },
+                                    common: { colorA: '#a17a4d', names: ['4N2'] },
                                     charmm: { colorA: '#a17a4d', names: ['AIDO', 'BIDO'] },
                                     glycam: { colorA: '#a17a4d', names: [] },
                                 }]
@@ -1570,12 +1570,12 @@ var LiteMol;
                             axisUp: [0, 0, 1],
                             instances: [{
                                     name: 'GlcNAc',
-                                    common: { colorA: '#0090bc', names: ['NAG', 'SGN', 'BGLN', 'NDG', 'GNS', 'CTO', '5AX'] },
+                                    common: { colorA: '#0090bc', names: ['NAG', 'NDG'] },
                                     charmm: { colorA: '#0090bc', names: ['AGLCNA', 'BGLCNA', 'BGLCN0'] },
                                     glycam: { colorA: '#0090bc', names: ['0YA', '0YB', '1YA', '1YB', '3YA', '3YB', '4YA', '4YB', '6YA', '6YB', 'WYA', 'WYB', 'VYA', 'VYB', 'UYA', 'UYB', 'QYA', 'QYB', '0yA', '0yB', '1yA', '1yB', '3yA', '3yB', '4yA', '4yB', '6yA', '6yB', 'WyA', 'WyB', 'VyA', 'VyB', 'UyA', 'UyB', 'QyA', 'QyB', '0YS', '0Ys', '3YS', '3Ys', '4YS', '4Ys', '6YS', '6Ys', 'QYS', 'QYs', 'UYS', 'UYs', 'VYS', 'VYs', 'WYS', 'WYs', '0yS', '0ys', '3yS', '3ys', '4yS', '4ys'] },
                                 }, {
                                     name: 'ManNAc',
-                                    common: { colorA: '#00a651', names: [] },
+                                    common: { colorA: '#00a651', names: ['BM3'] },
                                     charmm: { colorA: '#00a651', names: [] },
                                     glycam: { colorA: '#00a651', names: ['0WA', '0WB', '1WA', '1WB', '3WA', '3WB', '4WA', '4WB', '6WA', '6WB', 'WWA', 'WWB', 'VWA', 'VWB', 'UWA', 'UWB', 'QWA', 'QWB', '0wA', '0wB', '1wA', '1wB', '3wA', '3wB', '4wA', '4wB', '6wA', '6wB', 'WwA', 'WwB', 'VwA', 'VwB', 'UwA', 'UwB', 'QwA', 'QwB'] },
                                 }, {
@@ -1595,7 +1595,7 @@ var LiteMol;
                                     glycam: { colorA: '#f69ea1', names: [] },
                                 }, {
                                     name: 'AllNAc',
-                                    common: { colorA: '#a54399', names: [] },
+                                    common: { colorA: '#a54399', names: ['NAA'] },
                                     charmm: { colorA: '#a54399', names: [] },
                                     glycam: { colorA: '#a54399', names: [] },
                                 }, {
@@ -1605,7 +1605,7 @@ var LiteMol;
                                     glycam: { colorA: '#8fcce9', names: [] },
                                 }, {
                                     name: 'IdoNAc',
-                                    common: { colorA: '#a17a4d', names: [] },
+                                    common: { colorA: '#a17a4d', names: ['HSQ'] },
                                     charmm: { colorA: '#a17a4d', names: [] },
                                     glycam: { colorA: '#a17a4d', names: [] },
                                 }]
@@ -1616,7 +1616,7 @@ var LiteMol;
                             axisUp: [0, 0, 1],
                             instances: [{
                                     name: 'GlcN',
-                                    common: { colorA: '#0090bc', colorB: '#f1ece1', names: ['GCS'] },
+                                    common: { colorA: '#0090bc', colorB: '#f1ece1', names: ['GCS', 'PA1'] },
                                     charmm: { colorA: '#0090bc', colorB: '#f1ece1', names: [] },
                                     glycam: { colorA: '#0090bc', colorB: '#f1ece1', names: ['0YN', '3YN', '4YN', '6YN', 'WYN', 'VYN', 'UYN', 'QYN', '3Yn', '4Yn', 'WYn', '0Yn', '0YP', '3YP', '4YP', '6YP', 'WYP', 'VYP', 'UYP', 'QYP', '0Yp', '3Yp', '4Yp', 'WYp'] },
                                 }, {
@@ -1626,7 +1626,7 @@ var LiteMol;
                                     glycam: { colorA: '#00a651', colorB: '#f1ece1', names: [] },
                                 }, {
                                     name: 'GalN',
-                                    common: { colorA: '#ffd400', colorB: '#f1ece1', names: [] },
+                                    common: { colorA: '#ffd400', colorB: '#f1ece1', names: ['X6X', '1GN'] },
                                     charmm: { colorA: '#ffd400', colorB: '#f1ece1', names: [] },
                                     glycam: { colorA: '#ffd400', colorB: '#f1ece1', names: [] },
                                 }, {
@@ -1692,12 +1692,12 @@ var LiteMol;
                                     glycam: { colorA: '#a54399', colorB: '#f1ece1', names: [] },
                                 }, {
                                     name: 'TalA',
-                                    common: { colorA: '#8fcce9', colorB: '#f1ece1', names: [] },
+                                    common: { colorA: '#8fcce9', colorB: '#f1ece1', names: ['X0X', 'X1X'] },
                                     charmm: { colorA: '#8fcce9', colorB: '#f1ece1', names: [] },
                                     glycam: { colorA: '#8fcce9', colorB: '#f1ece1', names: [] },
                                 }, {
                                     name: 'IdoA',
-                                    common: { colorA: '#f1ece1', colorB: '#a17a4d', names: ['IDS', 'IDR'] },
+                                    common: { colorA: '#f1ece1', colorB: '#a17a4d', names: ['IDR'] },
                                     charmm: { colorA: '#f1ece1', colorB: '#a17a4d', names: ['AIDOA', 'BIDOA'] },
                                     glycam: { colorA: '#f1ece1', colorB: '#a17a4d', names: ['0UA', '0UB', '1UA', '1UB', '2UA', '2UB', '3UA', '3UB', '4UA', '4UB', 'ZUA', 'ZUB', 'YUA', 'YUB', 'WUA', 'WUB', 'TUA', 'TUB', '0uA', '0uB', '1uA', '1uB', '2uA', '2uB', '3uA', '3uB', '4uA', '4uB', 'ZuA', 'ZuB', 'YuA', 'YuB', 'WuA', 'WuB', 'TuA', 'TuB', 'YuAP'] },
                                 }]
@@ -1708,12 +1708,12 @@ var LiteMol;
                             axisUp: [0, 1, 0],
                             instances: [{
                                     name: 'Qui',
-                                    common: { colorA: '#0090bc', names: ['QUI'] },
+                                    common: { colorA: '#0090bc', names: ['G6D'] },
                                     charmm: { colorA: '#0090bc', names: [] },
                                     glycam: { colorA: '#0090bc', names: ['0QA', '0QB', '1QA', '1QB', '2QA', '2QB', '3QA', '3QB', '4QA', '4QB', 'ZQA', 'ZQB', 'YQA', 'YQB', 'WQA', 'WQB', 'TQA', 'TQB', '0qA', '0qB', '1qA', '1qB', '2qA', '2qB', '3qA', '3qB', '4qA', '4qB', 'ZqA', 'ZqB', 'YqA', 'YqB', 'WqA', 'WqB', 'TqA', 'TqB'] },
                                 }, {
                                     name: 'Rha',
-                                    common: { colorA: '#00a651', names: ['RAM'] },
+                                    common: { colorA: '#00a651', names: ['RAM', 'RM4'] },
                                     charmm: { colorA: '#00a651', names: ['ARHM', 'BRHM'] },
                                     glycam: { colorA: '#00a651', names: ['0HA', '0HB', '1HA', '1HB', '2HA', '2HB', '3HA', '3HB', '4HA', '4HB', 'ZHA', 'ZHB', 'YHA', 'YHB', 'WHA', 'WHB', 'THA', 'THB', '0hA', '0hB', '1hA', '1hB', '2hA', '2hB', '3hA', '3hB', '4hA', '4hB', 'ZhA', 'ZhB', 'YhA', 'YhB', 'WhA', 'WhB', 'ThA', 'ThB'] },
                                 }, {
@@ -1760,7 +1760,7 @@ var LiteMol;
                             axisUp: [0, 1, 0],
                             instances: [{
                                     name: 'Oli',
-                                    common: { colorA: '#0090bc', names: ['OLI'] },
+                                    common: { colorA: '#0090bc', names: ['DDA'] },
                                     charmm: { colorA: '#0090bc', names: [] },
                                     glycam: { colorA: '#0090bc', names: [] },
                                 }, {
@@ -1775,17 +1775,17 @@ var LiteMol;
                                     glycam: { colorA: '#f47920', names: ['0AE', '2AE', '4AE', 'YGa', '0AF', '2AF', '4AF', 'YAF'] },
                                 }, {
                                     name: 'Par',
-                                    common: { colorA: '#f69ea1', names: ['PAR'] },
+                                    common: { colorA: '#f69ea1', names: ['PZU'] },
                                     charmm: { colorA: '#f69ea1', names: [] },
                                     glycam: { colorA: '#f69ea1', names: [] },
                                 }, {
                                     name: 'Dig',
-                                    common: { colorA: '#a54399', names: ['DIG'] },
+                                    common: { colorA: '#a54399', names: [] },
                                     charmm: { colorA: '#a54399', names: [] },
                                     glycam: { colorA: '#a54399', names: [] },
                                 }, {
                                     name: 'Col',
-                                    common: { colorA: '#8fcce9', names: ['COL'] },
+                                    common: { colorA: '#8fcce9', names: [] },
                                     charmm: { colorA: '#8fcce9', names: [] },
                                     glycam: { colorA: '#8fcce9', names: [] },
                                 }]
@@ -1796,22 +1796,22 @@ var LiteMol;
                             axisUp: [0, 0, 1],
                             instances: [{
                                     name: 'Ara',
-                                    common: { colorA: '#00a651', names: ['ARA', 'AHR'] },
+                                    common: { colorA: '#00a651', names: ['ARA', 'ARB'] },
                                     charmm: { colorA: '#00a651', names: ['AARB', 'BARB'] },
                                     glycam: { colorA: '#00a651', names: ['0AA', '0AB', '1AA', '1AB', '2AA', '2AB', '3AA', '3AB', '4AA', '4AB', 'ZAA', 'ZAB', 'YAA', 'YAB', 'WAA', 'WAB', 'TAA', 'TAB', '0AD', '0AU', '1AD', '1AU', '2AD', '2AU', '3AD', '3AU', '5AD', '5AU', 'ZAD', 'ZAU', '0aA', '0aB', '1aA', '1aB', '2aA', '2aB', '3aA', '3aB', '4aA', '4aB', 'ZaA', 'ZaB', 'YaA', 'YaB', 'WaA', 'WaB', 'TaA', 'TaB', '0aD', '0aU', '1aD', '1aU', '2aD', '2aU', '3aD', '3aU', '5aD', '5aU', 'ZaD', 'ZaU'] },
                                 }, {
                                     name: 'Lyx',
-                                    common: { colorA: '#ffd400', names: ['LYX'] },
+                                    common: { colorA: '#ffd400', names: ['LDY'] },
                                     charmm: { colorA: '#ffd400', names: ['ALYF', 'BLYF'] },
                                     glycam: { colorA: '#ffd400', names: ['0DA', '0DB', '1DA', '1DB', '2DA', '2DB', '3DA', '3DB', '4DA', '4DB', 'ZDA', 'ZDB', 'YDA', 'YDB', 'WDA', 'WDB', 'TDA', 'TDB', '0DD', '0DU', '1DD', '1DU', '2DD', '2DU', '3DD', '3DU', '5DD', '5DU', 'ZDD', 'ZDU', '0dA', '0dB', '1dA', '1dB', '2dA', '2dB', '3dA', '3dB', '4dA', '4dB', 'ZdA', 'ZdB', 'YdA', 'YdB', 'WdA', 'WdB', 'TdA', 'TdB', '0dD', '0dU', '1dD', '1dU', '2dD', '2dU', '3dD', '3dU', '5dD', '5dU', 'ZdD', 'ZdU'] },
                                 }, {
                                     name: 'Xyl',
-                                    common: { colorA: '#f47920', names: ['XYL', 'XYS', 'LXC', 'XYP'] },
+                                    common: { colorA: '#f47920', names: ['XYS', 'XYP'] },
                                     charmm: { colorA: '#f47920', names: ['AXYL', 'BXYL', 'AXYF', 'BXYF'] },
                                     glycam: { colorA: '#f47920', names: ['0XA', '0XB', '1XA', '1XB', '2XA', '2XB', '3XA', '3XB', '4XA', '4XB', 'ZXA', 'ZXB', 'YXA', 'YXB', 'WXA', 'WXB', 'TXA', 'TXB', '0XD', '0XU', '1XD', '1XU', '2XD', '2XU', '3XD', '3XU', '5XD', '5XU', 'ZXD', 'ZXU', '0xA', '0xB', '1xA', '1xB', '2xA', '2xB', '3xA', '3xB', '4xA', '4xB', 'ZxA', 'ZxB', 'YxA', 'YxB', 'WxA', 'WxB', 'TxA', 'TxB', '0xD', '0xU', '1xD', '1xU', '2xD', '2xU', '3xD', '3xU', '5xD', '5xU', 'ZxD', 'ZxU'] },
                                 }, {
                                     name: 'Rib',
-                                    common: { colorA: '#f69ea1', names: ['RIB'] },
+                                    common: { colorA: '#f69ea1', names: ['RIP', '0MK'] },
                                     charmm: { colorA: '#f69ea1', names: ['ARIB', 'BRIB'] },
                                     glycam: { colorA: '#f69ea1', names: ['0RA', '0RB', '1RA', '1RB', '2RA', '2RB', '3RA', '3RB', '4RA', '4RB', 'ZRA', 'ZRB', 'YRA', 'YRB', 'WRA', 'WRB', 'TRA', 'TRB', '0RD', '0RU', '1RD', '1RU', '2RD', '2RU', '3RD', '3RU', '5RD', '5RU', 'ZRD', 'ZRU', '0rA', '0rB', '1rA', '1rB', '2rA', '2rB', '3rA', '3rB', '4rA', '4rB', 'ZrA', 'ZrB', 'YrA', 'YrB', 'WrA', 'WrB', 'TrA', 'TrB', '0rD', '0rU', '1rD', '1rU', '2rD', '2rU', '3rD', '3rU', '5rD', '5rU', 'ZrD', 'ZrU'] },
                                 }]
@@ -1822,22 +1822,22 @@ var LiteMol;
                             axisUp: [1, 0, 0],
                             instances: [{
                                     name: 'Kdn',
-                                    common: { colorA: '#00a651', names: ['KDN'] },
+                                    common: { colorA: '#00a651', names: ['KDN', 'KDM'] },
                                     charmm: { colorA: '#00a651', names: [] },
                                     glycam: { colorA: '#00a651', names: [] },
                                 }, {
                                     name: 'Neu5Ac',
-                                    common: { colorA: '#a54399', names: ['SIA'] },
+                                    common: { colorA: '#a54399', names: ['SIA', 'SLB'] },
                                     charmm: { colorA: '#a54399', names: ['ANE5AC', 'BNE5AC'] },
                                     glycam: { colorA: '#a54399', names: ['0SA', '0SB', '4SA', '4SB', '7SA', '7SB', '8SA', '8SB', '9SA', '9SB', 'ASA', 'ASB', 'BSA', 'BSB', 'CSA', 'CSB', 'DSA', 'DSB', 'ESA', 'ESB', 'FSA', 'FSB', 'GSA', 'GSB', 'HSA', 'HSB', 'ISA', 'ISB', 'JSA', 'JSB', 'KSA', 'KSB', '0sA', '0sB', '4sA', '4sB', '7sA', '7sB', '8sA', '8sB', '9sA', '9sB', 'AsA', 'AsB', 'BsA', 'BsB', 'CsA', 'CsB', 'DsA', 'DsB', 'EsA', 'EsB', 'FsA', 'FsB', 'GsA', 'GsB', 'HsA', 'HsB', 'IsA', 'IsB', 'JsA', 'JsB', 'KsA', 'KsB'] },
                                 }, {
                                     name: 'Neu5Gc',
-                                    common: { colorA: '#8fcce9', names: [] },
+                                    common: { colorA: '#8fcce9', names: ['NGC', 'NGE'] },
                                     charmm: { colorA: '#8fcce9', names: [] },
                                     glycam: { colorA: '#8fcce9', names: ['0GL', '4GL', '7GL', '8GL', '9GL', 'CGL', 'DGL', 'EGL', 'FGL', 'GGL', 'HGL', 'IGL', 'JGL', 'KGL', '0gL', '4gL', '7gL', '8gL', '9gL', 'AgL', 'BgL', 'CgL', 'DgL', 'EgL', 'FgL', 'GgL', 'HgL', 'IgL', 'JgL', 'KgL'] },
                                 }, {
                                     name: 'Neu',
-                                    common: { colorA: '#a17a4d', names: ['NEU'] },
+                                    common: { colorA: '#a17a4d', names: [] },
                                     charmm: { colorA: '#a17a4d', names: [] },
                                     glycam: { colorA: '#a17a4d', names: [] },
                                 }]
@@ -1848,7 +1848,7 @@ var LiteMol;
                             axisUp: [0, 0, 1],
                             instances: [{
                                     name: 'Bac',
-                                    common: { colorA: '#0090bc', names: ['BAC'] },
+                                    common: { colorA: '#0090bc', names: ['B6D'] },
                                     charmm: { colorA: '#0090bc', names: [] },
                                     glycam: { colorA: '#0090bc', names: ['0BC', '3BC', '0bC', '3bC'] },
                                 }, {
@@ -1863,7 +1863,7 @@ var LiteMol;
                                     glycam: { colorA: '#ffd400', names: [] },
                                 }, {
                                     name: 'Dha',
-                                    common: { colorA: '#f47920', names: ['DHA'] },
+                                    common: { colorA: '#f47920', names: [] },
                                     charmm: { colorA: '#f47920', names: [] },
                                     glycam: { colorA: '#f47920', names: [] },
                                 }, {
@@ -1873,7 +1873,7 @@ var LiteMol;
                                     glycam: { colorA: '#f69ea1', names: [] },
                                 }, {
                                     name: 'MurNAc',
-                                    common: { colorA: '#a54399', names: ['AMV', 'AMU'] },
+                                    common: { colorA: '#a54399', names: ['AMU'] },
                                     charmm: { colorA: '#a54399', names: [] },
                                     glycam: { colorA: '#a54399', names: [] },
                                 }, {
@@ -1894,29 +1894,29 @@ var LiteMol;
                             axisUp: [0, 0, 1],
                             instances: [{
                                     name: 'Api',
-                                    common: { colorA: '#0090bc', names: ['API'] },
+                                    common: { colorA: '#0090bc', names: ['XXM'] },
                                     charmm: { colorA: '#0090bc', names: [] },
                                     glycam: { colorA: '#0090bc', names: [] },
                                 }, {
                                     name: 'Fruc',
-                                    common: { colorA: '#00a651', names: ['FRU'] },
+                                    common: { colorA: '#00a651', names: ['BDF'] },
                                     charmm: { colorA: '#00a651', names: ['AFRU', 'BFRU'] },
                                     glycam: { colorA: '#00a651', names: ['0CA', '0CB', '1CA', '1CB', '2CA', '2CB', '3CA', '3CB', '4CA', '4CB', '5CA', '5CB', 'WCA', 'WCB', '0CD', '0CU', '1CD', '1CU', '2CD', '2CU', '3CD', '3CU', '4CD', '4CU', '6CD', '6CU', 'WCD', 'WCU', 'VCD', 'VCU', 'UCD', 'UCU', 'QCD', 'QCU', '0cA', '0cB', '1cA', '1cB', '2cA', '2cB', '3cA', '3cB', '4cA', '4cB', '5cA', '5cB', 'WcA', 'WcB', '0cD', '0cU', '1cD', '1cU', '2cD', '2cU', '3cD', '3cU', '4cD', '4cU', '6cD', '6cU', 'WcD', 'WcU', 'VcD', 'VcU', 'UcD', 'UcU', 'QcD', 'QcU'] },
                                 }, {
                                     name: 'Tag',
-                                    common: { colorA: '#ffd400', names: ['TAG'] },
+                                    common: { colorA: '#ffd400', names: ['T6T'] },
                                     charmm: { colorA: '#ffd400', names: [] },
                                     glycam: { colorA: '#ffd400', names: ['0JA', '0JB', '1JA', '1JB', '2JA', '2JB', '3JA', '3JB', '4JA', '4JB', '5JA', '5JB', 'WJA', 'WJB', '0JD', '0JU', '1JD', '1JU', '2JD', '2JU', '3JD', '3JU', '4JD', '4JU', '6JD', '6JU', 'WJD', 'WJU', 'VJD', 'VJU', 'UJD', 'UJU', 'QJD', 'QJU', '0jA', '0jB', '1jA', '1jB', '2jA', '2jB', '3jA', '3jB', '4jA', '4jB', '5jA', '5jB', 'WjA', 'WjB', '0jD', '0jU', '1jD', '1jU', '2jD', '2jU', '3jD', '3jU', '4jD', '4jU', '6jD', '6jU', 'WjD', 'WjU', 'VjD', 'VjU', 'UjD', 'UjU', 'QjD', 'QjU'] },
                                 }, {
                                     name: 'Sor',
-                                    common: { colorA: '#f47920', names: ['SOR'] },
+                                    common: { colorA: '#f47920', names: ['SOE'] },
                                     charmm: { colorA: '#f47920', names: [] },
                                     glycam: { colorA: '#f47920', names: ['0BA', '0BB', '1BA', '1BB', '2BA', '2BB', '3BA', '3BB', '4BA', '4BB', '5BA', '5BB', 'WBA', 'WBB', '0BD', '0BU', '1BD', '1BU', '2BD', '2BU', '3BD', '3BU', '4BD', '4BU', '6BD', '6BU', 'WBD', 'WBU', 'VBD', 'VBU', 'UBD', 'UBU', 'QBD', 'QBU', '0bA', '0bB', '1bA', '1bB', '2bA', '2bB', '3bA', '3bB', '4bA', '4bB', '5bA', '5bB', 'WbA', 'WbB', '0bD', '0bU', '1bD', '1bU', '2bD', '2bU', '3bD', '3bU', '4bD', '4bU', '6bD', '6bU', 'WbD', 'WbU', 'VbD', 'VbU', 'UbD', 'UbU', 'QbD', 'QbU'] },
                                 }, {
                                     name: 'Psi',
-                                    common: { colorA: '#f69ea1', names: ['PSI'] },
+                                    common: { colorA: '#f69ea1', names: [] },
                                     charmm: { colorA: '#f69ea1', names: [] },
-                                    glycam: { colorA: '#f69ea1', names: ['0PA', '0PB', '1PA', '1PB', '2PA', '2PB', '3PA', '3PB', '4PA', '4PB', '5PA', '5PB', 'WPA', 'WPB', '0PD', '0PU', '1PD', '1PU', '2PD', '2PU', '3PD', '3PU', '4PD', '4PU', '6PD', '6PU', 'WPD', 'WPU', 'VPD', 'VPU', 'UPD', 'UPU', 'QPD', 'QPU', '0pA', '0pB', '1pA', '1pB', '2pA', '2pB', '3pA', '3pB', '4pA', '4pB', '5pA', '5pB', 'WpA', 'WpB', '0pD', '0pU', '1pD', '1pU', '2pD', '2pU', '3pD', '3pU', '4pD', '4pU', '6pD', '6pU', 'WpD', 'WpU', 'VpD', 'VpU', 'UpD', 'UpU', 'QpD', 'QpU'] }
+                                    glycam: { colorA: '#f69ea1', names: [] }
                                 }]
                         },
                         /* === Flat diamond  === */
@@ -1925,17 +1925,17 @@ var LiteMol;
                             axisUp: [0, 0, 1],
                             instances: [{
                                     name: 'Pse',
-                                    common: { colorA: '#00a850', names: ['PSE'] },
+                                    common: { colorA: '#00a850', names: ['6PZ'] },
                                     charmm: { colorA: '#00a850', names: [] },
                                     glycam: { colorA: '#00a850', names: [] }
                                 }, {
                                     name: 'Leg',
-                                    common: { colorA: '#f9d10d', names: ['LEG'] },
+                                    common: { colorA: '#f9d10d', names: [] },
                                     charmm: { colorA: '#f9d10d', names: [] },
                                     glycam: { colorA: '#f9d10d', names: [] }
                                 }, {
                                     name: 'Aci',
-                                    common: { colorA: '#f69e9d', names: ['ACI'] },
+                                    common: { colorA: '#f69e9d', names: [] },
                                     charmm: { colorA: '#f69e9d', names: [] },
                                     glycam: { colorA: '#f69e9d', names: [] }
                                 }, {
