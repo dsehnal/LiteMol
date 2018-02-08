@@ -73573,13 +73573,16 @@ var LiteMol;
                 }
                 function resolveAction(src, context, resolve, reject, onDone, onError) {
                     return __awaiter(this, void 0, void 0, function () {
-                        var e_2;
+                        var hadError, e_2;
                         return __generator(this, function (_a) {
                             switch (_a.label) {
                                 case 0:
-                                    _a.trys.push([0, 2, , 3]);
-                                    return [4 /*yield*/, Tree.Transform.apply(context, src.action).run()];
+                                    hadError = false;
+                                    _a.label = 1;
                                 case 1:
+                                    _a.trys.push([1, 3, , 4]);
+                                    return [4 /*yield*/, Tree.Transform.apply(context, src.action).run()];
+                                case 2:
                                     _a.sent();
                                     try {
                                         resolve(Tree.Node.Null);
@@ -73587,16 +73590,18 @@ var LiteMol;
                                     finally {
                                         if (onDone) {
                                             if (typeof onDone === 'string') {
-                                                context.logger.message(onDone);
+                                                if (!hadError)
+                                                    context.logger.message(onDone);
                                             }
                                             else {
                                                 setTimeout(function () { return onDone.call(null, context, src.context); }, 0);
                                             }
                                         }
                                     }
-                                    return [3 /*break*/, 3];
-                                case 2:
+                                    return [3 /*break*/, 4];
+                                case 3:
                                     e_2 = _a.sent();
+                                    hadError = true;
                                     try {
                                         reject(e_2);
                                     }
@@ -73610,8 +73615,8 @@ var LiteMol;
                                             }
                                         }
                                     }
-                                    return [3 /*break*/, 3];
-                                case 3: return [2 /*return*/];
+                                    return [3 /*break*/, 4];
+                                case 4: return [2 /*return*/];
                             }
                         });
                     });

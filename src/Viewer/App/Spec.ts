@@ -80,6 +80,9 @@ namespace LiteMol.Viewer {
             // annotations
             { transformer: PDBe.SequenceAnnotation.DownloadAndCreate, view: Views.Transform.Empty, initiallyCollapsed: true },
             { transformer: PDBe.SequenceAnnotation.CreateSingle, view: PDBe.Views.CreateSequenceAnnotationView, initiallyCollapsed: true },
+
+            { transformer: Extensions.RNALoops.DownloadAndCreate, view: Views.Transform.Empty, initiallyCollapsed: true },
+            { transformer: Extensions.RNALoops.ApplyTheme, view: Views.Transform.Empty, initiallyCollapsed: false },
         ],
         behaviours: [
             // you will find the source of all behaviours in the Bootstrap/Behaviour directory

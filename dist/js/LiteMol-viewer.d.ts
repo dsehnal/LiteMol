@@ -439,6 +439,52 @@ declare namespace LiteMol.Extensions.ParticleColoring.UI {
         renderControls(): JSX.Element;
     }
 }
+declare namespace LiteMol.Extensions.RNALoops {
+    import Entity = Bootstrap.Entity;
+    interface LoopAnnotation extends Entity<Entity.Behaviour.Props<Interactivity.Behaviour>> {
+    }
+    const LoopAnnotation: Entity.Type<Entity.Behaviour.Props<Interactivity.Behaviour>>;
+    namespace Api {
+        interface ResidueRef {
+            modelId: string;
+            authAsymId: string;
+            authSeqNumber: number;
+            insCode: string;
+        }
+        interface Entry {
+            id: string;
+            type: 'IL' | 'HL' | 'J3';
+            residues: ResidueRef[];
+        }
+        interface Annotation {
+            [modelId: string]: {
+                [chainId: string]: {
+                    [resSeqNumber: number]: {
+                        [insCode: string]: Entry[];
+                    };
+                };
+            };
+        }
+        function parseCSV(data: string): Entry[];
+        function create(entries: Entry[]): Annotation;
+        function getEntries(annotation: Annotation, modelId: string, asymId: string, seqNumber: number, insCode: string): Entry[] | undefined;
+    }
+    namespace Interactivity {
+        class Behaviour implements Bootstrap.Behaviour.Dynamic {
+            context: Bootstrap.Context;
+            annotation: Api.Annotation;
+            private provider;
+            dispose(): void;
+            register(behaviour: any): void;
+            private processInfo(info);
+            constructor(context: Bootstrap.Context, annotation: Api.Annotation);
+        }
+    }
+    const DownloadAndCreate: Bootstrap.Tree.Transformer<Entity.Molecule.Molecule, Entity.Action, {
+        reportRef?: string | undefined;
+    }>;
+    const ApplyTheme: Bootstrap.Tree.Transformer<LoopAnnotation, Entity.Action, {}>;
+}
 declare namespace LiteMol.Viewer.PDBe.Data {
     import Bootstrap = LiteMol.Bootstrap;
     import Entity = Bootstrap.Entity;

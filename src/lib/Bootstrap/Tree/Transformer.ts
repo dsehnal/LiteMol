@@ -166,6 +166,7 @@ namespace LiteMol.Bootstrap.Tree {
             onDone?: string | ((ctx: Context, actionCtx: T | undefined) => void), 
             onError?: string | ((ctx: Context, actionCtx: T | undefined, error: any) => void)) {
 
+            let hadError = false;
             try {
                 await Tree.Transform.apply(context, src.action).run();
                 try {
@@ -173,13 +174,14 @@ namespace LiteMol.Bootstrap.Tree {
                 } finally {
                     if (onDone) {
                         if (typeof onDone === 'string') {
-                            context.logger.message(onDone);
+                            if (!hadError) context.logger.message(onDone);
                         } else {
                             setTimeout(() => onDone.call(null, context, src.context), 0);
                         }
                     }
                 }
             } catch (e) {
+                hadError = true;
                 try {
                     reject(e);
                 } finally {

@@ -2935,6 +2935,262 @@ var LiteMol;
  */
 var LiteMol;
 (function (LiteMol) {
+    var Extensions;
+    (function (Extensions) {
+        var RNALoops;
+        (function (RNALoops) {
+            var _this = this;
+            var Entity = LiteMol.Bootstrap.Entity;
+            var Transformer = LiteMol.Bootstrap.Entity.Transformer;
+            RNALoops.LoopAnnotation = Entity.create({ name: 'BGSU RNA Loops', typeClass: 'Behaviour', shortName: 'RL', description: 'Represents BGSU loop annotation.' });
+            var Api;
+            (function (Api) {
+                function parseCSV(data) {
+                    var lines = data.split('\n');
+                    var entries = [];
+                    for (var i = 0; i < lines.length; i++) {
+                        var line = lines[i].trim();
+                        var comma = line.indexOf(',');
+                        if (comma < 0)
+                            continue;
+                        var id = line.substring(1, comma - 2);
+                        var type = (id[0] + id[1]);
+                        var residueIds = line.substring(comma + 2, line.length - 1).split(',');
+                        var residues = [];
+                        for (var j = 0; j < residueIds.length; j++) {
+                            var t = residueIds[j].split('|');
+                            residues.push({ modelId: t[1], authAsymId: t[2], authSeqNumber: +t[4], insCode: t[7] || '' });
+                        }
+                        entries.push({ id: id, type: type, residues: residues });
+                    }
+                    return entries;
+                }
+                Api.parseCSV = parseCSV;
+                function create(entries) {
+                    var annotation = {};
+                    if (!entries.length) {
+                        return annotation;
+                    }
+                    for (var _i = 0, entries_1 = entries; _i < entries_1.length; _i++) {
+                        var entry = entries_1[_i];
+                        for (var _a = 0, _c = entry.residues; _a < _c.length; _a++) {
+                            var residue = _c[_a];
+                            var model = annotation[residue.modelId] || (annotation[residue.modelId] = {});
+                            var chain = model[residue.authAsymId] || (model[residue.authAsymId] = {});
+                            var seq = chain[residue.authSeqNumber] || (chain[residue.authSeqNumber] = {});
+                            var ins = seq[residue.insCode] || (seq[residue.insCode] = []);
+                            ins[ins.length] = entry;
+                        }
+                    }
+                    console.log(annotation);
+                    return annotation;
+                }
+                Api.create = create;
+                function getEntries(annotation, modelId, asymId, seqNumber, insCode) {
+                    var m = annotation[modelId];
+                    if (!m)
+                        return void 0;
+                    var c = m[asymId];
+                    if (!c)
+                        return void 0;
+                    var r = c[seqNumber];
+                    if (!r)
+                        return void 0;
+                    return r[insCode];
+                }
+                Api.getEntries = getEntries;
+            })(Api = RNALoops.Api || (RNALoops.Api = {}));
+            var Interactivity;
+            (function (Interactivity) {
+                var Behaviour = /** @class */ (function () {
+                    function Behaviour(context, annotation) {
+                        var _this = this;
+                        this.context = context;
+                        this.annotation = annotation;
+                        this.provider = function (info) {
+                            try {
+                                return _this.processInfo(info);
+                            }
+                            catch (e) {
+                                console.error('Error showing loop annotation label', e);
+                                return void 0;
+                            }
+                        };
+                    }
+                    Behaviour.prototype.dispose = function () {
+                        this.context.highlight.removeProvider(this.provider);
+                    };
+                    Behaviour.prototype.register = function (behaviour) {
+                        this.context.highlight.addProvider(this.provider);
+                    };
+                    Behaviour.prototype.processInfo = function (info) {
+                        var i = LiteMol.Bootstrap.Interactivity.Molecule.transformInteraction(info);
+                        if (!i || i.residues.length !== 1)
+                            return void 0;
+                        var r = i.residues[0];
+                        var xs = Api.getEntries(this.annotation, i.modelId, r.chain.asymId, r.seqNumber, r.insCode || '');
+                        if (!xs || !xs.length)
+                            return void 0;
+                        return 'RNA Loops: ' + xs.map(function (x) { return "<b>" + x.type + "</b> (" + x.id + ")"; }).join(', ');
+                    };
+                    return Behaviour;
+                }());
+                Interactivity.Behaviour = Behaviour;
+            })(Interactivity = RNALoops.Interactivity || (RNALoops.Interactivity = {}));
+            var Theme;
+            (function (Theme) {
+                var colorMap = (function () {
+                    var colors = LiteMol.Core.Utils.FastMap.create();
+                    colors.set(0, { r: 0x5B / 0xFF, g: 0xB7 / 0xFF, b: 0x5B / 0xFF }); // (IL): #5BB75B
+                    colors.set(1, { r: 0x49 / 0xFF, g: 0xAF / 0xFF, b: 0xCD / 0xFF }); // (HL): #49AFCD
+                    colors.set(2, { r: 0xCD / 0xFF, g: 0xAC / 0xFF, b: 0x4A / 0xFF }); // (J3): #CDAC4A
+                    colors.set(3, { r: 0.6, g: 0.6, b: 0.6 }); // not applicable
+                    return colors;
+                })();
+                var defaultColor = { r: 0.6, g: 0.6, b: 0.6 };
+                var selectionColor = { r: 0, g: 0, b: 1 };
+                var highlightColor = { r: 1, g: 0, b: 1 };
+                function createResidueMapNormal(model, annotation) {
+                    var map = new Uint8Array(model.data.residues.count);
+                    var mId = model.modelId;
+                    var _a = model.data.residues, authAsymId = _a.authAsymId, authSeqNumber = _a.authSeqNumber, insCode = _a.insCode;
+                    for (var i = 0, _b = model.data.residues.count; i < _b; i++) {
+                        var entries = Api.getEntries(annotation, mId, authAsymId[i], authSeqNumber[i], insCode[i] || '');
+                        if (!entries) {
+                            map[i] = 3;
+                            continue;
+                        }
+                        var e = entries[0];
+                        if (e.type === 'IL')
+                            map[i] = 0;
+                        else if (e.type === 'HL')
+                            map[i] = 1;
+                        else if (e.type === 'J3')
+                            map[i] = 2;
+                        else
+                            map[i] = 3;
+                    }
+                    return map;
+                }
+                function createResidueMapComputed(model, annotation) {
+                    var map = new Uint8Array(model.data.residues.count);
+                    var mId = model.modelId;
+                    var parent = model.parent;
+                    var _a = model.data.residues, chainIndex = _a.chainIndex, authSeqNumber = _a.authSeqNumber, insCode = _a.insCode;
+                    var sourceChainIndex = model.data.chains.sourceChainIndex;
+                    var authAsymId = parent.data.chains.authAsymId;
+                    for (var i = 0, _b = model.data.residues.count; i < _b; i++) {
+                        var aId = authAsymId[sourceChainIndex[chainIndex[i]]];
+                        var entries = Api.getEntries(annotation, mId, aId, authSeqNumber[i], insCode[i] || '');
+                        if (!entries) {
+                            map[i] = 3;
+                            continue;
+                        }
+                        var e = entries[0];
+                        if (e.type === 'IL')
+                            map[i] = 0;
+                        else if (e.type === 'HL')
+                            map[i] = 1;
+                        else if (e.type === 'J3')
+                            map[i] = 2;
+                        else
+                            map[i] = 3;
+                    }
+                    return map;
+                }
+                function create(entity, report) {
+                    var model = entity.props.model;
+                    var map = model.source === LiteMol.Core.Structure.Molecule.Model.Source.File
+                        ? createResidueMapNormal(model, report)
+                        : createResidueMapComputed(model, report);
+                    var colors = LiteMol.Core.Utils.FastMap.create();
+                    colors.set('Uniform', defaultColor);
+                    colors.set('Selection', selectionColor);
+                    colors.set('Highlight', highlightColor);
+                    var residueIndex = model.data.atoms.residueIndex;
+                    var mapping = LiteMol.Visualization.Theme.createColorMapMapping(function (i) { return map[residueIndex[i]]; }, colorMap, defaultColor);
+                    return LiteMol.Visualization.Theme.createMapping(mapping, { colors: colors, interactive: true, transparency: { alpha: 1.0 } });
+                }
+                Theme.create = create;
+            })(Theme || (Theme = {}));
+            var Create = LiteMol.Bootstrap.Tree.Transformer.create({
+                id: 'rna-loops-validation-create',
+                name: 'RNA Loops',
+                description: 'Create the RNA loop annotation object from a string.',
+                from: [Entity.Data.String],
+                to: [RNALoops.LoopAnnotation],
+                defaultParams: function () { return ({}); }
+            }, function (context, a, t) {
+                return LiteMol.Bootstrap.Task.create("RNA Loop Annotation (" + t.params.id + ")", 'Normal', function (ctx) { return __awaiter(_this, void 0, void 0, function () {
+                    var entries, annotation;
+                    return __generator(this, function (_a) {
+                        switch (_a.label) {
+                            case 0: return [4 /*yield*/, ctx.updateProgress('Parsing...')];
+                            case 1:
+                                _a.sent();
+                                entries = Api.parseCSV(a.props.data);
+                                annotation = Api.create(entries);
+                                return [2 /*return*/, RNALoops.LoopAnnotation.create(t, { label: 'RNA Loop Annotation', behaviour: new Interactivity.Behaviour(context, annotation) })];
+                        }
+                    });
+                }); }).setReportTime(true);
+            });
+            RNALoops.DownloadAndCreate = LiteMol.Bootstrap.Tree.Transformer.action({
+                id: 'rna-loops-download-and-create',
+                name: 'BGSU RNA Loop Annotation',
+                description: 'Download RNA loop annotation from BGSU',
+                from: [Entity.Molecule.Molecule],
+                to: [Entity.Action],
+                defaultParams: function () { return ({}); }
+            }, function (context, a, t) {
+                var id = a.props.molecule.id.trim().toLocaleLowerCase();
+                var action = LiteMol.Bootstrap.Tree.Transform.build()
+                    .add(a, Transformer.Data.Download, { url: "http://rna.bgsu.edu/rna3dhub/loops/download/" + id.toUpperCase(), type: 'String', id: id, description: 'Validation Data', title: 'Validation' })
+                    .then(Create, { id: id }, { isBinding: true, ref: t.params.reportRef });
+                return action;
+            }, "BGSU RNA annotation loaded. Hovering over RNA residue will now contain loop info. To apply coloring, select the entity in the tree and apply it the right panel.", "Failed to load BGSU RNA annotation.");
+            RNALoops.ApplyTheme = LiteMol.Bootstrap.Tree.Transformer.create({
+                id: 'rna-loops-apply-theme',
+                name: 'Apply Coloring',
+                description: 'Colors RNA strands according to annotation of secondary structure loops.',
+                from: [RNALoops.LoopAnnotation],
+                to: [Entity.Action],
+                defaultParams: function () { return ({}); }
+            }, function (context, a, t) {
+                return LiteMol.Bootstrap.Task.create('RNA Annotation Coloring', 'Background', function (ctx) { return __awaiter(_this, void 0, void 0, function () {
+                    var molecule, themes, visuals, _i, visuals_2, v, model, theme;
+                    return __generator(this, function (_a) {
+                        molecule = LiteMol.Bootstrap.Tree.Node.findAncestor(a, LiteMol.Bootstrap.Entity.Molecule.Molecule);
+                        if (!molecule) {
+                            throw 'No suitable parent found.';
+                        }
+                        themes = LiteMol.Core.Utils.FastMap.create();
+                        visuals = context.select(LiteMol.Bootstrap.Tree.Selection.byValue(molecule).subtree().ofType(LiteMol.Bootstrap.Entity.Molecule.Visual));
+                        for (_i = 0, visuals_2 = visuals; _i < visuals_2.length; _i++) {
+                            v = visuals_2[_i];
+                            model = LiteMol.Bootstrap.Utils.Molecule.findModel(v);
+                            if (!model)
+                                continue;
+                            theme = themes.get(model.id);
+                            if (!theme) {
+                                theme = Theme.create(model, a.props.behaviour.annotation);
+                                themes.set(model.id, theme);
+                            }
+                            LiteMol.Bootstrap.Command.Visual.UpdateBasicTheme.dispatch(context, { visual: v, theme: theme });
+                        }
+                        context.logger.message('RNA annotation coloring applied.');
+                        return [2 /*return*/, LiteMol.Bootstrap.Tree.Node.Null];
+                    });
+                }); });
+            });
+        })(RNALoops = Extensions.RNALoops || (Extensions.RNALoops = {}));
+    })(Extensions = LiteMol.Extensions || (LiteMol.Extensions = {}));
+})(LiteMol || (LiteMol = {}));
+/*
+ * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ */
+var LiteMol;
+(function (LiteMol) {
     var Viewer;
     (function (Viewer) {
         var PDBe;
@@ -3467,7 +3723,7 @@ var LiteMol;
                     defaultParams: function () { return ({}); }
                 }, function (context, a, t) {
                     return LiteMol.Bootstrap.Task.create('Validation Coloring', 'Background', function (ctx) { return __awaiter(_this, void 0, void 0, function () {
-                        var molecule, themes, visuals, _i, visuals_2, v, model, theme;
+                        var molecule, themes, visuals, _i, visuals_3, v, model, theme;
                         return __generator(this, function (_a) {
                             molecule = LiteMol.Bootstrap.Tree.Node.findAncestor(a, LiteMol.Bootstrap.Entity.Molecule.Molecule);
                             if (!molecule) {
@@ -3475,8 +3731,8 @@ var LiteMol;
                             }
                             themes = LiteMol.Core.Utils.FastMap.create();
                             visuals = context.select(LiteMol.Bootstrap.Tree.Selection.byValue(molecule).subtree().ofType(LiteMol.Bootstrap.Entity.Molecule.Visual));
-                            for (_i = 0, visuals_2 = visuals; _i < visuals_2.length; _i++) {
-                                v = visuals_2[_i];
+                            for (_i = 0, visuals_3 = visuals; _i < visuals_3.length; _i++) {
+                                v = visuals_3[_i];
                                 model = LiteMol.Bootstrap.Utils.Molecule.findModel(v);
                                 if (!model)
                                     continue;
@@ -3611,8 +3867,8 @@ var LiteMol;
                             if (!molecule)
                                 return;
                             var visuals = this.context.select(LiteMol.Bootstrap.Tree.Selection.byValue(molecule).subtree().ofType(LiteMol.Bootstrap.Entity.Molecule.Visual));
-                            for (var _i = 0, visuals_3 = visuals; _i < visuals_3.length; _i++) {
-                                var v = visuals_3[_i];
+                            for (var _i = 0, visuals_4 = visuals; _i < visuals_4.length; _i++) {
+                                var v = visuals_4[_i];
                                 var model = LiteMol.Bootstrap.Utils.Molecule.findModel(v);
                                 if (!model)
                                     continue;
@@ -3687,8 +3943,8 @@ var LiteMol;
                         if (!entries.length)
                             return "continue";
                         var group = action.add(parent, Transformer.Basic.CreateGroup, { label: g, isCollapsed: true }, { isBinding: true });
-                        for (var _i = 0, entries_1 = entries; _i < entries_1.length; _i++) {
-                            var a = entries_1[_i];
+                        for (var _i = 0, entries_2 = entries; _i < entries_2.length; _i++) {
+                            var a = entries_2[_i];
                             group.then(SequenceAnnotation.CreateSingle, { data: ans[a], id: a, color: baseColor });
                         }
                     };
@@ -4345,6 +4601,8 @@ var LiteMol;
                 // annotations
                 { transformer: Viewer.PDBe.SequenceAnnotation.DownloadAndCreate, view: Views.Transform.Empty, initiallyCollapsed: true },
                 { transformer: Viewer.PDBe.SequenceAnnotation.CreateSingle, view: Viewer.PDBe.Views.CreateSequenceAnnotationView, initiallyCollapsed: true },
+                { transformer: LiteMol.Extensions.RNALoops.DownloadAndCreate, view: Views.Transform.Empty, initiallyCollapsed: true },
+                { transformer: LiteMol.Extensions.RNALoops.ApplyTheme, view: Views.Transform.Empty, initiallyCollapsed: false },
             ],
             behaviours: [
                 // you will find the source of all behaviours in the Bootstrap/Behaviour directory
