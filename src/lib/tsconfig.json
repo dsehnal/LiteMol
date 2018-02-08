@@ -9,7 +9,7 @@
     "declaration": true,
     "strictNullChecks": true,
     "noImplicitThis": true,    
-    "noUnusedLocals": true,
+    //"noUnusedLocals": true,
     "noImplicitReturns": true,
     "lib": [ "es5", "es2015.collection", "dom", "es2015.promise" ],
     "target": "es5",

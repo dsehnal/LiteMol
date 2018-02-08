@@ -2,7 +2,7 @@ var LiteMol;
 (function (LiteMol) {
     var Viewer;
     (function (Viewer) {
-        Viewer.VERSION = { number: "1.6.4", date: "Sep 18 2017" };
+        Viewer.VERSION = { number: "1.6.5", date: "Feb 8 2018" };
     })(Viewer = LiteMol.Viewer || (LiteMol.Viewer = {}));
 })(LiteMol || (LiteMol = {}));
 /*
@@ -1260,7 +1260,7 @@ var LiteMol;
                     var show = React.createElement(Controls.OptionsGroup, { options: ['Everything', 'Around Selection'], caption: function (s) { return s; }, current: params.displayType, onChange: function (o) { return _this.autoUpdateParams({ displayType: o }); }, label: 'Show' });
                     return React.createElement(Controls.ExpandableGroup, { select: show, expander: React.createElement(Controls.ControlGroupExpander, { isExpanded: showDisplayOptions, onChange: function (e) { return _this.setPersistentState('showDisplayOptions', e); } }), options: [
                             this.details(),
-                            React.createElement(Controls.Toggle, { onChange: function (v) { return _this.updateValueType(v); }, value: isSigma, label: 'Relative (\u03C3)', title: 'Specify contour level as relative (\u03C3) or absolute value.' })
+                            React.createElement(Controls.Toggle, { onChange: function (v) { return _this.updateValueType(v); }, value: isSigma, label: 'Relative (\\u03C3)', title: 'Specify contour level as relative (\\u03C3) or absolute value.' })
                         ], isExpanded: showDisplayOptions });
                 };
                 StreamingView.prototype.renderControls = function () {

@@ -80294,7 +80294,7 @@ var LiteMol;
                 (function (Density) {
                     "use strict";
                     var IsoValue = function (props) {
-                        return Plugin.React.createElement(Plugin.Controls.ExpandableGroup, { select: Plugin.React.createElement(Plugin.Controls.Slider, { label: props.isSigma ? 'Iso Value (\u03C3)' : 'Iso Value', onChange: props.onChangeValue, min: props.min, max: props.max, value: props.value, step: 0.001 }), expander: Plugin.React.createElement(Plugin.Controls.ControlGroupExpander, { isExpanded: props.view.getPersistentState('showIsoValueType', false), onChange: function (e) { return props.view.setPersistentState('showIsoValueType', e); } }), options: [Plugin.React.createElement(Plugin.Controls.Toggle, { onChange: function (v) { return props.onChangeType(v ? LiteMol.Bootstrap.Visualization.Density.IsoValueType.Sigma : LiteMol.Bootstrap.Visualization.Density.IsoValueType.Absolute); }, value: props.isSigma, label: 'Relative (\u03C3)' })], isExpanded: props.view.getPersistentState('showIsoValueType', false) });
+                        return Plugin.React.createElement(Plugin.Controls.ExpandableGroup, { select: Plugin.React.createElement(Plugin.Controls.Slider, { label: props.isSigma ? 'Iso Value (\u03C3)' : 'Iso Value', onChange: props.onChangeValue, min: props.min, max: props.max, value: props.value, step: 0.001 }), expander: Plugin.React.createElement(Plugin.Controls.ControlGroupExpander, { isExpanded: props.view.getPersistentState('showIsoValueType', false), onChange: function (e) { return props.view.setPersistentState('showIsoValueType', e); } }), options: [Plugin.React.createElement(Plugin.Controls.Toggle, { onChange: function (v) { return props.onChangeType(v ? LiteMol.Bootstrap.Visualization.Density.IsoValueType.Sigma : LiteMol.Bootstrap.Visualization.Density.IsoValueType.Absolute); }, value: props.isSigma, label: 'Relative (\\u03C3)' })], isExpanded: props.view.getPersistentState('showIsoValueType', false) });
                     };
                     function isoValueAbsoluteToSigma(data, value, min, max) {
                         var ret = (value - data.valuesInfo.mean) / data.valuesInfo.sigma;
@@ -80700,7 +80700,6 @@ var LiteMol;
             var Entity;
             (function (Entity_2) {
                 "use strict";
-                var BEntity = LiteMol.Bootstrap.Entity;
                 Entity_2.VisibilityControl = function (props) {
                     var e = props.entity;
                     var command = function () {

@@ -244,7 +244,7 @@ namespace LiteMol.Extensions.DensityStreaming {
             this.download = Utils.ajaxGetArrayBuffer(url, 'Density').runWithContext(this.context);
             this.download.result.then(data => {
                 this.clear();
-                this.channels = this.parseChannels(data);
+                this.channels = this.parseChannels(data) as Behaviour['channels'];
                 if (!this.channels) return;
                 this.wasCached = false;
                 Bootstrap.Utils.LRUCache.set(this.cache, url, this.channels);
