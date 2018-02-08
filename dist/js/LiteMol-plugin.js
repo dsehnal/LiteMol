@@ -65801,7 +65801,7 @@ var LiteMol;
 (function (LiteMol) {
     var Visualization;
     (function (Visualization) {
-        Visualization.VERSION = { number: "1.7.5", date: "Oct 26 2017" };
+        Visualization.VERSION = { number: "1.7.6", date: "Feb 8 2018" };
     })(Visualization = LiteMol.Visualization || (LiteMol.Visualization = {}));
 })(LiteMol || (LiteMol = {}));
 var LiteMol;
@@ -66918,7 +66918,7 @@ var LiteMol;
             Camera.prototype.focus = function () {
                 this.controls.reset();
                 var target = this.focusPoint;
-                this.camera.position.set(target.x, target.y, target.z - 4 * this.focusRadius);
+                this.camera.position.set(target.x, target.y, target.z + 4 * this.focusRadius);
                 this.camera.lookAt(target);
                 this.controls.target.set(target.x, target.y, target.z);
                 this.cameraUpdated();
@@ -70220,7 +70220,12 @@ var LiteMol;
                                             params: params,
                                             state: new Geometry.CartoonsGeometryState(params, model.data.residues.count),
                                             units: void 0,
-                                            strandArrays: void 0,
+                                            strandArrays: {
+                                                startIndex: model.data.residues.atomStartIndex,
+                                                endIndex: model.data.residues.atomEndIndex,
+                                                x: model.positions.x, y: model.positions.y, z: model.positions.z,
+                                                name: model.data.atoms.name
+                                            },
                                             strandTemplate: void 0,
                                             builder: new Geometry.Builder(),
                                             geom: new Data()
@@ -70887,7 +70892,8 @@ var LiteMol;
                             this.radialSegmentCount = 10;
                             this.turnWidth = 0.1;
                             this.strandWidth = 0.15;
-                            this.strandLineWidth = 0.1;
+                            this.nucleotideStrandLineWidth = 0.15;
+                            this.nucleotideStrandFactor = 3;
                             this.helixWidth = 1.1;
                             this.helixHeight = 0.1;
                             this.sheetWidth = 1.1;
@@ -70944,7 +70950,7 @@ var LiteMol;
                     }());
                     Geometry.CartoonsGeometryState = CartoonsGeometryState;
                     function makeStrandLineTemplate(ctx) {
-                        var radius = ctx.params.strandLineWidth, tessalation = ctx.params.tessalation;
+                        var radius = ctx.params.nucleotideStrandLineWidth, tessalation = ctx.params.tessalation;
                         var capPoints = 0, radiusPoints = 0, geom;
                         switch (tessalation) {
                             case 0:
@@ -70989,14 +70995,6 @@ var LiteMol;
                             index: templ.attributes.index.array,
                             geometry: templ
                         };
-                        var atoms = ctx.model.data.atoms, residues = ctx.model.data.residues;
-                        var positions = ctx.model.positions;
-                        ctx.strandArrays = {
-                            startIndex: residues.atomStartIndex,
-                            endIndex: residues.atomEndIndex,
-                            x: positions.x, y: positions.y, z: positions.z,
-                            name: atoms.name
-                        };
                     }
                     function buildUnit(unit, ctx) {
                         var state = ctx.state, params = ctx.params;
@@ -71010,7 +71008,7 @@ var LiteMol;
                             if (ctx.isTrace || unit.backboneOnly) {
                                 switch (unit.residueType[index]) {
                                     case 5 /* Strand */:
-                                        builder.addTube(unit, state, params.strandWidth, params.strandWidth);
+                                        builder.addTube(unit, state, params.strandWidth, params.strandWidth, builder.hasP(unit.residueIndex[index], ctx.strandArrays) ? params.nucleotideStrandFactor : 1);
                                         if (start || end) {
                                             builder.addTubeCap(unit, state, params.strandWidth, params.strandWidth, start, end);
                                         }
@@ -71020,7 +71018,7 @@ var LiteMol;
                                         builder.addStrandLine(unit, state, ctx.strandTemplate, ctx.strandArrays, unit.residueIndex[index]);
                                         break;
                                     default:
-                                        builder.addTube(unit, state, params.turnWidth, params.turnWidth);
+                                        builder.addTube(unit, state, params.turnWidth, params.turnWidth, params.turnWidth);
                                         if (start || end) {
                                             builder.addTubeCap(unit, state, params.turnWidth, params.turnWidth, start, end);
                                         }
@@ -71030,7 +71028,7 @@ var LiteMol;
                             else {
                                 switch (unit.residueType[index]) {
                                     case 1 /* Helix */:
-                                        builder.addTube(unit, state, params.helixWidth, params.helixHeight);
+                                        builder.addTube(unit, state, params.helixWidth, params.helixHeight, 1);
                                         if (start) {
                                             builder.addTubeCap(unit, state, params.helixWidth, params.helixHeight, true, false);
                                         }
@@ -71045,7 +71043,7 @@ var LiteMol;
                                         }
                                         break;
                                     case 5 /* Strand */:
-                                        builder.addTube(unit, state, params.strandWidth, params.strandWidth);
+                                        builder.addTube(unit, state, params.strandWidth, params.strandWidth, builder.hasP(unit.residueIndex[index], ctx.strandArrays) ? params.nucleotideStrandFactor : 1);
                                         if (start || end) {
                                             builder.addTubeCap(unit, state, params.strandWidth, params.strandWidth, start, end);
                                         }
@@ -71055,7 +71053,7 @@ var LiteMol;
                                         builder.addStrandLine(unit, state, ctx.strandTemplate, ctx.strandArrays, unit.residueIndex[index]);
                                         break;
                                     default:
-                                        builder.addTube(unit, state, params.turnWidth, params.turnWidth);
+                                        builder.addTube(unit, state, params.turnWidth, params.turnWidth, 1);
                                         if (start || end) {
                                             builder.addTubeCap(unit, state, params.turnWidth, params.turnWidth, start, end);
                                         }
@@ -71164,19 +71162,23 @@ var LiteMol;
                             v.set(data[3 * i], data[3 * i + 1], data[3 * i + 2]);
                             return v;
                         };
-                        Builder.prototype.addTube = function (element, state, width, height) {
+                        Builder.prototype.addTube = function (element, state, width, height, waveFactor) {
                             var verticesDone = state.verticesDone, i = 0, j = 0, radialVector = this.tempVectors[0], normalVector = this.tempVectors[1], tempPos = this.tempVectors[2], a = this.tempVectors[3], b = this.tempVectors[4], u = this.tempVectors[5], v = this.tempVectors[6], elementOffsetStart = state.residueIndex * element.linearSegmentCount, elementOffsetEnd = elementOffsetStart + element.linearSegmentCount, elementPoints = element.controlPoints, elementPointsCount = element.linearSegmentCount + 1, torsionVectors = element.torsionVectors, normalVectors = element.normalVectors, radialSegmentCount = state.params.radialSegmentCount;
+                            var di = 1 / (elementOffsetEnd - elementOffsetStart);
                             for (i = elementOffsetStart; i <= elementOffsetEnd; i++) {
                                 this.setVector(torsionVectors, i, u);
                                 this.setVector(normalVectors, i, v);
+                                var tt = di * (i - elementOffsetStart) - 0.5;
+                                var ff = 1 + (waveFactor - 1) * (Math.cos(2 * Math.PI * tt) + 1);
+                                var w = ff * width, h = ff * height;
                                 for (j = 0; j < radialSegmentCount; j++) {
                                     var t = 2 * Math.PI * j / radialSegmentCount;
                                     a.copy(u);
                                     b.copy(v);
-                                    radialVector.addVectors(a.multiplyScalar(width * Math.cos(t)), b.multiplyScalar(height * Math.sin(t)));
+                                    radialVector.addVectors(a.multiplyScalar(w * Math.cos(t)), b.multiplyScalar(h * Math.sin(t)));
                                     a.copy(u);
                                     b.copy(v);
-                                    normalVector.addVectors(a.multiplyScalar(height * Math.cos(t)), b.multiplyScalar(width * Math.sin(t)));
+                                    normalVector.addVectors(a.multiplyScalar(h * Math.cos(t)), b.multiplyScalar(w * Math.sin(t)));
                                     normalVector.normalize();
                                     this.setVector(elementPoints, i, tempPos);
                                     tempPos.add(radialVector);
@@ -71301,6 +71303,14 @@ var LiteMol;
                                 }
                             }
                             return found;
+                        };
+                        Builder.prototype.hasP = function (index, arrays) {
+                            var start = arrays.startIndex[index], end = arrays.endIndex[index];
+                            for (var i = start; i < end; i++) {
+                                if (arrays.name[i] === "P")
+                                    return true;
+                            }
+                            return false;
                         };
                         Builder.prototype.addStrandLine = function (element, state, template, arrays, residueIndex) {
                             if (!this.findN3(residueIndex, arrays, this.tempVectors[3]))

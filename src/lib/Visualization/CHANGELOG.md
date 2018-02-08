@@ -1,4 +1,8 @@
-﻿# 1.7.5
+﻿# 1.7.6
+* Swapped direction of the camera Z axis.
+* DNA/RNA now render as "waves".
+
+# 1.7.5
 * Fixed secondary structure assigment for cartoon models.
 
 # 1.7.4

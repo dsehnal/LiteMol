@@ -2982,7 +2982,6 @@ var LiteMol;
                             ins[ins.length] = entry;
                         }
                     }
-                    console.log(annotation);
                     return annotation;
                 }
                 Api.create = create;
@@ -3028,7 +3027,7 @@ var LiteMol;
                         if (!i || i.residues.length !== 1)
                             return void 0;
                         var r = i.residues[0];
-                        var xs = Api.getEntries(this.annotation, i.modelId, r.chain.asymId, r.seqNumber, r.insCode || '');
+                        var xs = Api.getEntries(this.annotation, i.modelId, r.chain.authAsymId, r.authSeqNumber, r.insCode || '');
                         if (!xs || !xs.length)
                             return void 0;
                         return 'RNA Loops: ' + xs.map(function (x) { return "<b>" + x.type + "</b> (" + x.id + ")"; }).join(', ');

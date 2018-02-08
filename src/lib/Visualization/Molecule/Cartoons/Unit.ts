@@ -343,7 +343,7 @@ namespace LiteMol.Visualization.Molecule.Cartoons.Geometry {
             return hasP;
         }
 
-        export function  createMask(model: Core.Structure.Molecule.Model, atomIndices: number[]): boolean[] {
+        export function createMask(model: Core.Structure.Molecule.Model, atomIndices: number[]): boolean[] {
             let ret = new Uint8Array(model.data.residues.count);
             let { residueIndex, name } = model.data.atoms;
             let ssIndex = model.data.residues.secondaryStructureIndex;

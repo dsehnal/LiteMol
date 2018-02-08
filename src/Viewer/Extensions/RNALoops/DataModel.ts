@@ -65,8 +65,7 @@ namespace LiteMol.Extensions.RNALoops {
                     const ins = seq[residue.insCode] || (seq[residue.insCode] = []);
                     ins[ins.length] = entry;
                 }
-            }      
-            console.log(annotation);
+            }
             return annotation;  
         }
 
@@ -98,7 +97,7 @@ namespace LiteMol.Extensions.RNALoops {
                 if (!i || i.residues.length !== 1) return void 0;
 
                 const r = i.residues[0];
-                const xs = Api.getEntries(this.annotation, i.modelId, r.chain.asymId, r.seqNumber, r.insCode || '');
+                const xs = Api.getEntries(this.annotation, i.modelId, r.chain.authAsymId, r.authSeqNumber, r.insCode || '');
                 if (!xs || !xs.length) return void 0;                
                 return 'RNA Loops: ' + xs.map(x => `<b>${x.type}</b> (${x.id})`).join(', ');
             }

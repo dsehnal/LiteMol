@@ -9,7 +9,9 @@ namespace LiteMol.Visualization.Molecule.Cartoons.Geometry {
         turnWidth = 0.1;
 
         strandWidth = 0.15;
-        strandLineWidth = 0.1;
+        
+        nucleotideStrandLineWidth = 0.15;
+        nucleotideStrandFactor = 3;
 
         helixWidth = 1.1;
         helixHeight = 0.1;
@@ -69,7 +71,7 @@ namespace LiteMol.Visualization.Molecule.Cartoons.Geometry {
     }
 
     function makeStrandLineTemplate(ctx: Context) {
-        let radius = ctx.params.strandLineWidth, tessalation = ctx.params.tessalation;
+        let radius = ctx.params.nucleotideStrandLineWidth, tessalation = ctx.params.tessalation;
         let capPoints = 0, radiusPoints = 0, geom: THREE.Geometry;
 
         switch (tessalation) {
@@ -96,20 +98,12 @@ namespace LiteMol.Visualization.Molecule.Cartoons.Geometry {
             index: (<any>templ.attributes).index.array,
             geometry: templ
         };
-
-        let atoms = ctx.model.data.atoms, residues = ctx.model.data.residues;
-        let positions = ctx.model.positions;
-        ctx.strandArrays = {
-            startIndex: residues.atomStartIndex,
-            endIndex: residues.atomEndIndex,
-            x: positions.x, y: positions.y, z: positions.z,
-            name: atoms.name
-        };
     }
 
     export function buildUnit(unit: CartoonAsymUnit, ctx: Context) {
         let state = ctx.state, params = ctx.params;
         let builder = ctx.builder;
+
         for (let index = 0, _max = unit.residueCount; index < _max; index++) {
             state.vertexMap.startElement(unit.residueIndex[index]);
             let numVertices = state.verticesDone;
@@ -119,7 +113,8 @@ namespace LiteMol.Visualization.Molecule.Cartoons.Geometry {
             if (ctx.isTrace || unit.backboneOnly) {
                 switch (unit.residueType[index]) {
                     case Core.Structure.SecondaryStructureType.Strand:
-                        builder.addTube(unit, state, params.strandWidth, params.strandWidth);
+                        builder.addTube(unit, state, params.strandWidth, params.strandWidth, 
+                            builder.hasP(unit.residueIndex[index], ctx.strandArrays) ? params.nucleotideStrandFactor : 1);
                         if (start || end) {
                             builder.addTubeCap(unit, state, params.strandWidth, params.strandWidth, start, end);
                         }
@@ -130,7 +125,7 @@ namespace LiteMol.Visualization.Molecule.Cartoons.Geometry {
                         builder.addStrandLine(unit, state, ctx.strandTemplate, ctx.strandArrays, unit.residueIndex[index]);
                         break;
                     default:
-                        builder.addTube(unit, state, params.turnWidth, params.turnWidth);
+                        builder.addTube(unit, state, params.turnWidth, params.turnWidth, params.turnWidth);
                         if (start || end) {
                             builder.addTubeCap(unit, state, params.turnWidth, params.turnWidth, start, end);
                         }
@@ -139,7 +134,7 @@ namespace LiteMol.Visualization.Molecule.Cartoons.Geometry {
             } else {
                 switch (unit.residueType[index]) {
                     case Core.Structure.SecondaryStructureType.Helix:
-                        builder.addTube(unit, state, params.helixWidth, params.helixHeight);
+                        builder.addTube(unit, state, params.helixWidth, params.helixHeight, 1);
                         if (start) {
                             builder.addTubeCap(unit, state, params.helixWidth, params.helixHeight, true, false);
                         } else if (end) {
@@ -154,7 +149,8 @@ namespace LiteMol.Visualization.Molecule.Cartoons.Geometry {
                         }
                         break;
                     case Core.Structure.SecondaryStructureType.Strand:
-                        builder.addTube(unit, state, params.strandWidth, params.strandWidth);
+                        builder.addTube(unit, state, params.strandWidth, params.strandWidth, 
+                            builder.hasP(unit.residueIndex[index], ctx.strandArrays) ? params.nucleotideStrandFactor : 1);
                         if (start || end) {
                             builder.addTubeCap(unit, state, params.strandWidth, params.strandWidth, start, end);
                         }
@@ -165,7 +161,7 @@ namespace LiteMol.Visualization.Molecule.Cartoons.Geometry {
                         builder.addStrandLine(unit, state, ctx.strandTemplate, ctx.strandArrays, unit.residueIndex[index]);
                         break;
                     default:
-                        builder.addTube(unit, state, params.turnWidth, params.turnWidth);
+                        builder.addTube(unit, state, params.turnWidth, params.turnWidth, 1);
                         if (start || end) {
                             builder.addTubeCap(unit, state, params.turnWidth, params.turnWidth, start, end);
                         }
@@ -286,7 +282,7 @@ namespace LiteMol.Visualization.Molecule.Cartoons.Geometry {
             return v;
         }
 
-        addTube(element: CartoonAsymUnit, state: CartoonsGeometryState, width: number, height: number) {
+        addTube(element: CartoonAsymUnit, state: CartoonsGeometryState, width: number, height: number, waveFactor: number) {
             let verticesDone = state.verticesDone,
                 i = 0, j = 0,
                 radialVector = this.tempVectors[0], normalVector = this.tempVectors[1],
@@ -300,21 +296,26 @@ namespace LiteMol.Visualization.Molecule.Cartoons.Geometry {
                 normalVectors = element.normalVectors,
                 radialSegmentCount = state.params.radialSegmentCount;
 
+            const di = 1 / (elementOffsetEnd - elementOffsetStart);
+
             for (i = elementOffsetStart; i <= elementOffsetEnd; i++) {
                 this.setVector(torsionVectors, i, u);
                 this.setVector(normalVectors, i, v);
 
-                for (j = 0; j < radialSegmentCount; j++) {
+                const tt = di * (i - elementOffsetStart) - 0.5;
+                const ff = 1 + (waveFactor - 1) * (Math.cos(2 * Math.PI * tt) + 1);
+                const w = ff * width, h = ff * height;
 
+                for (j = 0; j < radialSegmentCount; j++) {
                     let t = 2 * Math.PI * j / radialSegmentCount;
 
                     a.copy(u);
                     b.copy(v);
-                    radialVector.addVectors(a.multiplyScalar(width * Math.cos(t)), b.multiplyScalar(height * Math.sin(t)));
+                    radialVector.addVectors(a.multiplyScalar(w * Math.cos(t)), b.multiplyScalar(h * Math.sin(t)));
 
                     a.copy(u);
                     b.copy(v);
-                    normalVector.addVectors(a.multiplyScalar(height * Math.cos(t)), b.multiplyScalar(width * Math.sin(t)));
+                    normalVector.addVectors(a.multiplyScalar(h * Math.cos(t)), b.multiplyScalar(w * Math.sin(t)));
                     normalVector.normalize();
 
                     this.setVector(elementPoints, i, tempPos);
@@ -515,7 +516,6 @@ namespace LiteMol.Visualization.Molecule.Cartoons.Geometry {
         }
 
         private findN3(index: number, arrays: { startIndex: number[]; endIndex: number[]; x: number[]; y: number[]; z: number[]; name: string[] }, target: THREE.Vector3) {
-
             let start = arrays.startIndex[index], end = arrays.endIndex[index];
             let found = false;
 
@@ -528,6 +528,14 @@ namespace LiteMol.Visualization.Molecule.Cartoons.Geometry {
             }
 
             return found;
+        }
+
+        hasP(index: number, arrays: { startIndex: number[]; endIndex: number[]; x: number[]; y: number[]; z: number[]; name: string[] }) {
+            let start = arrays.startIndex[index], end = arrays.endIndex[index];
+            for (let i = start; i < end; i++) {
+                if (arrays.name[i] === "P") return true;
+            }
+            return false;
         }
 
         addStrandLine(

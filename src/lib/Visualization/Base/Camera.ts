@@ -220,7 +220,7 @@ namespace LiteMol.Visualization {
         private focus() {
             this.controls.reset();
             let target = this.focusPoint;
-            this.camera.position.set(target.x, target.y, target.z - 4 * this.focusRadius);
+            this.camera.position.set(target.x, target.y, target.z + 4 * this.focusRadius);
             this.camera.lookAt(target);
             this.controls.target.set(target.x, target.y, target.z);
             this.cameraUpdated();

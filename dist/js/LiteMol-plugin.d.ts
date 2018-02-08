@@ -12144,7 +12144,8 @@ declare namespace LiteMol.Visualization.Molecule.Cartoons.Geometry {
         radialSegmentCount: number;
         turnWidth: number;
         strandWidth: number;
-        strandLineWidth: number;
+        nucleotideStrandLineWidth: number;
+        nucleotideStrandFactor: number;
         helixWidth: number;
         helixHeight: number;
         sheetWidth: number;
@@ -12181,12 +12182,20 @@ declare namespace LiteMol.Visualization.Molecule.Cartoons.Geometry {
         constructor();
         private tempVectors;
         private setVector(data, i, v);
-        addTube(element: CartoonAsymUnit, state: CartoonsGeometryState, width: number, height: number): void;
+        addTube(element: CartoonAsymUnit, state: CartoonsGeometryState, width: number, height: number, waveFactor: number): void;
         addTubeCap(element: CartoonAsymUnit, state: CartoonsGeometryState, width: number, height: number, isStart: boolean, isEnd: boolean): void;
         addSheet(element: CartoonAsymUnit, state: CartoonsGeometryState, isStart: boolean, isEnd: boolean): void;
         addSheetCap(element: CartoonAsymUnit, state: CartoonsGeometryState, isStart: boolean, isEnd: boolean): void;
         addSheepCapSection(state: CartoonsGeometryState, p1: THREE.Vector3, p2: THREE.Vector3, p3: THREE.Vector3, p4: THREE.Vector3): void;
         private findN3(index, arrays, target);
+        hasP(index: number, arrays: {
+            startIndex: number[];
+            endIndex: number[];
+            x: number[];
+            y: number[];
+            z: number[];
+            name: string[];
+        }): boolean;
         addStrandLine(element: CartoonAsymUnit, state: CartoonsGeometryState, template: {
             vertex: number[];
             normal: number[];

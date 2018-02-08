@@ -64,7 +64,12 @@ namespace LiteMol.Visualization.Molecule.Cartoons.Geometry {
             state: new CartoonsGeometryState(params, model.data.residues.count),
             units: <any>void 0,
             
-            strandArrays: <any>void 0,
+            strandArrays: {
+                startIndex: model.data.residues.atomStartIndex,
+                endIndex: model.data.residues.atomEndIndex,
+                x: model.positions.x, y: model.positions.y, z: model.positions.z,
+                name: model.data.atoms.name
+            },
             strandTemplate: <any>void 0,
             
             builder: new Builder(),
