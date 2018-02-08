@@ -19,7 +19,8 @@ namespace LiteMol.Viewer {
             'molecule.coordinateStreaming.defaultRadius': 10,
             'density.defaultVisualBehaviourRadius': 5,
 
-            'extensions.densityStreaming.defaultServer': 'https://webchem.ncbr.muni.cz/DensityServer/' // 'http://localhost:1337/DensityServer/'
+            'extensions.densityStreaming.defaultServer': 'https://webchem.ncbr.muni.cz/DensityServer/', // 'http://localhost:1337/DensityServer/'
+            'extensions.rnaLoops.defaultServer': 'http://rna.bgsu.edu/rna3dhub/loops/download/#id'
         },
         transforms: [
             // Root transforms -- things that load data.
@@ -81,7 +82,7 @@ namespace LiteMol.Viewer {
             { transformer: PDBe.SequenceAnnotation.DownloadAndCreate, view: Views.Transform.Empty, initiallyCollapsed: true },
             { transformer: PDBe.SequenceAnnotation.CreateSingle, view: PDBe.Views.CreateSequenceAnnotationView, initiallyCollapsed: true },
 
-            { transformer: Extensions.RNALoops.DownloadAndCreate, view: Views.Transform.Empty, initiallyCollapsed: true },
+            { transformer: Extensions.RNALoops.DownloadAndCreate, view: Extensions.RNALoops.CreateLoopAnnotationView, initiallyCollapsed: true },
             { transformer: Extensions.RNALoops.ApplyTheme, view: Views.Transform.Empty, initiallyCollapsed: false },
         ],
         behaviours: [

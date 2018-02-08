@@ -190,7 +190,7 @@ namespace LiteMol.Extensions.RNALoops {
     }
     
     const Create = Bootstrap.Tree.Transformer.create<Entity.Data.String, LoopAnnotation, { id?: string }>({
-            id: 'rna-loops-validation-create',
+            id: 'rna-loops-create',
             name: 'RNA Loops',
             description: 'Create the RNA loop annotation object from a string.',
             from: [Entity.Data.String],
@@ -201,30 +201,39 @@ namespace LiteMol.Extensions.RNALoops {
                 await ctx.updateProgress('Parsing...');               
 
                 const entries = Api.parseCSV(a.props.data);
+                if (!entries.length) {
+                    throw new Error(`No RNA loop annotation for '${t.params.id}' is available.`);
+                }
                 const annotation = Api.create(entries);
                 return LoopAnnotation.create(t, { label: 'RNA Loop Annotation', behaviour: new Interactivity.Behaviour(context, annotation) });
             }).setReportTime(true);
         }       
     );
-        
-    export const DownloadAndCreate = Bootstrap.Tree.Transformer.action<Entity.Molecule.Molecule, Entity.Action, { reportRef?: string }>({
+
+    export interface DownloadAndCreateProps { server: string, reportRef?: string }
+    export const DownloadAndCreate = Bootstrap.Tree.Transformer.actionWithContext<Entity.Molecule.Molecule, Entity.Action, DownloadAndCreateProps, { reportRef: string }>({
         id: 'rna-loops-download-and-create',
         name: 'BGSU RNA Loop Annotation',
         description: 'Download RNA loop annotation from BGSU',
         from: [Entity.Molecule.Molecule],
         to: [Entity.Action],
-        defaultParams: () => ({})
+        defaultParams: (ctx) => ({ server: ctx.settings.get('extensions.rnaLoops.defaultServer') })
     }, (context, a, t) => {        
-        const id = a.props.molecule.id.trim().toLocaleLowerCase();                    
+        const id = a.props.molecule.id.trim().toLocaleUpperCase();                 
+        const reportRef = t.params.reportRef || Bootstrap.Utils.generateUUID();
         const action = Bootstrap.Tree.Transform.build()
-            .add(a, Transformer.Data.Download, { url: `http://rna.bgsu.edu/rna3dhub/loops/download/${id.toUpperCase()}`, type: 'String', id, description: 'Validation Data', title: 'Validation' })
-            .then(Create, { id }, { isBinding: true, ref: t.params.reportRef });
+            .add(a, Transformer.Data.Download, { url: t.params.server.replace('#id', id), type: 'String', id, description: 'Annotation Data', title: 'RNA Annotation' })
+            .then(Create, { id }, { isBinding: true, ref: reportRef });
 
-        return action;
-    }, 
-    "BGSU RNA annotation loaded. Hovering over RNA residue will now contain loop info. To apply coloring, select the entity in the tree and apply it the right panel.",
-    "Failed to load BGSU RNA annotation.");
-    
+        return { action, context: { reportRef} };
+    }, (ctx, actionCtx) => {
+        if (!actionCtx || !ctx.select(actionCtx.reportRef).length) {
+            ctx.logger.error('Failed to load BGSU RNA annotation. Possible causes: no annotation available, server is down, server does not support HTTPS (use http:// in LiteMol URL to fix).');
+            return;
+        }
+        ctx.logger.info('BGSU RNA annotation loaded. Hovering over RNA residue will now contain loop info. To apply coloring, select the entity in the tree and apply it the right panel.');
+    });
+
     export const ApplyTheme = Bootstrap.Tree.Transformer.create<LoopAnnotation, Entity.Action, { }>({
         id: 'rna-loops-apply-theme',
         name: 'Apply Coloring',

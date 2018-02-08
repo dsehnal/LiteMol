@@ -2939,6 +2939,34 @@ var LiteMol;
     (function (Extensions) {
         var RNALoops;
         (function (RNALoops) {
+            var React = LiteMol.Plugin.React; // this is to enable the HTML-like syntax
+            var Controls = LiteMol.Plugin.Controls;
+            var CreateLoopAnnotationView = /** @class */ (function (_super) {
+                __extends(CreateLoopAnnotationView, _super);
+                function CreateLoopAnnotationView() {
+                    return _super !== null && _super.apply(this, arguments) || this;
+                }
+                CreateLoopAnnotationView.prototype.renderControls = function () {
+                    var _this = this;
+                    var params = this.params;
+                    return React.createElement("div", null,
+                        React.createElement(Controls.TextBoxGroup, { value: params.server, onChange: function (v) { return _this.updateParams({ server: v }); }, label: 'Server', title: 'The base URL of the annotation API.', onEnter: function (e) { return _this.applyEnter(e); }, placeholder: 'Enter server URL...' }));
+                };
+                return CreateLoopAnnotationView;
+            }(LiteMol.Plugin.Views.Transform.ControllerBase));
+            RNALoops.CreateLoopAnnotationView = CreateLoopAnnotationView;
+        })(RNALoops = Extensions.RNALoops || (Extensions.RNALoops = {}));
+    })(Extensions = LiteMol.Extensions || (LiteMol.Extensions = {}));
+})(LiteMol || (LiteMol = {}));
+/*
+ * Copyright (c) 2016 - now David Sehnal, licensed under Apache 2.0, See LICENSE file for more info.
+ */
+var LiteMol;
+(function (LiteMol) {
+    var Extensions;
+    (function (Extensions) {
+        var RNALoops;
+        (function (RNALoops) {
             var _this = this;
             var Entity = LiteMol.Bootstrap.Entity;
             var Transformer = LiteMol.Bootstrap.Entity.Transformer;
@@ -3113,7 +3141,7 @@ var LiteMol;
                 Theme.create = create;
             })(Theme || (Theme = {}));
             var Create = LiteMol.Bootstrap.Tree.Transformer.create({
-                id: 'rna-loops-validation-create',
+                id: 'rna-loops-create',
                 name: 'RNA Loops',
                 description: 'Create the RNA loop annotation object from a string.',
                 from: [Entity.Data.String],
@@ -3128,26 +3156,36 @@ var LiteMol;
                             case 1:
                                 _a.sent();
                                 entries = Api.parseCSV(a.props.data);
+                                if (!entries.length) {
+                                    throw new Error("No RNA loop annotation for '" + t.params.id + "' is available.");
+                                }
                                 annotation = Api.create(entries);
                                 return [2 /*return*/, RNALoops.LoopAnnotation.create(t, { label: 'RNA Loop Annotation', behaviour: new Interactivity.Behaviour(context, annotation) })];
                         }
                     });
                 }); }).setReportTime(true);
             });
-            RNALoops.DownloadAndCreate = LiteMol.Bootstrap.Tree.Transformer.action({
+            RNALoops.DownloadAndCreate = LiteMol.Bootstrap.Tree.Transformer.actionWithContext({
                 id: 'rna-loops-download-and-create',
                 name: 'BGSU RNA Loop Annotation',
                 description: 'Download RNA loop annotation from BGSU',
                 from: [Entity.Molecule.Molecule],
                 to: [Entity.Action],
-                defaultParams: function () { return ({}); }
+                defaultParams: function (ctx) { return ({ server: ctx.settings.get('extensions.rnaLoops.defaultServer') }); }
             }, function (context, a, t) {
-                var id = a.props.molecule.id.trim().toLocaleLowerCase();
+                var id = a.props.molecule.id.trim().toLocaleUpperCase();
+                var reportRef = t.params.reportRef || LiteMol.Bootstrap.Utils.generateUUID();
                 var action = LiteMol.Bootstrap.Tree.Transform.build()
-                    .add(a, Transformer.Data.Download, { url: "http://rna.bgsu.edu/rna3dhub/loops/download/" + id.toUpperCase(), type: 'String', id: id, description: 'Validation Data', title: 'Validation' })
-                    .then(Create, { id: id }, { isBinding: true, ref: t.params.reportRef });
-                return action;
-            }, "BGSU RNA annotation loaded. Hovering over RNA residue will now contain loop info. To apply coloring, select the entity in the tree and apply it the right panel.", "Failed to load BGSU RNA annotation.");
+                    .add(a, Transformer.Data.Download, { url: t.params.server.replace('#id', id), type: 'String', id: id, description: 'Annotation Data', title: 'RNA Annotation' })
+                    .then(Create, { id: id }, { isBinding: true, ref: reportRef });
+                return { action: action, context: { reportRef: reportRef } };
+            }, function (ctx, actionCtx) {
+                if (!actionCtx || !ctx.select(actionCtx.reportRef).length) {
+                    ctx.logger.error('Failed to load BGSU RNA annotation. Possible causes: no annotation available, server is down, server does not support HTTPS (use http:// in LiteMol URL to fix).');
+                    return;
+                }
+                ctx.logger.info('BGSU RNA annotation loaded. Hovering over RNA residue will now contain loop info. To apply coloring, select the entity in the tree and apply it the right panel.');
+            });
             RNALoops.ApplyTheme = LiteMol.Bootstrap.Tree.Transformer.create({
                 id: 'rna-loops-apply-theme',
                 name: 'Apply Coloring',
@@ -4551,7 +4589,8 @@ var LiteMol;
                 'molecule.downloadBinaryCIFFromCoordinateServer.server': 'https://webchem.ncbr.muni.cz/CoordinateServer',
                 'molecule.coordinateStreaming.defaultRadius': 10,
                 'density.defaultVisualBehaviourRadius': 5,
-                'extensions.densityStreaming.defaultServer': 'https://webchem.ncbr.muni.cz/DensityServer/' // 'http://localhost:1337/DensityServer/'
+                'extensions.densityStreaming.defaultServer': 'https://webchem.ncbr.muni.cz/DensityServer/',
+                'extensions.rnaLoops.defaultServer': 'http://rna.bgsu.edu/rna3dhub/loops/download/#id'
             },
             transforms: [
                 // Root transforms -- things that load data.
@@ -4600,7 +4639,7 @@ var LiteMol;
                 // annotations
                 { transformer: Viewer.PDBe.SequenceAnnotation.DownloadAndCreate, view: Views.Transform.Empty, initiallyCollapsed: true },
                 { transformer: Viewer.PDBe.SequenceAnnotation.CreateSingle, view: Viewer.PDBe.Views.CreateSequenceAnnotationView, initiallyCollapsed: true },
-                { transformer: LiteMol.Extensions.RNALoops.DownloadAndCreate, view: Views.Transform.Empty, initiallyCollapsed: true },
+                { transformer: LiteMol.Extensions.RNALoops.DownloadAndCreate, view: LiteMol.Extensions.RNALoops.CreateLoopAnnotationView, initiallyCollapsed: true },
                 { transformer: LiteMol.Extensions.RNALoops.ApplyTheme, view: Views.Transform.Empty, initiallyCollapsed: false },
             ],
             behaviours: [

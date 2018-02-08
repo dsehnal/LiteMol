@@ -440,6 +440,11 @@ declare namespace LiteMol.Extensions.ParticleColoring.UI {
     }
 }
 declare namespace LiteMol.Extensions.RNALoops {
+    class CreateLoopAnnotationView extends LiteMol.Plugin.Views.Transform.ControllerBase<Bootstrap.Components.Transform.Controller<DownloadAndCreateProps>> {
+        protected renderControls(): JSX.Element;
+    }
+}
+declare namespace LiteMol.Extensions.RNALoops {
     import Entity = Bootstrap.Entity;
     interface LoopAnnotation extends Entity<Entity.Behaviour.Props<Interactivity.Behaviour>> {
     }
@@ -480,9 +485,11 @@ declare namespace LiteMol.Extensions.RNALoops {
             constructor(context: Bootstrap.Context, annotation: Api.Annotation);
         }
     }
-    const DownloadAndCreate: Bootstrap.Tree.Transformer<Entity.Molecule.Molecule, Entity.Action, {
-        reportRef?: string | undefined;
-    }>;
+    interface DownloadAndCreateProps {
+        server: string;
+        reportRef?: string;
+    }
+    const DownloadAndCreate: Bootstrap.Tree.Transformer<Entity.Molecule.Molecule, Entity.Action, DownloadAndCreateProps>;
     const ApplyTheme: Bootstrap.Tree.Transformer<LoopAnnotation, Entity.Action, {}>;
 }
 declare namespace LiteMol.Viewer.PDBe.Data {

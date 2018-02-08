@@ -39,6 +39,7 @@
     "./Extensions/ComplexRepresentation/UI.tsx",
     "./Extensions/ParticleColoring/Coloring.ts",
     "./Extensions/ParticleColoring/UI.tsx",
+    "./Extensions/RNALoops/UI.tsx",
     "./Extensions/RNALoops/DataModel.ts",
 
     "./PDBe/Data.ts",
