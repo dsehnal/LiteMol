@@ -197,7 +197,7 @@ namespace LiteMol.Plugin {
         private ofOptions(options: PluginControllerOptions) {
             const spec = options.customSpecification ? options.customSpecification : getDefaultSpecification();
 
-            if (!options.customSpecification) {
+            if (!!options.allowAnalytics && !options.customSpecification) {
                 spec.behaviours.push(Bootstrap.Behaviour.GoogleAnalytics(options.analyticsId ? options.analyticsId : 'UA-77062725-1'));
             }
 

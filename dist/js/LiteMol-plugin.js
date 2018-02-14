@@ -81606,7 +81606,7 @@ var LiteMol;
             };
             Controller.prototype.ofOptions = function (options) {
                 var spec = options.customSpecification ? options.customSpecification : Plugin.getDefaultSpecification();
-                if (!options.customSpecification) {
+                if (!!options.allowAnalytics && !options.customSpecification) {
                     spec.behaviours.push(LiteMol.Bootstrap.Behaviour.GoogleAnalytics(options.analyticsId ? options.analyticsId : 'UA-77062725-1'));
                 }
                 var target;
