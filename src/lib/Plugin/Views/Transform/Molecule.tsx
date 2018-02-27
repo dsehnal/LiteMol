@@ -129,6 +129,14 @@ namespace LiteMol.Plugin.Views.Transform.Molecule {
             return [<Controls.OptionsGroup options={Bootstrap.Visualization.Molecule.DetailTypes} caption={s => s} current={p.detail}
                     onChange={(o) => this.controller.updateStyleParams({ detail: o }) } label='Detail' />];
         }
+
+        private cartoons() {
+            let p = this.params.style!.params as Bootstrap.Visualization.Molecule.CartoonParams;
+            return [
+                <Controls.Toggle key={0} onChange={v => this.controller.updateStyleParams({ showDirectionCone: v }) } value={p.showDirectionCone} label='Dir. Cones' />,
+                <Controls.OptionsGroup key={1} options={Bootstrap.Visualization.Molecule.DetailTypes} caption={s => s} current={p.detail}
+                    onChange={(o) => this.controller.updateStyleParams({ detail: o }) } label='Detail' />];
+        }
         
         private ballsAndSticks() {
             let p = this.params.style!.params as Bootstrap.Visualization.Molecule.BallsAndSticksParams;
@@ -200,6 +208,7 @@ namespace LiteMol.Plugin.Views.Transform.Molecule {
             switch (params.style!.type) {
                 case 'Surface': controls = this.surface(); break;
                 case 'BallsAndSticks': controls = this.ballsAndSticks(); break;
+                case 'Cartoons': controls = this.cartoons(); break;
                 default: controls = this.detail(); break;
             }
                        

@@ -5,6 +5,7 @@
 namespace LiteMol.Visualization.Molecule.Colors {
              
     export const DefaultBondColor: Color = { r: 0.6, g: 0.6, b: 0.6 };
+    export const DefaultCartoonDirectionConeColor: Color = { r: 0.85, g: 0.85, b: 0.85 };
     export const DefaultElementColor = { r: 0.6, g: 0.6, b: 0.6 };
     export const DefaultElementColorMap: Theme.ColorMap = Core.Utils.FastMap.create<string, Color>();
     export const DefaultPallete: Color[] = [];

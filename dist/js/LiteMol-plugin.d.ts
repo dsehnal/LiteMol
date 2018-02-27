@@ -12067,16 +12067,22 @@ declare namespace LiteMol.Visualization.Molecule.Cartoons.Geometry {
         geometry: THREE.BufferGeometry;
         pickGeometry: THREE.BufferGeometry;
         gapsGeometry: THREE.BufferGeometry | undefined;
+        directionConesGeometry: THREE.BufferGeometry | undefined;
         vertexMap: Selection.VertexMap;
         vertexStateBuffer: THREE.BufferAttribute;
         dispose(): void;
+    }
+    interface CreateParameters {
+        radialSegmentCount: number;
+        tessalation: number;
+        showDirectionCones: boolean;
     }
     interface Context {
         computation: Core.Computation.Context;
         model: Core.Structure.Molecule.Model;
         atomIndices: number[];
         linearSegments: number;
-        parameters: any;
+        parameters: CreateParameters;
         isTrace: boolean;
         params: CartoonsGeometryParams;
         state: CartoonsGeometryState;
@@ -12098,7 +12104,7 @@ declare namespace LiteMol.Visualization.Molecule.Cartoons.Geometry {
         builder: Builder;
         geom: Data;
     }
-    function create(model: Core.Structure.Molecule.Model, atomIndices: number[], linearSegments: number, parameters: any, isTrace: boolean, computation: Core.Computation.Context): Promise<Data>;
+    function create(model: Core.Structure.Molecule.Model, atomIndices: number[], linearSegments: number, parameters: CreateParameters, isTrace: boolean, computation: Core.Computation.Context): Promise<Data>;
 }
 declare namespace LiteMol.Visualization.Molecule.Cartoons.Geometry {
     class CartoonAsymUnit {
@@ -12165,6 +12171,9 @@ declare namespace LiteMol.Visualization.Molecule.Cartoons.Geometry {
         private vs;
         private is;
         gapsBuilder: GB.Dynamic;
+        private dCones;
+        private dConesInit;
+        readonly directionConesBuilder: GB.Dynamic;
         translationMatrix: THREE.Matrix4;
         scaleMatrix: THREE.Matrix4;
         rotationMatrix: THREE.Matrix4;
@@ -12219,12 +12228,14 @@ declare namespace LiteMol.Visualization.Molecule.Cartoons {
     interface Parameters {
         tessalation?: number;
         drawingType?: CartoonsModelType;
+        showDirectionCones?: boolean;
     }
     const DefaultCartoonsModelParameters: Parameters;
     class Model extends Visualization.Model {
         private model;
         private material;
         private gapMaterial;
+        private directionConeMaterial;
         private pickMaterial;
         private queryContext;
         private cartoons;
@@ -12247,6 +12258,7 @@ declare namespace LiteMol.Visualization.Molecule.Cartoons {
 }
 declare namespace LiteMol.Visualization.Molecule.Colors {
     const DefaultBondColor: Color;
+    const DefaultCartoonDirectionConeColor: Color;
     const DefaultElementColor: {
         r: number;
         g: number;
@@ -13038,6 +13050,9 @@ declare namespace LiteMol.Bootstrap.Visualization.Molecule {
     interface DetailParams {
         detail: DetailType;
     }
+    interface CartoonParams extends DetailParams {
+        showDirectionCone: boolean;
+    }
     interface BallsAndSticksParams extends DetailParams {
         useVDW: boolean;
         vdwScaling?: number;
@@ -13057,6 +13072,7 @@ declare namespace LiteMol.Bootstrap.Visualization.Molecule {
     }
     namespace Default {
         const DetailParams: DetailParams;
+        const CartoonParams: CartoonParams;
         const BallsAndSticksParams: BallsAndSticksParams;
         const SurfaceParams: SurfaceParams;
         const Transparency: LiteMol.Visualization.Theme.Transparency;
@@ -14335,6 +14351,7 @@ declare namespace LiteMol.Plugin.Views.Transform.Molecule {
     }
     class CreateVisual extends Transform.ControllerBase<Bootstrap.Components.Transform.MoleculeVisual> {
         private detail();
+        private cartoons();
         private ballsAndSticks();
         private surface();
         private createColors();

@@ -1,4 +1,7 @@
-﻿# 1.7.6
+﻿# 1.7.7
+* Added optional "direction cones" to cartoons.
+
+# 1.7.6
 * Swapped direction of the camera Z axis.
 * DNA/RNA now render as "waves".
 

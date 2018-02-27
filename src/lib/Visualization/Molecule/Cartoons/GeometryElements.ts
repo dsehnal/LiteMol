@@ -44,6 +44,15 @@ namespace LiteMol.Visualization.Molecule.Cartoons.Geometry {
 
         gapsBuilder = GB.createDynamic(256, 512);
 
+        private dCones = GB.createDynamic(1, 1);
+        private dConesInit = false;
+        get directionConesBuilder() {
+            if (this.dConesInit) return this.dCones;
+            this.dConesInit = true;
+            this.dCones = GB.createDynamic(this.residueCount, this.residueCount);
+            return this.dCones;
+        }
+
         translationMatrix: THREE.Matrix4 = new THREE.Matrix4();
         scaleMatrix: THREE.Matrix4 = new THREE.Matrix4();
         rotationMatrix: THREE.Matrix4 = new THREE.Matrix4();
@@ -168,6 +177,9 @@ namespace LiteMol.Visualization.Molecule.Cartoons.Geometry {
                         break;
                 }
             }
+            if (ctx.parameters.showDirectionCones && unit.residueType[index] !== Core.Structure.SecondaryStructureType.Strand) {
+                renderDirectionCone(ctx, unit, 2 * params.sheetHeight, index);
+            }
 
             state.vertexMap.addVertexRange(numVertices, state.verticesDone);
             state.vertexMap.endElement();
@@ -180,12 +192,45 @@ namespace LiteMol.Visualization.Molecule.Cartoons.Geometry {
     }
 
     import Vec3 = Core.Geometry.LinearAlgebra.Vector3
+    import Mat4 = Core.Geometry.LinearAlgebra.Matrix4
     function renderGap(ctx: Context, unitA: CartoonAsymUnit, unitB: CartoonAsymUnit) {
         const aL = unitA.controlPoints.length;
         const cpA = unitA.controlPoints, cpB = unitB.controlPoints;
         const a = Vec3.fromValues(cpA[aL - 3], cpA[aL - 2], cpA[aL - 1]), b = Vec3.fromValues(cpB[0], cpB[1], cpB[2]);
         const r = ctx.state.params.turnWidth / 2;
         GB.addDashedLine(ctx.state.gapsBuilder, a, b, 0.5, 0.5, r);
+    }
+
+    const coneTemplate = (function() {
+        const geom = new THREE.CylinderGeometry(0, 1, 1, 6, 1);
+        const ret = GeometryHelper.toRawGeometry(geom);
+        geom.dispose();
+        return ret;
+    })();
+    const coneDirection = Vec3.zero(), coneUp = Vec3.fromValues(0, 1, 0), coneA = Vec3.zero(), coneB = Vec3.zero(), coneTranslation = Vec3.zero(), coneScale = Vec3.zero(), coneRotation = Mat4.identity();
+
+    function renderDirectionCone(ctx: Context, unit: CartoonAsymUnit, radius: number, residueIndex: number) {
+        if (unit.residueCount <= 2) return;
+
+        const cp = unit.controlPoints;
+        const i = residueIndex * unit.linearSegmentCount + ((0.35 * unit.linearSegmentCount + 1) | 0);
+        const j = residueIndex * unit.linearSegmentCount + ((0.85 * unit.linearSegmentCount + 1) | 0);
+
+        if (i === j || 3 * j > cp.length) return;
+
+        Vec3.set(coneTranslation, cp[3 * i], cp[3 * i + 1], cp[3 * i + 2]);        
+        Vec3.set(coneA, cp[3 * i], cp[3 * i + 1], cp[3 * i + 2]);
+        Vec3.set(coneB, cp[3 * j], cp[3 * j + 1], cp[3 * j + 2]);
+        Vec3.sub(coneA, coneB, coneA);
+
+        const l = Vec3.magnitude(coneA);
+        if (l <= 0.1) return;
+
+        Vec3.set(coneScale, 2 * radius, l, 2 * radius);
+        Vec3.normalize(coneA, coneA);
+        Vec3.makeRotation(coneRotation, coneUp, coneA);
+
+        GB.addRawTransformed(ctx.state.directionConesBuilder, coneTemplate, coneScale, coneTranslation, coneRotation);
     }
 
     export async function buildUnitsAsync(ctx: Context): Promise<void> {
@@ -231,6 +276,10 @@ namespace LiteMol.Visualization.Molecule.Cartoons.Geometry {
 
         if (state.gapsBuilder.vertices.elementCount) {
             ctx.geom.gapsGeometry = GB.toBufferGeometry(state.gapsBuilder);
+        }
+
+        if (state.directionConesBuilder.vertices.elementCount) {
+            ctx.geom.directionConesGeometry = GB.toBufferGeometry(state.directionConesBuilder);
         }
 
         let map = ctx.geom.vertexMap,

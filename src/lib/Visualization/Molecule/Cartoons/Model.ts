@@ -7,23 +7,24 @@ namespace LiteMol.Visualization.Molecule.Cartoons {
 
     export enum CartoonsModelType { Default, AlphaTrace };
 
-    export interface Parameters {
-        
+    export interface Parameters {        
         tessalation?: number,
-        drawingType?: CartoonsModelType
+        drawingType?: CartoonsModelType,
+        showDirectionCones?: boolean
     }
     
     export const DefaultCartoonsModelParameters: Parameters = {
         tessalation: 3,
-        drawingType: CartoonsModelType.Default
+        drawingType: CartoonsModelType.Default,
+        showDirectionCones: true
     } 
-
   
     export class Model extends Visualization.Model {
         
         private model: Core.Structure.Molecule.Model;
         private material: THREE.ShaderMaterial;
         private gapMaterial: THREE.MeshPhongMaterial;
+        private directionConeMaterial: THREE.MeshPhongMaterial;
         private pickMaterial: THREE.Material;
         private queryContext: Core.Structure.Query.Context;
 
@@ -85,8 +86,7 @@ namespace LiteMol.Visualization.Molecule.Cartoons {
             return Selection.applyActionToBuffer(this.cartoons.vertexStateBuffer, isOn ? Selection.Action.Highlight : Selection.Action.RemoveHighlight);
         }
         
-        private applyColoring(theme: Theme) {
-            
+        private applyColoring(theme: Theme) {            
             let {atomStartIndex, atomEndIndex} = this.model.data.residues;
             
             let color = { r: 0.1, g: 0.1, b: 0.1 };
@@ -137,25 +137,33 @@ namespace LiteMol.Visualization.Molecule.Cartoons {
             //     this.gapMaterial.color = new THREE.Color(gapColor.r, gapColor.g, gapColor.b);
             //     this.gapMaterial.needsUpdate = true;
             // }
+
+            // const dcColor = Theme.getColor(theme, 'DirectionCone', Colors.DefaultCartoonDirectionConeColor);
+            // const dc = this.gapMaterial.color;
+            // if (dcColor.r !== dc.r || dcColor.g !== dc.g || dcColor.b !== dc.b) {
+            //     this.directionConeMaterial.color = new THREE.Color(dcColor.r, dcColor.g, dcColor.b);
+            //     this.directionConeMaterial.needsUpdate = true;
+            // }
         }
         
         protected applyThemeInternal(theme: Theme) {
             this.applyColoring(theme);
             MaterialsHelper.updateMaterial(this.material, theme, this.object);
-            MaterialsHelper.updateMaterial(this.gapMaterial, theme, this.object);            
+            MaterialsHelper.updateMaterial(this.gapMaterial, theme, this.object);
+            MaterialsHelper.updateMaterial(this.directionConeMaterial, theme, this.object);
         }
 
         private createObjects(): { main: THREE.Object3D; pick: THREE.Object3D } {
-            let main;
+            const main = new THREE.Object3D();
+            main.add(new THREE.Mesh(this.cartoons.geometry, this.material))
             if (this.cartoons.gapsGeometry) {
-                main = new THREE.Object3D();
-                main.add(new THREE.Mesh(this.cartoons.geometry, this.material));
                 main.add(new THREE.Mesh(this.cartoons.gapsGeometry, this.gapMaterial));
-            } else {
-                main = new THREE.Mesh(this.cartoons.geometry, this.material)
+            }
+            if (this.cartoons.directionConesGeometry) {
+                main.add(new THREE.Mesh(this.cartoons.directionConesGeometry, this.directionConeMaterial));
             }
             return {
-                main,
+                main: main.children.length > 1 ? main : main.children[0],
                 pick: new THREE.Mesh(this.cartoons.pickGeometry, this.pickMaterial)
             };
         }
@@ -183,7 +191,7 @@ namespace LiteMol.Visualization.Molecule.Cartoons {
                 
                 params = Core.Utils.extend({}, params, DefaultCartoonsModelParameters);                
                 switch (params.tessalation) {
-                    case 0: linearSegments = 1; radialSements = 2; break;
+                    case 0: linearSegments = 2; radialSements = 2; break;
                     case 1: linearSegments = 4; radialSements = 3; break;
                     case 2: linearSegments = 6; radialSements = 5; break;
                     case 3: linearSegments = 10; radialSements = 8; break;
@@ -195,7 +203,8 @@ namespace LiteMol.Visualization.Molecule.Cartoons {
                 
                 let cartoons = await Geometry.create(model, atomIndices, linearSegments, {
                     radialSegmentCount: radialSements,
-                    tessalation: params.tessalation
+                    tessalation: +params.tessalation!,
+                    showDirectionCones: !!params.showDirectionCones
                 }, params.drawingType === CartoonsModelType.AlphaTrace, ctx)
                                                                 
                 let ret = new Model();
@@ -203,6 +212,7 @@ namespace LiteMol.Visualization.Molecule.Cartoons {
                 ret.queryContext = queryContext;   
                 ret.material = MaterialsHelper.getMeshMaterial();
                 ret.gapMaterial = new THREE.MeshPhongMaterial({ color: 0x777777, shading: THREE.FlatShading });
+                ret.directionConeMaterial = new THREE.MeshPhongMaterial({ color: 0x999999, shading: THREE.FlatShading });
                 ret.pickMaterial = MaterialsHelper.getPickMaterial();     
                 if (props) ret.props = props;
         
@@ -219,7 +229,7 @@ namespace LiteMol.Visualization.Molecule.Cartoons {
                 ret.model = model;
                 ret.applyTheme(theme);
 
-                ret.disposeList.push(ret.cartoons, ret.material, ret.pickMaterial, ret.gapMaterial);
+                ret.disposeList.push(ret.cartoons, ret.material, ret.pickMaterial, ret.gapMaterial, ret.directionConeMaterial);
                 
                 return ret;
             });

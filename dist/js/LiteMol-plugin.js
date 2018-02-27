@@ -65801,7 +65801,7 @@ var LiteMol;
 (function (LiteMol) {
     var Visualization;
     (function (Visualization) {
-        Visualization.VERSION = { number: "1.7.6", date: "Feb 8 2018" };
+        Visualization.VERSION = { number: "1.7.7", date: "Feb 27 2018" };
     })(Visualization = LiteMol.Visualization || (LiteMol.Visualization = {}));
 })(LiteMol || (LiteMol = {}));
 var LiteMol;
@@ -70189,6 +70189,7 @@ var LiteMol;
                             _this.geometry = void 0;
                             _this.pickGeometry = void 0;
                             _this.gapsGeometry = void 0;
+                            _this.directionConesGeometry = void 0;
                             _this.vertexMap = void 0;
                             _this.vertexStateBuffer = void 0;
                             return _this;
@@ -70198,6 +70199,9 @@ var LiteMol;
                             this.pickGeometry.dispose();
                             if (this.gapsGeometry) {
                                 this.gapsGeometry.dispose();
+                            }
+                            if (this.directionConesGeometry) {
+                                this.directionConesGeometry.dispose();
                             }
                         };
                         return Data;
@@ -70915,6 +70919,8 @@ var LiteMol;
                             this.vs = this.builder.vertices;
                             this.is = this.builder.indices;
                             this.gapsBuilder = GB.createDynamic(256, 512);
+                            this.dCones = GB.createDynamic(1, 1);
+                            this.dConesInit = false;
                             this.translationMatrix = new Visualization.THREE.Matrix4();
                             this.scaleMatrix = new Visualization.THREE.Matrix4();
                             this.rotationMatrix = new Visualization.THREE.Matrix4();
@@ -70931,6 +70937,17 @@ var LiteMol;
                         Object.defineProperty(CartoonsGeometryState.prototype, "trianglesDone", {
                             get: function () {
                                 return this.is.elementCount;
+                            },
+                            enumerable: true,
+                            configurable: true
+                        });
+                        Object.defineProperty(CartoonsGeometryState.prototype, "directionConesBuilder", {
+                            get: function () {
+                                if (this.dConesInit)
+                                    return this.dCones;
+                                this.dConesInit = true;
+                                this.dCones = GB.createDynamic(this.residueCount, this.residueCount);
+                                return this.dCones;
                             },
                             enumerable: true,
                             configurable: true
@@ -71060,6 +71077,9 @@ var LiteMol;
                                         break;
                                 }
                             }
+                            if (ctx.parameters.showDirectionCones && unit.residueType[index] !== 5 /* Strand */) {
+                                renderDirectionCone(ctx, unit, 2 * params.sheetHeight, index);
+                            }
                             state.vertexMap.addVertexRange(numVertices, state.verticesDone);
                             state.vertexMap.endElement();
                         }
@@ -71070,12 +71090,40 @@ var LiteMol;
                         return chainIndex[a.endResidueIndex] === chainIndex[b.endResidueIndex];
                     }
                     var Vec3 = LiteMol.Core.Geometry.LinearAlgebra.Vector3;
+                    var Mat4 = LiteMol.Core.Geometry.LinearAlgebra.Matrix4;
                     function renderGap(ctx, unitA, unitB) {
                         var aL = unitA.controlPoints.length;
                         var cpA = unitA.controlPoints, cpB = unitB.controlPoints;
                         var a = Vec3.fromValues(cpA[aL - 3], cpA[aL - 2], cpA[aL - 1]), b = Vec3.fromValues(cpB[0], cpB[1], cpB[2]);
                         var r = ctx.state.params.turnWidth / 2;
                         GB.addDashedLine(ctx.state.gapsBuilder, a, b, 0.5, 0.5, r);
+                    }
+                    var coneTemplate = (function () {
+                        var geom = new Visualization.THREE.CylinderGeometry(0, 1, 1, 6, 1);
+                        var ret = Visualization.GeometryHelper.toRawGeometry(geom);
+                        geom.dispose();
+                        return ret;
+                    })();
+                    var coneDirection = Vec3.zero(), coneUp = Vec3.fromValues(0, 1, 0), coneA = Vec3.zero(), coneB = Vec3.zero(), coneTranslation = Vec3.zero(), coneScale = Vec3.zero(), coneRotation = Mat4.identity();
+                    function renderDirectionCone(ctx, unit, radius, residueIndex) {
+                        if (unit.residueCount <= 2)
+                            return;
+                        var cp = unit.controlPoints;
+                        var i = residueIndex * unit.linearSegmentCount + ((0.35 * unit.linearSegmentCount + 1) | 0);
+                        var j = residueIndex * unit.linearSegmentCount + ((0.85 * unit.linearSegmentCount + 1) | 0);
+                        if (i === j || 3 * j > cp.length)
+                            return;
+                        Vec3.set(coneTranslation, cp[3 * i], cp[3 * i + 1], cp[3 * i + 2]);
+                        Vec3.set(coneA, cp[3 * i], cp[3 * i + 1], cp[3 * i + 2]);
+                        Vec3.set(coneB, cp[3 * j], cp[3 * j + 1], cp[3 * j + 2]);
+                        Vec3.sub(coneA, coneB, coneA);
+                        var l = Vec3.magnitude(coneA);
+                        if (l <= 0.1)
+                            return;
+                        Vec3.set(coneScale, 2 * radius, l, 2 * radius);
+                        Vec3.normalize(coneA, coneA);
+                        Vec3.makeRotation(coneRotation, coneUp, coneA);
+                        GB.addRawTransformed(ctx.state.directionConesBuilder, coneTemplate, coneScale, coneTranslation, coneRotation);
                     }
                     function buildUnitsAsync(ctx) {
                         return __awaiter(this, void 0, void 0, function () {
@@ -71125,6 +71173,9 @@ var LiteMol;
                         ctx.geom.geometry = geometry;
                         if (state.gapsBuilder.vertices.elementCount) {
                             ctx.geom.gapsGeometry = GB.toBufferGeometry(state.gapsBuilder);
+                        }
+                        if (state.directionConesBuilder.vertices.elementCount) {
+                            ctx.geom.directionConesGeometry = GB.toBufferGeometry(state.directionConesBuilder);
                         }
                         var map = ctx.geom.vertexMap, color = { r: 0.45, g: 0.45, b: 0.45 }, vertexRanges = map.vertexRanges;
                         for (var _i = 0, _a = map.elementIndices; _i < _a.length; _i++) {
@@ -71361,7 +71412,8 @@ var LiteMol;
                 ;
                 Cartoons.DefaultCartoonsModelParameters = {
                     tessalation: 3,
-                    drawingType: CartoonsModelType.Default
+                    drawingType: CartoonsModelType.Default,
+                    showDirectionCones: true
                 };
                 var Model = /** @class */ (function (_super) {
                     __extends(Model, _super);
@@ -71454,24 +71506,30 @@ var LiteMol;
                         //     this.gapMaterial.color = new THREE.Color(gapColor.r, gapColor.g, gapColor.b);
                         //     this.gapMaterial.needsUpdate = true;
                         // }
+                        // const dcColor = Theme.getColor(theme, 'DirectionCone', Colors.DefaultCartoonDirectionConeColor);
+                        // const dc = this.gapMaterial.color;
+                        // if (dcColor.r !== dc.r || dcColor.g !== dc.g || dcColor.b !== dc.b) {
+                        //     this.directionConeMaterial.color = new THREE.Color(dcColor.r, dcColor.g, dcColor.b);
+                        //     this.directionConeMaterial.needsUpdate = true;
+                        // }
                     };
                     Model.prototype.applyThemeInternal = function (theme) {
                         this.applyColoring(theme);
                         Visualization.MaterialsHelper.updateMaterial(this.material, theme, this.object);
                         Visualization.MaterialsHelper.updateMaterial(this.gapMaterial, theme, this.object);
+                        Visualization.MaterialsHelper.updateMaterial(this.directionConeMaterial, theme, this.object);
                     };
                     Model.prototype.createObjects = function () {
-                        var main;
+                        var main = new Visualization.THREE.Object3D();
+                        main.add(new Visualization.THREE.Mesh(this.cartoons.geometry, this.material));
                         if (this.cartoons.gapsGeometry) {
-                            main = new Visualization.THREE.Object3D();
-                            main.add(new Visualization.THREE.Mesh(this.cartoons.geometry, this.material));
                             main.add(new Visualization.THREE.Mesh(this.cartoons.gapsGeometry, this.gapMaterial));
                         }
-                        else {
-                            main = new Visualization.THREE.Mesh(this.cartoons.geometry, this.material);
+                        if (this.cartoons.directionConesGeometry) {
+                            main.add(new Visualization.THREE.Mesh(this.cartoons.directionConesGeometry, this.directionConeMaterial));
                         }
                         return {
-                            main: main,
+                            main: main.children.length > 1 ? main : main.children[0],
                             pick: new Visualization.THREE.Mesh(this.cartoons.pickGeometry, this.pickMaterial)
                         };
                     };
@@ -71490,7 +71548,7 @@ var LiteMol;
                                         params = LiteMol.Core.Utils.extend({}, params, Cartoons.DefaultCartoonsModelParameters);
                                         switch (params.tessalation) {
                                             case 0:
-                                                linearSegments = 1;
+                                                linearSegments = 2;
                                                 radialSements = 2;
                                                 break;
                                             case 1:
@@ -71520,7 +71578,8 @@ var LiteMol;
                                         }
                                         return [4 /*yield*/, Cartoons.Geometry.create(model, atomIndices, linearSegments, {
                                                 radialSegmentCount: radialSements,
-                                                tessalation: params.tessalation
+                                                tessalation: +params.tessalation,
+                                                showDirectionCones: !!params.showDirectionCones
                                             }, params.drawingType === CartoonsModelType.AlphaTrace, ctx)];
                                     case 2:
                                         cartoons = _c.sent();
@@ -71529,6 +71588,7 @@ var LiteMol;
                                         ret.queryContext = queryContext;
                                         ret.material = Visualization.MaterialsHelper.getMeshMaterial();
                                         ret.gapMaterial = new Visualization.THREE.MeshPhongMaterial({ color: 0x777777, shading: Visualization.THREE.FlatShading });
+                                        ret.directionConeMaterial = new Visualization.THREE.MeshPhongMaterial({ color: 0x999999, shading: Visualization.THREE.FlatShading });
                                         ret.pickMaterial = Visualization.MaterialsHelper.getPickMaterial();
                                         if (props)
                                             ret.props = props;
@@ -71542,7 +71602,7 @@ var LiteMol;
                                         ret.pickBufferAttributes = [ret.cartoons.pickGeometry.attributes.pColor];
                                         ret.model = model;
                                         ret.applyTheme(theme);
-                                        ret.disposeList.push(ret.cartoons, ret.material, ret.pickMaterial, ret.gapMaterial);
+                                        ret.disposeList.push(ret.cartoons, ret.material, ret.pickMaterial, ret.gapMaterial, ret.directionConeMaterial);
                                         return [2 /*return*/, ret];
                                 }
                             });
@@ -71567,6 +71627,7 @@ var LiteMol;
             var Colors;
             (function (Colors) {
                 Colors.DefaultBondColor = { r: 0.6, g: 0.6, b: 0.6 };
+                Colors.DefaultCartoonDirectionConeColor = { r: 0.85, g: 0.85, b: 0.85 };
                 Colors.DefaultElementColor = { r: 0.6, g: 0.6, b: 0.6 };
                 Colors.DefaultElementColorMap = LiteMol.Core.Utils.FastMap.create();
                 Colors.DefaultPallete = [];
@@ -74675,6 +74736,10 @@ var LiteMol;
                 var Default;
                 (function (Default) {
                     Default.DetailParams = { detail: 'Automatic' };
+                    Default.CartoonParams = {
+                        showDirectionCone: false,
+                        detail: 'Automatic'
+                    };
                     Default.BallsAndSticksParams = {
                         useVDW: true,
                         vdwScaling: 0.22,
@@ -74694,7 +74759,7 @@ var LiteMol;
                     Default.Transparency = { alpha: 1.0, writeDepth: false };
                     Default.ForType = (function () {
                         var types = {
-                            'Cartoons': { type: 'Cartoons', params: { detail: 'Automatic' }, theme: { template: Default.CartoonThemeTemplate, colors: Default.CartoonThemeTemplate.colors, transparency: Default.Transparency, interactive: true } },
+                            'Cartoons': { type: 'Cartoons', params: Default.CartoonParams, theme: { template: Default.CartoonThemeTemplate, colors: Default.CartoonThemeTemplate.colors, transparency: Default.Transparency, interactive: true } },
                             'Calpha': { type: 'Calpha', params: { detail: 'Automatic' }, theme: { template: Default.CartoonThemeTemplate, colors: Default.CartoonThemeTemplate.colors, transparency: Default.Transparency, interactive: true } },
                             'BallsAndSticks': { type: 'BallsAndSticks', params: Default.BallsAndSticksParams, theme: { template: Default.ElementSymbolThemeTemplate, colors: Default.ElementSymbolThemeTemplate.colors, transparency: Default.Transparency, interactive: true } },
                             'VDWBalls': { type: 'VDWBalls', params: { detail: 'Automatic' }, theme: { template: Default.ElementSymbolThemeTemplate, colors: Default.ElementSymbolThemeTemplate.colors, transparency: Default.Transparency, interactive: true } },
@@ -74758,12 +74823,13 @@ var LiteMol;
                         return +params.density;
                     return 1.0;
                 }
-                function createCartoonParams(tessalation, isAlphaTrace) {
+                function createCartoonParams(tessalation, isAlphaTrace, showCones) {
                     return {
                         tessalation: tessalation,
                         drawingType: isAlphaTrace
                             ? MolVis.Cartoons.CartoonsModelType.AlphaTrace
-                            : MolVis.Cartoons.CartoonsModelType.Default
+                            : MolVis.Cartoons.CartoonsModelType.Default,
+                        showDirectionCones: showCones
                     };
                 }
                 function makeRadiusFunc(model, parameters) {
@@ -74815,9 +74881,9 @@ var LiteMol;
                     var tessalation = getTessalation(style.params.detail, atomIndices.length);
                     switch (style.type) {
                         case 'Cartoons':
-                            return MolVis.Cartoons.Model.create(source, { model: model, atomIndices: atomIndices, theme: theme, queryContext: Bootstrap.Utils.Molecule.findQueryContext(source), params: createCartoonParams(tessalation, false) });
+                            return MolVis.Cartoons.Model.create(source, { model: model, atomIndices: atomIndices, theme: theme, queryContext: Bootstrap.Utils.Molecule.findQueryContext(source), params: createCartoonParams(tessalation, false, style.params.showDirectionCone) });
                         case 'Calpha':
-                            return MolVis.Cartoons.Model.create(source, { model: model, atomIndices: atomIndices, theme: theme, queryContext: Bootstrap.Utils.Molecule.findQueryContext(source), params: createCartoonParams(tessalation, true) });
+                            return MolVis.Cartoons.Model.create(source, { model: model, atomIndices: atomIndices, theme: theme, queryContext: Bootstrap.Utils.Molecule.findQueryContext(source), params: createCartoonParams(tessalation, true, style.params.showDirectionCone) });
                         case 'BallsAndSticks':
                             return Vis.Molecule.BallsAndSticks.Model.create(source, { model: model, atomIndices: atomIndices, theme: theme, params: createBallsAndSticksParams(tessalation, model, style.params) });
                         case 'VDWBalls':
@@ -80198,6 +80264,14 @@ var LiteMol;
                             var p = this.params.style.params;
                             return [Plugin.React.createElement(Plugin.Controls.OptionsGroup, { options: LiteMol.Bootstrap.Visualization.Molecule.DetailTypes, caption: function (s) { return s; }, current: p.detail, onChange: function (o) { return _this.controller.updateStyleParams({ detail: o }); }, label: 'Detail' })];
                         };
+                        CreateVisual.prototype.cartoons = function () {
+                            var _this = this;
+                            var p = this.params.style.params;
+                            return [
+                                Plugin.React.createElement(Plugin.Controls.Toggle, { key: 0, onChange: function (v) { return _this.controller.updateStyleParams({ showDirectionCone: v }); }, value: p.showDirectionCone, label: 'Dir. Cones' }),
+                                Plugin.React.createElement(Plugin.Controls.OptionsGroup, { key: 1, options: LiteMol.Bootstrap.Visualization.Molecule.DetailTypes, caption: function (s) { return s; }, current: p.detail, onChange: function (o) { return _this.controller.updateStyleParams({ detail: o }); }, label: 'Detail' })
+                            ];
+                        };
                         CreateVisual.prototype.ballsAndSticks = function () {
                             var _this = this;
                             var p = this.params.style.params;
@@ -80253,6 +80327,9 @@ var LiteMol;
                                     break;
                                 case 'BallsAndSticks':
                                     controls = this.ballsAndSticks();
+                                    break;
+                                case 'Cartoons':
+                                    controls = this.cartoons();
                                     break;
                                 default:
                                     controls = this.detail();

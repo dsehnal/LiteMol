@@ -35,12 +35,13 @@ namespace LiteMol.Bootstrap.Visualization.Molecule {
         return 1.0;
     }
     
-    function createCartoonParams(tessalation: number, isAlphaTrace: boolean): MolVis.Cartoons.Parameters {
+    function createCartoonParams(tessalation: number, isAlphaTrace: boolean, showCones: boolean): MolVis.Cartoons.Parameters {
         return { 
             tessalation,
             drawingType: isAlphaTrace
                 ? MolVis.Cartoons.CartoonsModelType.AlphaTrace
-                : MolVis.Cartoons.CartoonsModelType.Default
+                : MolVis.Cartoons.CartoonsModelType.Default,
+            showDirectionCones: showCones
         };
     }
     
@@ -98,9 +99,9 @@ namespace LiteMol.Bootstrap.Visualization.Molecule {
                 
         switch (style.type) {
             case 'Cartoons': 
-                return MolVis.Cartoons.Model.create(source, { model, atomIndices, theme, queryContext: Utils.Molecule.findQueryContext(source), params: createCartoonParams(tessalation, false) });
+                return MolVis.Cartoons.Model.create(source, { model, atomIndices, theme, queryContext: Utils.Molecule.findQueryContext(source), params: createCartoonParams(tessalation, false, (style.params as CartoonParams).showDirectionCone) });
             case 'Calpha':
-                return MolVis.Cartoons.Model.create(source, { model, atomIndices, theme, queryContext: Utils.Molecule.findQueryContext(source), params: createCartoonParams(tessalation, true) });
+                return MolVis.Cartoons.Model.create(source, { model, atomIndices, theme, queryContext: Utils.Molecule.findQueryContext(source), params: createCartoonParams(tessalation, true, (style.params as CartoonParams).showDirectionCone) });
             case 'BallsAndSticks': 
                 return Vis.Molecule.BallsAndSticks.Model.create(source, { model, atomIndices, theme, params: createBallsAndSticksParams(tessalation, model, style.params as BallsAndSticksParams) });
             case 'VDWBalls':

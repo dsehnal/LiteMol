@@ -26,6 +26,10 @@ namespace LiteMol.Bootstrap.Visualization.Molecule {
     export interface DetailParams {
         detail: DetailType
     }
+
+    export interface CartoonParams extends DetailParams {
+        showDirectionCone: boolean
+    }
         
     export interface BallsAndSticksParams extends DetailParams {
         useVDW: boolean,
@@ -46,6 +50,11 @@ namespace LiteMol.Bootstrap.Visualization.Molecule {
     
     export namespace Default {        
         export const DetailParams:DetailParams = { detail: 'Automatic' }
+
+        export const CartoonParams: CartoonParams = {
+            showDirectionCone: false,
+            detail: 'Automatic'
+        };
         
         export const BallsAndSticksParams: BallsAndSticksParams = {
             useVDW: true,
@@ -69,7 +78,7 @@ namespace LiteMol.Bootstrap.Visualization.Molecule {
                     
         export const ForType: Map<Type, Style<any>> = (function() {    
             let types = {
-                'Cartoons': { type: 'Cartoons', params: { detail: 'Automatic' }, theme: { template: CartoonThemeTemplate, colors: CartoonThemeTemplate.colors, transparency: Transparency, interactive: true } },
+                'Cartoons': { type: 'Cartoons', params: CartoonParams, theme: { template: CartoonThemeTemplate, colors: CartoonThemeTemplate.colors, transparency: Transparency, interactive: true } },
                 'Calpha': { type: 'Calpha', params: { detail: 'Automatic' }, theme: { template: CartoonThemeTemplate, colors: CartoonThemeTemplate.colors, transparency: Transparency, interactive: true } },
                 'BallsAndSticks': { type: 'BallsAndSticks', params: BallsAndSticksParams, theme: { template: ElementSymbolThemeTemplate, colors: ElementSymbolThemeTemplate.colors, transparency: Transparency, interactive: true } },
                 'VDWBalls': { type: 'VDWBalls', params: { detail: 'Automatic' }, theme: { template: ElementSymbolThemeTemplate, colors: ElementSymbolThemeTemplate.colors, transparency: Transparency, interactive: true } },
