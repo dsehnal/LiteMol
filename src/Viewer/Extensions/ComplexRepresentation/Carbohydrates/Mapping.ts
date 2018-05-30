@@ -124,7 +124,7 @@ namespace LiteMol.Extensions.ComplexReprensetation.Carbohydrates.Mapping {
                 glycam: { colorA: '#0090bc', colorB: '#f1ece1', names: ['0YN', '3YN', '4YN', '6YN', 'WYN', 'VYN', 'UYN', 'QYN', '3Yn', '4Yn', 'WYn', '0Yn', '0YP', '3YP', '4YP', '6YP', 'WYP', 'VYP', 'UYP', 'QYP', '0Yp', '3Yp', '4Yp', 'WYp'] },
             }, {
                 name: 'ManN',
-                common: { colorA: '#00a651', colorB: '#f1ece1', names: [] },
+                common: { colorA: '#00a651', colorB: '#f1ece1', names: ['95Z'] },
                 charmm: { colorA: '#00a651', colorB: '#f1ece1', names: [] },
                 glycam: { colorA: '#00a651', colorB: '#f1ece1', names: [] },
             }, {
