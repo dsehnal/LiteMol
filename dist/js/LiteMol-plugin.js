@@ -58727,7 +58727,7 @@ var LiteMol;
                         Tokenizer.prototype.moveToEndOfLine = function () {
                             while (this.position < this.length) {
                                 var c = this.data.charCodeAt(this.position);
-                                if (c === 10 || c === 13) { //  /n | /r
+                                if (c === 10 || c === 13) {
                                     return this.position;
                                 }
                                 this.position++;
@@ -58772,7 +58772,7 @@ var LiteMol;
                             this.trim(start, start + 4);
                             Formats.TokenIndexBuilder.addToken(tokens, this.trimmedToken.start, this.trimmedToken.end);
                             //17             Character       Alternate location indicator. 
-                            if (this.data.charCodeAt(startPos + 16) === 32) { // ' '
+                            if (this.data.charCodeAt(startPos + 16) === 32) {
                                 Formats.TokenIndexBuilder.addToken(tokens, 0, 0);
                             }
                             else {
@@ -58789,7 +58789,7 @@ var LiteMol;
                             this.trim(start, start + 4);
                             Formats.TokenIndexBuilder.addToken(tokens, this.trimmedToken.start, this.trimmedToken.end);
                             //27             AChar           Code for insertion of residues.      
-                            if (this.data.charCodeAt(startPos + 26) === 32) { // ' '
+                            if (this.data.charCodeAt(startPos + 26) === 32) {
                                 Formats.TokenIndexBuilder.addToken(tokens, 0, 0);
                             }
                             else {
@@ -58862,7 +58862,7 @@ var LiteMol;
                             while (tokenizer.position < length) {
                                 var cont = true;
                                 switch (data.charCodeAt(tokenizer.position)) {
-                                    case 65: // A 
+                                    case 65:// A 
                                         if (tokenizer.startsWith(tokenizer.position, "ATOM")) {
                                             if (!modelAtomTokens) {
                                                 modelAtomTokens = Formats.TokenIndexBuilder.create(4096);
@@ -58873,14 +58873,14 @@ var LiteMol;
                                                 return err;
                                         }
                                         break;
-                                    case 67: // C
+                                    case 67:// C
                                         if (tokenizer.startsWith(tokenizer.position, "CRYST1")) {
                                             var start = tokenizer.position;
                                             var end = tokenizer.moveToEndOfLine();
                                             cryst = new PDB.CrystStructureInfo(data.substring(start, end));
                                         }
                                         break;
-                                    case 69: // E 
+                                    case 69:// E 
                                         if (tokenizer.startsWith(tokenizer.position, "ENDMDL") && atomCount > 0) {
                                             if (models.length === 0) {
                                                 modelIdToken = { start: data.length + 3, end: data.length + 4 };
@@ -58900,7 +58900,7 @@ var LiteMol;
                                             }
                                         }
                                         break;
-                                    case 72: // H 
+                                    case 72:// H 
                                         if (tokenizer.startsWith(tokenizer.position, "HETATM")) {
                                             if (!modelAtomTokens) {
                                                 modelAtomTokens = Formats.TokenIndexBuilder.create(4096);
@@ -58911,7 +58911,7 @@ var LiteMol;
                                                 return err;
                                         }
                                         break;
-                                    case 77: //M
+                                    case 77://M
                                         if (tokenizer.startsWith(tokenizer.position, "MODEL")) {
                                             if (atomCount > 0) {
                                                 if (models.length === 0) {
@@ -59988,7 +59988,7 @@ var LiteMol;
                         out[9] = a01 * b20 + a11 * b21 + a21 * b22;
                         out[10] = a02 * b20 + a12 * b21 + a22 * b22;
                         out[11] = a03 * b20 + a13 * b21 + a23 * b22;
-                        if (a !== out) { // If the source and destination differ, copy the unchanged last row
+                        if (a !== out) {
                             out[12] = a[12];
                             out[13] = a[13];
                             out[14] = a[14];
@@ -66097,10 +66097,10 @@ var LiteMol;
             function fromHexString(s) {
                 if (s[0] !== '#')
                     return fromHex(0);
-                if (s.length === 4) { // #rgb
+                if (s.length === 4) {
                     return fromHexString("#" + s[1] + s[1] + s[2] + s[2] + s[3] + s[3]);
                 }
-                else if (s.length === 7) { // #rrggbb
+                else if (s.length === 7) {
                     return fromHex(parseInt(s.substr(1), 16));
                 }
                 return fromHex(0);
@@ -66797,10 +66797,10 @@ var LiteMol;
                     event.preventDefault();
                 }
                 var delta = 0;
-                if (event.wheelDelta) { // WebKit / Opera / Explorer 9
+                if (event.wheelDelta) {
                     delta = event.wheelDelta;
                 }
-                else if (event.detail) { // Firefox
+                else if (event.detail) {
                     delta = -event.detail;
                 }
                 //if (delta < -0.5) delta = -0.5;
@@ -67874,7 +67874,7 @@ var LiteMol;
                     case 1:
                         this._state = 3 /* TOUCH_ROTATE */;
                         this.scene.mouseInfo.updatePosition(event.touches[0].clientX, event.touches[0].clientY);
-                        this._rotateStart.copy(this.getMouseProjectionOnBall( /*event.touches[0].clientX, event.touches[0].clientY*/));
+                        this._rotateStart.copy(this.getMouseProjectionOnBall());
                         this._rotateEnd.copy(this._rotateStart);
                         break;
                     case 2:
@@ -67885,7 +67885,7 @@ var LiteMol;
                         var x = (event.touches[0].clientX + event.touches[1].clientX) / 2;
                         var y = (event.touches[0].clientY + event.touches[1].clientY) / 2;
                         this.scene.mouseInfo.updatePosition(x, y);
-                        this._panStart.copy(this.getMouseOnScreen( /*x, y*/));
+                        this._panStart.copy(this.getMouseOnScreen());
                         this._panEnd.copy(this._panStart);
                         break;
                     default:
@@ -67901,7 +67901,7 @@ var LiteMol;
                 switch (event.touches.length) {
                     case 1:
                         this.scene.mouseInfo.updatePosition(event.touches[0].clientX, event.touches[0].clientY);
-                        this._rotateEnd.copy(this.getMouseProjectionOnBall( /*event.touches[0].clientX, event.touches[0].clientY*/));
+                        this._rotateEnd.copy(this.getMouseProjectionOnBall());
                         this.update();
                         break;
                     case 2:
@@ -67911,7 +67911,7 @@ var LiteMol;
                         var x = (event.touches[0].clientX + event.touches[1].clientX) / 2;
                         var y = (event.touches[0].clientY + event.touches[1].clientY) / 2;
                         this.scene.mouseInfo.updatePosition(x, y);
-                        this._panEnd.copy(this.getMouseOnScreen( /*x, y*/));
+                        this._panEnd.copy(this.getMouseOnScreen());
                         this.update();
                         break;
                     default:
@@ -67928,7 +67928,7 @@ var LiteMol;
                 switch (touches.length) {
                     case 1:
                         this.scene.mouseInfo.updatePosition(touches[0].clientX, touches[0].clientY);
-                        this._rotateEnd.copy(this.getMouseProjectionOnBall( /*event.touches[0].clientX, event.touches[0].clientY*/));
+                        this._rotateEnd.copy(this.getMouseProjectionOnBall());
                         this._rotateStart.copy(this._rotateEnd);
                         break;
                     case 2:
@@ -67936,7 +67936,7 @@ var LiteMol;
                         var x = (touches[0].clientX + touches[1].clientX) / 2;
                         var y = (touches[0].clientY + touches[1].clientY) / 2;
                         this.scene.mouseInfo.updatePosition(x, y);
-                        this._panEnd.copy(this.getMouseOnScreen( /*x, y*/));
+                        this._panEnd.copy(this.getMouseOnScreen());
                         this._panStart.copy(this._panEnd);
                         break;
                 }
@@ -68140,7 +68140,7 @@ var LiteMol;
                         }
                     }
                 }
-                else { // clear
+                else {
                     for (var i = start; i < end; i++) {
                         var v = array[i];
                         array[i] = 0;
@@ -72353,13 +72353,13 @@ var LiteMol;
                     if (item.previous !== null) {
                         item.previous.next = item.next;
                     }
-                    else if ( /*first == item*/item.previous === null) {
+                    else if (item.previous === null) {
                         this.first = item.next;
                     }
                     if (item.next !== null) {
                         item.next.previous = item.previous;
                     }
-                    else if ( /*last == item*/item.next === null) {
+                    else if (item.next === null) {
                         this.last = item.previous;
                     }
                     item.next = null;
@@ -73191,7 +73191,7 @@ var LiteMol;
             function remove(node) {
                 if (!node || !node.tree)
                     return;
-                if (node.parent === node) { // root
+                if (node.parent === node) {
                     clearRoot(node.tree);
                     return;
                 }
@@ -77810,6 +77810,7 @@ var LiteMol;
                             var c = manager.getController(t, e);
                             if (c)
                                 transforms.push(c);
+                            //this.setParams(c);                
                         }
                         this.setState({ update: update, transforms: transforms });
                     };
@@ -80945,7 +80946,7 @@ var LiteMol;
                                 : Plugin.React.createElement(Plugin.Controls.Button, { style: 'link', title: 'Collapse', onClick: function () { return LiteMol.Bootstrap.Command.Entity.ToggleExpanded.dispatch(_this.ctx, node); }, icon: 'collapse', customClass: 'lm-entity-tree-entry-toggle-group' });
                         }
                         else {
-                            if ( /*BEntity.isVisual(node) &&*/node.state.visibility === 0 /* Full */ && node.type.info.traits.isFocusable) {
+                            if (node.state.visibility === 0 /* Full */ && node.type.info.traits.isFocusable) {
                                 expander = Plugin.React.createElement(Plugin.Controls.Button, { style: 'link', icon: 'focus-on-visual', title: 'Focus', onClick: function () { return LiteMol.Bootstrap.Command.Entity.Focus.dispatch(_this.ctx, _this.ctx.select(node)); }, customClass: 'lm-entity-tree-entry-toggle-group' });
                             }
                         }
