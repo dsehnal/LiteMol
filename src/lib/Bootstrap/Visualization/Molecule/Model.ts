@@ -46,6 +46,9 @@ namespace LiteMol.Bootstrap.Visualization.Molecule {
     }
     
     function makeRadiusFunc(model: Structure.Molecule.Model, parameters: BallsAndSticksParams) {
+        if (typeof parameters.vdwScaling === 'undefined') parameters.vdwScaling = Default.BallsAndSticksParams.vdwScaling;
+        if (typeof parameters.atomRadius === 'undefined') parameters.atomRadius = Default.BallsAndSticksParams.atomRadius;
+
         if (!parameters.useVDW) {
             return function (r: number) {
                 return function() { return r; }

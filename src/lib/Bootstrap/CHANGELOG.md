@@ -1,4 +1,7 @@
-﻿# 1.4.3
+﻿# 1.4.4
+* Fixed a bug in Balls and Sticks atom scaling.
+
+# 1.4.3
 * Remember the camera position when updating visuals with the same parent.
 
 # 1.4.2

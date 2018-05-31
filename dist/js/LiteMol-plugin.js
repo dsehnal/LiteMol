@@ -71961,7 +71961,7 @@ var LiteMol;
 (function (LiteMol) {
     var Bootstrap;
     (function (Bootstrap) {
-        Bootstrap.VERSION = { number: "1.4.3", date: "Nov 28 2017" };
+        Bootstrap.VERSION = { number: "1.4.4", date: "May 31 2018" };
     })(Bootstrap = LiteMol.Bootstrap || (LiteMol.Bootstrap = {}));
 })(LiteMol || (LiteMol = {}));
 /*
@@ -74833,6 +74833,10 @@ var LiteMol;
                     };
                 }
                 function makeRadiusFunc(model, parameters) {
+                    if (typeof parameters.vdwScaling === 'undefined')
+                        parameters.vdwScaling = Molecule.Default.BallsAndSticksParams.vdwScaling;
+                    if (typeof parameters.atomRadius === 'undefined')
+                        parameters.atomRadius = Molecule.Default.BallsAndSticksParams.atomRadius;
                     if (!parameters.useVDW) {
                         return function (r) {
                             return function () { return r; };
