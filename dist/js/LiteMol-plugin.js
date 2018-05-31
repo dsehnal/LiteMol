@@ -58727,7 +58727,7 @@ var LiteMol;
                         Tokenizer.prototype.moveToEndOfLine = function () {
                             while (this.position < this.length) {
                                 var c = this.data.charCodeAt(this.position);
-                                if (c === 10 || c === 13) {
+                                if (c === 10 || c === 13) { //  /n | /r
                                     return this.position;
                                 }
                                 this.position++;
@@ -58772,7 +58772,7 @@ var LiteMol;
                             this.trim(start, start + 4);
                             Formats.TokenIndexBuilder.addToken(tokens, this.trimmedToken.start, this.trimmedToken.end);
                             //17             Character       Alternate location indicator. 
-                            if (this.data.charCodeAt(startPos + 16) === 32) {
+                            if (this.data.charCodeAt(startPos + 16) === 32) { // ' '
                                 Formats.TokenIndexBuilder.addToken(tokens, 0, 0);
                             }
                             else {
@@ -58789,7 +58789,7 @@ var LiteMol;
                             this.trim(start, start + 4);
                             Formats.TokenIndexBuilder.addToken(tokens, this.trimmedToken.start, this.trimmedToken.end);
                             //27             AChar           Code for insertion of residues.      
-                            if (this.data.charCodeAt(startPos + 26) === 32) {
+                            if (this.data.charCodeAt(startPos + 26) === 32) { // ' '
                                 Formats.TokenIndexBuilder.addToken(tokens, 0, 0);
                             }
                             else {
@@ -58862,7 +58862,7 @@ var LiteMol;
                             while (tokenizer.position < length) {
                                 var cont = true;
                                 switch (data.charCodeAt(tokenizer.position)) {
-                                    case 65:// A 
+                                    case 65: // A 
                                         if (tokenizer.startsWith(tokenizer.position, "ATOM")) {
                                             if (!modelAtomTokens) {
                                                 modelAtomTokens = Formats.TokenIndexBuilder.create(4096);
@@ -58873,14 +58873,14 @@ var LiteMol;
                                                 return err;
                                         }
                                         break;
-                                    case 67:// C
+                                    case 67: // C
                                         if (tokenizer.startsWith(tokenizer.position, "CRYST1")) {
                                             var start = tokenizer.position;
                                             var end = tokenizer.moveToEndOfLine();
                                             cryst = new PDB.CrystStructureInfo(data.substring(start, end));
                                         }
                                         break;
-                                    case 69:// E 
+                                    case 69: // E 
                                         if (tokenizer.startsWith(tokenizer.position, "ENDMDL") && atomCount > 0) {
                                             if (models.length === 0) {
                                                 modelIdToken = { start: data.length + 3, end: data.length + 4 };
@@ -58900,7 +58900,7 @@ var LiteMol;
                                             }
                                         }
                                         break;
-                                    case 72:// H 
+                                    case 72: // H 
                                         if (tokenizer.startsWith(tokenizer.position, "HETATM")) {
                                             if (!modelAtomTokens) {
                                                 modelAtomTokens = Formats.TokenIndexBuilder.create(4096);
@@ -58911,7 +58911,7 @@ var LiteMol;
                                                 return err;
                                         }
                                         break;
-                                    case 77://M
+                                    case 77: //M
                                         if (tokenizer.startsWith(tokenizer.position, "MODEL")) {
                                             if (atomCount > 0) {
                                                 if (models.length === 0) {
@@ -59988,7 +59988,7 @@ var LiteMol;
                         out[9] = a01 * b20 + a11 * b21 + a21 * b22;
                         out[10] = a02 * b20 + a12 * b21 + a22 * b22;
                         out[11] = a03 * b20 + a13 * b21 + a23 * b22;
-                        if (a !== out) {
+                        if (a !== out) { // If the source and destination differ, copy the unchanged last row
                             out[12] = a[12];
                             out[13] = a[13];
                             out[14] = a[14];
@@ -60341,22 +60341,29 @@ var LiteMol;
             "use strict";
             var Surface;
             (function (Surface) {
+                var Vec3 = Geometry.LinearAlgebra.Vector3;
                 function computeNormalsImmediate(surface) {
                     if (surface.normals)
                         return;
                     var normals = new Float32Array(surface.vertices.length), v = surface.vertices, triangles = surface.triangleIndices;
+                    var x = Vec3.zero(), y = Vec3.zero(), z = Vec3.zero(), d1 = Vec3.zero(), d2 = Vec3.zero(), n = Vec3.zero();
                     for (var i = 0; i < triangles.length; i += 3) {
                         var a = 3 * triangles[i], b = 3 * triangles[i + 1], c = 3 * triangles[i + 2];
-                        var nx = v[a + 2] * (v[b + 1] - v[c + 1]) + v[b + 2] * v[c + 1] - v[b + 1] * v[c + 2] + v[a + 1] * (-v[b + 2] + v[c + 2]), ny = -(v[b + 2] * v[c]) + v[a + 2] * (-v[b] + v[c]) + v[a] * (v[b + 2] - v[c + 2]) + v[b] * v[c + 2], nz = v[a + 1] * (v[b] - v[c]) + v[b + 1] * v[c] - v[b] * v[c + 1] + v[a] * (-v[b + 1] + v[b + 1]);
-                        normals[a] += nx;
-                        normals[a + 1] += ny;
-                        normals[a + 2] += nz;
-                        normals[b] += nx;
-                        normals[b + 1] += ny;
-                        normals[b + 2] += nz;
-                        normals[c] += nx;
-                        normals[c + 1] += ny;
-                        normals[c + 2] += nz;
+                        Vec3.set(x, v[a], v[a + 1], v[a + 2]);
+                        Vec3.set(y, v[b], v[b + 1], v[b + 2]);
+                        Vec3.set(z, v[c], v[c + 1], v[c + 2]);
+                        Vec3.sub(d1, z, y);
+                        Vec3.sub(d2, y, x);
+                        Vec3.cross(n, d1, d2);
+                        normals[a] += n[0];
+                        normals[a + 1] += n[1];
+                        normals[a + 2] += n[2];
+                        normals[b] += n[0];
+                        normals[b + 1] += n[1];
+                        normals[b + 2] += n[2];
+                        normals[c] += n[0];
+                        normals[c + 1] += n[1];
+                        normals[c + 2] += n[2];
                     }
                     for (var i = 0; i < normals.length; i += 3) {
                         var nx = normals[i];
@@ -66090,10 +66097,10 @@ var LiteMol;
             function fromHexString(s) {
                 if (s[0] !== '#')
                     return fromHex(0);
-                if (s.length === 4) {
+                if (s.length === 4) { // #rgb
                     return fromHexString("#" + s[1] + s[1] + s[2] + s[2] + s[3] + s[3]);
                 }
-                else if (s.length === 7) {
+                else if (s.length === 7) { // #rrggbb
                     return fromHex(parseInt(s.substr(1), 16));
                 }
                 return fromHex(0);
@@ -66790,10 +66797,10 @@ var LiteMol;
                     event.preventDefault();
                 }
                 var delta = 0;
-                if (event.wheelDelta) {
+                if (event.wheelDelta) { // WebKit / Opera / Explorer 9
                     delta = event.wheelDelta;
                 }
-                else if (event.detail) {
+                else if (event.detail) { // Firefox
                     delta = -event.detail;
                 }
                 //if (delta < -0.5) delta = -0.5;
@@ -67867,7 +67874,7 @@ var LiteMol;
                     case 1:
                         this._state = 3 /* TOUCH_ROTATE */;
                         this.scene.mouseInfo.updatePosition(event.touches[0].clientX, event.touches[0].clientY);
-                        this._rotateStart.copy(this.getMouseProjectionOnBall());
+                        this._rotateStart.copy(this.getMouseProjectionOnBall( /*event.touches[0].clientX, event.touches[0].clientY*/));
                         this._rotateEnd.copy(this._rotateStart);
                         break;
                     case 2:
@@ -67878,7 +67885,7 @@ var LiteMol;
                         var x = (event.touches[0].clientX + event.touches[1].clientX) / 2;
                         var y = (event.touches[0].clientY + event.touches[1].clientY) / 2;
                         this.scene.mouseInfo.updatePosition(x, y);
-                        this._panStart.copy(this.getMouseOnScreen());
+                        this._panStart.copy(this.getMouseOnScreen( /*x, y*/));
                         this._panEnd.copy(this._panStart);
                         break;
                     default:
@@ -67894,7 +67901,7 @@ var LiteMol;
                 switch (event.touches.length) {
                     case 1:
                         this.scene.mouseInfo.updatePosition(event.touches[0].clientX, event.touches[0].clientY);
-                        this._rotateEnd.copy(this.getMouseProjectionOnBall());
+                        this._rotateEnd.copy(this.getMouseProjectionOnBall( /*event.touches[0].clientX, event.touches[0].clientY*/));
                         this.update();
                         break;
                     case 2:
@@ -67904,7 +67911,7 @@ var LiteMol;
                         var x = (event.touches[0].clientX + event.touches[1].clientX) / 2;
                         var y = (event.touches[0].clientY + event.touches[1].clientY) / 2;
                         this.scene.mouseInfo.updatePosition(x, y);
-                        this._panEnd.copy(this.getMouseOnScreen());
+                        this._panEnd.copy(this.getMouseOnScreen( /*x, y*/));
                         this.update();
                         break;
                     default:
@@ -67921,7 +67928,7 @@ var LiteMol;
                 switch (touches.length) {
                     case 1:
                         this.scene.mouseInfo.updatePosition(touches[0].clientX, touches[0].clientY);
-                        this._rotateEnd.copy(this.getMouseProjectionOnBall());
+                        this._rotateEnd.copy(this.getMouseProjectionOnBall( /*event.touches[0].clientX, event.touches[0].clientY*/));
                         this._rotateStart.copy(this._rotateEnd);
                         break;
                     case 2:
@@ -67929,7 +67936,7 @@ var LiteMol;
                         var x = (touches[0].clientX + touches[1].clientX) / 2;
                         var y = (touches[0].clientY + touches[1].clientY) / 2;
                         this.scene.mouseInfo.updatePosition(x, y);
-                        this._panEnd.copy(this.getMouseOnScreen());
+                        this._panEnd.copy(this.getMouseOnScreen( /*x, y*/));
                         this._panStart.copy(this._panEnd);
                         break;
                 }
@@ -68133,7 +68140,7 @@ var LiteMol;
                         }
                     }
                 }
-                else {
+                else { // clear
                     for (var i = start; i < end; i++) {
                         var v = array[i];
                         array[i] = 0;
@@ -72346,13 +72353,13 @@ var LiteMol;
                     if (item.previous !== null) {
                         item.previous.next = item.next;
                     }
-                    else if (item.previous === null) {
+                    else if ( /*first == item*/item.previous === null) {
                         this.first = item.next;
                     }
                     if (item.next !== null) {
                         item.next.previous = item.previous;
                     }
-                    else if (item.next === null) {
+                    else if ( /*last == item*/item.next === null) {
                         this.last = item.previous;
                     }
                     item.next = null;
@@ -73184,7 +73191,7 @@ var LiteMol;
             function remove(node) {
                 if (!node || !node.tree)
                     return;
-                if (node.parent === node) {
+                if (node.parent === node) { // root
                     clearRoot(node.tree);
                     return;
                 }
@@ -77803,7 +77810,6 @@ var LiteMol;
                             var c = manager.getController(t, e);
                             if (c)
                                 transforms.push(c);
-                            //this.setParams(c);                
                         }
                         this.setState({ update: update, transforms: transforms });
                     };
@@ -80939,7 +80945,7 @@ var LiteMol;
                                 : Plugin.React.createElement(Plugin.Controls.Button, { style: 'link', title: 'Collapse', onClick: function () { return LiteMol.Bootstrap.Command.Entity.ToggleExpanded.dispatch(_this.ctx, node); }, icon: 'collapse', customClass: 'lm-entity-tree-entry-toggle-group' });
                         }
                         else {
-                            if (node.state.visibility === 0 /* Full */ && node.type.info.traits.isFocusable) {
+                            if ( /*BEntity.isVisual(node) &&*/node.state.visibility === 0 /* Full */ && node.type.info.traits.isFocusable) {
                                 expander = Plugin.React.createElement(Plugin.Controls.Button, { style: 'link', icon: 'focus-on-visual', title: 'Focus', onClick: function () { return LiteMol.Bootstrap.Command.Entity.Focus.dispatch(_this.ctx, _this.ctx.select(node)); }, customClass: 'lm-entity-tree-entry-toggle-group' });
                             }
                         }
