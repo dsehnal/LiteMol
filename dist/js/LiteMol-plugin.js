@@ -56370,7 +56370,7 @@ var LiteMol;
             }
             var immediateActions = (function () {
                 if (typeof setImmediate !== 'undefined') {
-                    if (typeof window !== 'undefined') {
+                    if (typeof window !== 'undefined' && typeof window.setImmediate !== 'undefined') {
                         // this is because of IE
                         return { setImmediate: function (handler) {
                                 var args = [];

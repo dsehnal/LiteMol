@@ -187,7 +187,7 @@ namespace LiteMol.Core.Scheduler {
     
     const immediateActions: any = (function () {
         if (typeof setImmediate !== 'undefined') {
-            if (typeof window !== 'undefined') {
+            if (typeof window !== 'undefined' && typeof window.setImmediate !== 'undefined') {
                 // this is because of IE
                 return { setImmediate: (handler: any, ...args: any[]) => window.setImmediate(handler, ...args as any), clearImmediate: (handle: any) => window.clearImmediate(handle) };
             } else return { setImmediate, clearImmediate }
