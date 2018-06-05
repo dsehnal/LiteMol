@@ -102,7 +102,7 @@ namespace LiteMol.Core.Utils {
             getBuilder(count: number): Builder<any> {
                 let b = new BuilderImpl(count);
                 for (let c of this.columns) {
-                    b.addColumn(c.name, c.creator);
+                    b.addColumn(c.name as string, c.creator);
                 }
                 return b;
             }
@@ -126,7 +126,7 @@ namespace LiteMol.Core.Utils {
                 }
 
                 for (let col of srcColumns) {
-                    let data = srcData[col.name];
+                    let data = srcData[col.name as string];
                     if (Utils.ChunkedArray.is(data)) {
                         data = Utils.ChunkedArray.compact(data);
                     }

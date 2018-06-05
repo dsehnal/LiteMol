@@ -28,7 +28,7 @@
   ],
   "license": "Apache-2.0",
   "dependencies": {
-    "@types/react": "^15.6.10",
+    "@types/react": "^15.6.16",
     "@types/react-dom": "^15.5.6"
   },
   "devDependencies": {
@@ -39,16 +39,16 @@
     "gulp-concat": "^2.6.1",
     "gulp-gzip": "^1.4.2",
     "gulp-insert": "^0.5.0",
-    "gulp-rename": "^1.2.2",
+    "gulp-rename": "^1.2.3",
     "gulp-replace": "^0.6.1",
-    "gulp-sass": "^3.1.0",
+    "gulp-sass": "^3.2.1",
     "gulp-tar": "^2.1.0",
     "gulp-typedoc": "^2.2.0",
     "gulp-uglify": "^2.1.2",
     "gulp-util": "^3.0.8",
-    "merge2": "^1.2.1",
+    "merge2": "^1.2.2",
     "ts-node": "^3.3.0",
     "typedoc": "^0.7.2",
-    "typescript": "^2.7.2"
+    "typescript": "^2.9.1"
   }
 }

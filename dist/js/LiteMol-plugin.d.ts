@@ -10126,7 +10126,7 @@ declare namespace LiteMol.Core.Utils {
     }
     function UniqueArray<T extends number | string>(): UniqueArray<T>;
     namespace UniqueArray {
-        function add<T extends number | string>({_set, array}: UniqueArray<T>, e: T): void;
+        function add<T extends number | string>({ _set, array }: UniqueArray<T>, e: T): void;
     }
 }
 declare namespace LiteMol.Core.Utils {
@@ -10222,7 +10222,7 @@ declare namespace LiteMol.Core.Formats.Molecule.PDB {
         crystInfo: CrystStructureInfo | undefined;
         models: ModelsData;
         data: string;
-        private makeEntities();
+        private makeEntities;
         toCifFile(): CIF.File;
         constructor(header: Header, crystInfo: CrystStructureInfo | undefined, models: ModelsData, data: string);
     }
@@ -10232,7 +10232,7 @@ declare namespace LiteMol.Core.Formats.Molecule.PDB {
     }
     class CrystStructureInfo {
         record: string;
-        private getValue(start, len);
+        private getValue;
         toCifCategory(id: string): {
             cell: CIF.Category | undefined;
             symm: CIF.Category | undefined;
@@ -10253,11 +10253,11 @@ declare namespace LiteMol.Core.Formats.Molecule.PDB {
         atomTokens: number[];
         atomCount: number;
         static COLUMNS: string[];
-        private writeToken(index, cifTokens);
-        private writeTokenCond(index, cifTokens, dot);
-        private writeRange(range, cifTokens);
-        private tokenEquals(start, end, value, data);
-        private getEntityType(row, data);
+        private writeToken;
+        private writeTokenCond;
+        private writeRange;
+        private tokenEquals;
+        private getEntityType;
         writeCifTokens(modelToken: TokenRange, cifTokens: Utils.ArrayBuilder<number>, helpers: HelperData): void;
         constructor(idToken: TokenRange, atomTokens: number[], atomCount: number);
     }
@@ -10269,8 +10269,8 @@ declare namespace LiteMol.Core.Formats.Molecule.PDB {
 }
 declare namespace LiteMol.Core.Formats.Molecule.PDB {
     class Parser {
-        private static tokenizeAtom(tokens, tokenizer);
-        private static tokenize(id, data);
+        private static tokenizeAtom;
+        private static tokenize;
         static getDotRange(length: number): TokenRange;
         static getNumberRanges(length: number): Utils.FastMap<number, TokenRange>;
         static getQuestionmarkRange(length: number): TokenRange;
@@ -10722,7 +10722,7 @@ declare namespace LiteMol.Core.Structure {
         Turn = 2,
         Sheet = 3,
         AminoSeq = 4,
-        Strand = 5,
+        Strand = 5
     }
     class SecondaryStructureElement {
         type: SecondaryStructureType;
@@ -10749,9 +10749,9 @@ declare namespace LiteMol.Core.Structure {
         entries: StructConn.Entry[];
         private _residuePairIndex;
         private _atomIndex;
-        private static _resKey(rA, rB);
-        private getResiduePairIndex();
-        private getAtomIndex();
+        private static _resKey;
+        private getResiduePairIndex;
+        private getAtomIndex;
         private static _emptyEntry;
         getResidueEntries(residueAIndex: number, residueBIndex: number): ReadonlyArray<StructConn.Entry>;
         getAtomEntries(atomIndex: number): ReadonlyArray<StructConn.Entry>;
@@ -10854,7 +10854,7 @@ declare namespace LiteMol.Core.Structure {
             function create(model: Base): Model;
             enum Source {
                 File = 0,
-                Computed = 1,
+                Computed = 1
             }
             interface Base {
                 readonly id: string;
@@ -10890,7 +10890,7 @@ declare namespace LiteMol.Core.Structure {
         DisulfideBridge = 5,
         Metallic = 6,
         Ion = 7,
-        Hydrogen = 8,
+        Hydrogen = 8
     }
     function isBondTypeCovalent(t: BondType): boolean;
     interface BondComputationParameters {
@@ -10908,9 +10908,9 @@ declare namespace LiteMol.Core.Structure {
         private operators;
         readonly operatorCount: number;
         getOperatorMatrix(index: number, i: number, j: number, k: number, target: number[]): number[];
-        private getSpace();
-        private static getOperator(ids);
-        private getOperators();
+        private getSpace;
+        private static getOperator;
+        private getOperators;
         constructor(info: Structure.SymmetryInfo);
     }
     namespace SpacegroupTables {
@@ -10984,7 +10984,7 @@ declare namespace LiteMol.Core.Structure {
              */
             static ofAtomIndices(structure: Molecule.Model, atomIndices: number[]): Context;
             constructor(structure: Molecule.Model, mask: Utils.Mask);
-            private makeLookup3d();
+            private makeLookup3d;
         }
         /**
          * The basic element of the query language.
@@ -11038,7 +11038,7 @@ declare namespace LiteMol.Core.Structure {
             private _residueIndices;
             private _chainIndices;
             private _entityIndices;
-            private computeIndices();
+            private computeIndices;
             /**
              * A sorted list of residue indices.
              */
@@ -11316,7 +11316,7 @@ declare namespace LiteMol.Visualization {
     }
     namespace Color {
         function copy(from: Color, to: Color): void;
-        function clone({r, g, b}: Color): Color;
+        function clone({ r, g, b }: Color): Color;
         function toVector(color: Color): THREE.Vector3;
         function fromVector(v: {
             x: number;
@@ -11395,10 +11395,10 @@ declare namespace LiteMol.Visualization {
             vertexShader: string;
             fragmentShader: string;
         };
-        private static compareVectorAndColor(v, c);
+        private static compareVectorAndColor;
         static updateMaterial(material: THREE.ShaderMaterial | THREE.MeshPhongMaterial, theme: Theme, object: THREE.Object3D): void;
-        private static updateHighlightColor(material, theme);
-        private static updateTransparencyAndFog(material, theme, object);
+        private static updateHighlightColor;
+        private static updateTransparencyAndFog;
         static getMeshMaterial(shading?: THREE.Shading, isWireframe?: boolean): THREE.ShaderMaterial;
         static getPhongVertexColorMaterial(): THREE.MeshPhongMaterial;
         static getDefaultHighlightMaterial(): THREE.MeshPhongMaterial;
@@ -11461,7 +11461,7 @@ declare namespace LiteMol.Visualization {
         readonly count: number;
         getBySceneId(id: number): Model | undefined;
         add(model: Model, resetCamera?: boolean): void;
-        private dispose(model);
+        private dispose;
         removeAndDispose(model: Model): void;
         clear(): void;
         constructor(scene: Scene);
@@ -11470,7 +11470,7 @@ declare namespace LiteMol.Visualization {
 declare namespace LiteMol.Visualization {
     enum CameraType {
         Perspective = 0,
-        Orthographic = 1,
+        Orthographic = 1
     }
     class SlabControls {
         private height;
@@ -11488,12 +11488,12 @@ declare namespace LiteMol.Visualization {
         updateSize(w: number, h: number): void;
         updateRadius(r: number): void;
         destroy(): void;
-        private handleMouseWheel(event);
-        private touchstart(event);
-        private touchend(event);
-        private touchmove(event);
-        private mousemove(e);
-        private mouseOut();
+        private handleMouseWheel;
+        private touchstart;
+        private touchend;
+        private touchmove;
+        private mousemove;
+        private mouseOut;
         constructor(element: HTMLElement);
     }
     class Camera {
@@ -11511,8 +11511,8 @@ declare namespace LiteMol.Visualization {
         fogEnabled: boolean;
         fogDelta: number;
         static shouldInUpdateInclude(m: Model): boolean;
-        private updateFocus(models);
-        private focus();
+        private updateFocus;
+        private focus;
         reset(): void;
         snapshot(): {
             state: CameraControlsState;
@@ -11540,11 +11540,11 @@ declare namespace LiteMol.Visualization {
         readonly object: THREE.Camera;
         private unbindCamera;
         dispose(): void;
-        private planeDeltaUpdate(delta);
+        private planeDeltaUpdate;
         computeNearDistance(): number;
         cameraUpdated(): void;
         createCamera(): void;
-        private setup();
+        private setup;
         private observers;
         observe(callback: (c: Camera) => void): void;
         stopObserving(callback: (c: Camera) => void): void;
@@ -11624,20 +11624,20 @@ declare namespace LiteMol.Visualization {
         private initialResizeTimeout;
         updateOptions(options: SceneOptions): void;
         constructor(element: HTMLElement, options?: SceneOptions);
-        private setupMouse();
+        private setupMouse;
         private clearHighlightsCall;
-        private handleSelectStart(x, y);
-        private handleSelectEnd(x, y);
-        private handleResize();
-        private needsRender();
-        private checkDirty();
+        private handleSelectStart;
+        private handleSelectEnd;
+        private handleResize;
+        private needsRender;
+        private checkDirty;
         private renderFunc;
-        private render(time);
+        private render;
         private pickBuffer;
-        private dispatchHoverEvent();
-        private dispatchSelectEvent(info);
-        private clearHighlights(update?);
-        private handlePick(isSelect);
+        private dispatchHoverEvent;
+        private dispatchSelectEvent;
+        private clearHighlights;
+        private handlePick;
         resized(): void;
         forceRender(): void;
         clear(): void;
@@ -11652,7 +11652,7 @@ declare namespace LiteMol.Visualization {
         ZOOM = 2,
         PAN = 1,
         TOUCH_ROTATE = 3,
-        TOUCH_ZOOM_PAN = 4,
+        TOUCH_ZOOM_PAN = 4
     }
     class CameraControls {
         camera: THREE.Camera;
@@ -11695,32 +11695,32 @@ declare namespace LiteMol.Visualization {
         private endEvent;
         events: THREE.EventDispatcher;
         private _mouseOnScreen;
-        private getMouseOnScreen();
+        private getMouseOnScreen;
         private _mouseOnBallProjection;
         private _objectUp;
         private _mouseOnBall;
-        private getMouseProjectionOnBall();
+        private getMouseProjectionOnBall;
         private _rotationAxis;
         private _rotationQuaternion;
-        private rotateCamera();
-        private zoomCamera();
+        private rotateCamera;
+        private zoomCamera;
         private _panMouseChange;
         private _panObjectUp;
         private _panPan;
-        private panCamera();
+        private panCamera;
         private _panToDelta;
         private _panToVector;
-        panTo({x, y, z}: {
+        panTo({ x, y, z }: {
             x: number;
             y: number;
             z: number;
         }): void;
-        panAndMoveToDistance({x, y, z}: {
+        panAndMoveToDistance({ x, y, z }: {
             x: number;
             y: number;
             z: number;
         }, distance: number): void;
-        private checkDistances();
+        private checkDistances;
         update(): void;
         reset(): void;
         getState(): {
@@ -11733,17 +11733,17 @@ declare namespace LiteMol.Visualization {
             lastPosition: THREE.Vector3;
         };
         setState(state: any): void;
-        private keydown(event);
-        private keyup(event);
-        private mousedown(event);
+        private keydown;
+        private keyup;
+        private mousedown;
         mousemove(event: MouseEvent): void;
         mouseup(event: MouseEvent): void;
-        private touchstart(event);
-        private touchmove(event);
-        private touchend(event);
-        private preventContextMenu(event);
+        private touchstart;
+        private touchmove;
+        private touchend;
+        private preventContextMenu;
         private eventHandlers;
-        private init();
+        private init;
         destroy(): void;
     }
 }
@@ -11778,7 +11778,7 @@ declare namespace LiteMol.Visualization.Selection {
         RemoveSelect = 2,
         Highlight = 3,
         RemoveHighlight = 4,
-        Clear = 5,
+        Clear = 5
     }
     class VertexMapBuilder {
         private elementIndices;
@@ -11888,8 +11888,8 @@ declare namespace LiteMol.Visualization.Surface {
         } | undefined;
         applyThemeInternal(theme: Theme): void;
         protected getPickObjectVisibility(visible: boolean): boolean;
-        private createObjects();
-        static create(entity: any, {surface, theme, parameters, props}: {
+        private createObjects;
+        static create(entity: any, { surface, theme, parameters, props }: {
             surface: Core.Geometry.Surface;
             theme: Theme;
             parameters?: Parameters;
@@ -11917,8 +11917,8 @@ declare namespace LiteMol.Visualization.Lines {
         getPickElements(pickId: number): number[];
         applyThemeInternal(theme: Theme): void;
         protected getPickObjectVisibility(visible: boolean): boolean;
-        private createObjects();
-        static create(entity: any, {geometry, theme, props}: {
+        private createObjects;
+        static create(entity: any, { geometry, theme, props }: {
             geometry: Geometry;
             theme: Theme;
             props?: Model.Props;
@@ -11958,11 +11958,11 @@ declare namespace LiteMol.Visualization.Labels {
         private canvas;
         texture: THREE.Texture;
         constructor(params: Partial<TextAtlasParams>);
-        private build();
-        private map(text);
+        private build;
+        private map;
         getTextMetrics(text: string): MappedMetrics;
-        private draw(text);
-        private populate();
+        private draw;
+        private populate;
     }
 }
 declare namespace LiteMol.Visualization.Labels.Geometry {
@@ -12013,7 +12013,7 @@ declare namespace LiteMol.Visualization.Labels {
         getPickElements(pickId: number): number[];
         highlightElement(pickId: number, highlight: boolean): boolean;
         protected highlightInternal(isOn: boolean): boolean;
-        private applyColoring(theme);
+        private applyColoring;
         protected applyThemeInternal(theme: Theme): void;
         static create(entity: any, params: LabelsParams): Core.Computation<Model>;
     }
@@ -12041,8 +12041,8 @@ declare namespace LiteMol.Visualization.Molecule.BallsAndSticks {
         highlightElement(pickId: number, highlight: boolean): boolean;
         protected highlightInternal(isOn: boolean): boolean;
         applyThemeInternal(theme: Theme): void;
-        private createObjects();
-        static create(entity: any, {model, atomIndices, theme, params, props}: {
+        private createObjects;
+        static create(entity: any, { model, atomIndices, theme, params, props }: {
             model: Core.Structure.Molecule.Model;
             atomIndices: number[];
             theme: Theme;
@@ -12129,12 +12129,12 @@ declare namespace LiteMol.Visualization.Molecule.Cartoons.Geometry {
         startResidueIndex: number;
         endResidueIndex: number;
         constructor(model: Core.Structure.Molecule.Model, elements: Core.Structure.SecondaryStructureElement[], linearSegmentCount: number);
-        private createControlPoints(builder);
-        private initPositions(builder);
-        private initControlsPoints(builder);
-        private computeSplines(builder);
-        private addSplineNode(previousControlPoint, controlPoint, torsionPoint);
-        private reflectPositions(xs, u, v, a, b, c, d, r1, r2);
+        private createControlPoints;
+        private initPositions;
+        private initControlsPoints;
+        private computeSplines;
+        private addSplineNode;
+        private reflectPositions;
     }
     namespace CartoonAsymUnit {
         function reflect(target: THREE.Vector3, p1: THREE.Vector3, p2: THREE.Vector3, amount: number): void;
@@ -12190,13 +12190,13 @@ declare namespace LiteMol.Visualization.Molecule.Cartoons.Geometry {
     class Builder {
         constructor();
         private tempVectors;
-        private setVector(data, i, v);
+        private setVector;
         addTube(element: CartoonAsymUnit, state: CartoonsGeometryState, width: number, height: number, waveFactor: number): void;
         addTubeCap(element: CartoonAsymUnit, state: CartoonsGeometryState, width: number, height: number, isStart: boolean, isEnd: boolean): void;
         addSheet(element: CartoonAsymUnit, state: CartoonsGeometryState, isStart: boolean, isEnd: boolean): void;
         addSheetCap(element: CartoonAsymUnit, state: CartoonsGeometryState, isStart: boolean, isEnd: boolean): void;
         addSheepCapSection(state: CartoonsGeometryState, p1: THREE.Vector3, p2: THREE.Vector3, p3: THREE.Vector3, p4: THREE.Vector3): void;
-        private findN3(index, arrays, target);
+        private findN3;
         hasP(index: number, arrays: {
             startIndex: number[];
             endIndex: number[];
@@ -12223,7 +12223,7 @@ declare namespace LiteMol.Visualization.Molecule.Cartoons.Geometry {
 declare namespace LiteMol.Visualization.Molecule.Cartoons {
     enum CartoonsModelType {
         Default = 0,
-        AlphaTrace = 1,
+        AlphaTrace = 1
     }
     interface Parameters {
         tessalation?: number;
@@ -12243,10 +12243,10 @@ declare namespace LiteMol.Visualization.Molecule.Cartoons {
         getPickElements(pickId: number): number[];
         highlightElement(pickId: number, highlight: boolean): boolean;
         protected highlightInternal(isOn: boolean): boolean;
-        private applyColoring(theme);
+        private applyColoring;
         protected applyThemeInternal(theme: Theme): void;
-        private createObjects();
-        static create(entity: any, {model, queryContext, atomIndices, theme, params, props}: {
+        private createObjects;
+        static create(entity: any, { model, queryContext, atomIndices, theme, params, props }: {
             model: Core.Structure.Molecule.Model;
             queryContext: Core.Structure.Query.Context;
             atomIndices: number[];
@@ -12368,7 +12368,7 @@ declare namespace LiteMol.Bootstrap.Utils {
 declare namespace LiteMol.Bootstrap.Utils {
     enum DataCompressionMethod {
         None = 0,
-        Gzip = 1,
+        Gzip = 1
     }
     interface AjaxGetParams {
         url: string;
@@ -12389,8 +12389,8 @@ declare namespace LiteMol.Bootstrap.Utils.Query {
 declare namespace LiteMol.Bootstrap.Utils.Query {
     class ValueOrError<A> {
         isError: boolean;
-        value: A | undefined;
-        error: any;
+        value?: A | undefined;
+        error?: any;
         bind<B>(f: (v: A) => ValueOrError<B>): ValueOrError<B>;
         constructor(isError: boolean, value?: A | undefined, error?: any);
     }
@@ -12448,14 +12448,14 @@ declare namespace LiteMol.Bootstrap.Service {
             Log = 2,
             Busy = 3,
             Transformer = 4,
-            Task = 5,
+            Task = 5
         }
     }
 }
 declare namespace LiteMol.Bootstrap.Service {
     class Logger {
         private context;
-        private log(e);
+        private log;
         message(m: string): void;
         error(m: string): void;
         warning(m: string): void;
@@ -12467,7 +12467,7 @@ declare namespace LiteMol.Bootstrap.Service {
             Message = 0,
             Error = 1,
             Warning = 2,
-            Info = 3,
+            Info = 3
         }
         interface Entry {
             type: EntryType;
@@ -12520,10 +12520,10 @@ declare namespace LiteMol.Bootstrap {
             private computationCtx;
             result: Promise<T>;
             tryAbort(): void;
-            private progressUpdated(progress);
-            private resolved();
-            private rejected(err);
-            private run();
+            private progressUpdated;
+            private resolved;
+            private rejected;
+            private run;
             constructor(context: Bootstrap.Context, computation: Computation<T>, info: Info);
         }
         interface State {
@@ -12843,7 +12843,7 @@ declare namespace LiteMol.Bootstrap.Interactivity {
     namespace Info {
         const enum __Kind {
             Empty = 0,
-            Selection = 1,
+            Selection = 1
         }
         interface Empty {
             kind: __Kind.Empty;
@@ -12870,7 +12870,7 @@ declare namespace LiteMol.Bootstrap.Interactivity {
         addProvider(provider: HighlightProvider): void;
         removeProvider(provider: HighlightProvider): void;
         private empty;
-        private getInfo(i);
+        private getInfo;
         constructor(context: Context);
     }
 }
@@ -12940,7 +12940,7 @@ declare namespace LiteMol.Bootstrap.Visualization {
             visual: Visual;
         } | undefined;
         resetThemesAndHighlight(sel?: Bootstrap.Tree.Selector<Bootstrap.Entity.Any>): void;
-        private highlightMoleculeModel(what);
+        private highlightMoleculeModel;
         constructor(context: Context, scene: SceneWrapper);
     }
     class SceneWrapper {
@@ -12950,12 +12950,12 @@ declare namespace LiteMol.Bootstrap.Visualization {
         private cameraObserver;
         scene: LiteMol.Visualization.Scene;
         models: DisplayList;
-        private resetScene();
+        private resetScene;
         readonly camera: LiteMol.Visualization.Camera;
         destroy(): void;
-        private handleEvent(e, event);
-        private focusMoleculeModelSelection(sel);
-        private focusMoleculeModelOnQuery(what);
+        private handleEvent;
+        private focusMoleculeModelSelection;
+        private focusMoleculeModelOnQuery;
         constructor(element: HTMLElement, context: Context, options?: LiteMol.Visualization.SceneOptions);
     }
 }
@@ -13109,7 +13109,7 @@ declare namespace LiteMol.Bootstrap.Visualization.Density {
 declare namespace LiteMol.Bootstrap.Visualization.Density {
     enum IsoValueType {
         Sigma = 0,
-        Absolute = 1,
+        Absolute = 1
     }
     interface Params {
         bottomLeft?: number[];
@@ -13151,7 +13151,7 @@ declare namespace LiteMol.Bootstrap {
         const enum Visibility {
             Full = 0,
             Partial = 1,
-            None = 2,
+            None = 2
         }
         interface State {
             isCollapsed?: boolean;
@@ -13598,7 +13598,7 @@ declare namespace LiteMol.Bootstrap.Behaviour {
         select: Rx.Observable<Interactivity.Info>;
         click: Rx.Observable<Interactivity.Info>;
         currentEntity: Rx.Observable<Entity.Any | undefined>;
-        private init();
+        private init;
         constructor(context: Context);
     }
 }
@@ -13637,9 +13637,9 @@ declare namespace LiteMol.Bootstrap.Behaviour.Density {
         private obs;
         private behaviour;
         private ref;
-        private remove();
-        private getVisual();
-        private update(info);
+        private remove;
+        private getVisual;
+        private update;
         updateTheme(ti: Visualization.Theme.Instance): void;
         dispose(): void;
         register(behaviour: Entity.Behaviour.Any): void;
@@ -13657,11 +13657,11 @@ declare namespace LiteMol.Bootstrap.Behaviour.Molecule {
         private download;
         private cache;
         server: string;
-        private remove();
-        private isApplicable(info);
+        private remove;
+        private isApplicable;
         private style;
-        private update(info);
-        private create(data, transform);
+        private update;
+        private create;
         dispose(): void;
         register(behaviour: Entity.Behaviour.Any): void;
         constructor(context: Context, server: string, radius?: number);
@@ -13700,12 +13700,12 @@ declare namespace LiteMol.Bootstrap.Components {
         Right = 2,
         Bottom = 3,
         Left = 4,
-        Root = 5,
+        Root = 5
     }
     enum CollapsedControlsLayout {
         Outside = 0,
         Landscape = 1,
-        Portrait = 2,
+        Portrait = 2
     }
     class LayoutTarget {
         cssClass: string;
@@ -13728,8 +13728,8 @@ declare namespace LiteMol.Bootstrap.Components {
         update(state: Partial<LayoutState>): void;
         private rootState;
         private expandedViewport;
-        private getScrollElement();
-        private handleExpand();
+        private getScrollElement;
+        private handleExpand;
         updateTargets(targets: LayoutTarget[]): void;
         constructor(context: Context, targets: LayoutTarget[], root: HTMLElement);
     }
@@ -13749,10 +13749,10 @@ declare namespace LiteMol.Bootstrap.Components.Transform {
         private updateTimeout;
         private timeout;
         private never;
-        private _update();
-        private _reset();
+        private _update;
+        private _reset;
         private anchorParams;
-        private _updateParams(params);
+        private _updateParams;
         updateParams(params: Partial<P>): void;
         autoUpdateParams(params: Partial<P>): void;
         readonly isUpdate: boolean;
@@ -13766,7 +13766,7 @@ declare namespace LiteMol.Bootstrap.Components.Transform {
         update: Controller<any> | undefined;
         transforms: Controller<any>[];
     }> {
-        private update();
+        private update;
         constructor(context: Context);
     }
 }
@@ -13781,7 +13781,7 @@ declare namespace LiteMol.Bootstrap.Components.Transform {
         updateThemeColor(name: string, value: LiteMol.Visualization.Color): void;
         updateThemeVariable(name: string, value: any): void;
         updateThemeTransparency(transparency: LiteMol.Visualization.Theme.Transparency): void;
-        private getThemeInstance(template);
+        private getThemeInstance;
         updateThemeDefinition(definition: Bootstrap.Visualization.Theme.Template): void;
     }
     class MoleculeVisual extends VisualStyle<Bootstrap.Entity.Transformer.Molecule.CreateVisualParams> {
@@ -13791,14 +13791,14 @@ declare namespace LiteMol.Bootstrap.Components.Transform {
     class GenericLabels extends VisualStyle<Bootstrap.Entity.Transformer.Labels.CreateParams> {
     }
     class DensityVisual<T, Styles> extends Controller<T> {
-        private cloneStyle(prop?);
-        private getStyle(prop?);
-        private setStyle(style, prop?);
+        private cloneStyle;
+        private getStyle;
+        private setStyle;
         updateStyleParams(params: any, styleProp?: Styles): void;
         updateStyleTheme(theme: Partial<Vis.Theme.Instance>, styleProp?: Styles): void;
         updateThemeColor(name: string, value: LiteMol.Visualization.Color, styleProp?: Styles): void;
         updateThemeTransparency(transparency: LiteMol.Visualization.Theme.Transparency, styleProp?: Styles): void;
-        private getThemeInstance(template, styleProp?);
+        private getThemeInstance;
         updateThemeDefinition(definition: Bootstrap.Visualization.Theme.Template, styleProp?: Styles): void;
     }
 }
@@ -13809,8 +13809,8 @@ declare namespace LiteMol.Bootstrap.Components.Transform {
     class Updater extends Component<UpdaterState> {
         private selector;
         header: string;
-        private removed(e);
-        private added();
+        private removed;
+        private added;
         constructor(ctx: Context, selector: Tree.Selector<Entity.Any>, header: string);
     }
 }
@@ -13822,8 +13822,8 @@ declare namespace LiteMol.Bootstrap.Components.Transform {
         private selector;
         transformer: Tree.Transformer.Any;
         header: string;
-        private removed(e);
-        private added();
+        private removed;
+        private added;
         constructor(ctx: Context, selector: Tree.Selector<Entity.Any>, transformer: Tree.Transformer.Any, header: string);
     }
 }
@@ -13840,11 +13840,11 @@ declare namespace LiteMol.Bootstrap.Components.Context {
     }> {
         private serialNumber;
         private serialId;
-        private findByKey(key);
-        private show(toast);
-        private timeout(id, delay?);
-        private hideId(id);
-        private hide(e);
+        private findByKey;
+        private show;
+        private timeout;
+        private hideId;
+        private hide;
         constructor(context: Context);
     }
     namespace Toast {
@@ -13870,9 +13870,9 @@ declare namespace LiteMol.Bootstrap.Components.Context {
     }
     class TaskWatcher extends Component<TasksState> {
         private type;
-        private updated(state);
-        private started(task);
-        private completed(taskId);
+        private updated;
+        private started;
+        private completed;
         constructor(context: Context, type: Task.Type);
     }
 }
@@ -13901,7 +13901,7 @@ declare namespace LiteMol.Bootstrap {
         get(key: string): any;
     }
     class Context {
-        plugin: Plugin.Instance | undefined;
+        plugin?: Plugin.Instance | undefined;
         id: string;
         dispatcher: Service.Dispatcher;
         logger: Service.Logger;
@@ -13948,7 +13948,7 @@ declare namespace LiteMol.Bootstrap {
         private byId;
         private bySourceType;
         private byTargetType;
-        private addType(e, t, to);
+        private addType;
         getController(t: Transformer, e: Entity.Any): Components.Transform.Controller<any> | undefined;
         getBySourceType(t: Entity.AnyType): Tree.Transformer<Tree.Node.Any, Tree.Node.Any, any>[];
         getByTargetType(t: Entity.AnyType): Tree.Transformer<Tree.Node.Any, Tree.Node.Any, any>[];
@@ -14059,7 +14059,7 @@ declare namespace LiteMol.Plugin.Controls {
         title?: string;
     }, {}> {
         current: any;
-        private get(i);
+        private get;
         render(): JSX.Element;
     }
     function OptionsGroup(props: {
@@ -14082,7 +14082,7 @@ declare namespace LiteMol.Plugin.Controls {
         description: string;
         topRightAction?: JSX.Element;
     }, {}> {
-        private header();
+        private header;
         render(): JSX.Element;
     }
     const ExpandableGroup: (props: {
@@ -14111,8 +14111,8 @@ declare namespace LiteMol.Plugin.Controls {
         private firedValue;
         componentWillMount(): void;
         componentWillReceiveProps(nextProps: any): void;
-        private updateValue(s);
-        private fire();
+        private updateValue;
+        private fire;
         render(): JSX.Element;
     }
     class Handle extends React.Component<Partial<HandleProps>, {}> {
@@ -14256,8 +14256,8 @@ declare namespace LiteMol.Plugin.Views {
 declare namespace LiteMol.Plugin.Views {
     class Layout extends View<Bootstrap.Components.Layout, {}, {}> {
         componentDidMount(): void;
-        private renderTarget(name, target);
-        private updateTarget(name, regionType, layout);
+        private renderTarget;
+        private updateTarget;
         render(): JSX.Element;
     }
 }
@@ -14350,11 +14350,11 @@ declare namespace LiteMol.Plugin.Views.Transform.Molecule {
         protected renderControls(): JSX.Element;
     }
     class CreateVisual extends Transform.ControllerBase<Bootstrap.Components.Transform.MoleculeVisual> {
-        private detail();
-        private cartoons();
-        private ballsAndSticks();
-        private surface();
-        private createColors();
+        private detail;
+        private cartoons;
+        private ballsAndSticks;
+        private surface;
+        private createColors;
         protected renderControls(): JSX.Element;
     }
     class CreateLabels extends Transform.ControllerBase<Bootstrap.Components.Transform.MoleculeLabels> {
@@ -14367,14 +14367,14 @@ declare namespace LiteMol.Plugin.Views.Transform.Density {
         protected renderControls(): JSX.Element;
     }
     class CreateVisual extends Transform.ControllerBase<Bootstrap.Components.Transform.DensityVisual<Transformer.Density.CreateVisualParams, 'style'>> {
-        private surface();
-        private colors();
+        private surface;
+        private colors;
         protected renderControls(): JSX.Element;
     }
     class CreateVisualBehaviour extends Transform.ControllerBase<Bootstrap.Components.Transform.DensityVisual<Transformer.Density.CreateVisualBehaviourParams, 'style'>> {
-        private surface();
-        private colors();
-        private show();
+        private surface;
+        private colors;
+        private show;
         protected renderControls(): JSX.Element;
     }
 }
@@ -14386,7 +14386,7 @@ declare namespace LiteMol.Plugin.Views.Context {
         private wrapper;
         componentWillMount(): void;
         componentDidUpdate(): void;
-        private scrollToBottom();
+        private scrollToBottom;
         render(): JSX.Element;
     }
 }
@@ -14428,7 +14428,7 @@ declare namespace LiteMol.Plugin.Views.Entity {
         shouldComponentUpdate(nextProps: {
             type: Bootstrap.Entity.TypeInfo;
         }, nextState: {}, nextContext: any): boolean;
-        private createBadge(name);
+        private createBadge;
         render(): JSX.Element;
     }
     class CurrentEntityControl extends View<Plugin.Components.AppInfo, {
@@ -14454,7 +14454,7 @@ declare namespace LiteMol.Plugin.Views.Visualization {
             showSceneOptions: boolean;
             showHelp: boolean;
         };
-        private help();
+        private help;
         render(): JSX.Element;
     }
     class HighlightInfo extends View<Bootstrap.Components.Visualization.HighlightInfo, {}, {}> {
@@ -14474,8 +14474,8 @@ declare namespace LiteMol.Plugin.Views.Visualization {
         componentDidMount(): void;
         componentWillUnmount(): void;
         renderMissing(): JSX.Element;
-        private handleLogo();
-        private getShowLogo();
+        private handleLogo;
+        private getShowLogo;
         render(): JSX.Element;
     }
 }
@@ -14590,12 +14590,12 @@ declare namespace LiteMol.Plugin {
         private target;
         private transformersInfo;
         context: Bootstrap.Context;
-        private compose();
-        private prepareTargets();
+        private compose;
+        private prepareTargets;
         getTransformerInfo(transformer: Bootstrap.Tree.Transformer.Any): TransformerInfo;
         destroy(): void;
         setComponents(components: Bootstrap.Plugin.ComponentProvider[]): void;
-        private init();
+        private init;
         constructor(spec: Specification, target: HTMLElement);
     }
 }
@@ -14717,8 +14717,8 @@ declare namespace LiteMol.Plugin {
          * The controller becomes unusable as a result.
          */
         destroy(): void;
-        private ofOptions(options);
-        private ofInstace(instance);
+        private ofOptions;
+        private ofInstace;
         constructor(optionsOrInstance: PluginControllerOptions | Bootstrap.Plugin.Instance);
     }
     function create(options: PluginControllerOptions): Controller;

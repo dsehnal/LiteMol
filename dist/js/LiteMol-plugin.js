@@ -58727,7 +58727,7 @@ var LiteMol;
                         Tokenizer.prototype.moveToEndOfLine = function () {
                             while (this.position < this.length) {
                                 var c = this.data.charCodeAt(this.position);
-                                if (c === 10 || c === 13) {
+                                if (c === 10 || c === 13) { //  /n | /r
                                     return this.position;
                                 }
                                 this.position++;
@@ -58772,7 +58772,7 @@ var LiteMol;
                             this.trim(start, start + 4);
                             Formats.TokenIndexBuilder.addToken(tokens, this.trimmedToken.start, this.trimmedToken.end);
                             //17             Character       Alternate location indicator. 
-                            if (this.data.charCodeAt(startPos + 16) === 32) {
+                            if (this.data.charCodeAt(startPos + 16) === 32) { // ' '
                                 Formats.TokenIndexBuilder.addToken(tokens, 0, 0);
                             }
                             else {
@@ -58789,7 +58789,7 @@ var LiteMol;
                             this.trim(start, start + 4);
                             Formats.TokenIndexBuilder.addToken(tokens, this.trimmedToken.start, this.trimmedToken.end);
                             //27             AChar           Code for insertion of residues.      
-                            if (this.data.charCodeAt(startPos + 26) === 32) {
+                            if (this.data.charCodeAt(startPos + 26) === 32) { // ' '
                                 Formats.TokenIndexBuilder.addToken(tokens, 0, 0);
                             }
                             else {
@@ -58862,7 +58862,7 @@ var LiteMol;
                             while (tokenizer.position < length) {
                                 var cont = true;
                                 switch (data.charCodeAt(tokenizer.position)) {
-                                    case 65:// A 
+                                    case 65: // A 
                                         if (tokenizer.startsWith(tokenizer.position, "ATOM")) {
                                             if (!modelAtomTokens) {
                                                 modelAtomTokens = Formats.TokenIndexBuilder.create(4096);
@@ -58873,14 +58873,14 @@ var LiteMol;
                                                 return err;
                                         }
                                         break;
-                                    case 67:// C
+                                    case 67: // C
                                         if (tokenizer.startsWith(tokenizer.position, "CRYST1")) {
                                             var start = tokenizer.position;
                                             var end = tokenizer.moveToEndOfLine();
                                             cryst = new PDB.CrystStructureInfo(data.substring(start, end));
                                         }
                                         break;
-                                    case 69:// E 
+                                    case 69: // E 
                                         if (tokenizer.startsWith(tokenizer.position, "ENDMDL") && atomCount > 0) {
                                             if (models.length === 0) {
                                                 modelIdToken = { start: data.length + 3, end: data.length + 4 };
@@ -58900,7 +58900,7 @@ var LiteMol;
                                             }
                                         }
                                         break;
-                                    case 72:// H 
+                                    case 72: // H 
                                         if (tokenizer.startsWith(tokenizer.position, "HETATM")) {
                                             if (!modelAtomTokens) {
                                                 modelAtomTokens = Formats.TokenIndexBuilder.create(4096);
@@ -58911,7 +58911,7 @@ var LiteMol;
                                                 return err;
                                         }
                                         break;
-                                    case 77://M
+                                    case 77: //M
                                         if (tokenizer.startsWith(tokenizer.position, "MODEL")) {
                                             if (atomCount > 0) {
                                                 if (models.length === 0) {
@@ -59988,7 +59988,7 @@ var LiteMol;
                         out[9] = a01 * b20 + a11 * b21 + a21 * b22;
                         out[10] = a02 * b20 + a12 * b21 + a22 * b22;
                         out[11] = a03 * b20 + a13 * b21 + a23 * b22;
-                        if (a !== out) {
+                        if (a !== out) { // If the source and destination differ, copy the unchanged last row
                             out[12] = a[12];
                             out[13] = a[13];
                             out[14] = a[14];
@@ -64546,6 +64546,7 @@ var LiteMol;
                     state.entityCount += entityCount;
                 }
                 function buildAssemblyEntry(model, entry, state) {
+                    var _a;
                     var ops = [], currentOp = [];
                     for (var i_2 = 0; i_2 < entry.operators.length; i_2++)
                         currentOp[i_2] = '';
@@ -64562,7 +64563,6 @@ var LiteMol;
                         mask[i] = asymIds.has(residueAsymIds[i]);
                     }
                     getAssemblyParts(model, mask, transforms, state, transformOffset);
-                    var _a;
                 }
                 SymmetryHelpers.buildAssemblyEntry = buildAssemblyEntry;
                 function buildAssembly(model, assembly) {
@@ -66097,10 +66097,10 @@ var LiteMol;
             function fromHexString(s) {
                 if (s[0] !== '#')
                     return fromHex(0);
-                if (s.length === 4) {
+                if (s.length === 4) { // #rgb
                     return fromHexString("#" + s[1] + s[1] + s[2] + s[2] + s[3] + s[3]);
                 }
-                else if (s.length === 7) {
+                else if (s.length === 7) { // #rrggbb
                     return fromHex(parseInt(s.substr(1), 16));
                 }
                 return fromHex(0);
@@ -66797,10 +66797,10 @@ var LiteMol;
                     event.preventDefault();
                 }
                 var delta = 0;
-                if (event.wheelDelta) {
+                if (event.wheelDelta) { // WebKit / Opera / Explorer 9
                     delta = event.wheelDelta;
                 }
-                else if (event.detail) {
+                else if (event.detail) { // Firefox
                     delta = -event.detail;
                 }
                 //if (delta < -0.5) delta = -0.5;
@@ -67874,7 +67874,7 @@ var LiteMol;
                     case 1:
                         this._state = 3 /* TOUCH_ROTATE */;
                         this.scene.mouseInfo.updatePosition(event.touches[0].clientX, event.touches[0].clientY);
-                        this._rotateStart.copy(this.getMouseProjectionOnBall());
+                        this._rotateStart.copy(this.getMouseProjectionOnBall( /*event.touches[0].clientX, event.touches[0].clientY*/));
                         this._rotateEnd.copy(this._rotateStart);
                         break;
                     case 2:
@@ -67885,7 +67885,7 @@ var LiteMol;
                         var x = (event.touches[0].clientX + event.touches[1].clientX) / 2;
                         var y = (event.touches[0].clientY + event.touches[1].clientY) / 2;
                         this.scene.mouseInfo.updatePosition(x, y);
-                        this._panStart.copy(this.getMouseOnScreen());
+                        this._panStart.copy(this.getMouseOnScreen( /*x, y*/));
                         this._panEnd.copy(this._panStart);
                         break;
                     default:
@@ -67901,7 +67901,7 @@ var LiteMol;
                 switch (event.touches.length) {
                     case 1:
                         this.scene.mouseInfo.updatePosition(event.touches[0].clientX, event.touches[0].clientY);
-                        this._rotateEnd.copy(this.getMouseProjectionOnBall());
+                        this._rotateEnd.copy(this.getMouseProjectionOnBall( /*event.touches[0].clientX, event.touches[0].clientY*/));
                         this.update();
                         break;
                     case 2:
@@ -67911,7 +67911,7 @@ var LiteMol;
                         var x = (event.touches[0].clientX + event.touches[1].clientX) / 2;
                         var y = (event.touches[0].clientY + event.touches[1].clientY) / 2;
                         this.scene.mouseInfo.updatePosition(x, y);
-                        this._panEnd.copy(this.getMouseOnScreen());
+                        this._panEnd.copy(this.getMouseOnScreen( /*x, y*/));
                         this.update();
                         break;
                     default:
@@ -67928,7 +67928,7 @@ var LiteMol;
                 switch (touches.length) {
                     case 1:
                         this.scene.mouseInfo.updatePosition(touches[0].clientX, touches[0].clientY);
-                        this._rotateEnd.copy(this.getMouseProjectionOnBall());
+                        this._rotateEnd.copy(this.getMouseProjectionOnBall( /*event.touches[0].clientX, event.touches[0].clientY*/));
                         this._rotateStart.copy(this._rotateEnd);
                         break;
                     case 2:
@@ -67936,7 +67936,7 @@ var LiteMol;
                         var x = (touches[0].clientX + touches[1].clientX) / 2;
                         var y = (touches[0].clientY + touches[1].clientY) / 2;
                         this.scene.mouseInfo.updatePosition(x, y);
-                        this._panEnd.copy(this.getMouseOnScreen());
+                        this._panEnd.copy(this.getMouseOnScreen( /*x, y*/));
                         this._panStart.copy(this._panEnd);
                         break;
                 }
@@ -68140,7 +68140,7 @@ var LiteMol;
                         }
                     }
                 }
-                else {
+                else { // clear
                     for (var i = start; i < end; i++) {
                         var v = array[i];
                         array[i] = 0;
@@ -72260,10 +72260,10 @@ var LiteMol;
                     return { entityId: entityId, authSeqNumber: authSeqNumber, authAsymId: authAsymId, insCode: insCode };
                 }
                 function parseAuthResidueId(ids, separator) {
+                    var _a;
                     if (separator === void 0) { separator = ','; }
                     var parts = ids.split(separator).map(function (p) { return getAuthResidueIdParams(p); }).filter(function (p) { return !!p; });
                     return LiteMol.Core.Structure.Query.Builder.toQuery((_a = LiteMol.Core.Structure.Query).residues.apply(_a, parts));
-                    var _a;
                 }
                 Query.parseAuthResidueId = parseAuthResidueId;
             })(Query = Utils.Query || (Utils.Query = {}));
@@ -72353,13 +72353,13 @@ var LiteMol;
                     if (item.previous !== null) {
                         item.previous.next = item.next;
                     }
-                    else if (item.previous === null) {
+                    else if ( /*first == item*/item.previous === null) {
                         this.first = item.next;
                     }
                     if (item.next !== null) {
                         item.next.previous = item.previous;
                     }
-                    else if (item.next === null) {
+                    else if ( /*last == item*/item.next === null) {
                         this.last = item.previous;
                     }
                     item.next = null;
@@ -73191,7 +73191,7 @@ var LiteMol;
             function remove(node) {
                 if (!node || !node.tree)
                     return;
-                if (node.parent === node) {
+                if (node.parent === node) { // root
                     clearRoot(node.tree);
                     return;
                 }
@@ -74364,6 +74364,7 @@ var LiteMol;
                     });
                     Bootstrap.Command.Entity.Focus.getStream(context)
                         .subscribe(function (e) {
+                        var _a;
                         if (e.data.length === 1) {
                             var t = e.data[0];
                             if (Bootstrap.Entity.isMoleculeSelection(t)) {
@@ -74376,7 +74377,6 @@ var LiteMol;
                         else {
                             (_a = _this.scene.camera).focusOnModel.apply(_a, e.data.filter(function (e) { return Bootstrap.Entity.isClass(e, Bootstrap.Entity.VisualClass); }).map(function (e) { return e.props.model; }));
                         }
-                        var _a;
                     });
                     Bootstrap.Command.Entity.Highlight.getStream(context)
                         .subscribe(function (e) {
@@ -75563,6 +75563,7 @@ var LiteMol;
                     return void 0;
                 };
                 Cache.prototype.set = function (e, prop, value) {
+                    var _a;
                     var c = this.data.get(e.id);
                     if (c) {
                         c[prop] = value;
@@ -75571,7 +75572,6 @@ var LiteMol;
                         this.data.set(e.id, (_a = {}, _a[prop] = value, _a));
                     }
                     return value;
-                    var _a;
                 };
                 return Cache;
             }());
@@ -77950,8 +77950,8 @@ var LiteMol;
                         return this.latestState.params[prop || 'style'];
                     };
                     DensityVisual.prototype.setStyle = function (style, prop) {
-                        this.autoUpdateParams((_a = {}, _a[prop || 'style'] = style, _a));
                         var _a;
+                        this.autoUpdateParams((_a = {}, _a[prop || 'style'] = style, _a));
                     };
                     DensityVisual.prototype.updateStyleParams = function (params, styleProp) {
                         var s = this.cloneStyle(styleProp);
@@ -79366,20 +79366,21 @@ var LiteMol;
                     return step !== null ? parseFloat(closestPoint.toFixed(this.getPrecision(step))) : closestPoint;
                 };
                 SliderBase.prototype.render = function () {
+                    var _a;
                     var _this = this;
-                    var _a = this.state, handle = _a.handle, bounds = _a.bounds;
-                    var _b = this.props, className = _b.className, prefixCls = _b.prefixCls, disabled = _b.disabled, vertical = _b.vertical, dots = _b.dots, included = _b.included, range = _b.range, step = _b.step, marks = _b.marks, max = _b.max, min = _b.min, tipFormatter = _b.tipFormatter, children = _b.children;
+                    var _b = this.state, handle = _b.handle, bounds = _b.bounds;
+                    var _c = this.props, className = _c.className, prefixCls = _c.prefixCls, disabled = _c.disabled, vertical = _c.vertical, dots = _c.dots, included = _c.included, range = _c.range, step = _c.step, marks = _c.marks, max = _c.max, min = _c.min, tipFormatter = _c.tipFormatter, children = _c.children;
                     var customHandle = this.props.handle;
                     var offsets = bounds.map(function (v) { return _this.calcOffset(v); });
                     var handleClassName = prefixCls + "-handle";
                     var handlesClassNames = bounds.map(function (v, i) {
+                        var _a;
                         return classNames((_a = {},
                             _a[handleClassName] = true,
                             _a[handleClassName + "-" + (i + 1)] = true,
                             _a[handleClassName + "-lower"] = i === 0,
                             _a[handleClassName + "-upper"] = i === bounds.length - 1,
                             _a));
-                        var _a;
                     });
                     var isNoTip = (step === null) || (tipFormatter === null);
                     var commonHandleProps = {
@@ -79407,13 +79408,13 @@ var LiteMol;
                     //             />
                     //     );
                     // }
-                    var sliderClassName = classNames((_c = {},
-                        _c[prefixCls] = true,
-                        _c[prefixCls + "-with-marks"] = Object.keys(marks).length,
-                        _c[prefixCls + "-disabled"] = disabled,
-                        _c[prefixCls + "-vertical"] = this.props.vertical,
-                        _c[className] = !!className,
-                        _c));
+                    var sliderClassName = classNames((_a = {},
+                        _a[prefixCls] = true,
+                        _a[prefixCls + "-with-marks"] = Object.keys(marks).length,
+                        _a[prefixCls + "-disabled"] = disabled,
+                        _a[prefixCls + "-vertical"] = this.props.vertical,
+                        _a[className] = !!className,
+                        _a));
                     return (Plugin.React.createElement("div", { ref: function (e) { return _this.sliderElement = e; }, className: sliderClassName, onTouchStart: disabled ? noop : this.onTouchStart.bind(this), onMouseDown: disabled ? noop : this.onMouseDown.bind(this) },
                         Plugin.React.createElement("div", { className: prefixCls + "-rail" }),
                         tracks,
@@ -79421,7 +79422,6 @@ var LiteMol;
                         handles,
                         Plugin.React.createElement(Marks, { className: prefixCls + "-mark", vertical: vertical, marks: marks, included: isIncluded, lowerBound: bounds[0], upperBound: bounds[bounds.length - 1], max: max, min: min }),
                         children));
-                    var _c;
                 };
                 SliderBase.defaultProps = {
                     prefixCls: 'lm-slider-base',
@@ -79454,6 +79454,7 @@ var LiteMol;
                 var markWidth = unit * 0.9;
                 var range = max - min;
                 var elements = marksKeys.map(parseFloat).sort(function (a, b) { return a - b; }).map(function (point) {
+                    var _a;
                     var isActived = (!included && point === upperBound) ||
                         (included && point <= upperBound && point >= lowerBound);
                     var markClassName = classNames((_a = {},
@@ -79476,7 +79477,6 @@ var LiteMol;
                     var markLabel = markPointIsObject ? markPoint.label : markPoint;
                     var markStyle = markPointIsObject ? __assign({}, style, markPoint.style) : style;
                     return (Plugin.React.createElement("span", { className: markClassName, style: markStyle, key: point }, markLabel));
-                    var _a;
                 });
                 return Plugin.React.createElement("div", { className: className }, elements);
             };
@@ -79495,6 +79495,7 @@ var LiteMol;
                 var prefixCls = _a.prefixCls, vertical = _a.vertical, marks = _a.marks, dots = _a.dots, step = _a.step, included = _a.included, lowerBound = _a.lowerBound, upperBound = _a.upperBound, max = _a.max, min = _a.min;
                 var range = max - min;
                 var elements = calcPoints(vertical, marks, dots, step, min, max).map(function (point) {
+                    var _a;
                     var offset = Math.abs(point - min) / range * 100 + "%";
                     var style = vertical ? { bottom: offset } : { left: offset };
                     var isActived = (!included && point === upperBound) ||
@@ -79504,7 +79505,6 @@ var LiteMol;
                         _a[prefixCls + "-dot-active"] = isActived,
                         _a));
                     return Plugin.React.createElement("span", { className: pointClassName, style: style, key: point });
-                    var _a;
                 });
                 return Plugin.React.createElement("div", { className: prefixCls + "-step" }, elements);
             };
@@ -80946,7 +80946,7 @@ var LiteMol;
                                 : Plugin.React.createElement(Plugin.Controls.Button, { style: 'link', title: 'Collapse', onClick: function () { return LiteMol.Bootstrap.Command.Entity.ToggleExpanded.dispatch(_this.ctx, node); }, icon: 'collapse', customClass: 'lm-entity-tree-entry-toggle-group' });
                         }
                         else {
-                            if (node.state.visibility === 0 /* Full */ && node.type.info.traits.isFocusable) {
+                            if ( /*BEntity.isVisual(node) &&*/node.state.visibility === 0 /* Full */ && node.type.info.traits.isFocusable) {
                                 expander = Plugin.React.createElement(Plugin.Controls.Button, { style: 'link', icon: 'focus-on-visual', title: 'Focus', onClick: function () { return LiteMol.Bootstrap.Command.Entity.Focus.dispatch(_this.ctx, _this.ctx.select(node)); }, customClass: 'lm-entity-tree-entry-toggle-group' });
                             }
                         }

@@ -1004,8 +1004,8 @@ var LiteMol;
                 };
                 Behaviour.prototype.invalidateStyles = function () {
                     return __awaiter(this, void 0, void 0, function () {
-                        var _this = this;
                         var styles, refs, _loop_1, this_1, _i, _a, t, _b, refs_1, r;
+                        var _this = this;
                         return __generator(this, function (_c) {
                             switch (_c.label) {
                                 case 0:
@@ -1019,7 +1019,7 @@ var LiteMol;
                                         _this.groups.locked.add(r);
                                     });
                                     _loop_1 = function (t) {
-                                        var s, vs, _i, vs_1, v, _a;
+                                        var _a, s, vs, _i, vs_1, v;
                                         return __generator(this, function (_b) {
                                             switch (_b.label) {
                                                 case 0:
@@ -1174,9 +1174,9 @@ var LiteMol;
                     return _super !== null && _super.apply(this, arguments) || this;
                 }
                 StreamingView.prototype.updateIso = function (type, v) {
+                    var _a;
                     var isoValues = __assign({}, this.params.isoValues, (_a = {}, _a[type] = v, _a));
                     this.controller.autoUpdateParams({ isoValues: isoValues });
-                    var _a;
                 };
                 StreamingView.prototype.iso = function (type) {
                     var _this = this;
@@ -3497,10 +3497,11 @@ var LiteMol;
                         default: return fail(a, 'Unknown source.');
                     }
                 }, function (ctx, actionCtx) {
+                    var _a;
                     if (!actionCtx)
                         return;
-                    var _a = actionCtx, id = _a.id, refs = _a.refs, groupRef = _a.groupRef;
-                    var sel = ctx.select((_b = Tree.Selection).byRef.apply(_b, refs));
+                    var _b = actionCtx, id = _b.id, refs = _b.refs, groupRef = _b.groupRef;
+                    var sel = ctx.select((_a = Tree.Selection).byRef.apply(_a, refs));
                     if (sel.length === refs.length) {
                         ctx.logger.message('Density loaded, click on a residue or an atom to view the data.');
                     }
@@ -3513,7 +3514,6 @@ var LiteMol;
                             Bootstrap.Command.Tree.RemoveNode.dispatch(ctx, groupRef);
                         }
                     }
-                    var _b;
                 });
             })(Data = PDBe.Data || (PDBe.Data = {}));
         })(PDBe = Viewer.PDBe || (Viewer.PDBe = {}));
@@ -4140,6 +4140,7 @@ var LiteMol;
                         return id[this.params.sourceId];
                     };
                     DownloadDensityView.prototype.updateId = function (newId) {
+                        var _a, _b;
                         var params = this.params;
                         var id = params.id;
                         if (!id || typeof id === 'string')
@@ -4147,7 +4148,6 @@ var LiteMol;
                         else
                             id = LiteMol.Bootstrap.Utils.merge(id, (_b = {}, _b[params.sourceId] = newId, _b));
                         this.updateParams({ id: id });
-                        var _a, _b;
                     };
                     DownloadDensityView.prototype.renderControls = function () {
                         var _this = this;
@@ -4195,13 +4195,13 @@ var LiteMol;
                     return _super !== null && _super.apply(this, arguments) || this;
                 }
                 ObtainDownload.prototype.updateSourceParams = function (newSrc) {
+                    var _a;
                     var params = this.params;
                     var src = params.sources[params.sourceKind];
                     var newParams = {
                         sources: __assign({}, params.sources, (_a = {}, _a[params.sourceKind] = __assign({}, src, newSrc), _a))
                     };
                     this.updateParams(newParams);
-                    var _a;
                 };
                 ObtainDownload.prototype.coordServer = function (src) {
                     var _this = this;

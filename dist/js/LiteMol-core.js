@@ -13727,7 +13727,7 @@ var LiteMol;
                         Tokenizer.prototype.moveToEndOfLine = function () {
                             while (this.position < this.length) {
                                 var c = this.data.charCodeAt(this.position);
-                                if (c === 10 || c === 13) {
+                                if (c === 10 || c === 13) { //  /n | /r
                                     return this.position;
                                 }
                                 this.position++;
@@ -13772,7 +13772,7 @@ var LiteMol;
                             this.trim(start, start + 4);
                             Formats.TokenIndexBuilder.addToken(tokens, this.trimmedToken.start, this.trimmedToken.end);
                             //17             Character       Alternate location indicator. 
-                            if (this.data.charCodeAt(startPos + 16) === 32) {
+                            if (this.data.charCodeAt(startPos + 16) === 32) { // ' '
                                 Formats.TokenIndexBuilder.addToken(tokens, 0, 0);
                             }
                             else {
@@ -13789,7 +13789,7 @@ var LiteMol;
                             this.trim(start, start + 4);
                             Formats.TokenIndexBuilder.addToken(tokens, this.trimmedToken.start, this.trimmedToken.end);
                             //27             AChar           Code for insertion of residues.      
-                            if (this.data.charCodeAt(startPos + 26) === 32) {
+                            if (this.data.charCodeAt(startPos + 26) === 32) { // ' '
                                 Formats.TokenIndexBuilder.addToken(tokens, 0, 0);
                             }
                             else {
@@ -13862,7 +13862,7 @@ var LiteMol;
                             while (tokenizer.position < length) {
                                 var cont = true;
                                 switch (data.charCodeAt(tokenizer.position)) {
-                                    case 65:// A 
+                                    case 65: // A 
                                         if (tokenizer.startsWith(tokenizer.position, "ATOM")) {
                                             if (!modelAtomTokens) {
                                                 modelAtomTokens = Formats.TokenIndexBuilder.create(4096);
@@ -13873,14 +13873,14 @@ var LiteMol;
                                                 return err;
                                         }
                                         break;
-                                    case 67:// C
+                                    case 67: // C
                                         if (tokenizer.startsWith(tokenizer.position, "CRYST1")) {
                                             var start = tokenizer.position;
                                             var end = tokenizer.moveToEndOfLine();
                                             cryst = new PDB.CrystStructureInfo(data.substring(start, end));
                                         }
                                         break;
-                                    case 69:// E 
+                                    case 69: // E 
                                         if (tokenizer.startsWith(tokenizer.position, "ENDMDL") && atomCount > 0) {
                                             if (models.length === 0) {
                                                 modelIdToken = { start: data.length + 3, end: data.length + 4 };
@@ -13900,7 +13900,7 @@ var LiteMol;
                                             }
                                         }
                                         break;
-                                    case 72:// H 
+                                    case 72: // H 
                                         if (tokenizer.startsWith(tokenizer.position, "HETATM")) {
                                             if (!modelAtomTokens) {
                                                 modelAtomTokens = Formats.TokenIndexBuilder.create(4096);
@@ -13911,7 +13911,7 @@ var LiteMol;
                                                 return err;
                                         }
                                         break;
-                                    case 77://M
+                                    case 77: //M
                                         if (tokenizer.startsWith(tokenizer.position, "MODEL")) {
                                             if (atomCount > 0) {
                                                 if (models.length === 0) {
@@ -14988,7 +14988,7 @@ var LiteMol;
                         out[9] = a01 * b20 + a11 * b21 + a21 * b22;
                         out[10] = a02 * b20 + a12 * b21 + a22 * b22;
                         out[11] = a03 * b20 + a13 * b21 + a23 * b22;
-                        if (a !== out) {
+                        if (a !== out) { // If the source and destination differ, copy the unchanged last row
                             out[12] = a[12];
                             out[13] = a[13];
                             out[14] = a[14];
@@ -19546,6 +19546,7 @@ var LiteMol;
                     state.entityCount += entityCount;
                 }
                 function buildAssemblyEntry(model, entry, state) {
+                    var _a;
                     var ops = [], currentOp = [];
                     for (var i_2 = 0; i_2 < entry.operators.length; i_2++)
                         currentOp[i_2] = '';
@@ -19562,7 +19563,6 @@ var LiteMol;
                         mask[i] = asymIds.has(residueAsymIds[i]);
                     }
                     getAssemblyParts(model, mask, transforms, state, transformOffset);
-                    var _a;
                 }
                 SymmetryHelpers.buildAssemblyEntry = buildAssemblyEntry;
                 function buildAssembly(model, assembly) {

@@ -61,8 +61,8 @@ declare namespace LiteMol.Viewer.ValidatorDB {
             private provider;
             dispose(): void;
             register(behaviour: any): void;
-            private getChainId(id);
-            private processInfo(info);
+            private getChainId;
+            private processInfo;
             constructor(context: Bootstrap.Context, report: Api.Report);
         }
     }
@@ -184,29 +184,29 @@ declare namespace LiteMol.Extensions.DensityStreaming {
         private performance;
         private wasCached;
         private types;
-        private areBoxesSame(b);
-        private getModelBoundingBox();
-        private stop();
-        private remove(ref);
-        private clear();
-        private groupDone(ref, ok);
-        private checkResult(data);
-        private apply(b);
-        private finish();
-        private createXray();
-        private createEm();
-        private extendSelectionBox();
-        private isSameMolecule(info);
-        private static getChannel(data, name);
-        private noChannels();
-        private parseChannels(data);
-        private query(box?);
-        private tryUpdateSelectionDataBox(info);
-        private update();
-        private toSigma(type);
-        private syncStyles();
-        private updateVisual(v, style);
-        private invalidateStyles();
+        private areBoxesSame;
+        private getModelBoundingBox;
+        private stop;
+        private remove;
+        private clear;
+        private groupDone;
+        private checkResult;
+        private apply;
+        private finish;
+        private createXray;
+        private createEm;
+        private extendSelectionBox;
+        private isSameMolecule;
+        private static getChannel;
+        private noChannels;
+        private parseChannels;
+        private query;
+        private tryUpdateSelectionDataBox;
+        private update;
+        private toSigma;
+        private syncStyles;
+        private updateVisual;
+        private invalidateStyles;
         invalidateParams(newParams: CreateStreamingParams): Promise<void>;
         dispose(): void;
         register(behaviour: Entity.Behaviour.Any): void;
@@ -225,12 +225,12 @@ declare namespace LiteMol.Extensions.DensityStreaming {
         };
     };
     class StreamingView extends LiteMol.Plugin.Views.Transform.ControllerBase<Bootstrap.Components.Transform.DensityVisual<CreateStreamingParams, FieldType>> {
-        private updateIso(type, v);
-        private iso(type);
-        private style(type);
-        private details();
-        private updateValueType(toSigma);
-        private displayType();
+        private updateIso;
+        private iso;
+        private style;
+        private details;
+        private updateValueType;
+        private displayType;
         protected renderControls(): JSX.Element;
     }
 }
@@ -405,7 +405,7 @@ declare namespace LiteMol.Extensions.ComplexReprensetation.Transforms {
 }
 declare namespace LiteMol.Extensions.ComplexReprensetation.Carbohydrates.UI {
     class CreateVisual extends LiteMol.Plugin.Views.Transform.ControllerBase<Bootstrap.Components.Transform.Controller<Params>> {
-        private updateVisual(newParams);
+        private updateVisual;
         renderControls(): JSX.Element;
     }
 }
@@ -435,7 +435,7 @@ declare namespace LiteMol.Extensions.ParticleColoring {
 }
 declare namespace LiteMol.Extensions.ParticleColoring.UI {
     class Apply extends LiteMol.Plugin.Views.Transform.ControllerBase<Bootstrap.Components.Transform.Controller<Params>> {
-        private rainbow();
+        private rainbow;
         renderControls(): JSX.Element;
     }
 }
@@ -481,7 +481,7 @@ declare namespace LiteMol.Extensions.RNALoops {
             private provider;
             dispose(): void;
             register(behaviour: any): void;
-            private processInfo(info);
+            private processInfo;
             constructor(context: Bootstrap.Context, annotation: Api.Annotation);
         }
     }
@@ -548,7 +548,7 @@ declare namespace LiteMol.Viewer.PDBe.Validation {
             private provider;
             dispose(): void;
             register(behaviour: any): void;
-            private processInfo(info);
+            private processInfo;
             constructor(context: Bootstrap.Context, report: any);
         }
     }
@@ -591,13 +591,13 @@ declare namespace LiteMol.Viewer.PDBe.SequenceAnnotation {
             register(behaviour: Entity.Behaviour.Any): void;
             private __highlight;
             readonly molecule: Entity.Molecule.Molecule | undefined;
-            private resetTheme();
-            private getCached(a, model);
-            private setCached(a, model, theme);
-            private highlight();
-            private focus(a);
-            private apply(a);
-            private update(e);
+            private resetTheme;
+            private getCached;
+            private setCached;
+            private highlight;
+            private focus;
+            private apply;
+            private update;
             constructor(context: Bootstrap.Context);
         }
     }
@@ -617,8 +617,8 @@ declare namespace LiteMol.Viewer.PDBe.Views {
         protected renderControls(): JSX.Element;
     }
     class DownloadDensityView extends LiteMol.Plugin.Views.Transform.ControllerBase<Bootstrap.Components.Transform.Controller<Data.DownloadDensityParams>> {
-        private getId();
-        private updateId(newId);
+        private getId;
+        private updateId;
         protected renderControls(): JSX.Element;
     }
 }
@@ -627,11 +627,11 @@ declare namespace LiteMol.Viewer.Views {
         protected renderControls(): JSX.Element;
     }
     class ObtainDownload extends LiteMol.Plugin.Views.Transform.ControllerBase<Bootstrap.Components.Transform.Controller<DataSources.MoleculeDownloadParams>> {
-        private updateSourceParams(newSrc);
-        private coordServer(src);
-        private PDBe(src);
-        private url(src);
-        private file(src);
+        private updateSourceParams;
+        private coordServer;
+        private PDBe;
+        private url;
+        private file;
         protected renderControls(): JSX.Element;
     }
 }

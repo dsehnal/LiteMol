@@ -75,7 +75,7 @@ namespace LiteMol.Bootstrap.Utils {
 
             data.onabort = () => reject(Core.Computation.Aborted);
 
-            data.onprogress = e => {
+            data.onprogress = (e: ProgressEvent) => {
                 if (e.lengthComputable) {
                     ctx.updateProgress(action, true, e.loaded, e.total);
                 } else {
