@@ -29,8 +29,13 @@ namespace LiteMol.Custom {
     function determineSource(ctx: Bootstrap.Context) {
         let e = ctx.select('molecule')[0] as Entity.Molecule.Molecule;
         let source: Extensions.DensityStreaming.FieldSource = 'X-ray';
-        let method = (e.props.molecule.properties.experimentMethod || '').toLowerCase();
-        if (method.indexOf('microscopy') >= 0) source = 'EM';
+        const methods = (e.props.molecule.properties.experimentMethods || []);
+        for (const m of methods) {
+            if (m.toLowerCase().indexOf('microscopy') >= 0) {
+                source = 'EM';
+                break;
+            }
+        }
         return source;
     }
 

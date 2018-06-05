@@ -486,9 +486,14 @@ var LiteMol;
                 to: [Entity.Action],
                 defaultParams: function (ctx, e) {
                     var source = 'X-ray';
-                    var method = (e.props.molecule.properties.experimentMethod || '').toLowerCase();
-                    if (method.indexOf('microscopy') >= 0)
-                        source = 'EM';
+                    var methods = (e.props.molecule.properties.experimentMethods || []);
+                    for (var _i = 0, methods_1 = methods; _i < methods_1.length; _i++) {
+                        var m = methods_1[_i];
+                        if (m.toLowerCase().indexOf('microscopy') >= 0) {
+                            source = 'EM';
+                            break;
+                        }
+                    }
                     return {
                         server: ctx.settings.get('extensions.densityStreaming.defaultServer'),
                         id: e.props.molecule.id,

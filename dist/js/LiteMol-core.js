@@ -13350,12 +13350,18 @@ var LiteMol;
                             models.push(model);
                             startRow = endRow;
                         }
-                        var experimentMethod = void 0;
+                        var experimentMethods = void 0;
                         var _exptl = data.getCategory('_exptl');
                         if (_exptl) {
-                            experimentMethod = _exptl.getColumn('method').getString(0) || void 0;
+                            experimentMethods = [];
+                            var method = _exptl.getColumn('method');
+                            for (var i = 0; i < _exptl.rowCount; i++) {
+                                if (method.getValuePresence(i) !== 0 /* Present */)
+                                    continue;
+                                experimentMethods.push(method.getString(i));
+                            }
                         }
-                        return Core.Structure.Molecule.create(id, models, { experimentMethod: experimentMethod });
+                        return Core.Structure.Molecule.create(id, models, { experimentMethods: experimentMethods });
                     }
                     mmCIF.ofDataBlock = ofDataBlock;
                 })(mmCIF = Molecule.mmCIF || (Molecule.mmCIF = {}));

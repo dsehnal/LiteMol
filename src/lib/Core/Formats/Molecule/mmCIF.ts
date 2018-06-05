@@ -1058,12 +1058,17 @@ namespace LiteMol.Core.Formats.Molecule.mmCIF {
             startRow = endRow;
         }
 
-        let experimentMethod: string | undefined = void 0;
+        let experimentMethods: string[] | undefined = void 0;
         let _exptl = data.getCategory('_exptl');
         if (_exptl) {
-            experimentMethod = _exptl.getColumn('method').getString(0) || void 0;
+            experimentMethods = [];
+            const method = _exptl.getColumn('method');
+            for (let i = 0; i < _exptl.rowCount; i++) {
+                if (method.getValuePresence(i) !== CIF.ValuePresence.Present) continue;
+                experimentMethods.push(method.getString(i)!);
+            }
         }
 
-        return Structure.Molecule.create(id, models, { experimentMethod });
+        return Structure.Molecule.create(id, models, { experimentMethods });
     }
 }

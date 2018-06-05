@@ -44,8 +44,13 @@ namespace LiteMol.Extensions.DensityStreaming {
         to: [Entity.Action],
         defaultParams: (ctx, e) => {
             let source: FieldSource = 'X-ray';
-            const method = (e.props.molecule.properties.experimentMethod || '').toLowerCase();
-            if (method.indexOf('microscopy') >= 0) source = 'EM';
+            const methods = (e.props.molecule.properties.experimentMethods || []);
+            for (const m of methods) {
+                if (m.toLowerCase().indexOf('microscopy') >= 0) {
+                    source = 'EM';
+                    break;
+                }
+            }
             return { 
                 server: ctx.settings.get('extensions.densityStreaming.defaultServer'), 
                 id: e.props.molecule.id, 

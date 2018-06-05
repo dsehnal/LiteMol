@@ -422,7 +422,7 @@ namespace LiteMol.Core.Structure {
         }
         
         export interface Properties {
-            experimentMethod?: string
+            experimentMethods?: string[]
         }
 
         export interface Bonds {

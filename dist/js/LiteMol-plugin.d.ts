@@ -10840,7 +10840,7 @@ declare namespace LiteMol.Core.Structure {
     namespace Molecule {
         function create(id: string, models: Model[], properties?: Properties): Molecule;
         interface Properties {
-            experimentMethod?: string;
+            experimentMethods?: string[];
         }
         interface Bonds {
             readonly structConn?: StructConn;
