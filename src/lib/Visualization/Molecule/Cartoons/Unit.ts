@@ -75,14 +75,21 @@ namespace LiteMol.Visualization.Molecule.Cartoons.Geometry {
                 offset = 0,
                 i = 0;
 
+            let bbOnlyCount = 0, residueCount = 0;
             for (let e of this.elements) {
                 this.structureStarts.add(e.startResidueIndex);
                 this.structureEnds.add(e.endResidueIndex - 1);
                 for (i = e.startResidueIndex; i < e.endResidueIndex; i++) {
-                    this.backboneOnly = builder.addResidue(i, arrays, e.type);
+                    residueCount++;
+                    const bbOnly = builder.addResidue(i, arrays, e.type);
+                    if (bbOnly && (e.type === SSTypes.Helix || e.type === SSTypes.Sheet || e.type === SSTypes.Strand)) {
+                        bbOnlyCount++;
+                    }
                     residueType[residueType.length] = e.type;
                 }
             }
+
+            this.backboneOnly = bbOnlyCount > (residueCount / 4 - 1);
 
             this.residueIndex = new Int32Array(this.residueCount);
 

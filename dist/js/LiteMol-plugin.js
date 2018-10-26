@@ -56413,8 +56413,8 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     function step(op) {
         if (f) throw new TypeError("Generator is already executing.");
         while (_) try {
-            if (f = 1, y && (t = y[op[0] & 2 ? "return" : op[0] ? "throw" : "next"]) && !(t = t.call(y, op[1])).done) return t;
-            if (y = 0, t) op = [0, t.value];
+            if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
+            if (y = 0, t) op = [op[0] & 2, t.value];
             switch (op[0]) {
                 case 0: case 1: t = op; break;
                 case 4: _.label++; return { value: op[1], done: false };
@@ -65814,7 +65814,7 @@ var LiteMol;
 (function (LiteMol) {
     var Visualization;
     (function (Visualization) {
-        Visualization.VERSION = { number: "1.7.7", date: "Feb 27 2018" };
+        Visualization.VERSION = { number: "1.7.8", date: "Oct 26 2018" };
     })(Visualization = LiteMol.Visualization || (LiteMol.Visualization = {}));
 })(LiteMol || (LiteMol = {}));
 var LiteMol;
@@ -70338,15 +70338,21 @@ var LiteMol;
                         };
                         CartoonAsymUnit.prototype.initPositions = function (builder) {
                             var residues = this.model.data.residues, atoms = this.model.data.atoms, positions = this.model.positions, arrays = { atomStartIndex: residues.atomStartIndex, atomEndIndex: residues.atomEndIndex, name: atoms.name, x: positions.x, y: positions.y, z: positions.z }, residueType = [], offset = 0, i = 0;
+                            var bbOnlyCount = 0, residueCount = 0;
                             for (var _i = 0, _a = this.elements; _i < _a.length; _i++) {
                                 var e = _a[_i];
                                 this.structureStarts.add(e.startResidueIndex);
                                 this.structureEnds.add(e.endResidueIndex - 1);
                                 for (i = e.startResidueIndex; i < e.endResidueIndex; i++) {
-                                    this.backboneOnly = builder.addResidue(i, arrays, e.type);
+                                    residueCount++;
+                                    var bbOnly = builder.addResidue(i, arrays, e.type);
+                                    if (bbOnly && (e.type === 1 /* Helix */ || e.type === 3 /* Sheet */ || e.type === 5 /* Strand */)) {
+                                        bbOnlyCount++;
+                                    }
                                     residueType[residueType.length] = e.type;
                                 }
                             }
+                            this.backboneOnly = bbOnlyCount > (residueCount / 4 - 1);
                             this.residueIndex = new Int32Array(this.residueCount);
                             for (var _d = 0, _e = this.elements; _d < _e.length; _d++) {
                                 var e = _e[_d];
@@ -71048,7 +71054,7 @@ var LiteMol;
                                         builder.addStrandLine(unit, state, ctx.strandTemplate, ctx.strandArrays, unit.residueIndex[index]);
                                         break;
                                     default:
-                                        builder.addTube(unit, state, params.turnWidth, params.turnWidth, params.turnWidth);
+                                        builder.addTube(unit, state, params.turnWidth, params.turnWidth, 1);
                                         if (start || end) {
                                             builder.addTubeCap(unit, state, params.turnWidth, params.turnWidth, start, end);
                                         }
@@ -72266,8 +72272,8 @@ var LiteMol;
                     return { entityId: entityId, authSeqNumber: authSeqNumber, authAsymId: authAsymId, insCode: insCode };
                 }
                 function parseAuthResidueId(ids, separator) {
-                    var _a;
                     if (separator === void 0) { separator = ','; }
+                    var _a;
                     var parts = ids.split(separator).map(function (p) { return getAuthResidueIdParams(p); }).filter(function (p) { return !!p; });
                     return LiteMol.Core.Structure.Query.Builder.toQuery((_a = LiteMol.Core.Structure.Query).residues.apply(_a, parts));
                 }
@@ -79372,8 +79378,8 @@ var LiteMol;
                     return step !== null ? parseFloat(closestPoint.toFixed(this.getPrecision(step))) : closestPoint;
                 };
                 SliderBase.prototype.render = function () {
-                    var _a;
                     var _this = this;
+                    var _a;
                     var _b = this.state, handle = _b.handle, bounds = _b.bounds;
                     var _c = this.props, className = _c.className, prefixCls = _c.prefixCls, disabled = _c.disabled, vertical = _c.vertical, dots = _c.dots, included = _c.included, range = _c.range, step = _c.step, marks = _c.marks, max = _c.max, min = _c.min, tipFormatter = _c.tipFormatter, children = _c.children;
                     var customHandle = this.props.handle;

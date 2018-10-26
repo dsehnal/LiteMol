@@ -134,7 +134,7 @@ namespace LiteMol.Visualization.Molecule.Cartoons.Geometry {
                         builder.addStrandLine(unit, state, ctx.strandTemplate, ctx.strandArrays, unit.residueIndex[index]);
                         break;
                     default:
-                        builder.addTube(unit, state, params.turnWidth, params.turnWidth, params.turnWidth);
+                        builder.addTube(unit, state, params.turnWidth, params.turnWidth, 1);
                         if (start || end) {
                             builder.addTubeCap(unit, state, params.turnWidth, params.turnWidth, start, end);
                         }

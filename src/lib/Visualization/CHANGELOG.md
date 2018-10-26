@@ -1,4 +1,7 @@
-﻿# 1.7.7
+﻿# 1.7.8
+* Relaxed condition for switching to "backbone only" mode.
+
+# 1.7.7
 * Added optional "direction cones" to cartoons.
 
 # 1.7.6
