@@ -121,14 +121,14 @@ namespace LiteMol.Bootstrap.Visualization.Molecule {
     }
 
     export const RainbowPalette = [
-        Vis.Color.fromHex(0xCC2200),
-        Vis.Color.fromHex(0xCC7700),
-        Vis.Color.fromHex(0xCCAA00),
-        Vis.Color.fromHex(0x00CC00),
-        Vis.Color.fromHex(0x00AACC),
-        Vis.Color.fromHex(0x0000CC),
+        Vis.Color.fromHex(0xB77CE3),
         Vis.Color.fromHex(0x892AD2),
-        Vis.Color.fromHex(0xB77CE3)
+        Vis.Color.fromHex(0x0000CC),
+        Vis.Color.fromHex(0x00AACC),
+        Vis.Color.fromHex(0x00CC00),
+        Vis.Color.fromHex(0xCCAA00),
+        Vis.Color.fromHex(0xCC7700),
+        Vis.Color.fromHex(0xCC2200)
     ]
 
     const RainbowBaseColors = Immutable.Map({ 
