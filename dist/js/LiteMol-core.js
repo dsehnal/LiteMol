@@ -11188,7 +11188,7 @@ var LiteMol;
 (function (LiteMol) {
     var Core;
     (function (Core) {
-        Core.VERSION = { number: "3.2.2", date: "Nov 14 2017" };
+        Core.VERSION = { number: "3.2.3", date: "Feb 1 2019" };
     })(Core = LiteMol.Core || (LiteMol.Core = {}));
 })(LiteMol || (LiteMol = {}));
 /*
@@ -20395,27 +20395,35 @@ var LiteMol;
                     Compiler.compileAtomRanges = compileAtomRanges;
                     function compileSequence(seqEntityId, seqAsymId, start, end) {
                         return function (ctx) {
-                            var _a = ctx.structure.data, residues = _a.residues, chains = _a.chains, seqNumber = residues.seqNumber, atomStartIndex = residues.atomStartIndex, atomEndIndex = residues.atomEndIndex, entityId = chains.entityId, count = chains.count, residueStartIndex = chains.residueStartIndex, residueEndIndex = chains.residueEndIndex, fragments = new Query.FragmentSeqBuilder(ctx);
+                            var _a = ctx.structure.data, residues = _a.residues, chains = _a.chains, seqNumber = residues.seqNumber, authSeqNumber = residues.authSeqNumber, insCode = residues.insCode, atomStartIndex = residues.atomStartIndex, atomEndIndex = residues.atomEndIndex, entityId = chains.entityId, count = chains.count, residueStartIndex = chains.residueStartIndex, residueEndIndex = chains.residueEndIndex, fragments = new Query.FragmentSeqBuilder(ctx);
                             var parent = ctx.structure.parent, sourceChainIndex = chains.sourceChainIndex, isComputed = parent && sourceChainIndex;
                             var targetAsymId = typeof seqAsymId === 'string' ? { asymId: seqAsymId } : seqAsymId;
                             var optTargetAsymId = new OptimizedId(targetAsymId, isComputed ? parent.data.chains : chains);
+                            var isAuth = typeof targetAsymId.authAsymId === 'string';
+                            var seqSource = isAuth ? authSeqNumber : seqNumber;
+                            var startSeqNumber = isAuth ? start.authSeqNumber : start.seqNumber;
+                            var endSeqNumber = isAuth ? end.authSeqNumber : end.seqNumber;
                             //optAsymId.isSatisfied();
                             for (var cI = 0; cI < count; cI++) {
-                                if (entityId[cI] !== seqEntityId
+                                if ((!!seqEntityId && entityId[cI] !== seqEntityId)
                                     || !optTargetAsymId.isSatisfied(isComputed ? sourceChainIndex[cI] : cI)) {
                                     continue;
                                 }
                                 var i = residueStartIndex[cI], last = residueEndIndex[cI], startIndex = -1, endIndex = -1;
                                 for (; i < last; i++) {
-                                    if (seqNumber[i] >= start.seqNumber) {
+                                    if (seqSource[i] >= startSeqNumber && seqSource[i] <= endSeqNumber) {
+                                        if (!!start.insCode && insCode[i] !== start.insCode)
+                                            continue;
                                         startIndex = i;
                                         break;
                                     }
                                 }
-                                if (i === last)
+                                if (i < 0 || i === last)
                                     continue;
                                 for (i = startIndex; i < last; i++) {
-                                    if (seqNumber[i] >= end.seqNumber) {
+                                    if (seqSource[i] >= endSeqNumber) {
+                                        if (!!end.insCode && seqSource[i] === endSeqNumber && insCode[i] !== end.insCode)
+                                            continue;
                                         break;
                                     }
                                 }
@@ -20570,6 +20578,8 @@ var LiteMol;
                     Compiler.compileComplement = compileComplement;
                     function compileOr(queries) {
                         var _qs = queries.map(function (q) { return Builder.toQuery(q); });
+                        if (_qs.length === 1)
+                            return _qs[0];
                         return function (ctx) {
                             var fragments = new Query.HashFragmentSeqBuilder(ctx);
                             for (var _i = 0, _qs_1 = _qs; _i < _qs_1.length; _i++) {

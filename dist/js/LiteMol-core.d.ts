@@ -2734,7 +2734,7 @@ declare namespace LiteMol.Core.Structure.Query {
     function chainsFromIndices(indices: number[]): Builder;
     function residuesFromIndices(indices: number[]): Builder;
     function atomsFromIndices(indices: number[]): Builder;
-    function sequence(entityId: string, asymId: string | AsymIdSchema, startId: ResidueIdSchema, endId: ResidueIdSchema): Builder;
+    function sequence(entityId: string | undefined, asymId: string | AsymIdSchema, startId: ResidueIdSchema, endId: ResidueIdSchema): Builder;
     function hetGroups(): Builder;
     function nonHetPolymer(): Builder;
     function polymerTrace(...atomNames: string[]): Builder;
@@ -2781,7 +2781,7 @@ declare namespace LiteMol.Core.Structure.Query {
             atomStartIndex: number[];
             atomEndIndex: number[];
         } & Utils.DataTable<any>): Query;
-        function compileSequence(seqEntityId: string, seqAsymId: string | AsymIdSchema, start: ResidueIdSchema, end: ResidueIdSchema): Query;
+        function compileSequence(seqEntityId: string | undefined, seqAsymId: string | AsymIdSchema, start: ResidueIdSchema, end: ResidueIdSchema): Query;
         function compileHetGroups(): Query;
         function compileNonHetPolymer(): Query;
         function compileAtomsInBox(min: {
@@ -2797,7 +2797,7 @@ declare namespace LiteMol.Core.Structure.Query {
         function compileIntersectWith(what: Source, where: Source): Query;
         function compileFilter(what: Source, filter: (f: Fragment) => boolean): Query;
         function compileComplement(what: Source): Query;
-        function compileOr(queries: Source[]): (ctx: Context) => FragmentSeq;
+        function compileOr(queries: Source[]): Query;
         function compileUnion(what: Source): Query;
         function compilePolymerNames(names: string[], complement: boolean): Query;
         function compileAmbientResidues(where: Source, radius: number): (ctx: Context) => FragmentSeq;

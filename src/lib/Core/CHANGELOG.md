@@ -1,4 +1,7 @@
-﻿# 3.2.2
+﻿# 3.2.3
+* Updated sequence query to support atom_site.auth_ fields.
+
+# 3.2.2
 * Better Computation scheduling (using setImmediate alternatives instead of setTimeout).
 
 # 3.2.1

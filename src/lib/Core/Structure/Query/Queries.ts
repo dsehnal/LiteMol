@@ -71,7 +71,7 @@ namespace LiteMol.Core.Structure.Query {
     export function residuesFromIndices(indices: number[]) { return Builder.build(() => Compiler.compileFromIndices(false, indices, m => m.data.residues)); }
     export function atomsFromIndices(indices: number[]) { return Builder.build(() => Compiler.compileAtomIndices(indices)); }
 
-    export function sequence(entityId: string, asymId: string | AsymIdSchema, startId: ResidueIdSchema, endId: ResidueIdSchema) { return Builder.build(() => Compiler.compileSequence(entityId, asymId, startId, endId)); }
+    export function sequence(entityId: string | undefined, asymId: string | AsymIdSchema, startId: ResidueIdSchema, endId: ResidueIdSchema) { return Builder.build(() => Compiler.compileSequence(entityId, asymId, startId, endId)); }
     export function hetGroups() { return Builder.build(() => Compiler.compileHetGroups()); }
     export function nonHetPolymer() { return Builder.build(() => Compiler.compileNonHetPolymer()); }
     export function polymerTrace(...atomNames: string[]) { return Builder.build(() => Compiler.compilePolymerNames(atomNames, false)); }
@@ -272,11 +272,10 @@ namespace LiteMol.Core.Structure.Query {
             };
         }
         
-        export function compileSequence(seqEntityId: string, seqAsymId: string | AsymIdSchema, start: ResidueIdSchema, end: ResidueIdSchema): Query {
-            
+        export function compileSequence(seqEntityId: string | undefined, seqAsymId: string | AsymIdSchema, start: ResidueIdSchema, end: ResidueIdSchema): Query {            
             return (ctx: Context) => {
                 let { residues, chains } = ctx.structure.data,
-                    { seqNumber, atomStartIndex, atomEndIndex } = residues,
+                    { seqNumber, authSeqNumber, insCode, atomStartIndex, atomEndIndex } = residues,
                     { entityId, count, residueStartIndex, residueEndIndex } = chains,                                       
                     fragments = new FragmentSeqBuilder(ctx);
                
@@ -287,10 +286,16 @@ namespace LiteMol.Core.Structure.Query {
                 let targetAsymId: AsymIdSchema = typeof seqAsymId === 'string' ? { asymId: seqAsymId } : seqAsymId;
                 let optTargetAsymId = new OptimizedId(targetAsymId, isComputed ? parent!.data.chains : chains);
 
+                const isAuth = typeof targetAsymId.authAsymId === 'string';
+
+                const seqSource = isAuth ? authSeqNumber : seqNumber;
+                const startSeqNumber = isAuth ? start.authSeqNumber! : start.seqNumber!;
+                const endSeqNumber = isAuth ? end.authSeqNumber! : end.seqNumber!;
+
                 //optAsymId.isSatisfied();
                 
                 for (let cI = 0; cI < count; cI++) {
-                    if (entityId[cI] !== seqEntityId 
+                    if ((!!seqEntityId && entityId[cI] !== seqEntityId)
                         || !optTargetAsymId.isSatisfied(isComputed ? sourceChainIndex[cI] : cI)) {
                         continue;
                     }
@@ -298,15 +303,18 @@ namespace LiteMol.Core.Structure.Query {
                     let i = residueStartIndex[cI], last = residueEndIndex[cI], startIndex = -1, endIndex = -1;                    
                     for (; i < last; i++) {
 
-                        if (seqNumber[i] >= start.seqNumber!) {
+                        if (seqSource[i] >= startSeqNumber && seqSource[i] <= endSeqNumber) {
+                            if (!!start.insCode && insCode[i] !== start.insCode) continue;
                             startIndex = i;
                             break;
                         }
                     }
 
-                    if (i === last) continue;
+                    if (i < 0 || i === last) continue;
+
                     for (i = startIndex; i < last; i++) {                        
-                        if (seqNumber[i] >= end.seqNumber!) {
+                        if (seqSource[i] >= endSeqNumber) {
+                            if (!!end.insCode && seqSource[i] === endSeqNumber && insCode[i] !== end.insCode) continue;
                             break;
                         }
                     }
@@ -476,9 +484,9 @@ namespace LiteMol.Core.Structure.Query {
             };
         }
 
-        export function compileOr(queries: Source[]) {
-            
+        export function compileOr(queries: Source[]): Query {            
             let _qs = queries.map(q => Builder.toQuery(q));
+            if (_qs.length === 1) return _qs[0];
             return (ctx: Context) => {
                 let fragments = new HashFragmentSeqBuilder(ctx);
 
