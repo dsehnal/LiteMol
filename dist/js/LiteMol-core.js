@@ -15256,9 +15256,17 @@ var LiteMol;
                     var rotTemp = zero();
                     function makeRotation(mat, a, b) {
                         var by = angle(a, b);
-                        if (Math.abs(by) < 0.0001)
+                        if (Math.abs(by) < 0.0001) {
                             return Matrix4.fromIdentity(mat);
+                        }
                         var axis = cross(rotTemp, a, b);
+                        var m = squaredMagnitude(axis);
+                        if (m < 0.0001) {
+                            if (Math.abs(angleTempA[0] - 1) < 0.000001 /* Value */)
+                                set(axis, 0, 1, 0);
+                            else
+                                set(axis, 1, 0, 0);
+                        }
                         return Matrix4.fromRotation(mat, by, axis);
                     }
                     Vector3.makeRotation = makeRotation;

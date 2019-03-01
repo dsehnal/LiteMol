@@ -603,8 +603,15 @@ namespace LiteMol.Core.Geometry.LinearAlgebra {
         const rotTemp = zero();
         export function makeRotation(mat: Matrix4, a: Vector3, b: Vector3): Matrix4 {
             const by = angle(a, b);
-            if (Math.abs(by) < 0.0001) return Matrix4.fromIdentity(mat);
+            if (Math.abs(by) < 0.0001) {
+                return Matrix4.fromIdentity(mat);
+            }
             const axis = cross(rotTemp, a, b);
+            const m = squaredMagnitude(axis);
+            if (m < 0.0001) {
+                if (Math.abs(angleTempA[0] - 1) < EPSILON.Value) set(axis, 0, 1, 0);
+                else set(axis, 1, 0, 0);
+            }
             return Matrix4.fromRotation(mat, by, axis);
         }
     }

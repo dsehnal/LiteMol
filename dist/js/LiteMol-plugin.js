@@ -60256,9 +60256,17 @@ var LiteMol;
                     var rotTemp = zero();
                     function makeRotation(mat, a, b) {
                         var by = angle(a, b);
-                        if (Math.abs(by) < 0.0001)
+                        if (Math.abs(by) < 0.0001) {
                             return Matrix4.fromIdentity(mat);
+                        }
                         var axis = cross(rotTemp, a, b);
+                        var m = squaredMagnitude(axis);
+                        if (m < 0.0001) {
+                            if (Math.abs(angleTempA[0] - 1) < 0.000001 /* Value */)
+                                set(axis, 0, 1, 0);
+                            else
+                                set(axis, 1, 0, 0);
+                        }
                         return Matrix4.fromRotation(mat, by, axis);
                     }
                     Vector3.makeRotation = makeRotation;
@@ -69801,11 +69809,9 @@ var LiteMol;
                     function BondModelState(bondTemplate, builder) {
                         this.bondTemplate = bondTemplate;
                         this.builder = builder;
-                        this.rotationAxis = Vec3.zero();
                         this.bondUpVector = Vec3.fromValues(1, 0, 0);
                         this.dir = Vec3.zero();
                         this.scale = Vec3.zero();
-                        this.translation = Vec3.zero();
                         this.rotation = Mat4.zero();
                         this.offset = Vec3.zero();
                         this.a = Vec3.zero();
@@ -69978,9 +69984,9 @@ var LiteMol;
                                 break;
                             case 3 /* Triple */:
                                 BallsAndSticksGeometryBuilder.addBondPart(h, 0, o, bondState);
-                                var c = Math.cos(Math.PI / 3) * o, s = Math.sin(Math.PI / 3) * o;
+                                var c = Math.cos(Math.PI / 6) * o, s = Math.sin(Math.PI / 6) * o;
                                 BallsAndSticksGeometryBuilder.addBondPart(h, -c, -s, bondState);
-                                BallsAndSticksGeometryBuilder.addBondPart(h, -c, s, bondState);
+                                BallsAndSticksGeometryBuilder.addBondPart(h, c, -s, bondState);
                                 break;
                             case 4 /* Aromatic */:
                                 BallsAndSticksGeometryBuilder.addBondPart(h / 2, o, o, bondState);

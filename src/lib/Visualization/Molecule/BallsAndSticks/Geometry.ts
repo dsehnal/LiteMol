@@ -75,12 +75,10 @@ namespace LiteMol.Visualization.Molecule.BallsAndSticks {
     }
 
     class BondModelState {
-        rotationAxis = Vec3.zero();
         bondUpVector = Vec3.fromValues(1, 0, 0);
         dir = Vec3.zero();
 
         scale = Vec3.zero();
-        translation = Vec3.zero();
         rotation = Mat4.zero();
         
         offset =  Vec3.zero();
@@ -256,11 +254,11 @@ namespace LiteMol.Visualization.Molecule.BallsAndSticks {
                     BallsAndSticksGeometryBuilder.addBondPart(h, o, o, bondState);
                     BallsAndSticksGeometryBuilder.addBondPart(h, -o, -o, bondState);
                     break;
-                case BT.Triple:
+                    case BT.Triple:
                     BallsAndSticksGeometryBuilder.addBondPart(h, 0, o, bondState);
-                    const c = Math.cos(Math.PI / 3) * o, s = Math.sin(Math.PI / 3) * o
+                    const c = Math.cos(Math.PI / 6) * o, s = Math.sin(Math.PI / 6) * o
                     BallsAndSticksGeometryBuilder.addBondPart(h, -c,  -s,  bondState);
-                    BallsAndSticksGeometryBuilder.addBondPart(h, -c, s, bondState);
+                    BallsAndSticksGeometryBuilder.addBondPart(h, c, -s, bondState);
                     break;
                 case BT.Aromatic:
                     BallsAndSticksGeometryBuilder.addBondPart(h / 2, o, o, bondState);
