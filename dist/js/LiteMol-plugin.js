@@ -35639,12 +35639,11 @@ THREE.WebGLProgram = ( function () {
 
 			].join( '\n' );
 
-			prefix_fragment = [
+			prefix_fragment = [				
+				( parameters.bumpMap || parameters.normalMap || parameters.flatShading ) ? '#extension GL_OES_standard_derivatives : enable' : '',
 
 				'precision ' + parameters.precision + ' float;',
 				'precision ' + parameters.precision + ' int;',
-
-				( parameters.bumpMap || parameters.normalMap || parameters.flatShading ) ? '#extension GL_OES_standard_derivatives : enable' : '',
 
 				customDefines,
 
@@ -65832,7 +65831,7 @@ var LiteMol;
 (function (LiteMol) {
     var Visualization;
     (function (Visualization) {
-        Visualization.VERSION = { number: "1.7.8", date: "Oct 26 2018" };
+        Visualization.VERSION = { number: "1.7.9", date: "June 8 2019" };
     })(Visualization = LiteMol.Visualization || (LiteMol.Visualization = {}));
 })(LiteMol || (LiteMol = {}));
 var LiteMol;

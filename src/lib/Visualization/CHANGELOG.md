@@ -1,4 +1,7 @@
-﻿# 1.7.8
+﻿# 1.7.9
+* Fixed a shader bug that broke Chrome 75 compat.
+
+# 1.7.8
 * Relaxed condition for switching to "backbone only" mode.
 
 # 1.7.7

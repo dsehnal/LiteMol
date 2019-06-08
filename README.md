@@ -1,5 +1,5 @@
 
-[![Version](https://img.shields.io/badge/Version-2.4.1-blue.svg?style=flat)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/Version-2.4.2-blue.svg?style=flat)](CHANGELOG.md)
 [![Latest Release](https://img.shields.io/badge/Latest%20Release-2-blue.svg?style=flat)](https://github.com/dsehnal/LiteMol/releases/tag/v2)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg?style=flat)](https://github.com/dsehnal/LiteMol/blob/master/LICENSE)
 
