@@ -11510,6 +11510,7 @@ declare namespace LiteMol.Visualization {
         nearPlaneDelta: number;
         fogEnabled: boolean;
         fogDelta: number;
+        fogFactor: number;
         static shouldInUpdateInclude(m: Model): boolean;
         private updateFocus;
         private focus;
@@ -11563,6 +11564,7 @@ declare namespace LiteMol.Visualization {
         cameraSpeed?: number;
         cameraType?: CameraType;
         enableFog?: boolean;
+        fogFactor?: number;
         enableFrontClip?: boolean;
     }
     const DefaultSceneOptions: SceneOptions;

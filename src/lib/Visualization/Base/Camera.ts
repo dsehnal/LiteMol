@@ -165,6 +165,7 @@ namespace LiteMol.Visualization {
         
         fogEnabled = true;
         fogDelta = 0;
+        fogFactor = 1.0;
 
         static shouldInUpdateInclude(m: Model) {
             return !isNaN(m.centroid.x) && m.getVisibility();
@@ -339,8 +340,8 @@ namespace LiteMol.Visualization {
                 // let fogNear = dist + this.focusRadius - this.fogDelta - this.camera.near;
                 // let fogFar = dist + 2 * this.focusRadius - this.fogDelta - this.camera.near;
                 
-                let fogNear = this.targetDistance - this.camera.near + 1 * this.focusRadius - this.nearPlaneDelta;
-                let fogFar = this.targetDistance - this.camera.near + 2 * this.focusRadius - this.nearPlaneDelta; 
+                let fogNear = this.targetDistance - this.camera.near + this.fogFactor * 1 * this.focusRadius - this.nearPlaneDelta;
+                let fogFar = this.targetDistance - this.camera.near + this.fogFactor * 2 * this.focusRadius - this.nearPlaneDelta; 
                                             
                 //console.log(fogNear, fogFar); 
                 this.fog.near = Math.max(fogNear, 0.1);

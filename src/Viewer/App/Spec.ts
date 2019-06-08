@@ -14,12 +14,12 @@ namespace LiteMol.Viewer {
             'molecule.model.defaultQuery': `residuesByName('GLY', 'ALA')`,
             'molecule.model.defaultAssemblyName': '1', 
             'molecule.coordinateStreaming.defaultId': '5iv5',
-            'molecule.coordinateStreaming.defaultServer': 'https://webchem.ncbr.muni.cz/CoordinateServer',
-            'molecule.downloadBinaryCIFFromCoordinateServer.server': 'https://webchem.ncbr.muni.cz/CoordinateServer',
+            'molecule.coordinateStreaming.defaultServer': 'https://cs.litemol.org',
+            'molecule.downloadBinaryCIFFromCoordinateServer.server': 'https://cs.litemol.org',
             'molecule.coordinateStreaming.defaultRadius': 10,
             'density.defaultVisualBehaviourRadius': 5,
 
-            'extensions.densityStreaming.defaultServer': 'https://webchem.ncbr.muni.cz/DensityServer/', // 'http://localhost:1337/DensityServer/'
+            'extensions.densityStreaming.defaultServer': 'https://ds.litemol.org/', // 'http://localhost:1337/DensityServer/'
             'extensions.rnaLoops.defaultServer': 'http://rna.bgsu.edu/rna3dhub/loops/download/#id'
         },
         transforms: [

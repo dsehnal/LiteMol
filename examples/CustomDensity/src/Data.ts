@@ -75,7 +75,7 @@ namespace LiteMol.Custom {
         } else {
             // Enable the streaming
             action.add('molecule', Extensions.DensityStreaming.Setup, {
-                server: 'https://webchem.ncbr.muni.cz/DensityServer/',
+                server: 'https://ds.litemol.org/',
                 id,
                 source: determineSource(context)
             }, { ref: 'density-streaming' });

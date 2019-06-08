@@ -79,7 +79,7 @@ namespace LiteMol.Viewer.Examples {
         hideControlsIfNarrow(plugin);
 
         const molecule = plugin.createTransform()
-            .add(plugin.root, Transformer.Data.Download, { url: `https://webchem.ncbr.muni.cz/CoordinateServer/5ire/full?encoding=bcif&lowPrecisionCoords=1`, type: 'Binary', id: '5ire' })
+            .add(plugin.root, Transformer.Data.Download, { url: `https://cs.litemol.org/5ire/full?encoding=bcif&lowPrecisionCoords=1`, type: 'Binary', id: '5ire' })
             .then(Transformer.Molecule.CreateFromData, { format: LiteMol.Core.Formats.Molecule.SupportedFormats.mmBCIF }, { ref: 'molecule', isBinding: true });
    
         plugin.applyTransform(molecule).then(() => {
@@ -106,7 +106,7 @@ namespace LiteMol.Viewer.Examples {
             }).catch(() => suppressCreateModel(false));
 
             const params: Extensions.DensityStreaming.SetupParams = { 
-                server: 'https://webchem.ncbr.muni.cz/DensityServer/', //'http://localhost:1337/DensityServer/',
+                server: 'https://ds.litemol.org/', //'http://localhost:1337/DensityServer/',
                 id: '5ire',
                 source: 'EM',
                 initialStreamingParams: { 
@@ -135,7 +135,7 @@ namespace LiteMol.Viewer.Examples {
         hideControlsIfNarrow(plugin);
 
         const molecule = plugin.createTransform()
-            .add(plugin.root, Transformer.Data.Download, { url: `https://webchem.ncbr.muni.cz/CoordinateServer/5va1/full?encoding=bcif&lowPrecisionCoords=1`, type: 'Binary', id: '5va1' })
+            .add(plugin.root, Transformer.Data.Download, { url: `https://cs.litemol.org/5va1/full?encoding=bcif&lowPrecisionCoords=1`, type: 'Binary', id: '5va1' })
             .then(Transformer.Molecule.CreateFromData, { format: LiteMol.Core.Formats.Molecule.SupportedFormats.mmBCIF }, { ref: 'molecule', isBinding: true });
    
         plugin.applyTransform(molecule).then(() => {
@@ -158,7 +158,7 @@ namespace LiteMol.Viewer.Examples {
             }).catch(() => suppressCreateModel(false));
 
             const params: Extensions.DensityStreaming.SetupParams = { 
-                server: 'https://webchem.ncbr.muni.cz/DensityServer/', //'http://localhost:1337/DensityServer/',
+                server: 'https://ds.litemol.org/', //'http://localhost:1337/DensityServer/',
                 id: '5va1',
                 source: 'EM',
                 initialStreamingParams: { 
@@ -178,7 +178,7 @@ namespace LiteMol.Viewer.Examples {
         hideControlsIfNarrow(plugin);
 
         const molecule = plugin.createTransform()
-            .add(plugin.root, Transformer.Data.Download, { url: `https://webchem.ncbr.muni.cz/CoordinateServer/3j3q/cartoon?encoding=bcif&lowPrecisionCoords=1`, type: 'Binary', id: '3j3q' })
+            .add(plugin.root, Transformer.Data.Download, { url: `https://cs.litemol.org/3j3q/cartoon?encoding=bcif&lowPrecisionCoords=1`, type: 'Binary', id: '3j3q' })
             .then(Transformer.Molecule.CreateFromData, { format: LiteMol.Core.Formats.Molecule.SupportedFormats.mmBCIF }, { ref: 'molecule', isBinding: true })
             .then(Transformer.Molecule.CreateModel, { modelIndex: 0 })
             .then(Transformer.Molecule.CreateMacromoleculeVisual, { het: true, polymer: true, water: false, polymerRef: 'polymer' }, { });
@@ -202,7 +202,7 @@ namespace LiteMol.Viewer.Examples {
         const rootRef = 'hiv1-protease-data';
 
         const molecule = plugin.createTransform()
-            .add(plugin.root, Transformer.Data.Download, { url: `https://webchem.ncbr.muni.cz/CoordinateServer/2f80/full?encoding=bcif&lowPrecisionCoords=1`, type: 'Binary', id: '2f80' }, { ref: rootRef })
+            .add(plugin.root, Transformer.Data.Download, { url: `https://cs.litemol.org/2f80/full?encoding=bcif&lowPrecisionCoords=1`, type: 'Binary', id: '2f80' }, { ref: rootRef })
             .then(Transformer.Molecule.CreateFromData, { format: LiteMol.Core.Formats.Molecule.SupportedFormats.mmBCIF }, { ref: 'molecule', isBinding: true })
             .then(Transformer.Molecule.CreateModel, { modelIndex: 0 })
             .then(Transformer.Molecule.CreateMacromoleculeVisual, { het: true, polymer: true, water: false, hetRef: 'het-visual', polymerRef: 'polymer-visual' }, { });
@@ -223,7 +223,7 @@ namespace LiteMol.Viewer.Examples {
         const annotationTransform = plugin.applyTransform(annotation);
 
         const streamingParams: Extensions.DensityStreaming.SetupParams = { 
-            server: 'https://webchem.ncbr.muni.cz/DensityServer/',
+            server: 'https://ds.litemol.org/',
             id: '2f80',
             source: 'X-ray', 
             initialStreamingParams: {
@@ -279,7 +279,7 @@ namespace LiteMol.Viewer.Examples {
 
         const query = Core.Structure.Query.residues({ entityId: '2', authAsymId: 'B', authSeqNumber: 2 });
         const model = plugin.createTransform()
-            .add(plugin.root, Transformer.Data.Download, { url: `https://webchem.ncbr.muni.cz/CoordinateServer/3a4x/ligandInteraction?modelId=1&entityId=2&authAsymId=B&authSeqNumber=2&insCode=&radius=5&atomSitesOnly=1&encoding=bcif&lowPrecisionCoords=1`, type: 'Binary', id: '3a4x' }, { ref: rootRef })
+            .add(plugin.root, Transformer.Data.Download, { url: `https://cs.litemol.org/3a4x/ligandInteraction?modelId=1&entityId=2&authAsymId=B&authSeqNumber=2&insCode=&radius=5&atomSitesOnly=1&encoding=bcif&lowPrecisionCoords=1`, type: 'Binary', id: '3a4x' }, { ref: rootRef })
             .then(Transformer.Molecule.CreateFromData, { format: LiteMol.Core.Formats.Molecule.SupportedFormats.mmBCIF }, { ref: 'molecule', isBinding: true })        
             .then(Transformer.Molecule.CreateModel, { modelIndex: 0 });
 
@@ -300,7 +300,7 @@ namespace LiteMol.Viewer.Examples {
         const annotationTransform = plugin.applyTransform(annotation);
 
         const streamingParams: Extensions.DensityStreaming.SetupParams = { 
-            server: 'https://webchem.ncbr.muni.cz/DensityServer/',
+            server: 'https://ds.litemol.org/',
             id: '3a4x',
             source: 'X-ray',
             initialStreamingParams: { 

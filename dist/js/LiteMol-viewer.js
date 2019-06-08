@@ -20,7 +20,7 @@ var LiteMol;
                 sourceId: 'url-molecule',
                 name: 'URL',
                 description: 'Download a molecule from the specified Url (if the host server supports cross domain requests).',
-                defaultId: 'https://webchem.ncbr.muni.cz/CoordinateServer/1tqn/cartoon',
+                defaultId: 'https://cs.litemol.org/1tqn/cartoon',
                 urlTemplate: function (id) { return id; },
                 isFullUrl: true
             });
@@ -34,9 +34,9 @@ var LiteMol;
                 defaultParams: function (ctx) { return ({
                     sourceKind: 'CoordinateServer',
                     sources: {
-                        'CoordinateServer': { kind: 'CoordinateServer', id: '1cbs', type: 'Full', lowPrecisionCoords: true, serverUrl: ctx.settings.get('molecule.downloadBinaryCIFFromCoordinateServer.server') ? ctx.settings.get('molecule.downloadBinaryCIFFromCoordinateServer.server') : 'https://webchem.ncbr.muni.cz/CoordinateServer' },
+                        'CoordinateServer': { kind: 'CoordinateServer', id: '1cbs', type: 'Full', lowPrecisionCoords: true, serverUrl: ctx.settings.get('molecule.downloadBinaryCIFFromCoordinateServer.server') ? ctx.settings.get('molecule.downloadBinaryCIFFromCoordinateServer.server') : 'https://cs.litemol.org' },
                         'PDBe Updated mmCIF': { kind: 'PDBe Updated mmCIF', id: '1cbs' },
-                        'URL': { kind: 'URL', format: LiteMol.Core.Formats.Molecule.SupportedFormats.mmCIF, url: 'https://webchem.ncbr.muni.cz/CoordinateServer/1tqn/cartoon' },
+                        'URL': { kind: 'URL', format: LiteMol.Core.Formats.Molecule.SupportedFormats.mmCIF, url: 'https://cs.litemol.org/1tqn/cartoon' },
                         'File on Disk': { kind: 'File on Disk', file: void 0 }
                     }
                 }); },
@@ -3258,7 +3258,7 @@ var LiteMol;
                     description: 'Download full or cartoon representation of a PDB entry using the BinaryCIF format.',
                     from: [Entity.Root],
                     to: [Entity.Action],
-                    defaultParams: function (ctx) { return ({ id: '1cbs', type: 'Full', lowPrecisionCoords: true, serverUrl: ctx.settings.get('molecule.downloadBinaryCIFFromCoordinateServer.server') ? ctx.settings.get('molecule.downloadBinaryCIFFromCoordinateServer.server') : 'https://webchem.ncbr.muni.cz/CoordinateServer' }); },
+                    defaultParams: function (ctx) { return ({ id: '1cbs', type: 'Full', lowPrecisionCoords: true, serverUrl: ctx.settings.get('molecule.downloadBinaryCIFFromCoordinateServer.server') ? ctx.settings.get('molecule.downloadBinaryCIFFromCoordinateServer.server') : 'https://cs.litemol.org' }); },
                     validateParams: function (p) { return (!p.id || !p.id.trim().length) ? ['Enter Id'] : (!p.serverUrl || !p.serverUrl.trim().length) ? ['Enter CoordinateServer base URL'] : void 0; },
                 }, function (context, a, t) {
                     var query = t.params.type === 'Cartoon' ? 'cartoon' : 'full';
@@ -4347,7 +4347,7 @@ var LiteMol;
                 suppressCreateModel(true);
                 hideControlsIfNarrow(plugin);
                 var molecule = plugin.createTransform()
-                    .add(plugin.root, Transformer.Data.Download, { url: "https://webchem.ncbr.muni.cz/CoordinateServer/5ire/full?encoding=bcif&lowPrecisionCoords=1", type: 'Binary', id: '5ire' })
+                    .add(plugin.root, Transformer.Data.Download, { url: "https://cs.litemol.org/5ire/full?encoding=bcif&lowPrecisionCoords=1", type: 'Binary', id: '5ire' })
                     .then(Transformer.Molecule.CreateFromData, { format: LiteMol.Core.Formats.Molecule.SupportedFormats.mmBCIF }, { ref: 'molecule', isBinding: true });
                 plugin.applyTransform(molecule).then(function () {
                     var model = plugin.createTransform()
@@ -4370,7 +4370,7 @@ var LiteMol;
                         }
                     }).catch(function () { return suppressCreateModel(false); });
                     var params = {
-                        server: 'https://webchem.ncbr.muni.cz/DensityServer/',
+                        server: 'https://ds.litemol.org/',
                         id: '5ire',
                         source: 'EM',
                         initialStreamingParams: {
@@ -4396,7 +4396,7 @@ var LiteMol;
                 suppressCreateModel(true);
                 hideControlsIfNarrow(plugin);
                 var molecule = plugin.createTransform()
-                    .add(plugin.root, Transformer.Data.Download, { url: "https://webchem.ncbr.muni.cz/CoordinateServer/5va1/full?encoding=bcif&lowPrecisionCoords=1", type: 'Binary', id: '5va1' })
+                    .add(plugin.root, Transformer.Data.Download, { url: "https://cs.litemol.org/5va1/full?encoding=bcif&lowPrecisionCoords=1", type: 'Binary', id: '5va1' })
                     .then(Transformer.Molecule.CreateFromData, { format: LiteMol.Core.Formats.Molecule.SupportedFormats.mmBCIF }, { ref: 'molecule', isBinding: true });
                 plugin.applyTransform(molecule).then(function () {
                     var model = plugin.createTransform()
@@ -4416,7 +4416,7 @@ var LiteMol;
                         }
                     }).catch(function () { return suppressCreateModel(false); });
                     var params = {
-                        server: 'https://webchem.ncbr.muni.cz/DensityServer/',
+                        server: 'https://ds.litemol.org/',
                         id: '5va1',
                         source: 'EM',
                         initialStreamingParams: {
@@ -4433,7 +4433,7 @@ var LiteMol;
                 suppressCreateModel(true);
                 hideControlsIfNarrow(plugin);
                 var molecule = plugin.createTransform()
-                    .add(plugin.root, Transformer.Data.Download, { url: "https://webchem.ncbr.muni.cz/CoordinateServer/3j3q/cartoon?encoding=bcif&lowPrecisionCoords=1", type: 'Binary', id: '3j3q' })
+                    .add(plugin.root, Transformer.Data.Download, { url: "https://cs.litemol.org/3j3q/cartoon?encoding=bcif&lowPrecisionCoords=1", type: 'Binary', id: '3j3q' })
                     .then(Transformer.Molecule.CreateFromData, { format: LiteMol.Core.Formats.Molecule.SupportedFormats.mmBCIF }, { ref: 'molecule', isBinding: true })
                     .then(Transformer.Molecule.CreateModel, { modelIndex: 0 })
                     .then(Transformer.Molecule.CreateMacromoleculeVisual, { het: true, polymer: true, water: false, polymerRef: 'polymer' }, {});
@@ -4461,7 +4461,7 @@ var LiteMol;
                                 hideControlsIfNarrow(plugin);
                                 rootRef = 'hiv1-protease-data';
                                 molecule = plugin.createTransform()
-                                    .add(plugin.root, Transformer.Data.Download, { url: "https://webchem.ncbr.muni.cz/CoordinateServer/2f80/full?encoding=bcif&lowPrecisionCoords=1", type: 'Binary', id: '2f80' }, { ref: rootRef })
+                                    .add(plugin.root, Transformer.Data.Download, { url: "https://cs.litemol.org/2f80/full?encoding=bcif&lowPrecisionCoords=1", type: 'Binary', id: '2f80' }, { ref: rootRef })
                                     .then(Transformer.Molecule.CreateFromData, { format: LiteMol.Core.Formats.Molecule.SupportedFormats.mmBCIF }, { ref: 'molecule', isBinding: true })
                                     .then(Transformer.Molecule.CreateModel, { modelIndex: 0 })
                                     .then(Transformer.Molecule.CreateMacromoleculeVisual, { het: true, polymer: true, water: false, hetRef: 'het-visual', polymerRef: 'polymer-visual' }, {});
@@ -4478,7 +4478,7 @@ var LiteMol;
                                     .add('molecule', Viewer.PDBe.Validation.DownloadAndCreate, { reportRef: 'hiv1-validation' });
                                 annotationTransform = plugin.applyTransform(annotation);
                                 streamingParams = {
-                                    server: 'https://webchem.ncbr.muni.cz/DensityServer/',
+                                    server: 'https://ds.litemol.org/',
                                     id: '2f80',
                                     source: 'X-ray',
                                     initialStreamingParams: {
@@ -4534,7 +4534,7 @@ var LiteMol;
                                 rootRef = '3a4x-ligint-data';
                                 query = LiteMol.Core.Structure.Query.residues({ entityId: '2', authAsymId: 'B', authSeqNumber: 2 });
                                 model = plugin.createTransform()
-                                    .add(plugin.root, Transformer.Data.Download, { url: "https://webchem.ncbr.muni.cz/CoordinateServer/3a4x/ligandInteraction?modelId=1&entityId=2&authAsymId=B&authSeqNumber=2&insCode=&radius=5&atomSitesOnly=1&encoding=bcif&lowPrecisionCoords=1", type: 'Binary', id: '3a4x' }, { ref: rootRef })
+                                    .add(plugin.root, Transformer.Data.Download, { url: "https://cs.litemol.org/3a4x/ligandInteraction?modelId=1&entityId=2&authAsymId=B&authSeqNumber=2&insCode=&radius=5&atomSitesOnly=1&encoding=bcif&lowPrecisionCoords=1", type: 'Binary', id: '3a4x' }, { ref: rootRef })
                                     .then(Transformer.Molecule.CreateFromData, { format: LiteMol.Core.Formats.Molecule.SupportedFormats.mmBCIF }, { ref: 'molecule', isBinding: true })
                                     .then(Transformer.Molecule.CreateModel, { modelIndex: 0 });
                                 model
@@ -4550,7 +4550,7 @@ var LiteMol;
                                     .add('molecule', Viewer.ValidatorDB.DownloadAndCreate, { reportRef: 'validation' });
                                 annotationTransform = plugin.applyTransform(annotation);
                                 streamingParams = {
-                                    server: 'https://webchem.ncbr.muni.cz/DensityServer/',
+                                    server: 'https://ds.litemol.org/',
                                     id: '3a4x',
                                     source: 'X-ray',
                                     initialStreamingParams: {
@@ -4590,11 +4590,11 @@ var LiteMol;
                 'molecule.model.defaultQuery': "residuesByName('GLY', 'ALA')",
                 'molecule.model.defaultAssemblyName': '1',
                 'molecule.coordinateStreaming.defaultId': '5iv5',
-                'molecule.coordinateStreaming.defaultServer': 'https://webchem.ncbr.muni.cz/CoordinateServer',
-                'molecule.downloadBinaryCIFFromCoordinateServer.server': 'https://webchem.ncbr.muni.cz/CoordinateServer',
+                'molecule.coordinateStreaming.defaultServer': 'https://cs.litemol.org',
+                'molecule.downloadBinaryCIFFromCoordinateServer.server': 'https://cs.litemol.org',
                 'molecule.coordinateStreaming.defaultRadius': 10,
                 'density.defaultVisualBehaviourRadius': 5,
-                'extensions.densityStreaming.defaultServer': 'https://webchem.ncbr.muni.cz/DensityServer/',
+                'extensions.densityStreaming.defaultServer': 'https://ds.litemol.org/',
                 'extensions.rnaLoops.defaultServer': 'http://rna.bgsu.edu/rna3dhub/loops/download/#id'
             },
             transforms: [
@@ -4746,7 +4746,7 @@ var LiteMol;
                     id: downloadCS,
                     type: 'Full',
                     lowPrecisionCoords: true,
-                    serverUrl: 'https://webchem.ncbr.muni.cz/CoordinateServer'
+                    serverUrl: 'https://cs.litemol.org'
                 });
                 plugin.applyTransform(t);
             }

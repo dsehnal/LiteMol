@@ -10,7 +10,7 @@ namespace LiteMol.Viewer.DataSources {
         sourceId: 'url-molecule', 
         name: 'URL', 
         description: 'Download a molecule from the specified Url (if the host server supports cross domain requests).',  
-        defaultId: 'https://webchem.ncbr.muni.cz/CoordinateServer/1tqn/cartoon',
+        defaultId: 'https://cs.litemol.org/1tqn/cartoon',
         urlTemplate: id => id,
         isFullUrl: true
     });  
@@ -50,9 +50,9 @@ namespace LiteMol.Viewer.DataSources {
         defaultParams: (ctx) => ({
             sourceKind: 'CoordinateServer',
             sources: {
-                'CoordinateServer': { kind: 'CoordinateServer', id: '1cbs', type: 'Full', lowPrecisionCoords: true, serverUrl: ctx.settings.get('molecule.downloadBinaryCIFFromCoordinateServer.server') ? ctx.settings.get('molecule.downloadBinaryCIFFromCoordinateServer.server') : 'https://webchem.ncbr.muni.cz/CoordinateServer' },
+                'CoordinateServer': { kind: 'CoordinateServer', id: '1cbs', type: 'Full', lowPrecisionCoords: true, serverUrl: ctx.settings.get('molecule.downloadBinaryCIFFromCoordinateServer.server') ? ctx.settings.get('molecule.downloadBinaryCIFFromCoordinateServer.server') : 'https://cs.litemol.org' },
                 'PDBe Updated mmCIF': { kind: 'PDBe Updated mmCIF', id: '1cbs' },
-                'URL': { kind: 'URL', format: Core.Formats.Molecule.SupportedFormats.mmCIF, url: 'https://webchem.ncbr.muni.cz/CoordinateServer/1tqn/cartoon' },
+                'URL': { kind: 'URL', format: Core.Formats.Molecule.SupportedFormats.mmCIF, url: 'https://cs.litemol.org/1tqn/cartoon' },
                 'File on Disk': { kind: 'File on Disk', file: void 0 }
             }
         }),

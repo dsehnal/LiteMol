@@ -66897,6 +66897,7 @@ var LiteMol;
                 this.nearPlaneDelta = 0;
                 this.fogEnabled = true;
                 this.fogDelta = 0;
+                this.fogFactor = 1.0;
                 this.observers = [];
                 this.setup();
             }
@@ -67060,8 +67061,8 @@ var LiteMol;
                     //   let dist = 0;              
                     // let fogNear = dist + this.focusRadius - this.fogDelta - this.camera.near;
                     // let fogFar = dist + 2 * this.focusRadius - this.fogDelta - this.camera.near;
-                    var fogNear = this.targetDistance - this.camera.near + 1 * this.focusRadius - this.nearPlaneDelta;
-                    var fogFar = this.targetDistance - this.camera.near + 2 * this.focusRadius - this.nearPlaneDelta;
+                    var fogNear = this.targetDistance - this.camera.near + this.fogFactor * 1 * this.focusRadius - this.nearPlaneDelta;
+                    var fogFar = this.targetDistance - this.camera.near + this.fogFactor * 2 * this.focusRadius - this.nearPlaneDelta;
                     //console.log(fogNear, fogFar); 
                     this.fog.near = Math.max(fogNear, 0.1);
                     this.fog.far = Math.max(fogFar, 0.2);
@@ -67134,7 +67135,8 @@ var LiteMol;
             cameraSpeed: 6,
             cameraFOV: 30,
             cameraType: Visualization.CameraType.Perspective,
-            enableFog: true
+            enableFog: true,
+            fogFactor: 1
         };
         var MouseInfo = /** @class */ (function () {
             function MouseInfo(renderState, domElement) {
@@ -67275,11 +67277,16 @@ var LiteMol;
             }
             Scene.prototype.updateOptions = function (options) {
                 options = LiteMol.Core.Utils.extend({}, options, this.options);
+                if (options.fogFactor < 0.1)
+                    options.fogFactor = 0.1;
+                else if (options.fogFactor > 1)
+                    options.fogFactor = 1;
                 var updateCamera = options.cameraType !== this.options.cameraType;
                 var cc = options.clearColor;
                 this.renderer.setClearColor(new Visualization.THREE.Color(cc.r, cc.g, cc.b));
                 this.renderer.setClearAlpha(options.alpha ? 0.0 : 1.0);
                 this.camera.fog.color.setRGB(cc.r, cc.g, cc.b);
+                this.camera.fogFactor = options.fogFactor;
                 if (this.camera.controls) {
                     this.camera.controls.rotateSpeed = options.cameraSpeed;
                     this.camera.controls.zoomSpeed = options.cameraSpeed;
@@ -81220,6 +81227,7 @@ var LiteMol;
                         if (this.state.showSceneOptions) {
                             options = Plugin.React.createElement("div", { className: 'lm-viewport-controls-scene-options lm-control' },
                                 Plugin.React.createElement(Plugin.Controls.Toggle, { onChange: function (v) { return _this.controller.setState({ enableFog: v }); }, value: state.enableFog, label: 'Fog' }),
+                                Plugin.React.createElement(Plugin.Controls.Slider, { label: 'Fog Factor', min: 0.1, max: 1, step: 0.01, onChange: function (v) { return _this.controller.setState({ fogFactor: v }); }, value: state.fogFactor }),
                                 Plugin.React.createElement(Plugin.Controls.Slider, { label: 'FOV', min: 30, max: 90, onChange: function (v) { return _this.controller.setState({ cameraFOV: v }); }, value: state.cameraFOV }),
                                 Plugin.React.createElement(Plugin.Controls.Slider, { label: 'Camera Speed', min: 1, max: 10, step: 0.01, onChange: function (v) { return _this.controller.setState({ cameraSpeed: v }); }, value: state.cameraSpeed }),
                                 Plugin.React.createElement(Plugin.Controls.ToggleColorPicker, { color: state.clearColor, label: 'Background', position: 'below', onChange: function (c) { return _this.controller.setState({ clearColor: c }); } }));
@@ -81495,7 +81503,7 @@ var LiteMol;
                 sourceId: 'url-molecule',
                 name: 'URL',
                 description: 'Download a molecule from the specified URL (if the host server supports cross domain requests).',
-                defaultId: 'https://webchem.ncbr.muni.cz/CoordinateServer/1tqn/cartoon',
+                defaultId: 'https://cs.litemol.org/1tqn/cartoon',
                 urlTemplate: function (id) { return id; },
                 isFullUrl: true
             });
@@ -81507,7 +81515,7 @@ var LiteMol;
                     'molecule.model.defaultQuery': "residues({ name: 'ALA' })",
                     'molecule.model.defaultAssemblyName': '1',
                     'molecule.coordinateStreaming.defaultId': '1jj2',
-                    'molecule.coordinateStreaming.defaultServer': 'https://webchem.ncbr.muni.cz/CoordinateServer',
+                    'molecule.coordinateStreaming.defaultServer': 'https://cs.litemol.org',
                     'molecule.coordinateStreaming.defaultRadius': 10,
                     'density.defaultVisualBehaviourRadius': 5
                 },

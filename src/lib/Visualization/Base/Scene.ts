@@ -11,6 +11,7 @@ namespace LiteMol.Visualization {
         cameraSpeed?: number,
         cameraType?: CameraType,
         enableFog?: boolean,
+        fogFactor?: number,
         enableFrontClip?: boolean
     }
     
@@ -20,7 +21,8 @@ namespace LiteMol.Visualization {
         cameraSpeed: 6,
         cameraFOV: 30,
         cameraType: CameraType.Perspective,
-        enableFog: true
+        enableFog: true,
+        fogFactor: 1
     }
 
     export class MouseInfo {
@@ -152,15 +154,18 @@ namespace LiteMol.Visualization {
         private initialResizeTimeout: number | undefined = void 0;
 
         
-        updateOptions(options: SceneOptions) {
-            
+        updateOptions(options: SceneOptions) {            
             options = Core.Utils.extend({}, options, this.options);
+            if (options.fogFactor! < 0.1) options.fogFactor = 0.1;
+            else if (options.fogFactor! > 1) options.fogFactor = 1;
+
             let updateCamera = options.cameraType !== this.options.cameraType;
             
             let cc = options.clearColor; 
             this.renderer.setClearColor(new THREE.Color(cc!.r, cc!.g, cc!.b));
             this.renderer.setClearAlpha(options.alpha ? 0.0 : 1.0);            
             this.camera.fog.color.setRGB(cc!.r, cc!.g, cc!.b);
+            this.camera.fogFactor = options.fogFactor!;
             if (this.camera.controls) {
                 this.camera.controls.rotateSpeed = options.cameraSpeed!;
                 this.camera.controls.zoomSpeed = options.cameraSpeed!;

@@ -15,7 +15,7 @@ namespace LiteMol.Custom {
         const customSpecification: Plugin.Specification = {
             settings: {
                 'density.defaultVisualBehaviourRadius': 5,
-                'extensions.densityStreaming.defaultServer': 'https://webchem.ncbr.muni.cz/DensityServer/'
+                'extensions.densityStreaming.defaultServer': 'https://ds.litemol.org/'
             },
             transforms: [                
                 { transformer: Transformer.Molecule.CreateVisual, view: Views.Transform.Molecule.CreateVisual },

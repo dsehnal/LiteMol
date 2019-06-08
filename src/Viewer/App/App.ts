@@ -49,7 +49,7 @@ namespace LiteMol.Viewer {
                 id: downloadCS,
                 type: 'Full' as 'Full',
                 lowPrecisionCoords: true,
-                serverUrl: 'https://webchem.ncbr.muni.cz/CoordinateServer'
+                serverUrl: 'https://cs.litemol.org'
             });
             plugin.applyTransform(t);
         }
